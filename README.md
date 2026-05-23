@@ -437,6 +437,19 @@ Instances are from the [einsum benchmark](https://benchmark.einsum.org/) suite. 
 
 Full `scripts/run_all.sh 1` benchmark measured on an Apple M2 Max machine after building PyTorch from GitHub with `BLAS=OpenBLAS`. Median ± IQR (ms). `OMP_NUM_THREADS=1`, `RAYON_NUM_THREADS=1`.
 
+The direct comparison is between **tenferro-rs trace**, **tenferro-rs eager**, and **Torch C++ / LibTorch CPU OpenBLAS**. JAX is shown later only as an additional CPU reference.
+
+Representative direct comparison:
+
+| Strategy | Instance | tenferro trace (ms) | tenferro eager (ms) | Torch C++ / LibTorch OpenBLAS (ms) |
+|---|---|---:|---:|---:|
+| opt_flops | bin_matmul_256 | 0.784 ± 0.040 | 0.816 ± 0.026 | **0.778 ± 0.011** |
+| opt_flops | gm_queen5_5_3.wcsp | **1904.652 ± 33.918** | 2737.154 ± 49.773 | 1954.326 ± 24.222 |
+| opt_flops | str_mps_varying_inner_product_200 | **11.461 ± 0.133** | 16.037 ± 0.131 | 39.471 ± 0.114 |
+| opt_flops | tensornetwork_permutation_focus_step409_316 | 273.003 ± 1.162 | 387.721 ± 2.698 | **260.141 ± 2.665** |
+| opt_size | gm_queen5_5_3.wcsp | 1036.876 ± 2.896 | 1247.475 ± 19.458 | **892.044 ± 5.774** |
+| opt_size | str_nw_mera_closed_120 | 1025.704 ± 5.192 | **1013.006 ± 24.025** | 1042.117 ± 7.288 |
+
 Build and execution details:
 
 - PyTorch checkout: `/Users/atelierarith/work/atelierarith/shinaoka/pytorch-openblas`
