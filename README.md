@@ -431,11 +431,11 @@ Instances are from the [einsum benchmark](https://benchmark.einsum.org/) suite. 
 
 ## Benchmark Results
 
-### Apple Silicon M4
+### Apple Silicon M2 Max
 
 #### tenferro-rs trace/eager vs Torch C++ OpenBLAS, GitHub PyTorch build
 
-Full `scripts/run_all.sh 1` benchmark after building PyTorch from GitHub with `BLAS=OpenBLAS`. Median ± IQR (ms). `OMP_NUM_THREADS=1`, `RAYON_NUM_THREADS=1`.
+Full `scripts/run_all.sh 1` benchmark measured on an Apple M2 Max machine after building PyTorch from GitHub with `BLAS=OpenBLAS`. Median ± IQR (ms). `OMP_NUM_THREADS=1`, `RAYON_NUM_THREADS=1`.
 
 Build and execution details:
 
