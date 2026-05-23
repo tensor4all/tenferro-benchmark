@@ -2,12 +2,12 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# Rust benchmark runner (tenferro-einsum + strided-rs faer)
+# Rust benchmark runner (tenferro trace/eager system OpenBLAS + strided-rs faer)
 #
 # Usage: ./scripts/run_all_rust.sh [NUM_THREADS]
 #
 # NUM_THREADS (default: 1) controls:
-#   - OMP_NUM_THREADS   (OpenBLAS internal threading, if used)
+#   - OMP_NUM_THREADS   (OpenBLAS internal threading)
 #   - RAYON_NUM_THREADS  (Rust rayon parallelism)
 #
 # Requires:
@@ -30,34 +30,50 @@ mkdir -p "$RESULTS_DIR"
 
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 
+if [[ -z "${OPENBLAS_ROOT:-}" ]]; then
+    if command -v brew >/dev/null 2>&1 && brew --prefix openblas >/dev/null 2>&1; then
+        export OPENBLAS_ROOT="$(brew --prefix openblas)"
+    else
+        echo "ERROR: OPENBLAS_ROOT is required for tenferro system OpenBLAS." >&2
+        echo "Set OPENBLAS_ROOT=/path/to/openblas." >&2
+        exit 1
+    fi
+fi
+
 echo "============================================"
 echo " Rust benchmark (threads=${NUM_THREADS})"
 echo "============================================"
 echo "  OMP_NUM_THREADS=$OMP_NUM_THREADS"
 echo "  RAYON_NUM_THREADS=$RAYON_NUM_THREADS"
+echo "  OPENBLAS_ROOT=$OPENBLAS_ROOT"
+echo "  tenferro features=system-openblas"
 echo ""
 
 RUST_LOGS=()
 
 # ---------------------------------------------------------------------------
-# tenferro-einsum
+# tenferro trace/eager
 # ---------------------------------------------------------------------------
 echo "============================================"
-echo " Rust: tenferro-einsum"
+echo " Rust: tenferro trace/eager"
 echo "============================================"
 
-TENFERRO_LOG="$RESULTS_DIR/tenferro_einsum_t${NUM_THREADS}_${TIMESTAMP}.log"
+echo "Building tenferro benchmark (OpenBLAS, release)..."
+cargo build --release --no-default-features --features system-openblas \
+    --manifest-path="$PROJECT_DIR/Cargo.toml" 2>&1
 
-echo "Building tenferro-einsum (release)..."
-cargo build --release --manifest-path="$PROJECT_DIR/Cargo.toml" 2>&1
+for TENFERRO_MODE in trace eager; do
+    TENFERRO_LOG="$RESULTS_DIR/tenferro_${TENFERRO_MODE}_t${NUM_THREADS}_${TIMESTAMP}.log"
+    echo "Running tenferro ${TENFERRO_MODE} benchmark..."
+    TENFERRO_MODE="$TENFERRO_MODE" \
+        cargo run --release --no-default-features --features system-openblas \
+        --manifest-path="$PROJECT_DIR/Cargo.toml" 2>&1 | tee "$TENFERRO_LOG"
 
-echo "Running tenferro-einsum benchmark..."
-cargo run --release --manifest-path="$PROJECT_DIR/Cargo.toml" 2>&1 | tee "$TENFERRO_LOG"
-
-echo ""
-echo "tenferro-einsum results saved to: $TENFERRO_LOG"
-echo ""
-RUST_LOGS+=("$TENFERRO_LOG")
+    echo ""
+    echo "tenferro ${TENFERRO_MODE} results saved to: $TENFERRO_LOG"
+    echo ""
+    RUST_LOGS+=("$TENFERRO_LOG")
+done
 
 # ---------------------------------------------------------------------------
 # strided-rs (faer)

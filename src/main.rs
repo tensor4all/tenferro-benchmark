@@ -1,8 +1,9 @@
 //! Benchmark runner for tenferro-einsum using einsum benchmark instances.
 //!
 //! Loads JSON metadata from data/instances/, builds ContractionTree from
-//! pre-computed paths, compiles the compute graph once, and times execution.
+//! pre-computed paths, and times trace-mode or eager-mode execution.
 
+use std::collections::{HashMap, HashSet};
 use std::hint::black_box;
 use std::panic;
 use std::path::Path;
@@ -10,7 +11,7 @@ use std::time::{Duration, Instant};
 
 use serde::Deserialize;
 use tenferro::exec::eval_exec_ir;
-use tenferro_einsum::{ContractionTree, Subscripts};
+use tenferro_einsum::{eager_einsum_owned_subscripts, ContractionTree, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, reorder_user_operands, unwrap_eval_result};
 use tenferro_tensor::cpu::CpuBackend;
 use tenferro_tensor::{Tensor, TypedTensor};
@@ -81,11 +82,129 @@ fn create_operand_tensors(shapes: &[Vec<usize>]) -> Vec<Tensor> {
         .collect()
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum TenferroMode {
+    Trace,
+    Eager,
+}
+
+impl TenferroMode {
+    fn from_env() -> Self {
+        match std::env::var("TENFERRO_MODE")
+            .unwrap_or_else(|_| "trace".into())
+            .to_ascii_lowercase()
+            .as_str()
+        {
+            "eager" => Self::Eager,
+            "trace" | "traced" | "compile" | "compiled" => Self::Trace,
+            other => {
+                eprintln!("Unknown TENFERRO_MODE={other:?}; using trace");
+                Self::Trace
+            }
+        }
+    }
+
+    fn backend_name(self) -> &'static str {
+        match self {
+            Self::Trace => "tenferro-trace",
+            Self::Eager => "tenferro-eager",
+        }
+    }
+
+    fn timing_note(self) -> &'static str {
+        match self {
+            Self::Trace => "graph compiled once",
+            Self::Eager => "precomputed path, eager binary contractions",
+        }
+    }
+}
+
+fn append_unique(labels: &mut Vec<u32>, label: u32) {
+    if !labels.contains(&label) {
+        labels.push(label);
+    }
+}
+
+fn intermediate_output_labels(
+    subscripts: &[Vec<u32>],
+    final_output: &[u32],
+    lhs_index: usize,
+    rhs_index: usize,
+) -> Result<Vec<u32>, String> {
+    if lhs_index >= subscripts.len() || rhs_index >= subscripts.len() {
+        return Err("contraction index out of range".into());
+    }
+    if lhs_index == rhs_index {
+        return Err("cannot contract an operand with itself".into());
+    }
+
+    let mut outside_counts: HashMap<u32, usize> = HashMap::new();
+    for (i, labels) in subscripts.iter().enumerate() {
+        if i == lhs_index || i == rhs_index {
+            continue;
+        }
+        for &label in labels {
+            *outside_counts.entry(label).or_default() += 1;
+        }
+    }
+
+    let mut labels_in_order = Vec::new();
+    for &label in &subscripts[lhs_index] {
+        append_unique(&mut labels_in_order, label);
+    }
+    for &label in &subscripts[rhs_index] {
+        append_unique(&mut labels_in_order, label);
+    }
+
+    let label_set: HashSet<u32> = labels_in_order.iter().copied().collect();
+    let mut output = Vec::new();
+    for &label in final_output {
+        if label_set.contains(&label) {
+            append_unique(&mut output, label);
+        }
+    }
+    for &label in &labels_in_order {
+        if outside_counts.get(&label).copied().unwrap_or(0) > 0 {
+            append_unique(&mut output, label);
+        }
+    }
+    Ok(output)
+}
+
+fn binary_subscripts(
+    subscripts: &[Vec<u32>],
+    final_output: &[u32],
+    lhs_index: usize,
+    rhs_index: usize,
+) -> Result<Subscripts, String> {
+    let output = intermediate_output_labels(subscripts, final_output, lhs_index, rhs_index)?;
+    Ok(Subscripts::new(
+        &[&subscripts[lhs_index], &subscripts[rhs_index]],
+        &output,
+    ))
+}
+
+fn contract_label_subscripts(
+    subscripts: &[Vec<u32>],
+    final_output: &[u32],
+    lhs_index: usize,
+    rhs_index: usize,
+) -> Result<Vec<Vec<u32>>, String> {
+    let output = intermediate_output_labels(subscripts, final_output, lhs_index, rhs_index)?;
+    let mut next = subscripts.to_vec();
+    let first_remove = lhs_index.max(rhs_index);
+    let second_remove = lhs_index.min(rhs_index);
+    next.remove(first_remove);
+    next.remove(second_remove);
+    next.push(output);
+    Ok(next)
+}
+
 // ---------------------------------------------------------------------------
 // Benchmark runner
 // ---------------------------------------------------------------------------
 
-fn run_instance(
+fn run_instance_trace(
     instance: &BenchmarkInstance,
     path_meta: &PathMeta,
 ) -> Result<(Duration, Duration, Duration), String> {
@@ -150,11 +269,88 @@ fn run_instance(
     Ok((median, iqr, compile_time))
 }
 
+fn contract_once_eager(
+    backend: &mut CpuBackend,
+    instance: &BenchmarkInstance,
+    path_meta: &PathMeta,
+) -> Result<Tensor, String> {
+    let parsed = Subscripts::parse(&instance.format_string_colmajor).map_err(|e| format!("{e}"))?;
+    let mut subscripts = parsed.inputs;
+    let final_output = parsed.output;
+    let mut operands = create_operand_tensors(&instance.shapes_colmajor);
+
+    for &[lhs_index, rhs_index] in &path_meta.path {
+        let binary = binary_subscripts(&subscripts, &final_output, lhs_index, rhs_index)?;
+        let first_remove = lhs_index.max(rhs_index);
+        let second_remove = lhs_index.min(rhs_index);
+        let rhs = operands.remove(first_remove);
+        let lhs = operands.remove(second_remove);
+        let ordered = if lhs_index < rhs_index {
+            vec![lhs, rhs]
+        } else {
+            vec![rhs, lhs]
+        };
+        let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+            eager_einsum_owned_subscripts(backend, ordered, &binary)
+        }));
+        let result = unwrap_eval_result(result, "panic during eager execution")?;
+        operands.push(result);
+        subscripts = contract_label_subscripts(&subscripts, &final_output, lhs_index, rhs_index)?;
+    }
+
+    if operands.len() != 1 {
+        return Err("contraction did not reduce to one output tensor".into());
+    }
+    Ok(operands.pop().expect("checked operands length"))
+}
+
+fn run_instance_eager(
+    instance: &BenchmarkInstance,
+    path_meta: &PathMeta,
+) -> Result<(Duration, Duration, Duration), String> {
+    if instance.dtype == "complex128" {
+        return Err("complex128 not supported".into());
+    }
+
+    let mut backend = CpuBackend::new();
+
+    for _ in 0..3 {
+        let eval = contract_once_eager(&mut backend, instance, path_meta)?;
+        black_box(&eval);
+    }
+
+    let num_runs = 15;
+    let mut durations = Vec::with_capacity(num_runs);
+    for _ in 0..num_runs {
+        let t0 = Instant::now();
+        let eval = contract_once_eager(&mut backend, instance, path_meta)?;
+        let elapsed = t0.elapsed();
+        black_box(&eval);
+        durations.push(elapsed);
+    }
+
+    durations.sort();
+    let median = durations[num_runs / 2];
+    let q1 = durations[num_runs / 4];
+    let q3 = durations[3 * num_runs / 4];
+    let iqr = q3.saturating_sub(q1);
+    Ok((median, iqr, Duration::ZERO))
+}
+
+fn run_instance(
+    mode: TenferroMode,
+    instance: &BenchmarkInstance,
+    path_meta: &PathMeta,
+) -> Result<(Duration, Duration, Duration), String> {
+    match mode {
+        TenferroMode::Trace => run_instance_trace(instance, path_meta),
+        TenferroMode::Eager => run_instance_eager(instance, path_meta),
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
-
-const BACKEND_NAME: &str = "tenferro-einsum";
 
 fn load_instances() -> Vec<BenchmarkInstance> {
     let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data/instances");
@@ -193,6 +389,8 @@ fn load_instances() -> Vec<BenchmarkInstance> {
 }
 
 fn main() {
+    let mode = TenferroMode::from_env();
+    let backend_name = mode.backend_name();
     let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data/instances");
     let mut instances = load_instances();
     if let Ok(filter) = std::env::var("BENCH_INSTANCE") {
@@ -206,16 +404,19 @@ fn main() {
     let rayon_threads = std::env::var("RAYON_NUM_THREADS").unwrap_or_else(|_| "unset".into());
     let omp_threads = std::env::var("OMP_NUM_THREADS").unwrap_or_else(|_| "unset".into());
 
-    println!("{BACKEND_NAME} benchmark suite");
+    println!("{backend_name} benchmark suite");
     println!("==================================");
     println!(
         "Loaded {} instances from {}",
         instances.len(),
         data_dir.display()
     );
-    println!("Backend: {BACKEND_NAME}");
+    println!("Backend: {backend_name}");
     println!("RAYON_NUM_THREADS={rayon_threads}, OMP_NUM_THREADS={omp_threads}");
-    println!("Timing: median ± IQR of 15 runs (3 warmup), graph compiled once");
+    println!(
+        "Timing: median ± IQR of 15 runs (3 warmup), {}",
+        mode.timing_note()
+    );
 
     let strategies: &[(&str, fn(&PathInfo) -> &PathMeta)] = &[
         ("opt_flops", |p| &p.opt_flops),
@@ -240,7 +441,7 @@ fn main() {
         for (i, instance) in instances.iter().enumerate() {
             eprintln!("  [{}/{}] {}...", i + 1, instances.len(), instance.name);
             let path_meta = get_path(&instance.paths);
-            match run_instance(instance, path_meta) {
+            match run_instance(mode, instance, path_meta) {
                 Ok((median, iqr, compile_time)) => {
                     println!(
                         "{:<50} {:>8} {:>10.2} {:>12.2} {:>12.3} {:>10.3} {:>12.3}",
