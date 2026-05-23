@@ -1,0 +1,13 @@
+{
+  "name": "bin_outer_product_4096",
+  "format_string": "i,j->ij",
+  "shapes": [[4096], [4096]],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {"path": [[0, 1]], "log2_size": 24.0, "log10_flops": 7.2247},
+    "opt_flops": {"path": [[0, 1]], "log2_size": 24.0, "log10_flops": 7.2247}
+  },
+  "format_string_colmajor": "i,j->ij",
+  "shapes_colmajor": [[4096], [4096]]
+}

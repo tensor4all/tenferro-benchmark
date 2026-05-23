@@ -1,0 +1,13 @@
+{
+  "name": "bin_matmul_256",
+  "format_string": "ij,jk->ik",
+  "shapes": [[256, 256], [256, 256]],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {"path": [[0, 1]], "log2_size": 16.0, "log10_flops": 7.2247},
+    "opt_flops": {"path": [[0, 1]], "log2_size": 16.0, "log10_flops": 7.2247}
+  },
+  "format_string_colmajor": "ij,jk->ik",
+  "shapes_colmajor": [[256, 256], [256, 256]]
+}

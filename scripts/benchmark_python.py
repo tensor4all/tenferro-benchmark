@@ -1,0 +1,278 @@
+#!/usr/bin/env python3
+"""Python einsum benchmark using PyTorch or JAX backends.
+
+Reads instance JSON files from data/instances/ and benchmarks einsum
+with precomputed contraction paths (opt_flops / opt_size).
+
+Output format mirrors the Rust benchmark logs so format_results.py can
+parse both Rust and Python results in a unified table.
+
+Usage:
+    uv run python scripts/benchmark_python.py --backend pytorch [--num-threads N]
+    uv run python scripts/benchmark_python.py --backend jax [--num-threads N]
+
+Environment:
+    BENCH_INSTANCE  Run only the named instance (default: all)
+    OMP_NUM_THREADS Thread count (overridden by --num-threads)
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).parent
+PROJECT_DIR = SCRIPT_DIR.parent
+DATA_DIR = PROJECT_DIR / "data" / "instances"
+
+NUM_WARMUP = 3
+NUM_RUNS = 15
+
+
+# ---------------------------------------------------------------------------
+# Argument parsing
+# ---------------------------------------------------------------------------
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Python einsum benchmark")
+    parser.add_argument(
+        "--backend", choices=["pytorch", "jax"], default="pytorch",
+        help="Backend to use (default: pytorch)",
+    )
+    parser.add_argument(
+        "--num-threads", type=int,
+        default=int(os.environ.get("OMP_NUM_THREADS", "1")),
+        help="Number of CPU threads (default: OMP_NUM_THREADS or 1)",
+    )
+    parser.add_argument(
+        "--instance", default=os.environ.get("BENCH_INSTANCE", ""),
+        help="Run only this instance name (default: all)",
+    )
+    return parser.parse_args()
+
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
+def load_instances(instance_filter: str = "") -> list[dict]:
+    paths = sorted(DATA_DIR.glob("*.json"))
+    instances = []
+    for path in paths:
+        try:
+            with open(path) as f:
+                d = json.load(f)
+        except Exception as e:
+            print(f"Warning: skip {path.name} ({e})", file=sys.stderr)
+            continue
+        if instance_filter and d["name"] != instance_filter:
+            continue
+        instances.append(d)
+    return instances
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def get_format_string(instance: dict) -> str:
+    """Return the row-major format string for the instance.
+
+    Prefers ``format_string_rowmajor`` when non-empty; falls back to
+    ``format_string`` (which is always row-major for our dataset).
+    """
+    rowmajor = instance.get("format_string_rowmajor", "")
+    return rowmajor if rowmajor else instance["format_string"]
+
+
+def path_to_opt_einsum(path_data: list[list[int]]) -> list[tuple[int, int]]:
+    """Convert JSON path ``[[i,j], ...]`` to opt_einsum format ``[(i,j), ...]``."""
+    return [tuple(p) for p in path_data]
+
+
+def compute_stats(times_ms: list[float]) -> tuple[float, float]:
+    """Return (median, IQR) from a sorted list of times in ms."""
+    times_ms = sorted(times_ms)
+    n = len(times_ms)
+    median = times_ms[n // 2]
+    q1 = times_ms[n // 4]
+    q3 = times_ms[3 * n // 4]
+    iqr = q3 - q1
+    return median, iqr
+
+
+# ---------------------------------------------------------------------------
+# PyTorch backend
+# ---------------------------------------------------------------------------
+
+def benchmark_pytorch(
+    instance: dict,
+    strategy: str,
+    num_threads: int,
+) -> tuple[tuple[float, float] | None, str | None]:
+    """Benchmark one instance with PyTorch.
+
+    Returns ((median_ms, iqr_ms), None) on success, or (None, error_msg).
+    """
+    import opt_einsum as oe
+    import torch
+
+    torch.set_num_threads(num_threads)
+
+    dtype_str = instance.get("dtype", "float64")
+    if "complex" in dtype_str:
+        return None, f"complex dtype ({dtype_str}) not supported"
+
+    fmt = get_format_string(instance)
+    shapes = instance["shapes"]
+    path = path_to_opt_einsum(instance["paths"][strategy]["path"])
+
+    operands = [torch.zeros(shape, dtype=torch.float64) for shape in shapes]
+
+    try:
+        # Warmup
+        for _ in range(NUM_WARMUP):
+            oe.contract(fmt, *operands, optimize=path, backend="torch")
+
+        # Timed runs
+        times: list[float] = []
+        for _ in range(NUM_RUNS):
+            t0 = time.perf_counter()
+            oe.contract(fmt, *operands, optimize=path, backend="torch")
+            times.append((time.perf_counter() - t0) * 1000.0)
+
+        return compute_stats(times), None
+
+    except Exception as exc:  # noqa: BLE001
+        return None, str(exc)
+
+
+# ---------------------------------------------------------------------------
+# JAX backend
+# ---------------------------------------------------------------------------
+
+def benchmark_jax(
+    instance: dict,
+    strategy: str,
+) -> tuple[tuple[float, float] | None, str | None]:
+    """Benchmark one instance with JAX.
+
+    Returns ((median_ms, iqr_ms), None) on success, or (None, error_msg).
+    JAX uses 64-bit floats (requires jax_enable_x64=True).
+    block_until_ready() ensures device execution is complete before timing.
+    """
+    import jax
+    import jax.numpy as jnp
+    import opt_einsum as oe
+
+    jax.config.update("jax_enable_x64", True)
+
+    dtype_str = instance.get("dtype", "float64")
+    if "complex" in dtype_str:
+        return None, f"complex dtype ({dtype_str}) not supported"
+
+    fmt = get_format_string(instance)
+    shapes = instance["shapes"]
+    path = path_to_opt_einsum(instance["paths"][strategy]["path"])
+
+    operands = [jnp.zeros(shape, dtype=jnp.float64) for shape in shapes]
+
+    try:
+        # Warmup (first call includes JIT compilation)
+        for _ in range(NUM_WARMUP):
+            jax.block_until_ready(
+                oe.contract(fmt, *operands, optimize=path, backend="jax")
+            )
+
+        # Timed runs
+        times: list[float] = []
+        for _ in range(NUM_RUNS):
+            t0 = time.perf_counter()
+            jax.block_until_ready(
+                oe.contract(fmt, *operands, optimize=path, backend="jax")
+            )
+            times.append((time.perf_counter() - t0) * 1000.0)
+
+        return compute_stats(times), None
+
+    except Exception as exc:  # noqa: BLE001
+        return None, str(exc)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main() -> None:
+    args = parse_args()
+    backend_name = f"{args.backend}-cpu"
+    num_threads = args.num_threads
+
+    instances = load_instances(args.instance)
+    if args.instance and not instances:
+        print(
+            f"BENCH_INSTANCE={args.instance!r}: no matching instance found",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # ---- Header ----
+    print(f"{backend_name} einsum benchmark suite")
+    print("==================================")
+    print(f"Loaded {len(instances)} instances from {DATA_DIR}")
+    print(f"Backend: {backend_name}")
+    print(f"OMP_NUM_THREADS={num_threads}")
+    print(
+        f"Timing: median ± IQR of {NUM_RUNS} runs "
+        f"({NUM_WARMUP} warmup), path precomputed"
+    )
+
+    strategies = ["opt_flops", "opt_size"]
+    col_w = 106  # separator width (no Compile column)
+
+    for strategy in strategies:
+        print()
+        print(f"Strategy: {strategy}")
+        print(
+            f"{'Instance':<50} {'Tensors':>8} {'log10FLOPS':>10} "
+            f"{'log2SIZE':>12} {'Median (ms)':>12} {'IQR (ms)':>10}"
+        )
+        print("-" * col_w)
+
+        for idx, instance in enumerate(instances):
+            name = instance["name"]
+            path_meta = instance["paths"][strategy]
+            num_tensors = instance["num_tensors"]
+            log10_flops = path_meta["log10_flops"]
+            log2_size = path_meta["log2_size"]
+
+            print(
+                f"  [{idx + 1}/{len(instances)}] {name}...",
+                file=sys.stderr,
+            )
+
+            if args.backend == "pytorch":
+                result, err = benchmark_pytorch(instance, strategy, num_threads)
+            else:
+                result, err = benchmark_jax(instance, strategy)
+
+            if result is None:
+                print(f"  -> {name} (error: {err})", file=sys.stderr)
+                print(
+                    f"{name:<50} {num_tensors:>8} {log10_flops:>10.2f} "
+                    f"{log2_size:>12.2f} {'SKIP':>12} {'-':>10}"
+                )
+            else:
+                median, iqr = result
+                print(
+                    f"{name:<50} {num_tensors:>8} {log10_flops:>10.2f} "
+                    f"{log2_size:>12.2f} {median:>12.3f} {iqr:>10.3f}"
+                )
+
+
+if __name__ == "__main__":
+    main()

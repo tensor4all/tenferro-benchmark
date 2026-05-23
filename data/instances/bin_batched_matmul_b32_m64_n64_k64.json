@@ -1,0 +1,13 @@
+{
+  "name": "bin_batched_matmul_b32_m64_n64_k64",
+  "format_string": "bij,bjk->bik",
+  "shapes": [[32, 64, 64], [32, 64, 64]],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {"path": [[0, 1]], "log2_size": 17.0, "log10_flops": 6.9237},
+    "opt_flops": {"path": [[0, 1]], "log2_size": 17.0, "log10_flops": 6.9237}
+  },
+  "format_string_colmajor": "bij,bjk->bik",
+  "shapes_colmajor": [[32, 64, 64], [32, 64, 64]]
+}
