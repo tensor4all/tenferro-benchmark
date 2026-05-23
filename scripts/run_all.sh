@@ -3,14 +3,15 @@ set -euo pipefail
 
 # ---------------------------------------------------------------------------
 # Full benchmark runner:
-#   - tenferro-einsum (Rust)
+#   - tenferro trace/eager (Rust)
 #   - strided-rs / faer (Rust, optional)
-#   - PyTorch CPU (Python)
+#   - LibTorch CPU (C++)
 #   - JAX CPU (Python)
 #
 # Usage: ./scripts/run_all.sh [NUM_THREADS]
 #
-# Delegates to run_all_rust.sh and run_all_python.sh, then formats results.
+# Delegates to run_all_rust.sh, run_all_libtorch.sh, and run_all_python.sh,
+# then formats results.
 # ---------------------------------------------------------------------------
 
 NUM_THREADS="${1:-1}"
@@ -22,7 +23,7 @@ RESULTS_DIR="$PROJECT_DIR/data/results"
 export BENCHMARK_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 echo "============================================"
-echo " tenferro-einsum benchmark suite"
+echo " tenferro benchmark suite"
 echo "============================================"
 echo "Project dir:  $PROJECT_DIR"
 echo "Threads:      $NUM_THREADS"
@@ -30,33 +31,45 @@ echo "Timestamp:    $BENCHMARK_TIMESTAMP"
 echo ""
 
 # ---------------------------------------------------------------------------
-# Rust benchmarks (tenferro-einsum + strided-rs)
+# Rust benchmarks (tenferro trace/eager + strided-rs)
 # ---------------------------------------------------------------------------
 "$SCRIPT_DIR/run_all_rust.sh" "$NUM_THREADS"
 
 # ---------------------------------------------------------------------------
-# Python benchmarks (PyTorch + JAX)
+# C++ LibTorch benchmark
+# ---------------------------------------------------------------------------
+"$SCRIPT_DIR/run_all_libtorch.sh" "$NUM_THREADS"
+
+# ---------------------------------------------------------------------------
+# Python benchmarks (JAX)
 # ---------------------------------------------------------------------------
 "$SCRIPT_DIR/run_all_python.sh" "$NUM_THREADS"
 
 # ---------------------------------------------------------------------------
 # Collect all logs and format as markdown table
 # ---------------------------------------------------------------------------
-TENFERRO_LOG="$RESULTS_DIR/tenferro_einsum_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+TENFERRO_TRACE_LOG="$RESULTS_DIR/tenferro_trace_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+TENFERRO_EAGER_LOG="$RESULTS_DIR/tenferro_eager_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 STRIDED_FAER_LOG="$RESULTS_DIR/strided_faer_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-PYTORCH_LOG="$RESULTS_DIR/pytorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+LIBTORCH_LOG="$RESULTS_DIR/libtorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 JAX_LOG="$RESULTS_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 MARKDOWN_OUT="$RESULTS_DIR/results_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
 
 LOGS=()
-[ -f "$TENFERRO_LOG" ]     && LOGS+=("$TENFERRO_LOG")
-[ -f "$STRIDED_FAER_LOG" ] && LOGS+=("$STRIDED_FAER_LOG")
-[ -f "$PYTORCH_LOG" ]      && LOGS+=("$PYTORCH_LOG")
-[ -f "$JAX_LOG" ]          && LOGS+=("$JAX_LOG")
+[ -f "$TENFERRO_TRACE_LOG" ] && LOGS+=("$TENFERRO_TRACE_LOG")
+[ -f "$TENFERRO_EAGER_LOG" ] && LOGS+=("$TENFERRO_EAGER_LOG")
+[ -f "$STRIDED_FAER_LOG" ]   && LOGS+=("$STRIDED_FAER_LOG")
+[ -f "$LIBTORCH_LOG" ]       && LOGS+=("$LIBTORCH_LOG")
+[ -f "$JAX_LOG" ]            && LOGS+=("$JAX_LOG")
 
 if [ ${#LOGS[@]} -gt 0 ]; then
     echo "Formatting results as markdown..."
-    uv run python "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_OUT"
+    if command -v uv >/dev/null 2>&1; then
+        uv run python "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_OUT" \
+            || python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_OUT"
+    else
+        python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_OUT"
+    fi
     echo ""
 fi
 

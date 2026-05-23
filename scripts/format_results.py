@@ -1,13 +1,13 @@
 """Parse benchmark log files and format results as a markdown table.
 
 Usage:
-    python scripts/format_results.py data/results/tenferro_einsum_*.log
+    python scripts/format_results.py data/results/tenferro_trace_*.log data/results/tenferro_eager_*.log
     python scripts/format_results.py data/results/*.log   # all backends
 
 Supports log formats produced by:
-  - tenferro-einsum (Rust)  — columns: Instance Tensors log10FLOPS log2SIZE Median IQR Compile
+  - tenferro trace/eager (Rust) — columns: Instance Tensors log10FLOPS log2SIZE Median IQR Compile
   - strided-opteinsum (Rust)
-  - pytorch-cpu / jax-cpu (Python) — columns: Instance Tensors log10FLOPS log2SIZE Median IQR
+  - libtorch-cpu / pytorch-cpu / jax-cpu — columns: Instance Tensors log10FLOPS log2SIZE Median IQR
 """
 
 import re
@@ -44,16 +44,22 @@ def parse_log(
 
             # --- Engine detection (header lines) ---
             if engine is None:
-                if "tenferro-einsum" in line.lower():
-                    engine = "tenferro-einsum"
+                if "tenferro-trace" in line.lower():
+                    engine = "tenferro-trace"
+                elif "tenferro-eager" in line.lower():
+                    engine = "tenferro-eager"
+                elif "tenferro-einsum" in line.lower():
+                    engine = "tenferro-trace"
                 elif "strided-opteinsum" in line.lower():
                     engine = "strided-opteinsum"
+                elif "libtorch-cpu" in line.lower():
+                    engine = "libtorch-cpu"
                 elif "pytorch-cpu" in line.lower():
                     engine = "pytorch-cpu"
                 elif "jax-cpu" in line.lower():
                     engine = "jax-cpu"
 
-            # "Backend: tenferro-einsum" / "Backend: strided-opteinsum(faer)"
+            # "Backend: tenferro-trace" / "Backend: strided-opteinsum(faer)"
             m = re.match(r"^Backend:\s+(.+)", line)
             if m and rust_backend is None:
                 rust_backend = m.group(1).strip()
@@ -157,9 +163,12 @@ def format_markdown_table(
     # Column order: Rust engines first, then Python, then Julia
     preferred_order = [
         "tenferro-einsum",
+        "tenferro-trace",
+        "tenferro-eager",
         "strided-opteinsum(faer)",
         "strided-opteinsum(blas)",
         "strided-opteinsum",
+        "libtorch-cpu",
         "pytorch-cpu",
         "jax-cpu",
         "omeinsum_path",
@@ -175,9 +184,12 @@ def format_markdown_table(
 
     mode_labels = {
         "tenferro-einsum": "tenferro-einsum (ms)",
+        "tenferro-trace": "tenferro trace (ms)",
+        "tenferro-eager": "tenferro eager (ms)",
         "strided-opteinsum": "strided-rs (ms)",
         "strided-opteinsum(faer)": "strided-rs faer (ms)",
         "strided-opteinsum(blas)": "strided-rs OpenBLAS (ms)",
+        "libtorch-cpu": "LibTorch CPU OpenBLAS (ms)",
         "pytorch-cpu": "PyTorch CPU (ms)",
         "jax-cpu": "JAX CPU (ms)",
         "omeinsum_path": "OMEinsum.jl OpenBLAS (ms)",

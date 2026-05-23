@@ -7,11 +7,11 @@ use computegraph::resolve::resolve;
 use computegraph::types::{GlobalValKey, ValRef};
 use tenferro::compiler::compile_std_to_exec;
 use tenferro::exec::ExecProgram;
-use tenferro_ops::dim_expr::DimExpr;
-use tenferro_tensor::DType;
 use tenferro_einsum::{build_einsum_fragment, ContractionTree, Subscripts};
+use tenferro_ops::dim_expr::DimExpr;
 use tenferro_ops::input_key::TensorInputKey;
 use tenferro_ops::std_tensor_op::StdTensorOp;
+use tenferro_tensor::DType;
 use tenferro_tensor::Tensor;
 
 pub struct CompiledEinsum {

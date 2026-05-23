@@ -3,14 +3,30 @@ name = "tenferro-einsum-benchmark"
 version = "0.1.0"
 edition = "2021"
 description = "Benchmark suite for tenferro-einsum based on einsum benchmark"
+build = "build.rs"
 
 [dependencies]
-tenferro          = { path = "../tenferro-rs/tenferro" }
-tenferro-einsum   = { path = "../tenferro-rs/tenferro-einsum" }
-tenferro-tensor   = { path = "../tenferro-rs/tenferro-tensor" }
-tenferro-ops      = { path = "../tenferro-rs/tenferro-ops" }
+tenferro          = { path = "../tenferro-rs/tenferro", default-features = false }
+tenferro-einsum   = { path = "../tenferro-rs/tenferro-einsum", default-features = false }
+tenferro-tensor   = { path = "../tenferro-rs/tenferro-tensor", default-features = false }
+tenferro-ops      = { path = "../tenferro-rs/tenferro-ops", default-features = false }
 tenferro-device   = { path = "../tenferro-rs/tenferro-device" }
 computegraph      = { git = "https://github.com/tensor4all/computegraph-rs.git", rev = "c20e8912560ef11166418bcea089126ef50443cc" }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+[features]
+default = ["cpu-faer"]
+cpu-faer = [
+    "tenferro/cpu-faer",
+    "tenferro-einsum/cpu-faer",
+    "tenferro-ops/cpu-faer",
+    "tenferro-tensor/cpu-faer",
+]
+system-openblas = [
+    "tenferro/cpu-blas",
+    "tenferro-einsum/cpu-blas",
+    "tenferro-ops/cpu-blas",
+    "tenferro-tensor/cpu-blas",
+]
