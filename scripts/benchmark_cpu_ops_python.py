@@ -160,7 +160,7 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
         sizes = sizes_for(profile, [2, 4], [2, 4, 8, 16])
         for batch in batches:
             for n in sizes:
-                label = f"{n}x{n}xbatch{batch} (rightmost batch)"
+                label = f"{n}x{n}xbatch{batch} (native batch layout)"
                 emit_row(writer, args, "batched", "batched_matmul_ikb_kjb_ijb", label, lambda n=n, batch=batch: torch.einsum("bik,bkj->bij", tensor(data((batch, n, n), 41)), tensor(data((batch, n, n), 42))), sync)
                 emit_row(writer, args, "batched", "batched_svd", label, lambda n=n, batch=batch: torch.linalg.svd(tensor(batched_well_conditioned(n, batch, 43)))[1], sync)
                 emit_row(writer, args, "batched", "batched_qr", label, lambda n=n, batch=batch: torch.linalg.qr(tensor(batched_well_conditioned(n, batch, 44)))[0], sync)
@@ -252,7 +252,7 @@ def run_jax(args, writer: csv.DictWriter) -> None:
         sizes = sizes_for(profile, [2, 4], [2, 4, 8, 16])
         for batch in batches:
             for n in sizes:
-                label = f"{n}x{n}xbatch{batch} (rightmost batch)"
+                label = f"{n}x{n}xbatch{batch} (native batch layout)"
                 emit_row(writer, args, "batched", "batched_matmul_ikb_kjb_ijb", label, lambda n=n, batch=batch: jnp.einsum("bik,bkj->bij", array(data((batch, n, n), 41)), array(data((batch, n, n), 42))), sync)
                 emit_row(writer, args, "batched", "batched_svd", label, lambda n=n, batch=batch: jnp.linalg.svd(array(batched_well_conditioned(n, batch, 43)), full_matrices=True)[1], sync)
                 emit_row(writer, args, "batched", "batched_qr", label, lambda n=n, batch=batch: jnp.linalg.qr(array(batched_well_conditioned(n, batch, 44)))[0], sync)

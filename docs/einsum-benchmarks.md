@@ -142,7 +142,7 @@ OPENBLAS_ROOT=/opt/homebrew/opt/openblas \
 - Large matrix throughput: `128` through `1024` matmul, medium/large linalg, and separate primal/backward timing rows for AD workloads.
 - Batched small matrices: batched matmul, batched `svd`/`qr`/`eigh`/`solve`, and batched AD for matmul/solve.
 
-tenferro-rs stores batch axes as trailing dimensions. Therefore the batched matmul case is encoded as `ikb,kjb->ijb`, where the rightmost `b` index is the batch index. This is the same workload as the issue's `bij,bjk->bik` example, expressed in tenferro's col-major/trailing-batch convention.
+The batched rows use each backend's native batch layout. tenferro-rs stores batch axes as trailing dimensions, so its batched matmul case is encoded as `ikb,kjb->ijb`, where the rightmost `b` index is the batch index. Torch, LibTorch, and JAX use row-major tensors with leading batch axes, so they run the same workload as `bij,bjk->bik`.
 
 Run the quick profile:
 

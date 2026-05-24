@@ -350,7 +350,7 @@ void run_batched(const Args& args, std::ofstream& out) {
     }
     for (const auto batch : profile_sizes({16, 64}, {16, 64, 256, 1024})) {
         for (const auto n : profile_sizes({2, 4}, {2, 4, 8, 16})) {
-            const auto shape = std::to_string(n) + "x" + std::to_string(n) + "xbatch" + std::to_string(batch) + " (rightmost batch)";
+            const auto shape = std::to_string(n) + "x" + std::to_string(n) + "xbatch" + std::to_string(batch) + " (native batch layout)";
             write_row(out, args, "batched", "batched_matmul_ikb_kjb_ijb", shape, [&] {
                 return bench(args, [&] { return torch::einsum("bik,bkj->bij", {data({batch, n, n}, 41), data({batch, n, n}, 42)}); });
             });

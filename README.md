@@ -82,6 +82,10 @@ devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 1'
 devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 4'
 ```
 
+The reports in `result/` aggregate the latest timestamped table for each
+thread count under `data/results/`. After running both commands, the same
+markdown files should contain `## Threads: 1` and `## Threads: 4` sections.
+
 The devcontainer sets `OPENBLAS_ROOT=/opt/openblas` and installs Rust, CMake,
 Python 3.12, `uv`, OpenBLAS, and Linux linkage tools. It also sets
 `PYTORCH_OPENBLAS_DIR` to `extern/devcontainer/pytorch-openblas` inside the
@@ -99,7 +103,7 @@ restore the benchmark dependency checkout:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc \
-  'rg -n "tenferro-rs commit" result/einsum-results.md result/cpu-benchmark-results.md'
+  'rg -n "Threads: 1|Threads: 4|tenferro-rs commit" result/einsum-results.md result/cpu-benchmark-results.md'
 ```
 
 ## Torch C++ Benchmark Workflow
@@ -134,10 +138,15 @@ For normal benchmark results:
 ./scripts/run_all.sh 4
 ```
 
+Each `run_all.sh` invocation writes timestamped raw logs and intermediate
+tables under `data/results/`. The reports in `result/` are regenerated as a
+thread-count summary: the latest table for thread 1 and the latest table for
+thread 4 are kept in separate sections of the same markdown file.
+
 The generated reports should include the comparison columns:
 
 ```bash
-rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
+rg -n "Threads: 1|Threads: 4|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
   result/einsum-results.md result/cpu-benchmark-results.md
 ```
 
@@ -196,9 +205,12 @@ Raw logs and timestamped tables are written to `data/results/`, summarized by `s
 - [result/einsum-results.md](result/einsum-results.md)
 - [result/cpu-benchmark-results.md](result/cpu-benchmark-results.md)
 
-Both report files include the full `tenferro-rs` commit hash resolved from
-`TENFERRO_RS_DIR` so the benchmark checkout can be restored later with
-`git checkout <commit>`.
+Both report files aggregate the latest generated table for each thread count,
+so a normal `./scripts/run_all.sh 1` followed by `./scripts/run_all.sh 4`
+produces one einsum report and one CPU report with `## Threads: 1` and
+`## Threads: 4` sections. They also include the full `tenferro-rs` commit hash
+resolved from `TENFERRO_RS_DIR` so the benchmark checkout can be restored later
+with `git checkout <commit>`.
 
 ### Run PyTorch and JAX Python baselines manually
 
