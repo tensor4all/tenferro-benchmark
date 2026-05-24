@@ -621,7 +621,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
 
     for &b in batches {
         for &n in sizes {
-            let shape = format!("{n}x{n}xbatch{b} (rightmost batch)");
+            let shape = format!("{n}x{n}xbatch{b} (native batch layout)");
             rows.push(bench_row(
                 config,
                 "batched",
@@ -924,7 +924,7 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
 
     for &b in batches {
         for &n in sizes {
-            let shape = format!("{n}x{n}xbatch{b} (rightmost batch)");
+            let shape = format!("{n}x{n}xbatch{b} (native batch layout)");
             rows.push(bench_trace_row(config, "batched", "batched_matmul_ikb_kjb_ijb", "primal", "f64", &shape, || {
                 let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 41));
                 let rhs = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 42));

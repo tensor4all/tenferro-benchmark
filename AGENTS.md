@@ -71,8 +71,14 @@ devcontainer from the host `devcontainer` CLI.
 
    ```bash
    devcontainer exec --workspace-folder . bash -lc \
-     'rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs commit" result/einsum-results.md result/cpu-benchmark-results.md'
+     'rg -n "Threads: 1|Threads: 4|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs commit" result/einsum-results.md result/cpu-benchmark-results.md'
    ```
+
+   `result/einsum-results.md` and `result/cpu-benchmark-results.md` collect
+   the latest table for each thread count found under `data/results/`. After
+   running both commands above, each report should contain separate
+   `## Threads: 1` and `## Threads: 4` sections rather than only the most
+   recent run.
 
    The `tenferro-rs commit` line records the exact commit hash to use later
    with `git checkout <commit>`.
@@ -135,13 +141,15 @@ include the Torch C++ column.
    ```
 
    Raw logs and timestamped intermediate tables are written under
-   `data/results/`. The latest human-facing reports are written under
-   `result/`.
+   `data/results/`. The human-facing reports under `result/` aggregate the
+   latest timestamped table for each thread count, so running thread 1 and then
+   thread 4 leaves both `## Threads: 1` and `## Threads: 4` sections in one
+   markdown file.
 
 5. Verify generated outputs:
 
    ```bash
-   rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
+   rg -n "Threads: 1|Threads: 4|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
      result/einsum-results.md result/cpu-benchmark-results.md
    ```
 
@@ -161,4 +169,5 @@ cargo metadata --no-deps --format-version 1
 bash tests/test_run_all_docs_outputs.sh
 bash tests/test_extern_dependency_paths.sh
 bash tests/test_run_all_rust_bin_selection.sh
+bash tests/test_native_batch_layout_labels.sh
 ```
