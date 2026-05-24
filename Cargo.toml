@@ -8,6 +8,7 @@ build = "build.rs"
 [dependencies]
 tenferro          = { path = "extern/tenferro-rs/tenferro", default-features = false }
 tenferro-einsum   = { path = "extern/tenferro-rs/tenferro-einsum", default-features = false }
+tenferro-linalg   = { path = "extern/tenferro-rs/tenferro-linalg", default-features = false }
 tenferro-tensor   = { path = "extern/tenferro-rs/tenferro-tensor", default-features = false }
 tenferro-ops      = { path = "extern/tenferro-rs/tenferro-ops", default-features = false }
 tenferro-device   = { path = "extern/tenferro-rs/tenferro-device" }
@@ -25,16 +26,22 @@ cpu-faer = [
     "tenferro-tensor/cpu-faer",
 ]
 system-openblas = [
+    "tenferro/autodiff",
     "tenferro/cpu-blas",
+    "tenferro-einsum/autodiff",
     "tenferro-einsum/cpu-blas",
+    "tenferro-linalg/autodiff",
+    "tenferro-linalg/cpu-blas",
+    "tenferro-ops/autodiff",
     "tenferro-ops/cpu-blas",
     "tenferro-tensor/cpu-blas",
 ]
 cuda = [
     "tenferro/cuda",
-    "tenferro-einsum/cubecl",
-    "tenferro-ops/cubecl",
-    "tenferro-tensor/cubecl",
+    "tenferro-einsum/cuda",
+    "tenferro-linalg/cuda",
+    "tenferro-ops/cuda",
+    "tenferro-tensor/cuda",
     "tenferro-device/cuda",
 ]
 

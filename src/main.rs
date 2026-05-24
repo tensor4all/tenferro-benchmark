@@ -10,9 +10,10 @@ use std::path::Path;
 use std::time::{Duration, Instant};
 
 use serde::Deserialize;
-use tenferro::exec::eval_exec_ir;
-use tenferro_einsum::{eager_einsum_owned_subscripts, ContractionTree, Subscripts};
-use tenferro_einsum_benchmark::{compile_einsum, reorder_user_operands, unwrap_eval_result};
+use tenferro::{EagerRuntime, EagerTensor, GraphExecutor, TracedTensor};
+use tenferro_einsum::eager_tensor;
+use tenferro_einsum::{ContractionTree, Subscripts};
+use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_tensor::cpu::CpuBackend;
 use tenferro_tensor::{Tensor, TypedTensor};
 
@@ -80,6 +81,30 @@ fn create_operand_tensors(shapes: &[Vec<usize>]) -> Vec<Tensor> {
         .iter()
         .map(|shape| Tensor::F64(TypedTensor::<f64>::zeros(shape.clone())))
         .collect()
+}
+
+fn create_eager_operands(
+    shapes: &[Vec<usize>],
+    ctx: &std::sync::Arc<EagerRuntime>,
+) -> Vec<EagerTensor> {
+    create_operand_tensors(shapes)
+        .into_iter()
+        .map(|tensor| EagerTensor::from_tensor_in(tensor, std::sync::Arc::clone(ctx)))
+        .collect()
+}
+
+fn bind_operands<'a>(
+    inputs: &'a [TracedTensor],
+    operands: &'a [Tensor],
+) -> Result<Vec<(&'a TracedTensor, &'a Tensor)>, String> {
+    if inputs.len() != operands.len() {
+        return Err(format!(
+            "operand count mismatch: graph expects {} inputs but runner created {}",
+            inputs.len(),
+            operands.len()
+        ));
+    }
+    Ok(inputs.iter().zip(operands.iter()).collect())
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -226,18 +251,19 @@ fn run_instance_trace(
     let compiled = compile_einsum(&subs, &instance.shapes_colmajor, &tree)?;
     let compile_time = t_compile_start.elapsed();
 
-    let mut backend = CpuBackend::new();
+    let mut executor = GraphExecutor::new(CpuBackend::new());
+    executor
+        .register_extension(tenferro_einsum::register_runtime)
+        .map_err(|e| format!("{e}"))?;
 
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
     for _ in 0..3 {
-        let operands = reorder_user_operands(
-            &compiled.input_keys,
-            create_operand_tensors(&instance.shapes_colmajor),
-        )?;
-        let exec_ref = &compiled.exec;
+        let operands = create_operand_tensors(&instance.shapes_colmajor);
+        let bindings = bind_operands(&compiled.inputs, &operands)?;
+        let program = &compiled.program;
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            eval_exec_ir(&mut backend, exec_ref, operands)
+            executor.run_many_with_inputs(program, &bindings)
         }));
         let _ = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
     }
@@ -246,14 +272,12 @@ fn run_instance_trace(
     let num_runs = 15;
     let mut durations = Vec::with_capacity(num_runs);
     for _ in 0..num_runs {
-        let operands = reorder_user_operands(
-            &compiled.input_keys,
-            create_operand_tensors(&instance.shapes_colmajor),
-        )?;
-        let exec_ref = &compiled.exec;
+        let operands = create_operand_tensors(&instance.shapes_colmajor);
+        let bindings = bind_operands(&compiled.inputs, &operands)?;
+        let program = &compiled.program;
         let t0 = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            eval_exec_ir(&mut backend, exec_ref, operands)
+            executor.run_many_with_inputs(program, &bindings)
         }));
         let elapsed = t0.elapsed();
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
@@ -270,14 +294,14 @@ fn run_instance_trace(
 }
 
 fn contract_once_eager(
-    backend: &mut CpuBackend,
+    ctx: &std::sync::Arc<EagerRuntime>,
     instance: &BenchmarkInstance,
     path_meta: &PathMeta,
 ) -> Result<Tensor, String> {
     let parsed = Subscripts::parse(&instance.format_string_colmajor).map_err(|e| format!("{e}"))?;
     let mut subscripts = parsed.inputs;
     let final_output = parsed.output;
-    let mut operands = create_operand_tensors(&instance.shapes_colmajor);
+    let mut operands = create_eager_operands(&instance.shapes_colmajor, ctx);
 
     for &[lhs_index, rhs_index] in &path_meta.path {
         let binary = binary_subscripts(&subscripts, &final_output, lhs_index, rhs_index)?;
@@ -290,8 +314,10 @@ fn contract_once_eager(
         } else {
             vec![rhs, lhs]
         };
+        let input_refs: Vec<&EagerTensor> = ordered.iter().collect();
+        let binary_subscripts = (&binary).into();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            eager_einsum_owned_subscripts(backend, ordered, &binary)
+            eager_tensor::einsum_subscripts(&input_refs, &binary_subscripts)
         }));
         let result = unwrap_eval_result(result, "panic during eager execution")?;
         operands.push(result);
@@ -301,7 +327,11 @@ fn contract_once_eager(
     if operands.len() != 1 {
         return Err("contraction did not reduce to one output tensor".into());
     }
-    Ok(operands.pop().expect("checked operands length"))
+    Ok(operands
+        .pop()
+        .expect("checked operands length")
+        .data()
+        .clone())
 }
 
 fn run_instance_eager(
@@ -312,10 +342,10 @@ fn run_instance_eager(
         return Err("complex128 not supported".into());
     }
 
-    let mut backend = CpuBackend::new();
+    let ctx = EagerRuntime::with_cpu_backend(CpuBackend::new());
 
     for _ in 0..3 {
-        let eval = contract_once_eager(&mut backend, instance, path_meta)?;
+        let eval = contract_once_eager(&ctx, instance, path_meta)?;
         black_box(&eval);
     }
 
@@ -323,7 +353,7 @@ fn run_instance_eager(
     let mut durations = Vec::with_capacity(num_runs);
     for _ in 0..num_runs {
         let t0 = Instant::now();
-        let eval = contract_once_eager(&mut backend, instance, path_meta)?;
+        let eval = contract_once_eager(&ctx, instance, path_meta)?;
         let elapsed = t0.elapsed();
         black_box(&eval);
         durations.push(elapsed);
