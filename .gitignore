@@ -211,3 +211,6 @@ plans/
 
 # Benchmark results (machine-specific)
 data/results/
+
+# superpowers
+docs/superpowers
