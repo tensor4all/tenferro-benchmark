@@ -3682,21 +3682,11 @@ dependencies = [
  "lru",
  "num-complex",
  "num-traits",
- "omeco",
- "tenferro-einsum",
  "tenferro-ops",
+ "tenferro-runtime",
  "tenferro-tensor",
  "thiserror 2.0.18",
  "tidu",
-]
-
-[[package]]
-name = "tenferro-cubecl"
-version = "0.1.0"
-dependencies = [
- "cubecl",
- "num-complex",
- "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -3714,9 +3704,11 @@ dependencies = [
 name = "tenferro-einsum"
 version = "0.1.0"
 dependencies = [
+ "chainrules",
  "computegraph",
  "lru",
  "omeco",
+ "tenferro",
  "tenferro-device",
  "tenferro-ops",
  "tenferro-tensor",
@@ -3733,6 +3725,7 @@ dependencies = [
  "tenferro",
  "tenferro-device",
  "tenferro-einsum",
+ "tenferro-linalg",
  "tenferro-ops",
  "tenferro-tensor",
 ]
@@ -3747,6 +3740,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "tenferro-gpubackend"
+version = "0.1.0"
+dependencies = [
+ "cubecl",
+ "num-complex",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "tenferro-linalg"
+version = "0.1.0"
+dependencies = [
+ "chainrules",
+ "computegraph",
+ "num-complex",
+ "tenferro",
+ "tenferro-ops",
+ "tenferro-tensor",
+]
+
+[[package]]
 name = "tenferro-ops"
 version = "0.1.0"
 dependencies = [
@@ -3754,6 +3768,16 @@ dependencies = [
  "computegraph",
  "num-complex",
  "tenferro-extension-macros",
+ "tenferro-tensor",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "tenferro-runtime"
+version = "0.1.0"
+dependencies = [
+ "lru",
+ "tenferro-ops",
  "tenferro-tensor",
  "thiserror 2.0.18",
 ]
@@ -3776,7 +3800,7 @@ dependencies = [
  "rayon",
  "smallvec",
  "strided-kernel",
- "tenferro-cubecl",
+ "tenferro-gpubackend",
  "thiserror 2.0.18",
 ]
 

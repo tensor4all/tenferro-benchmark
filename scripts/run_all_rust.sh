@@ -60,6 +60,7 @@ echo "============================================"
 
 echo "Building tenferro benchmark (OpenBLAS, release)..."
 cargo build --release --no-default-features --features system-openblas \
+    --bin tenferro-einsum-benchmark \
     --manifest-path="$PROJECT_DIR/Cargo.toml" 2>&1
 
 for TENFERRO_MODE in trace eager; do

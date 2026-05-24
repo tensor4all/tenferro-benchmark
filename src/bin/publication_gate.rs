@@ -9,8 +9,9 @@ use std::panic;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use tenferro::eager_tensor;
 use tenferro::traced_tensor;
+use tenferro_einsum::eager_tensor as eager_einsum_tensor;
+use tenferro_linalg::eager_tensor as eager_linalg_tensor;
 use tenferro::{CpuBackend, DotGeneralConfig, EagerRuntime, EagerTensor, Tensor, TypedTensor};
 use tenferro::{GraphCompiler, GraphExecutor, TracedTensor};
 
@@ -233,7 +234,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 );
                 let b =
                     EagerTensor::from_tensor_in(tensor(&[n, n], data_for_shape(&[n, n], 2)), ctx);
-                let out = eager_tensor::einsum(&[&a, &b], "ij,jk->ik")?;
+                let out = eager_einsum_tensor::einsum(&[&a, &b], "ij,jk->ik")?;
                 black_box(out.data());
                 Ok(())
             },
@@ -251,7 +252,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                     tensor(&[n, n], well_conditioned_matrix(n, 3)),
                     cpu_ctx(),
                 );
-                let (u, s, vh) = a.svd()?;
+                let (u, s, vh) = eager_linalg_tensor::svd(&a)?;
                 black_box((u.data(), s.data(), vh.data()));
                 Ok(())
             },
@@ -269,7 +270,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                     tensor(&[n, n], well_conditioned_matrix(n, 4)),
                     cpu_ctx(),
                 );
-                let (q, r) = a.qr()?;
+                let (q, r) = eager_linalg_tensor::qr(&a)?;
                 black_box((q.data(), r.data()));
                 Ok(())
             },
@@ -284,7 +285,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             || {
                 let a = EagerTensor::from_tensor_in(tensor(&[n, n], spd_matrix(n, 5)), cpu_ctx());
-                let (w, v) = a.eigh()?;
+                let (w, v) = eager_linalg_tensor::eigh(&a)?;
                 black_box((w.data(), v.data()));
                 Ok(())
             },
@@ -306,7 +307,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                         tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 7)),
                         ctx,
                     );
-                    let x = a.solve(&b)?;
+                    let x = eager_linalg_tensor::solve(&a, &b)?;
                     black_box(x.data());
                     Ok(())
                 },
@@ -348,7 +349,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                     tensor(&[n, n], well_conditioned_matrix(n, 10)),
                     cpu_ctx(),
                 );
-                let (_, s, _) = a.svd()?;
+                let (_, s, _) = eager_linalg_tensor::svd(&a)?;
                 let loss = s.reduce_sum(&[0])?;
                 let _ = loss.backward()?;
                 black_box(a.grad());
@@ -371,7 +372,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                     tensor(&[n, 1], data_for_shape(&[n, 1], 12)),
                     ctx,
                 );
-                let x = a.solve(&b)?;
+                let x = eager_linalg_tensor::solve(&a, &b)?;
                 let loss = x.reduce_sum(&[0, 1])?;
                 let _ = loss.backward()?;
                 black_box((a.grad(), b.grad()));
@@ -452,7 +453,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                     tensor(&[n, n], well_conditioned_matrix(n, 25)),
                     cpu_ctx(),
                 );
-                let (u, s, vh) = a.svd()?;
+                let (u, s, vh) = eager_linalg_tensor::svd(&a)?;
                 black_box((u.data(), s.data(), vh.data()));
                 Ok(())
             },
@@ -469,7 +470,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                     tensor(&[n, n], well_conditioned_matrix(n, 26)),
                     cpu_ctx(),
                 );
-                let (q, r) = a.qr()?;
+                let (q, r) = eager_linalg_tensor::qr(&a)?;
                 black_box((q.data(), r.data()));
                 Ok(())
             },
@@ -483,7 +484,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             &format!("{n}x{n}"),
             || {
                 let a = EagerTensor::from_tensor_in(tensor(&[n, n], spd_matrix(n, 27)), cpu_ctx());
-                let (w, v) = a.eigh()?;
+                let (w, v) = eager_linalg_tensor::eigh(&a)?;
                 black_box((w.data(), v.data()));
                 Ok(())
             },
@@ -506,7 +507,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                         tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 29)),
                         ctx,
                     );
-                    let x = a.solve(&b)?;
+                    let x = eager_linalg_tensor::solve(&a, &b)?;
                     black_box(x.data());
                     Ok(())
                 },
@@ -577,7 +578,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                     tensor(&[n, n], well_conditioned_matrix(n, 34)),
                     cpu_ctx(),
                 );
-                let (_, s, _) = a.svd()?;
+                let (_, s, _) = eager_linalg_tensor::svd(&a)?;
                 let loss = s.reduce_sum(&[0])?;
                 let _ = loss.backward()?;
                 black_box(a.grad());
@@ -599,7 +600,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                     tensor(&[n, 1], data_for_shape(&[n, 1], 36)),
                     ctx,
                 );
-                let x = a.solve(&b)?;
+                let x = eager_linalg_tensor::solve(&a, &b)?;
                 let loss = x.reduce_sum(&[0, 1])?;
                 let _ = loss.backward()?;
                 black_box((a.grad(), b.grad()));
@@ -656,7 +657,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                         tensor(&[n, n, b], batched_well_conditioned(n, b, 43)),
                         cpu_ctx(),
                     );
-                    let (u, s, vh) = a.svd()?;
+                    let (u, s, vh) = eager_linalg_tensor::svd(&a)?;
                     black_box((u.data(), s.data(), vh.data()));
                     Ok(())
                 },
@@ -673,7 +674,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                         tensor(&[n, n, b], batched_well_conditioned(n, b, 44)),
                         cpu_ctx(),
                     );
-                    let (q, r) = a.qr()?;
+                    let (q, r) = eager_linalg_tensor::qr(&a)?;
                     black_box((q.data(), r.data()));
                     Ok(())
                 },
@@ -690,7 +691,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                         tensor(&[n, n, b], batched_spd(n, b, 45)),
                         cpu_ctx(),
                     );
-                    let (w, v) = a.eigh()?;
+                    let (w, v) = eager_linalg_tensor::eigh(&a)?;
                     black_box((w.data(), v.data()));
                     Ok(())
                 },
@@ -712,7 +713,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                         tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 47)),
                         ctx,
                     );
-                    let x = a.solve(&rhs)?;
+                    let x = eager_linalg_tensor::solve(&a, &rhs)?;
                     black_box(x.data());
                     Ok(())
                 },
@@ -758,7 +759,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                         tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 51)),
                         ctx,
                     );
-                    let x = a.solve(&rhs)?;
+                    let x = eager_linalg_tensor::solve(&a, &rhs)?;
                     let loss = x.reduce_sum(&[0, 1, 2])?;
                     let _ = loss.backward()?;
                     black_box((a.grad(), rhs.grad()));
@@ -785,28 +786,28 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 1));
             let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 2));
             let mut compiler = GraphCompiler::new();
-            Ok(vec![traced_tensor::einsum(&mut compiler, &[&a, &b], "ij,jk->ik")?])
+            Ok(vec![tenferro_einsum::einsum(&mut compiler, &[&a, &b], "ij,jk->ik")?])
         }));
         rows.push(bench_trace_row(config, "small", "svd", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 3));
-            let (u, s, vh) = traced_tensor::svd(&a);
+            let (u, s, vh) = tenferro_linalg::svd(&a);
             Ok(vec![u, s, vh])
         }));
         rows.push(bench_trace_row(config, "small", "qr", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 4));
-            let (q, r) = traced_tensor::qr(&a);
+            let (q, r) = tenferro_linalg::qr(&a);
             Ok(vec![q, r])
         }));
         rows.push(bench_trace_row(config, "small", "eigh", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 5));
-            let (w, v) = traced_tensor::eigh(&a);
+            let (w, v) = tenferro_linalg::eigh(&a);
             Ok(vec![w, v])
         }));
         for &rhs_cols in &[1, 4] {
             rows.push(bench_trace_row(config, "small", "solve", "primal", "f64", &format!("{n}x{n},rhs={rhs_cols}"), || {
                 let a = traced_tensor(&[n, n], spd_matrix(n, 6));
                 let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 7));
-                Ok(vec![traced_tensor::solve(&a, &b)])
+                Ok(vec![tenferro_linalg::solve(&a, &b)])
             }));
         }
         rows.push(bench_trace_row(config, "small", "grad_sum_matmul", "backward", "f64", &format!("{n}x{n}"), || {
@@ -818,14 +819,14 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
         }));
         rows.push(bench_trace_row(config, "small", "grad_sum_svd_s", "backward", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 10));
-            let (_, s, _) = traced_tensor::svd(&a);
+            let (_, s, _) = tenferro_linalg::svd(&a);
             let loss = s.reduce_sum(&[0]);
             Ok(vec![loss.grad(&a)?])
         }));
         rows.push(bench_trace_row(config, "small", "grad_sum_solve", "backward", "f64", &format!("{n}x{n},rhs=1"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 11));
             let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 12));
-            let x = traced_tensor::solve(&a, &b);
+            let x = tenferro_linalg::solve(&a, &b);
             let loss = x.reduce_sum(&[0, 1]);
             Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
         }));
@@ -861,24 +862,24 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
     for &n in linalg_sizes {
         rows.push(bench_trace_row(config, "large", "svd", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 25));
-            let (u, s, vh) = traced_tensor::svd(&a);
+            let (u, s, vh) = tenferro_linalg::svd(&a);
             Ok(vec![u, s, vh])
         }));
         rows.push(bench_trace_row(config, "large", "qr", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 26));
-            let (q, r) = traced_tensor::qr(&a);
+            let (q, r) = tenferro_linalg::qr(&a);
             Ok(vec![q, r])
         }));
         rows.push(bench_trace_row(config, "large", "eigh", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 27));
-            let (w, v) = traced_tensor::eigh(&a);
+            let (w, v) = tenferro_linalg::eigh(&a);
             Ok(vec![w, v])
         }));
         for &rhs_cols in &[1, 16, 64] {
             rows.push(bench_trace_row(config, "large", "solve", "primal", "f64", &format!("{n}x{n},rhs={rhs_cols}"), || {
                 let a = traced_tensor(&[n, n], spd_matrix(n, 28));
                 let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 29));
-                Ok(vec![traced_tensor::solve(&a, &b)])
+                Ok(vec![tenferro_linalg::solve(&a, &b)])
             }));
         }
     }
@@ -899,14 +900,14 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
         }));
         rows.push(bench_trace_row(config, "large", "grad_sum_svd_s", "backward", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 34));
-            let (_, s, _) = traced_tensor::svd(&a);
+            let (_, s, _) = tenferro_linalg::svd(&a);
             let loss = s.reduce_sum(&[0]);
             Ok(vec![loss.grad(&a)?])
         }));
         rows.push(bench_trace_row(config, "large", "grad_sum_solve", "backward", "f64", &format!("{n}x{n},rhs=1"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 35));
             let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 36));
-            let loss = traced_tensor::solve(&a, &b).reduce_sum(&[0, 1]);
+            let loss = tenferro_linalg::solve(&a, &b).reduce_sum(&[0, 1]);
             Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
         }));
     }
@@ -932,23 +933,23 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             }));
             rows.push(bench_trace_row(config, "batched", "batched_svd", "primal", "f64", &shape, || {
                 let a = traced_tensor(&[n, n, b], batched_well_conditioned(n, b, 43));
-                let (u, s, vh) = traced_tensor::svd(&a);
+                let (u, s, vh) = tenferro_linalg::svd(&a);
                 Ok(vec![u, s, vh])
             }));
             rows.push(bench_trace_row(config, "batched", "batched_qr", "primal", "f64", &shape, || {
                 let a = traced_tensor(&[n, n, b], batched_well_conditioned(n, b, 44));
-                let (q, r) = traced_tensor::qr(&a);
+                let (q, r) = tenferro_linalg::qr(&a);
                 Ok(vec![q, r])
             }));
             rows.push(bench_trace_row(config, "batched", "batched_eigh", "primal", "f64", &shape, || {
                 let a = traced_tensor(&[n, n, b], batched_spd(n, b, 45));
-                let (w, v) = traced_tensor::eigh(&a);
+                let (w, v) = tenferro_linalg::eigh(&a);
                 Ok(vec![w, v])
             }));
             rows.push(bench_trace_row(config, "batched", "batched_solve", "primal", "f64", &format!("{shape},rhs=1"), || {
                 let a = traced_tensor(&[n, n, b], batched_spd(n, b, 46));
                 let rhs = traced_tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 47));
-                Ok(vec![traced_tensor::solve(&a, &rhs)])
+                Ok(vec![tenferro_linalg::solve(&a, &rhs)])
             }));
             rows.push(bench_trace_row(config, "batched", "grad_sum_batched_matmul", "backward", "f64", &shape, || {
                 let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 48));
@@ -959,7 +960,7 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             rows.push(bench_trace_row(config, "batched", "grad_sum_batched_solve", "backward", "f64", &format!("{shape},rhs=1"), || {
                 let a = traced_tensor(&[n, n, b], batched_spd(n, b, 50));
                 let rhs = traced_tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 51));
-                let loss = traced_tensor::solve(&a, &rhs).reduce_sum(&[0, 1, 2]);
+                let loss = tenferro_linalg::solve(&a, &rhs).reduce_sum(&[0, 1, 2]);
                 Ok(vec![loss.grad(&a)?, loss.grad(&rhs)?])
             }));
         }
@@ -1043,6 +1044,12 @@ fn bench_trace_row(
         let mut compiler = GraphCompiler::new();
         let program = compiler.compile_many(&output_refs)?;
         let mut executor = GraphExecutor::new(CpuBackend::new());
+        executor
+            .register_extension(tenferro_einsum::register_runtime)
+            .map_err(|err| tenferro::error::Error::Internal(err.to_string()))?;
+        executor
+            .register_extension(tenferro_linalg::register_runtime)
+            .map_err(|err| tenferro::error::Error::Internal(err.to_string()))?;
 
         for _ in 0..config.warmups {
             let out = executor.run_many(&program)?;
