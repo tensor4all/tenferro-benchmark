@@ -1,0 +1,36 @@
+{
+  "name": "tenferro-benchmark",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "OPENBLAS_ROOT": "/opt/openblas",
+    "PYTORCH_OPENBLAS_DIR": "${containerWorkspaceFolder}/extern/devcontainer/pytorch-openblas",
+    "CMAKE_POLICY_VERSION_MINIMUM": "3.5",
+    "MAX_JOBS": "4",
+    "USE_CUDA": "0",
+    "USE_ROCM": "0",
+    "USE_MPS": "0",
+    "USE_DISTRIBUTED": "0"
+  },
+  "remoteEnv": {
+    "PATH": "/home/vscode/.cargo/bin:/home/vscode/.local/bin:${containerEnv:PATH}"
+  },
+  "mounts": [
+    "source=tenferro-benchmark-cargo-registry,target=/home/vscode/.cargo/registry,type=volume",
+    "source=tenferro-benchmark-cargo-git,target=/home/vscode/.cargo/git,type=volume",
+    "source=tenferro-benchmark-uv-cache,target=/home/vscode/.cache/uv,type=volume"
+  ],
+  "postCreateCommand": "uv sync --frozen || uv sync",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "ms-python.python",
+        "ms-vscode.cmake-tools"
+      ]
+    }
+  }
+}

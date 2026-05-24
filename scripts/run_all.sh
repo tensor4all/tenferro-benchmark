@@ -29,6 +29,18 @@ if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
     source "$SCRIPT_DIR/setup_extern_deps.sh"
 fi
 
+resolve_git_commit() {
+    local checkout_dir="$1"
+    if [[ -d "$checkout_dir/.git" ]] && command -v git >/dev/null 2>&1; then
+        git -C "$checkout_dir" rev-parse HEAD 2>/dev/null || true
+    fi
+}
+
+TENFERRO_COMMIT=""
+if [[ -n "${TENFERRO_RS_DIR:-}" ]]; then
+    TENFERRO_COMMIT="$(resolve_git_commit "$TENFERRO_RS_DIR")"
+fi
+
 export BENCHMARK_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 echo "============================================"
@@ -37,6 +49,7 @@ echo "============================================"
 echo "Project dir:  $PROJECT_DIR"
 echo "Threads:      $NUM_THREADS"
 echo "Timestamp:    $BENCHMARK_TIMESTAMP"
+[[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
 echo ""
 
 # ---------------------------------------------------------------------------
@@ -111,6 +124,9 @@ if [ ${#LOGS[@]} -gt 0 ]; then
         echo ""
         echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
         echo "- Threads: \`$NUM_THREADS\`"
+        if [[ -n "$TENFERRO_COMMIT" ]]; then
+            echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
+        fi
         echo "- Source table: \`data/results/$(basename "$MARKDOWN_OUT")\`"
         echo ""
         echo "Logs:"
@@ -140,6 +156,9 @@ if [ ${#LOGS[@]} -gt 0 ]; then
         echo ""
         echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
         echo "- Threads: \`$NUM_THREADS\`"
+        if [[ -n "$TENFERRO_COMMIT" ]]; then
+            echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
+        fi
         if [ -f "$CPU_OPS_MD" ]; then
             echo "- Source table: \`data/results/$(basename "$CPU_OPS_MD")\`"
         fi

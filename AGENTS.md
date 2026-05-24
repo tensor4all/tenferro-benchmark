@@ -1,5 +1,82 @@
 # Agent Workflow
 
+## Devcontainer Benchmark Workflow
+
+Use this workflow when validating that benchmarks can run inside the Linux
+devcontainer from the host `devcontainer` CLI.
+
+1. Build and start the container from the host repository root:
+
+   ```bash
+   devcontainer up --workspace-folder .
+   ```
+
+   If `.devcontainer/devcontainer.json` or `.devcontainer/Dockerfile` changed
+   and an old container may already exist, recreate it:
+
+   ```bash
+   devcontainer up --workspace-folder . --remove-existing-container
+   ```
+
+2. Confirm the container environment:
+
+   ```bash
+   devcontainer exec --workspace-folder . bash -lc \
+     'echo "$OPENBLAS_ROOT"; echo "$PYTORCH_OPENBLAS_DIR"; rustc --version; uv --version; cmake --version | head -n 1'
+   ```
+
+   Expected paths:
+
+   ```bash
+   OPENBLAS_ROOT=/opt/openblas
+   PYTORCH_OPENBLAS_DIR=/workspaces/tenferro-benchmark/extern/devcontainer/pytorch-openblas
+   ```
+
+   The devcontainer intentionally uses
+   `extern/devcontainer/pytorch-openblas` for Linux PyTorch/LibTorch builds so
+   it does not reuse a host-built macOS `extern/pytorch-openblas` checkout.
+
+3. Run a quick end-to-end smoke from the host. This still executes inside the
+   container and exercises the Torch C++ path:
+
+   ```bash
+   devcontainer exec --workspace-folder . bash -lc '\
+     BENCH_INSTANCE=bin_matmul_256 \
+     BENCH_RUNS=1 \
+     BENCH_WARMUPS=0 \
+     PUBLICATION_GATE_SUITE=small \
+       ./scripts/run_all.sh 1'
+   ```
+
+   The first run can take a long time because it clones
+   `extern/tenferro-rs` if needed and builds an OpenBLAS-linked
+   PyTorch/LibTorch checkout under `extern/devcontainer/pytorch-openblas`.
+
+4. Verify LibTorch linkage inside the container before trusting Torch C++
+   results:
+
+   ```bash
+   devcontainer exec --workspace-folder . bash -lc \
+     'ldd "$PYTORCH_OPENBLAS_DIR/torch/lib/libtorch_cpu.so" | rg -i openblas'
+   ```
+
+5. For normal benchmark results:
+
+   ```bash
+   devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 1'
+   devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 4'
+   ```
+
+6. Verify generated outputs and reproducibility metadata:
+
+   ```bash
+   devcontainer exec --workspace-folder . bash -lc \
+     'rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs commit" result/einsum-results.md result/cpu-benchmark-results.md'
+   ```
+
+   The `tenferro-rs commit` line records the exact commit hash to use later
+   with `git checkout <commit>`.
+
 ## Torch C++ Included Benchmark
 
 Use this workflow when validating or regenerating benchmark results that must

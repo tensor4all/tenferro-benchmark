@@ -23,6 +23,20 @@ On Linux, set `OPENBLAS_ROOT` to the prefix that contains `include/` and `lib/`:
 export OPENBLAS_ROOT=/path/to/openblas
 ```
 
+The repository devcontainer uses Ubuntu 24.04 and prepares a stable OpenBLAS
+prefix at:
+
+```bash
+export OPENBLAS_ROOT=/opt/openblas
+```
+
+It also keeps the Linux PyTorch/LibTorch checkout separate from a possible
+host-built checkout:
+
+```bash
+export PYTORCH_OPENBLAS_DIR=/workspaces/tenferro-benchmark/extern/devcontainer/pytorch-openblas
+```
+
 ## Set up Python tools
 
 Python is used for dataset generation, PyTorch/JAX comparison, and result formatting.
