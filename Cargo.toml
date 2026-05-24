@@ -6,11 +6,11 @@ description = "Benchmark suite for tenferro-einsum based on einsum benchmark"
 build = "build.rs"
 
 [dependencies]
-tenferro          = { path = "../tenferro-rs/tenferro", default-features = false }
-tenferro-einsum   = { path = "../tenferro-rs/tenferro-einsum", default-features = false }
-tenferro-tensor   = { path = "../tenferro-rs/tenferro-tensor", default-features = false }
-tenferro-ops      = { path = "../tenferro-rs/tenferro-ops", default-features = false }
-tenferro-device   = { path = "../tenferro-rs/tenferro-device" }
+tenferro          = { path = "extern/tenferro-rs/tenferro", default-features = false }
+tenferro-einsum   = { path = "extern/tenferro-rs/tenferro-einsum", default-features = false }
+tenferro-tensor   = { path = "extern/tenferro-rs/tenferro-tensor", default-features = false }
+tenferro-ops      = { path = "extern/tenferro-rs/tenferro-ops", default-features = false }
+tenferro-device   = { path = "extern/tenferro-rs/tenferro-device" }
 computegraph      = { git = "https://github.com/tensor4all/computegraph-rs.git", rev = "c20e8912560ef11166418bcea089126ef50443cc" }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }

@@ -3841,7 +3841,7 @@ dependencies = [
 [[package]]
 name = "tidu"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/tidu-rs.git?rev=1351fa42cf98852d821963682e4fc5d0835ba6d4#1351fa42cf98852d821963682e4fc5d0835ba6d4"
+source = "git+https://github.com/tensor4all/tidu-rs.git?rev=1694275361d2f16abfb3f25ad7941407c88b7c09#1694275361d2f16abfb3f25ad7941407c88b7c09"
 dependencies = [
  "chainrules",
  "computegraph",

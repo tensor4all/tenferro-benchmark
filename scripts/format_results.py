@@ -174,6 +174,17 @@ def format_markdown_table(
         "omeinsum_path",
         "tensorops",
     ]
+    core_modes = [
+        "tenferro-eager",
+        "tenferro-trace",
+        "libtorch-cpu",
+        "pytorch-cpu",
+        "jax-cpu",
+    ]
+    for mode in core_modes:
+        if all_results and mode not in modes:
+            modes.append(mode)
+
     mode_order: list[str] = []
     for m in preferred_order:
         if m in modes:
@@ -183,15 +194,15 @@ def format_markdown_table(
             mode_order.append(m)
 
     mode_labels = {
-        "tenferro-einsum": "tenferro-einsum (ms)",
-        "tenferro-trace": "tenferro trace (ms)",
-        "tenferro-eager": "tenferro eager (ms)",
+        "tenferro-einsum": "tenferro-rs trace mode (ms)",
+        "tenferro-trace": "tenferro-rs trace mode (ms)",
+        "tenferro-eager": "tenferro-rs eager mode (ms)",
         "strided-opteinsum": "strided-rs (ms)",
         "strided-opteinsum(faer)": "strided-rs faer (ms)",
         "strided-opteinsum(blas)": "strided-rs OpenBLAS (ms)",
-        "libtorch-cpu": "LibTorch CPU OpenBLAS (ms)",
-        "pytorch-cpu": "PyTorch CPU (ms)",
-        "jax-cpu": "JAX CPU (ms)",
+        "libtorch-cpu": "Torch C++ (ms)",
+        "pytorch-cpu": "PyTorch Python (ms)",
+        "jax-cpu": "JAX Python (ms)",
         "omeinsum_path": "OMEinsum.jl OpenBLAS (ms)",
         "omeinsum_opt": "OMEinsum.jl opt (ms)",
         "tensorops": "TensorOperations.jl (ms)",

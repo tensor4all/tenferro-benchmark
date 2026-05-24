@@ -11,7 +11,7 @@ set -euo pipefail
 #   - RAYON_NUM_THREADS  (Rust rayon parallelism)
 #
 # Requires:
-#   - tenferro-rs at ../tenferro-rs
+#   - tenferro-rs at extern/tenferro-rs
 #   - strided-rs-benchmark-suite at ../strided-rs-benchmark-suite (optional)
 #     └─ strided-rs at ../strided-rs (dependency of strided-rs-benchmark-suite)
 # ---------------------------------------------------------------------------
@@ -67,6 +67,7 @@ for TENFERRO_MODE in trace eager; do
     echo "Running tenferro ${TENFERRO_MODE} benchmark..."
     TENFERRO_MODE="$TENFERRO_MODE" \
         cargo run --release --no-default-features --features system-openblas \
+        --bin tenferro-einsum-benchmark \
         --manifest-path="$PROJECT_DIR/Cargo.toml" 2>&1 | tee "$TENFERRO_LOG"
 
     echo ""

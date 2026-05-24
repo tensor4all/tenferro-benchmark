@@ -211,6 +211,10 @@ plans/
 
 # Benchmark results (machine-specific)
 data/results/
+result/
+
+# Repo-local external checkouts
+extern/
 
 # superpowers
 docs/superpowers

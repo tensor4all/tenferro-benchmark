@@ -1,0 +1,288 @@
+#!/usr/bin/env python3
+"""Run PR884 CPU benchmark items for PyTorch or JAX and emit normalized CSV."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import os
+import statistics
+import sys
+import time
+from collections.abc import Callable
+
+
+def runs_from_env() -> tuple[int, int]:
+    profile = os.environ.get("PUBLICATION_GATE_PROFILE", "quick").lower()
+    default_runs = 15 if profile == "full" else 7
+    runs = int(os.environ.get("BENCH_RUNS", default_runs))
+    warmups = int(os.environ.get("BENCH_WARMUPS", 3))
+    return runs, warmups
+
+
+def suite_enabled(suite: str) -> bool:
+    selected = os.environ.get("PUBLICATION_GATE_SUITE", "all").lower()
+    return selected in {"all", suite}
+
+
+def sizes_for(profile: str, quick: list[int], full: list[int]) -> list[int]:
+    return full if profile == "full" else quick
+
+
+def data(shape: tuple[int, ...], seed: int):
+    import numpy as np
+
+    size = int(np.prod(shape))
+    values = []
+    for i in range(size):
+        x = (i * 6364136223846793005 + seed * 1442695040888963407) & ((1 << 64) - 1)
+        values.append(((x % 1024) - 512) / 512.0)
+    return np.array(values, dtype=np.float64).reshape(shape)
+
+
+def well_conditioned(n: int, seed: int):
+    matrix = data((n, n), seed) * 0.05
+    for j in range(n):
+        matrix[j, j] += 1.0 + j / max(n, 1)
+    return matrix
+
+
+def spd(n: int, seed: int):
+    matrix = well_conditioned(n, seed)
+    return matrix.T @ matrix + data_identity(n)
+
+
+def data_identity(n: int):
+    import numpy as np
+
+    return np.eye(n, dtype=np.float64)
+
+
+def batched_well_conditioned(n: int, batch: int, seed: int):
+    import numpy as np
+
+    return np.stack([well_conditioned(n, seed + i) for i in range(batch)], axis=0)
+
+
+def batched_spd(n: int, batch: int, seed: int):
+    import numpy as np
+
+    return np.stack([spd(n, seed + i) for i in range(batch)], axis=0)
+
+
+def median_iqr(times: list[float]) -> tuple[float, float]:
+    values = sorted(times)
+    return statistics.median(values), values[(3 * len(values)) // 4] - values[len(values) // 4]
+
+
+def bench(fn: Callable[[], object], sync: Callable[[object], None], runs: int, warmups: int) -> tuple[float, float]:
+    for _ in range(warmups):
+        sync(fn())
+    times = []
+    for _ in range(runs):
+        start = time.perf_counter()
+        sync(fn())
+        times.append((time.perf_counter() - start) * 1000.0)
+    return median_iqr(times)
+
+
+def emit_row(writer: csv.DictWriter, args, suite: str, benchmark: str, shape: str, fn, sync) -> None:
+    try:
+        median_ms, iqr_ms = bench(fn, sync, args.runs, args.warmups)
+        status = "ok"
+        median = f"{median_ms:.6f}"
+        iqr = f"{iqr_ms:.6f}"
+    except Exception as exc:  # Keep table shape stable across partial backend support.
+        status = f"error: {exc}"
+        median = ""
+        iqr = ""
+    writer.writerow(
+        {
+            "suite": suite,
+            "benchmark": benchmark,
+            "dtype": "f64",
+            "threads": args.num_threads,
+            "shape": shape,
+            "backend": args.backend,
+            "median_ms": median,
+            "iqr_ms": iqr,
+            "status": status,
+        }
+    )
+
+
+def run_pytorch(args, writer: csv.DictWriter) -> None:
+    import torch
+
+    torch.set_num_threads(args.num_threads)
+
+    def tensor(x, requires_grad: bool = False):
+        return torch.tensor(x, dtype=torch.float64, requires_grad=requires_grad)
+
+    def sync(value):
+        if isinstance(value, torch.Tensor):
+            _ = value.numel()
+
+    profile = os.environ.get("PUBLICATION_GATE_PROFILE", "quick").lower()
+    if suite_enabled("small"):
+        for n in sizes_for(profile, [2, 4, 8], [2, 4, 8, 16, 32]):
+            emit_row(writer, args, "small", "matmul", f"{n}x{n}", lambda n=n: tensor(data((n, n), 1)) @ tensor(data((n, n), 2)), sync)
+            emit_row(writer, args, "small", "einsum_ij_jk_ik", f"{n}x{n}", lambda n=n: torch.einsum("ij,jk->ik", tensor(data((n, n), 1)), tensor(data((n, n), 2))), sync)
+            emit_row(writer, args, "small", "svd", f"{n}x{n}", lambda n=n: torch.linalg.svd(tensor(well_conditioned(n, 3)))[1], sync)
+            emit_row(writer, args, "small", "qr", f"{n}x{n}", lambda n=n: torch.linalg.qr(tensor(well_conditioned(n, 4)))[0], sync)
+            emit_row(writer, args, "small", "eigh", f"{n}x{n}", lambda n=n: torch.linalg.eigh(tensor(spd(n, 5)))[0], sync)
+            for rhs_cols in [1, 4]:
+                emit_row(writer, args, "small", "solve", f"{n}x{n},rhs={rhs_cols}", lambda n=n, rhs_cols=rhs_cols: torch.linalg.solve(tensor(spd(n, 6)), tensor(data((n, rhs_cols), 7))), sync)
+            emit_row(writer, args, "small", "grad_sum_matmul_backward", f"{n}x{n}", lambda n=n: grad_torch_matmul(tensor(data((n, n), 8), True), tensor(data((n, n), 9), True)), sync)
+            emit_row(writer, args, "small", "grad_sum_svd_s_backward", f"{n}x{n}", lambda n=n: grad_torch_svd(tensor(well_conditioned(n, 10), True)), sync)
+            emit_row(writer, args, "small", "grad_sum_solve_backward", f"{n}x{n},rhs=1", lambda n=n: grad_torch_solve(tensor(spd(n, 11), True), tensor(data((n, 1), 12), True)), sync)
+    if suite_enabled("large"):
+        for n in sizes_for(profile, [128, 256], [128, 256, 512, 1024]):
+            emit_row(writer, args, "large", "matmul", f"{n}x{n}", lambda n=n: tensor(data((n, n), 21)) @ tensor(data((n, n), 22)), sync)
+        rects = [(1024, 256, 1024), (256, 1024, 256)]
+        for m, k, n in rects:
+            if profile == "quick" and m > 256:
+                continue
+            emit_row(writer, args, "large", "matmul_rect", f"{m}x{k} * {k}x{n}", lambda m=m, k=k, n=n: tensor(data((m, k), 23)) @ tensor(data((k, n), 24)), sync)
+        for n in sizes_for(profile, [64], [64, 128, 256]):
+            emit_row(writer, args, "large", "svd", f"{n}x{n}", lambda n=n: torch.linalg.svd(tensor(well_conditioned(n, 25)))[1], sync)
+            emit_row(writer, args, "large", "qr", f"{n}x{n}", lambda n=n: torch.linalg.qr(tensor(well_conditioned(n, 26)))[0], sync)
+            emit_row(writer, args, "large", "eigh", f"{n}x{n}", lambda n=n: torch.linalg.eigh(tensor(spd(n, 27)))[0], sync)
+            for rhs_cols in [1, 16, 64]:
+                emit_row(writer, args, "large", "solve", f"{n}x{n},rhs={rhs_cols}", lambda n=n, rhs_cols=rhs_cols: torch.linalg.solve(tensor(spd(n, 28)), tensor(data((n, rhs_cols), 29))), sync)
+        for n in sizes_for(profile, [64], [64, 128]):
+            emit_row(writer, args, "large", "grad_sum_matmul", f"{n}x{n}", lambda n=n: (tensor(data((n, n), 30), True) @ tensor(data((n, n), 31), True)).sum(), sync)
+            emit_row(writer, args, "large", "grad_sum_matmul_backward", f"{n}x{n}", lambda n=n: grad_torch_matmul(tensor(data((n, n), 32), True), tensor(data((n, n), 33), True)), sync)
+            emit_row(writer, args, "large", "grad_sum_svd_s_backward", f"{n}x{n}", lambda n=n: grad_torch_svd(tensor(well_conditioned(n, 34), True)), sync)
+            emit_row(writer, args, "large", "grad_sum_solve_backward", f"{n}x{n},rhs=1", lambda n=n: grad_torch_solve(tensor(spd(n, 35), True), tensor(data((n, 1), 36), True)), sync)
+    if suite_enabled("batched"):
+        batches = sizes_for(profile, [16, 64], [16, 64, 256, 1024])
+        sizes = sizes_for(profile, [2, 4], [2, 4, 8, 16])
+        for batch in batches:
+            for n in sizes:
+                label = f"{n}x{n}xbatch{batch} (rightmost batch)"
+                emit_row(writer, args, "batched", "batched_matmul_ikb_kjb_ijb", label, lambda n=n, batch=batch: torch.einsum("bik,bkj->bij", tensor(data((batch, n, n), 41)), tensor(data((batch, n, n), 42))), sync)
+                emit_row(writer, args, "batched", "batched_svd", label, lambda n=n, batch=batch: torch.linalg.svd(tensor(batched_well_conditioned(n, batch, 43)))[1], sync)
+                emit_row(writer, args, "batched", "batched_qr", label, lambda n=n, batch=batch: torch.linalg.qr(tensor(batched_well_conditioned(n, batch, 44)))[0], sync)
+                emit_row(writer, args, "batched", "batched_eigh", label, lambda n=n, batch=batch: torch.linalg.eigh(tensor(batched_spd(n, batch, 45)))[0], sync)
+                emit_row(writer, args, "batched", "batched_solve", f"{label},rhs=1", lambda n=n, batch=batch: torch.linalg.solve(tensor(batched_spd(n, batch, 46)), tensor(data((batch, n, 1), 47))), sync)
+                emit_row(writer, args, "batched", "grad_sum_batched_matmul_backward", label, lambda n=n, batch=batch: grad_torch_batched_matmul(tensor(data((batch, n, n), 48), True), tensor(data((batch, n, n), 49), True)), sync)
+                emit_row(writer, args, "batched", "grad_sum_batched_solve_backward", f"{label},rhs=1", lambda n=n, batch=batch: grad_torch_solve(tensor(batched_spd(n, batch, 50), True), tensor(data((batch, n, 1), 51), True)), sync)
+
+
+def grad_torch_matmul(a, b):
+    loss = (a @ b).sum()
+    loss.backward()
+    return a.grad
+
+
+def grad_torch_svd(a):
+    loss = torch_svd_s(a).sum()
+    loss.backward()
+    return a.grad
+
+
+def torch_svd_s(a):
+    import torch
+
+    return torch.linalg.svd(a)[1]
+
+
+def grad_torch_solve(a, b):
+    import torch
+
+    loss = torch.linalg.solve(a, b).sum()
+    loss.backward()
+    return a.grad
+
+
+def grad_torch_batched_matmul(a, b):
+    import torch
+
+    loss = torch.einsum("bik,bkj->bij", a, b).sum()
+    loss.backward()
+    return a.grad
+
+
+def run_jax(args, writer: csv.DictWriter) -> None:
+    import jax
+    import jax.numpy as jnp
+
+    jax.config.update("jax_enable_x64", True)
+
+    def array(x):
+        return jnp.asarray(x, dtype=jnp.float64)
+
+    def sync(value):
+        jax.block_until_ready(value)
+
+    profile = os.environ.get("PUBLICATION_GATE_PROFILE", "quick").lower()
+    if suite_enabled("small"):
+        for n in sizes_for(profile, [2, 4, 8], [2, 4, 8, 16, 32]):
+            emit_row(writer, args, "small", "matmul", f"{n}x{n}", lambda n=n: array(data((n, n), 1)) @ array(data((n, n), 2)), sync)
+            emit_row(writer, args, "small", "einsum_ij_jk_ik", f"{n}x{n}", lambda n=n: jnp.einsum("ij,jk->ik", array(data((n, n), 1)), array(data((n, n), 2))), sync)
+            emit_row(writer, args, "small", "svd", f"{n}x{n}", lambda n=n: jnp.linalg.svd(array(well_conditioned(n, 3)), full_matrices=True)[1], sync)
+            emit_row(writer, args, "small", "qr", f"{n}x{n}", lambda n=n: jnp.linalg.qr(array(well_conditioned(n, 4)))[0], sync)
+            emit_row(writer, args, "small", "eigh", f"{n}x{n}", lambda n=n: jnp.linalg.eigh(array(spd(n, 5)))[0], sync)
+            for rhs_cols in [1, 4]:
+                emit_row(writer, args, "small", "solve", f"{n}x{n},rhs={rhs_cols}", lambda n=n, rhs_cols=rhs_cols: jnp.linalg.solve(array(spd(n, 6)), array(data((n, rhs_cols), 7))), sync)
+            emit_row(writer, args, "small", "grad_sum_matmul_backward", f"{n}x{n}", lambda n=n: jax.grad(lambda x: jnp.sum(x @ array(data((n, n), 9))))(array(data((n, n), 8))), sync)
+            emit_row(writer, args, "small", "grad_sum_svd_s_backward", f"{n}x{n}", lambda n=n: jax.grad(lambda x: jnp.sum(jnp.linalg.svd(x, full_matrices=True)[1]))(array(well_conditioned(n, 10))), sync)
+            emit_row(writer, args, "small", "grad_sum_solve_backward", f"{n}x{n},rhs=1", lambda n=n: jax.grad(lambda x: jnp.sum(jnp.linalg.solve(x, array(data((n, 1), 12)))))(array(spd(n, 11))), sync)
+    if suite_enabled("large"):
+        for n in sizes_for(profile, [128, 256], [128, 256, 512, 1024]):
+            emit_row(writer, args, "large", "matmul", f"{n}x{n}", lambda n=n: array(data((n, n), 21)) @ array(data((n, n), 22)), sync)
+        for m, k, n in [(1024, 256, 1024), (256, 1024, 256)]:
+            if profile == "quick" and m > 256:
+                continue
+            emit_row(writer, args, "large", "matmul_rect", f"{m}x{k} * {k}x{n}", lambda m=m, k=k, n=n: array(data((m, k), 23)) @ array(data((k, n), 24)), sync)
+        for n in sizes_for(profile, [64], [64, 128, 256]):
+            emit_row(writer, args, "large", "svd", f"{n}x{n}", lambda n=n: jnp.linalg.svd(array(well_conditioned(n, 25)), full_matrices=True)[1], sync)
+            emit_row(writer, args, "large", "qr", f"{n}x{n}", lambda n=n: jnp.linalg.qr(array(well_conditioned(n, 26)))[0], sync)
+            emit_row(writer, args, "large", "eigh", f"{n}x{n}", lambda n=n: jnp.linalg.eigh(array(spd(n, 27)))[0], sync)
+            for rhs_cols in [1, 16, 64]:
+                emit_row(writer, args, "large", "solve", f"{n}x{n},rhs={rhs_cols}", lambda n=n, rhs_cols=rhs_cols: jnp.linalg.solve(array(spd(n, 28)), array(data((n, rhs_cols), 29))), sync)
+        for n in sizes_for(profile, [64], [64, 128]):
+            emit_row(writer, args, "large", "grad_sum_matmul", f"{n}x{n}", lambda n=n: jnp.sum(array(data((n, n), 30)) @ array(data((n, n), 31))), sync)
+            emit_row(writer, args, "large", "grad_sum_matmul_backward", f"{n}x{n}", lambda n=n: jax.grad(lambda x: jnp.sum(x @ array(data((n, n), 33))))(array(data((n, n), 32))), sync)
+            emit_row(writer, args, "large", "grad_sum_svd_s_backward", f"{n}x{n}", lambda n=n: jax.grad(lambda x: jnp.sum(jnp.linalg.svd(x, full_matrices=True)[1]))(array(well_conditioned(n, 34))), sync)
+            emit_row(writer, args, "large", "grad_sum_solve_backward", f"{n}x{n},rhs=1", lambda n=n: jax.grad(lambda x: jnp.sum(jnp.linalg.solve(x, array(data((n, 1), 36)))))(array(spd(n, 35))), sync)
+    if suite_enabled("batched"):
+        batches = sizes_for(profile, [16, 64], [16, 64, 256, 1024])
+        sizes = sizes_for(profile, [2, 4], [2, 4, 8, 16])
+        for batch in batches:
+            for n in sizes:
+                label = f"{n}x{n}xbatch{batch} (rightmost batch)"
+                emit_row(writer, args, "batched", "batched_matmul_ikb_kjb_ijb", label, lambda n=n, batch=batch: jnp.einsum("bik,bkj->bij", array(data((batch, n, n), 41)), array(data((batch, n, n), 42))), sync)
+                emit_row(writer, args, "batched", "batched_svd", label, lambda n=n, batch=batch: jnp.linalg.svd(array(batched_well_conditioned(n, batch, 43)), full_matrices=True)[1], sync)
+                emit_row(writer, args, "batched", "batched_qr", label, lambda n=n, batch=batch: jnp.linalg.qr(array(batched_well_conditioned(n, batch, 44)))[0], sync)
+                emit_row(writer, args, "batched", "batched_eigh", label, lambda n=n, batch=batch: jnp.linalg.eigh(array(batched_spd(n, batch, 45)))[0], sync)
+                emit_row(writer, args, "batched", "batched_solve", f"{label},rhs=1", lambda n=n, batch=batch: jnp.linalg.solve(array(batched_spd(n, batch, 46)), array(data((batch, n, 1), 47))), sync)
+                emit_row(writer, args, "batched", "grad_sum_batched_matmul_backward", label, lambda n=n, batch=batch: jax.grad(lambda x: jnp.sum(jnp.einsum("bik,bkj->bij", x, array(data((batch, n, n), 49)))))(array(data((batch, n, n), 48))), sync)
+                emit_row(writer, args, "batched", "grad_sum_batched_solve_backward", f"{label},rhs=1", lambda n=n, batch=batch: jax.grad(lambda x: jnp.sum(jnp.linalg.solve(x, array(data((batch, n, 1), 51)))))(array(batched_spd(n, batch, 50))), sync)
+
+
+def main() -> None:
+    runs, warmups = runs_from_env()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--backend", choices=["pytorch-cpu", "jax-cpu"], required=True)
+    parser.add_argument("--num-threads", type=int, default=1)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--runs", type=int, default=runs)
+    parser.add_argument("--warmups", type=int, default=warmups)
+    args = parser.parse_args()
+
+    fieldnames = ["suite", "benchmark", "dtype", "threads", "shape", "backend", "median_ms", "iqr_ms", "status"]
+    with open(args.output, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if args.backend == "pytorch-cpu":
+            run_pytorch(args, writer)
+        else:
+            run_jax(args, writer)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(130)

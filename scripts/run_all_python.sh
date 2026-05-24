@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# Python benchmark runner (JAX CPU)
+# Python benchmark runner (PyTorch CPU + JAX CPU)
 #
 # Usage: ./scripts/run_all_python.sh [NUM_THREADS]
 #
@@ -32,33 +32,38 @@ echo ""
 
 PYTHON_LOGS=()
 
-# ---------------------------------------------------------------------------
-# JAX (CPU)
-# ---------------------------------------------------------------------------
-echo "============================================"
-echo " Python: jax-cpu"
-echo "============================================"
+run_python_backend() {
+    local backend="$1"
+    local log="$2"
 
+    echo "============================================"
+    echo " Python: ${backend}-cpu"
+    echo "============================================"
+    echo "Running ${backend}-cpu benchmark..."
+    if command -v uv >/dev/null 2>&1; then
+        uv run python "$SCRIPT_DIR/benchmark_python.py" \
+            --backend "$backend" \
+            --num-threads "$NUM_THREADS" 2>&1 | tee "$log" \
+            || python3 "$SCRIPT_DIR/benchmark_python.py" \
+                --backend "$backend" \
+                --num-threads "$NUM_THREADS" 2>&1 | tee "$log"
+    else
+        python3 "$SCRIPT_DIR/benchmark_python.py" \
+            --backend "$backend" \
+            --num-threads "$NUM_THREADS" 2>&1 | tee "$log"
+    fi
+
+    echo ""
+    echo "${backend}-cpu results saved to: $log"
+    echo ""
+    PYTHON_LOGS+=("$log")
+}
+
+PYTORCH_LOG="$RESULTS_DIR/pytorch_cpu_t${NUM_THREADS}_${TIMESTAMP}.log"
 JAX_LOG="$RESULTS_DIR/jax_cpu_t${NUM_THREADS}_${TIMESTAMP}.log"
 
-echo "Running jax-cpu benchmark..."
-if command -v uv >/dev/null 2>&1; then
-    uv run python "$SCRIPT_DIR/benchmark_python.py" \
-        --backend jax \
-        --num-threads "$NUM_THREADS" 2>&1 | tee "$JAX_LOG" \
-        || python3 "$SCRIPT_DIR/benchmark_python.py" \
-            --backend jax \
-            --num-threads "$NUM_THREADS" 2>&1 | tee "$JAX_LOG"
-else
-    python3 "$SCRIPT_DIR/benchmark_python.py" \
-        --backend jax \
-        --num-threads "$NUM_THREADS" 2>&1 | tee "$JAX_LOG"
-fi
-
-echo ""
-echo "jax-cpu results saved to: $JAX_LOG"
-echo ""
-PYTHON_LOGS+=("$JAX_LOG")
+run_python_backend pytorch "$PYTORCH_LOG"
+run_python_backend jax "$JAX_LOG"
 
 # ---------------------------------------------------------------------------
 # Summary
