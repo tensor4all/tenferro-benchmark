@@ -27,6 +27,7 @@ fn main() {
 
     println!("cargo:rustc-link-search=native={}", lib_dir.display());
     println!("cargo:rustc-link-lib=dylib=openblas");
+    println!("cargo:rustc-link-arg-bin=publication_gate=-lopenblas");
     println!("cargo:include={}", include_dir.display());
     println!("cargo:rerun-if-env-changed=OPENBLAS_ROOT");
 }

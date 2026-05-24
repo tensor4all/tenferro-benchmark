@@ -30,6 +30,7 @@ tenferro-einsum-benchmark/
     run_all_rust.sh         # Build & run tenferro trace/eager OpenBLAS + strided-rs (faer)
     run_all_libtorch.sh     # Build & run LibTorch CPU benchmark
     run_all_python.sh       # Run JAX CPU benchmark
+    run_publication_gate.sh # tenferro-rs small/large/batched linalg+AD gate
     benchmark_python.py     # Python benchmark runner (PyTorch / JAX)
     generate_dataset.py     # Filter & export benchmark instances as JSON
     format_results.py       # Parse logs and output unified markdown tables
@@ -289,7 +290,55 @@ The script writes:
 - `data/results/libtorch_cpu_t<threads>_<timestamp>.log`
 - `data/results/tenferro_libtorch_t<threads>_<timestamp>.md`
 
-### 3. Run all benchmarks
+### 3. Run the tenferro-rs publication-gate microbenchmarks
+
+`publication_gate` is a repo-local benchmark runner for the focused matrix in [tensor4all/tenferro-rs#862](https://github.com/tensor4all/tenferro-rs/issues/862). It is separate from the einsum macrobenchmark suite and covers:
+
+- **Small matrix latency**: `2x2` through `32x32` matmul/einsum, `svd`, `qr`, `eigh`, `solve`, and AD cases for `grad(sum(A @ B))`, `grad(sum(svd(A).S))`, and `grad(sum(solve(A, b)))`.
+- **Large matrix throughput**: `128` through `1024` matmul, medium/large linalg, and separate primal/backward timing rows for AD workloads.
+- **Batched small matrices**: batched matmul, batched `svd`/`qr`/`eigh`/`solve`, and batched AD for matmul/solve.
+
+tenferro-rs stores batch axes as trailing dimensions. Therefore the batched matmul case is encoded as `ikb,kjb->ijb`, where the rightmost `b` index is the batch index. This is the same workload as the issue's `bij,bjk->bik` example, expressed in tenferro's col-major/trailing-batch convention.
+
+Run the quick profile:
+
+```bash
+export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
+
+./scripts/run_publication_gate.sh 1
+```
+
+The quick profile uses a smaller shape subset intended for smoke checks. The full profile includes the complete issue matrix, including `32x32` small cases, `1024` matmul, and `b=1024` batched cases:
+
+```bash
+PUBLICATION_GATE_PROFILE=full ./scripts/run_publication_gate.sh 1
+```
+
+Select one suite when iterating:
+
+```bash
+PUBLICATION_GATE_SUITE=small ./scripts/run_publication_gate.sh 1
+PUBLICATION_GATE_SUITE=large ./scripts/run_publication_gate.sh 1
+PUBLICATION_GATE_SUITE=batched ./scripts/run_publication_gate.sh 1
+```
+
+Compare tenferro CPU backends by rebuilding the same runner with different features:
+
+```bash
+PUBLICATION_GATE_FEATURES=cpu-faer ./scripts/run_publication_gate.sh 1
+PUBLICATION_GATE_FEATURES=system-openblas ./scripts/run_publication_gate.sh 1
+PUBLICATION_GATE_FEATURES=cuda ./scripts/run_publication_gate.sh 1
+```
+
+The runner writes CSV files under `data/results/` with one row per case:
+
+```text
+suite,op,phase,dtype,backend,profile,shape,warmups,runs,median_ms,iqr_ms,status
+```
+
+`phase=primal` measures forward execution. `phase=backward` constructs the forward expression and times reverse-mode execution separately for the AD rows. The benchmark currently emits `f64` rows; C64 should be added as a separate extension once the real-valued baseline is stable.
+
+### 4. Run all benchmarks
 
 ```bash
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
@@ -312,7 +361,7 @@ Instance JSON files that fail to read or parse are skipped with a warning; the s
 
 Requires `strided-rs-benchmark-suite` at `../strided-rs-benchmark-suite` for strided-rs comparison (optional; skipped with a note if not found). Requires an OpenBLAS-linked LibTorch for the LibTorch comparison; otherwise `scripts/run_all_libtorch.sh` fails before running timings.
 
-### 4. Run a single instance
+### 5. Run a single instance
 
 To run the benchmark for **one instance only**, set the environment variable `BENCH_INSTANCE` to the instance name:
 
@@ -338,7 +387,7 @@ BENCH_INSTANCE=tensornetwork_permutation_light_415 ./scripts/run_all.sh 4
 
 Instance name must match the `name` field in the JSON (i.e. the filename without `.json`). To list available names: `ls data/instances/` → e.g. `gm_queen5_5_3.wcsp.json` → use `gm_queen5_5_3.wcsp`.
 
-### 5. Binary Einsum Diagnostic Instances
+### 6. Binary Einsum Diagnostic Instances
 
 For bottleneck investigation, this repo includes a small binary-only set:
 
@@ -519,6 +568,54 @@ Median ± IQR (ms). OMP_NUM_THREADS=1, RAYON_NUM_THREADS=1.
 | str_nw_mera_open_26 | 759.832 ± 8.088 | 754.611 ± 8.726 | 681.890 ± 8.633 | **133.571 ± 2.393** |
 | tensornetwork_permutation_focus_step409_316 | 268.920 ± 2.359 | 386.310 ± 7.191 | 258.466 ± 1.586 | **107.587 ± 4.243** |
 | tensornetwork_permutation_light_415 | 269.454 ± 0.833 | 311.939 ± 5.772 | 369.260 ± 4.783 | **114.533 ± 4.485** |
+
+### tenferro-rs publication-gate quick profile
+
+This run uses the publication-gate runner from `scripts/run_publication_gate.sh`, measured on the same Apple M2 Max machine with `OMP_NUM_THREADS=1`, `RAYON_NUM_THREADS=1`, `PUBLICATION_GATE_PROFILE=quick`, and `PUBLICATION_GATE_SUITE=all`. Median ± IQR (ms). Both CSV files contain 71 benchmark rows and all rows completed with `status=ok`.
+
+Commands:
+
+```bash
+export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
+
+BENCHMARK_TIMESTAMP=20260523_publication_gate_quick \
+  PUBLICATION_GATE_FEATURES=system-openblas \
+  PUBLICATION_GATE_PROFILE=quick \
+  PUBLICATION_GATE_SUITE=all \
+  ./scripts/run_publication_gate.sh 1
+
+BENCHMARK_TIMESTAMP=20260523_publication_gate_quick \
+  PUBLICATION_GATE_FEATURES=cpu-faer \
+  PUBLICATION_GATE_PROFILE=quick \
+  PUBLICATION_GATE_SUITE=all \
+  ./scripts/run_publication_gate.sh 1
+```
+
+Logs:
+
+- `data/results/publication_gate_system-openblas_t1_quick_all_20260523_publication_gate_quick.csv`
+- `data/results/publication_gate_cpu-faer_t1_quick_all_20260523_publication_gate_quick.csv`
+
+Representative results:
+
+| Suite | Operation | Phase | Shape | OpenBLAS (ms) | faer (ms) |
+|---|---|---|---|---:|---:|
+| small | `matmul` | primal | 2x2 | 0.004 ± 0.001 | 0.003 ± 0.005 |
+| small | `einsum_ij_jk_ik` | primal | 2x2 | 0.004 ± 0.001 | 0.004 ± 0.001 |
+| small | `svd` | primal | 8x8 | 0.015 ± 0.001 | 0.008 ± 0.000 |
+| small | `solve` | primal | 8x8,rhs=1 | 0.005 ± 0.000 | 0.003 ± 0.000 |
+| small | `grad_sum_matmul` | backward | 8x8 | 0.065 ± 0.007 | 0.038 ± 0.000 |
+| small | `grad_sum_svd_s` | backward | 8x8 | 0.364 ± 0.040 | 0.459 ± 0.002 |
+| large | `matmul` | primal | 128x128 | 0.186 ± 0.000 | 0.177 ± 0.001 |
+| large | `matmul` | primal | 256x256 | 1.144 ± 0.019 | 1.142 ± 0.088 |
+| large | `svd` | primal | 64x64 | 0.649 ± 0.022 | 0.556 ± 0.011 |
+| large | `solve` | primal | 64x64,rhs=16 | 0.229 ± 0.005 | 0.146 ± 0.000 |
+| large | `grad_sum_matmul` | primal | 64x64 | 0.024 ± 0.001 | 0.025 ± 0.000 |
+| large | `grad_sum_matmul` | backward | 64x64 | 0.112 ± 0.002 | 0.118 ± 0.001 |
+| batched | `batched_matmul_ikb_kjb_ijb` | primal | 2x2xbatch16 (rightmost batch) | 0.003 ± 0.000 | 0.003 ± 0.000 |
+| batched | `batched_solve` | primal | 4x4xbatch64 (rightmost batch),rhs=1 | 0.032 ± 0.000 | 0.040 ± 0.001 |
+| batched | `grad_sum_batched_matmul` | backward | 4x4xbatch64 (rightmost batch) | 0.056 ± 0.000 | 0.046 ± 0.001 |
+| batched | `grad_sum_batched_solve` | backward | 4x4xbatch64 (rightmost batch),rhs=1 | 0.122 ± 0.000 | 0.140 ± 0.001 |
 
 #### Strategy: opt_flops
 
