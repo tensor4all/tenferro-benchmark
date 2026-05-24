@@ -13,8 +13,8 @@ Detailed documentation was split out of this README:
 
 - [Setup and C++ LibTorch build](docs/setup-and-libtorch.md)
 - [Einsum benchmark usage and instances](docs/einsum-benchmarks.md)
-- Latest generated einsum benchmark results: `result/results-einsum.md`
-- Latest generated CPU benchmark results: `result/cpu-benchmark-results.md`
+- Latest generated einsum benchmark results: [result/einsum-results.md](result/einsum-results.md)
+- Latest generated CPU benchmark results: [result/cpu-benchmark-results.md](result/cpu-benchmark-results.md)
 
 ## Quick Start
 
@@ -77,7 +77,7 @@ The generated reports should include the comparison columns:
 
 ```bash
 rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
-  result/results-einsum.md result/cpu-benchmark-results.md
+  result/einsum-results.md result/cpu-benchmark-results.md
 ```
 
 ## Human-Run Scripts
@@ -132,8 +132,8 @@ export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
 
 Raw logs and timestamped tables are written to `data/results/`, summarized by `scripts/format_results.py`, and copied to:
 
-- `result/results-einsum.md`
-- `result/cpu-benchmark-results.md`
+- [result/einsum-results.md](result/einsum-results.md)
+- [result/cpu-benchmark-results.md](result/cpu-benchmark-results.md)
 
 ### Run PyTorch and JAX Python baselines manually
 

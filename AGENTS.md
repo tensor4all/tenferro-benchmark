@@ -65,10 +65,10 @@ include the Torch C++ column.
 
    ```bash
    rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
-     result/results-einsum.md result/cpu-benchmark-results.md
+     result/einsum-results.md result/cpu-benchmark-results.md
    ```
 
-   `result/results-einsum.md` should contain measured columns for tenferro-rs
+   `result/einsum-results.md` should contain measured columns for tenferro-rs
    eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX
    Python. The PR884 CPU table in `result/cpu-benchmark-results.md` uses the
    same column labels and should include measured tenferro-rs eager mode,
