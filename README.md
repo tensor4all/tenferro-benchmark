@@ -41,6 +41,67 @@ To remove these repo-local external checkouts:
 ./scripts/clean_extern_deps.sh
 ```
 
+## Dev Container Workflow
+
+Prerequisites on the host:
+
+- Docker Desktop or another Docker engine
+- The `devcontainer` CLI
+
+From the host repository root, build and start the development container:
+
+```bash
+devcontainer up --workspace-folder .
+```
+
+If the devcontainer config changed and an older container already exists,
+recreate it:
+
+```bash
+devcontainer up --workspace-folder . --remove-existing-container
+```
+
+Run the benchmark suite inside the container from the host with
+`devcontainer exec`. The first run prepares `extern/tenferro-rs` if needed and
+builds an OpenBLAS-linked PyTorch/LibTorch checkout under
+`extern/devcontainer/pytorch-openblas`, so it can take a long time.
+
+```bash
+devcontainer exec --workspace-folder . bash -lc '\
+  BENCH_INSTANCE=bin_matmul_256 \
+  BENCH_RUNS=1 \
+  BENCH_WARMUPS=0 \
+  PUBLICATION_GATE_SUITE=small \
+    ./scripts/run_all.sh 1'
+```
+
+For normal benchmark results:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 1'
+devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 4'
+```
+
+The devcontainer sets `OPENBLAS_ROOT=/opt/openblas` and installs Rust, CMake,
+Python 3.12, `uv`, OpenBLAS, and Linux linkage tools. It also sets
+`PYTORCH_OPENBLAS_DIR` to `extern/devcontainer/pytorch-openblas` inside the
+workspace so Linux container builds do not reuse a host-built macOS
+`extern/pytorch-openblas` checkout. Verify the Torch C++ library with `ldd`
+inside the container before trusting the Torch C++ column:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc \
+  'ldd "$PYTORCH_OPENBLAS_DIR/torch/lib/libtorch_cpu.so" | rg -i openblas'
+```
+
+Generated reports include the exact `tenferro-rs` commit hash. Use it later to
+restore the benchmark dependency checkout:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc \
+  'rg -n "tenferro-rs commit" result/einsum-results.md result/cpu-benchmark-results.md'
+```
+
 ## Torch C++ Benchmark Workflow
 
 Use this workflow when benchmark results must include the Torch C++ column.
@@ -134,6 +195,10 @@ Raw logs and timestamped tables are written to `data/results/`, summarized by `s
 
 - [result/einsum-results.md](result/einsum-results.md)
 - [result/cpu-benchmark-results.md](result/cpu-benchmark-results.md)
+
+Both report files include the full `tenferro-rs` commit hash resolved from
+`TENFERRO_RS_DIR` so the benchmark checkout can be restored later with
+`git checkout <commit>`.
 
 ### Run PyTorch and JAX Python baselines manually
 

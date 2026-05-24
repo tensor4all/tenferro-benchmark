@@ -45,7 +45,7 @@ clone_or_reuse_checkout() {
     local dest="$4"
     local sibling="$PROJECT_DIR/../$name"
 
-    mkdir -p "$EXTERN_DIR"
+    mkdir -p "$(dirname "$dest")"
     if [[ -d "$dest/.git" ]]; then
         log "$name already exists at ${dest#$PROJECT_DIR/}"
         return
