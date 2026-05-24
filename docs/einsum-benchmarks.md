@@ -26,7 +26,7 @@ This focused comparison runner runs:
 
 ```bash
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-export Torch_DIR=/path/to/libtorch/share/cmake/Torch
+source ./scripts/setup_extern_deps.sh
 
 ./scripts/run_tenferro_libtorch.sh
 ./scripts/run_tenferro_libtorch.sh 4
@@ -49,7 +49,6 @@ The script writes:
 
 ```bash
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-export Torch_DIR=/path/to/libtorch/share/cmake/Torch
 
 ./scripts/run_all.sh
 ./scripts/run_all.sh 4
@@ -60,9 +59,24 @@ Runs all backends in sequence and writes a unified markdown comparison table:
 - `tenferro trace/eager` via `scripts/run_all_rust.sh`
 - `strided-rs faer` via `scripts/run_all_rust.sh`, if `../strided-rs-benchmark-suite` exists
 - `LibTorch CPU` via `scripts/run_all_libtorch.sh`
-- `JAX CPU` via `scripts/run_all_python.sh`
+- `PyTorch CPU` and `JAX CPU` via `scripts/run_all_python.sh`
+- PR884 CPU benchmark items via `scripts/run_cpu_ops.sh`
 
-The script sets `OMP_NUM_THREADS` and `RAYON_NUM_THREADS` to the given thread count. Logs and the markdown table are saved to `data/results/` with timestamps.
+For PR884 CPU benchmark items, `scripts/run_cpu_ops.sh` writes tenferro-rs
+eager and trace rows from `publication_gate`, then appends Torch C++, PyTorch
+Python, and JAX Python measurements to the same normalized CSV.
+
+The script sets `OMP_NUM_THREADS` and `RAYON_NUM_THREADS` to the given thread count. Raw logs and timestamped intermediate tables are saved to `data/results/`. The latest human-facing reports are written to:
+
+- `result/results-einsum.md`
+- `result/cpu-benchmark-results.md`
+
+Verify the generated report columns with:
+
+```bash
+rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
+  result/results-einsum.md result/cpu-benchmark-results.md
+```
 
 Instance JSON files that fail to read or parse are skipped with a warning. Instances that trigger a backend error are reported as `SKIP` with the reason on stderr.
 
@@ -75,7 +89,7 @@ uv run python scripts/benchmark_python.py --backend pytorch --num-threads 1
 uv run python scripts/benchmark_python.py --backend jax --num-threads 1
 ```
 
-The top-level `scripts/run_all.sh` currently runs JAX only. Use the README's human-run four-backend script when you need tenferro-rs, C++ Torch, Python PyTorch, and JAX in one formatted table.
+The top-level `scripts/run_all.sh` includes both Python baselines in the formatted table.
 
 ## Run a single instance
 
@@ -95,7 +109,6 @@ With the full script:
 
 ```bash
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-export Torch_DIR=/path/to/libtorch/share/cmake/Torch
 
 BENCH_INSTANCE=gm_queen5_5_3.wcsp ./scripts/run_all.sh 1
 BENCH_INSTANCE=tensornetwork_permutation_light_415 ./scripts/run_all.sh 4

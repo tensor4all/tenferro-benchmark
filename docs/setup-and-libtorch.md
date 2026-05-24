@@ -8,8 +8,7 @@ Required tools:
 - CMake 3.20+
 - Python 3.12+ and [uv](https://docs.astral.sh/uv/)
 - OpenBLAS
-- LibTorch built against OpenBLAS
-- A local clone of [tenferro-rs](https://github.com/tensor4all/tenferro-rs) at `../tenferro-rs`
+- Repo-local external checkouts under `extern/`
 
 On macOS with Homebrew:
 
@@ -31,6 +30,31 @@ Python is used for dataset generation, PyTorch/JAX comparison, and result format
 ```bash
 uv sync
 ```
+
+## Set up external checkouts
+
+Use the repo-local setup script to prepare dependencies under `extern/`:
+
+```bash
+./scripts/setup_extern_deps.sh
+```
+
+The script creates or reuses:
+
+- `extern/tenferro-rs`
+- `extern/pytorch-openblas`
+
+If old sibling checkouts exist at `../tenferro-rs` or `../pytorch-openblas`, the script moves them into `extern/` by default to avoid re-cloning or rebuilding. Set `SETUP_EXTERN_MIGRATE_SIBLINGS=0` to disable that migration.
+
+`scripts/run_all.sh` sources this setup script automatically so `OPENBLAS_ROOT`, `TENFERRO_RS_DIR`, `PYTORCH_OPENBLAS_DIR`, and `Torch_DIR` are available to the benchmark subprocesses. Set `SKIP_EXTERN_SETUP=1` only when you intentionally want to provide all paths yourself.
+
+To remove the repo-local dependency checkouts:
+
+```bash
+./scripts/clean_extern_deps.sh
+```
+
+The cleanup script removes only `extern/tenferro-rs` and `extern/pytorch-openblas`. It leaves any other entries under `extern/` alone.
 
 ## Build tenferro
 
@@ -55,17 +79,19 @@ tenferro-rs currently supports col-major tensor layout. This benchmark therefore
 
 Set `Torch_DIR` to the CMake package directory for a LibTorch build that is linked against the same OpenBLAS installation as `OPENBLAS_ROOT`.
 
-On this machine, the OpenBLAS-linked Torch C++ build was built from the GitHub PyTorch repository at:
+On this machine, the OpenBLAS-linked Torch C++ build is PyTorch `v2.12.0`
+checked out from the GitHub PyTorch repository at:
 
 ```bash
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-export Torch_DIR=/Users/atelierarith/work/atelierarith/shinaoka/pytorch-openblas/torch/share/cmake/Torch
+export Torch_DIR=/Users/atelierarith/work/atelierarith/shinaoka/tenferro-benchmark/extern/pytorch-openblas/torch/share/cmake/Torch
 ```
 
-This exact build reports `torch 2.13.0a0+git8cb4928` and `BLAS_INFO=open`. Its `libtorch_cpu.dylib` links Homebrew OpenBLAS:
+This exact build reports `torch 2.12.0a0+git0d62256` from tag `v2.12.0`.
+Its `libtorch_cpu.dylib` links Homebrew OpenBLAS:
 
 ```bash
-otool -L /Users/atelierarith/work/atelierarith/shinaoka/pytorch-openblas/torch/lib/libtorch_cpu.dylib | grep -Ei 'openblas|accelerate'
+otool -L extern/pytorch-openblas/torch/lib/libtorch_cpu.dylib | grep -Ei 'openblas|accelerate'
 # /opt/homebrew/opt/openblas/lib/libopenblas.0.dylib
 ```
 
@@ -87,14 +113,24 @@ print(pathlib.Path(torch.__file__).parent / "share/cmake/Torch")
 PY
 ```
 
-If you do not already have an OpenBLAS-linked LibTorch, build PyTorch/LibTorch from source and force its BLAS provider to OpenBLAS. The build used for the local benchmark was created from GitHub as follows:
+If you do not already have an OpenBLAS-linked LibTorch, build PyTorch/LibTorch
+from source and force its BLAS provider to OpenBLAS. The build used for the
+local benchmark is created from the PyTorch `v2.12.0` tag by the setup script:
 
 ```bash
-git clone --recursive --depth 1 --shallow-submodules https://github.com/pytorch/pytorch.git ../pytorch-openblas
-cd ../pytorch-openblas
+export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
+./scripts/setup_extern_deps.sh
+```
 
-python3 -m venv .venv
-source .venv/bin/activate
+For a manual rebuild, use the same destination under `extern/`:
+
+```bash
+git clone --recursive --branch v2.12.0 --depth 1 --shallow-submodules \
+  https://github.com/pytorch/pytorch.git extern/pytorch-openblas
+cd extern/pytorch-openblas
+
+python3 -m venv .venv-openblas
+source .venv-openblas/bin/activate
 python -m pip install --upgrade pip
 python -m pip install --group dev
 
@@ -102,6 +138,7 @@ export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
 export BLAS=OpenBLAS
 export OpenBLAS_HOME="$OPENBLAS_ROOT"
 export CMAKE_PREFIX_PATH="$OPENBLAS_ROOT:${CMAKE_PREFIX_PATH:-}"
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
 
 # CPU-only build. Drop these flags if you intentionally need those backends.
 export USE_CUDA=0
@@ -120,7 +157,10 @@ export MAX_JOBS=8
 python -m pip install --no-build-isolation -v -e .
 ```
 
-The important settings are `BLAS=OpenBLAS`, `OpenBLAS_HOME=$OPENBLAS_ROOT`, and a `CMAKE_PREFIX_PATH` that lets CMake find the same OpenBLAS prefix used by the Rust benchmark.
+The important settings are `BLAS=OpenBLAS`, `OpenBLAS_HOME=$OPENBLAS_ROOT`,
+and a `CMAKE_PREFIX_PATH` that lets CMake find the same OpenBLAS prefix used by
+the Rust benchmark. With CMake 4.x, `CMAKE_POLICY_VERSION_MINIMUM=3.5` avoids
+compatibility failures in old vendored CMake projects.
 
 After the build, get the `Torch_DIR` for this checkout:
 
@@ -155,11 +195,39 @@ PY
 
 If these commands do not print an OpenBLAS library, do not use that LibTorch build for this comparison.
 
+For the repo-local checkout prepared by `scripts/setup_extern_deps.sh`, the shortest verification is:
+
+```bash
+# macOS
+otool -L extern/pytorch-openblas/torch/lib/libtorch_cpu.dylib | rg -i openblas
+
+# Linux
+ldd extern/pytorch-openblas/torch/lib/libtorch_cpu.so | rg -i openblas
+```
+
+Confirm the build version before benchmarking:
+
+```bash
+python - <<'PY'
+import pathlib
+import torch
+print(torch.__version__)
+print(pathlib.Path(torch.__file__).parent / "share/cmake/Torch")
+PY
+```
+
+Expected local output for the build above:
+
+```text
+2.12.0a0+git0d62256
+/Users/atelierarith/work/atelierarith/shinaoka/tenferro-benchmark/extern/pytorch-openblas/torch/share/cmake/Torch
+```
+
 Build this repository's C++ benchmark executable:
 
 ```bash
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-export Torch_DIR=/path/to/libtorch/share/cmake/Torch
+source ./scripts/setup_extern_deps.sh
 
 cmake -S cpp -B build/cpp-libtorch \
   -DBUILD_LIBTORCH_BENCHMARK=ON \
@@ -173,6 +241,36 @@ You can also use `CMAKE_PREFIX_PATH` instead of `Torch_DIR`:
 ```bash
 export CMAKE_PREFIX_PATH=/path/to/libtorch
 ```
+
+Run the full top-level benchmark with the local PyTorch 2.12 LibTorch build:
+
+```bash
+export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
+
+./scripts/run_all.sh 1
+./scripts/run_all.sh 4
+```
+
+For a quick smoke run that still measures the Torch C++ column:
+
+```bash
+export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
+
+BENCH_INSTANCE=bin_matmul_256 \
+BENCH_RUNS=1 \
+BENCH_WARMUPS=0 \
+PUBLICATION_GATE_SUITE=small \
+  ./scripts/run_all.sh 1
+```
+
+After either run, verify that the generated reports include the expected comparison columns:
+
+```bash
+rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
+  result/results-einsum.md result/cpu-benchmark-results.md
+```
+
+`result/results-einsum.md` should contain measured einsum columns for tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python. `result/cpu-benchmark-results.md` uses the same column labels for PR884 CPU benchmark items and measures tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python CPU-op runners.
 
 Important OpenBLAS notes:
 

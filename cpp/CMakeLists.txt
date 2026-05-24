@@ -122,4 +122,11 @@ if(BUILD_LIBTORCH_BENCHMARK)
         "${TORCH_LIBRARIES}"
         nlohmann_json::nlohmann_json
     )
+
+    add_executable(benchmark_cpu_ops_libtorch
+        benchmark_cpu_ops_libtorch.cpp
+    )
+    target_link_libraries(benchmark_cpu_ops_libtorch PRIVATE
+        "${TORCH_LIBRARIES}"
+    )
 endif()

@@ -10,7 +10,9 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use tenferro::eager_tensor;
+use tenferro::traced_tensor;
 use tenferro::{CpuBackend, DotGeneralConfig, EagerRuntime, EagerTensor, Tensor, TypedTensor};
+use tenferro::{GraphCompiler, GraphExecutor, TracedTensor};
 
 const DEFAULT_WARMUPS: usize = 3;
 
@@ -87,6 +89,8 @@ struct BenchConfig {
     runs: usize,
     warmups: usize,
     backend: &'static str,
+    include_eager: bool,
+    include_trace: bool,
 }
 
 impl BenchConfig {
@@ -98,6 +102,8 @@ impl BenchConfig {
             runs: profile.runs(),
             warmups: profile.warmups(),
             backend: backend_name(),
+            include_eager: tenferro_mode_includes("eager"),
+            include_trace: tenferro_mode_includes("trace"),
         }
     }
 }
@@ -109,6 +115,7 @@ struct Row {
     phase: &'static str,
     dtype: &'static str,
     shape: String,
+    backend: &'static str,
     median_ms: Option<f64>,
     iqr_ms: Option<f64>,
     status: String,
@@ -124,6 +131,18 @@ fn backend_name() -> &'static str {
     }
 }
 
+fn tenferro_mode_includes(mode: &str) -> bool {
+    match env::var("PUBLICATION_GATE_TENFERRO_MODE")
+        .or_else(|_| env::var("PUBLICATION_GATE_TENFERRO_MODES"))
+        .unwrap_or_else(|_| "both".into())
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "both" | "all" => true,
+        selected => selected.split(',').any(|item| item.trim() == mode),
+    }
+}
+
 fn main() {
     let config = BenchConfig::from_env();
     println!("suite,op,phase,dtype,backend,profile,shape,warmups,runs,median_ms,iqr_ms,status");
@@ -135,7 +154,7 @@ fn main() {
             row.op,
             row.phase,
             row.dtype,
-            config.backend,
+            row.backend,
             match config.profile {
                 Profile::Quick => "quick",
                 Profile::Full => "full",
@@ -152,14 +171,23 @@ fn main() {
 
 fn run_all(config: &BenchConfig) -> Vec<Row> {
     let mut rows = Vec::new();
-    if config.suite.includes("small") {
+    if config.include_eager && config.suite.includes("small") {
         run_small_latency(config, &mut rows);
     }
-    if config.suite.includes("large") {
+    if config.include_eager && config.suite.includes("large") {
         run_large_throughput(config, &mut rows);
     }
-    if config.suite.includes("batched") {
+    if config.include_eager && config.suite.includes("batched") {
         run_batched_small(config, &mut rows);
+    }
+    if config.include_trace && config.suite.includes("small") {
+        run_small_latency_trace(config, &mut rows);
+    }
+    if config.include_trace && config.suite.includes("large") {
+        run_large_throughput_trace(config, &mut rows);
+    }
+    if config.include_trace && config.suite.includes("batched") {
+        run_batched_small_trace(config, &mut rows);
     }
     rows
 }
@@ -741,6 +769,203 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
     }
 }
 
+fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
+    let sizes: &[usize] = match config.profile {
+        Profile::Quick => &[2, 4, 8],
+        Profile::Full => &[2, 4, 8, 16, 32],
+    };
+
+    for &n in sizes {
+        rows.push(bench_trace_row(config, "small", "matmul", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 1));
+            let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 2));
+            Ok(vec![traced_tensor::matmul(&a, &b)])
+        }));
+        rows.push(bench_trace_row(config, "small", "einsum_ij_jk_ik", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 1));
+            let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 2));
+            let mut compiler = GraphCompiler::new();
+            Ok(vec![traced_tensor::einsum(&mut compiler, &[&a, &b], "ij,jk->ik")?])
+        }));
+        rows.push(bench_trace_row(config, "small", "svd", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 3));
+            let (u, s, vh) = traced_tensor::svd(&a);
+            Ok(vec![u, s, vh])
+        }));
+        rows.push(bench_trace_row(config, "small", "qr", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 4));
+            let (q, r) = traced_tensor::qr(&a);
+            Ok(vec![q, r])
+        }));
+        rows.push(bench_trace_row(config, "small", "eigh", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], spd_matrix(n, 5));
+            let (w, v) = traced_tensor::eigh(&a);
+            Ok(vec![w, v])
+        }));
+        for &rhs_cols in &[1, 4] {
+            rows.push(bench_trace_row(config, "small", "solve", "primal", "f64", &format!("{n}x{n},rhs={rhs_cols}"), || {
+                let a = traced_tensor(&[n, n], spd_matrix(n, 6));
+                let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 7));
+                Ok(vec![traced_tensor::solve(&a, &b)])
+            }));
+        }
+        rows.push(bench_trace_row(config, "small", "grad_sum_matmul", "backward", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 8));
+            let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 9));
+            let y = traced_tensor::matmul(&a, &b);
+            let loss = y.reduce_sum(&[0, 1]);
+            Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
+        }));
+        rows.push(bench_trace_row(config, "small", "grad_sum_svd_s", "backward", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 10));
+            let (_, s, _) = traced_tensor::svd(&a);
+            let loss = s.reduce_sum(&[0]);
+            Ok(vec![loss.grad(&a)?])
+        }));
+        rows.push(bench_trace_row(config, "small", "grad_sum_solve", "backward", "f64", &format!("{n}x{n},rhs=1"), || {
+            let a = traced_tensor(&[n, n], spd_matrix(n, 11));
+            let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 12));
+            let x = traced_tensor::solve(&a, &b);
+            let loss = x.reduce_sum(&[0, 1]);
+            Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
+        }));
+    }
+}
+
+fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
+    let matmul_sizes: &[usize] = match config.profile {
+        Profile::Quick => &[128, 256],
+        Profile::Full => &[128, 256, 512, 1024],
+    };
+    for &n in matmul_sizes {
+        rows.push(bench_trace_row(config, "large", "matmul", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 21));
+            let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 22));
+            Ok(vec![traced_tensor::matmul(&a, &b)])
+        }));
+    }
+    for &(m, k, n) in &[(1024, 256, 1024), (256, 1024, 256)] {
+        if config.profile == Profile::Quick && m > 256 {
+            continue;
+        }
+        rows.push(bench_trace_row(config, "large", "matmul_rect", "primal", "f64", &format!("{m}x{k} * {k}x{n}"), || {
+            let a = traced_tensor(&[m, k], data_for_shape(&[m, k], 23));
+            let b = traced_tensor(&[k, n], data_for_shape(&[k, n], 24));
+            Ok(vec![traced_tensor::matmul(&a, &b)])
+        }));
+    }
+    let linalg_sizes: &[usize] = match config.profile {
+        Profile::Quick => &[64],
+        Profile::Full => &[64, 128, 256],
+    };
+    for &n in linalg_sizes {
+        rows.push(bench_trace_row(config, "large", "svd", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 25));
+            let (u, s, vh) = traced_tensor::svd(&a);
+            Ok(vec![u, s, vh])
+        }));
+        rows.push(bench_trace_row(config, "large", "qr", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 26));
+            let (q, r) = traced_tensor::qr(&a);
+            Ok(vec![q, r])
+        }));
+        rows.push(bench_trace_row(config, "large", "eigh", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], spd_matrix(n, 27));
+            let (w, v) = traced_tensor::eigh(&a);
+            Ok(vec![w, v])
+        }));
+        for &rhs_cols in &[1, 16, 64] {
+            rows.push(bench_trace_row(config, "large", "solve", "primal", "f64", &format!("{n}x{n},rhs={rhs_cols}"), || {
+                let a = traced_tensor(&[n, n], spd_matrix(n, 28));
+                let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 29));
+                Ok(vec![traced_tensor::solve(&a, &b)])
+            }));
+        }
+    }
+    for &n in match config.profile {
+        Profile::Quick => &[64][..],
+        Profile::Full => &[64, 128][..],
+    } {
+        rows.push(bench_trace_row(config, "large", "grad_sum_matmul", "primal", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 30));
+            let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 31));
+            Ok(vec![traced_tensor::matmul(&a, &b).reduce_sum(&[0, 1])])
+        }));
+        rows.push(bench_trace_row(config, "large", "grad_sum_matmul", "backward", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 32));
+            let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 33));
+            let loss = traced_tensor::matmul(&a, &b).reduce_sum(&[0, 1]);
+            Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
+        }));
+        rows.push(bench_trace_row(config, "large", "grad_sum_svd_s", "backward", "f64", &format!("{n}x{n}"), || {
+            let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 34));
+            let (_, s, _) = traced_tensor::svd(&a);
+            let loss = s.reduce_sum(&[0]);
+            Ok(vec![loss.grad(&a)?])
+        }));
+        rows.push(bench_trace_row(config, "large", "grad_sum_solve", "backward", "f64", &format!("{n}x{n},rhs=1"), || {
+            let a = traced_tensor(&[n, n], spd_matrix(n, 35));
+            let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 36));
+            let loss = traced_tensor::solve(&a, &b).reduce_sum(&[0, 1]);
+            Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
+        }));
+    }
+}
+
+fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
+    let batches: &[usize] = match config.profile {
+        Profile::Quick => &[16, 64],
+        Profile::Full => &[16, 64, 256, 1024],
+    };
+    let sizes: &[usize] = match config.profile {
+        Profile::Quick => &[2, 4],
+        Profile::Full => &[2, 4, 8, 16],
+    };
+
+    for &b in batches {
+        for &n in sizes {
+            let shape = format!("{n}x{n}xbatch{b} (rightmost batch)");
+            rows.push(bench_trace_row(config, "batched", "batched_matmul_ikb_kjb_ijb", "primal", "f64", &shape, || {
+                let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 41));
+                let rhs = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 42));
+                Ok(vec![a.dot_general(&rhs, batched_matmul_config())])
+            }));
+            rows.push(bench_trace_row(config, "batched", "batched_svd", "primal", "f64", &shape, || {
+                let a = traced_tensor(&[n, n, b], batched_well_conditioned(n, b, 43));
+                let (u, s, vh) = traced_tensor::svd(&a);
+                Ok(vec![u, s, vh])
+            }));
+            rows.push(bench_trace_row(config, "batched", "batched_qr", "primal", "f64", &shape, || {
+                let a = traced_tensor(&[n, n, b], batched_well_conditioned(n, b, 44));
+                let (q, r) = traced_tensor::qr(&a);
+                Ok(vec![q, r])
+            }));
+            rows.push(bench_trace_row(config, "batched", "batched_eigh", "primal", "f64", &shape, || {
+                let a = traced_tensor(&[n, n, b], batched_spd(n, b, 45));
+                let (w, v) = traced_tensor::eigh(&a);
+                Ok(vec![w, v])
+            }));
+            rows.push(bench_trace_row(config, "batched", "batched_solve", "primal", "f64", &format!("{shape},rhs=1"), || {
+                let a = traced_tensor(&[n, n, b], batched_spd(n, b, 46));
+                let rhs = traced_tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 47));
+                Ok(vec![traced_tensor::solve(&a, &rhs)])
+            }));
+            rows.push(bench_trace_row(config, "batched", "grad_sum_batched_matmul", "backward", "f64", &shape, || {
+                let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 48));
+                let rhs = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 49));
+                let loss = a.dot_general(&rhs, batched_matmul_config()).reduce_sum(&[0, 1, 2]);
+                Ok(vec![loss.grad(&a)?, loss.grad(&rhs)?])
+            }));
+            rows.push(bench_trace_row(config, "batched", "grad_sum_batched_solve", "backward", "f64", &format!("{shape},rhs=1"), || {
+                let a = traced_tensor(&[n, n, b], batched_spd(n, b, 50));
+                let rhs = traced_tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 51));
+                let loss = traced_tensor::solve(&a, &rhs).reduce_sum(&[0, 1, 2]);
+                Ok(vec![loss.grad(&a)?, loss.grad(&rhs)?])
+            }));
+        }
+    }
+}
+
 fn bench_row(
     config: &BenchConfig,
     suite: &'static str,
@@ -772,6 +997,7 @@ fn bench_row(
                 phase,
                 dtype,
                 shape: shape.to_string(),
+                backend: config.backend,
                 median_ms: Some(median),
                 iqr_ms: Some(iqr),
                 status: "ok".to_string(),
@@ -783,6 +1009,7 @@ fn bench_row(
             phase,
             dtype,
             shape: shape.to_string(),
+            backend: config.backend,
             median_ms: None,
             iqr_ms: None,
             status: format!("error: {err}"),
@@ -793,6 +1020,77 @@ fn bench_row(
             phase,
             dtype,
             shape: shape.to_string(),
+            backend: config.backend,
+            median_ms: None,
+            iqr_ms: None,
+            status: "panic".to_string(),
+        },
+    }
+}
+
+fn bench_trace_row(
+    config: &BenchConfig,
+    suite: &'static str,
+    op: &'static str,
+    phase: &'static str,
+    dtype: &'static str,
+    shape: &str,
+    mut build: impl FnMut() -> tenferro::error::Result<Vec<TracedTensor>>,
+) -> Row {
+    let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+        let outputs = build()?;
+        let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
+        let mut compiler = GraphCompiler::new();
+        let program = compiler.compile_many(&output_refs)?;
+        let mut executor = GraphExecutor::new(CpuBackend::new());
+
+        for _ in 0..config.warmups {
+            let out = executor.run_many(&program)?;
+            black_box(out.len());
+        }
+        let mut times = Vec::with_capacity(config.runs);
+        for _ in 0..config.runs {
+            let start = Instant::now();
+            let out = executor.run_many(&program)?;
+            black_box(out.len());
+            times.push(start.elapsed());
+        }
+        Ok::<_, tenferro::error::Error>(times)
+    }));
+
+    match result {
+        Ok(Ok(times)) => {
+            let (median, iqr) = median_iqr_ms(times);
+            Row {
+                suite,
+                op,
+                phase,
+                dtype,
+                shape: shape.to_string(),
+                backend: "tenferro-trace",
+                median_ms: Some(median),
+                iqr_ms: Some(iqr),
+                status: "ok".to_string(),
+            }
+        }
+        Ok(Err(err)) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape: shape.to_string(),
+            backend: "tenferro-trace",
+            median_ms: None,
+            iqr_ms: None,
+            status: format!("error: {err}"),
+        },
+        Err(_) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape: shape.to_string(),
+            backend: "tenferro-trace",
             median_ms: None,
             iqr_ms: None,
             status: "panic".to_string(),
@@ -806,6 +1104,10 @@ fn cpu_ctx() -> Arc<EagerRuntime> {
 
 fn tensor(shape: &[usize], data: Vec<f64>) -> Tensor {
     Tensor::F64(TypedTensor::from_vec_col_major(shape.to_vec(), data))
+}
+
+fn traced_tensor(shape: &[usize], data: Vec<f64>) -> TracedTensor {
+    TracedTensor::from_tensor_concrete_shape(tensor(shape, data))
 }
 
 fn data_for_shape(shape: &[usize], seed: u64) -> Vec<f64> {

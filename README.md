@@ -13,8 +13,8 @@ Detailed documentation was split out of this README:
 
 - [Setup and C++ LibTorch build](docs/setup-and-libtorch.md)
 - [Einsum benchmark usage and instances](docs/einsum-benchmarks.md)
-- [Latest einsum benchmark results](docs/results-einsum.md)
-- [Latest CPU benchmark results](docs/cpu-benchmark-results.md)
+- Latest generated einsum benchmark results: `result/results-einsum.md`
+- Latest generated CPU benchmark results: `result/cpu-benchmark-results.md`
 
 ## Quick Start
 
@@ -24,16 +24,61 @@ Prerequisites:
 - CMake 3.20+
 - Python 3.12+ and [uv](https://docs.astral.sh/uv/)
 - OpenBLAS
-- An OpenBLAS-linked LibTorch build for C++ Torch comparison
-- A local clone of [tenferro-rs](https://github.com/tensor4all/tenferro-rs) at `../tenferro-rs`
+- Repo-local external checkouts under `extern/`
 
 ```bash
 brew install openblas cmake
 export OPENBLAS_ROOT="$(brew --prefix openblas)"
 uv sync
+./scripts/setup_extern_deps.sh
 ```
 
-See [Setup and C++ LibTorch build](docs/setup-and-libtorch.md) for the full LibTorch/OpenBLAS build instructions.
+`scripts/setup_extern_deps.sh` prepares `extern/tenferro-rs` and an OpenBLAS-linked PyTorch/LibTorch checkout at `extern/pytorch-openblas`. `scripts/run_all.sh` sources it automatically before running benchmarks. See [Setup and C++ LibTorch build](docs/setup-and-libtorch.md) for the full LibTorch/OpenBLAS build instructions.
+
+To remove these repo-local external checkouts:
+
+```bash
+./scripts/clean_extern_deps.sh
+```
+
+## Torch C++ Benchmark Workflow
+
+Use this workflow when benchmark results must include the Torch C++ column.
+
+```bash
+export OPENBLAS_ROOT="$(brew --prefix openblas)"
+./scripts/setup_extern_deps.sh
+```
+
+Verify that LibTorch is linked to OpenBLAS before trusting Torch C++ numbers:
+
+```bash
+otool -L extern/pytorch-openblas/torch/lib/libtorch_cpu.dylib | rg -i openblas
+```
+
+Run a quick end-to-end smoke that exercises tenferro-rs, Torch C++, PyTorch Python, JAX Python, and PR884 CPU table generation. The CPU table measures tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python rows.
+
+```bash
+BENCH_INSTANCE=bin_matmul_256 \
+BENCH_RUNS=1 \
+BENCH_WARMUPS=0 \
+PUBLICATION_GATE_SUITE=small \
+  ./scripts/run_all.sh 1
+```
+
+For normal benchmark results:
+
+```bash
+./scripts/run_all.sh 1
+./scripts/run_all.sh 4
+```
+
+The generated reports should include the comparison columns:
+
+```bash
+rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
+  result/results-einsum.md result/cpu-benchmark-results.md
+```
 
 ## Human-Run Scripts
 
@@ -60,7 +105,7 @@ OPENBLAS_ROOT=/opt/homebrew/opt/openblas \
 
 ```bash
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-export Torch_DIR=/path/to/libtorch/share/cmake/Torch
+source ./scripts/setup_extern_deps.sh
 
 ./scripts/run_tenferro_libtorch.sh 1
 ```
@@ -69,38 +114,37 @@ Run one instance:
 
 ```bash
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-export Torch_DIR=/path/to/libtorch/share/cmake/Torch
+source ./scripts/setup_extern_deps.sh
 
 BENCH_INSTANCE=bin_matmul_256 ./scripts/run_tenferro_libtorch.sh 1
 ```
 
 ### Run the main benchmark suite
 
-This runs tenferro-rs trace/eager, optional strided-rs faer, C++ LibTorch, and JAX.
+This runs tenferro-rs trace/eager, optional strided-rs faer, C++ LibTorch, Python PyTorch, JAX, and the PR884 CPU benchmark items. PR884 CPU-op rows include measured tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python values.
 
 ```bash
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-export Torch_DIR=/path/to/libtorch/share/cmake/Torch
 
 ./scripts/run_all.sh 1
 ./scripts/run_all.sh 4
 ```
 
-Results are written to `data/results/`, summarized by `scripts/format_results.py`, and copied to:
+Raw logs and timestamped tables are written to `data/results/`, summarized by `scripts/format_results.py`, and copied to:
 
-- `docs/results-einsum.md`
-- `docs/cpu-benchmark-results.md`
+- `result/results-einsum.md`
+- `result/cpu-benchmark-results.md`
 
 ### Run PyTorch and JAX Python baselines manually
 
-`scripts/run_all.sh` currently runs JAX as the Python baseline. To include Python PyTorch in a four-backend comparison, run PyTorch manually and format the logs together:
+`scripts/run_all.sh` runs both Python baselines automatically. To run and format the backend logs manually:
 
 ```bash
 export BENCHMARK_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 export OMP_NUM_THREADS=1
 export RAYON_NUM_THREADS=1
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-export Torch_DIR=/path/to/libtorch/share/cmake/Torch
+source ./scripts/setup_extern_deps.sh
 
 ./scripts/run_all_rust.sh 1
 ./scripts/run_all_libtorch.sh 1
@@ -154,6 +198,8 @@ tenferro-einsum-benchmark/
     run_all_libtorch.sh
     run_all_python.sh
     run_publication_gate.sh
+    setup_extern_deps.sh
+    clean_extern_deps.sh
     benchmark_python.py
     generate_dataset.py
     format_results.py
