@@ -30,3 +30,14 @@ system-openblas = [
     "tenferro-ops/cpu-blas",
     "tenferro-tensor/cpu-blas",
 ]
+cuda = [
+    "tenferro/cuda",
+    "tenferro-einsum/cubecl",
+    "tenferro-ops/cubecl",
+    "tenferro-tensor/cubecl",
+    "tenferro-device/cuda",
+]
+
+[[bin]]
+name = "publication_gate"
+path = "src/bin/publication_gate.rs"
