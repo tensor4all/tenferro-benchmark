@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use tenferro::{DType, GraphCompiler, GraphProgram, TracedTensor};
+use tenferro_runtime::{DType, GraphCompiler, GraphProgram, TracedTensor};
 use tenferro_einsum::{einsum_subscripts_with, ContractionTree, EinsumOptimize, Subscripts};
 
 pub struct CompiledEinsum {

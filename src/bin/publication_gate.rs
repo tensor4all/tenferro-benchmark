@@ -6,14 +6,16 @@
 use std::env;
 use std::hint::black_box;
 use std::panic;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use std::time::{Duration, Instant};
 
-use tenferro::traced_tensor;
+use tenferro_ad::{AdContext, EagerRuntime, EagerTensor};
 use tenferro_einsum::eager_tensor as eager_einsum_tensor;
 use tenferro_linalg::eager_tensor as eager_linalg_tensor;
-use tenferro::{CpuBackend, DotGeneralConfig, EagerRuntime, EagerTensor, Tensor, TypedTensor};
-use tenferro::{GraphCompiler, GraphExecutor, TracedTensor};
+use tenferro_runtime::{
+    traced_tensor, CpuBackend, DotGeneralConfig, Error, GraphCompiler, GraphExecutor, Tensor,
+    TracedTensor, TypedTensor,
+};
 
 const DEFAULT_WARMUPS: usize = 3;
 
@@ -815,20 +817,20 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 9));
             let y = traced_tensor::matmul(&a, &b);
             let loss = y.reduce_sum(&[0, 1]);
-            Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
+            Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?])
         }));
         rows.push(bench_trace_row(config, "small", "grad_sum_svd_s", "backward", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 10));
             let (_, s, _) = tenferro_linalg::svd(&a);
             let loss = s.reduce_sum(&[0]);
-            Ok(vec![loss.grad(&a)?])
+            Ok(vec![grad(&loss, &a)?])
         }));
         rows.push(bench_trace_row(config, "small", "grad_sum_solve", "backward", "f64", &format!("{n}x{n},rhs=1"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 11));
             let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 12));
             let x = tenferro_linalg::solve(&a, &b);
             let loss = x.reduce_sum(&[0, 1]);
-            Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
+            Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?])
         }));
     }
 }
@@ -896,19 +898,19 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 32));
             let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 33));
             let loss = traced_tensor::matmul(&a, &b).reduce_sum(&[0, 1]);
-            Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
+            Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?])
         }));
         rows.push(bench_trace_row(config, "large", "grad_sum_svd_s", "backward", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 34));
             let (_, s, _) = tenferro_linalg::svd(&a);
             let loss = s.reduce_sum(&[0]);
-            Ok(vec![loss.grad(&a)?])
+            Ok(vec![grad(&loss, &a)?])
         }));
         rows.push(bench_trace_row(config, "large", "grad_sum_solve", "backward", "f64", &format!("{n}x{n},rhs=1"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 35));
             let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 36));
             let loss = tenferro_linalg::solve(&a, &b).reduce_sum(&[0, 1]);
-            Ok(vec![loss.grad(&a)?, loss.grad(&b)?])
+            Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?])
         }));
     }
 }
@@ -955,13 +957,13 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 48));
                 let rhs = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 49));
                 let loss = a.dot_general(&rhs, batched_matmul_config()).reduce_sum(&[0, 1, 2]);
-                Ok(vec![loss.grad(&a)?, loss.grad(&rhs)?])
+                Ok(vec![grad(&loss, &a)?, grad(&loss, &rhs)?])
             }));
             rows.push(bench_trace_row(config, "batched", "grad_sum_batched_solve", "backward", "f64", &format!("{shape},rhs=1"), || {
                 let a = traced_tensor(&[n, n, b], batched_spd(n, b, 50));
                 let rhs = traced_tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 51));
                 let loss = tenferro_linalg::solve(&a, &rhs).reduce_sum(&[0, 1, 2]);
-                Ok(vec![loss.grad(&a)?, loss.grad(&rhs)?])
+                Ok(vec![grad(&loss, &a)?, grad(&loss, &rhs)?])
             }));
         }
     }
@@ -974,7 +976,7 @@ fn bench_row(
     phase: &'static str,
     dtype: &'static str,
     shape: &str,
-    mut f: impl FnMut() -> tenferro::error::Result<()>,
+    mut f: impl FnMut() -> tenferro_ad::error::Result<()>,
 ) -> Row {
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         for _ in 0..config.warmups {
@@ -986,7 +988,7 @@ fn bench_row(
             f()?;
             times.push(start.elapsed());
         }
-        Ok::<_, tenferro::error::Error>(times)
+        Ok::<_, Error>(times)
     }));
 
     match result {
@@ -1036,7 +1038,7 @@ fn bench_trace_row(
     phase: &'static str,
     dtype: &'static str,
     shape: &str,
-    mut build: impl FnMut() -> tenferro::error::Result<Vec<TracedTensor>>,
+    mut build: impl FnMut() -> tenferro_ad::error::Result<Vec<TracedTensor>>,
 ) -> Row {
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         let outputs = build()?;
@@ -1046,10 +1048,10 @@ fn bench_trace_row(
         let mut executor = GraphExecutor::new(CpuBackend::new());
         executor
             .register_extension(tenferro_einsum::register_runtime)
-            .map_err(|err| tenferro::error::Error::Internal(err.to_string()))?;
+            .map_err(|err| Error::Internal(err.to_string()))?;
         executor
             .register_extension(tenferro_linalg::register_runtime)
-            .map_err(|err| tenferro::error::Error::Internal(err.to_string()))?;
+            .map_err(|err| Error::Internal(err.to_string()))?;
 
         for _ in 0..config.warmups {
             let out = executor.run_many(&program)?;
@@ -1062,7 +1064,7 @@ fn bench_trace_row(
             black_box(out.len());
             times.push(start.elapsed());
         }
-        Ok::<_, tenferro::error::Error>(times)
+        Ok::<_, Error>(times)
     }));
 
     match result {
@@ -1106,7 +1108,24 @@ fn bench_trace_row(
 }
 
 fn cpu_ctx() -> Arc<EagerRuntime> {
-    EagerRuntime::with_cpu_backend(CpuBackend::new())
+    EagerRuntime::with_cpu_backend_and_ad_context(CpuBackend::new(), ad_context())
+}
+
+fn ad_context() -> &'static AdContext {
+    static AD_CONTEXT: OnceLock<AdContext> = OnceLock::new();
+    AD_CONTEXT.get_or_init(|| {
+        AdContext::builder()
+            .with_core_rules()
+            .with_extension_rules(
+                tenferro_linalg::ad_rules().expect("tenferro-linalg AD rules should register"),
+            )
+            .build()
+            .expect("tenferro AD context should build")
+    })
+}
+
+fn grad(output: &TracedTensor, wrt: &TracedTensor) -> tenferro_ad::error::Result<TracedTensor> {
+    ad_context().grad(output, wrt)
 }
 
 fn tensor(shape: &[usize], data: Vec<f64>) -> Tensor {

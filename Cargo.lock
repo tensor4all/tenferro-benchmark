@@ -18,6 +18,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
+name = "ahash"
+version = "0.8.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a15f179cd60c4584b8a8c596927aadc462e27f2ca70c04e0071964a73ba7a75"
+dependencies = [
+ "cfg-if",
+ "once_cell",
+ "version_check",
+ "zerocopy",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -486,8 +498,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "cubecl-core",
  "cubecl-cpu",
@@ -502,8 +514,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-common"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "backtrace",
  "bytemuck",
@@ -532,6 +544,7 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "spin",
+ "toml",
  "tynm",
  "wasm-bindgen-futures",
  "web-time",
@@ -540,8 +553,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-core"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -567,8 +580,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-cpp"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "bytemuck",
  "cubecl-common",
@@ -583,8 +596,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-cpu"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "bytemuck",
  "cubecl-common",
@@ -604,8 +617,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-cuda"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "bytemuck",
  "cubecl-common",
@@ -621,8 +634,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-hip"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "bytemuck",
  "cubecl-common",
@@ -649,8 +662,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-ir"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "cubecl-common",
  "cubecl-macros-internal",
@@ -671,8 +684,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-macros"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "cubecl-common",
  "darling 0.23.0",
@@ -687,8 +700,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-macros-internal"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "darling 0.23.0",
  "proc-macro2",
@@ -698,8 +711,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-opt"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "cubecl-common",
  "cubecl-core",
@@ -715,9 +728,10 @@ dependencies = [
 
 [[package]]
 name = "cubecl-runtime"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
+ "ahash",
  "async-channel",
  "bytemuck",
  "cfg-if",
@@ -737,15 +751,14 @@ dependencies = [
  "spin",
  "thiserror 2.0.18",
  "toml",
- "variadics_please",
  "wasm-bindgen-futures",
  "web-time",
 ]
 
 [[package]]
 name = "cubecl-std"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "cubecl-common",
  "cubecl-core",
@@ -760,8 +773,8 @@ dependencies = [
 
 [[package]]
 name = "cubecl-wgpu"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "async-channel",
  "bytemuck",
@@ -777,13 +790,14 @@ dependencies = [
  "hashbrown 0.16.1",
  "log",
  "sanitize-filename",
+ "wasm-bindgen-futures",
  "wgpu",
 ]
 
 [[package]]
 name = "cubecl-zspace"
-version = "0.10.0-pre.3"
-source = "git+https://github.com/shinaoka/cubecl.git?rev=929c8a96#929c8a969021c08dddce6ad4643181fc47260e32"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
 dependencies = [
  "derive-new",
  "serde",
@@ -3674,7 +3688,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tenferro"
+name = "tenferro-ad"
 version = "0.1.0"
 dependencies = [
  "chainrules",
@@ -3682,22 +3696,12 @@ dependencies = [
  "lru",
  "num-complex",
  "num-traits",
- "tenferro-ops",
+ "tenferro-gpu",
+ "tenferro-internal-ops",
  "tenferro-runtime",
  "tenferro-tensor",
  "thiserror 2.0.18",
  "tidu",
-]
-
-[[package]]
-name = "tenferro-device"
-version = "0.1.0"
-dependencies = [
- "cudarc",
- "mt19937",
- "num-complex",
- "rand_core 0.10.1",
- "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -3708,9 +3712,10 @@ dependencies = [
  "computegraph",
  "lru",
  "omeco",
- "tenferro",
- "tenferro-device",
- "tenferro-ops",
+ "tenferro-ad",
+ "tenferro-internal-device",
+ "tenferro-internal-ops",
+ "tenferro-runtime",
  "tenferro-tensor",
 ]
 
@@ -3722,16 +3727,40 @@ dependencies = [
  "num-complex",
  "serde",
  "serde_json",
- "tenferro",
- "tenferro-device",
+ "tenferro-ad",
  "tenferro-einsum",
  "tenferro-linalg",
- "tenferro-ops",
+ "tenferro-runtime",
  "tenferro-tensor",
 ]
 
 [[package]]
-name = "tenferro-extension-macros"
+name = "tenferro-gpu"
+version = "0.1.0"
+dependencies = [
+ "cubecl",
+ "cubecl-cuda",
+ "cubecl-runtime",
+ "cudarc",
+ "libloading 0.8.9",
+ "num-complex",
+ "num-traits",
+ "tenferro-tensor",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "tenferro-internal-device"
+version = "0.1.0"
+dependencies = [
+ "mt19937",
+ "num-complex",
+ "rand_core 0.10.1",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "tenferro-internal-extension-macros"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
@@ -3740,11 +3769,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "tenferro-gpubackend"
+name = "tenferro-internal-ops"
 version = "0.1.0"
 dependencies = [
- "cubecl",
+ "chainrules",
+ "computegraph",
  "num-complex",
+ "tenferro-internal-extension-macros",
+ "tenferro-tensor",
  "thiserror 2.0.18",
 ]
 
@@ -3755,29 +3787,21 @@ dependencies = [
  "chainrules",
  "computegraph",
  "num-complex",
- "tenferro",
- "tenferro-ops",
+ "tenferro-ad",
+ "tenferro-internal-ops",
+ "tenferro-runtime",
  "tenferro-tensor",
-]
-
-[[package]]
-name = "tenferro-ops"
-version = "0.1.0"
-dependencies = [
- "chainrules",
- "computegraph",
- "num-complex",
- "tenferro-extension-macros",
- "tenferro-tensor",
- "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "tenferro-runtime"
 version = "0.1.0"
 dependencies = [
+ "computegraph",
  "lru",
- "tenferro-ops",
+ "num-complex",
+ "num-traits",
+ "tenferro-internal-ops",
  "tenferro-tensor",
  "thiserror 2.0.18",
 ]
@@ -3787,10 +3811,6 @@ name = "tenferro-tensor"
 version = "0.1.0"
 dependencies = [
  "cblas-sys",
- "cubecl",
- "cubecl-cuda",
- "cubecl-runtime",
- "cudarc",
  "faer",
  "lapack",
  "libloading 0.8.9",
@@ -3800,7 +3820,6 @@ dependencies = [
  "rayon",
  "smallvec",
  "strided-kernel",
- "tenferro-gpubackend",
  "thiserror 2.0.18",
 ]
 
