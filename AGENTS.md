@@ -1,5 +1,62 @@
 # Agent Workflow
 
+## Host CPU Contention
+
+Before running benchmarks, check whether the host is busy. If other long-running
+jobs are consuming CPU, choose idle CPU cores and pin benchmark commands to
+those cores so the run does not contend with already-busy cores.
+
+For host runs:
+
+```bash
+taskset -c <idle-core-list> ./scripts/run_all.sh 1
+taskset -c <idle-core-list> ./scripts/run_all.sh 4
+```
+
+For devcontainer runs, apply the pinning inside the container command:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc \
+  'taskset -c <idle-core-list> ./scripts/run_all.sh 1'
+```
+
+## Benchmark Report Policy
+
+Treat benchmark reports as provenance-bearing run artifacts, not as a single
+mutable "latest result" file.
+
+- Do not commit performance results from a busy or otherwise contended host.
+  Busy-host runs are useful for smoke validation only; keep their details in
+  the work log or untracked notes.
+- Publishable benchmark reports must record the environment that produced the
+  numbers, including:
+  - timestamp and exact command line;
+  - host vs devcontainer execution mode;
+  - OS/kernel, CPU model, online CPU count, and thread count;
+  - pinned CPU core list, if `taskset` or another affinity mechanism was used;
+  - host load/CPU contention observations before the run;
+  - `OPENBLAS_ROOT`, `PYTORCH_OPENBLAS_DIR` or `Torch_DIR`, and LibTorch
+    OpenBLAS linkage verification;
+  - Rust, Python/uv, CMake, PyTorch, and JAX versions when those backends are
+    included;
+  - benchmark repository commit and dirty status;
+  - `tenferro-rs` commit hash used by `extern/tenferro-rs`.
+- Do not overwrite an existing committed benchmark report when publishing new
+  results. Add new report files for each publishable run using a date plus
+  per-day sequence suffix, for example:
+  - `result/einsum-results-YYYYMMDD-01.md`
+  - `result/cpu-benchmark-results-YYYYMMDD-01.md`
+  Pick the next sequence number by checking existing reports for that date. If
+  an aggregate or index file is needed, keep it separate from immutable run
+  reports and make clear that it is only an index.
+- If the current scripts overwrite `result/einsum-results.md` or
+  `result/cpu-benchmark-results.md` during a smoke run, do not commit those
+  overwritten files as benchmark evidence. Preserve publishable results as new
+  timestamped files.
+- When the user explicitly asks to publish benchmark results, add provenance to
+  the new dated reports, commit only those new reports and intentional metadata
+  changes, and push only after the user asks for publish or push.
+
 ## Devcontainer Benchmark Workflow
 
 Use this workflow when validating that benchmarks can run inside the Linux
