@@ -150,16 +150,71 @@
       },
       "allOf": [
         {
+          "if": { "properties": { "family": { "const": "dense" } } },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "matmul",
+                  "batched_matmul",
+                  "qr",
+                  "solve",
+                  "svd",
+                  "eigh"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "family": { "const": "einsum" } } },
+          "then": { "properties": { "op": { "const": "einsum" } } }
+        },
+        {
+          "if": { "properties": { "family": { "const": "sparse" } } },
+          "then": { "properties": { "op": { "enum": ["spmv", "spmm"] } } }
+        },
+        {
           "if": { "properties": { "op": { "const": "matmul" } } },
-          "then": { "required": ["matmul"] }
+          "then": {
+            "required": ["matmul"],
+            "not": {
+              "anyOf": [
+                { "required": ["batched_matmul"] },
+                { "required": ["einsum"] },
+                { "required": ["linalg"] },
+                { "required": ["sparse"] }
+              ]
+            }
+          }
         },
         {
           "if": { "properties": { "op": { "const": "batched_matmul" } } },
-          "then": { "required": ["batched_matmul"] }
+          "then": {
+            "required": ["batched_matmul"],
+            "not": {
+              "anyOf": [
+                { "required": ["matmul"] },
+                { "required": ["einsum"] },
+                { "required": ["linalg"] },
+                { "required": ["sparse"] }
+              ]
+            }
+          }
         },
         {
           "if": { "properties": { "op": { "const": "einsum" } } },
-          "then": { "required": ["einsum"] }
+          "then": {
+            "required": ["einsum"],
+            "not": {
+              "anyOf": [
+                { "required": ["matmul"] },
+                { "required": ["batched_matmul"] },
+                { "required": ["linalg"] },
+                { "required": ["sparse"] }
+              ]
+            }
+          }
         },
         {
           "if": {
@@ -167,7 +222,17 @@
               "op": { "enum": ["qr", "solve", "svd", "eigh"] }
             }
           },
-          "then": { "required": ["linalg"] }
+          "then": {
+            "required": ["linalg"],
+            "not": {
+              "anyOf": [
+                { "required": ["matmul"] },
+                { "required": ["batched_matmul"] },
+                { "required": ["einsum"] },
+                { "required": ["sparse"] }
+              ]
+            }
+          }
         },
         {
           "if": { "properties": { "op": { "enum": ["qr", "svd"] } } },
@@ -195,7 +260,17 @@
         },
         {
           "if": { "properties": { "op": { "enum": ["spmv", "spmm"] } } },
-          "then": { "required": ["sparse"] }
+          "then": {
+            "required": ["sparse"],
+            "not": {
+              "anyOf": [
+                { "required": ["matmul"] },
+                { "required": ["batched_matmul"] },
+                { "required": ["einsum"] },
+                { "required": ["linalg"] }
+              ]
+            }
+          }
         },
         {
           "if": { "properties": { "op": { "const": "spmm" } } },

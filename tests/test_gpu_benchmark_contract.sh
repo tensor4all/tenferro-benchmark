@@ -43,6 +43,14 @@ if uv run python scripts/validate_benchmark_suite.py --kind result "$TMP/bad_ok_
   exit 1
 fi
 
+cat > "$TMP/bad_verification_failed_result.jsonl" <<'JSON'
+{"schema_version":1,"suite_id":"gpu_bad","problem_id":"bad_verification","op":"matmul","backend":"pytorch-cuda","status":"verification_failed","timing":{"warmup_runs":0,"timed_runs":1,"compile_time_ms":null,"first_run_ms":1.0,"median_ms":1.0,"min_ms":1.0,"p95_ms":1.0,"iqr_ms":0.0,"timing_scope":"steady_state_host_api_plus_device_sync"},"verification":{"status":"passed","reference_backend":"cpu_fp64","rtol":1.0e-8,"atol":1.0e-10},"environment":{"timestamp_utc":"1999-01-01T00:00:00+00:00"},"execution":{"device":"cuda","device_ordinal":0,"execution_path":"contract-test","synchronization":"none","layout":"{}","dtype":"{}"}}
+JSON
+if uv run python scripts/validate_benchmark_suite.py --kind result "$TMP/bad_verification_failed_result.jsonl" >/dev/null 2>&1; then
+  echo "verification_failed result with passed verification unexpectedly passed validation" >&2
+  exit 1
+fi
+
 cat > "$TMP/duplicate_problem_ids.yaml" <<'YAML'
 schema_version: 1
 suite_id: duplicate_problem_ids
@@ -69,6 +77,47 @@ problems:
 YAML
 if uv run python scripts/validate_benchmark_suite.py "$TMP/duplicate_problem_ids.yaml" >/dev/null 2>&1; then
   echo "duplicate problem IDs unexpectedly passed validation" >&2
+  exit 1
+fi
+
+cat > "$TMP/bad_family_op.yaml" <<'YAML'
+schema_version: 1
+suite_id: bad_family_op
+description: family/op mismatch should fail validation
+problems:
+  - id: dense_sparse_mismatch
+    family: dense
+    op: spmv
+    dtype: {values: f64, x: f64, y: f64}
+    data: {generator: suitesparse, seed: 0}
+    run: {warmups: 0, runs: 1}
+    verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+    backend_candidates: [cusparse]
+    sparse: {source: suitesparse, storage: csr, rows: 1, cols: 1, nnz: 1}
+YAML
+if uv run python scripts/validate_benchmark_suite.py "$TMP/bad_family_op.yaml" >/dev/null 2>&1; then
+  echo "family/op mismatch unexpectedly passed validation" >&2
+  exit 1
+fi
+
+cat > "$TMP/bad_extra_op_block.yaml" <<'YAML'
+schema_version: 1
+suite_id: bad_extra_op_block
+description: unrelated op block should fail validation
+problems:
+  - id: matmul_with_sparse
+    family: dense
+    op: matmul
+    dtype: {a: f64, b: f64, c: f64}
+    data: {generator: normal, seed: 1}
+    run: {warmups: 0, runs: 1}
+    verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+    backend_candidates: [pytorch-cuda]
+    matmul: {m: 1, n: 1, k: 1}
+    sparse: {source: suitesparse, storage: csr, rows: 1, cols: 1, nnz: 1}
+YAML
+if uv run python scripts/validate_benchmark_suite.py "$TMP/bad_extra_op_block.yaml" >/dev/null 2>&1; then
+  echo "unrelated op block unexpectedly passed validation" >&2
   exit 1
 fi
 

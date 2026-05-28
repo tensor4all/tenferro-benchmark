@@ -174,6 +174,55 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "verification_failed" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "verification": {
+            "properties": {
+              "status": { "const": "failed" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": ["unsupported", "not_configured", "compile_failed", "runtime_failed", "oom"]
+          }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "verification": {
+            "properties": {
+              "status": { "enum": ["skipped", "not_applicable"] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "cpu_fallback" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "verification": {
+            "properties": {
+              "status": { "enum": ["failed", "skipped", "not_applicable"] }
+            }
+          }
+        }
+      }
     }
   ]
 }
