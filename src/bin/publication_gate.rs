@@ -792,24 +792,24 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
         }));
         rows.push(bench_trace_row(config, "small", "svd", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 3));
-            let (u, s, vh) = tenferro_linalg::svd(&a);
+            let (u, s, vh) = tenferro_linalg::svd(&a)?;
             Ok(vec![u, s, vh])
         }));
         rows.push(bench_trace_row(config, "small", "qr", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 4));
-            let (q, r) = tenferro_linalg::qr(&a);
+            let (q, r) = tenferro_linalg::qr(&a)?;
             Ok(vec![q, r])
         }));
         rows.push(bench_trace_row(config, "small", "eigh", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 5));
-            let (w, v) = tenferro_linalg::eigh(&a);
+            let (w, v) = tenferro_linalg::eigh(&a)?;
             Ok(vec![w, v])
         }));
         for &rhs_cols in &[1, 4] {
             rows.push(bench_trace_row(config, "small", "solve", "primal", "f64", &format!("{n}x{n},rhs={rhs_cols}"), || {
                 let a = traced_tensor(&[n, n], spd_matrix(n, 6));
                 let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 7));
-                Ok(vec![tenferro_linalg::solve(&a, &b)])
+                Ok(vec![tenferro_linalg::solve(&a, &b)?])
             }));
         }
         rows.push(bench_trace_row(config, "small", "grad_sum_matmul", "backward", "f64", &format!("{n}x{n}"), || {
@@ -821,14 +821,14 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
         }));
         rows.push(bench_trace_row(config, "small", "grad_sum_svd_s", "backward", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 10));
-            let (_, s, _) = tenferro_linalg::svd(&a);
+            let (_, s, _) = tenferro_linalg::svd(&a)?;
             let loss = s.reduce_sum(&[0]);
             Ok(vec![grad(&loss, &a)?])
         }));
         rows.push(bench_trace_row(config, "small", "grad_sum_solve", "backward", "f64", &format!("{n}x{n},rhs=1"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 11));
             let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 12));
-            let x = tenferro_linalg::solve(&a, &b);
+            let x = tenferro_linalg::solve(&a, &b)?;
             let loss = x.reduce_sum(&[0, 1]);
             Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?])
         }));
@@ -864,24 +864,24 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
     for &n in linalg_sizes {
         rows.push(bench_trace_row(config, "large", "svd", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 25));
-            let (u, s, vh) = tenferro_linalg::svd(&a);
+            let (u, s, vh) = tenferro_linalg::svd(&a)?;
             Ok(vec![u, s, vh])
         }));
         rows.push(bench_trace_row(config, "large", "qr", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 26));
-            let (q, r) = tenferro_linalg::qr(&a);
+            let (q, r) = tenferro_linalg::qr(&a)?;
             Ok(vec![q, r])
         }));
         rows.push(bench_trace_row(config, "large", "eigh", "primal", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 27));
-            let (w, v) = tenferro_linalg::eigh(&a);
+            let (w, v) = tenferro_linalg::eigh(&a)?;
             Ok(vec![w, v])
         }));
         for &rhs_cols in &[1, 16, 64] {
             rows.push(bench_trace_row(config, "large", "solve", "primal", "f64", &format!("{n}x{n},rhs={rhs_cols}"), || {
                 let a = traced_tensor(&[n, n], spd_matrix(n, 28));
                 let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], 29));
-                Ok(vec![tenferro_linalg::solve(&a, &b)])
+                Ok(vec![tenferro_linalg::solve(&a, &b)?])
             }));
         }
     }
@@ -902,14 +902,14 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
         }));
         rows.push(bench_trace_row(config, "large", "grad_sum_svd_s", "backward", "f64", &format!("{n}x{n}"), || {
             let a = traced_tensor(&[n, n], well_conditioned_matrix(n, 34));
-            let (_, s, _) = tenferro_linalg::svd(&a);
+            let (_, s, _) = tenferro_linalg::svd(&a)?;
             let loss = s.reduce_sum(&[0]);
             Ok(vec![grad(&loss, &a)?])
         }));
         rows.push(bench_trace_row(config, "large", "grad_sum_solve", "backward", "f64", &format!("{n}x{n},rhs=1"), || {
             let a = traced_tensor(&[n, n], spd_matrix(n, 35));
             let b = traced_tensor(&[n, 1], data_for_shape(&[n, 1], 36));
-            let loss = tenferro_linalg::solve(&a, &b).reduce_sum(&[0, 1]);
+            let loss = tenferro_linalg::solve(&a, &b)?.reduce_sum(&[0, 1]);
             Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?])
         }));
     }
@@ -935,23 +935,23 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             }));
             rows.push(bench_trace_row(config, "batched", "batched_svd", "primal", "f64", &shape, || {
                 let a = traced_tensor(&[n, n, b], batched_well_conditioned(n, b, 43));
-                let (u, s, vh) = tenferro_linalg::svd(&a);
+                let (u, s, vh) = tenferro_linalg::svd(&a)?;
                 Ok(vec![u, s, vh])
             }));
             rows.push(bench_trace_row(config, "batched", "batched_qr", "primal", "f64", &shape, || {
                 let a = traced_tensor(&[n, n, b], batched_well_conditioned(n, b, 44));
-                let (q, r) = tenferro_linalg::qr(&a);
+                let (q, r) = tenferro_linalg::qr(&a)?;
                 Ok(vec![q, r])
             }));
             rows.push(bench_trace_row(config, "batched", "batched_eigh", "primal", "f64", &shape, || {
                 let a = traced_tensor(&[n, n, b], batched_spd(n, b, 45));
-                let (w, v) = tenferro_linalg::eigh(&a);
+                let (w, v) = tenferro_linalg::eigh(&a)?;
                 Ok(vec![w, v])
             }));
             rows.push(bench_trace_row(config, "batched", "batched_solve", "primal", "f64", &format!("{shape},rhs=1"), || {
                 let a = traced_tensor(&[n, n, b], batched_spd(n, b, 46));
                 let rhs = traced_tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 47));
-                Ok(vec![tenferro_linalg::solve(&a, &rhs)])
+                Ok(vec![tenferro_linalg::solve(&a, &rhs)?])
             }));
             rows.push(bench_trace_row(config, "batched", "grad_sum_batched_matmul", "backward", "f64", &shape, || {
                 let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 48));
@@ -962,7 +962,7 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
             rows.push(bench_trace_row(config, "batched", "grad_sum_batched_solve", "backward", "f64", &format!("{shape},rhs=1"), || {
                 let a = traced_tensor(&[n, n, b], batched_spd(n, b, 50));
                 let rhs = traced_tensor(&[n, 1, b], data_for_shape(&[n, 1, b], 51));
-                let loss = tenferro_linalg::solve(&a, &rhs).reduce_sum(&[0, 1, 2]);
+                let loss = tenferro_linalg::solve(&a, &rhs)?.reduce_sum(&[0, 1, 2]);
                 Ok(vec![grad(&loss, &a)?, grad(&loss, &rhs)?])
             }));
         }
