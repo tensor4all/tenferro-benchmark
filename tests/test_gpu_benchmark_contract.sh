@@ -8,20 +8,24 @@ JSONL="data/results/gpu_contract_19990101_000000.jsonl"
 MARKDOWN="data/results/gpu_results_19990101_000000.md"
 REPORT="result/gpu-benchmark-results.md"
 TMP="$(mktemp -d)"
-HAD_REPORT=0
+ARTIFACTS=("$JSONL" "$MARKDOWN" "$REPORT")
 
-if [[ -e "$REPORT" ]]; then
-  HAD_REPORT=1
-  cp "$REPORT" "$TMP/gpu-benchmark-results.md"
-fi
+mkdir -p "$TMP/originals"
+for artifact in "${ARTIFACTS[@]}"; do
+  if [[ -e "$artifact" ]]; then
+    mkdir -p "$TMP/originals/$(dirname "$artifact")"
+    cp "$artifact" "$TMP/originals/$artifact"
+  fi
+done
 
 cleanup() {
-  rm -f "$JSONL" "$MARKDOWN"
-  if [[ "$HAD_REPORT" -eq 1 ]]; then
-    cp "$TMP/gpu-benchmark-results.md" "$REPORT"
-  else
-    rm -f "$REPORT"
-  fi
+  for artifact in "${ARTIFACTS[@]}"; do
+    if [[ -e "$TMP/originals/$artifact" ]]; then
+      cp "$TMP/originals/$artifact" "$artifact"
+    else
+      rm -f "$artifact"
+    fi
+  done
   rm -rf "$TMP"
 }
 trap cleanup EXIT
