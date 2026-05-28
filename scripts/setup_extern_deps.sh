@@ -128,7 +128,7 @@ ensure_pytorch_openblas_build() {
         export USE_XNNPACK="${USE_XNNPACK:-0}"
         export USE_FBGEMM="${USE_FBGEMM:-0}"
         export BUILD_TEST="${BUILD_TEST:-0}"
-        export MAX_JOBS="${MAX_JOBS:-8}"
+        export MAX_JOBS="${MAX_JOBS:-$(nproc)}"
         "$PYTORCH_VENV/bin/python" -m pip install --no-build-isolation -v -e .
     )
 
