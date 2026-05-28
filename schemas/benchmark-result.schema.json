@@ -109,7 +109,7 @@
       "additionalProperties": true,
       "properties": {
         "hostname": { "type": ["string", "null"] },
-        "timestamp_utc": { "type": "string", "minLength": 1 },
+        "timestamp_utc": { "type": "string", "format": "date-time", "minLength": 1 },
         "os": { "type": ["string", "null"] },
         "gpu_name": { "type": ["string", "null"] },
         "gpu_uuid": { "type": ["string", "null"] },
@@ -148,5 +148,32 @@
         "unsupported_reason": { "type": ["string", "null"] }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "ok" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "timing": {
+            "properties": {
+              "timed_runs": { "type": "integer", "minimum": 1 },
+              "first_run_ms": { "type": "number", "minimum": 0 },
+              "median_ms": { "type": "number", "minimum": 0 },
+              "min_ms": { "type": "number", "minimum": 0 },
+              "p95_ms": { "type": "number", "minimum": 0 },
+              "iqr_ms": { "type": "number", "minimum": 0 }
+            }
+          },
+          "verification": {
+            "properties": {
+              "status": { "const": "passed" }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

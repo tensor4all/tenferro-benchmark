@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -62,7 +63,7 @@ def format_cell(record: dict[str, Any] | None) -> str:
     if status == "ok":
         median = record["timing"]["median_ms"]
         if median is None:
-            return "ok"
+            return "ok (missing median)"
         return f"{median:.3f}"
     if status == "not_configured":
         return "not configured"
@@ -73,14 +74,21 @@ def format_cell(record: dict[str, Any] | None) -> str:
     return status.replace("_", " ")
 
 
-def timestamp_utc(record: dict[str, Any]) -> str | None:
+def markdown_cell(value: object) -> str:
+    return str(value).replace("\\", "\\\\").replace("|", "\\|")
+
+
+def timestamp_utc(record: dict[str, Any]) -> datetime | None:
     environment = record.get("environment")
     if not isinstance(environment, dict):
         return None
     timestamp = environment.get("timestamp_utc")
     if not isinstance(timestamp, str) or not timestamp:
         return None
-    return timestamp
+    try:
+        return datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+    except ValueError:
+        return None
 
 
 def choose_duplicate_record(existing: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
@@ -91,6 +99,10 @@ def choose_duplicate_record(existing: dict[str, Any], candidate: dict[str, Any])
             return candidate
         if candidate_timestamp < existing_timestamp:
             return existing
+    elif existing_timestamp is not None:
+        return existing
+    elif candidate_timestamp is not None:
+        return candidate
     return candidate
 
 
@@ -109,9 +121,9 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
     lines.append("")
 
     for (suite_id, op), group in sorted(by_suite_op.items()):
-        lines.append(f"## {suite_id} / {op}")
+        lines.append(f"## {markdown_cell(suite_id)} / {markdown_cell(op)}")
         lines.append("")
-        header = "| Problem | " + " | ".join(BACKEND_LABELS.get(b, b) for b in backends) + " |"
+        header = "| Problem | " + " | ".join(markdown_cell(BACKEND_LABELS.get(b, b)) for b in backends) + " |"
         separator = "|---|" + "|".join("---:" for _ in backends) + "|"
         lines.append(header)
         lines.append(separator)
@@ -126,9 +138,9 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
                 by_problem_backend[key] = record
 
         for problem_id in problem_ids:
-            row = [problem_id]
+            row = [markdown_cell(problem_id)]
             for backend in backends:
-                row.append(format_cell(by_problem_backend.get((problem_id, backend))))
+                row.append(markdown_cell(format_cell(by_problem_backend.get((problem_id, backend)))))
             lines.append("| " + " | ".join(row) + " |")
         lines.append("")
 

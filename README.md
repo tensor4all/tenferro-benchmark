@@ -117,9 +117,10 @@ a GPU:
 bash scripts/run_gpu_suite.sh
 ```
 
-The smoke path emits structured `not_configured` records instead of measuring
-kernels. This keeps schema and formatter tests runnable on CPU-only machines.
-Measured CUDA runners are outside this Phase 1 plan and require separate follow-up implementation plans.
+The smoke path emits structured `not_configured` and `unsupported` records
+instead of measuring kernels. This keeps schema and formatter tests runnable on
+CPU-only machines. Measured CUDA runners are outside this Phase 1 plan and
+require separate follow-up implementation plans.
 
 Validate suites and generated JSONL records manually:
 

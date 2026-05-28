@@ -170,8 +170,40 @@
           "then": { "required": ["linalg"] }
         },
         {
+          "if": { "properties": { "op": { "enum": ["qr", "svd"] } } },
+          "then": {
+            "properties": {
+              "linalg": { "required": ["m", "n"] }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "const": "solve" } } },
+          "then": {
+            "properties": {
+              "linalg": { "required": ["n", "rhs_cols"] }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "const": "eigh" } } },
+          "then": {
+            "properties": {
+              "linalg": { "required": ["n"] }
+            }
+          }
+        },
+        {
           "if": { "properties": { "op": { "enum": ["spmv", "spmm"] } } },
           "then": { "required": ["sparse"] }
+        },
+        {
+          "if": { "properties": { "op": { "const": "spmm" } } },
+          "then": {
+            "properties": {
+              "sparse": { "required": ["rhs_cols"] }
+            }
+          }
         }
       ]
     },
