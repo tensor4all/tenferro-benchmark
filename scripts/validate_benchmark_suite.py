@@ -11,24 +11,44 @@ from typing import Any
 
 import yaml
 from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 SUITE_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-suite.schema.json"
 RESULT_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-result.schema.json"
 
 
+class ValidationLoadError(Exception):
+    """Raised when an input or schema file cannot be loaded."""
+
+
 def load_json(path: Path) -> Any:
-    with path.open() as fh:
-        return json.load(fh)
+    try:
+        with path.open() as fh:
+            return json.load(fh)
+    except OSError as exc:
+        raise ValidationLoadError(f"{path}: failed to read JSON: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        raise ValidationLoadError(f"{path}: invalid JSON: {exc}") from exc
 
 
 def load_yaml(path: Path) -> Any:
-    with path.open() as fh:
-        return yaml.safe_load(fh)
+    try:
+        with path.open() as fh:
+            return yaml.safe_load(fh)
+    except OSError as exc:
+        raise ValidationLoadError(f"{path}: failed to read YAML: {exc}") from exc
+    except yaml.YAMLError as exc:
+        raise ValidationLoadError(f"{path}: invalid YAML: {exc}") from exc
 
 
 def validator_for(schema_path: Path) -> Draft202012Validator:
-    return Draft202012Validator(load_json(schema_path))
+    schema = load_json(schema_path)
+    try:
+        Draft202012Validator.check_schema(schema)
+    except SchemaError as exc:
+        raise ValidationLoadError(f"{schema_path}: invalid JSON schema: {exc.message}") from exc
+    return Draft202012Validator(schema)
 
 
 def print_errors(path: Path, errors: list[Any]) -> None:
@@ -47,13 +67,29 @@ def validate_object(path: Path, obj: Any, validator: Draft202012Validator) -> bo
 
 
 def validate_suite(path: Path) -> bool:
-    return validate_object(path, load_yaml(path), validator_for(SUITE_SCHEMA))
+    try:
+        validator = validator_for(SUITE_SCHEMA)
+        suite = load_yaml(path)
+    except ValidationLoadError as exc:
+        print(exc, file=sys.stderr)
+        return False
+    return validate_object(path, suite, validator)
 
 
 def validate_results(path: Path) -> bool:
-    validator = validator_for(RESULT_SCHEMA)
+    try:
+        validator = validator_for(RESULT_SCHEMA)
+    except ValidationLoadError as exc:
+        print(exc, file=sys.stderr)
+        return False
     ok = True
-    with path.open() as fh:
+    records = 0
+    try:
+        fh = path.open()
+    except OSError as exc:
+        print(f"{path}: failed to read JSONL: {exc}", file=sys.stderr)
+        return False
+    with fh:
         for line_no, line in enumerate(fh, start=1):
             stripped = line.strip()
             if not stripped:
@@ -64,8 +100,12 @@ def validate_results(path: Path) -> bool:
                 print(f"{path}:{line_no}: invalid JSON: {exc}", file=sys.stderr)
                 ok = False
                 continue
+            records += 1
             if not validate_object(Path(f"{path}:{line_no}"), record, validator):
                 ok = False
+    if records == 0:
+        print(f"{path}: no JSON records found", file=sys.stderr)
+        ok = False
     return ok
 
 
