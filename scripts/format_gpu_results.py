@@ -11,8 +11,8 @@ from typing import Any
 
 
 PREFERRED_BACKENDS = [
-    "tenferro-cuda-eager",
     "tenferro-cuda-trace",
+    "tenferro-cuda-eager",
     "pytorch-cuda",
     "libtorch-cuda",
     "jax-cuda",
@@ -73,6 +73,27 @@ def format_cell(record: dict[str, Any] | None) -> str:
     return status.replace("_", " ")
 
 
+def timestamp_utc(record: dict[str, Any]) -> str | None:
+    environment = record.get("environment")
+    if not isinstance(environment, dict):
+        return None
+    timestamp = environment.get("timestamp_utc")
+    if not isinstance(timestamp, str) or not timestamp:
+        return None
+    return timestamp
+
+
+def choose_duplicate_record(existing: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
+    existing_timestamp = timestamp_utc(existing)
+    candidate_timestamp = timestamp_utc(candidate)
+    if existing_timestamp is not None and candidate_timestamp is not None:
+        if candidate_timestamp > existing_timestamp:
+            return candidate
+        if candidate_timestamp < existing_timestamp:
+            return existing
+    return candidate
+
+
 def format_markdown(records: list[dict[str, Any]]) -> str:
     if not records:
         return "# GPU Benchmark Results\n\nNo GPU benchmark records found.\n"
@@ -98,7 +119,11 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
         by_problem_backend: dict[tuple[str, str], dict[str, Any]] = {}
         problem_ids = sorted({record["problem_id"] for record in group})
         for record in group:
-            by_problem_backend[(record["problem_id"], record["backend"])] = record
+            key = (record["problem_id"], record["backend"])
+            if key in by_problem_backend:
+                by_problem_backend[key] = choose_duplicate_record(by_problem_backend[key], record)
+            else:
+                by_problem_backend[key] = record
 
         for problem_id in problem_ids:
             row = [problem_id]
