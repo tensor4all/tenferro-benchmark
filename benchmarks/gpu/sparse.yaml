@@ -1,0 +1,30 @@
+schema_version: 1
+suite_id: gpu_sparse_contract_v1
+description: Sparse GPU benchmark contract suite using SuiteSparse-style metadata.
+defaults:
+  device: {kind: cuda, ordinal: 0}
+  layout: {sparse: csr}
+  run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+problems:
+  - id: sparse_bcspwr10_spmv_f64
+    family: sparse
+    op: spmv
+    dtype: {values: f64, x: f64, y: f64}
+    layout: {sparse: csr}
+    data: {generator: suitesparse, seed: 0}
+    sparse: {source: suitesparse, group: HB, name: bcspwr10, storage: csr, rows: 5300, cols: 5300, nnz: 21842}
+    run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+    backend_candidates: [cusparse, ginkgo, pytorch-cuda, libtorch-cuda]
+
+  - id: sparse_bcsstk17_spmm_f64_rhs32
+    family: sparse
+    op: spmm
+    dtype: {values: f64, x: f64, y: f64}
+    layout: {sparse: csr}
+    data: {generator: suitesparse, seed: 0}
+    sparse: {source: suitesparse, group: HB, name: bcsstk17, storage: csr, rows: 10974, cols: 10974, nnz: 428650, rhs_cols: 32}
+    run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+    backend_candidates: [cusparse, ginkgo, pytorch-cuda, libtorch-cuda]

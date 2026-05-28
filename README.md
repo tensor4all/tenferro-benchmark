@@ -106,6 +106,38 @@ devcontainer exec --workspace-folder . bash -lc \
   'rg -n "Threads: 1|Threads: 4|tenferro-rs commit" result/einsum-results.md result/cpu-benchmark-results.md'
 ```
 
+## GPU Benchmark Contract Workflow
+
+The GPU benchmark layer uses shared suite and result schemas so tenferro-rs,
+PyTorch Python, LibTorch C++, JAX, and vendor CUDA runners can report comparable
+records. Phase 1 validates the contract and report generation without requiring
+a GPU:
+
+```bash
+bash scripts/run_gpu_suite.sh
+```
+
+The smoke path emits structured `not_configured` and `unsupported` records
+instead of measuring kernels. This keeps schema and formatter tests runnable on
+CPU-only machines. Measured CUDA runners are outside this Phase 1 plan and
+require separate follow-up implementation plans.
+
+Validate suites and generated JSONL records manually:
+
+```bash
+uv run python scripts/validate_benchmark_suite.py \
+  benchmarks/gpu/dense.yaml \
+  benchmarks/gpu/einsum.yaml \
+  benchmarks/gpu/sparse.yaml
+
+uv run python scripts/validate_benchmark_suite.py --kind result \
+  data/results/gpu_contract_*.jsonl
+```
+
+The latest generated GPU report is written to:
+
+- `result/gpu-benchmark-results.md`
+
 ## Torch C++ Benchmark Workflow
 
 Use this workflow when benchmark results must include the Torch C++ column.
