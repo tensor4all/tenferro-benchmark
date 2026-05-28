@@ -12,6 +12,8 @@ BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,py
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 PROBLEM_FILTER="${GPU_BENCH_PROBLEM:-}"
 
+cd "$PROJECT_DIR"
+
 mkdir -p "$RESULTS_DIR" "$REPORTS_DIR"
 
 IFS=',' read -r -a SUITES <<< "$SUITES_VALUE"
