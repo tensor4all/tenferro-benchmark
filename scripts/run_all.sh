@@ -29,6 +29,20 @@ if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
     source "$SCRIPT_DIR/setup_extern_deps.sh"
 fi
 
+# If Torch_DIR is still unset (e.g. SKIP_EXTERN_SETUP=1), probe well-known
+# locations where an already-built OpenBLAS-linked LibTorch might live.
+if [[ -z "${Torch_DIR:-}" ]]; then
+    for _torch_candidate in \
+        "${PYTORCH_OPENBLAS_DIR:+${PYTORCH_OPENBLAS_DIR}/torch/share/cmake/Torch}" \
+        "$PROJECT_DIR/extern/devcontainer/pytorch-openblas/torch/share/cmake/Torch" \
+        "$PROJECT_DIR/extern/pytorch-openblas/torch/share/cmake/Torch"; do
+        [[ -n "$_torch_candidate" && -f "$_torch_candidate/TorchConfig.cmake" ]] || continue
+        export Torch_DIR="$_torch_candidate"
+        echo "[run_all.sh] Auto-detected Torch_DIR=$Torch_DIR"
+        break
+    done
+fi
+
 resolve_git_commit() {
     local checkout_dir="$1"
     if [[ -d "$checkout_dir/.git" ]] && command -v git >/dev/null 2>&1; then
