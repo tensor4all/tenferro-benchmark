@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tensor4all.example/schemas/benchmark-suite.schema.json",
+  "title": "GPU Benchmark Suite",
+  "type": "object",
+  "required": ["schema_version", "suite_id", "description", "problems"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "suite_id": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "run": { "$ref": "#/$defs/run" },
+        "verify": { "$ref": "#/$defs/verify" },
+        "device": { "$ref": "#/$defs/device" },
+        "layout": { "$ref": "#/$defs/layout" }
+      }
+    },
+    "problems": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/problem" }
+    }
+  },
+  "$defs": {
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["cuda"] },
+        "ordinal": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "run": {
+      "type": "object",
+      "required": ["warmups", "runs"],
+      "additionalProperties": false,
+      "properties": {
+        "warmups": { "type": "integer", "minimum": 0 },
+        "runs": { "type": "integer", "minimum": 1 },
+        "min_runtime_ms": { "type": "number", "minimum": 0 },
+        "timing_scope": {
+          "enum": [
+            "steady_state_device_only",
+            "steady_state_host_api_plus_device_sync",
+            "steady_state_host_api_plus_device_sync_with_download",
+            "compile_plus_first_run"
+          ]
+        }
+      }
+    },
+    "verify": {
+      "type": "object",
+      "required": ["reference", "rtol", "atol"],
+      "additionalProperties": true,
+      "properties": {
+        "reference": { "type": "string", "minLength": 1 },
+        "rtol": { "type": "number", "minimum": 0 },
+        "atol": { "type": "number", "minimum": 0 },
+        "residual_rtol": { "type": "number", "minimum": 0 }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tenferro": { "enum": ["col_major"] },
+        "framework": { "enum": ["row_major_contiguous"] },
+        "sparse": { "enum": ["csr"] }
+      }
+    },
+    "dtype": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "a": { "type": "string" },
+        "b": { "type": "string" },
+        "c": { "type": "string" },
+        "values": { "type": "string" },
+        "x": { "type": "string" },
+        "y": { "type": "string" },
+        "accum": { "type": "string" }
+      }
+    },
+    "data": {
+      "type": "object",
+      "required": ["generator", "seed"],
+      "additionalProperties": true,
+      "properties": {
+        "generator": {
+          "enum": [
+            "normal",
+            "zeros",
+            "well_conditioned",
+            "spd",
+            "symmetric_normal",
+            "suitesparse"
+          ]
+        },
+        "seed": { "type": "integer" }
+      }
+    },
+    "problem": {
+      "type": "object",
+      "required": [
+        "id",
+        "family",
+        "op",
+        "dtype",
+        "data",
+        "run",
+        "verify",
+        "backend_candidates"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "family": { "enum": ["dense", "sparse", "einsum"] },
+        "op": {
+          "enum": [
+            "matmul",
+            "batched_matmul",
+            "einsum",
+            "qr",
+            "solve",
+            "svd",
+            "eigh",
+            "spmv",
+            "spmm"
+          ]
+        },
+        "dtype": { "$ref": "#/$defs/dtype" },
+        "layout": { "$ref": "#/$defs/layout" },
+        "data": { "$ref": "#/$defs/data" },
+        "run": { "$ref": "#/$defs/run" },
+        "verify": { "$ref": "#/$defs/verify" },
+        "backend_candidates": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "matmul": { "$ref": "#/$defs/matmul" },
+        "batched_matmul": { "$ref": "#/$defs/batched_matmul" },
+        "einsum": { "$ref": "#/$defs/einsum" },
+        "linalg": { "$ref": "#/$defs/linalg" },
+        "sparse": { "$ref": "#/$defs/sparse" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "op": { "const": "matmul" } } },
+          "then": { "required": ["matmul"] }
+        },
+        {
+          "if": { "properties": { "op": { "const": "batched_matmul" } } },
+          "then": { "required": ["batched_matmul"] }
+        },
+        {
+          "if": { "properties": { "op": { "const": "einsum" } } },
+          "then": { "required": ["einsum"] }
+        },
+        {
+          "if": {
+            "properties": {
+              "op": { "enum": ["qr", "solve", "svd", "eigh"] }
+            }
+          },
+          "then": { "required": ["linalg"] }
+        },
+        {
+          "if": { "properties": { "op": { "enum": ["spmv", "spmm"] } } },
+          "then": { "required": ["sparse"] }
+        }
+      ]
+    },
+    "matmul": {
+      "type": "object",
+      "required": ["m", "n", "k"],
+      "additionalProperties": false,
+      "properties": {
+        "m": { "type": "integer", "minimum": 1 },
+        "n": { "type": "integer", "minimum": 1 },
+        "k": { "type": "integer", "minimum": 1 },
+        "transpose_a": { "type": "boolean" },
+        "transpose_b": { "type": "boolean" }
+      }
+    },
+    "batched_matmul": {
+      "type": "object",
+      "required": ["batch", "m", "n", "k", "batch_layout"],
+      "additionalProperties": false,
+      "properties": {
+        "batch": { "type": "integer", "minimum": 1 },
+        "m": { "type": "integer", "minimum": 1 },
+        "n": { "type": "integer", "minimum": 1 },
+        "k": { "type": "integer", "minimum": 1 },
+        "batch_layout": { "enum": ["leading", "trailing"] }
+      }
+    },
+    "einsum": {
+      "type": "object",
+      "required": [
+        "format_rowmajor",
+        "format_colmajor",
+        "shapes_rowmajor",
+        "shapes_colmajor",
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "format_rowmajor": { "type": "string", "minLength": 1 },
+        "format_colmajor": { "type": "string", "minLength": 1 },
+        "shapes_rowmajor": { "$ref": "#/$defs/shape_list" },
+        "shapes_colmajor": { "$ref": "#/$defs/shape_list" },
+        "path": {
+          "type": "object",
+          "required": ["strategy", "pairs"],
+          "additionalProperties": false,
+          "properties": {
+            "strategy": { "enum": ["opt_flops", "opt_size", "manual"] },
+            "pairs": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shape_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "linalg": {
+      "type": "object",
+      "required": ["n"],
+      "additionalProperties": false,
+      "properties": {
+        "m": { "type": "integer", "minimum": 1 },
+        "n": { "type": "integer", "minimum": 1 },
+        "rhs_cols": { "type": "integer", "minimum": 1 },
+        "batch": { "type": "integer", "minimum": 1 },
+        "full_matrices": { "type": "boolean" }
+      }
+    },
+    "sparse": {
+      "type": "object",
+      "required": ["source", "storage", "rows", "cols", "nnz"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "enum": ["suitesparse", "matrix_market"] },
+        "group": { "type": "string" },
+        "name": { "type": "string" },
+        "storage": { "enum": ["csr"] },
+        "rows": { "type": "integer", "minimum": 1 },
+        "cols": { "type": "integer", "minimum": 1 },
+        "nnz": { "type": "integer", "minimum": 0 },
+        "rhs_cols": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}
