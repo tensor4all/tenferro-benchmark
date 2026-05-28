@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tensor4all.example/schemas/benchmark-result.schema.json",
+  "title": "GPU Benchmark Result Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "suite_id",
+    "problem_id",
+    "op",
+    "backend",
+    "status",
+    "timing",
+    "verification",
+    "environment",
+    "execution"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "suite_id": { "type": "string", "minLength": 1 },
+    "problem_id": { "type": "string", "minLength": 1 },
+    "op": {
+      "enum": [
+        "matmul",
+        "batched_matmul",
+        "einsum",
+        "qr",
+        "solve",
+        "svd",
+        "eigh",
+        "spmv",
+        "spmm"
+      ]
+    },
+    "backend": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": [
+        "ok",
+        "unsupported",
+        "not_configured",
+        "compile_failed",
+        "runtime_failed",
+        "oom",
+        "verification_failed",
+        "cpu_fallback"
+      ]
+    },
+    "timing": {
+      "type": "object",
+      "required": [
+        "warmup_runs",
+        "timed_runs",
+        "compile_time_ms",
+        "first_run_ms",
+        "median_ms",
+        "min_ms",
+        "p95_ms",
+        "iqr_ms",
+        "timing_scope"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "warmup_runs": { "type": "integer", "minimum": 0 },
+        "timed_runs": { "type": "integer", "minimum": 0 },
+        "compile_time_ms": { "type": ["number", "null"], "minimum": 0 },
+        "first_run_ms": { "type": ["number", "null"], "minimum": 0 },
+        "median_ms": { "type": ["number", "null"], "minimum": 0 },
+        "min_ms": { "type": ["number", "null"], "minimum": 0 },
+        "p95_ms": { "type": ["number", "null"], "minimum": 0 },
+        "iqr_ms": { "type": ["number", "null"], "minimum": 0 },
+        "timing_scope": {
+          "enum": [
+            "steady_state_device_only",
+            "steady_state_host_api_plus_device_sync",
+            "steady_state_host_api_plus_device_sync_with_download",
+            "compile_plus_first_run"
+          ]
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tflops": { "type": ["number", "null"], "minimum": 0 },
+        "effective_bandwidth_gbps": { "type": ["number", "null"], "minimum": 0 },
+        "peak_memory_bytes": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["status", "reference_backend", "rtol", "atol"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["passed", "failed", "skipped", "not_applicable"] },
+        "reference_backend": { "type": ["string", "null"] },
+        "max_abs_error": { "type": ["number", "null"] },
+        "max_rel_error": { "type": ["number", "null"] },
+        "residual": { "type": ["number", "null"] },
+        "rtol": { "type": ["number", "null"], "minimum": 0 },
+        "atol": { "type": ["number", "null"], "minimum": 0 },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["timestamp_utc"],
+      "additionalProperties": true,
+      "properties": {
+        "hostname": { "type": ["string", "null"] },
+        "timestamp_utc": { "type": "string", "minLength": 1 },
+        "os": { "type": ["string", "null"] },
+        "gpu_name": { "type": ["string", "null"] },
+        "gpu_uuid": { "type": ["string", "null"] },
+        "gpu_memory_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "driver_version": { "type": ["string", "null"] },
+        "cuda_version": { "type": ["string", "null"] },
+        "cudnn_version": { "type": ["string", "null"] },
+        "framework_version": { "type": ["string", "null"] },
+        "tenferro_rs_commit": { "type": ["string", "null"] },
+        "benchmark_repo_commit": { "type": ["string", "null"] },
+        "env": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "device",
+        "device_ordinal",
+        "execution_path",
+        "synchronization",
+        "layout",
+        "dtype"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "device": { "enum": ["cuda"] },
+        "device_ordinal": { "type": "integer", "minimum": 0 },
+        "execution_path": { "type": "string" },
+        "synchronization": { "type": "string" },
+        "layout": { "type": "string" },
+        "dtype": { "type": "string" },
+        "notes": { "type": ["string", "null"] },
+        "unsupported_reason": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
