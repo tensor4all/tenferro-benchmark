@@ -11,10 +11,13 @@ tenferro-einsum   = { path = "extern/tenferro-rs/tenferro-einsum", default-featu
 tenferro-linalg   = { path = "extern/tenferro-rs/tenferro-linalg", default-features = false }
 tenferro-runtime  = { path = "extern/tenferro-rs/tenferro-runtime", default-features = false }
 tenferro-tensor   = { path = "extern/tenferro-rs/tenferro-tensor", default-features = false }
+tenferro-gpu      = { path = "extern/tenferro-rs/tenferro-gpu", default-features = false, optional = true }
+tenferro-cpu      = { path = "extern/tenferro-rs/tenferro-cpu", default-features = false, optional = true }
 computegraph      = { git = "https://github.com/tensor4all/computegraph-rs.git", rev = "c20e8912560ef11166418bcea089126ef50443cc" }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+serde_yaml = "0.9"
 
 [features]
 default = ["cpu-faer"]
@@ -23,7 +26,8 @@ cpu-faer = [
     "tenferro-einsum/cpu-faer",
     "tenferro-linalg/cpu-faer",
     "tenferro-runtime/cpu-faer",
-    "tenferro-tensor/cpu-faer",
+    "dep:tenferro-cpu",
+    "tenferro-cpu?/cpu-faer",
 ]
 system-openblas = [
     "tenferro-ad/cpu-blas",
@@ -32,14 +36,24 @@ system-openblas = [
     "tenferro-linalg/autodiff",
     "tenferro-linalg/cpu-blas",
     "tenferro-runtime/cpu-blas",
-    "tenferro-tensor/cpu-blas",
 ]
 cuda = [
     "tenferro-ad/cuda",
     "tenferro-einsum/cuda",
+    "tenferro-einsum/autodiff",
     "tenferro-linalg/cuda",
+    "tenferro-linalg/autodiff",
+    "dep:tenferro-gpu",
+    "tenferro-gpu?/cuda",
+    "dep:tenferro-cpu",
+    "tenferro-cpu?/cpu-faer",
 ]
 
 [[bin]]
 name = "publication_gate"
 path = "src/bin/publication_gate.rs"
+
+[[bin]]
+name = "benchmark_gpu_rust"
+path = "src/bin/benchmark_gpu_rust.rs"
+required-features = ["cuda"]

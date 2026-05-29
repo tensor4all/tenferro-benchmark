@@ -138,6 +138,29 @@ The latest generated GPU report is written to:
 
 - `result/gpu-benchmark-results.md`
 
+### Running on a Real GPU via devcontainer
+
+A CUDA-enabled devcontainer is provided for hosts with an NVIDIA GPU and the
+NVIDIA Container Toolkit installed. It uses
+`nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04` as the base image, sets
+`USE_CUDA=1`, and installs PyTorch and JAX with CUDA 12.6 wheels.
+
+Start the CUDA container:
+
+```bash
+devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
+```
+
+Run the GPU benchmark suite inside it:
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc './scripts/run_gpu_suite.sh'
+```
+
+See `AGENTS.md` for the full GPU devcontainer workflow including environment
+verification and per-backend overrides.
+
 ## Torch C++ Benchmark Workflow
 
 Use this workflow when benchmark results must include the Torch C++ column.

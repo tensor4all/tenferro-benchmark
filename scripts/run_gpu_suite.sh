@@ -40,120 +40,50 @@ fi
 "${VALIDATOR[@]}" "${SUITES[@]}"
 
 RESULT_JSONL="$RESULTS_DIR/gpu_contract_${TIMESTAMP}.jsonl"
-"${PYTHON[@]}" - "$RESULT_JSONL" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" "${BACKENDS[@]}" -- "${SUITES[@]}" <<'PY'
-from __future__ import annotations
 
-import json
-import os
-import platform
-import socket
-import subprocess
-import sys
-from datetime import datetime, timezone
-from pathlib import Path
+# Split backends: Rust-native vs Python
+RUST_BACKENDS=()
+PYTHON_BACKENDS=()
+for b in "${BACKENDS[@]}"; do
+    if [[ "$b" == "tenferro-cuda-trace" || "$b" == "tenferro-cuda-eager" ]]; then
+        RUST_BACKENDS+=("$b")
+    else
+        PYTHON_BACKENDS+=("$b")
+    fi
+done
 
-import yaml
+# Run Python benchmark (pytorch-cuda, jax-cuda, vendor backends)
+if [[ ${#PYTHON_BACKENDS[@]} -gt 0 ]]; then
+    echo "Running Python benchmarks: ${PYTHON_BACKENDS[*]}"
+    "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_python.py" \
+        "$RESULT_JSONL" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
+        "${PYTHON_BACKENDS[@]}" -- "${SUITES[@]}"
+fi
 
-output = Path(sys.argv[1])
-device_ordinal = int(sys.argv[2])
-problem_filter = sys.argv[3]
-separator = sys.argv.index("--")
-backends = sys.argv[4:separator]
-suites = [Path(p) for p in sys.argv[separator + 1:]]
-
-
-def git_commit(path: Path) -> str | None:
-    try:
-        return subprocess.check_output(
-            ["git", "-C", str(path), "rev-parse", "HEAD"],
-            text=True,
-            stderr=subprocess.DEVNULL,
-        ).strip()
-    except Exception:
-        return None
-
-
-benchmark_commit = git_commit(Path.cwd())
-tenferro_commit = git_commit(Path.cwd() / "extern" / "tenferro-rs")
-timestamp = datetime.now(timezone.utc).isoformat()
-
-with output.open("w") as fh:
-    for suite_path in suites:
-        suite = yaml.safe_load(suite_path.read_text())
-        for problem in suite["problems"]:
-            if problem_filter and problem["id"] != problem_filter:
-                continue
-            for backend in backends:
-                if backend not in problem["backend_candidates"]:
-                    status = "unsupported"
-                    reason = f"{backend} is not listed for {problem['id']}"
-                else:
-                    status = "not_configured"
-                    reason = "Phase 1 contract smoke does not execute GPU kernels"
-                record = {
-                    "schema_version": 1,
-                    "suite_id": suite["suite_id"],
-                    "problem_id": problem["id"],
-                    "op": problem["op"],
-                    "backend": backend,
-                    "status": status,
-                    "timing": {
-                        "warmup_runs": 0,
-                        "timed_runs": 0,
-                        "compile_time_ms": None,
-                        "first_run_ms": None,
-                        "median_ms": None,
-                        "min_ms": None,
-                        "p95_ms": None,
-                        "iqr_ms": None,
-                        "timing_scope": "steady_state_host_api_plus_device_sync",
-                    },
-                    "performance": {
-                        "tflops": None,
-                        "effective_bandwidth_gbps": None,
-                        "peak_memory_bytes": None,
-                    },
-                    "verification": {
-                        "status": "skipped",
-                        "reference_backend": None,
-                        "max_abs_error": None,
-                        "max_rel_error": None,
-                        "residual": None,
-                        "rtol": problem["verify"].get("rtol"),
-                        "atol": problem["verify"].get("atol"),
-                        "reason": reason,
-                    },
-                    "environment": {
-                        "hostname": socket.gethostname(),
-                        "timestamp_utc": timestamp,
-                        "os": platform.platform(),
-                        "gpu_name": None,
-                        "gpu_uuid": None,
-                        "gpu_memory_bytes": None,
-                        "driver_version": None,
-                        "cuda_version": None,
-                        "cudnn_version": None,
-                        "framework_version": None,
-                        "tenferro_rs_commit": tenferro_commit,
-                        "benchmark_repo_commit": benchmark_commit,
-                        "env": {
-                            "CUDA_PATH": os.environ.get("CUDA_PATH"),
-                            "LD_LIBRARY_PATH": os.environ.get("LD_LIBRARY_PATH"),
-                        },
-                    },
-                    "execution": {
-                        "device": "cuda",
-                        "device_ordinal": device_ordinal,
-                        "execution_path": "phase1-contract-smoke",
-                        "synchronization": "not executed",
-                        "layout": json.dumps(problem.get("layout", {}), sort_keys=True),
-                        "dtype": json.dumps(problem.get("dtype", {}), sort_keys=True),
-                        "notes": "Generated by scripts/run_gpu_suite.sh Phase 1 smoke path.",
-                        "unsupported_reason": reason,
-                    },
-                }
-                fh.write(json.dumps(record, sort_keys=True) + "\n")
-PY
+# Run Rust benchmark (tenferro-cuda-eager, tenferro-cuda-trace)
+RUST_BIN="$PROJECT_DIR/target/release/benchmark_gpu_rust"
+if [[ ${#RUST_BACKENDS[@]} -gt 0 ]]; then
+    echo "Running Rust GPU benchmarks: ${RUST_BACKENDS[*]}"
+    RUST_JSONL="$RESULTS_DIR/gpu_rust_${TIMESTAMP}.jsonl"
+    if [[ ! -f "$RUST_BIN" ]]; then
+        echo "  Building benchmark_gpu_rust..."
+        CUBECL_DEBUG_LOG=0 \
+        CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+        LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+            cargo build --release --features cuda --bin benchmark_gpu_rust 2>&1
+    fi
+    CUBECL_DEBUG_LOG=0 \
+    CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+    LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+        "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
+        "${RUST_BACKENDS[@]}" -- "${SUITES[@]}"
+    # Append Rust results to the main JSONL
+    if [[ ${#PYTHON_BACKENDS[@]} -gt 0 ]]; then
+        cat "$RUST_JSONL" >> "$RESULT_JSONL"
+    else
+        cp "$RUST_JSONL" "$RESULT_JSONL"
+    fi
+fi
 
 "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"
 

@@ -3435,6 +3435,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_yaml"
+version = "0.9.34+deprecated"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47"
+dependencies = [
+ "indexmap",
+ "itoa",
+ "ryu",
+ "serde",
+ "unsafe-libyaml",
+]
+
+[[package]]
 name = "sha2"
 version = "0.10.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3696,6 +3709,7 @@ dependencies = [
  "lru",
  "num-complex",
  "num-traits",
+ "tenferro-cpu",
  "tenferro-gpu",
  "tenferro-internal-ops",
  "tenferro-runtime",
@@ -3709,6 +3723,21 @@ name = "tenferro-core-ops"
 version = "0.1.0"
 
 [[package]]
+name = "tenferro-cpu"
+version = "0.1.0"
+dependencies = [
+ "cblas-sys",
+ "faer",
+ "lapack",
+ "num-complex",
+ "num-traits",
+ "smallvec",
+ "strided-kernel",
+ "tenferro-tensor",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "tenferro-einsum"
 version = "0.1.0"
 dependencies = [
@@ -3717,6 +3746,7 @@ dependencies = [
  "lru",
  "omeco",
  "tenferro-ad",
+ "tenferro-cpu",
  "tenferro-internal-device",
  "tenferro-internal-extension-macros",
  "tenferro-internal-ops",
@@ -3732,8 +3762,11 @@ dependencies = [
  "num-complex",
  "serde",
  "serde_json",
+ "serde_yaml",
  "tenferro-ad",
+ "tenferro-cpu",
  "tenferro-einsum",
+ "tenferro-gpu",
  "tenferro-linalg",
  "tenferro-runtime",
  "tenferro-tensor",
@@ -3803,6 +3836,7 @@ dependencies = [
  "num-complex",
  "num-traits",
  "tenferro-ad",
+ "tenferro-cpu",
  "tenferro-gpu",
  "tenferro-internal-extension-macros",
  "tenferro-internal-ops",
@@ -3828,16 +3862,9 @@ dependencies = [
 name = "tenferro-tensor"
 version = "0.1.0"
 dependencies = [
- "cblas-sys",
- "faer",
- "lapack",
- "libloading 0.8.9",
- "lru",
  "num-complex",
  "num-traits",
- "rayon",
  "smallvec",
- "strided-kernel",
  "tenferro-core-ops",
  "tenferro-tensor-core",
  "thiserror 2.0.18",
@@ -4279,6 +4306,12 @@ name = "unindent"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7264e107f553ccae879d21fbea1d6724ac785e8c3bfc762137959b5802826ef3"
+
+[[package]]
+name = "unsafe-libyaml"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861"
 
 [[package]]
 name = "untrusted"

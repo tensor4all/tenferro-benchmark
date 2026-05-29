@@ -83,6 +83,58 @@ devcontainer from the host `devcontainer` CLI.
    The `tenferro-rs commit` line records the exact commit hash to use later
    with `git checkout <commit>`.
 
+## GPU Devcontainer Benchmark Workflow
+
+Use this workflow to run GPU benchmarks inside the CUDA devcontainer.
+Requires an NVIDIA GPU on the host with the NVIDIA Container Toolkit installed.
+
+1. Build and start the CUDA container:
+
+   ```bash
+   devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
+   ```
+
+   Recreate if the config or Dockerfile changed:
+
+   ```bash
+   devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+     --remove-existing-container
+   ```
+
+2. Confirm GPU access and environment inside the container:
+
+   ```bash
+   devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+     bash -lc 'nvidia-smi && echo "USE_CUDA=$USE_CUDA" && echo "CUDA_HOME=$CUDA_HOME" && nvcc --version'
+   ```
+
+   Expected values: `USE_CUDA=1`, `CUDA_HOME=/usr/local/cuda`.
+
+3. Verify Python GPU backends are available:
+
+   ```bash
+   devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+     bash -lc 'uv run python -c "import torch; print(torch.cuda.is_available()); import jax; print(jax.devices())"'
+   ```
+
+4. Run the GPU benchmark suite:
+
+   ```bash
+   devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+     bash -lc './scripts/run_gpu_suite.sh'
+   ```
+
+   Generated reports:
+   - `data/results/gpu_contract_<timestamp>.jsonl` — structured JSONL records
+   - `result/gpu-benchmark-results.md` — formatted markdown report
+
+5. Override backends, suites, or device ordinal via environment variables:
+
+   ```bash
+   devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+     bash -lc 'GPU_BENCH_BACKENDS=pytorch-cuda,jax-cuda GPU_BENCH_DEVICE=0 ./scripts/run_gpu_suite.sh'
+   ```
+
 ## Torch C++ Included Benchmark
 
 Use this workflow when validating or regenerating benchmark results that must
