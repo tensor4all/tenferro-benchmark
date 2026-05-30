@@ -28,6 +28,11 @@ echo "Device:   cuda:$DEVICE_ORDINAL"
 echo "Timestamp: $TIMESTAMP"
 echo ""
 
+# Vendor library locations for JIT-compiled backends (CUTLASS, Ginkgo).
+# Override via env if installed elsewhere.
+export CUTLASS_DIR="${CUTLASS_DIR:-/opt/cutlass}"
+export GINKGO_DIR="${GINKGO_DIR:-/opt/ginkgo}"
+
 VALIDATOR=(python3 "$SCRIPT_DIR/validate_benchmark_suite.py")
 FORMATTER=(python3 "$SCRIPT_DIR/format_gpu_results.py")
 PYTHON=(python3)
@@ -93,7 +98,7 @@ REPORT_OUT="$REPORTS_DIR/gpu-benchmark-results.md"
 cp "$MARKDOWN_OUT" "$REPORT_OUT"
 
 echo ""
-echo "GPU contract smoke complete"
+echo "GPU benchmark suite complete"
 echo "JSONL:    $RESULT_JSONL"
 echo "Markdown: $MARKDOWN_OUT"
 echo "Report:   $REPORT_OUT"

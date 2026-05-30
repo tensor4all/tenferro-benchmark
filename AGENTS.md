@@ -135,6 +135,40 @@ Requires an NVIDIA GPU on the host with the NVIDIA Container Toolkit installed.
      bash -lc 'GPU_BENCH_BACKENDS=pytorch-cuda,jax-cuda GPU_BENCH_DEVICE=0 ./scripts/run_gpu_suite.sh'
    ```
 
+### Implemented backends and execution paths
+
+| Backend | Runner | Ops | Notes |
+|---|---|---|---|
+| `tenferro-cuda-trace` | `src/bin/benchmark_gpu_rust.rs` | dense + einsum | traced graph on CubeCL CUDA |
+| `tenferro-cuda-eager` | `src/bin/benchmark_gpu_rust.rs` | dense + einsum | eager CubeCL CUDA |
+| `pytorch-cuda` | `scripts/benchmark_gpu_python.py` | all | ATen CUDA kernels |
+| `libtorch-cuda` | `scripts/benchmark_gpu_python.py` | all | same ATen kernels as C++ LibTorch |
+| `jax-cuda` | `scripts/benchmark_gpu_python.py` | dense + einsum | XLA, `jax_enable_x64` |
+| `cublaslt` | `scripts/benchmark_gpu_python.py` | matmul/bmm/einsum | `torch.mm` → cuBLAS LT, TF32 off |
+| `cusolver` | `scripts/benchmark_gpu_python.py` | qr/solve/svd/eigh | `preferred_linalg_library=cusolver` |
+| `cusparse` | `scripts/benchmark_gpu_python.py` | spmv/spmm | `torch.sparse` CSR → cuSPARSE |
+| `cutlass` | `scripts/benchmark_gpu_python.py` | matmul/einsum | JIT extension, `cutlass::gemm::device::Gemm<double,...,Sm80>` |
+| `ginkgo` | `scripts/benchmark_gpu_python.py` | spmv/spmm | JIT extension linking `libginkgo` CUDA executor |
+
+### Vendor library setup (cutlass, ginkgo)
+
+The `cutlass` and `ginkgo` backends JIT-compile a small extension that needs
+their headers/libraries. Install both with the helper script (CUTLASS is a
+quick clone; Ginkgo is a full CUDA build, ~10-15 min):
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc './scripts/setup_gpu_vendors.sh all'   # or: cutlass | ginkgo
+```
+
+The script installs CUTLASS (`$CUTLASS_DIR`, default `/opt/cutlass`) and builds
+Ginkgo with CUDA (`$GINKGO_DIR`, default `/opt/ginkgo`), auto-detecting the host
+GPU compute capability. Override with `CUDA_ARCH`, `CUTLASS_TAG`, `GINKGO_TAG`.
+
+If a vendor library is absent the corresponding backend emits `not_configured`
+records rather than failing the suite. `run_gpu_suite.sh` exports `CUTLASS_DIR`
+and `GINKGO_DIR` automatically.
+
 ## Torch C++ Included Benchmark
 
 Use this workflow when validating or regenerating benchmark results that must
