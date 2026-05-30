@@ -12,9 +12,10 @@ use std::time::{Duration, Instant};
 use tenferro_ad::{AdContext, EagerRuntime, EagerTensor};
 use tenferro_einsum::eager_tensor as eager_einsum_tensor;
 use tenferro_linalg::eager_tensor as eager_linalg_tensor;
+use tenferro_cpu::CpuBackend;
 use tenferro_runtime::{
-    traced_tensor, CpuBackend, DotGeneralConfig, Error, GraphCompiler, GraphExecutor, Tensor,
-    TracedTensor, TypedTensor,
+    traced_tensor, DotGeneralConfig, Error, GraphCompiler, GraphExecutor, Tensor, TracedTensor,
+    TypedTensor,
 };
 
 const DEFAULT_WARMUPS: usize = 3;

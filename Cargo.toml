@@ -31,11 +31,18 @@ cpu-faer = [
 ]
 system-openblas = [
     "tenferro-ad/cpu-blas",
+    "tenferro-ad/cpu-faer",
     "tenferro-einsum/autodiff",
     "tenferro-einsum/cpu-blas",
+    "tenferro-einsum/cpu-faer",
     "tenferro-linalg/autodiff",
     "tenferro-linalg/cpu-blas",
+    "tenferro-linalg/cpu-faer",
     "tenferro-runtime/cpu-blas",
+    "tenferro-runtime/cpu-faer",
+    "dep:tenferro-cpu",
+    "tenferro-cpu?/cpu-blas",
+    "tenferro-cpu?/cpu-faer",
 ]
 cuda = [
     "tenferro-ad/cuda",

@@ -15,7 +15,7 @@ use tenferro_einsum::eager_tensor;
 use tenferro_einsum::{ContractionTree, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_runtime::{GraphExecutor, TracedTensor};
-use tenferro_tensor::cpu::CpuBackend;
+use tenferro_cpu::CpuBackend;
 use tenferro_tensor::{Tensor, TypedTensor};
 
 // ---------------------------------------------------------------------------
