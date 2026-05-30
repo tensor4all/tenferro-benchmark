@@ -13,8 +13,79 @@ Detailed documentation was split out of this README:
 
 - [Setup and C++ LibTorch build](docs/setup-and-libtorch.md)
 - [Einsum benchmark usage and instances](docs/einsum-benchmarks.md)
-- Latest generated einsum benchmark results: [result/einsum-results.md](result/einsum-results.md)
-- Latest generated CPU benchmark results: [result/cpu-benchmark-results.md](result/cpu-benchmark-results.md)
+- Full einsum results: [result/einsum-results.md](result/einsum-results.md)
+- Full CPU ops results: [result/cpu-benchmark-results.md](result/cpu-benchmark-results.md)
+- Full GPU results: [result/gpu-benchmark-results.md](result/gpu-benchmark-results.md)
+
+## Latest Benchmark Results
+
+- tenferro-rs commit: `fa722375c8662b5532a6f875a6bef3494ace40b5`
+- Environment: devcontainer (Ubuntu 24.04, OpenBLAS), GPU: NVIDIA GeForce RTX 3060
+
+### CPU Einsum Benchmark
+
+Median ± IQR (ms). 14 instances, strategy: opt\_flops.
+
+#### Threads: 1
+
+| Instance | tenferro-rs trace | tenferro-rs eager | Torch C++ | PyTorch | JAX |
+|---|---:|---:|---:|---:|---:|
+| bin_batched_matmul_b32_m64_n64_k64 | 4.084 ± 0.153 | 2.985 ± 0.013 | 0.899 ± 0.003 | **0.662 ± 0.022** | 1.040 ± 0.045 |
+| bin_elementwise_mul_2048x2048 | 115.138 ± 2.426 | 88.158 ± 2.160 | 21.262 ± 0.053 | 23.273 ± 0.039 | **14.126 ± 0.187** |
+| bin_matmul_256 | 2.157 ± 0.033 | 1.647 ± 0.009 | **1.074 ± 0.001** | 1.083 ± 0.008 | 1.198 ± 0.044 |
+| bin_outer_product_4096 | 241.635 ± 4.902 | 328.541 ± 6.319 | 63.164 ± 0.074 | 71.339 ± 0.408 | **38.563 ± 2.584** |
+| gm_queen5_5_3.wcsp | 12576.172 ± 20.940 | 19016.525 ± 127.123 | 9313.277 ± 76.146 | **7479.980 ± 26.226** | - |
+| lm_batch_likelihood_brackets_4_4d | 43.436 ± 1.189 | 95.981 ± 1.742 | 66.917 ± 0.267 | 43.530 ± 0.182 | **42.842 ± 0.958** |
+| lm_batch_likelihood_sentence_3_12d | 83.683 ± 3.056 | 275.219 ± 1.846 | 134.766 ± 0.849 | 101.233 ± 0.543 | **54.826 ± 5.437** |
+| lm_batch_likelihood_sentence_4_4d | **38.747 ± 1.214** | 75.563 ± 1.191 | 65.044 ± 0.215 | 46.522 ± 0.464 | 42.044 ± 1.614 |
+| str_matrix_chain_multiplication_100 | 48.223 ± 0.736 | 33.471 ± 0.627 | 35.284 ± 0.269 | **26.532 ± 0.086** | 43.609 ± 2.522 |
+| str_mps_varying_inner_product_200 | 45.279 ± 1.612 | 46.821 ± 0.611 | 85.337 ± 0.321 | **36.378 ± 0.762** | 93.413 ± 1.039 |
+| str_nw_mera_closed_120 | 2613.991 ± 7.665 | 2995.838 ± 10.763 | 2257.169 ± 3.495 | 2219.787 ± 13.428 | **622.084 ± 31.452** |
+| str_nw_mera_open_26 | 2271.418 ± 9.741 | 2703.557 ± 3.433 | 1485.944 ± 8.937 | 1471.294 ± 2.329 | **592.279 ± 61.661** |
+| tensornetwork_permutation_focus_step409_316 | 752.289 ± 6.395 | 1368.221 ± 4.687 | 811.400 ± 2.173 | 1015.309 ± 3.196 | **529.530 ± 15.527** |
+| tensornetwork_permutation_light_415 | 757.575 ± 5.890 | 1042.957 ± 2.339 | 1063.055 ± 1.217 | 986.796 ± 4.425 | **558.860 ± 44.889** |
+
+#### Threads: 4
+
+| Instance | tenferro-rs trace | tenferro-rs eager | Torch C++ | PyTorch | JAX |
+|---|---:|---:|---:|---:|---:|
+| bin_batched_matmul_b32_m64_n64_k64 | 6.291 ± 0.282 | 3.335 ± 0.077 | 0.890 ± 0.021 | **0.319 ± 0.021** | 1.238 ± 0.230 |
+| bin_elementwise_mul_2048x2048 | 111.792 ± 2.260 | 85.310 ± 0.446 | **7.689 ± 0.123** | 8.630 ± 0.758 | 13.966 ± 0.937 |
+| bin_matmul_256 | 1.908 ± 0.142 | 1.391 ± 0.058 | **0.392 ± 0.052** | 0.422 ± 0.022 | 1.103 ± 0.059 |
+| bin_outer_product_4096 | 231.349 ± 2.320 | 314.549 ± 1.947 | **19.008 ± 0.360** | 28.008 ± 0.615 | 45.580 ± 1.044 |
+| gm_queen5_5_3.wcsp | 11886.099 ± 82.524 | 18609.818 ± 87.356 | 3460.992 ± 22.763 | **2558.145 ± 35.061** | - |
+| lm_batch_likelihood_brackets_4_4d | 45.150 ± 0.299 | 101.083 ± 4.045 | 41.908 ± 0.252 | **19.227 ± 0.131** | 43.260 ± 1.880 |
+| lm_batch_likelihood_sentence_3_12d | 101.051 ± 1.065 | 232.287 ± 6.139 | 90.421 ± 1.144 | **23.660 ± 0.091** | 57.062 ± 2.788 |
+| lm_batch_likelihood_sentence_4_4d | 54.637 ± 5.290 | 81.905 ± 17.751 | 42.965 ± 0.192 | **20.033 ± 0.191** | 41.653 ± 0.976 |
+| str_matrix_chain_multiplication_100 | 54.154 ± 3.086 | 61.322 ± 25.283 | 24.830 ± 0.150 | **14.353 ± 0.244** | 46.342 ± 2.239 |
+| str_mps_varying_inner_product_200 | 87.245 ± 1.652 | 131.894 ± 0.988 | 88.409 ± 0.386 | **31.332 ± 0.243** | 92.467 ± 1.566 |
+| str_nw_mera_closed_120 | 1522.157 ± 4.250 | 2048.930 ± 21.986 | 937.599 ± 14.441 | 749.905 ± 2.487 | **631.926 ± 43.107** |
+| str_nw_mera_open_26 | 1742.110 ± 231.092 | 2300.714 ± 19.254 | 784.209 ± 5.577 | **506.221 ± 5.851** | 580.462 ± 37.953 |
+| tensornetwork_permutation_focus_step409_316 | 679.812 ± 4.714 | 1343.566 ± 5.854 | 373.097 ± 13.693 | **341.849 ± 4.101** | 486.924 ± 9.678 |
+| tensornetwork_permutation_light_415 | 681.329 ± 6.613 | 1013.995 ± 6.139 | 498.139 ± 2.492 | **348.518 ± 2.983** | 549.142 ± 21.982 |
+
+### GPU Benchmark (NVIDIA GeForce RTX 3060)
+
+Median time in milliseconds. `unsupported` = backend does not implement this operation.
+
+#### Dense operations
+
+| Operation | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | LibTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| batched\_matmul (b16×32) | 0.142 | 0.134 | 0.057 | 0.060 | 0.120 | **0.054** | 2.942 | - |
+| matmul (256×256) | 0.581 | 0.615 | 0.295 | 0.299 | **0.118** | 0.296 | 1.412 | - |
+| eigh (64×64) | 2.064 | 153.149 | 1.850 | **1.848** | 2.167 | - | - | 1.893 |
+| qr (64×64) | 1.182 | 154.654 | 0.930 | 0.929 | 1.193 | - | - | **0.921** |
+| solve (64×64, rhs=4) | 0.527 | 1968.921 | 0.240 | 0.263 | 0.437 | - | - | **0.251** |
+| svd (64×64) | **5.201** | 176.360 | 41.350 | 38.810 | 36.949 | - | - | 38.793 |
+| einsum bin\_matmul\_256 | 0.653 | 0.652 | 0.411 | 0.408 | **0.125** | 0.399 | 1.319 | - |
+
+#### Sparse operations
+
+| Operation | PyTorch CUDA | LibTorch CUDA | cuSPARSE | Ginkgo |
+|---|---:|---:|---:|---:|
+| spmm (bcsstk17, rhs=32) | 0.392 | 0.393 | **0.397** | 2.508 |
+| spmv (bcspwr10) | **0.096** | 0.096 | 0.098 | 1.375 |
 
 ## Quick Start
 
