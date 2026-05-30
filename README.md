@@ -151,6 +151,15 @@ Start the CUDA container:
 devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
 ```
 
+Install the vendor libraries needed by the `cutlass` and `ginkgo` backends
+(CUTLASS is a quick clone; Ginkgo is a CUDA build, ~10-15 min; persisted in
+named volumes so this is a one-time step):
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc './scripts/setup_gpu_vendors.sh all'
+```
+
 Run the GPU benchmark suite inside it:
 
 ```bash
@@ -158,8 +167,13 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
   bash -lc './scripts/run_gpu_suite.sh'
 ```
 
+This measures all 10 backends (tenferro-cuda trace/eager, PyTorch, LibTorch,
+JAX, cuBLASLt, CUTLASS, cuSOLVER, cuSPARSE, Ginkgo) and writes the report to
+`result/gpu-benchmark-results.md`. Backends whose vendor library is absent
+degrade to `not_configured` rather than failing the suite.
+
 See `AGENTS.md` for the full GPU devcontainer workflow including environment
-verification and per-backend overrides.
+verification, the backend/op matrix, and per-backend overrides.
 
 ## Torch C++ Benchmark Workflow
 

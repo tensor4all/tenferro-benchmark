@@ -31,7 +31,10 @@ ensure_writable() {
     local dir="$1"
     if [[ ! -d "$dir" ]]; then
         sudo mkdir -p "$dir"
-        sudo chown "$(id -u):$(id -g)" "$dir"
+    fi
+    # Named-volume mount points are created root-owned; claim them if needed.
+    if [[ ! -w "$dir" ]]; then
+        sudo chown -R "$(id -u):$(id -g)" "$dir"
     fi
 }
 

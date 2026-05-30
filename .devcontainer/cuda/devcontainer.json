@@ -19,7 +19,9 @@
     "TENFERRO_CUTENSOR_PATH": "/usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2",
     "TENFERRO_CUSOLVER_PATH": "/usr/local/cuda/lib64/libcusolver.so",
     "TENFERRO_CUBLAS_PATH": "/usr/local/cuda/lib64/libcublas.so",
-    "CUBECL_DEBUG_LOG": "0"
+    "CUBECL_DEBUG_LOG": "0",
+    "CUTLASS_DIR": "/opt/cutlass",
+    "GINKGO_DIR": "/opt/ginkgo"
   },
   "remoteEnv": {
     "PATH": "/home/vscode/.cargo/bin:/home/vscode/.local/bin:${containerEnv:PATH}"
@@ -27,7 +29,9 @@
   "mounts": [
     "source=tenferro-benchmark-cuda-cargo-registry,target=/home/vscode/.cargo/registry,type=volume",
     "source=tenferro-benchmark-cuda-cargo-git,target=/home/vscode/.cargo/git,type=volume",
-    "source=tenferro-benchmark-cuda-uv-cache,target=/home/vscode/.cache/uv,type=volume"
+    "source=tenferro-benchmark-cuda-uv-cache,target=/home/vscode/.cache/uv,type=volume",
+    "source=tenferro-benchmark-cuda-cutlass,target=/opt/cutlass,type=volume",
+    "source=tenferro-benchmark-cuda-ginkgo,target=/opt/ginkgo,type=volume"
   ],
   "postCreateCommand": "uv sync --frozen || uv sync && uv pip install 'torch>=2.12.0' --extra-index-url https://download.pytorch.org/whl/cu126 && uv pip install 'jax[cuda12]'",
   "customizations": {
