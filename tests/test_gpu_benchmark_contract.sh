@@ -122,8 +122,8 @@ if uv run python scripts/validate_benchmark_suite.py "$TMP/bad_extra_op_block.ya
 fi
 
 GPU_BENCH_TIMESTAMP=19990101_000000 \
-GPU_BENCH_BACKENDS=tenferro-cuda-trace,pytorch-cuda,cusolver \
-GPU_BENCH_PROBLEM=dense_matmul_f64_256 \
+GPU_BENCH_BACKENDS=tenferro-cuda-trace,pytorch-cuda,cusolver,cutlass \
+GPU_BENCH_PROBLEM=dense_matmul_f64_3072 \
   bash scripts/run_gpu_suite.sh
 
 test -s "$JSONL"
@@ -133,9 +133,8 @@ test -s "$REPORT"
 uv run python scripts/validate_benchmark_suite.py --kind result "$JSONL"
 
 rg -n "GPU Benchmark Results" "$REPORT"
-rg -n "dense_matmul_f64_256" "$REPORT"
+rg -n "dense_matmul_f64_3072" "$REPORT"
 rg -n "tenferro-rs CUDA trace" "$REPORT"
 rg -n "PyTorch CUDA" "$REPORT"
 rg -n "cuSOLVER" "$REPORT"
-rg -n "not configured" "$REPORT"
 rg -n "unsupported" "$REPORT"

@@ -7,7 +7,7 @@ defaults:
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
   verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
 problems:
-  - id: einsum_bin_matmul_256_f64
+  - id: einsum_bin_matmul_3072_f64
     family: einsum
     op: einsum
     dtype: {a: f64, b: f64, c: f64, accum: f64}
@@ -16,8 +16,8 @@ problems:
     einsum:
       format_rowmajor: "ij,jk->ik"
       format_colmajor: "ij,jk->ik"
-      shapes_rowmajor: [[256, 256], [256, 256]]
-      shapes_colmajor: [[256, 256], [256, 256]]
+      shapes_rowmajor: [[3072, 3072], [3072, 3072]]
+      shapes_colmajor: [[3072, 3072], [3072, 3072]]
       path: {strategy: opt_flops, pairs: [[0, 1]]}
     run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}

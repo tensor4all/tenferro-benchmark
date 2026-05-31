@@ -7,68 +7,68 @@ defaults:
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
   verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
 problems:
-  - id: dense_matmul_f64_256
+  - id: dense_matmul_f64_3072
     family: dense
     op: matmul
     dtype: {a: f64, b: f64, c: f64, accum: f64}
     layout: {tenferro: col_major, framework: row_major_contiguous}
     data: {generator: normal, seed: 1}
-    matmul: {m: 256, n: 256, k: 256, transpose_a: false, transpose_b: false}
+    matmul: {m: 3072, n: 3072, k: 3072, transpose_a: false, transpose_b: false}
     run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
     backend_candidates: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, libtorch-cuda, jax-cuda, cublaslt, cutlass]
 
-  - id: dense_batched_matmul_f64_b16_32
+  - id: dense_batched_matmul_f64_b1024_256
     family: dense
     op: batched_matmul
     dtype: {a: f64, b: f64, c: f64, accum: f64}
     layout: {tenferro: col_major, framework: row_major_contiguous}
     data: {generator: normal, seed: 2}
-    batched_matmul: {batch: 16, m: 32, n: 32, k: 32, batch_layout: leading}
+    batched_matmul: {batch: 1024, m: 256, n: 256, k: 256, batch_layout: leading}
     run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
     backend_candidates: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, libtorch-cuda, jax-cuda, cublaslt, cutlass]
 
-  - id: dense_qr_f64_64
+  - id: dense_qr_f64_2048
     family: dense
     op: qr
     dtype: {a: f64}
     layout: {tenferro: col_major, framework: row_major_contiguous}
     data: {generator: well_conditioned, seed: 3}
-    linalg: {m: 64, n: 64, full_matrices: false}
+    linalg: {m: 2048, n: 2048, full_matrices: false}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
     backend_candidates: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, libtorch-cuda, jax-cuda, cusolver]
 
-  - id: dense_solve_f64_64_rhs4
+  - id: dense_solve_f64_4096_rhs64
     family: dense
     op: solve
     dtype: {a: f64, b: f64, c: f64}
     layout: {tenferro: col_major, framework: row_major_contiguous}
     data: {generator: spd, seed: 4}
-    linalg: {n: 64, rhs_cols: 4}
+    linalg: {n: 4096, rhs_cols: 64}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
     backend_candidates: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, libtorch-cuda, jax-cuda, cusolver]
 
-  - id: dense_svd_f64_64
+  - id: dense_svd_f64_256
     family: dense
     op: svd
     dtype: {a: f64}
     layout: {tenferro: col_major, framework: row_major_contiguous}
     data: {generator: well_conditioned, seed: 5}
-    linalg: {m: 64, n: 64, full_matrices: false}
+    linalg: {m: 256, n: 256, full_matrices: false}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
     backend_candidates: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, libtorch-cuda, jax-cuda, cusolver]
 
-  - id: dense_eigh_f64_64
+  - id: dense_eigh_f64_1536
     family: dense
     op: eigh
     dtype: {a: f64}
     layout: {tenferro: col_major, framework: row_major_contiguous}
     data: {generator: spd, seed: 6}
-    linalg: {n: 64}
+    linalg: {n: 1536}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
     backend_candidates: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, libtorch-cuda, jax-cuda, cusolver]
