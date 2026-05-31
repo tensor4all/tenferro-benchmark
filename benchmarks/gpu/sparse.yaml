@@ -18,13 +18,13 @@ problems:
     verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
     backend_candidates: [cusparse, ginkgo, pytorch-cuda, libtorch-cuda]
 
-  - id: sparse_synthetic_64k_4m_spmm_f64_rhs2048
+  - id: sparse_synthetic_64k_4m_spmm_f64_rhs1024
     family: sparse
     op: spmm
     dtype: {values: f64, x: f64, y: f64}
     layout: {sparse: csr}
     data: {generator: suitesparse, seed: 0}
-    sparse: {source: suitesparse, group: synthetic, name: random_64k_4m, storage: csr, rows: 65536, cols: 65536, nnz: 4194304, rhs_cols: 2048}
+    sparse: {source: suitesparse, group: synthetic, name: random_64k_4m, storage: csr, rows: 65536, cols: 65536, nnz: 4194304, rhs_cols: 1024}
     run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
     backend_candidates: [cusparse, ginkgo, pytorch-cuda, libtorch-cuda]
