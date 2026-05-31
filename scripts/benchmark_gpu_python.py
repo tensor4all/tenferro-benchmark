@@ -244,18 +244,18 @@ def _run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 
     try:
         gpu_data = _to_jax(data, dev)
-        fn, fn_jit = _jax_fn(op, gpu_data)
+        fn_jit, args = _jax_fn(op, gpu_data)
 
         # Warmup (triggers JIT compilation)
         for _ in range(n_warmup):
-            jax.block_until_ready(fn_jit())
+            jax.block_until_ready(fn_jit(*args))
 
         # Timed runs (JIT already compiled)
         times_ms: list[float] = []
         for _ in range(n_runs):
             jax.block_until_ready(jnp.zeros(1, device=dev))
             t0 = time.perf_counter()
-            result = jax.block_until_ready(fn_jit())
+            result = jax.block_until_ready(fn_jit(*args))
             times_ms.append((time.perf_counter() - t0) * 1000.0)
 
     except Exception as exc:
@@ -266,11 +266,9 @@ def _run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 
     # Verification against CPU float64
     try:
-        import numpy as np
         cpu_data_jax = _to_jax_cpu(data)
-        cpu_fn_jit = jax.jit(fn.__class__._unwrapped if hasattr(fn, '_unwrapped') else fn)
-        _, cpu_fn_jit = _jax_fn(op, cpu_data_jax)
-        cpu_result = jax.block_until_ready(cpu_fn_jit())
+        cpu_fn_jit, cpu_args = _jax_fn(op, cpu_data_jax)
+        cpu_result = jax.block_until_ready(cpu_fn_jit(*cpu_args))
         ver_status, max_abs, max_rel = _verify_jax(op, result, cpu_result, data, rtol, atol)
     except Exception:
         ver_status, max_abs, max_rel = "skipped", None, None
@@ -1032,33 +1030,42 @@ def _jax_fn(op: str, d: dict):
     if op == "matmul":
         A, B = d["A"], d["B"]
         ta, tb = d.get("transpose_a", False), d.get("transpose_b", False)
-        a = A.T if ta else A
-        b = B.T if tb else B
-        fn = lambda: jnp.dot(a, b)
+        def fn(A, B):
+            a = A.T if ta else A
+            b = B.T if tb else B
+            return jnp.dot(a, b)
+        args = (A, B)
     elif op == "batched_matmul":
         A, B = d["A"], d["B"]
-        fn = lambda: jnp.einsum("bik,bkj->bij", A, B)
+        fn = lambda A, B: jnp.einsum("bik,bkj->bij", A, B)
+        args = (A, B)
     elif op == "einsum":
         tensors = d["tensors"]
-        fn = lambda: jnp.einsum(d["expr"], *tensors)
+        expr = d["expr"]
+        fn = lambda *tensors: jnp.einsum(expr, *tensors)
+        args = tuple(tensors)
     elif op == "qr":
         A = d["A"]
         mode = "reduced" if not d.get("full_matrices") else "complete"
-        fn = lambda: jnp.linalg.qr(A, mode=mode)
+        fn = lambda A: jnp.linalg.qr(A, mode=mode)
+        args = (A,)
     elif op == "solve":
         A, b = d["A"], d["b"]
-        fn = lambda: jnp.linalg.solve(A, b)
+        fn = lambda A, b: jnp.linalg.solve(A, b)
+        args = (A, b)
     elif op == "svd":
         A = d["A"]
         fm = d.get("full_matrices", True)
-        fn = lambda: jnp.linalg.svd(A, full_matrices=fm)
+        fn = lambda A: jnp.linalg.svd(A, full_matrices=fm)
+        args = (A,)
     elif op == "eigh":
         A = d["A"]
-        fn = lambda: jnp.linalg.eigh(A)
+        fn = lambda A: jnp.linalg.eigh(A)
+        args = (A,)
     else:
         raise ValueError(f"unsupported op: {op}")
 
-    return fn, jax.jit(fn)
+    return jax.jit(fn), args
 
 
 # ---------------------------------------------------------------------------
