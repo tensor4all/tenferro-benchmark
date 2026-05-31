@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -116,7 +117,11 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
         by_suite_op[(record["suite_id"], record["op"])].append(record)
 
     lines = ["# GPU Benchmark Results", ""]
+    lines.append(cpu_info_markdown(collect_cpu_info()).rstrip())
+    lines.append("")
     lines.append("Median time is reported in milliseconds for `ok` records.")
+    lines.append("Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.")
+    lines.append("Timed runs include the host API call and device synchronization.")
     lines.append("Non-`ok` cells show the structured backend status.")
     lines.append("")
 

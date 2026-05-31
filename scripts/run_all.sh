@@ -81,6 +81,15 @@ timestamp_from_markdown() {
     fi
 }
 
+write_cpu_info_section() {
+    if command -v uv >/dev/null 2>&1; then
+        uv run python "$PROJECT_DIR/scripts/collect_cpu_info.py" --markdown \
+            || python3 "$PROJECT_DIR/scripts/collect_cpu_info.py" --markdown
+    else
+        python3 "$PROJECT_DIR/scripts/collect_cpu_info.py" --markdown
+    fi
+}
+
 write_einsum_report() {
     local report="$1"
     mkdir -p "$REPORTS_DIR"
@@ -95,6 +104,8 @@ write_einsum_report() {
             echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
             echo ""
         fi
+        write_cpu_info_section
+        echo ""
 
         local thread table timestamp log section_count=0
         for thread in $(result_threads_for_prefix "results"); do
@@ -142,6 +153,8 @@ write_cpu_report() {
             echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
             echo ""
         fi
+        write_cpu_info_section
+        echo ""
 
         local thread table timestamp log section_count=0
         for thread in $(result_threads_for_prefix "cpu_ops"); do

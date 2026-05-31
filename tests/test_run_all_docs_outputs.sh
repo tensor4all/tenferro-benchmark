@@ -7,6 +7,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 mkdir -p "$TMP/scripts" "$TMP/data/results" "$TMP/extern/tenferro-rs"
 cp "$ROOT/scripts/run_all.sh" "$TMP/scripts/run_all.sh"
+cp "$ROOT/scripts/collect_cpu_info.py" "$TMP/scripts/collect_cpu_info.py"
 
 (
   cd "$TMP/extern/tenferro-rs"
@@ -129,6 +130,8 @@ grep -q "## Threads: 1" "$TMP/result/einsum-results.md"
 grep -q "## Threads: 4" "$TMP/result/einsum-results.md"
 grep -q "data/results/results_t1_" "$TMP/result/einsum-results.md"
 grep -q "data/results/results_t4_" "$TMP/result/einsum-results.md"
+grep -q "CPU Information" "$TMP/result/einsum-results.md"
+grep -q "Model:" "$TMP/result/einsum-results.md"
 
 grep -q "PR884 CPU Benchmark Items" "$TMP/result/cpu-benchmark-results.md"
 grep -q "tenferro-rs eager mode" "$TMP/result/cpu-benchmark-results.md"
@@ -140,3 +143,5 @@ grep -q "## Threads: 1" "$TMP/result/cpu-benchmark-results.md"
 grep -q "## Threads: 4" "$TMP/result/cpu-benchmark-results.md"
 grep -q "data/results/cpu_ops_t1_" "$TMP/result/cpu-benchmark-results.md"
 grep -q "data/results/cpu_ops_t4_" "$TMP/result/cpu-benchmark-results.md"
+grep -q "CPU Information" "$TMP/result/cpu-benchmark-results.md"
+grep -q "Logical CPUs:" "$TMP/result/cpu-benchmark-results.md"
