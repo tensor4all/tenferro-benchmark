@@ -711,12 +711,12 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         return _stub(suite_id, problem, backend, device_ordinal,
                      status="runtime_failed", reason=str(exc)[:500], path=path, **kw)
 
-    # Verify against torch CSR reference (dense matmul)
+    # Verify against torch CSR reference without densifying large sparse inputs.
     try:
         coo_cpu = torch.sparse_coo_tensor(torch.stack([row_idx, col_idx]), vals, (rows, cols)).coalesce()
-        dense_ref = coo_cpu.to_dense()
+        csr_cpu = coo_cpu.to_sparse_csr()
         x_ref = torch.as_tensor(x.detach().cpu().numpy(), dtype=torch.float64)
-        ref = dense_ref @ x_ref
+        ref = torch.sparse.mm(csr_cpu, x_ref)
         res_cpu = result.detach().cpu().to(torch.float64)
         import numpy as np
         a = res_cpu.numpy().ravel()
