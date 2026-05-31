@@ -1,5 +1,11 @@
 # Agent Workflow
 
+## Benchmark Result Source of Truth
+
+Do not duplicate benchmark result tables in README.md or other overview docs.
+Keep generated benchmark results under `result/` as the source of truth, and
+link to those files instead.
+
 ## Devcontainer Benchmark Workflow
 
 Use this workflow when validating that benchmarks can run inside the Linux
