@@ -13,7 +13,6 @@ tenferro-runtime  = { path = "extern/tenferro-rs/tenferro-runtime", default-feat
 tenferro-tensor   = { path = "extern/tenferro-rs/tenferro-tensor", default-features = false }
 tenferro-gpu      = { path = "extern/tenferro-rs/tenferro-gpu", default-features = false, optional = true }
 tenferro-cpu      = { path = "extern/tenferro-rs/tenferro-cpu", default-features = false, optional = true }
-computegraph      = { git = "https://github.com/tensor4all/computegraph-rs.git", rev = "c20e8912560ef11166418bcea089126ef50443cc" }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

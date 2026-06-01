@@ -7,7 +7,6 @@
 //! ```
 
 use std::hint::black_box;
-use std::os::raw::{c_char, c_int, c_void};
 use std::panic;
 use std::time::Instant;
 
@@ -18,7 +17,7 @@ use tenferro_einsum::eager_tensor as eager_einsum;
 use tenferro_gpu::{download_tensor, gpu_available, upload_tensor, CubeclBackend, CubeclRuntime};
 use tenferro_linalg::eager_tensor as eager_linalg;
 use tenferro_runtime::{
-    traced_tensor, DotGeneralConfig, DType, Error as TfError, GraphCompiler, GraphExecutor, Tensor,
+    traced_tensor, DotGeneralConfig, Error as TfError, GraphCompiler, GraphExecutor, Tensor,
     TracedTensor, TypedTensor,
 };
 
@@ -136,12 +135,13 @@ fn run_eager(
         let gpu_inputs = build_and_upload_eager_inputs(
             op, problem, seed, gen, transfer_bk.runtime(), ctx.clone(),
         )?;
+        sync_cubecl_runtime(transfer_bk.runtime())?;
         let cpu_inputs = build_cpu_eager_inputs(op, problem, seed, gen);
 
         // Warmup
         for _ in 0..n_warmup {
             let out = run_eager_op(op, problem, &gpu_inputs)?;
-            sync_cuda_stream(transfer_bk.runtime())?;
+            sync_eager_runtime(&ctx)?;
             black_box(out.len());
         }
 
@@ -151,7 +151,7 @@ fn run_eager(
         for _ in 0..n_runs {
             let t0 = Instant::now();
             let out = run_eager_op(op, problem, &gpu_inputs)?;
-            sync_cuda_stream(transfer_bk.runtime())?;
+            sync_eager_runtime(&ctx)?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
             last_out = Some(out);
         }
@@ -221,6 +221,7 @@ fn run_trace(
 
         let (outputs, cpu_inputs) = build_trace_graph_gpu(op, problem, seed, gen, transfer_bk.runtime())
             .map_err(|e| format!("graph build: {e}"))?;
+        sync_cubecl_runtime(transfer_bk.runtime())?;
         let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
         let mut compiler = GraphCompiler::new();
         let program = compiler.compile_many(&output_refs)
@@ -236,7 +237,7 @@ fn run_trace(
         for _ in 0..n_warmup {
             let out = executor.run_many(&program)
                 .map_err(|e| format!("warmup: {e}"))?;
-            sync_cuda_stream(transfer_bk.runtime())?;
+            sync_cubecl_runtime(executor.backend().runtime())?;
             black_box(out.len());
         }
 
@@ -247,7 +248,7 @@ fn run_trace(
             let t0 = Instant::now();
             let out = executor.run_many(&program)
                 .map_err(|e| format!("run: {e}"))?;
-            sync_cuda_stream(transfer_bk.runtime())?;
+            sync_cubecl_runtime(executor.backend().runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
             last_out = Some(out);
         }
@@ -304,7 +305,7 @@ fn build_and_upload_eager_inputs(
     rt: &CubeclRuntime,
     ctx: std::sync::Arc<EagerRuntime>,
 ) -> Result<EagerInputs, String> {
-    let mut upload = |t: Tensor| -> Result<EagerTensor, String> {
+    let upload = |t: Tensor| -> Result<EagerTensor, String> {
         let gpu_t = upload_tensor(rt, &t).map_err(|e| format!("upload: {e}"))?;
         Ok(EagerTensor::from_tensor_in(gpu_t, ctx.clone()))
     };
@@ -499,12 +500,6 @@ fn build_trace_graph_gpu(
     build_trace_graph_inner(op, problem, seed, gen, Some(rt))
 }
 
-fn build_trace_graph_with_inputs(
-    op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str,
-) -> Result<(Vec<TracedTensor>, Vec<(TracedTensor, Tensor)>), TfError> {
-    build_trace_graph_inner(op, problem, seed, gen, None)
-}
-
 fn build_trace_graph_inner(
     op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str,
     upload_rt: Option<&CubeclRuntime>,
@@ -613,51 +608,19 @@ fn run_cpu_trace(op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str)
 // Synchronization
 // ---------------------------------------------------------------------------
 
-fn sync_cuda_stream(rt: &CubeclRuntime) -> Result<(), String> {
-    rt.set_current_cuda_context("benchmark_gpu_sync")
-        .map_err(|e| format!("cuda sync context: {e}"))?;
-    let stream = rt
-        .raw_cuda_stream()
-        .map_err(|e| format!("raw cuda stream: {e}"))?;
-    cuda_stream_synchronize(stream)
+fn sync_eager_runtime(ctx: &EagerRuntime) -> Result<(), String> {
+    ctx.synchronize()
+        .map_err(|e| format!("eager runtime synchronize: {e}"))
 }
 
-fn cuda_stream_synchronize(raw_stream: u64) -> Result<(), String> {
+fn sync_cubecl_runtime(rt: &CubeclRuntime) -> Result<(), String> {
     // Fair GPU timing must wait for queued device work without reading result
     // tensors back to the host. A full output download makes tenferro-rs look
     // worse for large outputs, while no synchronization makes async CUDA
-    // launches look too fast. Dynamically loading the driver keeps this
-    // benchmark binary aligned with tenferro-gpu's CUDA dynamic-loading setup.
-    const RTLD_LAZY: c_int = 1;
-    type CuStreamSynchronize = unsafe extern "C" fn(*mut c_void) -> c_int;
-
-    unsafe {
-        for lib in [b"libcuda.so.1\0".as_ptr(), b"libcuda.so\0".as_ptr()] {
-            let handle = dlopen(lib.cast(), RTLD_LAZY);
-            if handle.is_null() {
-                continue;
-            }
-            let symbol = dlsym(handle, b"cuStreamSynchronize\0".as_ptr().cast());
-            if symbol.is_null() {
-                continue;
-            }
-            let cu_stream_synchronize: CuStreamSynchronize = std::mem::transmute(symbol);
-            let status = cu_stream_synchronize(raw_stream as usize as *mut c_void);
-            return if status == 0 {
-                Ok(())
-            } else {
-                Err(format!("cuStreamSynchronize failed with CUDA error {status}"))
-            };
-        }
-    }
-
-    Err("failed to load cuStreamSynchronize from libcuda".to_string())
-}
-
-#[link(name = "dl")]
-extern "C" {
-    fn dlopen(filename: *const c_char, flags: c_int) -> *mut c_void;
-    fn dlsym(handle: *mut c_void, symbol: *const c_char) -> *mut c_void;
+    // launches look too fast. Use tenferro-rs explicit synchronization API so
+    // benchmark timing follows the same runtime contract as production callers.
+    rt.synchronize()
+        .map_err(|e| format!("cubecl runtime synchronize: {e}"))
 }
 
 // ---------------------------------------------------------------------------
@@ -966,12 +929,27 @@ fn ok_record(
         "execution": {
             "device": "cuda", "device_ordinal": device_ordinal,
             "execution_path": path,
-            "synchronization": "cuStreamSynchronize on CubeCL CUDA stream",
+            "synchronization": "tenferro-rs explicit synchronize API",
             "layout": layout_str(problem), "dtype": dtype_str(problem),
-            "notes": "timing uses stream synchronization without result download; verification downloads outputs after timing",
+            "notes": tenferro_notes(op),
             "unsupported_reason": null
         }
     })
+}
+
+fn tenferro_notes(op: &str) -> &'static str {
+    match op {
+        "svd" => concat!(
+            "timing uses tenferro-rs explicit synchronization without result download; ",
+            "verification downloads outputs after timing and reconstructs U*diag(S)*Vh; ",
+            "tenferro-rs uses native column-major GPU tensors and its direct cuSOLVER path, ",
+            "so compare SVD against row-major torch.linalg preferred-cusolver columns with caution"
+        ),
+        _ => concat!(
+            "timing uses tenferro-rs explicit synchronization without result download; ",
+            "verification downloads outputs after timing; tenferro-rs uses native column-major GPU tensors"
+        ),
+    }
 }
 
 fn base_env(device_ordinal: usize, ts: &str, bc: Option<&str>, tc: Option<&str>) -> Value {
