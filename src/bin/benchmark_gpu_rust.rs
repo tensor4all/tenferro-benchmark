@@ -17,7 +17,7 @@ use tenferro_einsum::eager_tensor as eager_einsum;
 use tenferro_gpu::{download_tensor, gpu_available, upload_tensor, CubeclBackend, CubeclRuntime};
 use tenferro_linalg::eager_tensor as eager_linalg;
 use tenferro_runtime::{
-    traced_tensor, DotGeneralConfig, DType, Error as TfError, GraphCompiler, GraphExecutor, Tensor,
+    traced_tensor, DotGeneralConfig, Error as TfError, GraphCompiler, GraphExecutor, Tensor,
     TracedTensor, TypedTensor,
 };
 
@@ -305,7 +305,7 @@ fn build_and_upload_eager_inputs(
     rt: &CubeclRuntime,
     ctx: std::sync::Arc<EagerRuntime>,
 ) -> Result<EagerInputs, String> {
-    let mut upload = |t: Tensor| -> Result<EagerTensor, String> {
+    let upload = |t: Tensor| -> Result<EagerTensor, String> {
         let gpu_t = upload_tensor(rt, &t).map_err(|e| format!("upload: {e}"))?;
         Ok(EagerTensor::from_tensor_in(gpu_t, ctx.clone()))
     };
@@ -498,12 +498,6 @@ fn build_trace_graph_gpu(
     rt: &CubeclRuntime,
 ) -> Result<(Vec<TracedTensor>, Vec<(TracedTensor, Tensor)>), TfError> {
     build_trace_graph_inner(op, problem, seed, gen, Some(rt))
-}
-
-fn build_trace_graph_with_inputs(
-    op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str,
-) -> Result<(Vec<TracedTensor>, Vec<(TracedTensor, Tensor)>), TfError> {
-    build_trace_graph_inner(op, problem, seed, gen, None)
 }
 
 fn build_trace_graph_inner(

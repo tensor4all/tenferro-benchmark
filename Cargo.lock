@@ -343,7 +343,7 @@ dependencies = [
 [[package]]
 name = "computegraph"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/computegraph-rs.git?rev=c20e8912560ef11166418bcea089126ef50443cc#c20e8912560ef11166418bcea089126ef50443cc"
+source = "git+https://github.com/tensor4all/computegraph-rs.git?rev=691def2d82fd4367b397d61209449f68e82050b7#691def2d82fd4367b397d61209449f68e82050b7"
 
 [[package]]
 name = "comrak"
@@ -3740,7 +3740,6 @@ dependencies = [
 name = "tenferro-einsum-benchmark"
 version = "0.1.0"
 dependencies = [
- "computegraph",
  "num-complex",
  "serde",
  "serde_json",
@@ -3912,7 +3911,7 @@ dependencies = [
 [[package]]
 name = "tidu"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/tidu-rs.git?rev=f0d91566edb2ea08fac9d61ef26f9cd1754f02df#f0d91566edb2ea08fac9d61ef26f9cd1754f02df"
+source = "git+https://github.com/tensor4all/tidu-rs.git?rev=9934d8b775fcfbbad8e2daf3f9af54477da63e35#9934d8b775fcfbbad8e2daf3f9af54477da63e35"
 dependencies = [
  "computegraph",
 ]
