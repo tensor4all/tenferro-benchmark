@@ -3912,7 +3912,7 @@ dependencies = [
 [[package]]
 name = "tidu"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/tidu-rs.git?rev=6551e2de955c83a1c8c84b3bca0b037954559617#6551e2de955c83a1c8c84b3bca0b037954559617"
+source = "git+https://github.com/tensor4all/tidu-rs.git?rev=f0d91566edb2ea08fac9d61ef26f9cd1754f02df#f0d91566edb2ea08fac9d61ef26f9cd1754f02df"
 dependencies = [
  "computegraph",
 ]

@@ -804,7 +804,7 @@ def _run_cusolver(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     if isinstance(rec.get("execution"), dict):
         rec["execution"]["execution_path"] = "phase2-measured-cusolver"
         rec["execution"]["notes"] = (
-            "torch.linalg ops with preferred_linalg_library=cusolver"
+            "torch.linalg ops with preferred_linalg_library=cusolver; this is not the raw cuSOLVER API path used by tenferro-rs"
         )
     return rec
 
@@ -848,34 +848,48 @@ def _make_data_np(problem: dict) -> dict:
     rng = np.random.default_rng(seed)
     f64 = np.float64
 
-    def normal(*shape):
-        return rng.standard_normal(shape).astype(f64)
+    def rust_normal(shape, data_seed):
+        # Match src/bin/benchmark_gpu_rust.rs normal_data and col-major tensor fill.
+        total = int(np.prod(shape, dtype=np.int64))
+        idx = np.arange(total, dtype=np.uint64)
+        mixed = (
+            idx * np.uint64(6364136223846793005)
+            + np.uint64(data_seed) * np.uint64(1442695040888963407)
+        )
+        values = ((mixed % np.uint64(1024)).astype(f64) - 512.0) / 512.0
+        return np.ascontiguousarray(values.reshape(tuple(shape), order="F"))
 
-    def well_conditioned(m, n):
-        A = rng.standard_normal((m, n)).astype(f64)
-        Q, _ = np.linalg.qr(A if m >= n else A.T)
-        return Q if m >= n else Q.T
+    def normal(*shape, data_seed=seed):
+        return rust_normal(shape, data_seed)
 
-    def spd(n):
-        A = rng.standard_normal((n, n)).astype(f64)
-        return A @ A.T + n * np.eye(n, dtype=f64)
+    def well_conditioned(m, n, data_seed=seed):
+        d = rust_normal((m, n), data_seed)
+        for j in range(n):
+            d[:, j] *= 0.05
+            if j < m:
+                d[j, j] += 1.0 + j / max(n, 1)
+        return np.ascontiguousarray(d)
+
+    def spd(n, data_seed=seed):
+        base = well_conditioned(n, n, data_seed)
+        return np.ascontiguousarray(base.T @ base + np.eye(n, dtype=f64))
 
     if op == "matmul":
         p = problem["matmul"]
         m, n, k = p["m"], p["n"], p["k"]
-        return {"op": op, "A": normal(m, k), "B": normal(k, n),
+        return {"op": op, "A": normal(m, k, data_seed=seed), "B": normal(k, n, data_seed=seed + 1),
                 "transpose_a": p.get("transpose_a", False),
                 "transpose_b": p.get("transpose_b", False)}
 
     if op == "batched_matmul":
         p = problem["batched_matmul"]
         b, m, n, k = p["batch"], p["m"], p["n"], p["k"]
-        return {"op": op, "A": normal(b, m, k), "B": normal(b, k, n)}
+        return {"op": op, "A": np.transpose(rust_normal((m, k, b), seed), (2, 0, 1)).copy(), "B": np.transpose(rust_normal((k, n, b), seed + 1), (2, 0, 1)).copy()}
 
     if op == "einsum":
         p = problem["einsum"]
         shapes = p["shapes_rowmajor"]
-        tensors = [rng.standard_normal(s).astype(f64) for s in shapes]
+        tensors = [normal(*s, data_seed=seed + i) for i, s in enumerate(shapes)]
         return {"op": op, "expr": p["format_rowmajor"], "tensors": tensors}
 
     if op == "qr":
@@ -888,8 +902,8 @@ def _make_data_np(problem: dict) -> dict:
         p = problem["linalg"]
         n = p["n"]
         rhs = p.get("rhs_cols", 1)
-        A = spd(n) if generator == "spd" else normal(n, n) + n * np.eye(n, dtype=f64)
-        b = normal(n, rhs) if rhs > 1 else normal(n)
+        A = spd(n, data_seed=seed) if generator == "spd" else normal(n, n, data_seed=seed) + n * np.eye(n, dtype=f64)
+        b = normal(n, rhs, data_seed=seed + 100)
         return {"op": op, "A": A, "b": b}
 
     if op == "svd":

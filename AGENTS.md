@@ -160,6 +160,19 @@ than checking only singular/eigen values, otherwise tenferro-rs can appear
 overly fast if it computes or validates less of the decomposition than PyTorch,
 JAX, or vendor-library baselines.
 
+Keep Rust and Python GPU input generation equivalent for dense and einsum
+problems. The Python runner intentionally mirrors the Rust deterministic
+`normal_data` and `well_conditioned` helpers, then converts to each framework's
+native tensor layout before timing. Do not compare a tenferro-rs column-major
+input against a different PyTorch or JAX row-major input distribution, because
+that can make tenferro-rs SVD, QR, or solve results look unfairly fast or slow.
+
+When interpreting vendor-library columns, record the actual API path. The
+`cusolver` backend is a Torch `torch.linalg` path with
+`preferred_linalg_library=cusolver`; it is not the same as tenferro-rs calling
+raw cuSOLVER directly. If conversion cost or raw-vendor API cost is measured,
+put it in a separate backend or clearly separate timed scope.
+
 ### Implemented backends and execution paths
 
 | Backend | Runner | Ops | Notes |
@@ -170,7 +183,7 @@ JAX, or vendor-library baselines.
 | `libtorch-cuda` | `scripts/benchmark_gpu_python.py` | all | same ATen kernels as C++ LibTorch |
 | `jax-cuda` | `scripts/benchmark_gpu_python.py` | dense + einsum | XLA, `jax_enable_x64` |
 | `cublaslt` | `scripts/benchmark_gpu_python.py` | matmul/bmm/einsum | `torch.mm` → cuBLAS LT, TF32 off |
-| `cusolver` | `scripts/benchmark_gpu_python.py` | qr/solve/svd/eigh | `preferred_linalg_library=cusolver` |
+| `cusolver` | `scripts/benchmark_gpu_python.py` | qr/solve/svd/eigh | Torch `torch.linalg` with `preferred_linalg_library=cusolver`, not raw cuSOLVER |
 | `cusparse` | `scripts/benchmark_gpu_python.py` | spmv/spmm | `torch.sparse` CSR → cuSPARSE |
 | `cutlass` | `scripts/benchmark_gpu_python.py` | matmul/einsum | JIT extension, `cutlass::gemm::device::Gemm<double,...,Sm80>` |
 | `ginkgo` | `scripts/benchmark_gpu_python.py` | spmv/spmm | JIT extension linking `libginkgo` CUDA executor |

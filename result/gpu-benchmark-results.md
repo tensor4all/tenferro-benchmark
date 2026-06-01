@@ -13,7 +13,10 @@
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
-Timed runs include the host API call and backend-native device synchronization. tenferro-rs CUDA uses stream synchronization without downloading result tensors in the timed region.
+Timed runs include the host API call and backend-native device synchronization. tenferro-rs CUDA uses the explicit tenferro-rs synchronize API without downloading result tensors in the timed region.
+Dense and einsum inputs use the same deterministic benchmark generator in the Rust and Python runners; host-to-device layout conversion remains outside the timed region.
+tenferro-rs uses native column-major GPU tensors; Torch, JAX, and vendor-wrapper columns use their native row-major framework tensors unless noted.
+The cuSOLVER column is torch.linalg with preferred_linalg_library=cusolver, not a raw cuSOLVER API benchmark.
 Non-`ok` cells show the structured backend status.
 
 ## gpu_dense_contract_v1 / batched_matmul
@@ -47,6 +50,8 @@ Non-`ok` cells show the structured backend status.
 | dense_solve_f64_512_rhs16 | 3.683 | 1930.995 | 3.032 | 3.016 | 3.298 | unsupported | unsupported | 3.022 | unsupported | unsupported |
 
 ## gpu_dense_contract_v1 / svd
+
+> **SVD note:** Existing SVD rows are suspect until regenerated after the synchronized tenferro-rs runner and matched Rust/Python input generator fixes. Compare tenferro-rs native column-major direct-cuSOLVER results against Torch/JAX row-major framework results only with the layout and API-path caveats above.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | LibTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
