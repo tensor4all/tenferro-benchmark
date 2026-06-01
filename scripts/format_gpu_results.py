@@ -132,7 +132,7 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
         lines.append(f"## {markdown_cell(suite_id)} / {markdown_cell(op)}")
         lines.append("")
         if op == "svd":
-            lines.append("> **SVD note:** Existing SVD rows are suspect until regenerated after the synchronized tenferro-rs runner and matched Rust/Python input generator fixes. Compare tenferro-rs native column-major direct-cuSOLVER results against Torch/JAX row-major framework results only with the layout and API-path caveats above.")
+            lines.append("> **SVD note:** SVD rows use synchronized timed regions and matched Rust/Python input generators. Compare tenferro-rs native column-major direct-cuSOLVER results against Torch/JAX row-major framework results only with the layout and API-path caveats above.")
             lines.append("")
         header = "| Problem | " + " | ".join(markdown_cell(BACKEND_LABELS.get(b, b)) for b in backends) + " |"
         separator = "|---|" + "|".join("---:" for _ in backends) + "|"
