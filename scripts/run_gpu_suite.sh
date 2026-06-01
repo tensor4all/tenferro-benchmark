@@ -70,13 +70,14 @@ RUST_BIN="$PROJECT_DIR/target/release/benchmark_gpu_rust"
 if [[ ${#RUST_BACKENDS[@]} -gt 0 ]]; then
     echo "Running Rust GPU benchmarks: ${RUST_BACKENDS[*]}"
     RUST_JSONL="$RESULTS_DIR/gpu_rust_${TIMESTAMP}.jsonl"
-    if [[ ! -f "$RUST_BIN" ]]; then
-        echo "  Building benchmark_gpu_rust..."
-        CUBECL_DEBUG_LOG=0 \
-        CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
-        LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-            cargo build --release --features cuda --bin benchmark_gpu_rust 2>&1
-    fi
+    # Always ask Cargo to build before measuring so source changes that affect
+    # synchronization or timing metadata cannot be hidden by a stale release
+    # binary from an earlier benchmark run.
+    echo "  Building benchmark_gpu_rust..."
+    CUBECL_DEBUG_LOG=0 \
+    CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+    LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+        cargo build --release --features cuda --bin benchmark_gpu_rust 2>&1
     CUBECL_DEBUG_LOG=0 \
     CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
     LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
