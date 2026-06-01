@@ -169,8 +169,10 @@ that can make tenferro-rs SVD, QR, or solve results look unfairly fast or slow.
 
 When interpreting vendor-library columns, record the actual API path. The
 `cusolver` backend is a Torch `torch.linalg` path with
-`preferred_linalg_library=cusolver`; it is not the same as tenferro-rs calling
-raw cuSOLVER directly. If conversion cost or raw-vendor API cost is measured,
+`preferred_linalg_library=cusolver`; for SVD it must pin `driver="gesvd"`
+to match the cuSOLVER routine family used by tenferro-rs raw `cusolverDn*gesvd`
+more closely. It is still not the same as tenferro-rs calling raw cuSOLVER
+directly. If conversion cost or raw-vendor API cost is measured,
 put it in a separate backend or clearly separate timed scope.
 
 ### Implemented backends and execution paths
@@ -183,7 +185,7 @@ put it in a separate backend or clearly separate timed scope.
 | `libtorch-cuda` | `scripts/benchmark_gpu_python.py` | all | same ATen kernels as C++ LibTorch |
 | `jax-cuda` | `scripts/benchmark_gpu_python.py` | dense + einsum | XLA, `jax_enable_x64` |
 | `cublaslt` | `scripts/benchmark_gpu_python.py` | matmul/bmm/einsum | `torch.mm` → cuBLAS LT, TF32 off |
-| `cusolver` | `scripts/benchmark_gpu_python.py` | qr/solve/svd/eigh | Torch `torch.linalg` with `preferred_linalg_library=cusolver`, not raw cuSOLVER |
+| `cusolver` | `scripts/benchmark_gpu_python.py` | qr/solve/svd/eigh | Torch `torch.linalg` with `preferred_linalg_library=cusolver`; SVD pins `driver="gesvd"` |
 | `cusparse` | `scripts/benchmark_gpu_python.py` | spmv/spmm | `torch.sparse` CSR → cuSPARSE |
 | `cutlass` | `scripts/benchmark_gpu_python.py` | matmul/einsum | JIT extension, `cutlass::gemm::device::Gemm<double,...,Sm80>` |
 | `ginkgo` | `scripts/benchmark_gpu_python.py` | spmv/spmm | JIT extension linking `libginkgo` CUDA executor |

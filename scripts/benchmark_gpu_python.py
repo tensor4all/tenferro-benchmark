@@ -790,9 +790,16 @@ def _run_cublaslt(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 # ---------------------------------------------------------------------------
 
 def _run_cusolver(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
-    """cuSOLVER backend: runs linalg ops through torch.linalg with cuSOLVER explicitly preferred."""
+    """cuSOLVER backend: runs torch.linalg with cuSOLVER explicitly preferred.
+
+    For SVD, pin driver="gesvd" so this comparison follows the same
+    cuSOLVER routine family as tenferro-rs raw cusolverDn*gesvd.
+    """
     import torch
     kw = dict(ts=ts, bc=bc, tc=tc)
+    problem = dict(problem)
+    if problem.get("op") == "svd":
+        problem["torch_svd_driver"] = "gesvd"
 
     prev_pref = torch.backends.cuda.preferred_linalg_library()
     torch.backends.cuda.preferred_linalg_library("cusolver")
@@ -803,9 +810,17 @@ def _run_cusolver(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 
     if isinstance(rec.get("execution"), dict):
         rec["execution"]["execution_path"] = "phase2-measured-cusolver"
-        rec["execution"]["notes"] = (
-            "torch.linalg ops with preferred_linalg_library=cusolver; this is not the raw cuSOLVER API path used by tenferro-rs"
-        )
+        if problem.get("op") == "svd":
+            rec["execution"]["notes"] = (
+                "torch.linalg.svd with preferred_linalg_library=cusolver and driver=gesvd; "
+                "this matches the cuSOLVER gesvd routine family used by tenferro-rs, "
+                "but remains a torch.linalg path rather than a raw cuSOLVER API benchmark"
+            )
+        else:
+            rec["execution"]["notes"] = (
+                "torch.linalg ops with preferred_linalg_library=cusolver; "
+                "this is not the raw cuSOLVER API path used by tenferro-rs"
+            )
     return rec
 
 
@@ -910,7 +925,7 @@ def _make_data_np(problem: dict) -> dict:
         p = problem["linalg"]
         m, n = p["m"], p["n"]
         A = well_conditioned(m, n) if generator == "well_conditioned" else normal(m, n)
-        return {"op": op, "A": A, "full_matrices": p.get("full_matrices", True)}
+        return {"op": op, "A": A, "full_matrices": p.get("full_matrices", True), "svd_driver": problem.get("torch_svd_driver")}
 
     if op == "eigh":
         p = problem["linalg"]
@@ -1025,6 +1040,9 @@ def _torch_fn(op: str, d: dict):
         return lambda: torch.linalg.solve(d["A"], d["b"])
     if op == "svd":
         fm = d.get("full_matrices", True)
+        driver = d.get("svd_driver")
+        if driver and d["A"].is_cuda:
+            return lambda: torch.linalg.svd(d["A"], full_matrices=fm, driver=driver)
         return lambda: torch.linalg.svd(d["A"], full_matrices=fm)
     if op == "eigh":
         return lambda: torch.linalg.eigh(d["A"])
