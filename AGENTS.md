@@ -141,6 +141,23 @@ Requires an NVIDIA GPU on the host with the NVIDIA Container Toolkit installed.
      bash -lc 'GPU_BENCH_BACKENDS=pytorch-cuda,jax-cuda GPU_BENCH_DEVICE=0 ./scripts/run_gpu_suite.sh'
    ```
 
+### GPU timing fairness
+
+GPU benchmark timings must synchronize queued device work without using a
+full result download as the synchronization primitive. Downloading an output
+tensor inside the timed region adds output-size-dependent D2H transfer cost and
+can understate tenferro-rs performance for large dense outputs, while omitting
+synchronization can overstate any asynchronous CUDA backend by measuring only
+job submission. Keep timed regions scoped to host API dispatch plus
+backend-native device synchronization; perform output downloads only after
+timing for verification.
+
+For decomposition benchmarks, verify work equivalently across backends. SVD,
+QR, and eigensolver cases should use reconstruction or residual checks rather
+than checking only singular/eigen values, otherwise tenferro-rs can appear
+overly fast if it computes or validates less of the decomposition than PyTorch,
+JAX, or vendor-library baselines.
+
 ### Implemented backends and execution paths
 
 | Backend | Runner | Ops | Notes |

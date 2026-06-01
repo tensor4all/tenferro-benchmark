@@ -121,7 +121,7 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
     lines.append("")
     lines.append("Median time is reported in milliseconds for `ok` records.")
     lines.append("Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.")
-    lines.append("Timed runs include the host API call and device synchronization.")
+    lines.append("Timed runs include the host API call and backend-native device synchronization. tenferro-rs CUDA uses stream synchronization without downloading result tensors in the timed region.")
     lines.append("Non-`ok` cells show the structured backend status.")
     lines.append("")
 

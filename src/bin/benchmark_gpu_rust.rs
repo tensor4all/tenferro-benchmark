@@ -7,6 +7,7 @@
 //! ```
 
 use std::hint::black_box;
+use std::os::raw::{c_char, c_int, c_void};
 use std::panic;
 use std::time::Instant;
 
@@ -140,7 +141,7 @@ fn run_eager(
         // Warmup
         for _ in 0..n_warmup {
             let out = run_eager_op(op, problem, &gpu_inputs)?;
-            sync_eager(&out, transfer_bk.runtime())?;
+            sync_cuda_stream(transfer_bk.runtime())?;
             black_box(out.len());
         }
 
@@ -150,7 +151,7 @@ fn run_eager(
         for _ in 0..n_runs {
             let t0 = Instant::now();
             let out = run_eager_op(op, problem, &gpu_inputs)?;
-            sync_eager(&out, transfer_bk.runtime())?;
+            sync_cuda_stream(transfer_bk.runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
             last_out = Some(out);
         }
@@ -159,7 +160,7 @@ fn run_eager(
         let (ver_status, max_abs, max_rel) = if let Some(ref g) = last_out {
             let cpu_out = run_eager_op(op, problem, &cpu_inputs)
                 .unwrap_or_default();
-            verify_eager(op, g, &cpu_out, transfer_bk.runtime(), rtol, atol)
+            verify_eager(op, g, &cpu_out, &cpu_inputs, transfer_bk.runtime(), rtol, atol)
         } else {
             ("skipped".to_string(), None, None)
         };
@@ -218,7 +219,7 @@ fn run_trace(
         let compute_bk = CubeclBackend::new(device_ordinal)
             .map_err(|e| format!("compute backend: {e}"))?;
 
-        let outputs = build_trace_graph_gpu(op, problem, seed, gen, transfer_bk.runtime())
+        let (outputs, cpu_inputs) = build_trace_graph_gpu(op, problem, seed, gen, transfer_bk.runtime())
             .map_err(|e| format!("graph build: {e}"))?;
         let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
         let mut compiler = GraphCompiler::new();
@@ -235,7 +236,7 @@ fn run_trace(
         for _ in 0..n_warmup {
             let out = executor.run_many(&program)
                 .map_err(|e| format!("warmup: {e}"))?;
-            sync_trace(&out, transfer_bk.runtime())?;
+            sync_cuda_stream(transfer_bk.runtime())?;
             black_box(out.len());
         }
 
@@ -246,7 +247,7 @@ fn run_trace(
             let t0 = Instant::now();
             let out = executor.run_many(&program)
                 .map_err(|e| format!("run: {e}"))?;
-            sync_trace(&out, transfer_bk.runtime())?;
+            sync_cuda_stream(transfer_bk.runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
             last_out = Some(out);
         }
@@ -257,7 +258,8 @@ fn run_trace(
                 .filter_map(|t| download_tensor(transfer_bk.runtime(), t).ok())
                 .collect();
             let cpu_out = run_cpu_trace(op, problem, seed, gen).unwrap_or_default();
-            verify_tensors(op, &gpu_tensors, &cpu_out, rtol, atol)
+            let cpu_inputs: Vec<Tensor> = cpu_inputs.iter().map(|(_, t)| t.clone()).collect();
+            verify_tensors(op, &gpu_tensors, &cpu_out, &cpu_inputs, rtol, atol)
         } else {
             ("skipped".to_string(), None, None)
         };
@@ -493,9 +495,8 @@ fn build_trace_graph(
 fn build_trace_graph_gpu(
     op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str,
     rt: &CubeclRuntime,
-) -> Result<Vec<TracedTensor>, TfError> {
-    let (outputs, _) = build_trace_graph_inner(op, problem, seed, gen, Some(rt))?;
-    Ok(outputs)
+) -> Result<(Vec<TracedTensor>, Vec<(TracedTensor, Tensor)>), TfError> {
+    build_trace_graph_inner(op, problem, seed, gen, Some(rt))
 }
 
 fn build_trace_graph_with_inputs(
@@ -612,24 +613,51 @@ fn run_cpu_trace(op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str)
 // Synchronization
 // ---------------------------------------------------------------------------
 
-fn sync_eager(tensors: &[EagerTensor], rt: &CubeclRuntime) -> Result<(), String> {
-    if let Some(first) = tensors.first() {
-        download_tensor(rt, first.data())
-            .map(|_| ())
-            .map_err(|e| format!("eager sync: {e}"))
-    } else {
-        Ok(())
-    }
+fn sync_cuda_stream(rt: &CubeclRuntime) -> Result<(), String> {
+    rt.set_current_cuda_context("benchmark_gpu_sync")
+        .map_err(|e| format!("cuda sync context: {e}"))?;
+    let stream = rt
+        .raw_cuda_stream()
+        .map_err(|e| format!("raw cuda stream: {e}"))?;
+    cuda_stream_synchronize(stream)
 }
 
-fn sync_trace(tensors: &[Tensor], rt: &CubeclRuntime) -> Result<(), String> {
-    if let Some(first) = tensors.first() {
-        download_tensor(rt, first)
-            .map(|_| ())
-            .map_err(|e| format!("trace sync: {e}"))
-    } else {
-        Ok(())
+fn cuda_stream_synchronize(raw_stream: u64) -> Result<(), String> {
+    // Fair GPU timing must wait for queued device work without reading result
+    // tensors back to the host. A full output download makes tenferro-rs look
+    // worse for large outputs, while no synchronization makes async CUDA
+    // launches look too fast. Dynamically loading the driver keeps this
+    // benchmark binary aligned with tenferro-gpu's CUDA dynamic-loading setup.
+    const RTLD_LAZY: c_int = 1;
+    type CuStreamSynchronize = unsafe extern "C" fn(*mut c_void) -> c_int;
+
+    unsafe {
+        for lib in [b"libcuda.so.1\0".as_ptr(), b"libcuda.so\0".as_ptr()] {
+            let handle = dlopen(lib.cast(), RTLD_LAZY);
+            if handle.is_null() {
+                continue;
+            }
+            let symbol = dlsym(handle, b"cuStreamSynchronize\0".as_ptr().cast());
+            if symbol.is_null() {
+                continue;
+            }
+            let cu_stream_synchronize: CuStreamSynchronize = std::mem::transmute(symbol);
+            let status = cu_stream_synchronize(raw_stream as usize as *mut c_void);
+            return if status == 0 {
+                Ok(())
+            } else {
+                Err(format!("cuStreamSynchronize failed with CUDA error {status}"))
+            };
+        }
     }
+
+    Err("failed to load cuStreamSynchronize from libcuda".to_string())
+}
+
+#[link(name = "dl")]
+extern "C" {
+    fn dlopen(filename: *const c_char, flags: c_int) -> *mut c_void;
+    fn dlsym(handle: *mut c_void, symbol: *const c_char) -> *mut c_void;
 }
 
 // ---------------------------------------------------------------------------
@@ -639,62 +667,154 @@ fn sync_trace(tensors: &[Tensor], rt: &CubeclRuntime) -> Result<(), String> {
 fn verify_eager(
     op: &str,
     gpu: &[EagerTensor],
-    cpu: &[EagerTensor],
+    cpu_outputs: &[EagerTensor],
+    cpu_inputs: &EagerInputs,
     rt: &CubeclRuntime,
     rtol: f64, atol: f64,
 ) -> (String, Option<f64>, Option<f64>) {
     let gpu_tensors: Vec<Tensor> = gpu.iter()
         .filter_map(|t| download_tensor(rt, t.data()).ok())
         .collect();
-    let cpu_tensors: Vec<Tensor> = cpu.iter()
+    let cpu_tensors: Vec<Tensor> = cpu_outputs.iter()
         .map(|t| t.data().clone())
         .collect();
-    verify_tensors(op, &gpu_tensors, &cpu_tensors, rtol, atol)
+    let mut input_tensors = vec![cpu_inputs.a.data().clone()];
+    if let Some(b) = &cpu_inputs.b {
+        input_tensors.push(b.data().clone());
+    }
+    input_tensors.extend(cpu_inputs.extra.iter().map(|t| t.data().clone()));
+    verify_tensors(op, &gpu_tensors, &cpu_tensors, &input_tensors, rtol, atol)
 }
 
 fn verify_tensors(
     op: &str,
     gpu: &[Tensor],
-    cpu: &[Tensor],
+    cpu_outputs: &[Tensor],
+    cpu_inputs: &[Tensor],
     rtol: f64, atol: f64,
 ) -> (String, Option<f64>, Option<f64>) {
-    let to_f64 = |t: &Tensor| -> Option<Vec<f64>> {
-        if let Tensor::F64(typed) = t {
-            Some(typed.as_slice().to_vec())
-        } else {
-            None
+    let comparison = match op {
+        "qr" => verify_qr(gpu, cpu_inputs),
+        "svd" => verify_svd(gpu, cpu_inputs),
+        "eigh" => verify_eigh(gpu, cpu_inputs),
+        _ => {
+            let actual = gpu.first().and_then(tensor_f64_parts);
+            let expected = cpu_outputs.first().and_then(tensor_f64_parts);
+            match (actual, expected) {
+                (Some((_, a)), Some((_, e))) => Some((a, e)),
+                _ => None,
+            }
         }
     };
-    let abs_max = |a: &[f64], b: &[f64]| -> f64 {
-        a.iter().zip(b.iter()).map(|(x, y)| (x - y).abs()).fold(0.0_f64, f64::max)
-    };
-    let rel_max = |a: &[f64], b: &[f64]| -> f64 {
-        a.iter().zip(b.iter())
-            .map(|(x, y)| (x - y).abs() / y.abs().max(1e-10))
-            .fold(0.0_f64, f64::max)
-    };
-    let norm_inf = |a: &[f64]| a.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
 
-    // For decomp ops compare scale-invariant quantities only to avoid sign-flip failures.
-    // svd: compare S (singular values) at index 1.
-    // eigh: compare L (eigenvalues) at index 0.
-    // qr, solve: compare first output directly.
-    let (gi, ci) = match op {
-        "svd" if gpu.len() > 1 && cpu.len() > 1 => (1, 1),
-        "eigh" if !gpu.is_empty() && !cpu.is_empty() => (0, 0),
-        _ => (0, 0),
+    let Some((actual, expected)) = comparison else {
+        return ("skipped".to_string(), None, None);
     };
-    let g = match gpu.get(gi).and_then(to_f64) {
-        Some(v) => v,
-        None => return ("skipped".to_string(), None, None),
-    };
-    let c = match cpu.get(ci).and_then(to_f64) {
-        Some(v) => v,
-        None => return ("skipped".to_string(), None, None),
-    };
-    let max_abs = abs_max(&g, &c);
-    let max_rel = rel_max(&g, &c);
-    let norm = norm_inf(&c);
+    compare_vectors(&actual, &expected, rtol, atol)
+}
+
+fn verify_qr(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f64>)> {
+    let (q_shape, q) = gpu.first().and_then(tensor_f64_parts)?;
+    let (r_shape, r) = gpu.get(1).and_then(tensor_f64_parts)?;
+    let (_, a) = cpu_inputs.first().and_then(tensor_f64_parts)?;
+    if q_shape.len() != 2 || r_shape.len() != 2 {
+        return None;
+    }
+    let recon = matmul_col_major(&q, q_shape[0], q_shape[1], &r, r_shape[0], r_shape[1])?;
+    Some((recon, a))
+}
+
+fn verify_svd(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f64>)> {
+    let (u_shape, u) = gpu.first().and_then(tensor_f64_parts)?;
+    let (s_shape, s) = gpu.get(1).and_then(tensor_f64_parts)?;
+    let (vh_shape, vh) = gpu.get(2).and_then(tensor_f64_parts)?;
+    let (_, a) = cpu_inputs.first().and_then(tensor_f64_parts)?;
+    if u_shape.len() != 2 || s_shape.len() != 1 || vh_shape.len() != 2 {
+        return None;
+    }
+    let (m, k) = (u_shape[0], u_shape[1]);
+    if s_shape[0] != k || vh_shape[0] != k {
+        return None;
+    }
+    let mut us = u.clone();
+    for col in 0..k {
+        for row in 0..m {
+            us[row + m * col] *= s[col];
+        }
+    }
+    let recon = matmul_col_major(&us, m, k, &vh, vh_shape[0], vh_shape[1])?;
+    Some((recon, a))
+}
+
+fn verify_eigh(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f64>)> {
+    let (w_shape, w) = gpu.first().and_then(tensor_f64_parts)?;
+    let (v_shape, v) = gpu.get(1).and_then(tensor_f64_parts)?;
+    let (a_shape, a) = cpu_inputs.first().and_then(tensor_f64_parts)?;
+    if w_shape.len() != 1 || v_shape.len() != 2 || a_shape.len() != 2 {
+        return None;
+    }
+    let n = w_shape[0];
+    if v_shape.as_slice() != [n, n] || a_shape.as_slice() != [n, n] {
+        return None;
+    }
+    let av = matmul_col_major(&a, n, n, &v, n, n)?;
+    let mut vl = v.clone();
+    for col in 0..n {
+        for row in 0..n {
+            vl[row + n * col] *= w[col];
+        }
+    }
+    Some((av, vl))
+}
+
+fn tensor_f64_parts(t: &Tensor) -> Option<(Vec<usize>, Vec<f64>)> {
+    if let Tensor::F64(typed) = t {
+        Some((typed.shape().to_vec(), typed.as_slice().to_vec()))
+    } else {
+        None
+    }
+}
+
+fn matmul_col_major(
+    a: &[f64],
+    a_rows: usize,
+    a_cols: usize,
+    b: &[f64],
+    b_rows: usize,
+    b_cols: usize,
+) -> Option<Vec<f64>> {
+    if a_cols != b_rows || a.len() != a_rows * a_cols || b.len() != b_rows * b_cols {
+        return None;
+    }
+    let mut out = vec![0.0; a_rows * b_cols];
+    for col in 0..b_cols {
+        for row in 0..a_rows {
+            let mut acc = 0.0;
+            for k in 0..a_cols {
+                acc += a[row + a_rows * k] * b[k + b_rows * col];
+            }
+            out[row + a_rows * col] = acc;
+        }
+    }
+    Some(out)
+}
+
+fn compare_vectors(
+    actual: &[f64],
+    expected: &[f64],
+    rtol: f64,
+    atol: f64,
+) -> (String, Option<f64>, Option<f64>) {
+    if actual.len() != expected.len() {
+        return ("skipped".to_string(), None, None);
+    }
+    let max_abs = actual.iter().zip(expected.iter())
+        .map(|(x, y)| (x - y).abs())
+        .fold(0.0_f64, f64::max);
+    let max_rel = actual.iter().zip(expected.iter())
+        .map(|(x, y)| (x - y).abs() / y.abs().max(1e-10))
+        .fold(0.0_f64, f64::max);
+    let norm = expected.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
     let passed = max_abs <= atol + rtol * norm.max(1.0);
     (if passed { "passed" } else { "failed" }.to_string(), Some(max_abs), Some(max_rel))
 }
@@ -846,9 +966,9 @@ fn ok_record(
         "execution": {
             "device": "cuda", "device_ordinal": device_ordinal,
             "execution_path": path,
-            "synchronization": "download_tensor (CubeCL stream sync + D2H)",
+            "synchronization": "cuStreamSynchronize on CubeCL CUDA stream",
             "layout": layout_str(problem), "dtype": dtype_str(problem),
-            "notes": "timing includes small D2H transfer for synchronization",
+            "notes": "timing uses stream synchronization without result download; verification downloads outputs after timing",
             "unsupported_reason": null
         }
     })
