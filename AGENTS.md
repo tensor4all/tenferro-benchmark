@@ -150,7 +150,9 @@ can understate tenferro-rs performance for large dense outputs, while omitting
 synchronization can overstate any asynchronous CUDA backend by measuring only
 job submission. Keep timed regions scoped to host API dispatch plus
 backend-native device synchronization; perform output downloads only after
-timing for verification.
+timing for verification. Always rebuild the Rust GPU benchmark
+binary before measuring so synchronization fixes and timing metadata changes
+cannot be hidden by a stale `target/release/benchmark_gpu_rust`.
 
 For decomposition benchmarks, verify work equivalently across backends. SVD,
 QR, and eigensolver cases should use reconstruction or residual checks rather
