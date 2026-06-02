@@ -222,10 +222,13 @@ include the Torch C++ column.
    ```
 
    This creates or reuses `extern/tenferro-rs` and
-   `extern/pytorch-openblas`. If sibling checkouts exist at `../tenferro-rs` or
-   `../pytorch-openblas`, the setup script moves them under `extern/` by
-   default. Use `SETUP_EXTERN_MIGRATE_SIBLINGS=0` only when that migration is
-   not desired.
+   `extern/pytorch-openblas`. By default, a clean `extern/tenferro-rs`
+   checkout is fetched and checked out at `TENFERRO_REF=main`; dirty checkouts
+   fail explicitly instead of being overwritten. Use
+   `TENFERRO_REF=<branch-or-commit>` to reproduce recorded results, or
+   `TENFERRO_UPDATE=0` only when intentionally benchmarking the existing
+   checkout. Sibling checkouts at `../tenferro-rs` or `../pytorch-openblas`
+   are left in place unless `SETUP_EXTERN_MIGRATE_SIBLINGS=1` is set.
 
    To remove these repo-local checkouts, run:
 
