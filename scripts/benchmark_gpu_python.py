@@ -798,8 +798,9 @@ def _run_cublaslt(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 def _run_cusolver(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     """cuSOLVER backend: runs torch.linalg with cuSOLVER explicitly preferred.
 
-    For SVD, pin driver="gesvd" so this comparison follows the same
-    cuSOLVER routine family as tenferro-rs raw cusolverDn*gesvd.
+    For SVD, pin driver="gesvd" as a QR-based cuSOLVER comparison. tenferro-rs
+    CUDA SVD uses its backend default driver policy, currently JAX-compatible
+    gesvdj for matrices with both dimensions at most 1024 and gesvd otherwise.
     """
     import torch
     kw = dict(ts=ts, bc=bc, tc=tc)
@@ -819,8 +820,9 @@ def _run_cusolver(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         if problem.get("op") == "svd":
             rec["execution"]["notes"] = (
                 "torch.linalg.svd with preferred_linalg_library=cusolver and driver=gesvd; "
-                "this matches the cuSOLVER gesvd routine family used by tenferro-rs, "
-                "but remains a torch.linalg path rather than a raw cuSOLVER API benchmark"
+                "this is a QR-based cuSOLVER comparison, while tenferro-rs CUDA SVD uses "
+                "its backend default driver policy; this remains a torch.linalg path "
+                "rather than a raw cuSOLVER API benchmark"
             )
         else:
             rec["execution"]["notes"] = (

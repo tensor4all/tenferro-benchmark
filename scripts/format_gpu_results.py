@@ -124,7 +124,7 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
     lines.append("Timed runs include the host API call and backend-native device synchronization. tenferro-rs CUDA uses the explicit tenferro-rs synchronize API without downloading result tensors in the timed region.")
     lines.append("Dense and einsum inputs use the same deterministic benchmark generator in the Rust and Python runners; host-to-device layout conversion remains outside the timed region.")
     lines.append("tenferro-rs uses native column-major GPU tensors; Torch, JAX, and vendor-wrapper columns use their native row-major framework tensors unless noted.")
-    lines.append("The cuSOLVER column is torch.linalg with preferred_linalg_library=cusolver; for SVD it pins driver=gesvd to match tenferro-rs raw gesvd more closely, but it is still not a raw cuSOLVER API benchmark.")
+    lines.append("The cuSOLVER column is torch.linalg with preferred_linalg_library=cusolver; for SVD it pins driver=gesvd as a QR-based cuSOLVER comparison. tenferro-rs CUDA SVD uses its backend default driver policy, currently JAX-compatible gesvdj for matrices with both dimensions at most 1024 and gesvd otherwise.")
     lines.append("Non-`ok` cells show the structured backend status.")
     lines.append("")
 
@@ -132,7 +132,7 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
         lines.append(f"## {markdown_cell(suite_id)} / {markdown_cell(op)}")
         lines.append("")
         if op == "svd":
-            lines.append("> **SVD note:** SVD rows use synchronized timed regions and matched Rust/Python input generators. The cuSOLVER column pins torch.linalg.svd driver=gesvd to match tenferro-rs raw gesvd more closely; compare PyTorch/LibTorch/JAX default rows separately because they may use different SVD drivers and row-major framework layouts.")
+            lines.append("> **SVD note:** SVD rows use synchronized timed regions and matched Rust/Python input generators. tenferro-rs CUDA uses its backend default driver policy, currently JAX-compatible gesvdj for matrices with both dimensions at most 1024 and gesvd otherwise. The cuSOLVER column pins torch.linalg.svd driver=gesvd as a QR-based cuSOLVER comparison; compare PyTorch/LibTorch/JAX default rows separately because they may use different SVD drivers and row-major framework layouts.")
             lines.append("")
         header = "| Problem | " + " | ".join(markdown_cell(BACKEND_LABELS.get(b, b)) for b in backends) + " |"
         separator = "|---|" + "|".join("---:" for _ in backends) + "|"

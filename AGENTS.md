@@ -170,10 +170,12 @@ that can make tenferro-rs SVD, QR, or solve results look unfairly fast or slow.
 When interpreting vendor-library columns, record the actual API path. The
 `cusolver` backend is a Torch `torch.linalg` path with
 `preferred_linalg_library=cusolver`; for SVD it must pin `driver="gesvd"`
-to match the cuSOLVER routine family used by tenferro-rs raw `cusolverDn*gesvd`
-more closely. It is still not the same as tenferro-rs calling raw cuSOLVER
-directly. If conversion cost or raw-vendor API cost is measured,
-put it in a separate backend or clearly separate timed scope.
+as a QR-based cuSOLVER comparison. tenferro-rs CUDA SVD uses its backend
+default driver policy, currently JAX-compatible `gesvdj` for matrices with both
+dimensions at most 1024 and `gesvd` otherwise. The `cusolver` backend is still
+not the same as tenferro-rs calling raw cuSOLVER directly. If conversion cost or
+raw-vendor API cost is measured, put it in a separate backend or clearly
+separate timed scope.
 
 ### Implemented backends and execution paths
 
