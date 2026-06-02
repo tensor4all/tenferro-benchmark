@@ -58,7 +58,9 @@ The script creates or reuses:
 - `extern/tenferro-rs`
 - `extern/pytorch-openblas`
 
-If old sibling checkouts exist at `../tenferro-rs` or `../pytorch-openblas`, the script moves them into `extern/` by default to avoid re-cloning or rebuilding. Set `SETUP_EXTERN_MIGRATE_SIBLINGS=0` to disable that migration.
+By default, the tenferro checkout is updated to `TENFERRO_REF=main`. A clean existing `extern/tenferro-rs` checkout is fetched and checked out at that ref; a dirty checkout fails explicitly instead of being overwritten. Set `TENFERRO_REF=<branch-or-commit>` to reproduce a recorded result, or `TENFERRO_UPDATE=0` only when intentionally benchmarking the existing checkout.
+
+Sibling checkouts at `../tenferro-rs` or `../pytorch-openblas` are left in place by default. Set `SETUP_EXTERN_MIGRATE_SIBLINGS=1` only when you intentionally want the setup script to move those sibling repositories into `extern/`.
 
 `scripts/run_all.sh` sources this setup script automatically so `OPENBLAS_ROOT`, `TENFERRO_RS_DIR`, `PYTORCH_OPENBLAS_DIR`, and `Torch_DIR` are available to the benchmark subprocesses. Set `SKIP_EXTERN_SETUP=1` only when you intentionally want to provide all paths yourself.
 
