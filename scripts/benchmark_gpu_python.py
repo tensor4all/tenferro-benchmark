@@ -228,7 +228,13 @@ def _run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     atol = float(verify_spec.get("atol", 1e-8))
     path = "phase2-measured-jax-cuda"
 
-    cuda_devices = jax.devices("cuda")
+    try:
+        cuda_devices = jax.devices("cuda")
+    except RuntimeError as exc:
+        return _stub(suite_id, problem, backend, device_ordinal,
+                     status="not_configured",
+                     reason=str(exc)[:500],
+                     path=path, **kw)
     if device_ordinal >= len(cuda_devices):
         return _stub(suite_id, problem, backend, device_ordinal,
                      status="not_configured",

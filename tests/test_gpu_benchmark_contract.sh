@@ -121,6 +121,58 @@ if uv run python scripts/validate_benchmark_suite.py "$TMP/bad_extra_op_block.ya
   exit 1
 fi
 
+uv run python - <<'PY'
+import importlib.util
+import sys
+import types
+from pathlib import Path
+
+root = Path.cwd()
+spec = importlib.util.spec_from_file_location(
+    "benchmark_gpu_python", root / "scripts" / "benchmark_gpu_python.py"
+)
+mod = importlib.util.module_from_spec(spec)
+assert spec.loader is not None
+spec.loader.exec_module(mod)
+
+fake_jax = types.ModuleType("jax")
+fake_jnp = types.ModuleType("jax.numpy")
+
+class FakeConfig:
+    def update(self, *args, **kwargs):
+        pass
+
+def devices(backend=None):
+    if backend == "cuda":
+        raise RuntimeError("Unknown backend cuda. Available backends are ['cpu']")
+    return []
+
+fake_jax.config = FakeConfig()
+fake_jax.devices = devices
+fake_jax.numpy = fake_jnp
+sys.modules["jax"] = fake_jax
+sys.modules["jax.numpy"] = fake_jnp
+
+problem = {
+    "id": "jax_without_cuda",
+    "op": "matmul",
+    "backend_candidates": ["jax-cuda"],
+    "dtype": {"a": "f64", "b": "f64", "c": "f64"},
+    "layout": {},
+}
+rec = mod._run_one(
+    "gpu_contract",
+    problem,
+    "jax-cuda",
+    0,
+    ts="1999-01-01T00:00:00+00:00",
+    bc="benchmark",
+    tc="tenferro",
+)
+assert rec["status"] == "not_configured", rec
+assert "Unknown backend cuda" in rec["execution"]["unsupported_reason"], rec
+PY
+
 GPU_BENCH_TIMESTAMP=19990101_000000 \
 GPU_BENCH_BACKENDS=tenferro-cuda-trace,pytorch-cuda,cusolver,cutlass \
 GPU_BENCH_PROBLEM=dense_matmul_f64_3072 \
