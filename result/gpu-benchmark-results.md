@@ -23,31 +23,31 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | LibTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_batched_matmul_f64_b1024_256 | 185.597 | 185.612 | 186.353 | 186.332 | 162.014 | 187.493 | 1324.557 | unsupported | unsupported | unsupported |
+| dense_batched_matmul_f64_b1024_256 | 2.376 | 2.366 | 186.353 | 186.332 | 162.014 | 187.493 | 1324.557 | unsupported | unsupported | unsupported |
 
 ## gpu_dense_contract_v1 / eigh
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | LibTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_eigh_f64_1024 | 74.796 | 233.790 | 75.060 | 75.047 | 75.259 | unsupported | unsupported | 75.125 | unsupported | unsupported |
+| dense_eigh_f64_1024 | 13.985 | 14.127 | 75.060 | 75.047 | 75.259 | unsupported | unsupported | 75.125 | unsupported | unsupported |
 
 ## gpu_dense_contract_v1 / matmul
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | LibTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_matmul_f64_3072 | 312.201 | 312.204 | 311.947 | 311.916 | 270.579 | 313.662 | 319.657 | unsupported | unsupported | unsupported |
+| dense_matmul_f64_3072 | 3.305 | 3.426 | 311.947 | 311.916 | 270.579 | 313.662 | 319.657 | unsupported | unsupported | unsupported |
 
 ## gpu_dense_contract_v1 / qr
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | LibTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_qr_f64_1536 | 95.009 | 239.987 | 95.555 | 95.540 | 96.146 | unsupported | unsupported | 95.558 | unsupported | unsupported |
+| dense_qr_f64_1536 | 12.189 | 12.031 | 95.555 | 95.540 | 96.146 | unsupported | unsupported | 95.558 | unsupported | unsupported |
 
 ## gpu_dense_contract_v1 / solve
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | LibTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_solve_f64_512_rhs16 | 3.636 | 1916.999 | 3.050 | 3.054 | 3.317 | unsupported | unsupported | 5.987 | unsupported | unsupported |
+| dense_solve_f64_512_rhs16 | 2.725 | 2.623 | 3.050 | 3.054 | 3.317 | unsupported | unsupported | 5.987 | unsupported | unsupported |
 
 ## gpu_dense_contract_v1 / svd
 
@@ -55,13 +55,13 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | LibTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_svd_f64_256 | 28.991 | 189.795 | 84.391 | 84.374 | 82.441 | unsupported | unsupported | 27.665 | unsupported | unsupported |
+| dense_svd_f64_256 | 25.741 | 25.723 | 84.391 | 84.374 | 82.441 | unsupported | unsupported | 27.665 | unsupported | unsupported |
 
 ## gpu_einsum_contract_v1 / einsum
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | LibTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| einsum_bin_matmul_3072_f64 | 312.205 | 312.185 | 315.343 | 315.344 | 271.778 | 315.405 | 321.425 | unsupported | unsupported | unsupported |
+| einsum_bin_matmul_3072_f64 | 3.434 | 3.381 | 315.343 | 315.344 | 271.778 | 315.405 | 321.425 | unsupported | unsupported | unsupported |
 
 ## gpu_sparse_contract_v1 / spmm
 
