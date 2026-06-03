@@ -9,9 +9,9 @@ SUITE="${PUBLICATION_GATE_SUITE:-all}"
 FEATURES="${PUBLICATION_GATE_FEATURES:-system-openblas}"
 RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$ROOT/data/results}"
 
-export OMP_NUM_THREADS="$THREADS"
-export RAYON_NUM_THREADS="$THREADS"
-export OPENBLAS_NUM_THREADS="$THREADS"
+# shellcheck source=scripts/thread_env.sh
+source "$ROOT/scripts/thread_env.sh"
+configure_cpu_thread_env "$THREADS"
 export PUBLICATION_GATE_PROFILE="$PROFILE"
 export PUBLICATION_GATE_SUITE="$SUITE"
 
@@ -30,6 +30,7 @@ echo "  threads:  $THREADS"
 echo "  profile:  $PROFILE"
 echo "  suite:    $SUITE"
 echo "  output:   $LOG"
+print_cpu_thread_env
 
 case "$FEATURES" in
   cpu-faer)

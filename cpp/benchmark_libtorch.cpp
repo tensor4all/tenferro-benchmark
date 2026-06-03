@@ -449,6 +449,7 @@ int main() {
     const auto instance_filter = getenv_or("BENCH_INSTANCE", "");
     const auto num_threads = parse_num_threads();
     at::set_num_threads(num_threads);
+    at::set_num_interop_threads(num_threads);
 
     auto instances = load_instances(data_dir, instance_filter);
     if (!instance_filter.empty() && instances.empty()) {
@@ -461,6 +462,8 @@ int main() {
     std::cout << "Loaded " << instances.size() << " instances from " << data_dir.string() << "\n";
     std::cout << "Backend: libtorch-cpu\n";
     std::cout << "OMP_NUM_THREADS=" << num_threads << "\n";
+    std::cout << "Torch intra-op threads=" << at::get_num_threads() << "\n";
+    std::cout << "Torch inter-op threads=" << at::get_num_interop_threads() << "\n";
     std::cout << "BLAS policy: OpenBLAS required by runner configuration\n";
     std::cout << "Timing: median ± IQR of " << kNumRuns << " runs ("
               << kNumWarmup << " warmup), path precomputed\n";

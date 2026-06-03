@@ -24,6 +24,9 @@ REPORTS_DIR="$PROJECT_DIR/result"
 CPU_SUITE_ID="cpu/einsum"
 CPU_SUITE_FILE="$PROJECT_DIR/benchmarks/cpu/einsum.yaml"
 
+# shellcheck source=scripts/thread_env.sh
+source "$SCRIPT_DIR/thread_env.sh"
+
 if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
     # Source this so OPENBLAS_ROOT and Torch_DIR exported by the setup script
     # are visible to the benchmark subprocesses below.
@@ -59,6 +62,25 @@ write_cpu_info_section() {
     else
         python3 "$PROJECT_DIR/scripts/collect_cpu_info.py" --markdown
     fi
+}
+
+write_thread_env_section() {
+    echo "## Thread Environment"
+    echo ""
+    for key in \
+        OMP_NUM_THREADS \
+        OMP_THREAD_LIMIT \
+        OMP_DYNAMIC \
+        RAYON_NUM_THREADS \
+        OPENBLAS_NUM_THREADS \
+        GOTO_NUM_THREADS \
+        MKL_NUM_THREADS \
+        VECLIB_MAXIMUM_THREADS \
+        NUMEXPR_NUM_THREADS \
+        BLIS_NUM_THREADS \
+        XLA_FLAGS; do
+        echo "- ${key}: \`${!key:-}\`"
+    done
 }
 
 run_python_script() {
@@ -111,6 +133,8 @@ write_einsum_report() {
         fi
         write_cpu_info_section
         echo ""
+        write_thread_env_section
+        echo ""
 
         echo "## Threads: $NUM_THREADS"
         echo ""
@@ -151,6 +175,8 @@ write_cpu_report() {
         fi
         write_cpu_info_section
         echo ""
+        write_thread_env_section
+        echo ""
         echo "## Threads: $NUM_THREADS"
         echo ""
         [[ -f "$CPU_OPS_LOG" ]] && echo "- CSV: \`${CPU_OPS_LOG#$PROJECT_DIR/}\`"
@@ -182,6 +208,7 @@ if [[ -z "${OPENBLAS_ROOT:-}" ]]; then
         export OPENBLAS_ROOT="$(brew --prefix openblas)"
     fi
 fi
+configure_cpu_thread_env "$NUM_THREADS"
 
 echo "============================================"
 echo " tenferro benchmark suite"
@@ -192,6 +219,7 @@ echo "Timestamp:    $BENCHMARK_TIMESTAMP"
 echo "Suite:        $CPU_SUITE_ID"
 echo "Run dir:      $CPU_RUN_DIR"
 [[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
+print_cpu_thread_env
 echo ""
 
 write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"

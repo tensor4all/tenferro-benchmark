@@ -31,6 +31,21 @@ DATA_DIR = PROJECT_DIR / "data" / "instances"
 
 NUM_WARMUP = 3
 NUM_RUNS = 15
+_PYTORCH_THREADS_CONFIGURED = False
+
+THREAD_ENV_KEYS = (
+    "OMP_NUM_THREADS",
+    "OMP_THREAD_LIMIT",
+    "OMP_DYNAMIC",
+    "RAYON_NUM_THREADS",
+    "OPENBLAS_NUM_THREADS",
+    "GOTO_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "VECLIB_MAXIMUM_THREADS",
+    "NUMEXPR_NUM_THREADS",
+    "BLIS_NUM_THREADS",
+    "XLA_FLAGS",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -105,6 +120,40 @@ def compute_stats(times_ms: list[float]) -> tuple[float, float]:
     return median, iqr
 
 
+def configure_thread_env(num_threads: int) -> None:
+    value = str(num_threads)
+    xla_multi_thread = "true" if num_threads > 1 else "false"
+    os.environ.update(
+        {
+            "OMP_NUM_THREADS": value,
+            "OMP_THREAD_LIMIT": value,
+            "OMP_DYNAMIC": "FALSE",
+            "RAYON_NUM_THREADS": value,
+            "OPENBLAS_NUM_THREADS": value,
+            "GOTO_NUM_THREADS": value,
+            "MKL_NUM_THREADS": value,
+            "VECLIB_MAXIMUM_THREADS": value,
+            "NUMEXPR_NUM_THREADS": value,
+            "BLIS_NUM_THREADS": value,
+            "XLA_FLAGS": (
+                f"--xla_cpu_multi_thread_eigen={xla_multi_thread} "
+                f"intra_op_parallelism_threads={value}"
+            ),
+        }
+    )
+
+
+def configure_pytorch_threads(num_threads: int):
+    import torch
+
+    global _PYTORCH_THREADS_CONFIGURED
+    if not _PYTORCH_THREADS_CONFIGURED:
+        torch.set_num_threads(num_threads)
+        torch.set_num_interop_threads(num_threads)
+        _PYTORCH_THREADS_CONFIGURED = True
+    return torch
+
+
 # ---------------------------------------------------------------------------
 # PyTorch backend
 # ---------------------------------------------------------------------------
@@ -119,9 +168,8 @@ def benchmark_pytorch(
     Returns ((median_ms, iqr_ms), None) on success, or (None, error_msg).
     """
     import opt_einsum as oe
-    import torch
 
-    torch.set_num_threads(num_threads)
+    torch = configure_pytorch_threads(num_threads)
 
     dtype_str = instance.get("dtype", "float64")
     if "complex" in dtype_str:
@@ -211,6 +259,7 @@ def main() -> None:
     args = parse_args()
     backend_name = f"{args.backend}-cpu"
     num_threads = args.num_threads
+    configure_thread_env(num_threads)
 
     instances = load_instances(args.instance)
     if args.instance and not instances:
@@ -225,7 +274,12 @@ def main() -> None:
     print("==================================")
     print(f"Loaded {len(instances)} instances from {DATA_DIR}")
     print(f"Backend: {backend_name}")
-    print(f"OMP_NUM_THREADS={num_threads}")
+    for key in THREAD_ENV_KEYS:
+        print(f"{key}={os.environ.get(key, '')}")
+    if args.backend == "pytorch":
+        torch = configure_pytorch_threads(num_threads)
+        print(f"TORCH_NUM_THREADS={torch.get_num_threads()}")
+        print(f"TORCH_NUM_INTEROP_THREADS={torch.get_num_interop_threads()}")
     print(
         f"Timing: median ± IQR of {NUM_RUNS} runs "
         f"({NUM_WARMUP} warmup), path precomputed"

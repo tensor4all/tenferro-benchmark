@@ -11,13 +11,14 @@ set -euo pipefail
 
 NUM_THREADS="${1:-1}"
 
-export OMP_NUM_THREADS="$NUM_THREADS"
-export RAYON_NUM_THREADS="$NUM_THREADS"
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_DIR="$PROJECT_DIR/data/results"
 BUILD_DIR="$PROJECT_DIR/build/cpp-libtorch"
+
+# shellcheck source=scripts/thread_env.sh
+source "$SCRIPT_DIR/thread_env.sh"
+configure_cpu_thread_env "$NUM_THREADS"
 
 mkdir -p "$RESULTS_DIR"
 
@@ -46,6 +47,7 @@ echo "Project dir:       $PROJECT_DIR"
 echo "Threads:           $NUM_THREADS"
 echo "Timestamp:         $BENCHMARK_TIMESTAMP"
 echo "OPENBLAS_ROOT:     $OPENBLAS_ROOT"
+print_cpu_thread_env
 [[ -n "${Torch_DIR:-}" ]] && echo "Torch_DIR:         $Torch_DIR"
 [[ -n "${CMAKE_PREFIX_PATH:-}" ]] && echo "CMAKE_PREFIX_PATH: $CMAKE_PREFIX_PATH"
 echo ""

@@ -382,6 +382,7 @@ int main(int argc, char** argv) {
     try {
         const auto args = parse_args(argc, argv);
         at::set_num_threads(args.threads);
+        at::set_num_interop_threads(args.threads);
         std::ofstream out(args.output, std::ios::app);
         if (!out) {
             throw std::runtime_error("failed to open output CSV: " + args.output);

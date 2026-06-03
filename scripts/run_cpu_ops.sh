@@ -12,6 +12,10 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 
+# shellcheck source=scripts/thread_env.sh
+source "$SCRIPT_DIR/thread_env.sh"
+configure_cpu_thread_env "$NUM_THREADS"
+
 mkdir -p "$RESULTS_DIR"
 
 RAW_LOG="$RESULTS_DIR/publication_gate_system-openblas_t${NUM_THREADS}_${PUBLICATION_GATE_PROFILE:-quick}_${PUBLICATION_GATE_SUITE:-all}_${TIMESTAMP}.csv"
@@ -48,6 +52,7 @@ with open(out_path, "w", newline="") as f:
             "iqr_ms",
             "status",
         ],
+        lineterminator="\n",
     )
     writer.writeheader()
     for row in rows:
@@ -80,7 +85,7 @@ if [[ -n "${Torch_DIR:-}" ]]; then
         -DOPENBLAS_ROOT="${OPENBLAS_ROOT:-}" \
         -DREQUIRE_TORCH_OPENBLAS=ON
     cmake --build "$BUILD_DIR" --target benchmark_cpu_ops_libtorch --config Release
-    OMP_NUM_THREADS="$NUM_THREADS" "$BUILD_DIR/benchmark_cpu_ops_libtorch" \
+    "$BUILD_DIR/benchmark_cpu_ops_libtorch" \
         --num-threads "$NUM_THREADS" \
         --output "$CPU_OPS_LOG"
 else

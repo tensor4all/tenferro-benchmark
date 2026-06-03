@@ -19,8 +19,17 @@ from benchmark_layout import safe_suite_id_parts
 
 ENV_KEYS = (
     "OMP_NUM_THREADS",
+    "OMP_THREAD_LIMIT",
+    "OMP_DYNAMIC",
     "RAYON_NUM_THREADS",
     "OPENBLAS_ROOT",
+    "OPENBLAS_NUM_THREADS",
+    "GOTO_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "VECLIB_MAXIMUM_THREADS",
+    "NUMEXPR_NUM_THREADS",
+    "BLIS_NUM_THREADS",
+    "XLA_FLAGS",
     "CUDA_HOME",
     "USE_CUDA",
 )

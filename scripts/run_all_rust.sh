@@ -18,13 +18,14 @@ set -euo pipefail
 
 NUM_THREADS="${1:-1}"
 
-export OMP_NUM_THREADS="$NUM_THREADS"
-export RAYON_NUM_THREADS="$NUM_THREADS"
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 STRIDED_DIR="$(cd "$PROJECT_DIR/../strided-rs-benchmark-suite" 2>/dev/null && pwd || true)"
 RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
+
+# shellcheck source=scripts/thread_env.sh
+source "$SCRIPT_DIR/thread_env.sh"
+configure_cpu_thread_env "$NUM_THREADS"
 
 mkdir -p "$RESULTS_DIR"
 
@@ -43,8 +44,7 @@ fi
 echo "============================================"
 echo " Rust benchmark (threads=${NUM_THREADS})"
 echo "============================================"
-echo "  OMP_NUM_THREADS=$OMP_NUM_THREADS"
-echo "  RAYON_NUM_THREADS=$RAYON_NUM_THREADS"
+print_cpu_thread_env
 echo "  OPENBLAS_ROOT=$OPENBLAS_ROOT"
 echo "  tenferro features=system-openblas"
 echo ""

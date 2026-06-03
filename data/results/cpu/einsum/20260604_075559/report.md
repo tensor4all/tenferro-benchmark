@@ -90,4 +90,3 @@ Median ± IQR (ms). OMP_NUM_THREADS=1, RAYON_NUM_THREADS=1.
 | str_nw_mera_open_26 | 625.112 ± 2.323 | 646.779 ± 2.056 | - | 131.882 ± 1.962 | **77.527 ± 1.164** |
 | tensornetwork_permutation_focus_step409_316 | 171.843 ± 1.567 | 240.864 ± 11.798 | - | 164.224 ± 2.523 | **76.176 ± 3.495** |
 | tensornetwork_permutation_light_415 | 175.343 ± 7.211 | 209.752 ± 2.053 | - | 143.139 ± 1.171 | **79.599 ± 4.669** |
-

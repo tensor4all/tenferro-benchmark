@@ -11,6 +11,20 @@ import sys
 import time
 from collections.abc import Callable
 
+THREAD_ENV_KEYS = (
+    "OMP_NUM_THREADS",
+    "OMP_THREAD_LIMIT",
+    "OMP_DYNAMIC",
+    "RAYON_NUM_THREADS",
+    "OPENBLAS_NUM_THREADS",
+    "GOTO_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "VECLIB_MAXIMUM_THREADS",
+    "NUMEXPR_NUM_THREADS",
+    "BLIS_NUM_THREADS",
+    "XLA_FLAGS",
+)
+
 
 def runs_from_env() -> tuple[int, int]:
     profile = os.environ.get("PUBLICATION_GATE_PROFILE", "quick").lower()
@@ -18,6 +32,29 @@ def runs_from_env() -> tuple[int, int]:
     runs = int(os.environ.get("BENCH_RUNS", default_runs))
     warmups = int(os.environ.get("BENCH_WARMUPS", 3))
     return runs, warmups
+
+
+def configure_thread_env(num_threads: int) -> None:
+    value = str(num_threads)
+    xla_multi_thread = "true" if num_threads > 1 else "false"
+    os.environ.update(
+        {
+            "OMP_NUM_THREADS": value,
+            "OMP_THREAD_LIMIT": value,
+            "OMP_DYNAMIC": "FALSE",
+            "RAYON_NUM_THREADS": value,
+            "OPENBLAS_NUM_THREADS": value,
+            "GOTO_NUM_THREADS": value,
+            "MKL_NUM_THREADS": value,
+            "VECLIB_MAXIMUM_THREADS": value,
+            "NUMEXPR_NUM_THREADS": value,
+            "BLIS_NUM_THREADS": value,
+            "XLA_FLAGS": (
+                f"--xla_cpu_multi_thread_eigen={xla_multi_thread} "
+                f"intra_op_parallelism_threads={value}"
+            ),
+        }
+    )
 
 
 def suite_enabled(suite: str) -> bool:
@@ -115,6 +152,7 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
     import torch
 
     torch.set_num_threads(args.num_threads)
+    torch.set_num_interop_threads(args.num_threads)
 
     def tensor(x, requires_grad: bool = False):
         return torch.tensor(x, dtype=torch.float64, requires_grad=requires_grad)
@@ -271,10 +309,11 @@ def main() -> None:
     parser.add_argument("--runs", type=int, default=runs)
     parser.add_argument("--warmups", type=int, default=warmups)
     args = parser.parse_args()
+    configure_thread_env(args.num_threads)
 
     fieldnames = ["suite", "benchmark", "dtype", "threads", "shape", "backend", "median_ms", "iqr_ms", "status"]
     with open(args.output, "a", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         if args.backend == "pytorch-cpu":
             run_pytorch(args, writer)
         else:

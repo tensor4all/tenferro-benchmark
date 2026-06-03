@@ -14,20 +14,22 @@ set -euo pipefail
 
 NUM_THREADS="${1:-1}"
 
-export OMP_NUM_THREADS="$NUM_THREADS"
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
+
+# shellcheck source=scripts/thread_env.sh
+source "$SCRIPT_DIR/thread_env.sh"
+configure_cpu_thread_env "$NUM_THREADS"
 
 mkdir -p "$RESULTS_DIR"
 
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 
 echo "============================================"
-echo " Python benchmark: jax-cpu (threads=${NUM_THREADS})"
+echo " Python benchmark: pytorch-cpu + jax-cpu (threads=${NUM_THREADS})"
 echo "============================================"
-echo "  OMP_NUM_THREADS=$OMP_NUM_THREADS"
+print_cpu_thread_env
 echo ""
 
 PYTHON_LOGS=()

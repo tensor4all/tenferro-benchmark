@@ -1,0 +1,32 @@
+schema_version: 1
+suite_id: cpu/einsum
+suite_file: benchmarks/cpu/einsum.yaml
+timestamp: '2026-06-03T22:55:59.504670+00:00'
+tenferro_rs:
+  path: extern/tenferro-rs
+  commit: cc46577429a8cc5a91cb0ed86910b47b2055b420
+  features:
+  - system-openblas
+environment:
+  hostname: MacBook-Pro.local
+  os: macOS-26.5-arm64-arm-64bit
+  arch: arm64
+  cpu: arm
+  env:
+    OMP_NUM_THREADS: '1'
+    OMP_THREAD_LIMIT: '1'
+    OMP_DYNAMIC: 'FALSE'
+    RAYON_NUM_THREADS: '1'
+    OPENBLAS_ROOT: /opt/homebrew/opt/openblas
+    OPENBLAS_NUM_THREADS: '1'
+    GOTO_NUM_THREADS: '1'
+    MKL_NUM_THREADS: '1'
+    VECLIB_MAXIMUM_THREADS: '1'
+    NUMEXPR_NUM_THREADS: '1'
+    BLIS_NUM_THREADS: '1'
+    XLA_FLAGS: --xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1
+blas:
+  implementation: openblas
+  version: OpenBLAS 0.3.33
+  root: /opt/homebrew/opt/openblas
+  library: /opt/homebrew/opt/openblas/lib/libopenblas.0.dylib
