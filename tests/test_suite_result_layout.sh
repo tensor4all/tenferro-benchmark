@@ -113,6 +113,73 @@ PY
   fi
 }
 
+assert_benchmark_layout_api() {
+  if ! uv run python - >"$TMP/out" 2>&1 <<'PY'; then
+from pathlib import Path
+
+from scripts.benchmark_layout import paths_for_suite_run, safe_suite_id_parts
+
+root = Path.cwd()
+
+assert safe_suite_id_parts("cpu/einsum") == ("cpu", "einsum")
+assert safe_suite_id_parts("gpu/dense") == ("gpu", "dense")
+
+try:
+    safe_suite_id_parts("../bad")
+except ValueError as exc:
+    assert "invalid suite_id" in str(exc)
+else:
+    raise AssertionError("../bad did not raise ValueError")
+
+paths = paths_for_suite_run(root, "gpu/einsum", "19990101_000000")
+expected = {
+    "run_dir": Path("data/results/gpu/einsum/19990101_000000"),
+    "run_yaml": Path("data/results/gpu/einsum/19990101_000000/run.yaml"),
+    "records_jsonl": Path("data/results/gpu/einsum/19990101_000000/records.jsonl"),
+    "report_md": Path("data/results/gpu/einsum/19990101_000000/report.md"),
+    "latest_report": Path("result/gpu/einsum.md"),
+}
+for field, rel_path in expected.items():
+    actual = getattr(paths, field)
+    assert actual == root / rel_path, f"{field}: {actual} != {root / rel_path}"
+PY
+    cat "$TMP/out" >&2
+    exit 1
+  fi
+}
+
+assert_collected_run_metadata() {
+  local openblas_root="$TMP/openblas"
+  local output="$TMP/collected_run.yaml"
+
+  mkdir -p "$openblas_root/lib"
+  touch "$openblas_root/lib/libopenblas.dylib"
+
+  if ! OPENBLAS_ROOT="$openblas_root" uv run python scripts/collect_run_metadata.py \
+    --suite-id cpu/einsum \
+    --suite-file benchmarks/cpu/einsum.yaml \
+    --timestamp "2026-06-03T12:34:56+09:00" \
+    --tenferro-dir extern/tenferro-rs \
+    --tenferro-commit abcdef1 \
+    --features system-openblas \
+    --blas openblas \
+    --output "$output" >"$TMP/out" 2>&1; then
+    echo "collect_run_metadata.py failed" >&2
+    cat "$TMP/out" >&2
+    exit 1
+  fi
+
+  if grep -q "benchmark_repo_commit" "$output"; then
+    echo "collect_run_metadata.py emitted benchmark_repo_commit" >&2
+    cat "$output" >&2
+    exit 1
+  fi
+
+  assert_valid run "$output" "collected run metadata"
+}
+
+assert_benchmark_layout_api
+
 assert_valid suite benchmarks/cpu/einsum.yaml "bundled CPU einsum suite"
 assert_valid suite benchmarks/gpu/dense.yaml "bundled GPU dense suite"
 assert_valid suite benchmarks/gpu/einsum.yaml "bundled GPU einsum suite"
@@ -226,6 +293,8 @@ blas:
   library: /opt/OpenBLAS/lib/libopenblas.dylib
 YAML
 assert_invalid run "$TMP/run_with_environment_benchmark_repo_commit.yaml" "run metadata with environment.benchmark_repo_commit"
+
+assert_collected_run_metadata
 
 cat > "$TMP/cpu_result.jsonl" <<'JSON'
 {"schema_version":1,"suite_id":"cpu/einsum","problem_id":"einsum_bin_matmul_256_f64","op":"einsum","backend":"tenferro-cpu-eager","status":"ok","timing":{"warmup_runs":1,"timed_runs":3,"compile_time_ms":0.0,"first_run_ms":1.2,"median_ms":1.0,"min_ms":0.9,"p95_ms":1.1,"iqr_ms":0.1,"timing_scope":"steady_state_host_api"},"performance":{"tflops":null,"effective_bandwidth_gbps":null,"peak_memory_bytes":null},"verification":{"status":"passed","reference_backend":"cpu_fp64","max_abs_error":0.0,"max_rel_error":0.0,"residual":null,"rtol":1.0e-8,"atol":1.0e-10,"reason":null},"execution":{"device":"cpu","device_ordinal":0,"execution_path":"tenferro-rs eager cpu","synchronization":"none","layout":"col_major","dtype":"f64","notes":null,"unsupported_reason":null}}
