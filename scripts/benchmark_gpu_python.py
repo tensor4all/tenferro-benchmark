@@ -48,12 +48,13 @@ def main() -> None:
     with out.open("w") as fh:
         for sp in suites:
             suite = yaml.safe_load(sp.read_text())
+            suite_backends = suite.get("backends", [])
             for prob in suite["problems"]:
                 if problem_filter and prob["id"] != problem_filter:
                     continue
                 for backend in backends:
                     rec = _run_one(suite["suite_id"], prob, backend, device_ordinal,
-                                   ts=ts, bc=bc, tc=tc)
+                                   suite_backends=suite_backends, ts=ts, bc=bc, tc=tc)
                     fh.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
@@ -61,11 +62,18 @@ def main() -> None:
 # Dispatch
 # ---------------------------------------------------------------------------
 
-def _run_one(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
+def _backend_candidates(problem, suite_backends):
+    candidates = list(problem.get("only_backends") or suite_backends)
+    skipped = set(problem.get("skip_backends") or [])
+    return [candidate for candidate in candidates if candidate not in skipped]
+
+
+def _run_one(suite_id, problem, backend, device_ordinal, *, suite_backends=None, ts, bc, tc):
     kw = dict(ts=ts, bc=bc, tc=tc)
     op = problem["op"]
     pid = problem["id"]
-    if backend not in problem["backend_candidates"]:
+    candidates = _backend_candidates(problem, suite_backends or [])
+    if backend not in candidates:
         return _stub(suite_id, problem, backend, device_ordinal,
                      status="unsupported", reason=f"{backend} not listed for {pid}",
                      path="phase2-runner", **kw)
@@ -1265,7 +1273,6 @@ def _base_env(device_ordinal, ts, bc, tc):
         "cudnn_version": None,
         "framework_version": None,
         "tenferro_rs_commit": tc,
-        "benchmark_repo_commit": bc,
         "env": {
             "CUDA_PATH": os.environ.get("CUDA_PATH"),
             "LD_LIBRARY_PATH": os.environ.get("LD_LIBRARY_PATH"),
@@ -1313,7 +1320,6 @@ def _stub(suite_id, problem, backend, device_ordinal, *, status, reason, path,
             "atol": atol,
             "reason": reason,
         },
-        "environment": env,
         "execution": {
             "device": "cuda",
             "device_ordinal": device_ordinal,
@@ -1363,7 +1369,6 @@ def _ok_record(suite_id, problem, backend, device_ordinal, *, path,
             "atol": atol,
             "reason": None,
         },
-        "environment": env,
         "execution": {
             "device": "cuda",
             "device_ordinal": device_ordinal,

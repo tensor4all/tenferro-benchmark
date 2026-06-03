@@ -1,8 +1,8 @@
 """Parse benchmark log files and format results as a markdown table.
 
 Usage:
-    python scripts/format_results.py data/results/tenferro_trace_*.log data/results/tenferro_eager_*.log
-    python scripts/format_results.py data/results/*.log   # all backends
+    python scripts/format_results.py data/results/cpu/einsum/<timestamp>/tenferro_trace_*.log data/results/cpu/einsum/<timestamp>/tenferro_eager_*.log
+    python scripts/format_results.py data/results/cpu/einsum/<timestamp>/*.log   # all backends
 
 Supports log formats produced by:
   - tenferro trace/eager (Rust) — columns: Instance Tensors log10FLOPS log2SIZE Median IQR Compile

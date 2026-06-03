@@ -41,6 +41,8 @@ def parse_features(values: list[str]) -> list[str]:
 
 
 def run_git_rev_parse(tenferro_dir: Path) -> str:
+    if not tenferro_dir.exists():
+        raise MetadataError(f"tenferro dir does not exist: {tenferro_dir}")
     try:
         result = subprocess.run(
             ["git", "rev-parse", "HEAD"],

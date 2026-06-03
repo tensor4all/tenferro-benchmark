@@ -7,10 +7,10 @@ import argparse
 import json
 from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown
 from collections import defaultdict
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import yaml
 
 PREFERRED_BACKENDS = [
     "tenferro-cuda-trace",
@@ -79,35 +79,33 @@ def markdown_cell(value: object) -> str:
     return str(value).replace("\\", "\\\\").replace("|", "\\|")
 
 
-def timestamp_utc(record: dict[str, Any]) -> datetime | None:
-    environment = record.get("environment")
-    if not isinstance(environment, dict):
-        return None
-    timestamp = environment.get("timestamp_utc")
-    if not isinstance(timestamp, str) or not timestamp:
-        return None
-    try:
-        return datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-
-
 def choose_duplicate_record(existing: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
-    existing_timestamp = timestamp_utc(existing)
-    candidate_timestamp = timestamp_utc(candidate)
-    if existing_timestamp is not None and candidate_timestamp is not None:
-        if candidate_timestamp > existing_timestamp:
-            return candidate
-        if candidate_timestamp < existing_timestamp:
-            return existing
-    elif existing_timestamp is not None:
-        return existing
-    elif candidate_timestamp is not None:
-        return candidate
     return candidate
 
 
-def format_markdown(records: list[dict[str, Any]]) -> str:
+def load_run_metadata(path: Path | None) -> dict[str, Any] | None:
+    if path is None:
+        return None
+    with path.open() as fh:
+        metadata = yaml.safe_load(fh)
+    return metadata if isinstance(metadata, dict) else None
+
+
+def run_metadata_lines(metadata: dict[str, Any] | None) -> list[str]:
+    if metadata is None:
+        return []
+    lines = [
+        f"- Suite: `{metadata.get('suite_id', 'unknown')}`",
+        f"- Suite file: `{metadata.get('suite_file', 'unknown')}`",
+        f"- Timestamp: `{metadata.get('timestamp', 'unknown')}`",
+    ]
+    tenferro = metadata.get("tenferro_rs")
+    if isinstance(tenferro, dict) and tenferro.get("commit"):
+        lines.append(f"- tenferro-rs commit: `{tenferro['commit']}`")
+    return lines + [""]
+
+
+def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] | None = None) -> str:
     if not records:
         return "# GPU Benchmark Results\n\nNo GPU benchmark records found.\n"
 
@@ -117,6 +115,7 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
         by_suite_op[(record["suite_id"], record["op"])].append(record)
 
     lines = ["# GPU Benchmark Results", ""]
+    lines.extend(run_metadata_lines(run_metadata))
     lines.append(cpu_info_markdown(collect_cpu_info()).rstrip())
     lines.append("")
     lines.append("Median time is reported in milliseconds for `ok` records.")
@@ -161,13 +160,14 @@ def format_markdown(records: list[dict[str, Any]]) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("results", nargs="+", type=Path)
+    parser.add_argument("--run-metadata", type=Path)
     parser.add_argument("--output", type=Path)
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    markdown = format_markdown(load_records(args.results))
+    markdown = format_markdown(load_records(args.results), load_run_metadata(args.run_metadata))
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(markdown)

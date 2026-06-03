@@ -4,11 +4,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-JSONL="data/results/gpu_contract_19990101_000000.jsonl"
-MARKDOWN="data/results/gpu_results_19990101_000000.md"
-REPORT="result/gpu-benchmark-results.md"
+RUN_DIR="data/results/gpu/dense/19990101_000000"
+RUN_YAML="$RUN_DIR/run.yaml"
+JSONL="$RUN_DIR/records.jsonl"
+MARKDOWN="$RUN_DIR/report.md"
+REPORT="result/gpu/dense.md"
 TMP="$(mktemp -d)"
-ARTIFACTS=("$JSONL" "$MARKDOWN" "$REPORT")
+ARTIFACTS=("$RUN_YAML" "$JSONL" "$MARKDOWN" "$RUN_DIR/rust_records.jsonl" "$REPORT")
 
 mkdir -p "$TMP/originals"
 for artifact in "${ARTIFACTS[@]}"; do
@@ -180,12 +182,12 @@ suite = {
     ],
 }
 problem = dict(suite["problems"][0])
-problem["backend_candidates"] = problem.get("only_backends", suite["backends"])
 rec = mod._run_one(
     suite["suite_id"],
     problem,
     "jax-cuda",
     0,
+    suite_backends=suite["backends"],
     ts="1999-01-01T00:00:00+00:00",
     bc="benchmark",
     tc="tenferro",
@@ -195,17 +197,25 @@ assert "Unknown backend cuda" in rec["execution"]["unsupported_reason"], rec
 PY
 
 GPU_BENCH_TIMESTAMP=19990101_000000 \
+GPU_BENCH_SUITE=benchmarks/gpu/dense.yaml \
 GPU_BENCH_BACKENDS=tenferro-cuda-trace,pytorch-cuda,cusolver,cutlass \
 GPU_BENCH_PROBLEM=dense_matmul_f64_3072 \
   bash scripts/run_gpu_suite.sh
 
+test -s "$RUN_YAML"
 test -s "$JSONL"
 test -s "$MARKDOWN"
 test -s "$REPORT"
 
+uv run python scripts/validate_benchmark_suite.py --kind run "$RUN_YAML"
 uv run python scripts/validate_benchmark_suite.py --kind result "$JSONL"
+if rg -q '"environment"' "$JSONL"; then
+  echo "result records unexpectedly contained run-level environment" >&2
+  exit 1
+fi
 
 rg -n "GPU Benchmark Results" "$REPORT"
+rg -n "Suite: \`gpu/dense\`" "$REPORT"
 rg -n "dense_matmul_f64_3072" "$REPORT"
 rg -n "tenferro-rs CUDA trace" "$REPORT"
 rg -n "PyTorch CUDA" "$REPORT"

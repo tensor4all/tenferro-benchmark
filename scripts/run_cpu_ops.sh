@@ -9,7 +9,7 @@ NUM_THREADS="${1:-1}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-RESULTS_DIR="$PROJECT_DIR/data/results"
+RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 
 mkdir -p "$RESULTS_DIR"

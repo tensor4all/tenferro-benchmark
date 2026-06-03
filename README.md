@@ -17,9 +17,11 @@ Detailed documentation was split out of this README:
 Benchmark results are not duplicated in this README. The files under
 `result/` are the source of truth:
 
-- Full einsum results: [result/einsum-results.md](result/einsum-results.md)
-- Full CPU ops results: [result/cpu-benchmark-results.md](result/cpu-benchmark-results.md)
-- Full GPU results: [result/gpu-benchmark-results.md](result/gpu-benchmark-results.md)
+- CPU einsum results: [result/cpu/einsum.md](result/cpu/einsum.md)
+- CPU ops results: [result/cpu/cpu_ops.md](result/cpu/cpu_ops.md)
+- GPU dense results: [result/gpu/dense.md](result/gpu/dense.md)
+- GPU einsum results: [result/gpu/einsum.md](result/gpu/einsum.md)
+- GPU sparse results: [result/gpu/sparse.md](result/gpu/sparse.md)
 
 ## Quick Start
 
@@ -87,9 +89,10 @@ devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 1'
 devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 4'
 ```
 
-The reports in `result/` aggregate the latest timestamped table for each
-thread count under `data/results/`. After running both commands, the same
-markdown files should contain `## Threads: 1` and `## Threads: 4` sections.
+Each invocation writes one suite run under
+`data/results/cpu/einsum/<timestamp>/` with `run.yaml` and `report.md`. The
+latest human-facing reports are copied to `result/cpu/einsum.md` and
+`result/cpu/cpu_ops.md`.
 
 The devcontainer sets `OPENBLAS_ROOT=/opt/openblas` and installs Rust, CMake,
 Python 3.12, `uv`, OpenBLAS, and Linux linkage tools. It also sets
@@ -108,7 +111,7 @@ restore the benchmark dependency checkout:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc \
-  'rg -n "Threads: 1|Threads: 4|tenferro-rs commit" result/einsum-results.md result/cpu-benchmark-results.md'
+  'rg -n "Suite:|Threads:|tenferro-rs commit" result/cpu/einsum.md result/cpu/cpu_ops.md'
 ```
 
 ## GPU Benchmark Contract Workflow
@@ -136,12 +139,14 @@ uv run python scripts/validate_benchmark_suite.py \
   benchmarks/gpu/sparse.yaml
 
 uv run python scripts/validate_benchmark_suite.py --kind result \
-  data/results/gpu_contract_*.jsonl
+  data/results/gpu/dense/*/records.jsonl
 ```
 
-The latest generated GPU report is written to:
+The latest generated GPU reports are written per suite:
 
-- `result/gpu-benchmark-results.md`
+- `result/gpu/dense.md`
+- `result/gpu/einsum.md`
+- `result/gpu/sparse.md`
 
 ### Running on a Real GPU via devcontainer
 
@@ -174,8 +179,8 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
 
 This measures all 10 backends (tenferro-cuda trace/eager, PyTorch, LibTorch,
 JAX, cuBLASLt, CUTLASS, cuSOLVER, cuSPARSE, Ginkgo) and writes the report to
-`result/gpu-benchmark-results.md`. Backends whose vendor library is absent
-degrade to `not_configured` rather than failing the suite.
+`result/gpu/<suite>.md` for each suite YAML. Backends whose vendor library is
+absent degrade to `not_configured` rather than failing the suite.
 
 See `AGENTS.md` for the full GPU devcontainer workflow including environment
 verification, the backend/op matrix, and per-backend overrides.
@@ -212,16 +217,15 @@ For normal benchmark results:
 ./scripts/run_all.sh 4
 ```
 
-Each `run_all.sh` invocation writes timestamped raw logs and intermediate
-tables under `data/results/`. The reports in `result/` are regenerated as a
-thread-count summary: the latest table for thread 1 and the latest table for
-thread 4 are kept in separate sections of the same markdown file.
+Each `run_all.sh` invocation writes timestamped raw logs, run metadata, and
+reports under `data/results/cpu/einsum/<timestamp>/`. The latest reports are
+copied to `result/cpu/einsum.md` and `result/cpu/cpu_ops.md`.
 
 The generated reports should include the comparison columns:
 
 ```bash
-rg -n "Threads: 1|Threads: 4|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
-  result/einsum-results.md result/cpu-benchmark-results.md
+rg -n "Threads:|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
+  result/cpu/einsum.md result/cpu/cpu_ops.md
 ```
 
 ## Human-Run Scripts
@@ -274,17 +278,15 @@ export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
 ./scripts/run_all.sh 4
 ```
 
-Raw logs and timestamped tables are written to `data/results/`, summarized by `scripts/format_results.py`, and copied to:
+Raw logs and timestamped tables are written to `data/results/cpu/einsum/<timestamp>/`, summarized by `scripts/format_results.py`, and copied to:
 
-- [result/einsum-results.md](result/einsum-results.md)
-- [result/cpu-benchmark-results.md](result/cpu-benchmark-results.md)
+- [result/cpu/einsum.md](result/cpu/einsum.md)
+- [result/cpu/cpu_ops.md](result/cpu/cpu_ops.md)
 
-Both report files aggregate the latest generated table for each thread count,
-so a normal `./scripts/run_all.sh 1` followed by `./scripts/run_all.sh 4`
-produces one einsum report and one CPU report with `## Threads: 1` and
-`## Threads: 4` sections. They also include the full `tenferro-rs` commit hash
-resolved from `TENFERRO_RS_DIR` so the benchmark checkout can be restored later
-with `git checkout <commit>`.
+Each report includes the suite id, run metadata path, timestamp, and full
+`tenferro-rs` commit hash resolved from `TENFERRO_RS_DIR` or
+`extern/tenferro-rs`, so the benchmark checkout can be restored later with
+`git checkout <commit>`.
 
 ### Run PyTorch and JAX Python baselines manually
 
@@ -292,27 +294,29 @@ with `git checkout <commit>`.
 
 ```bash
 export BENCHMARK_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+export BENCHMARK_RESULTS_DIR="data/results/cpu/einsum/${BENCHMARK_TIMESTAMP}"
 export OMP_NUM_THREADS=1
 export RAYON_NUM_THREADS=1
 export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
 source ./scripts/setup_extern_deps.sh
+mkdir -p "$BENCHMARK_RESULTS_DIR"
 
 ./scripts/run_all_rust.sh 1
 ./scripts/run_all_libtorch.sh 1
 
 uv run python scripts/benchmark_python.py --backend pytorch --num-threads 1 \
-  2>&1 | tee "data/results/pytorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log"
+  2>&1 | tee "$BENCHMARK_RESULTS_DIR/pytorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log"
 
 uv run python scripts/benchmark_python.py --backend jax --num-threads 1 \
-  2>&1 | tee "data/results/jax_cpu_t1_${BENCHMARK_TIMESTAMP}.log"
+  2>&1 | tee "$BENCHMARK_RESULTS_DIR/jax_cpu_t1_${BENCHMARK_TIMESTAMP}.log"
 
 uv run python scripts/format_results.py \
-  "data/results/tenferro_trace_t1_${BENCHMARK_TIMESTAMP}.log" \
-  "data/results/tenferro_eager_t1_${BENCHMARK_TIMESTAMP}.log" \
-  "data/results/libtorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
-  "data/results/pytorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
-  "data/results/jax_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
-  | tee "data/results/results_four_backends_t1_${BENCHMARK_TIMESTAMP}.md"
+  "$BENCHMARK_RESULTS_DIR/tenferro_trace_t1_${BENCHMARK_TIMESTAMP}.log" \
+  "$BENCHMARK_RESULTS_DIR/tenferro_eager_t1_${BENCHMARK_TIMESTAMP}.log" \
+  "$BENCHMARK_RESULTS_DIR/libtorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
+  "$BENCHMARK_RESULTS_DIR/pytorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
+  "$BENCHMARK_RESULTS_DIR/jax_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
+  | tee "$BENCHMARK_RESULTS_DIR/einsum_table_t1_${BENCHMARK_TIMESTAMP}.md"
 ```
 
 ### Run publication-gate microbenchmarks

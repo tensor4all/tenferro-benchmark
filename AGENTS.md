@@ -77,14 +77,13 @@ devcontainer from the host `devcontainer` CLI.
 
    ```bash
    devcontainer exec --workspace-folder . bash -lc \
-     'rg -n "Threads: 1|Threads: 4|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs commit" result/einsum-results.md result/cpu-benchmark-results.md'
+     'rg -n "Suite:|Threads:|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs commit" result/cpu/einsum.md result/cpu/cpu_ops.md'
    ```
 
-   `result/einsum-results.md` and `result/cpu-benchmark-results.md` collect
-   the latest table for each thread count found under `data/results/`. After
-   running both commands above, each report should contain separate
-   `## Threads: 1` and `## Threads: 4` sections rather than only the most
-   recent run.
+   `result/cpu/einsum.md` and `result/cpu/cpu_ops.md` are the latest
+   human-facing copies for the CPU suite outputs. Each `run_all.sh` invocation
+   also writes the source run under `data/results/cpu/einsum/<timestamp>/`,
+   including `run.yaml` and `report.md`.
 
    The `tenferro-rs commit` line records the exact commit hash to use later
    with `git checkout <commit>`.
@@ -131,8 +130,10 @@ Requires an NVIDIA GPU on the host with the NVIDIA Container Toolkit installed.
    ```
 
    Generated reports:
-   - `data/results/gpu_contract_<timestamp>.jsonl` — structured JSONL records
-   - `result/gpu-benchmark-results.md` — formatted markdown report
+   - `data/results/gpu/<suite>/<timestamp>/run.yaml` — run metadata
+   - `data/results/gpu/<suite>/<timestamp>/records.jsonl` — structured JSONL records
+   - `data/results/gpu/<suite>/<timestamp>/report.md` — run report
+   - `result/gpu/<suite>.md` — latest formatted markdown report
 
 5. Override backends, suites, or device ordinal via environment variables:
 
@@ -271,25 +272,22 @@ include the Torch C++ column.
    ./scripts/run_all.sh 4
    ```
 
-   Raw logs and timestamped intermediate tables are written under
-   `data/results/`. The human-facing reports under `result/` aggregate the
-   latest timestamped table for each thread count, so running thread 1 and then
-   thread 4 leaves both `## Threads: 1` and `## Threads: 4` sections in one
-   markdown file.
+   Raw logs, run metadata, and timestamped intermediate tables are written
+   under `data/results/cpu/einsum/<timestamp>/`. The human-facing reports are
+   copied to `result/cpu/einsum.md` and `result/cpu/cpu_ops.md`.
 
 5. Verify generated outputs:
 
    ```bash
-   rg -n "Threads: 1|Threads: 4|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
-     result/einsum-results.md result/cpu-benchmark-results.md
+   rg -n "Suite:|Threads:|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
+     result/cpu/einsum.md result/cpu/cpu_ops.md
    ```
 
-   `result/einsum-results.md` should contain measured columns for tenferro-rs
-   eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX
-   Python. The PR884 CPU table in `result/cpu-benchmark-results.md` uses the
-   same column labels and should include measured tenferro-rs eager mode,
-   tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python values for
-   the CPU-op items.
+   `result/cpu/einsum.md` should contain measured columns for tenferro-rs eager
+   mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python. The
+   PR884 CPU table in `result/cpu/cpu_ops.md` uses the same column labels and
+   should include measured tenferro-rs eager mode, tenferro-rs trace mode,
+   Torch C++, PyTorch Python, and JAX Python values for the CPU-op items.
 
 ## Useful Checks
 

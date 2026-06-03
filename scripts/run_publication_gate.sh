@@ -7,6 +7,7 @@ TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 PROFILE="${PUBLICATION_GATE_PROFILE:-quick}"
 SUITE="${PUBLICATION_GATE_SUITE:-all}"
 FEATURES="${PUBLICATION_GATE_FEATURES:-system-openblas}"
+RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$ROOT/data/results}"
 
 export OMP_NUM_THREADS="$THREADS"
 export RAYON_NUM_THREADS="$THREADS"
@@ -14,9 +15,9 @@ export OPENBLAS_NUM_THREADS="$THREADS"
 export PUBLICATION_GATE_PROFILE="$PROFILE"
 export PUBLICATION_GATE_SUITE="$SUITE"
 
-mkdir -p "$ROOT/data/results"
+mkdir -p "$RESULTS_DIR"
 
-LOG="$ROOT/data/results/publication_gate_${FEATURES}_t${THREADS}_${PROFILE}_${SUITE}_${TIMESTAMP}.csv"
+LOG="$RESULTS_DIR/publication_gate_${FEATURES}_t${THREADS}_${PROFILE}_${SUITE}_${TIMESTAMP}.csv"
 
 if [[ "$FEATURES" == "system-openblas" && -z "${OPENBLAS_ROOT:-}" ]]; then
   echo "OPENBLAS_ROOT must be set for PUBLICATION_GATE_FEATURES=system-openblas" >&2

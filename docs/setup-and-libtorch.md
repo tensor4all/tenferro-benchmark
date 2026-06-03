@@ -283,10 +283,10 @@ After either run, verify that the generated reports include the expected compari
 
 ```bash
 rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
-  result/einsum-results.md result/cpu-benchmark-results.md
+  result/cpu/einsum.md result/cpu/cpu_ops.md
 ```
 
-`result/einsum-results.md` should contain measured einsum columns for tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python. `result/cpu-benchmark-results.md` uses the same column labels for PR884 CPU benchmark items and measures tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python CPU-op runners.
+`result/cpu/einsum.md` should contain measured einsum columns for tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python. `result/cpu/cpu_ops.md` uses the same column labels for PR884 CPU benchmark items and measures tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python CPU-op runners.
 
 Important OpenBLAS notes:
 

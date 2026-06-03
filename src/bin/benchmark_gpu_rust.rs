@@ -52,13 +52,14 @@ fn main() {
         let suite: serde_yaml::Value =
             serde_yaml::from_str(&suite_text).expect("invalid suite YAML");
         let suite_id = suite["suite_id"].as_str().unwrap_or("unknown").to_string();
+        let suite_backends = yaml_str_list(&suite["backends"]);
 
         for problem in suite["problems"].as_sequence().expect("problems list") {
             let pid = problem["id"].as_str().unwrap_or("");
             if !problem_filter.is_empty() && pid != problem_filter {
                 continue;
             }
-            let candidates = yaml_str_list(&problem["backend_candidates"]);
+            let candidates = backend_candidates(problem, &suite_backends);
 
             for &backend in &backends {
                 let rec = dispatch(
@@ -858,7 +859,7 @@ fn timing_stats(times_ms: &[f64]) -> (f64, f64, f64, f64, f64) {
 fn stub(
     suite_id: &str, problem: &serde_yaml::Value, backend: &str,
     device_ordinal: usize, status: &str, reason: &str, path: &str,
-    ts: &str, bc: Option<&str>, tc: Option<&str>,
+    _ts: &str, _bc: Option<&str>, _tc: Option<&str>,
 ) -> Value {
     let pid = problem["id"].as_str().unwrap_or("");
     let op  = problem["op"].as_str().unwrap_or("");
@@ -882,7 +883,6 @@ fn stub(
             "max_abs_error": null, "max_rel_error": null, "residual": null,
             "rtol": null, "atol": null, "reason": reason
         },
-        "environment": base_env(device_ordinal, ts, bc, tc),
         "execution": {
             "device": "cuda", "device_ordinal": device_ordinal,
             "execution_path": path, "synchronization": "not executed",
@@ -900,7 +900,7 @@ fn ok_record(
     stats: (f64, f64, f64, f64, f64),
     ver_status: &str, max_abs: Option<f64>, max_rel: Option<f64>,
     rtol: f64, atol: f64,
-    ts: &str, bc: Option<&str>, tc: Option<&str>,
+    _ts: &str, _bc: Option<&str>, _tc: Option<&str>,
 ) -> Value {
     let (first, median, min_t, p95, iqr) = stats;
     let pid = problem["id"].as_str().unwrap_or("");
@@ -925,7 +925,6 @@ fn ok_record(
             "max_abs_error": max_abs, "max_rel_error": max_rel, "residual": null,
             "rtol": rtol, "atol": atol, "reason": null
         },
-        "environment": base_env(device_ordinal, ts, bc, tc),
         "execution": {
             "device": "cuda", "device_ordinal": device_ordinal,
             "execution_path": path,
@@ -952,23 +951,6 @@ fn tenferro_notes(op: &str) -> &'static str {
     }
 }
 
-fn base_env(device_ordinal: usize, ts: &str, bc: Option<&str>, tc: Option<&str>) -> Value {
-    json!({
-        "hostname": hostname(),
-        "timestamp_utc": ts,
-        "os": std::env::consts::OS,
-        "gpu_name": null, "gpu_uuid": null, "gpu_memory_bytes": null,
-        "driver_version": null, "cuda_version": null, "cudnn_version": null,
-        "framework_version": format!("tenferro-rs-cuda (device {device_ordinal})"),
-        "tenferro_rs_commit": tc,
-        "benchmark_repo_commit": bc,
-        "env": {
-            "CUDA_PATH": std::env::var("CUDA_PATH").ok(),
-            "LD_LIBRARY_PATH": std::env::var("LD_LIBRARY_PATH").ok()
-        }
-    })
-}
-
 // ---------------------------------------------------------------------------
 // Utilities
 // ---------------------------------------------------------------------------
@@ -977,6 +959,19 @@ fn yaml_str_list(v: &serde_yaml::Value) -> Vec<String> {
     v.as_sequence()
         .map(|s| s.iter().filter_map(|x| x.as_str().map(String::from)).collect())
         .unwrap_or_default()
+}
+
+fn backend_candidates(problem: &serde_yaml::Value, suite_backends: &[String]) -> Vec<String> {
+    let only_backends = yaml_str_list(&problem["only_backends"]);
+    let skip_backends = yaml_str_list(&problem["skip_backends"]);
+    let base = if only_backends.is_empty() {
+        suite_backends.to_vec()
+    } else {
+        only_backends
+    };
+    base.into_iter()
+        .filter(|backend| !skip_backends.iter().any(|skip| skip == backend))
+        .collect()
 }
 
 fn yaml_usize(v: &serde_yaml::Value, default: usize) -> usize {
@@ -1029,12 +1024,4 @@ fn utc_timestamp() -> String {
         .filter(|o| o.status.success())
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
         .unwrap_or_else(|| "1970-01-01T00:00:00+00:00".to_string())
-}
-
-fn hostname() -> String {
-    std::process::Command::new("hostname")
-        .output()
-        .ok()
-        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
-        .unwrap_or_else(|| "unknown".to_string())
 }

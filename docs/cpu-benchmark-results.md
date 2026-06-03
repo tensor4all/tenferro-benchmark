@@ -6,7 +6,7 @@ Run the benchmark and read the latest generated PR884 CPU report at:
 
 ```bash
 ./scripts/run_all.sh 1
-less result/cpu-benchmark-results.md
+less result/cpu/cpu_ops.md
 ```
 
-Raw logs and timestamped intermediate tables are still written under `data/results/`.
+Raw logs, run metadata, and timestamped intermediate tables are written under `data/results/cpu/einsum/<timestamp>/`.

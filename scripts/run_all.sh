@@ -19,8 +19,10 @@ NUM_THREADS="${1:-1}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-RESULTS_DIR="$PROJECT_DIR/data/results"
+RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
+CPU_SUITE_ID="cpu/einsum"
+CPU_SUITE_FILE="$PROJECT_DIR/benchmarks/cpu/einsum.yaml"
 
 if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
     # Source this so OPENBLAS_ROOT and Torch_DIR exported by the setup script
@@ -50,37 +52,6 @@ resolve_git_commit() {
     fi
 }
 
-result_threads_for_prefix() {
-    local prefix="$1"
-    find "$RESULTS_DIR" -maxdepth 1 -name "${prefix}_t*_*.md" -print 2>/dev/null \
-        | while IFS= read -r path; do
-            local base
-            base="$(basename "$path")"
-            if [[ "$base" =~ ^${prefix}_t([0-9]+)_[0-9]{8}_[0-9]{6}\.md$ ]]; then
-                echo "${BASH_REMATCH[1]}"
-            fi
-        done \
-        | sort -n -u
-}
-
-latest_thread_markdown() {
-    local prefix="$1"
-    local threads="$2"
-    find "$RESULTS_DIR" -maxdepth 1 -name "${prefix}_t${threads}_*.md" -print 2>/dev/null \
-        | sort \
-        | tail -n 1
-}
-
-timestamp_from_markdown() {
-    local prefix="$1"
-    local path="$2"
-    local base
-    base="$(basename "$path")"
-    if [[ "$base" =~ ^${prefix}_t[0-9]+_([0-9]{8}_[0-9]{6})\.md$ ]]; then
-        echo "${BASH_REMATCH[1]}"
-    fi
-}
-
 write_cpu_info_section() {
     if command -v uv >/dev/null 2>&1; then
         uv run python "$PROJECT_DIR/scripts/collect_cpu_info.py" --markdown \
@@ -90,15 +61,49 @@ write_cpu_info_section() {
     fi
 }
 
+run_python_script() {
+    local script="$1"
+    shift
+    if command -v uv >/dev/null 2>&1; then
+        uv run python "$script" "$@" || python3 "$script" "$@"
+    else
+        python3 "$script" "$@"
+    fi
+}
+
+write_run_metadata() {
+    local run_yaml="$1"
+    local timestamp="$2"
+    local tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
+    local args=(
+        --suite-id "$CPU_SUITE_ID"
+        --suite-file "${CPU_SUITE_FILE#$PROJECT_DIR/}"
+        --timestamp "$timestamp"
+        --tenferro-dir "$tenferro_dir"
+        --features system-openblas
+        --blas openblas
+        --output "$run_yaml"
+    )
+    if [[ -n "$TENFERRO_COMMIT" ]]; then
+        args+=(--tenferro-commit "$TENFERRO_COMMIT")
+    fi
+    run_python_script "$PROJECT_DIR/scripts/collect_run_metadata.py" "${args[@]}"
+}
+
 write_einsum_report() {
     local report="$1"
-    mkdir -p "$REPORTS_DIR"
+    mkdir -p "$(dirname "$report")"
     {
         echo "# Einsum Benchmark Results"
         echo ""
+        echo "- Suite: \`$CPU_SUITE_ID\`"
+        echo "- Suite file: \`${CPU_SUITE_FILE#$PROJECT_DIR/}\`"
+        echo "- Run metadata: \`${CPU_RUN_YAML#$PROJECT_DIR/}\`"
+        echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
+        echo ""
         echo "Latest run: \`./scripts/run_all.sh $NUM_THREADS\`."
         echo ""
-        echo "This file collects the latest einsum benchmark table for each thread count under \`data/results/\`."
+        echo "This file is generated from one suite run under \`${CPU_RUN_DIR#$PROJECT_DIR/}\`."
         echo ""
         if [[ -n "$TENFERRO_COMMIT" ]]; then
             echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
@@ -107,47 +112,38 @@ write_einsum_report() {
         write_cpu_info_section
         echo ""
 
-        local thread table timestamp log section_count=0
-        for thread in $(result_threads_for_prefix "results"); do
-            table="$(latest_thread_markdown "results" "$thread")"
-            [[ -n "$table" ]] || continue
-            timestamp="$(timestamp_from_markdown "results" "$table")"
-
-            if (( section_count > 0 )); then
-                echo ""
-            fi
-            ((section_count += 1))
-            echo "## Threads: $thread"
-            echo ""
-            [[ -n "$timestamp" ]] && echo "- Timestamp: \`$timestamp\`"
-            echo "- Source table: \`${table#$PROJECT_DIR/}\`"
-            echo ""
-            echo "Logs:"
-            echo ""
-            for log in \
-                "$RESULTS_DIR/tenferro_trace_t${thread}_${timestamp}.log" \
-                "$RESULTS_DIR/tenferro_eager_t${thread}_${timestamp}.log" \
-                "$RESULTS_DIR/strided_faer_t${thread}_${timestamp}.log" \
-                "$RESULTS_DIR/libtorch_cpu_t${thread}_${timestamp}.log" \
-                "$RESULTS_DIR/pytorch_cpu_t${thread}_${timestamp}.log" \
-                "$RESULTS_DIR/jax_cpu_t${thread}_${timestamp}.log"; do
-                [[ -f "$log" ]] && echo "- \`${log#$PROJECT_DIR/}\`"
-            done
-            echo ""
-            cat "$table"
+        echo "## Threads: $NUM_THREADS"
+        echo ""
+        echo "- Source table: \`${MARKDOWN_TABLE#$PROJECT_DIR/}\`"
+        echo ""
+        echo "Logs:"
+        echo ""
+        for log in \
+            "$TENFERRO_TRACE_LOG" \
+            "$TENFERRO_EAGER_LOG" \
+            "$STRIDED_FAER_LOG" \
+            "$LIBTORCH_LOG" \
+            "$PYTORCH_LOG" \
+            "$JAX_LOG"; do
+            [[ -f "$log" ]] && echo "- \`${log#$PROJECT_DIR/}\`"
         done
+        echo ""
+        cat "$MARKDOWN_TABLE"
     } > "$report"
 }
 
 write_cpu_report() {
     local report="$1"
-    mkdir -p "$REPORTS_DIR"
+    mkdir -p "$(dirname "$report")"
     {
         echo "# CPU Benchmark Results"
         echo ""
+        echo "- Suite: \`cpu/cpu_ops\`"
+        echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
+        echo ""
         echo "Latest run: \`./scripts/run_all.sh $NUM_THREADS\`."
         echo ""
-        echo "This file collects the latest PR884 CPU benchmark item comparison for each thread count under \`data/results/\`."
+        echo "This file is generated from one CPU ops run under \`${CPU_RUN_DIR#$PROJECT_DIR/}\`."
         echo ""
         if [[ -n "$TENFERRO_COMMIT" ]]; then
             echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
@@ -155,38 +151,37 @@ write_cpu_report() {
         fi
         write_cpu_info_section
         echo ""
-
-        local thread table timestamp log section_count=0
-        for thread in $(result_threads_for_prefix "cpu_ops"); do
-            table="$(latest_thread_markdown "cpu_ops" "$thread")"
-            [[ -n "$table" ]] || continue
-            timestamp="$(timestamp_from_markdown "cpu_ops" "$table")"
-            log="$RESULTS_DIR/cpu_ops_t${thread}_${timestamp}.csv"
-
-            if (( section_count > 0 )); then
-                echo ""
-            fi
-            ((section_count += 1))
-            echo "## Threads: $thread"
-            echo ""
-            [[ -n "$timestamp" ]] && echo "- Timestamp: \`$timestamp\`"
-            echo "- Source table: \`${table#$PROJECT_DIR/}\`"
-            echo ""
-            echo "Logs:"
-            echo ""
-            [[ -f "$log" ]] && echo "- \`${log#$PROJECT_DIR/}\`"
-            echo ""
-            cat "$table"
-        done
+        echo "## Threads: $NUM_THREADS"
+        echo ""
+        [[ -f "$CPU_OPS_LOG" ]] && echo "- CSV: \`${CPU_OPS_LOG#$PROJECT_DIR/}\`"
+        echo "- Source table: \`${CPU_OPS_MD#$PROJECT_DIR/}\`"
+        echo ""
+        cat "$CPU_OPS_MD"
     } > "$report"
 }
 
-TENFERRO_COMMIT=""
-if [[ -n "${TENFERRO_RS_DIR:-}" ]]; then
-    TENFERRO_COMMIT="$(resolve_git_commit "$TENFERRO_RS_DIR")"
-fi
+TENFERRO_DIR_FOR_COMMIT="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
+TENFERRO_COMMIT="$(resolve_git_commit "$TENFERRO_DIR_FOR_COMMIT")"
 
 export BENCHMARK_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+RUN_TIMESTAMP_RFC3339="$(python3 - <<'PY'
+from datetime import datetime, timezone
+print(datetime.now(timezone.utc).isoformat())
+PY
+)"
+CPU_RUN_DIR="$RESULTS_ROOT/cpu/einsum/$BENCHMARK_TIMESTAMP"
+CPU_RUN_YAML="$CPU_RUN_DIR/run.yaml"
+CPU_LATEST_REPORT="$REPORTS_DIR/cpu/einsum.md"
+CPU_OPS_LATEST_REPORT="$REPORTS_DIR/cpu/cpu_ops.md"
+
+mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")"
+export BENCHMARK_RESULTS_DIR="$CPU_RUN_DIR"
+
+if [[ -z "${OPENBLAS_ROOT:-}" ]]; then
+    if command -v brew >/dev/null 2>&1 && brew --prefix openblas >/dev/null 2>&1; then
+        export OPENBLAS_ROOT="$(brew --prefix openblas)"
+    fi
+fi
 
 echo "============================================"
 echo " tenferro benchmark suite"
@@ -194,8 +189,12 @@ echo "============================================"
 echo "Project dir:  $PROJECT_DIR"
 echo "Threads:      $NUM_THREADS"
 echo "Timestamp:    $BENCHMARK_TIMESTAMP"
+echo "Suite:        $CPU_SUITE_ID"
+echo "Run dir:      $CPU_RUN_DIR"
 [[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
 echo ""
+
+write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
 
 # ---------------------------------------------------------------------------
 # Rust benchmarks (tenferro trace/eager + strided-rs)
@@ -219,8 +218,8 @@ fi
 # ---------------------------------------------------------------------------
 # Focused CPU benchmark items from tensor4all/tenferro-rs#884
 # ---------------------------------------------------------------------------
-CPU_OPS_LOG="$RESULTS_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
-CPU_OPS_MD="$RESULTS_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
+CPU_OPS_LOG="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
+CPU_OPS_MD="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
 if [[ -x "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
     if ! "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
         echo "WARNING: PR884 CPU benchmark items failed; continuing without CPU item results." >&2
@@ -234,15 +233,15 @@ fi
 # ---------------------------------------------------------------------------
 # Collect all logs and format as markdown table
 # ---------------------------------------------------------------------------
-TENFERRO_TRACE_LOG="$RESULTS_DIR/tenferro_trace_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-TENFERRO_EAGER_LOG="$RESULTS_DIR/tenferro_eager_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-STRIDED_FAER_LOG="$RESULTS_DIR/strided_faer_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-LIBTORCH_LOG="$RESULTS_DIR/libtorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-PYTORCH_LOG="$RESULTS_DIR/pytorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-JAX_LOG="$RESULTS_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-MARKDOWN_OUT="$RESULTS_DIR/results_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
-EINSUM_REPORT="$REPORTS_DIR/einsum-results.md"
-CPU_REPORT="$REPORTS_DIR/cpu-benchmark-results.md"
+TENFERRO_TRACE_LOG="$CPU_RUN_DIR/tenferro_trace_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+TENFERRO_EAGER_LOG="$CPU_RUN_DIR/tenferro_eager_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+STRIDED_FAER_LOG="$CPU_RUN_DIR/strided_faer_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+LIBTORCH_LOG="$CPU_RUN_DIR/libtorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+PYTORCH_LOG="$CPU_RUN_DIR/pytorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+JAX_LOG="$CPU_RUN_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+MARKDOWN_TABLE="$CPU_RUN_DIR/einsum_table_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
+EINSUM_REPORT="$CPU_RUN_DIR/report.md"
+CPU_REPORT="$CPU_RUN_DIR/cpu_ops_report.md"
 
 LOGS=()
 [ -f "$TENFERRO_TRACE_LOG" ] && LOGS+=("$TENFERRO_TRACE_LOG")
@@ -254,12 +253,12 @@ LOGS=()
 
 if [ ${#LOGS[@]} -gt 0 ]; then
     echo "Formatting results as markdown..."
-    mkdir -p "$REPORTS_DIR"
+    mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")" "$(dirname "$CPU_OPS_LATEST_REPORT")"
     if command -v uv >/dev/null 2>&1; then
-        uv run python "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_OUT" \
-            || python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_OUT"
+        uv run python "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE" \
+            || python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE"
     else
-        python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_OUT"
+        python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE"
     fi
 
     if [ -f "$CPU_OPS_LOG" ]; then
@@ -272,7 +271,11 @@ if [ ${#LOGS[@]} -gt 0 ]; then
     fi
 
     write_einsum_report "$EINSUM_REPORT"
-    write_cpu_report "$CPU_REPORT"
+    cp "$EINSUM_REPORT" "$CPU_LATEST_REPORT"
+    if [ -f "$CPU_OPS_MD" ]; then
+        write_cpu_report "$CPU_REPORT"
+        cp "$CPU_REPORT" "$CPU_OPS_LATEST_REPORT"
+    fi
     echo ""
 fi
 
@@ -283,6 +286,9 @@ echo "Results:"
 for log in "${LOGS[@]}"; do
     echo "  $log"
 done
-[ -f "$MARKDOWN_OUT" ] && echo "  Markdown: $MARKDOWN_OUT"
+[ -f "$MARKDOWN_TABLE" ] && echo "  Markdown: $MARKDOWN_TABLE"
+[ -f "$CPU_RUN_YAML" ] && echo "  Run YAML: $CPU_RUN_YAML"
 [ -f "$EINSUM_REPORT" ] && echo "  Report:   $EINSUM_REPORT"
+[ -f "$CPU_LATEST_REPORT" ] && echo "  Latest:   $CPU_LATEST_REPORT"
 [ -f "$CPU_REPORT" ] && echo "  Report:   $CPU_REPORT"
+[ -f "$CPU_OPS_LATEST_REPORT" ] && echo "  Latest:   $CPU_OPS_LATEST_REPORT"

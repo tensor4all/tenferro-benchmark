@@ -66,16 +66,16 @@ For PR884 CPU benchmark items, `scripts/run_cpu_ops.sh` writes tenferro-rs
 eager and trace rows from `publication_gate`, then appends Torch C++, PyTorch
 Python, and JAX Python measurements to the same normalized CSV.
 
-The script sets `OMP_NUM_THREADS` and `RAYON_NUM_THREADS` to the given thread count. Raw logs and timestamped intermediate tables are saved to `data/results/`. The latest human-facing reports are written to:
+The script sets `OMP_NUM_THREADS` and `RAYON_NUM_THREADS` to the given thread count. Raw logs, run metadata, and timestamped intermediate tables are saved to `data/results/cpu/einsum/<timestamp>/`. The latest human-facing reports are written to:
 
-- `result/einsum-results.md`
-- `result/cpu-benchmark-results.md`
+- `result/cpu/einsum.md`
+- `result/cpu/cpu_ops.md`
 
 Verify the generated report columns with:
 
 ```bash
 rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
-  result/einsum-results.md result/cpu-benchmark-results.md
+  result/cpu/einsum.md result/cpu/cpu_ops.md
 ```
 
 Instance JSON files that fail to read or parse are skipped with a warning. Instances that trigger a backend error are reported as `SKIP` with the reason on stderr.

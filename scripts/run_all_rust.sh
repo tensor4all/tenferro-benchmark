@@ -24,7 +24,7 @@ export RAYON_NUM_THREADS="$NUM_THREADS"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 STRIDED_DIR="$(cd "$PROJECT_DIR/../strided-rs-benchmark-suite" 2>/dev/null && pwd || true)"
-RESULTS_DIR="$PROJECT_DIR/data/results"
+RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
 
 mkdir -p "$RESULTS_DIR"
 

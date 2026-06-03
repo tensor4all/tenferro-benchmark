@@ -17,7 +17,7 @@ export OMP_NUM_THREADS="$NUM_THREADS"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-RESULTS_DIR="$PROJECT_DIR/data/results"
+RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
 BUILD_DIR="$PROJECT_DIR/build/cpp-libtorch"
 
 mkdir -p "$RESULTS_DIR"
