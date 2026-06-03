@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tensor4all.example/schemas/benchmark-run.schema.json",
+  "title": "Benchmark Run Metadata",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "suite_id",
+    "suite_file",
+    "timestamp",
+    "tenferro_rs",
+    "environment"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "suite_id": {
+      "type": "string",
+      "pattern": "^(cpu|gpu)/[a-z0-9][a-z0-9_.-]*$"
+    },
+    "suite_file": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time", "minLength": 1 },
+    "tenferro_rs": { "$ref": "#/$defs/tenferro_rs" },
+    "environment": { "$ref": "#/$defs/environment" },
+    "blas": { "$ref": "#/$defs/blas" },
+    "cuda": { "$ref": "#/$defs/cuda" }
+  },
+  "$defs": {
+    "tenferro_rs": {
+      "type": "object",
+      "required": ["path", "commit", "features"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{7,40}$"
+        },
+        "features": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "hostname": { "type": ["string", "null"] },
+        "os": { "type": ["string", "null"] },
+        "arch": { "type": ["string", "null"] },
+        "cpu": { "type": ["string", "null"] },
+        "env": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "blas": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["implementation", "version", "root", "library"],
+          "additionalProperties": false,
+          "properties": {
+            "implementation": { "const": "openblas" },
+            "version": { "type": "string", "minLength": 1 },
+            "root": { "type": "string", "minLength": 1 },
+            "library": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["implementation"],
+          "additionalProperties": false,
+          "properties": {
+            "implementation": { "const": "none" }
+          }
+        }
+      ]
+    },
+    "cuda": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "device_name": { "type": ["string", "null"] },
+        "device_uuid": { "type": ["string", "null"] },
+        "device_memory_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "driver_version": { "type": ["string", "null"] },
+        "runtime_version": { "type": ["string", "null"] },
+        "cuda_version": { "type": ["string", "null"] },
+        "cudnn_version": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

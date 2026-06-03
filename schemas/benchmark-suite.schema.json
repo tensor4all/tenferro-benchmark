@@ -1,13 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tensor4all.example/schemas/benchmark-suite.schema.json",
-  "title": "GPU Benchmark Suite",
+  "title": "Benchmark Suite",
   "type": "object",
-  "required": ["schema_version", "suite_id", "description", "problems"],
+  "required": [
+    "schema_version",
+    "suite_id",
+    "title",
+    "description",
+    "defaults",
+    "backends",
+    "problems"
+  ],
   "additionalProperties": false,
   "properties": {
     "schema_version": { "const": 1 },
-    "suite_id": { "type": "string", "minLength": 1 },
+    "suite_id": {
+      "type": "string",
+      "pattern": "^(cpu|gpu)/[a-z0-9][a-z0-9_.-]*$"
+    },
+    "title": { "type": "string", "minLength": 1 },
     "description": { "type": "string", "minLength": 1 },
     "defaults": {
       "type": "object",
@@ -19,18 +31,44 @@
         "layout": { "$ref": "#/$defs/layout" }
       }
     },
+    "backends": { "$ref": "#/$defs/backend_list" },
     "problems": {
-      "type": "array",
-      "minItems": 1,
-      "items": { "$ref": "#/$defs/problem" }
+      "oneOf": [
+        { "$ref": "#/$defs/problem_selector" },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/problem" }
+        }
+      ]
     }
   },
   "$defs": {
+    "backend_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "problem_selector": {
+      "type": "object",
+      "required": ["source", "include"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "include": { "$ref": "#/$defs/problem_id_list" },
+        "exclude": { "$ref": "#/$defs/problem_id_list" }
+      }
+    },
+    "problem_id_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
     "device": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "kind": { "enum": ["cuda"] },
+        "kind": { "enum": ["cpu", "cuda"] },
         "ordinal": { "type": "integer", "minimum": 0 }
       }
     },
@@ -44,6 +82,7 @@
         "min_runtime_ms": { "type": "number", "minimum": 0 },
         "timing_scope": {
           "enum": [
+            "steady_state_host_api",
             "steady_state_device_only",
             "steady_state_host_api_plus_device_sync",
             "steady_state_host_api_plus_device_sync_with_download",
@@ -110,10 +149,7 @@
         "family",
         "op",
         "dtype",
-        "data",
-        "run",
-        "verify",
-        "backend_candidates"
+        "data"
       ],
       "additionalProperties": false,
       "properties": {
@@ -137,11 +173,8 @@
         "data": { "$ref": "#/$defs/data" },
         "run": { "$ref": "#/$defs/run" },
         "verify": { "$ref": "#/$defs/verify" },
-        "backend_candidates": {
-          "type": "array",
-          "minItems": 1,
-          "items": { "type": "string", "minLength": 1 }
-        },
+        "only_backends": { "$ref": "#/$defs/backend_list" },
+        "skip_backends": { "$ref": "#/$defs/backend_list" },
         "matmul": { "$ref": "#/$defs/matmul" },
         "batched_matmul": { "$ref": "#/$defs/batched_matmul" },
         "einsum": { "$ref": "#/$defs/einsum" },
