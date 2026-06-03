@@ -44,7 +44,7 @@
     },
     "environment": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "hostname": { "type": ["string", "null"] },
         "os": { "type": ["string", "null"] },

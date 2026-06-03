@@ -104,6 +104,27 @@ blas:
 YAML
 assert_invalid run "$TMP/run_with_benchmark_repo_commit.yaml" "run metadata with benchmark_repo_commit"
 
+cat > "$TMP/run_with_environment_benchmark_repo_commit.yaml" <<'YAML'
+schema_version: 1
+suite_id: cpu/einsum
+suite_file: benchmarks/cpu/einsum.yaml
+timestamp: "2026-06-03T12:34:56+09:00"
+tenferro_rs:
+  path: extern/tenferro-rs
+  commit: abcdef1
+  features: [openblas]
+environment:
+  hostname: ci-host
+  os: macos
+  benchmark_repo_commit: 0123456789abcdef
+blas:
+  implementation: openblas
+  version: 0.3.26
+  root: /opt/OpenBLAS
+  library: /opt/OpenBLAS/lib/libopenblas.dylib
+YAML
+assert_invalid run "$TMP/run_with_environment_benchmark_repo_commit.yaml" "run metadata with environment.benchmark_repo_commit"
+
 cat > "$TMP/cpu_result.jsonl" <<'JSON'
 {"schema_version":1,"suite_id":"cpu/einsum","problem_id":"einsum_bin_matmul_256_f64","op":"einsum","backend":"tenferro-cpu-eager","status":"ok","timing":{"warmup_runs":1,"timed_runs":3,"compile_time_ms":0.0,"first_run_ms":1.2,"median_ms":1.0,"min_ms":0.9,"p95_ms":1.1,"iqr_ms":0.1,"timing_scope":"steady_state_host_api"},"performance":{"tflops":null,"effective_bandwidth_gbps":null,"peak_memory_bytes":null},"verification":{"status":"passed","reference_backend":"cpu_fp64","max_abs_error":0.0,"max_rel_error":0.0,"residual":null,"rtol":1.0e-8,"atol":1.0e-10,"reason":null},"execution":{"device":"cpu","device_ordinal":0,"execution_path":"tenferro-rs eager cpu","synchronization":"none","layout":"col_major","dtype":"f64","notes":null,"unsupported_reason":null}}
 JSON
