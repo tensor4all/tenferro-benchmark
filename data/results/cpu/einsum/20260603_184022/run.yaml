@@ -1,0 +1,21 @@
+schema_version: 1
+suite_id: cpu/einsum
+suite_file: benchmarks/cpu/einsum.yaml
+timestamp: '2026-06-03T09:40:22.539172+00:00'
+tenferro_rs:
+  path: extern/tenferro-rs
+  commit: cc46577429a8cc5a91cb0ed86910b47b2055b420
+  features:
+  - system-openblas
+environment:
+  hostname: MacBook-Pro.local
+  os: macOS-26.5-arm64-arm-64bit
+  arch: arm64
+  cpu: arm
+  env:
+    OPENBLAS_ROOT: /opt/homebrew/opt/openblas
+blas:
+  implementation: openblas
+  version: OpenBLAS 0.3.33
+  root: /opt/homebrew/opt/openblas
+  library: /opt/homebrew/opt/openblas/lib/libopenblas.0.dylib
