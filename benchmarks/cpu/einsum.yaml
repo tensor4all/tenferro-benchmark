@@ -1,0 +1,31 @@
+schema_version: 1
+suite_id: cpu/einsum
+title: CPU Einsum Benchmarks
+description: CPU einsum benchmark suite using shared instance definitions.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api}
+  verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+backends:
+  - tenferro-trace
+  - tenferro-eager
+  - libtorch-cpu
+  - pytorch-cpu
+  - jax-cpu
+problems:
+  source: data/instances
+  include:
+    - bin_matmul_256
+    - bin_batched_matmul_b32_m64_n64_k64
+    - bin_outer_product_4096
+    - bin_elementwise_mul_2048x2048
+    - gm_queen5_5_3.wcsp
+    - lm_batch_likelihood_brackets_4_4d
+    - lm_batch_likelihood_sentence_3_12d
+    - lm_batch_likelihood_sentence_4_4d
+    - str_matrix_chain_multiplication_100
+    - str_mps_varying_inner_product_200
+    - str_nw_mera_closed_120
+    - str_nw_mera_open_26
+    - tensornetwork_permutation_light_415
+    - tensornetwork_permutation_focus_step409_316

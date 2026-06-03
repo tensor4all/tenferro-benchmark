@@ -36,7 +36,7 @@ uv run python scripts/validate_benchmark_suite.py \
   benchmarks/gpu/sparse.yaml
 
 cat > "$TMP/bad_ok_result.jsonl" <<'JSON'
-{"schema_version":1,"suite_id":"gpu_bad","problem_id":"bad_ok","op":"matmul","backend":"pytorch-cuda","status":"ok","timing":{"warmup_runs":0,"timed_runs":0,"compile_time_ms":null,"first_run_ms":null,"median_ms":null,"min_ms":null,"p95_ms":null,"iqr_ms":null,"timing_scope":"steady_state_host_api_plus_device_sync"},"verification":{"status":"skipped","reference_backend":null,"rtol":null,"atol":null},"environment":{"timestamp_utc":"not-a-date"},"execution":{"device":"cuda","device_ordinal":0,"execution_path":"contract-test","synchronization":"none","layout":"{}","dtype":"{}"}}
+{"schema_version":1,"suite_id":"gpu/dense","problem_id":"bad_ok","op":"matmul","backend":"pytorch-cuda","status":"ok","timing":{"warmup_runs":0,"timed_runs":0,"compile_time_ms":null,"first_run_ms":null,"median_ms":null,"min_ms":null,"p95_ms":null,"iqr_ms":null,"timing_scope":"steady_state_host_api_plus_device_sync"},"verification":{"status":"skipped","reference_backend":null,"rtol":null,"atol":null},"environment":{"timestamp_utc":"not-a-date"},"execution":{"device":"cuda","device_ordinal":0,"execution_path":"contract-test","synchronization":"none","layout":"{}","dtype":"{}"}}
 JSON
 if uv run python scripts/validate_benchmark_suite.py --kind result "$TMP/bad_ok_result.jsonl" >/dev/null 2>&1; then
   echo "invalid ok result record unexpectedly passed validation" >&2
@@ -44,7 +44,7 @@ if uv run python scripts/validate_benchmark_suite.py --kind result "$TMP/bad_ok_
 fi
 
 cat > "$TMP/bad_verification_failed_result.jsonl" <<'JSON'
-{"schema_version":1,"suite_id":"gpu_bad","problem_id":"bad_verification","op":"matmul","backend":"pytorch-cuda","status":"verification_failed","timing":{"warmup_runs":0,"timed_runs":1,"compile_time_ms":null,"first_run_ms":1.0,"median_ms":1.0,"min_ms":1.0,"p95_ms":1.0,"iqr_ms":0.0,"timing_scope":"steady_state_host_api_plus_device_sync"},"verification":{"status":"passed","reference_backend":"cpu_fp64","rtol":1.0e-8,"atol":1.0e-10},"environment":{"timestamp_utc":"1999-01-01T00:00:00+00:00"},"execution":{"device":"cuda","device_ordinal":0,"execution_path":"contract-test","synchronization":"none","layout":"{}","dtype":"{}"}}
+{"schema_version":1,"suite_id":"gpu/dense","problem_id":"bad_verification","op":"matmul","backend":"pytorch-cuda","status":"verification_failed","timing":{"warmup_runs":0,"timed_runs":1,"compile_time_ms":null,"first_run_ms":1.0,"median_ms":1.0,"min_ms":1.0,"p95_ms":1.0,"iqr_ms":0.0,"timing_scope":"steady_state_host_api_plus_device_sync"},"verification":{"status":"passed","reference_backend":"cpu_fp64","rtol":1.0e-8,"atol":1.0e-10},"environment":{"timestamp_utc":"1999-01-01T00:00:00+00:00"},"execution":{"device":"cuda","device_ordinal":0,"execution_path":"contract-test","synchronization":"none","layout":"{}","dtype":"{}"}}
 JSON
 if uv run python scripts/validate_benchmark_suite.py --kind result "$TMP/bad_verification_failed_result.jsonl" >/dev/null 2>&1; then
   echo "verification_failed result with passed verification unexpectedly passed validation" >&2
@@ -53,8 +53,13 @@ fi
 
 cat > "$TMP/duplicate_problem_ids.yaml" <<'YAML'
 schema_version: 1
-suite_id: duplicate_problem_ids
+suite_id: gpu/dense
+title: Duplicate Problem ID Suite
 description: duplicate problem IDs should fail semantic validation
+defaults:
+  run: {warmups: 0, runs: 1}
+  verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+backends: [pytorch-cuda, cusparse]
 problems:
   - id: duplicate
     family: dense
@@ -63,7 +68,7 @@ problems:
     data: {generator: normal, seed: 1}
     run: {warmups: 0, runs: 1}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-    backend_candidates: [pytorch-cuda]
+    only_backends: [pytorch-cuda]
     matmul: {m: 1, n: 1, k: 1}
   - id: duplicate
     family: sparse
@@ -72,7 +77,7 @@ problems:
     data: {generator: suitesparse, seed: 0}
     run: {warmups: 0, runs: 1}
     verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-    backend_candidates: [cusparse]
+    only_backends: [cusparse]
     sparse: {source: suitesparse, storage: csr, rows: 1, cols: 1, nnz: 1, rhs_cols: 1}
 YAML
 if uv run python scripts/validate_benchmark_suite.py "$TMP/duplicate_problem_ids.yaml" >/dev/null 2>&1; then
@@ -82,8 +87,13 @@ fi
 
 cat > "$TMP/bad_family_op.yaml" <<'YAML'
 schema_version: 1
-suite_id: bad_family_op
+suite_id: gpu/sparse
+title: Bad Family Operation Suite
 description: family/op mismatch should fail validation
+defaults:
+  run: {warmups: 0, runs: 1}
+  verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+backends: [cusparse]
 problems:
   - id: dense_sparse_mismatch
     family: dense
@@ -92,7 +102,6 @@ problems:
     data: {generator: suitesparse, seed: 0}
     run: {warmups: 0, runs: 1}
     verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-    backend_candidates: [cusparse]
     sparse: {source: suitesparse, storage: csr, rows: 1, cols: 1, nnz: 1}
 YAML
 if uv run python scripts/validate_benchmark_suite.py "$TMP/bad_family_op.yaml" >/dev/null 2>&1; then
@@ -102,8 +111,13 @@ fi
 
 cat > "$TMP/bad_extra_op_block.yaml" <<'YAML'
 schema_version: 1
-suite_id: bad_extra_op_block
+suite_id: gpu/dense
+title: Bad Extra Operation Block Suite
 description: unrelated op block should fail validation
+defaults:
+  run: {warmups: 0, runs: 1}
+  verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+backends: [pytorch-cuda]
 problems:
   - id: matmul_with_sparse
     family: dense
@@ -112,7 +126,6 @@ problems:
     data: {generator: normal, seed: 1}
     run: {warmups: 0, runs: 1}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-    backend_candidates: [pytorch-cuda]
     matmul: {m: 1, n: 1, k: 1}
     sparse: {source: suitesparse, storage: csr, rows: 1, cols: 1, nnz: 1}
 YAML
@@ -153,15 +166,23 @@ fake_jax.numpy = fake_jnp
 sys.modules["jax"] = fake_jax
 sys.modules["jax.numpy"] = fake_jnp
 
-problem = {
-    "id": "jax_without_cuda",
-    "op": "matmul",
-    "backend_candidates": ["jax-cuda"],
-    "dtype": {"a": "f64", "b": "f64", "c": "f64"},
-    "layout": {},
+suite = {
+    "suite_id": "gpu/dense",
+    "backends": ["jax-cuda"],
+    "problems": [
+        {
+            "id": "jax_without_cuda",
+            "op": "matmul",
+            "only_backends": ["jax-cuda"],
+            "dtype": {"a": "f64", "b": "f64", "c": "f64"},
+            "layout": {},
+        }
+    ],
 }
+problem = dict(suite["problems"][0])
+problem["backend_candidates"] = problem.get("only_backends", suite["backends"])
 rec = mod._run_one(
-    "gpu_contract",
+    suite["suite_id"],
     problem,
     "jax-cuda",
     0,

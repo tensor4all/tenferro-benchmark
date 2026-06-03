@@ -30,6 +30,72 @@ assert_invalid() {
   fi
 }
 
+assert_suite_id() {
+  local path="$1"
+  local expected="$2"
+  local actual
+
+  if ! actual="$(uv run python - "$path" 2>"$TMP/out" <<'PY'
+import sys
+from pathlib import Path
+
+import yaml
+
+path = Path(sys.argv[1])
+with path.open() as fh:
+    suite = yaml.safe_load(fh)
+if not isinstance(suite, dict) or not isinstance(suite.get("suite_id"), str):
+    print(f"{path}: missing top-level suite_id", file=sys.stderr)
+    raise SystemExit(1)
+print(suite["suite_id"])
+PY
+)"; then
+    echo "$path did not expose a scalar suite_id" >&2
+    cat "$TMP/out" >&2
+    exit 1
+  fi
+  if [[ "$actual" != "$expected" ]]; then
+    echo "$path suite_id was '$actual', expected '$expected'" >&2
+    exit 1
+  fi
+}
+
+assert_top_level_backends() {
+  local path="$1"
+
+  if ! uv run python - "$path" >"$TMP/out" 2>&1 <<'PY'; then
+import sys
+from pathlib import Path
+
+import yaml
+
+path = Path(sys.argv[1])
+with path.open() as fh:
+    suite = yaml.safe_load(fh)
+backends = suite.get("backends") if isinstance(suite, dict) else None
+if not isinstance(backends, list) or not backends:
+    print(f"{path}: missing non-empty top-level backends block", file=sys.stderr)
+    raise SystemExit(1)
+PY
+    cat "$TMP/out" >&2
+    exit 1
+  fi
+}
+
+assert_valid suite benchmarks/cpu/einsum.yaml "bundled CPU einsum suite"
+assert_valid suite benchmarks/gpu/dense.yaml "bundled GPU dense suite"
+assert_valid suite benchmarks/gpu/einsum.yaml "bundled GPU einsum suite"
+assert_valid suite benchmarks/gpu/sparse.yaml "bundled GPU sparse suite"
+
+assert_suite_id benchmarks/cpu/einsum.yaml cpu/einsum
+assert_suite_id benchmarks/gpu/dense.yaml gpu/dense
+assert_suite_id benchmarks/gpu/einsum.yaml gpu/einsum
+assert_suite_id benchmarks/gpu/sparse.yaml gpu/sparse
+
+assert_top_level_backends benchmarks/gpu/dense.yaml
+assert_top_level_backends benchmarks/gpu/einsum.yaml
+assert_top_level_backends benchmarks/gpu/sparse.yaml
+
 cat > "$TMP/cpu_selector_suite.yaml" <<'YAML'
 schema_version: 1
 suite_id: cpu/einsum

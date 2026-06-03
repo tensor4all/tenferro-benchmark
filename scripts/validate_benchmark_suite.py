@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-from copy import deepcopy
 import json
 import sys
 from datetime import datetime
@@ -19,10 +18,6 @@ PROJECT_DIR = Path(__file__).resolve().parents[1]
 SUITE_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-suite.schema.json"
 RUN_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-run.schema.json"
 RESULT_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-result.schema.json"
-BUNDLED_LEGACY_GPU_SUITES = {
-    (PROJECT_DIR / "benchmarks" / "gpu" / name).resolve()
-    for name in ("dense.yaml", "einsum.yaml", "sparse.yaml")
-}
 
 
 class ValidationLoadError(Exception):
@@ -103,41 +98,6 @@ def validate_unique_problem_ids(path: Path, suite: Any) -> bool:
     return ok
 
 
-def is_bundled_legacy_gpu_suite(path: Path) -> bool:
-    try:
-        return path.resolve() in BUNDLED_LEGACY_GPU_SUITES
-    except OSError:
-        return False
-
-
-def normalize_bundled_legacy_gpu_suite(path: Path, suite: Any) -> Any:
-    if not is_bundled_legacy_gpu_suite(path) or not isinstance(suite, dict):
-        return suite
-    if not isinstance(suite.get("problems"), list):
-        return suite
-
-    normalized = deepcopy(suite)
-    normalized["suite_id"] = f"gpu/{path.stem}"
-    normalized.setdefault("title", f"GPU {path.stem} benchmark suite")
-
-    backends: list[str] = []
-    seen_backends: set[str] = set()
-    for problem in normalized["problems"]:
-        if not isinstance(problem, dict):
-            continue
-        candidates = problem.pop("backend_candidates", None)
-        if isinstance(candidates, list):
-            problem.setdefault("only_backends", candidates)
-            for backend in candidates:
-                if isinstance(backend, str) and backend not in seen_backends:
-                    seen_backends.add(backend)
-                    backends.append(backend)
-
-    if backends:
-        normalized.setdefault("backends", backends)
-    return normalized
-
-
 def parse_rfc3339_datetime(value: str) -> datetime:
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     if parsed.tzinfo is None:
@@ -165,7 +125,7 @@ def validate_result_semantics(path: Path, record: Any) -> bool:
 def validate_suite(path: Path) -> bool:
     try:
         validator = validator_for(SUITE_SCHEMA)
-        suite = normalize_bundled_legacy_gpu_suite(path, load_yaml(path))
+        suite = load_yaml(path)
     except ValidationLoadError as exc:
         print(exc, file=sys.stderr)
         return False

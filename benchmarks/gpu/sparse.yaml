@@ -1,11 +1,17 @@
 schema_version: 1
-suite_id: gpu_sparse_contract_v1
+suite_id: gpu/sparse
+title: GPU Sparse Benchmarks
 description: Sparse GPU benchmark contract suite using SuiteSparse-style metadata.
 defaults:
   device: {kind: cuda, ordinal: 0}
   layout: {sparse: csr}
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
   verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+backends:
+  - pytorch-cuda
+  - libtorch-cuda
+  - cusparse
+  - ginkgo
 problems:
   - id: sparse_synthetic_4m_64m_spmv_f64
     family: sparse
@@ -16,7 +22,6 @@ problems:
     sparse: {source: suitesparse, group: synthetic, name: random_4m_64m, storage: csr, rows: 4194304, cols: 4194304, nnz: 67108864}
     run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-    backend_candidates: [cusparse, ginkgo, pytorch-cuda, libtorch-cuda]
 
   - id: sparse_synthetic_64k_4m_spmm_f64_rhs1024
     family: sparse
@@ -27,4 +32,3 @@ problems:
     sparse: {source: suitesparse, group: synthetic, name: random_64k_4m, storage: csr, rows: 65536, cols: 65536, nnz: 4194304, rhs_cols: 1024}
     run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-    backend_candidates: [cusparse, ginkgo, pytorch-cuda, libtorch-cuda]
