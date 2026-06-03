@@ -82,6 +82,37 @@ PY
   fi
 }
 
+assert_yaml_list_contains() {
+  local path="$1"
+  local dotted_path="$2"
+  local expected="$3"
+
+  if ! uv run python - "$path" "$dotted_path" "$expected" >"$TMP/out" 2>&1 <<'PY'; then
+import sys
+from pathlib import Path
+
+import yaml
+
+path = Path(sys.argv[1])
+dotted_path = sys.argv[2]
+expected = sys.argv[3]
+
+with path.open() as fh:
+    value = yaml.safe_load(fh)
+for part in dotted_path.split("."):
+    if not isinstance(value, dict) or part not in value:
+        print(f"{path}: missing {dotted_path}", file=sys.stderr)
+        raise SystemExit(1)
+    value = value[part]
+if not isinstance(value, list) or expected not in value:
+    print(f"{path}: {dotted_path} does not contain {expected}", file=sys.stderr)
+    raise SystemExit(1)
+PY
+    cat "$TMP/out" >&2
+    exit 1
+  fi
+}
+
 assert_valid suite benchmarks/cpu/einsum.yaml "bundled CPU einsum suite"
 assert_valid suite benchmarks/gpu/dense.yaml "bundled GPU dense suite"
 assert_valid suite benchmarks/gpu/einsum.yaml "bundled GPU einsum suite"
@@ -91,6 +122,9 @@ assert_suite_id benchmarks/cpu/einsum.yaml cpu/einsum
 assert_suite_id benchmarks/gpu/dense.yaml gpu/dense
 assert_suite_id benchmarks/gpu/einsum.yaml gpu/einsum
 assert_suite_id benchmarks/gpu/sparse.yaml gpu/sparse
+
+assert_yaml_list_contains benchmarks/cpu/einsum.yaml backends tenferro-eager
+assert_yaml_list_contains benchmarks/cpu/einsum.yaml problems.include bin_matmul_256
 
 assert_top_level_backends benchmarks/gpu/dense.yaml
 assert_top_level_backends benchmarks/gpu/einsum.yaml
@@ -104,13 +138,15 @@ description: CPU selector suite using shared einsum problem definitions.
 defaults:
   run: {warmups: 1, runs: 3, timing_scope: steady_state_host_api}
   verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-backends: [tenferro-cpu-eager, libtorch-cpu, pytorch-cpu]
+backends: [tenferro-eager, libtorch-cpu, pytorch-cpu]
 problems:
   source: benchmarks/cpu/einsum.yaml
-  include: [einsum_bin_matmul_256_f64]
+  include: [bin_matmul_256]
   exclude: [einsum_skip_me]
 YAML
 assert_valid suite "$TMP/cpu_selector_suite.yaml" "valid CPU selector suite"
+assert_yaml_list_contains "$TMP/cpu_selector_suite.yaml" backends tenferro-eager
+assert_yaml_list_contains "$TMP/cpu_selector_suite.yaml" problems.include bin_matmul_256
 
 cat > "$TMP/legacy_suite_id.yaml" <<'YAML'
 schema_version: 1

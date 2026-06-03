@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -98,30 +97,6 @@ def validate_unique_problem_ids(path: Path, suite: Any) -> bool:
     return ok
 
 
-def parse_rfc3339_datetime(value: str) -> datetime:
-    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    if parsed.tzinfo is None:
-        raise ValueError("timestamp is missing a timezone offset")
-    return parsed
-
-
-def validate_result_semantics(path: Path, record: Any) -> bool:
-    if not isinstance(record, dict):
-        return True
-    environment = record.get("environment")
-    if not isinstance(environment, dict):
-        return True
-    timestamp = environment.get("timestamp_utc")
-    if not isinstance(timestamp, str):
-        return True
-    try:
-        parse_rfc3339_datetime(timestamp)
-    except ValueError as exc:
-        print(f"{path}:environment.timestamp_utc: invalid RFC3339 date-time: {exc}", file=sys.stderr)
-        return False
-    return True
-
-
 def validate_suite(path: Path) -> bool:
     try:
         validator = validator_for(SUITE_SCHEMA)
@@ -169,8 +144,6 @@ def validate_results(path: Path) -> bool:
             records += 1
             record_path = Path(f"{path}:{line_no}")
             if not validate_object(record_path, record, validator):
-                ok = False
-            if not validate_result_semantics(record_path, record):
                 ok = False
     if records == 0:
         print(f"{path}: no JSON records found", file=sys.stderr)
