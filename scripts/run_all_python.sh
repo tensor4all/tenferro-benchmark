@@ -6,8 +6,8 @@ set -euo pipefail
 #
 # Usage: ./scripts/run_all_python.sh [NUM_THREADS]
 #
-# NUM_THREADS (default: 1) controls:
-#   - OMP_NUM_THREADS  (JAX/XLA CPU threading environment)
+# NUM_THREADS (default: 1) controls the shared CPU thread environment
+# used by OpenBLAS, Accelerate/vecLib, PyTorch, and JAX/XLA.
 #
 # Requires uv or another Python environment with the project's Python deps.
 # ---------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 {
   "name": "bin_elementwise_mul_2048x2048",
+  "intent": "Binary elementwise einsum diagnostic for separating generic einsum overhead from contraction-heavy GEMM work.",
   "format_string": "ij,ij->ij",
   "shapes": [[2048, 2048], [2048, 2048]],
   "dtype": "float64",
@@ -8,6 +9,6 @@
     "opt_size": {"path": [[0, 1]], "log2_size": 22.0, "log10_flops": 6.6227},
     "opt_flops": {"path": [[0, 1]], "log2_size": 22.0, "log10_flops": 6.6227}
   },
-  "format_string_colmajor": "ij,ij->ij",
+  "format_string_colmajor": "ji,ji->ji",
   "shapes_colmajor": [[2048, 2048], [2048, 2048]]
 }

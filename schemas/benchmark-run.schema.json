@@ -23,6 +23,7 @@
     "tenferro_rs": { "$ref": "#/$defs/tenferro_rs" },
     "environment": { "$ref": "#/$defs/environment" },
     "blas": { "$ref": "#/$defs/blas" },
+    "python_backends": { "$ref": "#/$defs/python_backends" },
     "cuda": { "$ref": "#/$defs/cuda" }
   },
   "$defs": {
@@ -76,8 +77,50 @@
           "properties": {
             "implementation": { "const": "none" }
           }
+        },
+        {
+          "type": "object",
+          "required": ["implementation", "version", "library"],
+          "additionalProperties": false,
+          "properties": {
+            "implementation": { "const": "accelerate" },
+            "version": { "type": "string", "minLength": 1 },
+            "library": { "type": "string", "minLength": 1 }
+          }
         }
       ]
+    },
+    "python_backends": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pytorch": { "$ref": "#/$defs/python_backend" },
+        "jax": { "$ref": "#/$defs/python_backend" }
+      }
+    },
+    "python_backend": {
+      "type": "object",
+      "required": ["available"],
+      "additionalProperties": false,
+      "properties": {
+        "available": { "type": "boolean" },
+        "version": { "type": ["string", "null"], "minLength": 1 },
+        "jaxlib_version": { "type": ["string", "null"], "minLength": 1 },
+        "backend": { "type": ["string", "null"], "minLength": 1 },
+        "file": { "type": ["string", "null"], "minLength": 1 },
+        "provider": {
+          "type": ["string", "null"],
+          "enum": ["openblas", "accelerate", "mkl", "internal_lapack", "blas_lapack", "none_detected", null]
+        },
+        "blas_info": { "type": ["string", "null"], "minLength": 1 },
+        "lapack_info": { "type": ["string", "null"], "minLength": 1 },
+        "library": { "type": ["string", "null"], "minLength": 1 },
+        "linked_libraries": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reason": { "type": ["string", "null"], "minLength": 1 }
+      }
     },
     "cuda": {
       "type": "object",

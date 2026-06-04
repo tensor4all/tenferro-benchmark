@@ -15,6 +15,7 @@ configure_cpu_thread_env() {
     export GOTO_NUM_THREADS="$threads"
     export MKL_NUM_THREADS="$threads"
     export VECLIB_MAXIMUM_THREADS="$threads"
+    export VECLIB_NUM_THREADS="$threads"
     export NUMEXPR_NUM_THREADS="$threads"
     export BLIS_NUM_THREADS="$threads"
     export XLA_FLAGS="--xla_cpu_multi_thread_eigen=${xla_multi_thread} intra_op_parallelism_threads=${threads}"
@@ -30,6 +31,7 @@ print_cpu_thread_env() {
         GOTO_NUM_THREADS \
         MKL_NUM_THREADS \
         VECLIB_MAXIMUM_THREADS \
+        VECLIB_NUM_THREADS \
         NUMEXPR_NUM_THREADS \
         BLIS_NUM_THREADS \
         XLA_FLAGS; do

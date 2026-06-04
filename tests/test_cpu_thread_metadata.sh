@@ -18,11 +18,13 @@ assert_thread_env_metadata() {
   OMP_THREAD_LIMIT=1 \
   OMP_DYNAMIC=FALSE \
   RAYON_NUM_THREADS=1 \
+  TENFERRO_CPU_BACKEND_KIND=blas \
   OPENBLAS_ROOT="$openblas_root" \
   OPENBLAS_NUM_THREADS=1 \
   GOTO_NUM_THREADS=1 \
   MKL_NUM_THREADS=1 \
   VECLIB_MAXIMUM_THREADS=1 \
+  VECLIB_NUM_THREADS=1 \
   NUMEXPR_NUM_THREADS=1 \
   BLIS_NUM_THREADS=1 \
   XLA_FLAGS="--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1" \
@@ -49,10 +51,12 @@ expected = {
     "OMP_THREAD_LIMIT": "1",
     "OMP_DYNAMIC": "FALSE",
     "RAYON_NUM_THREADS": "1",
+    "TENFERRO_CPU_BACKEND_KIND": "blas",
     "OPENBLAS_NUM_THREADS": "1",
     "GOTO_NUM_THREADS": "1",
     "MKL_NUM_THREADS": "1",
     "VECLIB_MAXIMUM_THREADS": "1",
+    "VECLIB_NUM_THREADS": "1",
     "NUMEXPR_NUM_THREADS": "1",
     "BLIS_NUM_THREADS": "1",
     "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1",

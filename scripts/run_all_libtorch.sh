@@ -18,6 +18,14 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
 BUILD_DIR="$PROJECT_DIR/build/cpp-libtorch"
 
+# shellcheck source=scripts/cpu_blas_provider.sh
+source "$SCRIPT_DIR/cpu_blas_provider.sh"
+
+if [[ "$(benchmark_host_os)" == "Darwin" ]]; then
+    echo "ERROR: run_all_libtorch.sh is OpenBLAS-only; macOS CPU BLAS benchmarks use Accelerate." >&2
+    exit 1
+fi
+
 # shellcheck source=scripts/thread_env.sh
 source "$SCRIPT_DIR/thread_env.sh"
 configure_cpu_thread_env "$NUM_THREADS"
@@ -26,15 +34,7 @@ mkdir -p "$RESULTS_DIR"
 
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 
-if [[ -z "${OPENBLAS_ROOT:-}" ]]; then
-    if command -v brew >/dev/null 2>&1 && brew --prefix openblas >/dev/null 2>&1; then
-        export OPENBLAS_ROOT="$(brew --prefix openblas)"
-    else
-        echo "ERROR: OPENBLAS_ROOT is required for a fair OpenBLAS comparison." >&2
-        echo "Set OPENBLAS_ROOT=/path/to/openblas." >&2
-        exit 1
-    fi
-fi
+ensure_blas_env_for_features system-openblas
 
 if [[ -z "${Torch_DIR:-}" && -z "${CMAKE_PREFIX_PATH:-}" ]]; then
     echo "ERROR: Torch_DIR or CMAKE_PREFIX_PATH must point to an OpenBLAS-linked LibTorch." >&2

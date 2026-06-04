@@ -7,6 +7,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 mkdir -p "$TMP/scripts" "$TMP/data/results" "$TMP/extern/tenferro-rs"
 cp "$ROOT/scripts/run_all.sh" "$TMP/scripts/run_all.sh"
+cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/scripts/cpu_blas_provider.sh"
 cp "$ROOT/scripts/collect_cpu_info.py" "$TMP/scripts/collect_cpu_info.py"
 cp "$ROOT/scripts/thread_env.sh" "$TMP/scripts/thread_env.sh"
 
@@ -48,13 +49,13 @@ Path(args.output).write_text(
             f"  path: {args.tenferro_dir}",
             f"  commit: {args.tenferro_commit}",
             "  features:",
-            "    - system-openblas",
+            *[f"    - {feature}" for feature in args.features],
             "environment:",
             "  hostname: test-host",
             "  os: test-os",
             "  arch: test-arch",
             "blas:",
-            "  implementation: openblas",
+            f"  implementation: {args.blas}",
             "  version: unknown",
             "  root: /tmp/openblas",
             "  library: /tmp/openblas/lib/libopenblas.dylib",
@@ -166,8 +167,8 @@ assert_any_file() {
 
 (
   cd "$TMP"
-  PATH="/usr/bin:/bin" ./scripts/run_all.sh 1 >/tmp/run_all_docs_test.out
-  PATH="/usr/bin:/bin" ./scripts/run_all.sh 4 >>/tmp/run_all_docs_test.out
+  BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 1 >/tmp/run_all_docs_test.out
+  BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 4 >>/tmp/run_all_docs_test.out
 )
 
 assert_any_file "$TMP/data/results/cpu/einsum/*/run.yaml"

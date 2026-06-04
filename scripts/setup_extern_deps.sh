@@ -9,9 +9,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 EXTERN_DIR="$PROJECT_DIR/extern"
 
+# shellcheck source=scripts/cpu_blas_provider.sh
+source "$SCRIPT_DIR/cpu_blas_provider.sh"
+
 TENFERRO_REPO_URL="${TENFERRO_REPO_URL:-https://github.com/tensor4all/tenferro-rs.git}"
 TENFERRO_REF="${TENFERRO_REF:-main}"
-TENFERRO_UPDATE="${TENFERRO_UPDATE:-1}"
+TENFERRO_UPDATE="${TENFERRO_UPDATE:-0}"
+SETUP_PYTORCH_OPENBLAS="${SETUP_PYTORCH_OPENBLAS:-0}"
 PYTORCH_REPO_URL="${PYTORCH_REPO_URL:-https://github.com/pytorch/pytorch.git}"
 PYTORCH_REF="${PYTORCH_REF:-v2.12.0}"
 SETUP_EXTERN_MIGRATE_SIBLINGS="${SETUP_EXTERN_MIGRATE_SIBLINGS:-0}"
@@ -78,8 +82,8 @@ require_clean_checkout() {
     if [[ -n "$(git -C "$dest" status --porcelain)" ]]; then
         cat >&2 <<EOF
 $name has local changes at $dest.
-Commit, stash, or remove those changes before setup updates the checkout.
-Set TENFERRO_UPDATE=0 only when intentionally benchmarking the existing checkout.
+Commit, stash, or remove those changes before explicitly updating the checkout.
+The default setup path reuses the existing checkout, including dirty changes.
 EOF
         return 1
     fi
@@ -130,7 +134,7 @@ clone_or_update_tenferro_checkout() {
 
     mkdir -p "$(dirname "$dest")"
     if [[ -d "$dest/.git" ]]; then
-        log "$name already exists at ${dest#$PROJECT_DIR/}"
+        log "$name already exists at ${dest#$PROJECT_DIR/}; reusing current checkout"
         if [[ "$TENFERRO_UPDATE" == "1" ]]; then
             checkout_git_ref "$name" "$dest" "$TENFERRO_REF"
         fi
@@ -157,6 +161,8 @@ EOF
     git clone --recursive "$TENFERRO_REPO_URL" "$dest"
     if [[ "$TENFERRO_UPDATE" == "1" ]]; then
         checkout_git_ref "$name" "$dest" "$TENFERRO_REF"
+    else
+        log "$name commit $(git -C "$dest" rev-parse --short HEAD)"
     fi
 }
 
@@ -231,18 +237,35 @@ ensure_pytorch_openblas_build() {
 }
 
 main() {
-    ensure_openblas_root
+    TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
+    export TENFERRO_CPU_FEATURES
+    if [[ "$(benchmark_host_os)" == "Darwin" && "$SETUP_PYTORCH_OPENBLAS" == "1" ]]; then
+        cat >&2 <<'EOF'
+SETUP_PYTORCH_OPENBLAS=1 is disabled on macOS.
+macOS CPU BLAS benchmarks use Accelerate; run OpenBLAS LibTorch comparisons in Linux/devcontainer.
+EOF
+        exit 1
+    fi
+    if [[ "$TENFERRO_CPU_FEATURES" == "system-openblas" || "$SETUP_PYTORCH_OPENBLAS" == "1" ]]; then
+        ensure_openblas_root
+    fi
     ensure_tenferro_checkout
-    ensure_pytorch_checkout
-    ensure_pytorch_openblas_build
 
     export TENFERRO_RS_DIR="$TENFERRO_DIR"
-    export PYTORCH_OPENBLAS_DIR="$PYTORCH_DIR"
-    export Torch_DIR="$PYTORCH_DIR/torch/share/cmake/Torch"
+    if [[ "$SETUP_PYTORCH_OPENBLAS" == "1" ]]; then
+        ensure_pytorch_checkout
+        ensure_pytorch_openblas_build
+        export PYTORCH_OPENBLAS_DIR="$PYTORCH_DIR"
+        export Torch_DIR="$PYTORCH_DIR/torch/share/cmake/Torch"
+    else
+        log "skipping PyTorch OpenBLAS checkout/build; set SETUP_PYTORCH_OPENBLAS=1 to enable"
+    fi
 
-    log "OPENBLAS_ROOT=$OPENBLAS_ROOT"
+    [[ -n "${OPENBLAS_ROOT:-}" ]] && log "OPENBLAS_ROOT=$OPENBLAS_ROOT"
     log "TENFERRO_RS_DIR=$TENFERRO_RS_DIR"
-    log "Torch_DIR=$Torch_DIR"
+    log "TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES"
+    [[ -n "${Torch_DIR:-}" ]] && log "Torch_DIR=$Torch_DIR"
+    return 0
 }
 
 if [[ "${SETUP_EXTERN_DEPS_SKIP_MAIN:-0}" != "1" ]]; then

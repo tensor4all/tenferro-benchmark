@@ -1,0 +1,54 @@
+schema_version: 1
+suite_id: cpu/einsum
+suite_file: benchmarks/cpu/einsum.yaml
+timestamp: '2026-06-04T03:15:58.536190+00:00'
+tenferro_rs:
+  path: /Users/hiroshi/.config/superpowers/worktrees/tenferro-benchmark/suite-result-layout/extern/tenferro-rs
+  commit: ba6523f81e3fb35b00ba3b3f96b551ed95cd6d1b
+  features:
+  - system-accelerate
+environment:
+  hostname: MacBook-Pro.local
+  os: macOS-26.5-arm64-arm-64bit
+  arch: arm64
+  cpu: arm
+  env:
+    OMP_NUM_THREADS: '1'
+    OMP_THREAD_LIMIT: '1'
+    OMP_DYNAMIC: 'FALSE'
+    RAYON_NUM_THREADS: '1'
+    TENFERRO_CPU_BACKEND_KIND: blas
+    OPENBLAS_NUM_THREADS: '1'
+    GOTO_NUM_THREADS: '1'
+    MKL_NUM_THREADS: '1'
+    VECLIB_MAXIMUM_THREADS: '1'
+    VECLIB_NUM_THREADS: '1'
+    NUMEXPR_NUM_THREADS: '1'
+    BLIS_NUM_THREADS: '1'
+    XLA_FLAGS: --xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1
+blas:
+  implementation: accelerate
+  version: unknown
+  library: /System/Library/Frameworks/Accelerate.framework
+python_backends:
+  pytorch:
+    available: true
+    version: 2.12.0
+    file: /Users/hiroshi/.config/superpowers/worktrees/tenferro-benchmark/suite-result-layout/.venv/lib/python3.12/site-packages/torch/__init__.py
+    provider: accelerate
+    blas_info: accelerate
+    lapack_info: accelerate
+    library: /Users/hiroshi/.config/superpowers/worktrees/tenferro-benchmark/suite-result-layout/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.dylib
+    linked_libraries:
+    - /System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate
+    - '@rpath/libomp.dylib'
+  jax:
+    available: true
+    version: 0.10.1
+    jaxlib_version: 0.10.1
+    backend: cpu
+    file: /Users/hiroshi/.config/superpowers/worktrees/tenferro-benchmark/suite-result-layout/.venv/lib/python3.12/site-packages/jaxlib/__init__.py
+    provider: internal_lapack
+    library: /Users/hiroshi/.config/superpowers/worktrees/tenferro-benchmark/suite-result-layout/.venv/lib/python3.12/site-packages/jaxlib/_ifrt_proxy.so
+    linked_libraries:
+    - bazel-out/darwin_arm64-opt/bin/jaxlib/cpu/_lapack.so

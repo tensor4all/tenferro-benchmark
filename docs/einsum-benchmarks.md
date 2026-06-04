@@ -18,14 +18,14 @@ Selection criteria:
 
 ## Compare tenferro-rs and Torch C++
 
-This focused comparison runner runs:
+This focused comparison runner is OpenBLAS-only and is intended for Linux/devcontainer runs that must include the Torch C++ column. macOS BLAS-backed CPU benchmarks use Accelerate and this runner stops instead of switching to OpenBLAS.
 
 - `tenferro trace` with `system-openblas`
 - `tenferro eager` with `system-openblas`
 - `LibTorch CPU` with an OpenBLAS-linked `libtorch_cpu`
 
 ```bash
-export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
+export OPENBLAS_ROOT=/opt/openblas
 source ./scripts/setup_extern_deps.sh
 
 ./scripts/run_tenferro_libtorch.sh
@@ -48,17 +48,15 @@ The script writes:
 ## Run all benchmarks
 
 ```bash
-export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-
 ./scripts/run_all.sh
 ./scripts/run_all.sh 4
 ```
 
 Runs all backends in sequence and writes a unified markdown comparison table:
 
-- `tenferro trace/eager` via `scripts/run_all_rust.sh`
+- `tenferro trace/eager` via `scripts/run_all_rust.sh` (`system-accelerate` on macOS, `system-openblas` elsewhere by default)
 - `strided-rs faer` via `scripts/run_all_rust.sh`, if `../strided-rs-benchmark-suite` exists
-- `LibTorch CPU` via `scripts/run_all_libtorch.sh`
+- `LibTorch CPU` via `scripts/run_all_libtorch.sh` only for OpenBLAS runs
 - `PyTorch CPU` and `JAX CPU` via `scripts/run_all_python.sh`
 - PR884 CPU benchmark items via `scripts/run_cpu_ops.sh`
 
@@ -79,6 +77,9 @@ rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
 ```
 
 Instance JSON files that fail to read or parse are skipped with a warning. Instances that trigger a backend error are reported as `SKIP` with the reason on stderr.
+Instance JSON files may include an optional top-level `intent` string. It is
+human-facing metadata for why the benchmark exists; runners ignore it for
+timing, result identity, and cache keys.
 
 ## Run PyTorch and JAX baselines
 
@@ -96,20 +97,16 @@ The top-level `scripts/run_all.sh` includes both Python baselines in the formatt
 Set `BENCH_INSTANCE` to the instance name:
 
 ```bash
-OPENBLAS_ROOT=/opt/homebrew/opt/openblas \
-  BENCH_INSTANCE=gm_queen5_5_3.wcsp \
-  cargo run --release --no-default-features --features system-openblas
+BENCH_INSTANCE=gm_queen5_5_3.wcsp \
+  cargo run --release --no-default-features --features system-accelerate
 
-OPENBLAS_ROOT=/opt/homebrew/opt/openblas \
-  BENCH_INSTANCE=tensornetwork_permutation_light_415 \
-  cargo run --release --no-default-features --features system-openblas
+BENCH_INSTANCE=tensornetwork_permutation_light_415 \
+  cargo run --release --no-default-features --features system-accelerate
 ```
 
 With the full script:
 
 ```bash
-export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-
 BENCH_INSTANCE=gm_queen5_5_3.wcsp ./scripts/run_all.sh 1
 BENCH_INSTANCE=tensornetwork_permutation_light_415 ./scripts/run_all.sh 4
 ```
@@ -125,14 +122,29 @@ For bottleneck investigation, this repo includes a small binary-only set:
 - `bin_outer_product_4096` (`i,j->ij`)
 - `bin_elementwise_mul_2048x2048` (`ij,ij->ij`)
 
+These are intended to measure binary einsum dispatch, layout, and wrapper
+overhead. In particular, `bin_matmul_256` is the focused case for binary
+GEMM-shaped eager/traced fast-path work.
+
 Recommended invocation for consistent single-thread profiling:
 
 ```bash
-OPENBLAS_ROOT=/opt/homebrew/opt/openblas \
-  RAYON_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+RAYON_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   BENCH_INSTANCE=bin_matmul_256 \
-  cargo run --release --no-default-features --features system-openblas
+  cargo run --release --no-default-features --features system-accelerate
 ```
+
+## N-ary diagnostic instances
+
+For extension-runtime cache investigation, this repo also includes small N-ary
+cases whose cost is low enough that runtime planning and inner compilation
+overhead remain visible:
+
+- `nary_matmul_chain_64` (`ij,jk,kl->il`)
+
+This case is not covered by a binary-only fast path. It exercises the traced
+einsum extension runtime and is intended to measure caching of the inner
+`ExecProgram` produced from the extension's lowered graph.
 
 ## Publication-gate microbenchmarks
 
@@ -147,8 +159,6 @@ The batched rows use each backend's native batch layout. tenferro-rs stores batc
 Run the quick profile:
 
 ```bash
-export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-
 ./scripts/run_publication_gate.sh 1
 ```
 
@@ -170,6 +180,7 @@ Compare tenferro CPU backends:
 
 ```bash
 PUBLICATION_GATE_FEATURES=cpu-faer ./scripts/run_publication_gate.sh 1
+PUBLICATION_GATE_FEATURES=system-accelerate ./scripts/run_publication_gate.sh 1
 PUBLICATION_GATE_FEATURES=system-openblas ./scripts/run_publication_gate.sh 1
 PUBLICATION_GATE_FEATURES=cuda ./scripts/run_publication_gate.sh 1
 ```
@@ -192,6 +203,7 @@ Instances are from the [einsum benchmark](https://benchmark.einsum.org/) suite. 
 | `bin_batched_matmul_b32_m64_n64_k64` | Binary (diagnostic) | 2 | 1 | — | — |
 | `bin_outer_product_4096` | Binary (diagnostic) | 2 | 1 | — | — |
 | `bin_elementwise_mul_2048x2048` | Binary (diagnostic) | 2 | 1 | — | — |
+| `nary_matmul_chain_64` | N-ary (diagnostic) | 3 | 2 | 5.24 | 12.0 |
 | `gm_queen5_5_3.wcsp` | Graphical model | 160 | 159 | 9.75 | 26.94 |
 | `lm_batch_likelihood_brackets_4_4d` | Language model | 84 | 83 | 8.37 | 18.96 |
 | `lm_batch_likelihood_sentence_3_12d` | Language model | 38 | 37 | 9.20 | 20.86 |
@@ -212,3 +224,6 @@ Notes:
 - `str_nw_mera_*`: tensor networks from multi-scale entanglement renormalization.
 - `tensornetwork_permutation_light_415`: 415 tensors extracted from the full TensorNetworkBenchmarks instance via BFS-connected subgraph.
 - `tensornetwork_permutation_focus_step409_316`: focused subtree for profiling late bottleneck steps.
+- `intent`: optional per-instance design note. It should describe what overhead,
+  dispatch path, shape regime, or regression target the benchmark is meant to
+  expose.

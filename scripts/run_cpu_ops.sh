@@ -12,21 +12,23 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 
+# shellcheck source=scripts/cpu_blas_provider.sh
+source "$SCRIPT_DIR/cpu_blas_provider.sh"
+
+PUBLICATION_GATE_FEATURES="$(normalize_cpu_blas_features "${PUBLICATION_GATE_FEATURES:-}")"
+export PUBLICATION_GATE_FEATURES
+
 # shellcheck source=scripts/thread_env.sh
 source "$SCRIPT_DIR/thread_env.sh"
 configure_cpu_thread_env "$NUM_THREADS"
 
 mkdir -p "$RESULTS_DIR"
 
-RAW_LOG="$RESULTS_DIR/publication_gate_system-openblas_t${NUM_THREADS}_${PUBLICATION_GATE_PROFILE:-quick}_${PUBLICATION_GATE_SUITE:-all}_${TIMESTAMP}.csv"
+RAW_LOG="$RESULTS_DIR/publication_gate_${PUBLICATION_GATE_FEATURES}_t${NUM_THREADS}_${PUBLICATION_GATE_PROFILE:-quick}_${PUBLICATION_GATE_SUITE:-all}_${TIMESTAMP}.csv"
 CPU_OPS_LOG="$RESULTS_DIR/cpu_ops_t${NUM_THREADS}_${TIMESTAMP}.csv"
 BUILD_DIR="$PROJECT_DIR/build/cpp-libtorch"
 
-if [[ -z "${OPENBLAS_ROOT:-}" ]]; then
-    if command -v brew >/dev/null 2>&1 && brew --prefix openblas >/dev/null 2>&1; then
-        export OPENBLAS_ROOT="$(brew --prefix openblas)"
-    fi
-fi
+ensure_blas_env_for_features "$PUBLICATION_GATE_FEATURES"
 
 "$SCRIPT_DIR/run_publication_gate.sh" "$NUM_THREADS"
 
@@ -61,7 +63,7 @@ with open(out_path, "w", newline="") as f:
         if phase and phase != "primal":
             benchmark = f"{benchmark}_{phase}"
         backend = row["backend"]
-        if backend in {"cpu-faer", "system-openblas", "cuda"}:
+        if backend in {"cpu-faer", "system-openblas", "system-accelerate", "cuda"}:
             backend = "tenferro-eager"
         writer.writerow(
             {
@@ -78,7 +80,7 @@ with open(out_path, "w", newline="") as f:
         )
 PY
 
-if [[ -n "${Torch_DIR:-}" ]]; then
+if [[ "$PUBLICATION_GATE_FEATURES" == "system-openblas" && -n "${Torch_DIR:-}" ]]; then
     cmake -S "$PROJECT_DIR/cpp" -B "$BUILD_DIR" \
         -DCMAKE_BUILD_TYPE=Release \
         -DTorch_DIR="$Torch_DIR" \
@@ -89,7 +91,11 @@ if [[ -n "${Torch_DIR:-}" ]]; then
         --num-threads "$NUM_THREADS" \
         --output "$CPU_OPS_LOG"
 else
-    echo "WARNING: Torch_DIR is not set; skipping Torch C++ CPU ops." >&2
+    if [[ "$PUBLICATION_GATE_FEATURES" == "system-openblas" ]]; then
+        echo "WARNING: Torch_DIR is not set; skipping Torch C++ CPU ops." >&2
+    else
+        echo "Skipping OpenBLAS Torch C++ CPU ops for PUBLICATION_GATE_FEATURES=$PUBLICATION_GATE_FEATURES." >&2
+    fi
 fi
 
 if command -v uv >/dev/null 2>&1; then

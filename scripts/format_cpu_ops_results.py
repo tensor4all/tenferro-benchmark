@@ -36,7 +36,7 @@ def row_value(row: dict[str, str], *names: str) -> str:
 
 def normalize_backend(row: dict[str, str]) -> str:
     backend = row_value(row, "backend").strip()
-    if backend in {"cpu-faer", "system-openblas"}:
+    if backend in {"cpu-faer", "system-openblas", "system-accelerate"}:
         return "tenferro-eager"
     return backend
 

@@ -11,12 +11,15 @@ use std::time::{Duration, Instant};
 
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
+use tenferro_cpu::{CpuBackend, CpuBackendKind};
 use tenferro_einsum::eager_tensor;
 use tenferro_einsum::{ContractionTree, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_runtime::{GraphExecutor, TracedTensor};
-use tenferro_cpu::CpuBackend;
 use tenferro_tensor::{Tensor, TypedTensor};
+
+const NUM_WARMUPS: usize = 3;
+const NUM_RUNS: usize = 15;
 
 // ---------------------------------------------------------------------------
 // JSON schema
@@ -106,6 +109,50 @@ fn bind_operands<'a>(
         ));
     }
     Ok(inputs.iter().zip(operands.iter()).collect())
+}
+
+fn cpu_backend_from_env() -> Result<CpuBackend, String> {
+    match std::env::var("TENFERRO_CPU_BACKEND_KIND")
+        .unwrap_or_else(|_| "default".into())
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "default" | "" => Ok(CpuBackend::new()),
+        "blas" => CpuBackend::with_kind(CpuBackendKind::Blas).map_err(|e| e.to_string()),
+        "faer" => CpuBackend::with_kind(CpuBackendKind::Faer).map_err(|e| e.to_string()),
+        other => Err(format!(
+            "unknown TENFERRO_CPU_BACKEND_KIND={other:?}; use default, blas, or faer"
+        )),
+    }
+}
+
+fn profile_bench_breakdown_enabled() -> bool {
+    std::env::var_os("TENFERRO_PROFILE_BENCH_BREAKDOWN").is_some()
+}
+
+fn duration_stats(mut durations: Vec<Duration>) -> (Duration, Duration) {
+    durations.sort();
+    let median = durations[durations.len() / 2];
+    let q1 = durations[durations.len() / 4];
+    let q3 = durations[3 * durations.len() / 4];
+    let iqr = q3.saturating_sub(q1);
+    (median, iqr)
+}
+
+fn print_breakdown(
+    backend: &str,
+    instance: &BenchmarkInstance,
+    strategy_name: &str,
+    section: &str,
+    durations: Vec<Duration>,
+) {
+    let (median, iqr) = duration_stats(durations);
+    println!(
+        "Breakdown: backend={backend} instance={} strategy={strategy_name} section={section} median_ms={:.6} iqr_ms={:.6}",
+        instance.name,
+        median.as_secs_f64() * 1e3,
+        iqr.as_secs_f64() * 1e3,
+    );
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -233,6 +280,7 @@ fn contract_label_subscripts(
 fn run_instance_trace(
     instance: &BenchmarkInstance,
     path_meta: &PathMeta,
+    strategy_name: &str,
 ) -> Result<(Duration, Duration, Duration), String> {
     if instance.dtype == "complex128" {
         return Err("complex128 not supported".into());
@@ -251,18 +299,22 @@ fn run_instance_trace(
     let t_compile_start = Instant::now();
     let compiled = compile_einsum(&subs, &instance.shapes_colmajor, &tree)?;
     let compile_time = t_compile_start.elapsed();
+    if std::env::var_os("TENFERRO_DUMP_PROGRAM").is_some() {
+        eprintln!("{:#?}", compiled.program);
+    }
 
-    let mut executor = GraphExecutor::new(CpuBackend::new());
+    let mut executor = GraphExecutor::new(cpu_backend_from_env()?);
     executor
         .register_extension(tenferro_einsum::register_runtime)
         .map_err(|e| format!("{e}"))?;
 
+    let operands = create_operand_tensors(&instance.shapes_colmajor);
+    let bindings = bind_operands(&compiled.inputs, &operands)?;
+    let program = &compiled.program;
+
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
-    for _ in 0..3 {
-        let operands = create_operand_tensors(&instance.shapes_colmajor);
-        let bindings = bind_operands(&compiled.inputs, &operands)?;
-        let program = &compiled.program;
+    for _ in 0..NUM_WARMUPS {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             executor.run_many_with_inputs(program, &bindings)
         }));
@@ -270,12 +322,8 @@ fn run_instance_trace(
     }
 
     // Timed runs
-    let num_runs = 15;
-    let mut durations = Vec::with_capacity(num_runs);
-    for _ in 0..num_runs {
-        let operands = create_operand_tensors(&instance.shapes_colmajor);
-        let bindings = bind_operands(&compiled.inputs, &operands)?;
-        let program = &compiled.program;
+    let mut durations = Vec::with_capacity(NUM_RUNS);
+    for _ in 0..NUM_RUNS {
         let t0 = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             executor.run_many_with_inputs(program, &bindings)
@@ -286,25 +334,94 @@ fn run_instance_trace(
         durations.push(elapsed);
     }
 
-    durations.sort();
-    let median = durations[num_runs / 2];
-    let q1 = durations[num_runs / 4];
-    let q3 = durations[3 * num_runs / 4];
-    let iqr = q3.saturating_sub(q1);
+    let (median, iqr) = duration_stats(durations);
+
+    if profile_bench_breakdown_enabled() {
+        let mut input_create = Vec::with_capacity(NUM_RUNS);
+        for _ in 0..NUM_RUNS {
+            let started = Instant::now();
+            let operands = create_operand_tensors(&instance.shapes_colmajor);
+            input_create.push(started.elapsed());
+            black_box(&operands);
+        }
+        print_breakdown(
+            "tenferro-trace",
+            instance,
+            strategy_name,
+            "trace.input_create",
+            input_create,
+        );
+
+        let mut input_bind = Vec::with_capacity(NUM_RUNS);
+        for _ in 0..NUM_RUNS {
+            let started = Instant::now();
+            let bindings = bind_operands(&compiled.inputs, &operands)?;
+            input_bind.push(started.elapsed());
+            black_box(&bindings);
+        }
+        print_breakdown(
+            "tenferro-trace",
+            instance,
+            strategy_name,
+            "trace.input_bind",
+            input_bind,
+        );
+
+        let mut executor_run = Vec::with_capacity(NUM_RUNS);
+        for _ in 0..NUM_RUNS {
+            let started = Instant::now();
+            let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+                executor.run_many_with_inputs(program, &bindings)
+            }));
+            let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
+            executor_run.push(started.elapsed());
+            black_box(&eval);
+        }
+        print_breakdown(
+            "tenferro-trace",
+            instance,
+            strategy_name,
+            "trace.executor_run",
+            executor_run,
+        );
+    }
+
     Ok((median, iqr, compile_time))
 }
 
+#[derive(Default)]
+struct EagerRunBreakdown {
+    total: Duration,
+    parse_subscripts: Duration,
+    operand_handles: Duration,
+    binary_setup: Duration,
+    einsum_call: Duration,
+    result_clone: Duration,
+}
+
 fn contract_once_eager(
-    ctx: &std::sync::Arc<EagerRuntime>,
     instance: &BenchmarkInstance,
     path_meta: &PathMeta,
+    source_operands: &[EagerTensor],
+    mut profile: Option<&mut EagerRunBreakdown>,
 ) -> Result<Tensor, String> {
+    let total_started = Instant::now();
+    let started = Instant::now();
     let parsed = Subscripts::parse(&instance.format_string_colmajor).map_err(|e| format!("{e}"))?;
+    if let Some(profile) = profile.as_deref_mut() {
+        profile.parse_subscripts += started.elapsed();
+    }
+
+    let started = Instant::now();
     let mut subscripts = parsed.inputs;
     let final_output = parsed.output;
-    let mut operands = create_eager_operands(&instance.shapes_colmajor, ctx);
+    let mut operands = source_operands.to_vec();
+    if let Some(profile) = profile.as_deref_mut() {
+        profile.operand_handles += started.elapsed();
+    }
 
     for &[lhs_index, rhs_index] in &path_meta.path {
+        let started = Instant::now();
         let binary = binary_subscripts(&subscripts, &final_output, lhs_index, rhs_index)?;
         let first_remove = lhs_index.max(rhs_index);
         let second_remove = lhs_index.min(rhs_index);
@@ -317,10 +434,18 @@ fn contract_once_eager(
         };
         let input_refs: Vec<&EagerTensor> = ordered.iter().collect();
         let binary_subscripts = (&binary).into();
+        if let Some(profile) = profile.as_deref_mut() {
+            profile.binary_setup += started.elapsed();
+        }
+
+        let started = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             eager_tensor::einsum_subscripts(&input_refs, &binary_subscripts)
         }));
         let result = unwrap_eval_result(result, "panic during eager execution")?;
+        if let Some(profile) = profile.as_deref_mut() {
+            profile.einsum_call += started.elapsed();
+        }
         operands.push(result);
         subscripts = contract_label_subscripts(&subscripts, &final_output, lhs_index, rhs_index)?;
     }
@@ -328,43 +453,125 @@ fn contract_once_eager(
     if operands.len() != 1 {
         return Err("contraction did not reduce to one output tensor".into());
     }
-    Ok(operands
+    let started = Instant::now();
+    let output = operands
         .pop()
         .expect("checked operands length")
         .data()
-        .clone())
+        .clone();
+    if let Some(profile) = profile.as_deref_mut() {
+        profile.result_clone += started.elapsed();
+        profile.total += total_started.elapsed();
+    }
+    Ok(output)
 }
 
 fn run_instance_eager(
     instance: &BenchmarkInstance,
     path_meta: &PathMeta,
+    strategy_name: &str,
 ) -> Result<(Duration, Duration, Duration), String> {
     if instance.dtype == "complex128" {
         return Err("complex128 not supported".into());
     }
 
-    let ctx = EagerRuntime::with_cpu_backend(CpuBackend::new());
+    let ctx = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?);
+    let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
 
-    for _ in 0..3 {
-        let eval = contract_once_eager(&ctx, instance, path_meta)?;
+    for _ in 0..NUM_WARMUPS {
+        let eval = contract_once_eager(instance, path_meta, &source_operands, None)?;
         black_box(&eval);
     }
 
-    let num_runs = 15;
-    let mut durations = Vec::with_capacity(num_runs);
-    for _ in 0..num_runs {
+    let mut durations = Vec::with_capacity(NUM_RUNS);
+    for _ in 0..NUM_RUNS {
         let t0 = Instant::now();
-        let eval = contract_once_eager(&ctx, instance, path_meta)?;
+        let eval = contract_once_eager(instance, path_meta, &source_operands, None)?;
         let elapsed = t0.elapsed();
         black_box(&eval);
         durations.push(elapsed);
     }
 
-    durations.sort();
-    let median = durations[num_runs / 2];
-    let q1 = durations[num_runs / 4];
-    let q3 = durations[3 * num_runs / 4];
-    let iqr = q3.saturating_sub(q1);
+    let (median, iqr) = duration_stats(durations);
+
+    if profile_bench_breakdown_enabled() {
+        let mut input_create = Vec::with_capacity(NUM_RUNS);
+        for _ in 0..NUM_RUNS {
+            let started = Instant::now();
+            let operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
+            input_create.push(started.elapsed());
+            black_box(&operands);
+        }
+        print_breakdown(
+            "tenferro-eager",
+            instance,
+            strategy_name,
+            "eager.input_create",
+            input_create,
+        );
+
+        let mut total = Vec::with_capacity(NUM_RUNS);
+        let mut parse_subscripts = Vec::with_capacity(NUM_RUNS);
+        let mut operand_handles = Vec::with_capacity(NUM_RUNS);
+        let mut binary_setup = Vec::with_capacity(NUM_RUNS);
+        let mut einsum_call = Vec::with_capacity(NUM_RUNS);
+        let mut result_clone = Vec::with_capacity(NUM_RUNS);
+        for _ in 0..NUM_RUNS {
+            let mut breakdown = EagerRunBreakdown::default();
+            let eval =
+                contract_once_eager(instance, path_meta, &source_operands, Some(&mut breakdown))?;
+            black_box(&eval);
+            total.push(breakdown.total);
+            parse_subscripts.push(breakdown.parse_subscripts);
+            operand_handles.push(breakdown.operand_handles);
+            binary_setup.push(breakdown.binary_setup);
+            einsum_call.push(breakdown.einsum_call);
+            result_clone.push(breakdown.result_clone);
+        }
+        print_breakdown(
+            "tenferro-eager",
+            instance,
+            strategy_name,
+            "eager.total",
+            total,
+        );
+        print_breakdown(
+            "tenferro-eager",
+            instance,
+            strategy_name,
+            "eager.parse_subscripts",
+            parse_subscripts,
+        );
+        print_breakdown(
+            "tenferro-eager",
+            instance,
+            strategy_name,
+            "eager.operand_handles",
+            operand_handles,
+        );
+        print_breakdown(
+            "tenferro-eager",
+            instance,
+            strategy_name,
+            "eager.binary_setup",
+            binary_setup,
+        );
+        print_breakdown(
+            "tenferro-eager",
+            instance,
+            strategy_name,
+            "eager.einsum_call",
+            einsum_call,
+        );
+        print_breakdown(
+            "tenferro-eager",
+            instance,
+            strategy_name,
+            "eager.result_clone",
+            result_clone,
+        );
+    }
+
     Ok((median, iqr, Duration::ZERO))
 }
 
@@ -372,10 +579,11 @@ fn run_instance(
     mode: TenferroMode,
     instance: &BenchmarkInstance,
     path_meta: &PathMeta,
+    strategy_name: &str,
 ) -> Result<(Duration, Duration, Duration), String> {
     match mode {
-        TenferroMode::Trace => run_instance_trace(instance, path_meta),
-        TenferroMode::Eager => run_instance_eager(instance, path_meta),
+        TenferroMode::Trace => run_instance_trace(instance, path_meta, strategy_name),
+        TenferroMode::Eager => run_instance_eager(instance, path_meta, strategy_name),
     }
 }
 
@@ -434,6 +642,8 @@ fn main() {
 
     let rayon_threads = std::env::var("RAYON_NUM_THREADS").unwrap_or_else(|_| "unset".into());
     let omp_threads = std::env::var("OMP_NUM_THREADS").unwrap_or_else(|_| "unset".into());
+    let cpu_backend_kind =
+        std::env::var("TENFERRO_CPU_BACKEND_KIND").unwrap_or_else(|_| "default".into());
 
     println!("{backend_name} benchmark suite");
     println!("==================================");
@@ -443,9 +653,10 @@ fn main() {
         data_dir.display()
     );
     println!("Backend: {backend_name}");
+    println!("TENFERRO_CPU_BACKEND_KIND={cpu_backend_kind}");
     println!("RAYON_NUM_THREADS={rayon_threads}, OMP_NUM_THREADS={omp_threads}");
     println!(
-        "Timing: median ± IQR of 15 runs (3 warmup), {}",
+        "Timing: median ± IQR of {NUM_RUNS} runs ({NUM_WARMUPS} warmup), {}",
         mode.timing_note()
     );
 
@@ -472,7 +683,7 @@ fn main() {
         for (i, instance) in instances.iter().enumerate() {
             eprintln!("  [{}/{}] {}...", i + 1, instances.len(), instance.name);
             let path_meta = get_path(&instance.paths);
-            match run_instance(mode, instance, path_meta) {
+            match run_instance(mode, instance, path_meta, strategy_name) {
                 Ok((median, iqr, compile_time)) => {
                     println!(
                         "{:<50} {:>8} {:>10.2} {:>12.2} {:>12.3} {:>10.3} {:>12.3}",

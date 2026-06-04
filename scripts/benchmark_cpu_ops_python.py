@@ -20,6 +20,7 @@ THREAD_ENV_KEYS = (
     "GOTO_NUM_THREADS",
     "MKL_NUM_THREADS",
     "VECLIB_MAXIMUM_THREADS",
+    "VECLIB_NUM_THREADS",
     "NUMEXPR_NUM_THREADS",
     "BLIS_NUM_THREADS",
     "XLA_FLAGS",
@@ -47,6 +48,7 @@ def configure_thread_env(num_threads: int) -> None:
             "GOTO_NUM_THREADS": value,
             "MKL_NUM_THREADS": value,
             "VECLIB_MAXIMUM_THREADS": value,
+            "VECLIB_NUM_THREADS": value,
             "NUMEXPR_NUM_THREADS": value,
             "BLIS_NUM_THREADS": value,
             "XLA_FLAGS": (

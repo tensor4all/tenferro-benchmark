@@ -6,6 +6,16 @@ Do not duplicate benchmark result tables in README.md or other overview docs.
 Keep generated benchmark results under `result/` as the source of truth, and
 link to those files instead.
 
+## Benchmark Timing Discipline
+
+Run benchmark timing collection sequentially. Do not run multiple CPU
+benchmark processes at the same time when collecting or comparing results,
+including `run_all.sh` invocations and ad hoc `BENCH_INSTANCE` probes.
+Concurrent BLAS, Python, and Rust benchmark processes contend for cores,
+caches, thermal headroom, and runtime thread pools, which distorts medians and
+IQRs. Parallel shell/tool execution is fine for non-timing work such as file
+inspection or tests that do not measure benchmark performance.
+
 ## Devcontainer Benchmark Workflow
 
 Use this workflow when validating that benchmarks can run inside the Linux
@@ -214,13 +224,15 @@ and `GINKGO_DIR` automatically.
 
 ## Torch C++ Included Benchmark
 
-Use this workflow when validating or regenerating benchmark results that must
-include the Torch C++ column.
+Use this workflow when validating or regenerating Linux/devcontainer benchmark
+results that must include the OpenBLAS Torch C++ column. On macOS, CPU BLAS
+benchmarks are fixed to Accelerate and the OpenBLAS LibTorch runners are
+disabled.
 
 1. Prepare repo-local external dependencies:
 
    ```bash
-   export OPENBLAS_ROOT="$(brew --prefix openblas)"
+   export OPENBLAS_ROOT=/opt/openblas
    ./scripts/setup_extern_deps.sh
    ```
 
@@ -242,7 +254,7 @@ include the Torch C++ column.
 2. Confirm LibTorch is OpenBLAS-linked before trusting Torch C++ numbers:
 
    ```bash
-   otool -L extern/pytorch-openblas/torch/lib/libtorch_cpu.dylib | rg -i openblas
+   ldd extern/pytorch-openblas/torch/lib/libtorch_cpu.so | rg -i openblas
    ```
 
    The expected local Torch C++ package directory is:
@@ -262,8 +274,8 @@ include the Torch C++ column.
    ```
 
    `scripts/run_all.sh` sources `scripts/setup_extern_deps.sh` automatically,
-   so `Torch_DIR` and `OPENBLAS_ROOT` exported by the setup script are visible
-   to `scripts/run_all_libtorch.sh`.
+   so `TENFERRO_RS_DIR` and the OpenBLAS paths from explicit OpenBLAS setup are
+   visible to child benchmark scripts.
 
 4. For a normal benchmark run:
 

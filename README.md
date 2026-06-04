@@ -30,17 +30,17 @@ Prerequisites:
 - Rust and Cargo
 - CMake 3.20+
 - Python 3.12+ and [uv](https://docs.astral.sh/uv/)
-- OpenBLAS
 - Repo-local external checkouts under `extern/`
 
 ```bash
-brew install openblas cmake
-export OPENBLAS_ROOT="$(brew --prefix openblas)"
+brew install cmake
 uv sync
 ./scripts/setup_extern_deps.sh
 ```
 
-`scripts/setup_extern_deps.sh` prepares `extern/tenferro-rs` and an OpenBLAS-linked PyTorch/LibTorch checkout at `extern/pytorch-openblas`. By default, it keeps `extern/tenferro-rs` at the latest `main` commit so benchmark runs pick up current tenferro fixes. `scripts/run_all.sh` sources it automatically before running benchmarks. See [Setup and C++ LibTorch build](docs/setup-and-libtorch.md) for the full LibTorch/OpenBLAS build instructions.
+On macOS, BLAS-backed tenferro CPU benchmarks use Accelerate (`system-accelerate`) by default, matching the standard PyTorch/JAX wheels. Linux and the devcontainer keep the OpenBLAS default (`system-openblas`).
+
+`scripts/setup_extern_deps.sh` prepares `extern/tenferro-rs`. By default, it reuses the current checkout as-is, including dirty changes, so benchmark runs record the exact checkout being measured instead of silently switching refs. Set `TENFERRO_UPDATE=1 TENFERRO_REF=<branch-or-commit>` only when you intentionally want setup to update the checkout. Set `SETUP_PYTORCH_OPENBLAS=1` only in Linux/devcontainer OpenBLAS workflows when you intentionally want setup to create or build the optional OpenBLAS-linked PyTorch/LibTorch checkout at `extern/pytorch-openblas`; it is disabled on macOS. `scripts/run_all.sh` sources setup automatically before running benchmarks. See [Setup and C++ LibTorch build](docs/setup-and-libtorch.md) for the full LibTorch/OpenBLAS build instructions.
 
 To remove these repo-local external checkouts:
 
@@ -187,17 +187,17 @@ verification, the backend/op matrix, and per-backend overrides.
 
 ## Torch C++ Benchmark Workflow
 
-Use this workflow when benchmark results must include the Torch C++ column.
+Use this OpenBLAS workflow when benchmark results must include the Torch C++ column. It is intended for Linux/devcontainer OpenBLAS runs; macOS CPU BLAS runs are fixed to Accelerate and skip the OpenBLAS LibTorch C++ runner.
 
 ```bash
-export OPENBLAS_ROOT="$(brew --prefix openblas)"
+export OPENBLAS_ROOT=/opt/openblas
 ./scripts/setup_extern_deps.sh
 ```
 
 Verify that LibTorch is linked to OpenBLAS before trusting Torch C++ numbers:
 
 ```bash
-otool -L extern/pytorch-openblas/torch/lib/libtorch_cpu.dylib | rg -i openblas
+ldd extern/pytorch-openblas/torch/lib/libtorch_cpu.so | rg -i openblas
 ```
 
 Run a quick end-to-end smoke that exercises tenferro-rs, Torch C++, PyTorch Python, JAX Python, and PR884 CPU table generation. The CPU table measures tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python rows.
@@ -245,14 +245,15 @@ cmake -S cpp -B build/cpp-plan-test -DBUILD_LIBTORCH_BENCHMARK=OFF
 cmake --build build/cpp-plan-test --target einsum_plan_test
 ctest --test-dir build/cpp-plan-test --output-on-failure
 
-OPENBLAS_ROOT=/opt/homebrew/opt/openblas \
-  cargo check --no-default-features --features system-openblas
+cargo check --no-default-features --features system-accelerate
 ```
 
 ### Run tenferro-rs vs C++ Torch
 
+This runner is OpenBLAS-only and is disabled on macOS. Use it from the Linux devcontainer when needed:
+
 ```bash
-export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
+export OPENBLAS_ROOT=/opt/openblas
 source ./scripts/setup_extern_deps.sh
 
 ./scripts/run_tenferro_libtorch.sh 1
@@ -261,9 +262,6 @@ source ./scripts/setup_extern_deps.sh
 Run one instance:
 
 ```bash
-export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-source ./scripts/setup_extern_deps.sh
-
 BENCH_INSTANCE=bin_matmul_256 ./scripts/run_tenferro_libtorch.sh 1
 ```
 
@@ -272,8 +270,6 @@ BENCH_INSTANCE=bin_matmul_256 ./scripts/run_tenferro_libtorch.sh 1
 This runs tenferro-rs trace/eager, optional strided-rs faer, C++ LibTorch, Python PyTorch, JAX, and the PR884 CPU benchmark items. PR884 CPU-op rows include measured tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python values.
 
 ```bash
-export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-
 ./scripts/run_all.sh 1
 ./scripts/run_all.sh 4
 ```
@@ -297,12 +293,10 @@ export BENCHMARK_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 export BENCHMARK_RESULTS_DIR="data/results/cpu/einsum/${BENCHMARK_TIMESTAMP}"
 export OMP_NUM_THREADS=1
 export RAYON_NUM_THREADS=1
-export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
 source ./scripts/setup_extern_deps.sh
 mkdir -p "$BENCHMARK_RESULTS_DIR"
 
 ./scripts/run_all_rust.sh 1
-./scripts/run_all_libtorch.sh 1
 
 uv run python scripts/benchmark_python.py --backend pytorch --num-threads 1 \
   2>&1 | tee "$BENCHMARK_RESULTS_DIR/pytorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log"
@@ -313,7 +307,6 @@ uv run python scripts/benchmark_python.py --backend jax --num-threads 1 \
 uv run python scripts/format_results.py \
   "$BENCHMARK_RESULTS_DIR/tenferro_trace_t1_${BENCHMARK_TIMESTAMP}.log" \
   "$BENCHMARK_RESULTS_DIR/tenferro_eager_t1_${BENCHMARK_TIMESTAMP}.log" \
-  "$BENCHMARK_RESULTS_DIR/libtorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
   "$BENCHMARK_RESULTS_DIR/pytorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
   "$BENCHMARK_RESULTS_DIR/jax_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
   | tee "$BENCHMARK_RESULTS_DIR/einsum_table_t1_${BENCHMARK_TIMESTAMP}.md"
@@ -322,8 +315,6 @@ uv run python scripts/format_results.py \
 ### Run publication-gate microbenchmarks
 
 ```bash
-export OPENBLAS_ROOT=/opt/homebrew/opt/openblas
-
 ./scripts/run_publication_gate.sh 1
 
 PUBLICATION_GATE_PROFILE=full ./scripts/run_publication_gate.sh 1
@@ -336,6 +327,7 @@ Compare CPU backends:
 
 ```bash
 PUBLICATION_GATE_FEATURES=cpu-faer ./scripts/run_publication_gate.sh 1
+PUBLICATION_GATE_FEATURES=system-accelerate ./scripts/run_publication_gate.sh 1
 PUBLICATION_GATE_FEATURES=system-openblas ./scripts/run_publication_gate.sh 1
 ```
 

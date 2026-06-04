@@ -2,7 +2,18 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    if env::var_os("CARGO_FEATURE_SYSTEM_OPENBLAS").is_none() {
+    let system_openblas = env::var_os("CARGO_FEATURE_SYSTEM_OPENBLAS").is_some();
+    let system_accelerate = env::var_os("CARGO_FEATURE_SYSTEM_ACCELERATE").is_some();
+    if system_openblas && system_accelerate {
+        panic!("features `system-openblas` and `system-accelerate` cannot be enabled together");
+    }
+
+    if system_accelerate {
+        println!("cargo:rustc-link-lib=framework=Accelerate");
+        return;
+    }
+
+    if !system_openblas {
         return;
     }
 

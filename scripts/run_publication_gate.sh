@@ -6,8 +6,13 @@ THREADS="${1:-1}"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 PROFILE="${PUBLICATION_GATE_PROFILE:-quick}"
 SUITE="${PUBLICATION_GATE_SUITE:-all}"
-FEATURES="${PUBLICATION_GATE_FEATURES:-system-openblas}"
 RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$ROOT/data/results}"
+
+# shellcheck source=scripts/cpu_blas_provider.sh
+source "$ROOT/scripts/cpu_blas_provider.sh"
+
+FEATURES="$(normalize_cpu_blas_features "${PUBLICATION_GATE_FEATURES:-}")"
+export PUBLICATION_GATE_FEATURES="$FEATURES"
 
 # shellcheck source=scripts/thread_env.sh
 source "$ROOT/scripts/thread_env.sh"
@@ -19,10 +24,7 @@ mkdir -p "$RESULTS_DIR"
 
 LOG="$RESULTS_DIR/publication_gate_${FEATURES}_t${THREADS}_${PROFILE}_${SUITE}_${TIMESTAMP}.csv"
 
-if [[ "$FEATURES" == "system-openblas" && -z "${OPENBLAS_ROOT:-}" ]]; then
-  echo "OPENBLAS_ROOT must be set for PUBLICATION_GATE_FEATURES=system-openblas" >&2
-  exit 1
-fi
+ensure_blas_env_for_features "$FEATURES"
 
 echo "Running publication-gate benchmarks"
 echo "  features: $FEATURES"
@@ -39,11 +41,14 @@ case "$FEATURES" in
   system-openblas)
     cargo run --release --bin publication_gate --no-default-features --features system-openblas > "$LOG"
     ;;
+  system-accelerate)
+    cargo run --release --bin publication_gate --no-default-features --features system-accelerate > "$LOG"
+    ;;
   cuda)
     cargo run --release --bin publication_gate --no-default-features --features cuda > "$LOG"
     ;;
   *)
-    echo "Unsupported PUBLICATION_GATE_FEATURES=$FEATURES (use cpu-faer, system-openblas, or cuda)" >&2
+    echo "Unsupported PUBLICATION_GATE_FEATURES=$FEATURES (use cpu-faer, system-openblas, system-accelerate, or cuda)" >&2
     exit 1
     ;;
 esac

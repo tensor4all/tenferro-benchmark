@@ -23,8 +23,29 @@ NEW_COMMIT="$(git -C "$TMP/source" rev-parse HEAD)"
 git -C "$TMP/source" branch -M main
 git -C "$TMP/source" clone --bare "$TMP/source" "$TMP/tenferro-rs.git" >/dev/null 2>&1
 
+mkdir -p "$TMP/project-main/scripts"
+cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project-main/scripts/setup_extern_deps.sh"
+cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-main/scripts/cpu_blas_provider.sh"
+
+(
+  cd "$TMP/project-main"
+  BENCHMARK_HOST_OS=Darwin \
+  TENFERRO_REPO_URL="$TMP/tenferro-rs.git" \
+  TENFERRO_REF=main \
+    bash scripts/setup_extern_deps.sh >"$TMP/project-main.log" 2>&1
+
+  test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$NEW_COMMIT"
+  grep -q 'TENFERRO_CPU_FEATURES=system-accelerate' "$TMP/project-main.log"
+  if grep -q 'OPENBLAS_ROOT=' "$TMP/project-main.log"; then
+    echo "macOS Accelerate setup should not require or export OPENBLAS_ROOT" >&2
+    cat "$TMP/project-main.log" >&2
+    exit 1
+  fi
+)
+
 mkdir -p "$TMP/project/scripts"
 cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project/scripts/setup_extern_deps.sh"
+cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project/scripts/cpu_blas_provider.sh"
 
 (
   cd "$TMP/project"
@@ -40,28 +61,30 @@ cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project/scripts/setup_extern_deps.
 
   git -C extern/tenferro-rs checkout -q --detach "$OLD_COMMIT"
   ensure_tenferro_checkout
-  test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$NEW_COMMIT"
+  test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$OLD_COMMIT"
 
   git -C extern/tenferro-rs checkout -q --detach "$OLD_COMMIT"
   printf 'local\n' >extern/tenferro-rs/local-change.txt
-  if ensure_tenferro_checkout 2>"$TMP/untracked.err"; then
-    echo "untracked tenferro-rs checkout change was ignored silently" >&2
-    exit 1
-  fi
-  grep -q 'tenferro-rs has local changes' "$TMP/untracked.err"
+  ensure_tenferro_checkout
+  test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$OLD_COMMIT"
+  test -f extern/tenferro-rs/local-change.txt
   rm extern/tenferro-rs/local-change.txt
 
   git -C extern/tenferro-rs checkout -q --detach "$OLD_COMMIT"
   printf 'dirty\n' >>extern/tenferro-rs/marker.txt
-  if ensure_tenferro_checkout 2>"$TMP/dirty.err"; then
-    echo "dirty tenferro-rs checkout was updated silently" >&2
-    exit 1
-  fi
-  grep -q 'tenferro-rs has local changes' "$TMP/dirty.err"
+  ensure_tenferro_checkout
+  test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$OLD_COMMIT"
+  grep -q 'dirty' extern/tenferro-rs/marker.txt
+
+  git -C extern/tenferro-rs checkout -- marker.txt
+  export TENFERRO_UPDATE=1
+  ensure_tenferro_checkout
+  test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$NEW_COMMIT"
 )
 
 mkdir -p "$TMP/project-with-sibling/scripts"
 cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project-with-sibling/scripts/setup_extern_deps.sh"
+cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-with-sibling/scripts/cpu_blas_provider.sh"
 git clone "$TMP/tenferro-rs.git" "$TMP/tenferro-rs" >/dev/null 2>&1
 git -C "$TMP/tenferro-rs" checkout -q --detach "$OLD_COMMIT"
 

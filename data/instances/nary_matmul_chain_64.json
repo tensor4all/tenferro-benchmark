@@ -1,0 +1,14 @@
+{
+  "name": "nary_matmul_chain_64",
+  "intent": "Small N-ary einsum diagnostic that bypasses binary-only fast-path coverage and exposes traced extension inner ExecProgram compile/cache overhead.",
+  "format_string": "ij,jk,kl->il",
+  "shapes": [[64, 64], [64, 64], [64, 64]],
+  "dtype": "float64",
+  "num_tensors": 3,
+  "paths": {
+    "opt_size": {"path": [[0, 1], [0, 1]], "log2_size": 12.0, "log10_flops": 5.2441},
+    "opt_flops": {"path": [[0, 1], [0, 1]], "log2_size": 12.0, "log10_flops": 5.2441}
+  },
+  "format_string_colmajor": "ji,kj,lk->li",
+  "shapes_colmajor": [[64, 64], [64, 64], [64, 64]]
+}

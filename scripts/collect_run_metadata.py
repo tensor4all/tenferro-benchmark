@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import socket
 import subprocess
 import sys
@@ -22,11 +24,13 @@ ENV_KEYS = (
     "OMP_THREAD_LIMIT",
     "OMP_DYNAMIC",
     "RAYON_NUM_THREADS",
+    "TENFERRO_CPU_BACKEND_KIND",
     "OPENBLAS_ROOT",
     "OPENBLAS_NUM_THREADS",
     "GOTO_NUM_THREADS",
     "MKL_NUM_THREADS",
     "VECLIB_MAXIMUM_THREADS",
+    "VECLIB_NUM_THREADS",
     "NUMEXPR_NUM_THREADS",
     "BLIS_NUM_THREADS",
     "XLA_FLAGS",
@@ -158,6 +162,12 @@ def collect_blas(blas: str | None) -> dict[str, str] | None:
         return None
     if blas == "none":
         return {"implementation": "none"}
+    if blas == "accelerate":
+        return {
+            "implementation": "accelerate",
+            "version": "unknown",
+            "library": "/System/Library/Frameworks/Accelerate.framework",
+        }
 
     root_value = os.environ.get("OPENBLAS_ROOT")
     if not root_value:
@@ -168,6 +178,204 @@ def collect_blas(blas: str | None) -> dict[str, str] | None:
         "version": find_openblas_version(root),
         "root": str(root),
         "library": find_openblas_library(root),
+    }
+
+
+def run_python_probe(source: str) -> dict[str, Any]:
+    try:
+        result = subprocess.run(
+            [sys.executable, "-c", source],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+        return {
+            "available": False,
+            "reason": f"{type(exc).__name__}: {exc}",
+        }
+    try:
+        parsed = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        return {
+            "available": False,
+            "reason": f"invalid probe JSON: {exc}",
+        }
+    return parsed if isinstance(parsed, dict) else {"available": False, "reason": "probe did not return an object"}
+
+
+def linked_libraries(path: str) -> list[str]:
+    library = Path(path)
+    if not library.exists():
+        return []
+    if platform.system() == "Darwin" and shutil.which("otool"):
+        args = ["otool", "-L", str(library)]
+    elif shutil.which("ldd"):
+        args = ["ldd", str(library)]
+    else:
+        return []
+    try:
+        result = subprocess.run(args, check=True, capture_output=True, text=True)
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return []
+
+    deps: list[str] = []
+    for line in result.stdout.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.endswith(":"):
+            continue
+        dep = stripped.split(" (", 1)[0].strip()
+        if "=>" in dep:
+            dep = dep.split("=>", 1)[1].strip().split(" ", 1)[0]
+        if dep:
+            deps.append(dep)
+    return deps
+
+
+def relevant_linked_libraries(paths: list[str]) -> list[str]:
+    tokens = ("accelerate", "veclib", "openblas", "mkl", "blas", "lapack", "omp")
+    selected: list[str] = []
+    for path in paths:
+        for dep in linked_libraries(path):
+            if any(token in dep.lower() for token in tokens) and dep not in selected:
+                selected.append(dep)
+    return selected
+
+
+def detect_provider(*parts: str | None) -> str:
+    text = "\n".join(part for part in parts if part).lower()
+    if "openblas" in text:
+        return "openblas"
+    if "accelerate.framework" in text or "veclib" in text or "blas_info=accelerate" in text:
+        return "accelerate"
+    if "mkl" in text:
+        return "mkl"
+    if "_lapack" in text:
+        return "internal_lapack"
+    if "blas" in text or "lapack" in text:
+        return "blas_lapack"
+    return "none_detected"
+
+
+def torch_config_value(config: str, key: str) -> str | None:
+    match = re.search(rf"\b{re.escape(key)}=([^,\n]+)", config)
+    if match:
+        return match.group(1).strip()
+    return None
+
+
+def collect_pytorch_backend() -> dict[str, Any]:
+    info = run_python_probe(
+        r'''
+import json
+from pathlib import Path
+
+try:
+    import torch
+    base = Path(torch.__file__).resolve().parent
+    libraries = sorted(str(path.resolve()) for path in base.glob("lib/libtorch_cpu*") if path.is_file())
+    print(json.dumps({
+        "available": True,
+        "version": str(torch.__version__),
+        "file": str(Path(torch.__file__).resolve()),
+        "config": torch.__config__.show(),
+        "libraries": libraries,
+    }))
+except Exception as exc:
+    print(json.dumps({
+        "available": False,
+        "reason": f"{type(exc).__name__}: {exc}",
+    }))
+'''
+    )
+    if not info.get("available"):
+        return {
+            "available": False,
+            "reason": str(info.get("reason", "unavailable")),
+        }
+
+    config = str(info.get("config", ""))
+    libraries = [str(path) for path in info.get("libraries", []) if isinstance(path, str)]
+    deps = relevant_linked_libraries(libraries)
+    blas_info = torch_config_value(config, "BLAS_INFO")
+    lapack_info = torch_config_value(config, "LAPACK_INFO")
+    provider = detect_provider(blas_info, lapack_info, "\n".join(deps), config)
+    version = info.get("version")
+    file_path = info.get("file")
+    return {
+        "available": True,
+        "version": non_empty_or_none(str(version)) if version is not None else None,
+        "file": non_empty_or_none(str(file_path)) if file_path is not None else None,
+        "provider": provider,
+        "blas_info": blas_info,
+        "lapack_info": lapack_info,
+        "library": libraries[0] if libraries else None,
+        "linked_libraries": deps,
+    }
+
+
+def collect_jax_backend() -> dict[str, Any]:
+    info = run_python_probe(
+        r'''
+import json
+from pathlib import Path
+
+try:
+    import jax
+    import jaxlib
+    base = Path(jaxlib.__file__).resolve().parent
+    libraries = []
+    for pattern in ("*.so", "*.dylib", "**/*.so", "**/*.dylib"):
+        libraries.extend(str(path.resolve()) for path in base.glob(pattern) if path.is_file())
+    libraries = sorted(set(libraries))
+    try:
+        backend = jax.default_backend()
+    except Exception:
+        backend = None
+    print(json.dumps({
+        "available": True,
+        "version": str(jax.__version__),
+        "jaxlib_version": str(jaxlib.__version__),
+        "file": str(Path(jaxlib.__file__).resolve()),
+        "backend": backend,
+        "libraries": libraries[:64],
+    }))
+except Exception as exc:
+    print(json.dumps({
+        "available": False,
+        "reason": f"{type(exc).__name__}: {exc}",
+    }))
+'''
+    )
+    if not info.get("available"):
+        return {
+            "available": False,
+            "reason": str(info.get("reason", "unavailable")),
+        }
+
+    libraries = [str(path) for path in info.get("libraries", []) if isinstance(path, str)]
+    deps = relevant_linked_libraries(libraries)
+    provider = detect_provider("\n".join(deps))
+    version = info.get("version")
+    jaxlib_version = info.get("jaxlib_version")
+    backend = info.get("backend")
+    file_path = info.get("file")
+    return {
+        "available": True,
+        "version": non_empty_or_none(str(version)) if version is not None else None,
+        "jaxlib_version": non_empty_or_none(str(jaxlib_version)) if jaxlib_version is not None else None,
+        "backend": non_empty_or_none(str(backend)) if backend is not None else None,
+        "file": non_empty_or_none(str(file_path)) if file_path is not None else None,
+        "provider": provider,
+        "library": libraries[0] if libraries else None,
+        "linked_libraries": deps,
+    }
+
+
+def collect_python_backends() -> dict[str, Any]:
+    return {
+        "pytorch": collect_pytorch_backend(),
+        "jax": collect_jax_backend(),
     }
 
 
@@ -192,6 +400,7 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
     blas = collect_blas(args.blas)
     if blas is not None:
         metadata["blas"] = blas
+    metadata["python_backends"] = collect_python_backends()
     return metadata
 
 
@@ -204,7 +413,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tenferro-commit")
     parser.add_argument("--tenferro-ref")
     parser.add_argument("--features", action="append", default=[])
-    parser.add_argument("--blas", choices=["openblas", "none"])
+    parser.add_argument("--blas", choices=["openblas", "accelerate", "none"])
     parser.add_argument("--output", required=True, type=Path)
     return parser.parse_args()
 

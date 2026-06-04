@@ -16,9 +16,34 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 
 NUM_THREADS="${1:-1}"
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# shellcheck source=scripts/cpu_blas_provider.sh
+source "$SCRIPT_DIR/cpu_blas_provider.sh"
+
+TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
+export TENFERRO_CPU_FEATURES
+case "${TENFERRO_CPU_BACKEND_KIND:-}" in
+    "")
+        case "$TENFERRO_CPU_FEATURES" in
+            system-openblas|system-accelerate)
+                export TENFERRO_CPU_BACKEND_KIND=blas
+                ;;
+            *)
+                export TENFERRO_CPU_BACKEND_KIND=default
+                ;;
+        esac
+        ;;
+    default|faer|blas)
+        export TENFERRO_CPU_BACKEND_KIND
+        ;;
+    *)
+        echo "ERROR: TENFERRO_CPU_BACKEND_KIND must be default, faer, or blas." >&2
+        exit 1
+        ;;
+esac
+
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
 CPU_SUITE_ID="cpu/einsum"
@@ -28,8 +53,8 @@ CPU_SUITE_FILE="$PROJECT_DIR/benchmarks/cpu/einsum.yaml"
 source "$SCRIPT_DIR/thread_env.sh"
 
 if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
-    # Source this so OPENBLAS_ROOT and Torch_DIR exported by the setup script
-    # are visible to the benchmark subprocesses below.
+    # Source this so TENFERRO_RS_DIR and any explicitly configured OpenBLAS
+    # paths are visible to the benchmark subprocesses below.
     # shellcheck source=scripts/setup_extern_deps.sh
     source "$SCRIPT_DIR/setup_extern_deps.sh"
 fi
@@ -76,11 +101,62 @@ write_thread_env_section() {
         GOTO_NUM_THREADS \
         MKL_NUM_THREADS \
         VECLIB_MAXIMUM_THREADS \
+        VECLIB_NUM_THREADS \
         NUMEXPR_NUM_THREADS \
         BLIS_NUM_THREADS \
         XLA_FLAGS; do
         echo "- ${key}: \`${!key:-}\`"
     done
+}
+
+write_python_backend_section() {
+    local run_yaml="$1"
+    echo "## Python Backend BLAS Providers"
+    echo ""
+    run_python_script - "$run_yaml" <<'PY'
+import sys
+from pathlib import Path
+
+try:
+    import yaml
+except Exception as exc:  # noqa: BLE001
+    print(f"- unavailable: PyYAML is not available ({exc})")
+    raise SystemExit(0)
+
+run_path = Path(sys.argv[1])
+try:
+    run = yaml.safe_load(run_path.read_text())
+except Exception as exc:  # noqa: BLE001
+    print(f"- unavailable: failed to read run metadata ({exc})")
+    raise SystemExit(0)
+
+backends = (run or {}).get("python_backends") or {}
+if not backends:
+    print("- unavailable: provider metadata was not collected")
+    raise SystemExit(0)
+
+labels = {"pytorch": "PyTorch", "jax": "JAX"}
+for key in ("pytorch", "jax"):
+    info = backends.get(key) or {}
+    label = labels[key]
+    if not info.get("available"):
+        reason = info.get("reason") or "unavailable"
+        print(f"- {label}: unavailable ({reason})")
+        continue
+    provider = info.get("provider") or "unknown"
+    version = info.get("version") or "unknown"
+    details = [f"provider `{provider}`", f"version `{version}`"]
+    if info.get("blas_info"):
+        details.append(f"BLAS_INFO `{info['blas_info']}`")
+    if info.get("lapack_info"):
+        details.append(f"LAPACK_INFO `{info['lapack_info']}`")
+    if info.get("backend"):
+        details.append(f"backend `{info['backend']}`")
+    print(f"- {label}: " + ", ".join(details))
+    deps = info.get("linked_libraries") or []
+    if deps:
+        print("  - linked BLAS/LAPACK libs: " + "; ".join(f"`{dep}`" for dep in deps))
+PY
 }
 
 run_python_script() {
@@ -97,13 +173,15 @@ write_run_metadata() {
     local run_yaml="$1"
     local timestamp="$2"
     local tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
+    local blas_impl
+    blas_impl="$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")"
     local args=(
         --suite-id "$CPU_SUITE_ID"
         --suite-file "${CPU_SUITE_FILE#$PROJECT_DIR/}"
         --timestamp "$timestamp"
         --tenferro-dir "$tenferro_dir"
-        --features system-openblas
-        --blas openblas
+        --features "$TENFERRO_CPU_FEATURES"
+        --blas "$blas_impl"
         --output "$run_yaml"
     )
     if [[ -n "$TENFERRO_COMMIT" ]]; then
@@ -134,6 +212,8 @@ write_einsum_report() {
         write_cpu_info_section
         echo ""
         write_thread_env_section
+        echo ""
+        write_python_backend_section "$CPU_RUN_YAML"
         echo ""
 
         echo "## Threads: $NUM_THREADS"
@@ -177,6 +257,8 @@ write_cpu_report() {
         echo ""
         write_thread_env_section
         echo ""
+        write_python_backend_section "$CPU_RUN_YAML"
+        echo ""
         echo "## Threads: $NUM_THREADS"
         echo ""
         [[ -f "$CPU_OPS_LOG" ]] && echo "- CSV: \`${CPU_OPS_LOG#$PROJECT_DIR/}\`"
@@ -203,11 +285,7 @@ CPU_OPS_LATEST_REPORT="$REPORTS_DIR/cpu/cpu_ops.md"
 mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")"
 export BENCHMARK_RESULTS_DIR="$CPU_RUN_DIR"
 
-if [[ -z "${OPENBLAS_ROOT:-}" ]]; then
-    if command -v brew >/dev/null 2>&1 && brew --prefix openblas >/dev/null 2>&1; then
-        export OPENBLAS_ROOT="$(brew --prefix openblas)"
-    fi
-fi
+ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 configure_cpu_thread_env "$NUM_THREADS"
 
 echo "============================================"
@@ -218,6 +296,8 @@ echo "Threads:      $NUM_THREADS"
 echo "Timestamp:    $BENCHMARK_TIMESTAMP"
 echo "Suite:        $CPU_SUITE_ID"
 echo "Run dir:      $CPU_RUN_DIR"
+echo "Features:     $TENFERRO_CPU_FEATURES"
+echo "CPU backend:  $TENFERRO_CPU_BACKEND_KIND"
 [[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
 print_cpu_thread_env
 echo ""
@@ -232,8 +312,12 @@ write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
 # ---------------------------------------------------------------------------
 # C++ LibTorch benchmark
 # ---------------------------------------------------------------------------
-if ! "$SCRIPT_DIR/run_all_libtorch.sh" "$NUM_THREADS"; then
-    echo "WARNING: LibTorch benchmark failed or is not configured; continuing with missing Torch C++ results." >&2
+if [[ "$TENFERRO_CPU_FEATURES" == "system-openblas" ]]; then
+    if ! "$SCRIPT_DIR/run_all_libtorch.sh" "$NUM_THREADS"; then
+        echo "WARNING: LibTorch benchmark failed or is not configured; continuing with missing Torch C++ results." >&2
+    fi
+else
+    echo "Skipping OpenBLAS LibTorch C++ runner for TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES."
 fi
 
 # ---------------------------------------------------------------------------
