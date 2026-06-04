@@ -15,7 +15,7 @@ use tenferro_cpu::{CpuBackend, CpuBackendKind};
 use tenferro_einsum::eager_tensor;
 use tenferro_einsum::{ContractionTree, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
-use tenferro_runtime::{GraphExecutor, TracedTensor};
+use tenferro_runtime::{GraphExecutor, TensorRead, TracedTensor};
 use tenferro_tensor::{Tensor, TypedTensor};
 
 const NUM_WARMUPS: usize = 3;
@@ -97,10 +97,10 @@ fn create_eager_operands(
         .collect()
 }
 
-fn bind_operands<'a>(
+fn bind_operand_reads<'a>(
     inputs: &'a [TracedTensor],
     operands: &'a [Tensor],
-) -> Result<Vec<(&'a TracedTensor, &'a Tensor)>, String> {
+) -> Result<Vec<(&'a TracedTensor, TensorRead<'a>)>, String> {
     if inputs.len() != operands.len() {
         return Err(format!(
             "operand count mismatch: graph expects {} inputs but runner created {}",
@@ -108,7 +108,11 @@ fn bind_operands<'a>(
             operands.len()
         ));
     }
-    Ok(inputs.iter().zip(operands.iter()).collect())
+    Ok(inputs
+        .iter()
+        .zip(operands.iter())
+        .map(|(input, operand)| (input, TensorRead::from_tensor(operand)))
+        .collect())
 }
 
 fn cpu_backend_from_env() -> Result<CpuBackend, String> {
@@ -309,14 +313,14 @@ fn run_instance_trace(
         .map_err(|e| format!("{e}"))?;
 
     let operands = create_operand_tensors(&instance.shapes_colmajor);
-    let bindings = bind_operands(&compiled.inputs, &operands)?;
+    let bindings = bind_operand_reads(&compiled.inputs, &operands)?;
     let program = &compiled.program;
 
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
     for _ in 0..NUM_WARMUPS {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            executor.run_many_with_inputs(program, &bindings)
+            executor.run_many_with_input_reads(program, &bindings)
         }));
         let _ = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
     }
@@ -326,7 +330,7 @@ fn run_instance_trace(
     for _ in 0..NUM_RUNS {
         let t0 = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            executor.run_many_with_inputs(program, &bindings)
+            executor.run_many_with_input_reads(program, &bindings)
         }));
         let elapsed = t0.elapsed();
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
@@ -355,7 +359,7 @@ fn run_instance_trace(
         let mut input_bind = Vec::with_capacity(NUM_RUNS);
         for _ in 0..NUM_RUNS {
             let started = Instant::now();
-            let bindings = bind_operands(&compiled.inputs, &operands)?;
+            let bindings = bind_operand_reads(&compiled.inputs, &operands)?;
             input_bind.push(started.elapsed());
             black_box(&bindings);
         }
@@ -371,7 +375,7 @@ fn run_instance_trace(
         for _ in 0..NUM_RUNS {
             let started = Instant::now();
             let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-                executor.run_many_with_inputs(program, &bindings)
+                executor.run_many_with_input_reads(program, &bindings)
             }));
             let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
             executor_run.push(started.elapsed());
@@ -396,7 +400,7 @@ struct EagerRunBreakdown {
     operand_handles: Duration,
     binary_setup: Duration,
     einsum_call: Duration,
-    result_clone: Duration,
+    output_take: Duration,
 }
 
 fn contract_once_eager(
@@ -404,7 +408,7 @@ fn contract_once_eager(
     path_meta: &PathMeta,
     source_operands: &[EagerTensor],
     mut profile: Option<&mut EagerRunBreakdown>,
-) -> Result<Tensor, String> {
+) -> Result<EagerTensor, String> {
     let total_started = Instant::now();
     let started = Instant::now();
     let parsed = Subscripts::parse(&instance.format_string_colmajor).map_err(|e| format!("{e}"))?;
@@ -454,13 +458,9 @@ fn contract_once_eager(
         return Err("contraction did not reduce to one output tensor".into());
     }
     let started = Instant::now();
-    let output = operands
-        .pop()
-        .expect("checked operands length")
-        .data()
-        .clone();
+    let output = operands.pop().expect("checked operands length");
     if let Some(profile) = profile.as_deref_mut() {
-        profile.result_clone += started.elapsed();
+        profile.output_take += started.elapsed();
         profile.total += total_started.elapsed();
     }
     Ok(output)
@@ -515,7 +515,7 @@ fn run_instance_eager(
         let mut operand_handles = Vec::with_capacity(NUM_RUNS);
         let mut binary_setup = Vec::with_capacity(NUM_RUNS);
         let mut einsum_call = Vec::with_capacity(NUM_RUNS);
-        let mut result_clone = Vec::with_capacity(NUM_RUNS);
+        let mut output_take = Vec::with_capacity(NUM_RUNS);
         for _ in 0..NUM_RUNS {
             let mut breakdown = EagerRunBreakdown::default();
             let eval =
@@ -526,7 +526,7 @@ fn run_instance_eager(
             operand_handles.push(breakdown.operand_handles);
             binary_setup.push(breakdown.binary_setup);
             einsum_call.push(breakdown.einsum_call);
-            result_clone.push(breakdown.result_clone);
+            output_take.push(breakdown.output_take);
         }
         print_breakdown(
             "tenferro-eager",
@@ -567,8 +567,8 @@ fn run_instance_eager(
             "tenferro-eager",
             instance,
             strategy_name,
-            "eager.result_clone",
-            result_clone,
+            "eager.output_take",
+            output_take,
         );
     }
 
