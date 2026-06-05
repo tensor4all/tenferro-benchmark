@@ -1,0 +1,14 @@
+{
+  "name": "bin_batched_matmul_b32_m128_n128_k128",
+  "intent": "Larger binary batched GEMM-shaped einsum diagnostic for separating fixed wrapper overhead from backend compute throughput.",
+  "format_string": "bij,bjk->bik",
+  "shapes": [[32, 128, 128], [32, 128, 128]],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {"path": [[0, 1]], "log2_size": 19.0, "log10_flops": 7.8268},
+    "opt_flops": {"path": [[0, 1]], "log2_size": 19.0, "log10_flops": 7.8268}
+  },
+  "format_string_colmajor": "jib,kjb->kib",
+  "shapes_colmajor": [[128, 128, 32], [128, 128, 32]]
+}

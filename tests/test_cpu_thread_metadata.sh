@@ -64,6 +64,16 @@ expected = {
 missing = {key: value for key, value in expected.items() if env.get(key) != value}
 if missing:
     raise SystemExit(f"missing or mismatched thread env: {missing}; env={env}")
+jax = run.get("python_backends", {}).get("jax", {})
+if jax.get("available"):
+    provider = jax.get("provider")
+    dot_backend = jax.get("dot_backend")
+    if not (isinstance(provider, str) and provider.startswith("xla_")):
+        raise SystemExit(f"expected JAX provider to identify XLA backend: {jax}")
+    if dot_backend != provider:
+        raise SystemExit(f"expected JAX dot_backend to match provider: {jax}")
+    if "lapack_provider" not in jax:
+        raise SystemExit(f"expected JAX LAPACK provider metadata: {jax}")
 PY
 }
 

@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -156,6 +157,11 @@ def configure_pytorch_threads(num_threads: int):
     return torch
 
 
+def xla_backend_name(value: object) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "_", str(value).lower()).strip("_")
+    return f"xla_{normalized}" if normalized else "xla_unknown"
+
+
 # ---------------------------------------------------------------------------
 # PyTorch backend
 # ---------------------------------------------------------------------------
@@ -282,6 +288,12 @@ def main() -> None:
         torch = configure_pytorch_threads(num_threads)
         print(f"TORCH_NUM_THREADS={torch.get_num_threads()}")
         print(f"TORCH_NUM_INTEROP_THREADS={torch.get_num_interop_threads()}")
+    else:
+        import jax
+
+        jax_backend = jax.default_backend()
+        print(f"JAX_DEFAULT_BACKEND={jax_backend}")
+        print(f"JAX_DOT_BACKEND={xla_backend_name(jax_backend)}")
     print(
         f"Timing: median ± IQR of {NUM_RUNS} runs "
         f"({NUM_WARMUP} warmup), path precomputed"

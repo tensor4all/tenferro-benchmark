@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown
 from collections import defaultdict
 from pathlib import Path
@@ -37,6 +38,10 @@ BACKEND_LABELS = {
     "cusparse": "cuSPARSE",
     "ginkgo": "Ginkgo",
 }
+
+
+def clean_markdown_eof(markdown: str) -> str:
+    return markdown.rstrip() + "\n"
 
 
 def load_records(paths: list[Path]) -> list[dict[str, Any]]:
@@ -107,7 +112,7 @@ def run_metadata_lines(metadata: dict[str, Any] | None) -> list[str]:
 
 def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] | None = None) -> str:
     if not records:
-        return "# GPU Benchmark Results\n\nNo GPU benchmark records found.\n"
+        return clean_markdown_eof("# GPU Benchmark Results\n\nNo GPU benchmark records found.")
 
     backends = backend_order(records)
     by_suite_op: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
@@ -154,7 +159,7 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
             lines.append("| " + " | ".join(row) + " |")
         lines.append("")
 
-    return "\n".join(lines)
+    return clean_markdown_eof("\n".join(lines))
 
 
 def parse_args() -> argparse.Namespace:
@@ -172,7 +177,7 @@ def main() -> int:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(markdown)
     else:
-        print(markdown)
+        sys.stdout.write(markdown)
     return 0
 
 

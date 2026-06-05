@@ -322,7 +322,9 @@ fn run_instance_trace(
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             executor.run_many_with_input_reads(program, &bindings)
         }));
-        let _ = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
+        let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
+        black_box(&eval);
+        executor.reclaim_outputs(eval);
     }
 
     // Timed runs
@@ -335,6 +337,7 @@ fn run_instance_trace(
         let elapsed = t0.elapsed();
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
         black_box(&eval);
+        executor.reclaim_outputs(eval);
         durations.push(elapsed);
     }
 
@@ -380,6 +383,7 @@ fn run_instance_trace(
             let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
             executor_run.push(started.elapsed());
             black_box(&eval);
+            executor.reclaim_outputs(eval);
         }
         print_breakdown(
             "tenferro-trace",
@@ -644,6 +648,8 @@ fn main() {
     let omp_threads = std::env::var("OMP_NUM_THREADS").unwrap_or_else(|_| "unset".into());
     let cpu_backend_kind =
         std::env::var("TENFERRO_CPU_BACKEND_KIND").unwrap_or_else(|_| "default".into());
+    let dot_decomposer =
+        std::env::var("TENFERRO_OPT_DOT_DECOMPOSER").unwrap_or_else(|_| "0".into());
 
     println!("{backend_name} benchmark suite");
     println!("==================================");
@@ -654,6 +660,7 @@ fn main() {
     );
     println!("Backend: {backend_name}");
     println!("TENFERRO_CPU_BACKEND_KIND={cpu_backend_kind}");
+    println!("TENFERRO_OPT_DOT_DECOMPOSER={dot_decomposer}");
     println!("RAYON_NUM_THREADS={rayon_threads}, OMP_NUM_THREADS={omp_threads}");
     println!(
         "Timing: median ± IQR of {NUM_RUNS} runs ({NUM_WARMUPS} warmup), {}",

@@ -1,0 +1,15 @@
+{
+  "name": "bin_batched_outer_product_compact_j16_k16_o64_t64",
+  "intent": "Binary batched outer-product diagnostic for the compact strided-kernel path: C[j,k,o,t] = A[j,k,t] * B[o,t].",
+  "notes": "Both lhs free axes are compact in column-major order after metadata alignment, so this should exercise the compact batched_outer_product kernel.",
+  "format_string": "tkj,to->tokj",
+  "shapes": [[64, 16, 16], [64, 64]],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {"path": [[0, 1]], "log2_size": 20.0, "log10_flops": 6.0206},
+    "opt_flops": {"path": [[0, 1]], "log2_size": 20.0, "log10_flops": 6.0206}
+  },
+  "format_string_colmajor": "jkt,ot->jkot",
+  "shapes_colmajor": [[16, 16, 64], [64, 64]]
+}

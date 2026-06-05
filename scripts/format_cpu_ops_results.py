@@ -9,6 +9,10 @@ from collections import defaultdict
 from pathlib import Path
 
 
+def clean_markdown_eof(markdown: str) -> str:
+    return markdown.rstrip() + "\n"
+
+
 BACKEND_ORDER = [
     "tenferro-eager",
     "tenferro-trace",
@@ -22,7 +26,7 @@ BACKEND_LABELS = {
     "tenferro-trace": "tenferro-rs trace mode (ms)",
     "libtorch-cpu": "Torch C++ (ms)",
     "pytorch-cpu": "PyTorch Python (ms)",
-    "jax-cpu": "JAX Python (ms)",
+    "jax-cpu": "JAX Python (XLA CPU) (ms)",
 }
 
 
@@ -103,14 +107,14 @@ def format_table(path: Path) -> str:
         ]
         lines.append("| " + " | ".join(row) + " |")
 
-    return "\n".join(lines)
+    return clean_markdown_eof("\n".join(lines))
 
 
 def main() -> None:
     if len(sys.argv) != 2:
         print(f"Usage: {sys.argv[0]} <cpu-ops.csv>", file=sys.stderr)
         sys.exit(1)
-    print(format_table(Path(sys.argv[1])))
+    sys.stdout.write(format_table(Path(sys.argv[1])))
 
 
 if __name__ == "__main__":

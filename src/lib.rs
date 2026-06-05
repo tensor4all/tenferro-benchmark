@@ -1,7 +1,8 @@
 use std::fmt::Display;
 
-use tenferro_runtime::{DType, GraphCompiler, GraphProgram, TracedTensor};
 use tenferro_einsum::{einsum_subscripts_with, ContractionTree, EinsumOptimize, Subscripts};
+use tenferro_runtime::compiler::{CompilerOptions, OptimizerConfig};
+use tenferro_runtime::{DType, GraphCompiler, GraphProgram, TracedTensor};
 
 pub struct CompiledEinsum {
     pub program: GraphProgram,
@@ -20,15 +21,12 @@ pub fn compile_einsum(
     let input_refs: Vec<&TracedTensor> = inputs.iter().collect();
     let einsum_subscripts = subs.into();
     let pairs: Vec<(usize, usize)> = (0..tree.step_count())
-        .map(|idx| {
-            tree.step_pair(idx)
-                .expect("step index is in 0..step_count")
-        })
+        .map(|idx| tree.step_pair(idx).expect("step index is in 0..step_count"))
         .collect();
     let shape_refs: Vec<&[usize]> = shapes.iter().map(Vec::as_slice).collect();
     let owned_tree =
         ContractionTree::from_pairs(subs, &shape_refs, &pairs).map_err(|e| format!("{e}"))?;
-    let mut compiler = GraphCompiler::new();
+    let mut compiler = GraphCompiler::with_compiler_options(compiler_options_from_env());
     let output = einsum_subscripts_with(
         &mut compiler,
         &input_refs,
@@ -46,6 +44,17 @@ pub fn compile_einsum(
         .map_err(|e| format!("{e}"))?;
 
     Ok(CompiledEinsum { program, inputs })
+}
+
+fn compiler_options_from_env() -> CompilerOptions {
+    let mut optimizer = OptimizerConfig::default();
+    if std::env::var("TENFERRO_OPT_DOT_DECOMPOSER")
+        .ok()
+        .is_some_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+    {
+        optimizer.dot_decomposer = true;
+    }
+    CompilerOptions { optimizer }
 }
 
 pub fn unwrap_eval_result<T, E>(

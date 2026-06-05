@@ -135,7 +135,7 @@ print("#### Strategy: opt_flops")
 print("")
 print(f"Median ± IQR (ms). OMP_NUM_THREADS={threads}, RAYON_NUM_THREADS={threads}.")
 print("")
-print("| Instance | tenferro trace (ms) | tenferro eager (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |")
+print("| Instance | tenferro trace (ms) | tenferro eager (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |")
 print("|---|---:|---:|---:|---:|---:|")
 print("| bin_matmul_256 | 1.0 ± 0.1 | 1.2 ± 0.1 | 0.8 ± 0.1 | 0.7 ± 0.1 | **0.5 ± 0.1** |")
 PY
@@ -149,7 +149,7 @@ print("## PR884 CPU Benchmark Items")
 print("")
 print("Median ± IQR (ms).")
 print("")
-print("| suite | benchmark | dtype | threads | shape | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |")
+print("| suite | benchmark | dtype | threads | shape | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) |")
 print("|---|---|---:|---:|---|---:|---:|---:|---:|---:|")
 print(f"| matmul | `f64_square` | f64 | {threads} | `2x2` | 1.000 ± 0.100 | 1.100 ± 0.100 | 0.900 ± 0.100 | 0.800 ± 0.100 | **0.700 ± 0.100** |")
 PY
@@ -187,6 +187,7 @@ test -s "$TMP/setup_extern_called"
 grep -q "Suite: \`cpu/einsum\`" "$TMP/result/cpu/einsum.md"
 grep -q "Strategy: opt_flops" "$TMP/result/cpu/einsum.md"
 grep -q "PyTorch Python" "$TMP/result/cpu/einsum.md"
+grep -q "JAX Python (XLA CPU dot)" "$TMP/result/cpu/einsum.md"
 grep -q "Torch C++" "$TMP/result/cpu/einsum.md"
 grep -Fq "tenferro-rs commit: \`$TENFERRO_COMMIT\`" "$TMP/result/cpu/einsum.md"
 grep -q "Latest run: \`./scripts/run_all.sh 4\`" "$TMP/result/cpu/einsum.md"
@@ -202,6 +203,7 @@ grep -q "PR884 CPU Benchmark Items" "$TMP/result/cpu/cpu_ops.md"
 grep -q "tenferro-rs eager mode" "$TMP/result/cpu/cpu_ops.md"
 grep -q "tenferro-rs trace mode" "$TMP/result/cpu/cpu_ops.md"
 grep -q "PyTorch Python" "$TMP/result/cpu/cpu_ops.md"
+grep -q "JAX Python (XLA CPU)" "$TMP/result/cpu/cpu_ops.md"
 grep -Fq "tenferro-rs commit: \`$TENFERRO_COMMIT\`" "$TMP/result/cpu/cpu_ops.md"
 grep -q "Latest run: \`./scripts/run_all.sh 4\`" "$TMP/result/cpu/cpu_ops.md"
 grep -q "## Threads: 4" "$TMP/result/cpu/cpu_ops.md"

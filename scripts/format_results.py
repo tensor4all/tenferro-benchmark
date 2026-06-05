@@ -14,6 +14,10 @@ import re
 import sys
 
 
+def clean_markdown_eof(markdown: str) -> str:
+    return markdown.rstrip() + "\n"
+
+
 def parse_log(
     filepath: str,
 ) -> tuple[
@@ -202,7 +206,7 @@ def format_markdown_table(
         "strided-opteinsum(blas)": "strided-rs OpenBLAS (ms)",
         "libtorch-cpu": "Torch C++ (ms)",
         "pytorch-cpu": "PyTorch Python (ms)",
-        "jax-cpu": "JAX Python (ms)",
+        "jax-cpu": "JAX Python (XLA CPU dot) (ms)",
         "omeinsum_path": "OMEinsum.jl OpenBLAS (ms)",
         "omeinsum_opt": "OMEinsum.jl opt (ms)",
         "tensorops": "TensorOperations.jl (ms)",
@@ -262,7 +266,7 @@ def format_markdown_table(
 
         lines.append("")
 
-    return "\n".join(lines)
+    return clean_markdown_eof("\n".join(lines))
 
 
 def main() -> None:
@@ -279,7 +283,7 @@ def main() -> None:
         all_results.update(results)
         all_metadata.update(metadata)
 
-    print(format_markdown_table(all_results, all_metadata))
+    sys.stdout.write(format_markdown_table(all_results, all_metadata))
 
 
 if __name__ == "__main__":

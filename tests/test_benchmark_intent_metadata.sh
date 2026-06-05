@@ -19,6 +19,9 @@ for path in sorted((root / "data/instances").glob("*.json")):
     intent = instance.get("intent")
     if intent is not None and (not isinstance(intent, str) or not intent.strip()):
         errors.append(f"{path}: optional intent must be a non-empty string")
+    notes = instance.get("notes")
+    if notes is not None and (not isinstance(notes, str) or not notes.strip()):
+        errors.append(f"{path}: optional notes must be a non-empty string")
 
 nary_path = root / "data/instances/nary_matmul_chain_64.json"
 if not nary_path.exists():
@@ -37,7 +40,7 @@ suite = """\
 schema_version: 1
 suite_id: cpu/einsum-intent-smoke
 title: Intent smoke
-description: Verifies optional benchmark problem intent metadata.
+description: Verifies optional benchmark problem intent and notes metadata.
 defaults:
   run:
     warmups: 1
@@ -49,6 +52,7 @@ problems:
     family: einsum
     op: einsum
     intent: Small N-ary cache diagnostic.
+    notes: Smoke-test note for optional benchmark comments.
     dtype:
       values: f64
     data:
@@ -91,7 +95,7 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     if result.returncode != 0:
         errors.append(
-            "suite schema should allow optional problem intent metadata:\n"
+            "suite schema should allow optional problem intent and notes metadata:\n"
             + result.stderr.strip()
         )
 

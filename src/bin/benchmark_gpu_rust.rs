@@ -63,8 +63,14 @@ fn main() {
 
             for &backend in &backends {
                 let rec = dispatch(
-                    &suite_id, problem, backend, device_ordinal, &candidates,
-                    &timestamp, benchmark_commit.as_deref(), tenferro_commit.as_deref(),
+                    &suite_id,
+                    problem,
+                    backend,
+                    device_ordinal,
+                    &candidates,
+                    &timestamp,
+                    benchmark_commit.as_deref(),
+                    tenferro_commit.as_deref(),
                 );
                 lines.push(serde_json::to_string(&rec).unwrap());
             }
@@ -80,20 +86,45 @@ fn main() {
 // ---------------------------------------------------------------------------
 
 fn dispatch(
-    suite_id: &str, problem: &serde_yaml::Value, backend: &str,
-    device_ordinal: usize, candidates: &[String],
-    ts: &str, bc: Option<&str>, tc: Option<&str>,
+    suite_id: &str,
+    problem: &serde_yaml::Value,
+    backend: &str,
+    device_ordinal: usize,
+    candidates: &[String],
+    ts: &str,
+    bc: Option<&str>,
+    tc: Option<&str>,
 ) -> Value {
     let pid = problem["id"].as_str().unwrap_or("");
     if !candidates.iter().any(|c| c == backend) {
-        return stub(suite_id, problem, backend, device_ordinal, "unsupported",
-                    &format!("{backend} not listed for {pid}"), "phase2-runner", ts, bc, tc);
+        return stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "unsupported",
+            &format!("{backend} not listed for {pid}"),
+            "phase2-runner",
+            ts,
+            bc,
+            tc,
+        );
     }
     match backend {
         "tenferro-cuda-eager" => run_eager(suite_id, problem, backend, device_ordinal, ts, bc, tc),
         "tenferro-cuda-trace" => run_trace(suite_id, problem, backend, device_ordinal, ts, bc, tc),
-        _ => stub(suite_id, problem, backend, device_ordinal, "not_configured",
-                  &format!("{backend} not in Rust GPU runner"), "phase2-runner", ts, bc, tc),
+        _ => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "not_configured",
+            &format!("{backend} not in Rust GPU runner"),
+            "phase2-runner",
+            ts,
+            bc,
+            tc,
+        ),
     }
 }
 
@@ -102,19 +133,41 @@ fn dispatch(
 // ---------------------------------------------------------------------------
 
 fn run_eager(
-    suite_id: &str, problem: &serde_yaml::Value, backend: &str,
-    device_ordinal: usize, ts: &str, bc: Option<&str>, tc: Option<&str>,
+    suite_id: &str,
+    problem: &serde_yaml::Value,
+    backend: &str,
+    device_ordinal: usize,
+    ts: &str,
+    bc: Option<&str>,
+    tc: Option<&str>,
 ) -> Value {
     let op = problem["op"].as_str().unwrap_or("");
-    let supported = ["matmul", "batched_matmul", "einsum", "qr", "solve", "svd", "eigh"];
+    let supported = [
+        "matmul",
+        "batched_matmul",
+        "einsum",
+        "qr",
+        "solve",
+        "svd",
+        "eigh",
+    ];
     if !supported.contains(&op) {
-        return stub(suite_id, problem, backend, device_ordinal, "not_configured",
-                    &format!("tenferro-cuda-eager: op={op} not implemented"),
-                    "phase2-runner", ts, bc, tc);
+        return stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "not_configured",
+            &format!("tenferro-cuda-eager: op={op} not implemented"),
+            "phase2-runner",
+            ts,
+            bc,
+            tc,
+        );
     }
 
     let n_warmup = yaml_usize(&problem["run"]["warmups"], 3);
-    let n_runs   = yaml_usize(&problem["run"]["runs"], 7);
+    let n_runs = yaml_usize(&problem["run"]["runs"], 7);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
     let exec_path = "phase2-measured-tenferro-cuda-eager";
@@ -123,18 +176,23 @@ fn run_eager(
         // Use two backends for the same device ordinal.
         // CubeCL returns the same underlying device client for the same ordinal,
         // so both backends share the same CUDA stream.
-        let transfer_bk = CubeclBackend::new(device_ordinal)
-            .map_err(|e| format!("transfer backend: {e}"))?;
-        let compute_bk = CubeclBackend::new(device_ordinal)
-            .map_err(|e| format!("compute backend: {e}"))?;
+        let transfer_bk =
+            CubeclBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
+        let compute_bk =
+            CubeclBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
         let ctx = EagerRuntime::with_cuda_backend(compute_bk);
 
         let seed = problem["data"]["seed"].as_u64().unwrap_or(0);
-        let gen  = problem["data"]["generator"].as_str().unwrap_or("normal");
+        let gen = problem["data"]["generator"].as_str().unwrap_or("normal");
 
         // Upload CPU tensors to GPU, then wrap in EagerTensor
         let gpu_inputs = build_and_upload_eager_inputs(
-            op, problem, seed, gen, transfer_bk.runtime(), ctx.clone(),
+            op,
+            problem,
+            seed,
+            gen,
+            transfer_bk.runtime(),
+            ctx.clone(),
         )?;
         sync_cubecl_runtime(transfer_bk.runtime())?;
         let cpu_inputs = build_cpu_eager_inputs(op, problem, seed, gen);
@@ -159,9 +217,16 @@ fn run_eager(
 
         // Verify last result against CPU reference
         let (ver_status, max_abs, max_rel) = if let Some(ref g) = last_out {
-            let cpu_out = run_eager_op(op, problem, &cpu_inputs)
-                .unwrap_or_default();
-            verify_eager(op, g, &cpu_out, &cpu_inputs, transfer_bk.runtime(), rtol, atol)
+            let cpu_out = run_eager_op(op, problem, &cpu_inputs).unwrap_or_default();
+            verify_eager(
+                op,
+                g,
+                &cpu_out,
+                &cpu_inputs,
+                transfer_bk.runtime(),
+                rtol,
+                atol,
+            )
         } else {
             ("skipped".to_string(), None, None)
         };
@@ -172,18 +237,63 @@ fn run_eager(
     match result {
         Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
             if ver_status == "failed" {
-                return stub(suite_id, problem, backend, device_ordinal, "verification_failed",
-                            &format!("max_abs={:.3e}", max_abs.unwrap_or(f64::NAN)),
-                            exec_path, ts, bc, tc);
+                return stub(
+                    suite_id,
+                    problem,
+                    backend,
+                    device_ordinal,
+                    "verification_failed",
+                    &format!("max_abs={:.3e}", max_abs.unwrap_or(f64::NAN)),
+                    exec_path,
+                    ts,
+                    bc,
+                    tc,
+                );
             }
             let stats = timing_stats(&times_ms);
-            ok_record(suite_id, problem, backend, device_ordinal, exec_path,
-                      n_warmup, n_runs, stats, &ver_status, max_abs, max_rel, rtol, atol, ts, bc, tc)
+            ok_record(
+                suite_id,
+                problem,
+                backend,
+                device_ordinal,
+                exec_path,
+                n_warmup,
+                n_runs,
+                stats,
+                &ver_status,
+                max_abs,
+                max_rel,
+                rtol,
+                atol,
+                ts,
+                bc,
+                tc,
+            )
         }
-        Ok(Err(msg)) => stub(suite_id, problem, backend, device_ordinal, "runtime_failed",
-                             &msg, exec_path, ts, bc, tc),
-        Err(_) => stub(suite_id, problem, backend, device_ordinal, "runtime_failed",
-                       "panic during eager benchmark", exec_path, ts, bc, tc),
+        Ok(Err(msg)) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            &msg,
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
+        Err(_) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            "panic during eager benchmark",
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
     }
 }
 
@@ -192,51 +302,78 @@ fn run_eager(
 // ---------------------------------------------------------------------------
 
 fn run_trace(
-    suite_id: &str, problem: &serde_yaml::Value, backend: &str,
-    device_ordinal: usize, ts: &str, bc: Option<&str>, tc: Option<&str>,
+    suite_id: &str,
+    problem: &serde_yaml::Value,
+    backend: &str,
+    device_ordinal: usize,
+    ts: &str,
+    bc: Option<&str>,
+    tc: Option<&str>,
 ) -> Value {
     let op = problem["op"].as_str().unwrap_or("");
-    let supported = ["matmul", "batched_matmul", "einsum", "qr", "solve", "svd", "eigh"];
+    let supported = [
+        "matmul",
+        "batched_matmul",
+        "einsum",
+        "qr",
+        "solve",
+        "svd",
+        "eigh",
+    ];
     if !supported.contains(&op) {
-        return stub(suite_id, problem, backend, device_ordinal, "not_configured",
-                    &format!("tenferro-cuda-trace: op={op} not implemented"),
-                    "phase2-runner", ts, bc, tc);
+        return stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "not_configured",
+            &format!("tenferro-cuda-trace: op={op} not implemented"),
+            "phase2-runner",
+            ts,
+            bc,
+            tc,
+        );
     }
 
     let n_warmup = yaml_usize(&problem["run"]["warmups"], 3);
-    let n_runs   = yaml_usize(&problem["run"]["runs"], 7);
+    let n_runs = yaml_usize(&problem["run"]["runs"], 7);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
     let exec_path = "phase2-measured-tenferro-cuda-trace";
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
         let seed = problem["data"]["seed"].as_u64().unwrap_or(0);
-        let gen  = problem["data"]["generator"].as_str().unwrap_or("normal");
+        let gen = problem["data"]["generator"].as_str().unwrap_or("normal");
 
         // Two backends sharing the same CubeCL device client.
         // Build the trace graph with GPU-uploaded tensors as embedded constants.
-        let transfer_bk = CubeclBackend::new(device_ordinal)
-            .map_err(|e| format!("transfer backend: {e}"))?;
-        let compute_bk = CubeclBackend::new(device_ordinal)
-            .map_err(|e| format!("compute backend: {e}"))?;
+        let transfer_bk =
+            CubeclBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
+        let compute_bk =
+            CubeclBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
 
-        let (outputs, cpu_inputs) = build_trace_graph_gpu(op, problem, seed, gen, transfer_bk.runtime())
-            .map_err(|e| format!("graph build: {e}"))?;
+        let (outputs, cpu_inputs) =
+            build_trace_graph_gpu(op, problem, seed, gen, transfer_bk.runtime())
+                .map_err(|e| format!("graph build: {e}"))?;
         sync_cubecl_runtime(transfer_bk.runtime())?;
         let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
         let mut compiler = GraphCompiler::new();
-        let program = compiler.compile_many(&output_refs)
+        let program = compiler
+            .compile_many(&output_refs)
             .map_err(|e| format!("compile: {e}"))?;
 
         let mut executor = GraphExecutor::new(compute_bk);
-        executor.register_extension(tenferro_einsum::register_runtime)
+        executor
+            .register_extension(tenferro_einsum::register_runtime)
             .map_err(|e| format!("register einsum: {e}"))?;
-        executor.register_extension(tenferro_linalg::register_runtime)
+        executor
+            .register_extension(tenferro_linalg::register_runtime)
             .map_err(|e| format!("register linalg: {e}"))?;
 
         // Warmup (triggers JIT compilation on first run)
         for _ in 0..n_warmup {
-            let out = executor.run_many(&program)
+            let out = executor
+                .run_many(&program)
                 .map_err(|e| format!("warmup: {e}"))?;
             sync_cubecl_runtime(executor.backend().runtime())?;
             black_box(out.len());
@@ -247,7 +384,8 @@ fn run_trace(
         let mut last_out: Option<Vec<Tensor>> = None;
         for _ in 0..n_runs {
             let t0 = Instant::now();
-            let out = executor.run_many(&program)
+            let out = executor
+                .run_many(&program)
                 .map_err(|e| format!("run: {e}"))?;
             sync_cubecl_runtime(executor.backend().runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
@@ -256,7 +394,8 @@ fn run_trace(
 
         // Verify via download + CPU reference
         let (ver_status, max_abs, max_rel) = if let Some(ref gpu_out) = last_out {
-            let gpu_tensors: Vec<Tensor> = gpu_out.iter()
+            let gpu_tensors: Vec<Tensor> = gpu_out
+                .iter()
                 .filter_map(|t| download_tensor(transfer_bk.runtime(), t).ok())
                 .collect();
             let cpu_out = run_cpu_trace(op, problem, seed, gen).unwrap_or_default();
@@ -272,18 +411,63 @@ fn run_trace(
     match result {
         Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
             if ver_status == "failed" {
-                return stub(suite_id, problem, backend, device_ordinal, "verification_failed",
-                            &format!("max_abs={:.3e}", max_abs.unwrap_or(f64::NAN)),
-                            exec_path, ts, bc, tc);
+                return stub(
+                    suite_id,
+                    problem,
+                    backend,
+                    device_ordinal,
+                    "verification_failed",
+                    &format!("max_abs={:.3e}", max_abs.unwrap_or(f64::NAN)),
+                    exec_path,
+                    ts,
+                    bc,
+                    tc,
+                );
             }
             let stats = timing_stats(&times_ms);
-            ok_record(suite_id, problem, backend, device_ordinal, exec_path,
-                      n_warmup, n_runs, stats, &ver_status, max_abs, max_rel, rtol, atol, ts, bc, tc)
+            ok_record(
+                suite_id,
+                problem,
+                backend,
+                device_ordinal,
+                exec_path,
+                n_warmup,
+                n_runs,
+                stats,
+                &ver_status,
+                max_abs,
+                max_rel,
+                rtol,
+                atol,
+                ts,
+                bc,
+                tc,
+            )
         }
-        Ok(Err(msg)) => stub(suite_id, problem, backend, device_ordinal, "runtime_failed",
-                             &msg, exec_path, ts, bc, tc),
-        Err(_) => stub(suite_id, problem, backend, device_ordinal, "runtime_failed",
-                       "panic during trace benchmark", exec_path, ts, bc, tc),
+        Ok(Err(msg)) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            &msg,
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
+        Err(_) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            "panic during trace benchmark",
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
     }
 }
 
@@ -326,8 +510,14 @@ fn build_and_upload_eager_inputs(
             let batch = yaml_usize(&p["batch"], 16);
             let (m, n, k) = yshape3(p, "m", "n", "k");
             Ok(EagerInputs {
-                a: upload(tensor_f64(&[m, k, batch], normal_data(&[m, k, batch], seed)))?,
-                b: Some(upload(tensor_f64(&[k, n, batch], normal_data(&[k, n, batch], seed + 1)))?),
+                a: upload(tensor_f64(
+                    &[m, k, batch],
+                    normal_data(&[m, k, batch], seed),
+                ))?,
+                b: Some(upload(tensor_f64(
+                    &[k, n, batch],
+                    normal_data(&[k, n, batch], seed + 1),
+                ))?),
                 extra: vec![],
             })
         }
@@ -335,16 +525,30 @@ fn build_and_upload_eager_inputs(
             let p = &problem["einsum"];
             let shapes = yaml_shapes(p);
             let dummy = upload(tensor_f64(&[1], vec![0.0]))?;
-            let extra = shapes.iter().enumerate()
+            let extra = shapes
+                .iter()
+                .enumerate()
                 .map(|(i, sh)| upload(tensor_f64(sh, normal_data(sh, seed + i as u64))))
                 .collect::<Result<Vec<_>, _>>()?;
-            Ok(EagerInputs { a: dummy, b: None, extra })
+            Ok(EagerInputs {
+                a: dummy,
+                b: None,
+                extra,
+            })
         }
         "qr" | "svd" => {
             let p = &problem["linalg"];
             let (m, n) = (yaml_usize(&p["m"], 64), yaml_usize(&p["n"], 64));
-            let d = if gen == "well_conditioned" { well_conditioned(m, n, seed) } else { normal_data(&[m, n], seed) };
-            Ok(EagerInputs { a: upload(tensor_f64(&[m, n], d))?, b: None, extra: vec![] })
+            let d = if gen == "well_conditioned" {
+                well_conditioned(m, n, seed)
+            } else {
+                normal_data(&[m, n], seed)
+            };
+            Ok(EagerInputs {
+                a: upload(tensor_f64(&[m, n], d))?,
+                b: None,
+                extra: vec![],
+            })
         }
         "solve" => {
             let p = &problem["linalg"];
@@ -352,15 +556,26 @@ fn build_and_upload_eager_inputs(
             let rhs = yaml_usize(&p["rhs_cols"], 1);
             Ok(EagerInputs {
                 a: upload(tensor_f64(&[n, n], spd_data(n, seed)))?,
-                b: Some(upload(tensor_f64(&[n, rhs], normal_data(&[n, rhs], seed + 100)))?),
+                b: Some(upload(tensor_f64(
+                    &[n, rhs],
+                    normal_data(&[n, rhs], seed + 100),
+                ))?),
                 extra: vec![],
             })
         }
         "eigh" => {
             let p = &problem["linalg"];
             let n = yaml_usize(&p["n"], 64);
-            let d = if gen == "spd" { spd_data(n, seed) } else { normal_data(&[n, n], seed) };
-            Ok(EagerInputs { a: upload(tensor_f64(&[n, n], d))?, b: None, extra: vec![] })
+            let d = if gen == "spd" {
+                spd_data(n, seed)
+            } else {
+                normal_data(&[n, n], seed)
+            };
+            Ok(EagerInputs {
+                a: upload(tensor_f64(&[n, n], d))?,
+                b: None,
+                extra: vec![],
+            })
         }
         _ => Err(format!("unsupported op for eager GPU: {op}")),
     }
@@ -391,8 +606,14 @@ fn build_cpu_eager_inputs(
             let batch = yaml_usize(&p["batch"], 16);
             let (m, n, k) = yshape3(p, "m", "n", "k");
             EagerInputs {
-                a: cpu(tensor_f64(&[m, k, batch], normal_data(&[m, k, batch], seed))),
-                b: Some(cpu(tensor_f64(&[k, n, batch], normal_data(&[k, n, batch], seed + 1)))),
+                a: cpu(tensor_f64(
+                    &[m, k, batch],
+                    normal_data(&[m, k, batch], seed),
+                )),
+                b: Some(cpu(tensor_f64(
+                    &[k, n, batch],
+                    normal_data(&[k, n, batch], seed + 1),
+                ))),
                 extra: vec![],
             }
         }
@@ -400,16 +621,30 @@ fn build_cpu_eager_inputs(
             let p = &problem["einsum"];
             let shapes = yaml_shapes(p);
             let dummy = cpu(tensor_f64(&[1], vec![0.0]));
-            let extra = shapes.iter().enumerate()
+            let extra = shapes
+                .iter()
+                .enumerate()
                 .map(|(i, sh)| cpu(tensor_f64(sh, normal_data(sh, seed + i as u64))))
                 .collect();
-            EagerInputs { a: dummy, b: None, extra }
+            EagerInputs {
+                a: dummy,
+                b: None,
+                extra,
+            }
         }
         "qr" | "svd" => {
             let p = &problem["linalg"];
             let (m, n) = (yaml_usize(&p["m"], 64), yaml_usize(&p["n"], 64));
-            let d = if gen == "well_conditioned" { well_conditioned(m, n, seed) } else { normal_data(&[m, n], seed) };
-            EagerInputs { a: cpu(tensor_f64(&[m, n], d)), b: None, extra: vec![] }
+            let d = if gen == "well_conditioned" {
+                well_conditioned(m, n, seed)
+            } else {
+                normal_data(&[m, n], seed)
+            };
+            EagerInputs {
+                a: cpu(tensor_f64(&[m, n], d)),
+                b: None,
+                extra: vec![],
+            }
         }
         "solve" => {
             let p = &problem["linalg"];
@@ -417,48 +652,69 @@ fn build_cpu_eager_inputs(
             let rhs = yaml_usize(&p["rhs_cols"], 1);
             EagerInputs {
                 a: cpu(tensor_f64(&[n, n], spd_data(n, seed))),
-                b: Some(cpu(tensor_f64(&[n, rhs], normal_data(&[n, rhs], seed + 100)))),
+                b: Some(cpu(tensor_f64(
+                    &[n, rhs],
+                    normal_data(&[n, rhs], seed + 100),
+                ))),
                 extra: vec![],
             }
         }
         "eigh" => {
             let p = &problem["linalg"];
             let n = yaml_usize(&p["n"], 64);
-            let d = if gen == "spd" { spd_data(n, seed) } else { normal_data(&[n, n], seed) };
-            EagerInputs { a: cpu(tensor_f64(&[n, n], d)), b: None, extra: vec![] }
+            let d = if gen == "spd" {
+                spd_data(n, seed)
+            } else {
+                normal_data(&[n, n], seed)
+            };
+            EagerInputs {
+                a: cpu(tensor_f64(&[n, n], d)),
+                b: None,
+                extra: vec![],
+            }
         }
         _ => {
             let dummy = cpu(tensor_f64(&[1], vec![0.0]));
-            EagerInputs { a: dummy, b: None, extra: vec![] }
+            EagerInputs {
+                a: dummy,
+                b: None,
+                extra: vec![],
+            }
         }
     }
 }
 
-fn run_eager_op(op: &str, problem: &serde_yaml::Value, inputs: &EagerInputs)
-    -> Result<Vec<EagerTensor>, String>
-{
+fn run_eager_op(
+    op: &str,
+    problem: &serde_yaml::Value,
+    inputs: &EagerInputs,
+) -> Result<Vec<EagerTensor>, String> {
     match op {
         "matmul" => {
-            let out = inputs.a.matmul(inputs.b.as_ref().unwrap())
+            let out = inputs
+                .a
+                .matmul(inputs.b.as_ref().unwrap())
                 .map_err(|e| format!("matmul: {e}"))?;
             Ok(vec![out])
         }
         "batched_matmul" => {
             let cfg = batched_matmul_cfg();
-            let out = inputs.a.dot_general(inputs.b.as_ref().unwrap(), cfg)
+            let out = inputs
+                .a
+                .dot_general(inputs.b.as_ref().unwrap(), cfg)
                 .map_err(|e| format!("batched_matmul: {e}"))?;
             Ok(vec![out])
         }
         "einsum" => {
-            let expr = problem["einsum"]["format_rowmajor"].as_str().unwrap_or("ij,jk->ik");
+            let expr = problem["einsum"]["format_rowmajor"]
+                .as_str()
+                .unwrap_or("ij,jk->ik");
             let refs: Vec<&EagerTensor> = inputs.extra.iter().collect();
-            let out = eager_einsum::einsum(&refs, expr)
-                .map_err(|e| format!("einsum: {e}"))?;
+            let out = eager_einsum::einsum(&refs, expr).map_err(|e| format!("einsum: {e}"))?;
             Ok(vec![out])
         }
         "qr" => {
-            let (q, r) = eager_linalg::qr(&inputs.a)
-                .map_err(|e| format!("qr: {e}"))?;
+            let (q, r) = eager_linalg::qr(&inputs.a).map_err(|e| format!("qr: {e}"))?;
             Ok(vec![q, r])
         }
         "solve" => {
@@ -467,13 +723,11 @@ fn run_eager_op(op: &str, problem: &serde_yaml::Value, inputs: &EagerInputs)
             Ok(vec![x])
         }
         "svd" => {
-            let (u, s, vh) = eager_linalg::svd(&inputs.a)
-                .map_err(|e| format!("svd: {e}"))?;
+            let (u, s, vh) = eager_linalg::svd(&inputs.a).map_err(|e| format!("svd: {e}"))?;
             Ok(vec![u, s, vh])
         }
         "eigh" => {
-            let (w, v) = eager_linalg::eigh(&inputs.a)
-                .map_err(|e| format!("eigh: {e}"))?;
+            let (w, v) = eager_linalg::eigh(&inputs.a).map_err(|e| format!("eigh: {e}"))?;
             Ok(vec![w, v])
         }
         _ => Err(format!("unknown op: {op}")),
@@ -486,7 +740,10 @@ fn run_eager_op(op: &str, problem: &serde_yaml::Value, inputs: &EagerInputs)
 
 /// Build trace graph with CPU tensors as concrete-shape constants.
 fn build_trace_graph(
-    op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str,
+    op: &str,
+    problem: &serde_yaml::Value,
+    seed: u64,
+    gen: &str,
 ) -> Result<Vec<TracedTensor>, TfError> {
     let (outputs, _) = build_trace_graph_inner(op, problem, seed, gen, None)?;
     Ok(outputs)
@@ -495,14 +752,20 @@ fn build_trace_graph(
 /// Build trace graph with GPU-uploaded tensors embedded as concrete-shape constants.
 /// When rt is Some, each input tensor is uploaded to GPU before embedding.
 fn build_trace_graph_gpu(
-    op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str,
+    op: &str,
+    problem: &serde_yaml::Value,
+    seed: u64,
+    gen: &str,
     rt: &CubeclRuntime,
 ) -> Result<(Vec<TracedTensor>, Vec<(TracedTensor, Tensor)>), TfError> {
     build_trace_graph_inner(op, problem, seed, gen, Some(rt))
 }
 
 fn build_trace_graph_inner(
-    op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str,
+    op: &str,
+    problem: &serde_yaml::Value,
+    seed: u64,
+    gen: &str,
     upload_rt: Option<&CubeclRuntime>,
 ) -> Result<(Vec<TracedTensor>, Vec<(TracedTensor, Tensor)>), TfError> {
     // Helper: create a TracedTensor with concrete shape from tensor data.
@@ -511,8 +774,7 @@ fn build_trace_graph_inner(
         ($shape:expr, $data:expr) => {{
             let cpu_d = tensor_f64($shape, $data);
             let tensor = if let Some(rt) = upload_rt {
-                upload_tensor(rt, &cpu_d)
-                    .map_err(|e| TfError::Internal(format!("upload: {e}")))?
+                upload_tensor(rt, &cpu_d).map_err(|e| TfError::Internal(format!("upload: {e}")))?
             } else {
                 cpu_d.clone()
             };
@@ -556,7 +818,11 @@ fn build_trace_graph_inner(
         "qr" => {
             let p = &problem["linalg"];
             let (m, n) = (yaml_usize(&p["m"], 64), yaml_usize(&p["n"], 64));
-            let d = if gen == "well_conditioned" { well_conditioned(m, n, seed) } else { normal_data(&[m, n], seed) };
+            let d = if gen == "well_conditioned" {
+                well_conditioned(m, n, seed)
+            } else {
+                normal_data(&[m, n], seed)
+            };
             let (a, a_data) = inp!(&[m, n], d);
             let (q, r) = tenferro_linalg::qr(&a)?;
             Ok((vec![q, r], vec![(a, a_data)]))
@@ -573,7 +839,11 @@ fn build_trace_graph_inner(
         "svd" => {
             let p = &problem["linalg"];
             let (m, n) = (yaml_usize(&p["m"], 64), yaml_usize(&p["n"], 64));
-            let d = if gen == "well_conditioned" { well_conditioned(m, n, seed) } else { normal_data(&[m, n], seed) };
+            let d = if gen == "well_conditioned" {
+                well_conditioned(m, n, seed)
+            } else {
+                normal_data(&[m, n], seed)
+            };
             let (a, a_data) = inp!(&[m, n], d);
             let (u, s, vh) = tenferro_linalg::svd(&a)?;
             Ok((vec![u, s, vh], vec![(a, a_data)]))
@@ -581,7 +851,11 @@ fn build_trace_graph_inner(
         "eigh" => {
             let p = &problem["linalg"];
             let n = yaml_usize(&p["n"], 64);
-            let d = if gen == "spd" { spd_data(n, seed) } else { normal_data(&[n, n], seed) };
+            let d = if gen == "spd" {
+                spd_data(n, seed)
+            } else {
+                normal_data(&[n, n], seed)
+            };
             let (a, a_data) = inp!(&[n, n], d);
             let (w, v) = tenferro_linalg::eigh(&a)?;
             Ok((vec![w, v], vec![(a, a_data)]))
@@ -590,18 +864,26 @@ fn build_trace_graph_inner(
     }
 }
 
-fn run_cpu_trace(op: &str, problem: &serde_yaml::Value, seed: u64, gen: &str)
-    -> Result<Vec<Tensor>, String>
-{
+fn run_cpu_trace(
+    op: &str,
+    problem: &serde_yaml::Value,
+    seed: u64,
+    gen: &str,
+) -> Result<Vec<Tensor>, String> {
     // Use None for upload_rt → CPU constants embedded in from_tensor_concrete_shape
-    let outputs = build_trace_graph(op, problem, seed, gen)
-        .map_err(|e| format!("{e}"))?;
+    let outputs = build_trace_graph(op, problem, seed, gen).map_err(|e| format!("{e}"))?;
     let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
     let mut compiler = GraphCompiler::new();
-    let program = compiler.compile_many(&output_refs).map_err(|e| format!("{e}"))?;
+    let program = compiler
+        .compile_many(&output_refs)
+        .map_err(|e| format!("{e}"))?;
     let mut executor = GraphExecutor::new(CpuBackend::default());
-    executor.register_extension(tenferro_einsum::register_runtime).map_err(|e| format!("{e}"))?;
-    executor.register_extension(tenferro_linalg::register_runtime).map_err(|e| format!("{e}"))?;
+    executor
+        .register_extension(tenferro_einsum::register_runtime)
+        .map_err(|e| format!("{e}"))?;
+    executor
+        .register_extension(tenferro_linalg::register_runtime)
+        .map_err(|e| format!("{e}"))?;
     executor.run_many(&program).map_err(|e| format!("{e}"))
 }
 
@@ -634,14 +916,14 @@ fn verify_eager(
     cpu_outputs: &[EagerTensor],
     cpu_inputs: &EagerInputs,
     rt: &CubeclRuntime,
-    rtol: f64, atol: f64,
+    rtol: f64,
+    atol: f64,
 ) -> (String, Option<f64>, Option<f64>) {
-    let gpu_tensors: Vec<Tensor> = gpu.iter()
+    let gpu_tensors: Vec<Tensor> = gpu
+        .iter()
         .filter_map(|t| download_tensor(rt, t.data()).ok())
         .collect();
-    let cpu_tensors: Vec<Tensor> = cpu_outputs.iter()
-        .map(|t| t.data().clone())
-        .collect();
+    let cpu_tensors: Vec<Tensor> = cpu_outputs.iter().map(|t| t.data().clone()).collect();
     let mut input_tensors = vec![cpu_inputs.a.data().clone()];
     if let Some(b) = &cpu_inputs.b {
         input_tensors.push(b.data().clone());
@@ -655,7 +937,8 @@ fn verify_tensors(
     gpu: &[Tensor],
     cpu_outputs: &[Tensor],
     cpu_inputs: &[Tensor],
-    rtol: f64, atol: f64,
+    rtol: f64,
+    atol: f64,
 ) -> (String, Option<f64>, Option<f64>) {
     let comparison = match op {
         "qr" => verify_qr(gpu, cpu_inputs),
@@ -772,15 +1055,23 @@ fn compare_vectors(
     if actual.len() != expected.len() {
         return ("skipped".to_string(), None, None);
     }
-    let max_abs = actual.iter().zip(expected.iter())
+    let max_abs = actual
+        .iter()
+        .zip(expected.iter())
         .map(|(x, y)| (x - y).abs())
         .fold(0.0_f64, f64::max);
-    let max_rel = actual.iter().zip(expected.iter())
+    let max_rel = actual
+        .iter()
+        .zip(expected.iter())
         .map(|(x, y)| (x - y).abs() / y.abs().max(1e-10))
         .fold(0.0_f64, f64::max);
     let norm = expected.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
     let passed = max_abs <= atol + rtol * norm.max(1.0);
-    (if passed { "passed" } else { "failed" }.to_string(), Some(max_abs), Some(max_rel))
+    (
+        if passed { "passed" } else { "failed" }.to_string(),
+        Some(max_abs),
+        Some(max_rel),
+    )
 }
 
 // ---------------------------------------------------------------------------
@@ -790,7 +1081,6 @@ fn compare_vectors(
 fn tensor_f64(shape: &[usize], data: Vec<f64>) -> Tensor {
     Tensor::F64(TypedTensor::from_vec_col_major(shape.to_vec(), data))
 }
-
 
 fn normal_data(shape: &[usize], seed: u64) -> Vec<f64> {
     let len: usize = shape.iter().product();
@@ -807,8 +1097,12 @@ fn normal_data(shape: &[usize], seed: u64) -> Vec<f64> {
 fn well_conditioned(m: usize, n: usize, seed: u64) -> Vec<f64> {
     let mut d = normal_data(&[m, n], seed);
     for j in 0..n {
-        for i in 0..m { d[i + m * j] *= 0.05; }
-        if j < m { d[j + m * j] += 1.0 + j as f64 / n.max(1) as f64; }
+        for i in 0..m {
+            d[i + m * j] *= 0.05;
+        }
+        if j < m {
+            d[j + m * j] += 1.0 + j as f64 / n.max(1) as f64;
+        }
     }
     d
 }
@@ -819,7 +1113,9 @@ fn spd_data(n: usize, seed: u64) -> Vec<f64> {
     for j in 0..n {
         for i in 0..n {
             let mut s: f64 = (0..n).map(|k| base[k + n * i] * base[k + n * j]).sum();
-            if i == j { s += 1.0; }
+            if i == j {
+                s += 1.0;
+            }
             out[i + n * j] = s;
         }
     }
@@ -843,10 +1139,14 @@ fn timing_stats(times_ms: &[f64]) -> (f64, f64, f64, f64, f64) {
     let n = times_ms.len();
     let mut s = times_ms.to_vec();
     s.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    let first  = times_ms[0];
-    let median = if n % 2 == 0 { (s[n / 2 - 1] + s[n / 2]) / 2.0 } else { s[n / 2] };
-    let min_t  = s[0];
-    let p95    = s[(n as f64 * 0.95) as usize].min(*s.last().unwrap());
+    let first = times_ms[0];
+    let median = if n % 2 == 0 {
+        (s[n / 2 - 1] + s[n / 2]) / 2.0
+    } else {
+        s[n / 2]
+    };
+    let min_t = s[0];
+    let p95 = s[(n as f64 * 0.95) as usize].min(*s.last().unwrap());
     let q1 = s[((n as f64 * 0.25) as usize).max(0)];
     let q3 = s[((n as f64 * 0.75) as usize).min(n - 1)];
     (first, median, min_t, p95, q3 - q1)
@@ -857,13 +1157,24 @@ fn timing_stats(times_ms: &[f64]) -> (f64, f64, f64, f64, f64) {
 // ---------------------------------------------------------------------------
 
 fn stub(
-    suite_id: &str, problem: &serde_yaml::Value, backend: &str,
-    device_ordinal: usize, status: &str, reason: &str, path: &str,
-    _ts: &str, _bc: Option<&str>, _tc: Option<&str>,
+    suite_id: &str,
+    problem: &serde_yaml::Value,
+    backend: &str,
+    device_ordinal: usize,
+    status: &str,
+    reason: &str,
+    path: &str,
+    _ts: &str,
+    _bc: Option<&str>,
+    _tc: Option<&str>,
 ) -> Value {
     let pid = problem["id"].as_str().unwrap_or("");
-    let op  = problem["op"].as_str().unwrap_or("");
-    let ver_status = if status == "verification_failed" { "failed" } else { "skipped" };
+    let op = problem["op"].as_str().unwrap_or("");
+    let ver_status = if status == "verification_failed" {
+        "failed"
+    } else {
+        "skipped"
+    };
     json!({
         "schema_version": 1,
         "suite_id": suite_id,
@@ -894,17 +1205,26 @@ fn stub(
 
 #[allow(clippy::too_many_arguments)]
 fn ok_record(
-    suite_id: &str, problem: &serde_yaml::Value, backend: &str,
-    device_ordinal: usize, path: &str,
-    n_warmup: usize, n_runs: usize,
+    suite_id: &str,
+    problem: &serde_yaml::Value,
+    backend: &str,
+    device_ordinal: usize,
+    path: &str,
+    n_warmup: usize,
+    n_runs: usize,
     stats: (f64, f64, f64, f64, f64),
-    ver_status: &str, max_abs: Option<f64>, max_rel: Option<f64>,
-    rtol: f64, atol: f64,
-    _ts: &str, _bc: Option<&str>, _tc: Option<&str>,
+    ver_status: &str,
+    max_abs: Option<f64>,
+    max_rel: Option<f64>,
+    rtol: f64,
+    atol: f64,
+    _ts: &str,
+    _bc: Option<&str>,
+    _tc: Option<&str>,
 ) -> Value {
     let (first, median, min_t, p95, iqr) = stats;
     let pid = problem["id"].as_str().unwrap_or("");
-    let op  = problem["op"].as_str().unwrap_or("");
+    let op = problem["op"].as_str().unwrap_or("");
     json!({
         "schema_version": 1,
         "suite_id": suite_id,
@@ -957,7 +1277,11 @@ fn tenferro_notes(op: &str) -> &'static str {
 
 fn yaml_str_list(v: &serde_yaml::Value) -> Vec<String> {
     v.as_sequence()
-        .map(|s| s.iter().filter_map(|x| x.as_str().map(String::from)).collect())
+        .map(|s| {
+            s.iter()
+                .filter_map(|x| x.as_str().map(String::from))
+                .collect()
+        })
         .unwrap_or_default()
 }
 
@@ -979,7 +1303,11 @@ fn yaml_usize(v: &serde_yaml::Value, default: usize) -> usize {
 }
 
 fn yshape3(v: &serde_yaml::Value, a: &str, b: &str, c: &str) -> (usize, usize, usize) {
-    (yaml_usize(&v[a], 64), yaml_usize(&v[b], 64), yaml_usize(&v[c], 64))
+    (
+        yaml_usize(&v[a], 64),
+        yaml_usize(&v[b], 64),
+        yaml_usize(&v[c], 64),
+    )
 }
 
 fn yaml_shapes(p: &serde_yaml::Value) -> Vec<Vec<usize>> {
@@ -1003,8 +1331,7 @@ fn layout_str(p: &serde_yaml::Value) -> String {
 }
 
 fn dtype_str(p: &serde_yaml::Value) -> String {
-    serde_json::to_string(&serde_json::json!(p["dtype"].as_str().unwrap_or("")))
-        .unwrap_or_default()
+    serde_json::to_string(&serde_json::json!(p["dtype"].as_str().unwrap_or(""))).unwrap_or_default()
 }
 
 fn git_commit(path: &str) -> Option<String> {

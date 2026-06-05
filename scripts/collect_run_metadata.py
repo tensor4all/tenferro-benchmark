@@ -25,6 +25,7 @@ ENV_KEYS = (
     "OMP_DYNAMIC",
     "RAYON_NUM_THREADS",
     "TENFERRO_CPU_BACKEND_KIND",
+    "TENFERRO_OPT_DOT_DECOMPOSER",
     "OPENBLAS_ROOT",
     "OPENBLAS_NUM_THREADS",
     "GOTO_NUM_THREADS",
@@ -257,6 +258,14 @@ def detect_provider(*parts: str | None) -> str:
     return "none_detected"
 
 
+def jax_xla_backend_name(backend: Any) -> str:
+    value = non_empty_or_none(str(backend)) if backend is not None else None
+    if value is None:
+        return "xla_unknown"
+    normalized = re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
+    return f"xla_{normalized}" if normalized else "xla_unknown"
+
+
 def torch_config_value(config: str, key: str) -> str | None:
     match = re.search(rf"\b{re.escape(key)}=([^,\n]+)", config)
     if match:
@@ -355,18 +364,21 @@ except Exception as exc:
 
     libraries = [str(path) for path in info.get("libraries", []) if isinstance(path, str)]
     deps = relevant_linked_libraries(libraries)
-    provider = detect_provider("\n".join(deps))
+    lapack_provider = detect_provider("\n".join(deps))
     version = info.get("version")
     jaxlib_version = info.get("jaxlib_version")
     backend = info.get("backend")
     file_path = info.get("file")
+    dot_backend = jax_xla_backend_name(backend)
     return {
         "available": True,
         "version": non_empty_or_none(str(version)) if version is not None else None,
         "jaxlib_version": non_empty_or_none(str(jaxlib_version)) if jaxlib_version is not None else None,
         "backend": non_empty_or_none(str(backend)) if backend is not None else None,
         "file": non_empty_or_none(str(file_path)) if file_path is not None else None,
-        "provider": provider,
+        "provider": dot_backend,
+        "dot_backend": dot_backend,
+        "lapack_provider": lapack_provider,
         "library": libraries[0] if libraries else None,
         "linked_libraries": deps,
     }

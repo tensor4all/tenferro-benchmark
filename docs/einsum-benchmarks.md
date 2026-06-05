@@ -64,6 +64,10 @@ For PR884 CPU benchmark items, `scripts/run_cpu_ops.sh` writes tenferro-rs
 eager and trace rows from `publication_gate`, then appends Torch C++, PyTorch
 Python, and JAX Python measurements to the same normalized CSV.
 
+JAX CPU einsum rows use JAX's XLA CPU dot backend. They are not labeled as
+Accelerate/OpenBLAS/MKL BLAS provider rows even when PyTorch and tenferro are
+linked to an external BLAS provider.
+
 The script sets `OMP_NUM_THREADS` and `RAYON_NUM_THREADS` to the given thread count. Raw logs, run metadata, and timestamped intermediate tables are saved to `data/results/cpu/einsum/<timestamp>/`. The latest human-facing reports are written to:
 
 - `result/cpu/einsum.md`
@@ -72,7 +76,7 @@ The script sets `OMP_NUM_THREADS` and `RAYON_NUM_THREADS` to the given thread co
 Verify the generated report columns with:
 
 ```bash
-rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
+rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|XLA CPU|tenferro-rs" \
   result/cpu/einsum.md result/cpu/cpu_ops.md
 ```
 
@@ -119,6 +123,7 @@ For bottleneck investigation, this repo includes a small binary-only set:
 
 - `bin_matmul_256` (`ij,jk->ik`)
 - `bin_batched_matmul_b32_m64_n64_k64` (`bij,bjk->bik`)
+- `bin_batched_matmul_b32_m128_n128_k128` (`bij,bjk->bik`)
 - `bin_outer_product_4096` (`i,j->ij`)
 - `bin_elementwise_mul_2048x2048` (`ij,ij->ij`)
 
@@ -201,6 +206,7 @@ Instances are from the [einsum benchmark](https://benchmark.einsum.org/) suite. 
 |----------|----------|--------:|------:|-------------:|------------:|
 | `bin_matmul_256` | Binary (diagnostic) | 2 | 1 | — | — |
 | `bin_batched_matmul_b32_m64_n64_k64` | Binary (diagnostic) | 2 | 1 | — | — |
+| `bin_batched_matmul_b32_m128_n128_k128` | Binary (diagnostic) | 2 | 1 | 7.83 | 19.0 |
 | `bin_outer_product_4096` | Binary (diagnostic) | 2 | 1 | — | — |
 | `bin_elementwise_mul_2048x2048` | Binary (diagnostic) | 2 | 1 | — | — |
 | `nary_matmul_chain_64` | N-ary (diagnostic) | 3 | 2 | 5.24 | 12.0 |

@@ -3682,7 +3682,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "strided-kernel"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=ea37986f4d9cb99cfc1f62a1d4aea561cb3a9722#ea37986f4d9cb99cfc1f62a1d4aea561cb3a9722"
+source = "git+https://github.com/tensor4all/strided-rs?rev=f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54#f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3694,7 +3694,7 @@ dependencies = [
 [[package]]
 name = "strided-perm"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=ea37986f4d9cb99cfc1f62a1d4aea561cb3a9722#ea37986f4d9cb99cfc1f62a1d4aea561cb3a9722"
+source = "git+https://github.com/tensor4all/strided-rs?rev=f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54#f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54"
 dependencies = [
  "strided-view",
 ]
@@ -3702,7 +3702,7 @@ dependencies = [
 [[package]]
 name = "strided-traits"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=ea37986f4d9cb99cfc1f62a1d4aea561cb3a9722#ea37986f4d9cb99cfc1f62a1d4aea561cb3a9722"
+source = "git+https://github.com/tensor4all/strided-rs?rev=f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54#f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3711,7 +3711,7 @@ dependencies = [
 [[package]]
 name = "strided-view"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=ea37986f4d9cb99cfc1f62a1d4aea561cb3a9722#ea37986f4d9cb99cfc1f62a1d4aea561cb3a9722"
+source = "git+https://github.com/tensor4all/strided-rs?rev=f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54#f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3858,6 +3858,7 @@ dependencies = [
  "computegraph",
  "lru",
  "omeco",
+ "smallvec",
  "tenferro-ad",
  "tenferro-cpu",
  "tenferro-internal-extension-macros",
@@ -3955,6 +3956,7 @@ dependencies = [
  "lru",
  "num-complex",
  "num-traits",
+ "smallvec",
  "tenferro-core-ops",
  "tenferro-internal-ops",
  "tenferro-tensor",

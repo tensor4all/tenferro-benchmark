@@ -34,7 +34,7 @@ Logs:
 
 Median ± IQR (ms). OMP_NUM_THREADS=1, RAYON_NUM_THREADS=1.
 
-| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|---:|
 | bin_batched_matmul_b32_m64_n64_k64 | 3.322 ± 0.157 | 2.496 ± 0.172 | 0.745 ± 0.003 | **0.536 ± 0.009** | 1.352 ± 0.062 |
 | bin_elementwise_mul_2048x2048 | 95.368 ± 2.000 | 73.649 ± 1.182 | 18.497 ± 0.432 | 20.851 ± 0.416 | **14.103 ± 1.010** |
@@ -55,7 +55,7 @@ Median ± IQR (ms). OMP_NUM_THREADS=1, RAYON_NUM_THREADS=1.
 
 Median ± IQR (ms). OMP_NUM_THREADS=1, RAYON_NUM_THREADS=1.
 
-| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|---:|
 | bin_batched_matmul_b32_m64_n64_k64 | 2.113 ± 0.089 | 2.019 ± 0.036 | 0.739 ± 0.040 | **0.550 ± 0.011** | 1.489 ± 0.035 |
 | bin_elementwise_mul_2048x2048 | 69.589 ± 0.441 | 73.707 ± 1.136 | 18.275 ± 0.298 | 19.997 ± 0.204 | **6.206 ± 0.615** |
@@ -90,7 +90,7 @@ Logs:
 
 Median ± IQR (ms). OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
 
-| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|---:|
 | bin_batched_matmul_b32_m64_n64_k64 | 3.784 ± 0.296 | 3.434 ± 0.106 | 0.785 ± 0.060 | **0.287 ± 0.013** | 0.771 ± 0.045 |
 | bin_elementwise_mul_2048x2048 | 96.026 ± 1.627 | 75.774 ± 0.576 | **7.100 ± 0.288** | 8.415 ± 0.252 | 13.973 ± 1.023 |
@@ -111,7 +111,7 @@ Median ± IQR (ms). OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
 
 Median ± IQR (ms). OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
 
-| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|---:|
 | bin_batched_matmul_b32_m64_n64_k64 | 2.915 ± 0.088 | 2.895 ± 0.069 | 0.833 ± 0.016 | **0.277 ± 0.031** | 1.513 ± 0.033 |
 | bin_elementwise_mul_2048x2048 | 96.321 ± 3.244 | 75.754 ± 0.961 | 7.237 ± 0.182 | 8.921 ± 0.315 | **6.874 ± 0.336** |

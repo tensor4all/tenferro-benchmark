@@ -30,7 +30,7 @@ Logs:
 
 Median ± IQR (ms). Missing backends are shown as `-`.
 
-| suite | benchmark | dtype | threads | shape | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |
+| suite | benchmark | dtype | threads | shape | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) |
 |---|---|---:|---:|---|---:|---:|---:|---:|---:|
 | batched | `batched_eigh` | f64 | 1 | `2x2xbatch16 (native batch layout)` | 0.022 ± 0.000 | 0.019 ± 0.000 | 0.589 ± 0.013 | 0.551 ± 0.024 | 1.722 ± 0.044 |
 | batched | `batched_eigh` | f64 | 1 | `2x2xbatch64 (native batch layout)` | 0.085 ± 0.000 | 0.069 ± 0.000 | 2.286 ± 0.027 | 1.824 ± 0.040 | 6.148 ± 0.060 |
@@ -117,7 +117,7 @@ Logs:
 
 Median ± IQR (ms). Missing backends are shown as `-`.
 
-| suite | benchmark | dtype | threads | shape | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |
+| suite | benchmark | dtype | threads | shape | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) |
 |---|---|---:|---:|---|---:|---:|---:|---:|---:|
 | batched | `batched_eigh` | f64 | 4 | `2x2xbatch16 (native batch layout)` | 0.026 ± 0.000 | 0.029 ± 0.000 | 0.683 ± 0.060 | 0.611 ± 0.107 | 1.557 ± 0.014 |
 | batched | `batched_eigh` | f64 | 4 | `2x2xbatch64 (native batch layout)` | 0.095 ± 0.002 | 0.097 ± 0.001 | 2.272 ± 0.081 | 1.994 ± 0.041 | 5.118 ± 0.060 |

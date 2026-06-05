@@ -1,0 +1,15 @@
+{
+  "name": "bin_batched_outer_product_noncompact_j16_k16_o64_t64",
+  "intent": "Binary batched outer-product diagnostic for the non-compact strided-kernel path: C[j,k,o,t] = A[k,j,t] * B[o,t], so lhs free axes require a metadata permutation.",
+  "notes": "The lhs free group is intentionally non-compact after metadata alignment; this fixes coverage for the strided fallback rather than the compact fast path.",
+  "format_string": "tjk,to->tokj",
+  "shapes": [[64, 16, 16], [64, 64]],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {"path": [[0, 1]], "log2_size": 20.0, "log10_flops": 6.0206},
+    "opt_flops": {"path": [[0, 1]], "log2_size": 20.0, "log10_flops": 6.0206}
+  },
+  "format_string_colmajor": "kjt,ot->jkot",
+  "shapes_colmajor": [[16, 16, 64], [64, 64]]
+}

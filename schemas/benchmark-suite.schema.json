@@ -155,6 +155,7 @@
       "properties": {
         "id": { "type": "string", "minLength": 1 },
         "intent": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string", "minLength": 1 },
         "family": { "enum": ["dense", "sparse", "einsum"] },
         "op": {
           "enum": [

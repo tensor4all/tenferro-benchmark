@@ -3,7 +3,8 @@
 # Shared CPU BLAS provider policy for benchmark runners.
 #
 # macOS uses Accelerate for BLAS-backed tenferro CPU benchmarks so the Rust
-# backend matches the BLAS provider used by the standard PyTorch/JAX wheels.
+# backend matches the BLAS provider used by the standard PyTorch wheel. JAX CPU
+# dot is reported separately as an XLA CPU backend.
 # Linux keeps the existing OpenBLAS default.
 
 benchmark_host_os() {

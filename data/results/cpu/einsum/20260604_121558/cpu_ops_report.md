@@ -37,12 +37,12 @@ This file is generated from one CPU ops run under `data/results/cpu/einsum/20260
 - BLIS_NUM_THREADS: `1`
 - XLA_FLAGS: `--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1`
 
-## Python Backend BLAS Providers
+## Python Backend Providers
 
-- PyTorch: provider `accelerate`, version `2.12.0`, BLAS_INFO `accelerate`, LAPACK_INFO `accelerate`
+- PyTorch: BLAS provider `accelerate`, version `2.12.0`, BLAS_INFO `accelerate`, LAPACK_INFO `accelerate`
   - linked BLAS/LAPACK libs: `/System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate`; `@rpath/libomp.dylib`
-- JAX: provider `internal_lapack`, version `0.10.1`, backend `cpu`
-  - linked BLAS/LAPACK libs: `bazel-out/darwin_arm64-opt/bin/jaxlib/cpu/_lapack.so`
+- JAX: dot backend `xla_cpu`, version `0.10.1`, jaxlib `0.10.1`, default backend `cpu`, LAPACK provider `internal_lapack`
+  - linked LAPACK libs: `bazel-out/darwin_arm64-opt/bin/jaxlib/cpu/_lapack.so`
 
 ## Threads: 1
 
@@ -53,7 +53,7 @@ This file is generated from one CPU ops run under `data/results/cpu/einsum/20260
 
 Median ± IQR (ms). Missing backends are shown as `-`.
 
-| suite | benchmark | dtype | threads | shape | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |
+| suite | benchmark | dtype | threads | shape | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) |
 |---|---|---:|---:|---|---:|---:|---:|---:|---:|
 | batched | `batched_eigh` | f64 | 1 | `2x2xbatch16 (native batch layout)` | 0.011 ± 0.000 | 0.009 ± 0.000 | - | 0.111 ± 0.002 | 0.144 ± 0.012 |
 | batched | `batched_eigh` | f64 | 1 | `2x2xbatch64 (native batch layout)` | 0.036 ± 0.000 | 0.030 ± 0.000 | - | 0.393 ± 0.002 | 0.488 ± 0.119 |

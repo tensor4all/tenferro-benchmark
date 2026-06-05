@@ -39,12 +39,12 @@ This file is generated from one suite run under `data/results/cpu/einsum/2026060
 - BLIS_NUM_THREADS: `1`
 - XLA_FLAGS: `--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1`
 
-## Python Backend BLAS Providers
+## Python Backend Providers
 
-- PyTorch: provider `accelerate`, version `2.12.0`, BLAS_INFO `accelerate`, LAPACK_INFO `accelerate`
+- PyTorch: BLAS provider `accelerate`, version `2.12.0`, BLAS_INFO `accelerate`, LAPACK_INFO `accelerate`
   - linked BLAS/LAPACK libs: `/System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate`; `@rpath/libomp.dylib`
-- JAX: provider `internal_lapack`, version `0.10.1`, backend `cpu`
-  - linked BLAS/LAPACK libs: `bazel-out/darwin_arm64-opt/bin/jaxlib/cpu/_lapack.so`
+- JAX: dot backend `xla_cpu`, version `0.10.1`, jaxlib `0.10.1`, default backend `cpu`, LAPACK provider `internal_lapack`
+  - linked LAPACK libs: `bazel-out/darwin_arm64-opt/bin/jaxlib/cpu/_lapack.so`
 
 ## Threads: 1
 
@@ -61,7 +61,7 @@ Logs:
 
 Median ± IQR (ms). OMP_NUM_THREADS=1, RAYON_NUM_THREADS=1.
 
-| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|---:|
 | bin_batched_matmul_b32_m64_n64_k64 | 0.609 ± 0.075 | 0.443 ± 0.080 | - | **0.140 ± 0.003** | 0.243 ± 0.028 |
 | bin_elementwise_mul_2048x2048 | 3.893 ± 0.064 | 3.193 ± 0.031 | - | 1.247 ± 0.009 | **0.924 ± 0.048** |
@@ -83,7 +83,7 @@ Median ± IQR (ms). OMP_NUM_THREADS=1, RAYON_NUM_THREADS=1.
 
 Median ± IQR (ms). OMP_NUM_THREADS=1, RAYON_NUM_THREADS=1.
 
-| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (ms) |
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | Torch C++ (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|---:|
 | bin_batched_matmul_b32_m64_n64_k64 | 0.271 ± 0.007 | 0.246 ± 0.030 | - | **0.141 ± 0.001** | 0.204 ± 0.021 |
 | bin_elementwise_mul_2048x2048 | 3.855 ± 0.025 | 3.237 ± 0.071 | - | 1.277 ± 0.043 | **0.863 ± 0.029** |

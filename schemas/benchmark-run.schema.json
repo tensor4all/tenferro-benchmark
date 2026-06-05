@@ -108,10 +108,9 @@
         "jaxlib_version": { "type": ["string", "null"], "minLength": 1 },
         "backend": { "type": ["string", "null"], "minLength": 1 },
         "file": { "type": ["string", "null"], "minLength": 1 },
-        "provider": {
-          "type": ["string", "null"],
-          "enum": ["openblas", "accelerate", "mkl", "internal_lapack", "blas_lapack", "none_detected", null]
-        },
+        "provider": { "$ref": "#/$defs/provider_name" },
+        "dot_backend": { "$ref": "#/$defs/xla_backend_name" },
+        "lapack_provider": { "$ref": "#/$defs/provider_name" },
         "blas_info": { "type": ["string", "null"], "minLength": 1 },
         "lapack_info": { "type": ["string", "null"], "minLength": 1 },
         "library": { "type": ["string", "null"], "minLength": 1 },
@@ -121,6 +120,28 @@
         },
         "reason": { "type": ["string", "null"], "minLength": 1 }
       }
+    },
+    "provider_name": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["openblas", "accelerate", "mkl", "internal_lapack", "blas_lapack", "none_detected"]
+        },
+        {
+          "type": "string",
+          "pattern": "^xla_[a-z0-9_]+$"
+        },
+        { "type": "null" }
+      ]
+    },
+    "xla_backend_name": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^xla_[a-z0-9_]+$"
+        },
+        { "type": "null" }
+      ]
     },
     "cuda": {
       "type": "object",

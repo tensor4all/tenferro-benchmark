@@ -111,7 +111,7 @@ write_thread_env_section() {
 
 write_python_backend_section() {
     local run_yaml="$1"
-    echo "## Python Backend BLAS Providers"
+    echo "## Python Backend Providers"
     echo ""
     run_python_script - "$run_yaml" <<'PY'
 import sys
@@ -145,17 +145,28 @@ for key in ("pytorch", "jax"):
         continue
     provider = info.get("provider") or "unknown"
     version = info.get("version") or "unknown"
-    details = [f"provider `{provider}`", f"version `{version}`"]
-    if info.get("blas_info"):
-        details.append(f"BLAS_INFO `{info['blas_info']}`")
-    if info.get("lapack_info"):
-        details.append(f"LAPACK_INFO `{info['lapack_info']}`")
-    if info.get("backend"):
-        details.append(f"backend `{info['backend']}`")
+    if key == "jax":
+        dot_backend = info.get("dot_backend") or provider
+        details = [f"dot backend `{dot_backend}`", f"version `{version}`"]
+        if info.get("jaxlib_version"):
+            details.append(f"jaxlib `{info['jaxlib_version']}`")
+        if info.get("backend"):
+            details.append(f"default backend `{info['backend']}`")
+        if info.get("lapack_provider"):
+            details.append(f"LAPACK provider `{info['lapack_provider']}`")
+    else:
+        details = [f"BLAS provider `{provider}`", f"version `{version}`"]
+        if info.get("blas_info"):
+            details.append(f"BLAS_INFO `{info['blas_info']}`")
+        if info.get("lapack_info"):
+            details.append(f"LAPACK_INFO `{info['lapack_info']}`")
+        if info.get("backend"):
+            details.append(f"backend `{info['backend']}`")
     print(f"- {label}: " + ", ".join(details))
     deps = info.get("linked_libraries") or []
     if deps:
-        print("  - linked BLAS/LAPACK libs: " + "; ".join(f"`{dep}`" for dep in deps))
+        dep_label = "linked LAPACK libs" if key == "jax" else "linked BLAS/LAPACK libs"
+        print(f"  - {dep_label}: " + "; ".join(f"`{dep}`" for dep in deps))
 PY
 }
 

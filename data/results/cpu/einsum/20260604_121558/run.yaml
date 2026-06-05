@@ -48,7 +48,9 @@ python_backends:
     jaxlib_version: 0.10.1
     backend: cpu
     file: /Users/hiroshi/.config/superpowers/worktrees/tenferro-benchmark/suite-result-layout/.venv/lib/python3.12/site-packages/jaxlib/__init__.py
-    provider: internal_lapack
+    provider: xla_cpu
+    dot_backend: xla_cpu
+    lapack_provider: internal_lapack
     library: /Users/hiroshi/.config/superpowers/worktrees/tenferro-benchmark/suite-result-layout/.venv/lib/python3.12/site-packages/jaxlib/_ifrt_proxy.so
     linked_libraries:
     - bazel-out/darwin_arm64-opt/bin/jaxlib/cpu/_lapack.so

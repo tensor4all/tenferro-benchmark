@@ -1,5 +1,6 @@
 {
   "name": "str_nw_mera_open_26",
+  "intent": "N-ary open MERA einsum diagnostic with a large permuted output; PyTorch CPU timings intentionally keep PyTorch's default output materialization semantics so final lazy views can show up in the comparison.",
   "format_string": "ab,acg,bdh,cek,dft,ewP,fJQ,ghij,ilo,jps,klmn,mxy,nqzA,opqr,ruBC,stuv,vDE,wxÁ,yzÂ,ABÃ,CDÄ,EFÅ,FG,GHÇ,HI,IJÉ->PQÁÂÃÄÅÇÉ",
   "shapes": [
     [
