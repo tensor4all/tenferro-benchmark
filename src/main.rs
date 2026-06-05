@@ -203,7 +203,7 @@ impl TenferroMode {
 
     fn timing_note(self) -> &'static str {
         match self {
-            Self::Trace => "graph compiled once",
+            Self::Trace => "graph compiled once, output TensorValue preserves final lazy views",
             Self::Eager => "precomputed path, eager binary contractions",
         }
     }
@@ -333,11 +333,11 @@ fn run_instance_trace(
     // Use catch_unwind to handle panics from unsupported layouts
     for _ in 0..NUM_WARMUPS {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            executor.run_many_with_input_reads(program, &bindings)
+            executor.run_many_values_with_input_reads(program, &bindings)
         }));
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
         black_box(&eval);
-        executor.reclaim_outputs(eval);
+        executor.reclaim_value_outputs(eval);
     }
 
     // Timed runs
@@ -345,12 +345,12 @@ fn run_instance_trace(
     for _ in 0..NUM_RUNS {
         let t0 = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            executor.run_many_with_input_reads(program, &bindings)
+            executor.run_many_values_with_input_reads(program, &bindings)
         }));
         let elapsed = t0.elapsed();
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
         black_box(&eval);
-        executor.reclaim_outputs(eval);
+        executor.reclaim_value_outputs(eval);
         durations.push(elapsed);
     }
 
@@ -391,12 +391,12 @@ fn run_instance_trace(
         for _ in 0..NUM_RUNS {
             let started = Instant::now();
             let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-                executor.run_many_with_input_reads(program, &bindings)
+                executor.run_many_values_with_input_reads(program, &bindings)
             }));
             let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
             executor_run.push(started.elapsed());
             black_box(&eval);
-            executor.reclaim_outputs(eval);
+            executor.reclaim_value_outputs(eval);
         }
         print_breakdown(
             "tenferro-trace",
