@@ -48,6 +48,19 @@ struct PathMeta {
     log10_flops: f64,
 }
 
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+struct StrategyCacheKey {
+    instance_name: String,
+    path: Vec<[usize; 2]>,
+}
+
+fn strategy_cache_key(instance: &BenchmarkInstance, path_meta: &PathMeta) -> StrategyCacheKey {
+    StrategyCacheKey {
+        instance_name: instance.name.clone(),
+        path: path_meta.path.clone(),
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Contraction path conversion
 // ---------------------------------------------------------------------------
@@ -671,6 +684,10 @@ fn main() {
         ("opt_flops", |p| &p.opt_flops),
         ("opt_size", |p| &p.opt_size),
     ];
+    let mut measured_by_path: HashMap<
+        StrategyCacheKey,
+        Result<(Duration, Duration, Duration), String>,
+    > = HashMap::new();
 
     for &(strategy_name, get_path) in strategies {
         println!();
@@ -690,7 +707,19 @@ fn main() {
         for (i, instance) in instances.iter().enumerate() {
             eprintln!("  [{}/{}] {}...", i + 1, instances.len(), instance.name);
             let path_meta = get_path(&instance.paths);
-            match run_instance(mode, instance, path_meta, strategy_name) {
+            let cache_key = strategy_cache_key(instance, path_meta);
+            let result = if let Some(cached) = measured_by_path.get(&cache_key) {
+                eprintln!(
+                    "  -> {} strategy={strategy_name}: reusing previous measurement for identical path",
+                    instance.name
+                );
+                cached.clone()
+            } else {
+                let measured = run_instance(mode, instance, path_meta, strategy_name);
+                measured_by_path.insert(cache_key, measured.clone());
+                measured
+            };
+            match result {
                 Ok((median, iqr, compile_time)) => {
                     println!(
                         "{:<50} {:>8} {:>10.2} {:>12.2} {:>12.3} {:>10.3} {:>12.3}",
@@ -718,5 +747,60 @@ fn main() {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_instance(name: &str) -> BenchmarkInstance {
+        BenchmarkInstance {
+            name: name.to_string(),
+            format_string_colmajor: "ji,kj->ki".to_string(),
+            shapes_colmajor: vec![vec![2, 2], vec![2, 2]],
+            dtype: "float64".to_string(),
+            num_tensors: 2,
+            paths: PathInfo {
+                opt_size: PathMeta {
+                    path: vec![[0, 1]],
+                    log2_size: 2.0,
+                    log10_flops: 1.0,
+                },
+                opt_flops: PathMeta {
+                    path: vec![[0, 1]],
+                    log2_size: 2.0,
+                    log10_flops: 1.0,
+                },
+            },
+        }
+    }
+
+    #[test]
+    fn strategy_cache_key_uses_instance_name_and_exact_path() {
+        let instance = test_instance("bin_matmul_1024");
+        let same_path_different_metadata = PathMeta {
+            path: vec![[0, 1]],
+            log2_size: 99.0,
+            log10_flops: 88.0,
+        };
+        let different_path = PathMeta {
+            path: vec![[1, 0]],
+            log2_size: 2.0,
+            log10_flops: 1.0,
+        };
+
+        assert_eq!(
+            strategy_cache_key(&instance, &instance.paths.opt_flops),
+            strategy_cache_key(&instance, &same_path_different_metadata)
+        );
+        assert_ne!(
+            strategy_cache_key(&instance, &instance.paths.opt_flops),
+            strategy_cache_key(&instance, &different_path)
+        );
+        assert_ne!(
+            strategy_cache_key(&instance, &instance.paths.opt_flops),
+            strategy_cache_key(&test_instance("other"), &instance.paths.opt_flops)
+        );
     }
 }

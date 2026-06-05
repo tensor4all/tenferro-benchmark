@@ -122,6 +122,14 @@ def compute_stats(times_ms: list[float]) -> tuple[float, float]:
     return median, iqr
 
 
+def strategy_cache_key(instance: dict, path_meta: dict) -> tuple[str, tuple[tuple[int, int], ...]]:
+    """Return a key for identical physical contractions within one backend run."""
+    return (
+        instance["name"],
+        tuple(tuple(pair) for pair in path_meta["path"]),
+    )
+
+
 def configure_thread_env(num_threads: int) -> None:
     value = str(num_threads)
     xla_multi_thread = "true" if num_threads > 1 else "false"
@@ -301,6 +309,10 @@ def main() -> None:
 
     strategies = ["opt_flops", "opt_size"]
     col_w = 106  # separator width (no Compile column)
+    measured_by_path: dict[
+        tuple[str, tuple[tuple[int, int], ...]],
+        tuple[tuple[float, float] | None, str | None],
+    ] = {}
 
     for strategy in strategies:
         print()
@@ -323,10 +335,21 @@ def main() -> None:
                 file=sys.stderr,
             )
 
-            if args.backend == "pytorch":
-                result, err = benchmark_pytorch(instance, strategy, num_threads)
+            cache_key = strategy_cache_key(instance, path_meta)
+            cached = measured_by_path.get(cache_key)
+            if cached is not None:
+                print(
+                    f"  -> {name} strategy={strategy}: "
+                    "reusing previous measurement for identical path",
+                    file=sys.stderr,
+                )
+                result, err = cached
             else:
-                result, err = benchmark_jax(instance, strategy)
+                if args.backend == "pytorch":
+                    result, err = benchmark_pytorch(instance, strategy, num_threads)
+                else:
+                    result, err = benchmark_jax(instance, strategy)
+                measured_by_path[cache_key] = (result, err)
 
             if result is None:
                 print(f"  -> {name} (error: {err})", file=sys.stderr)

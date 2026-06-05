@@ -48,6 +48,12 @@ struct Stats {
     double iqr_ms = 0.0;
 };
 
+struct CachedStats {
+    bool ok = false;
+    Stats stats;
+    std::string error;
+};
+
 std::string getenv_or(const char* name, const std::string& fallback) {
     const char* value = std::getenv(name);
     return value == nullptr ? fallback : std::string(value);
@@ -391,10 +397,23 @@ Stats benchmark_instance(const Instance& instance, const PathMeta& path_meta) {
     return compute_stats(std::move(times_ms));
 }
 
+std::string strategy_cache_key(const Instance& instance, const PathMeta& path_meta) {
+    std::string key = instance.name;
+    key.push_back('|');
+    for (const auto& [lhs, rhs] : path_meta.path) {
+        key += std::to_string(lhs);
+        key.push_back(',');
+        key += std::to_string(rhs);
+        key.push_back(';');
+    }
+    return key;
+}
+
 void print_strategy(
     const std::string& strategy,
     const std::vector<Instance>& instances,
-    const PathMeta& (*select_path)(const Instance&)
+    const PathMeta& (*select_path)(const Instance&),
+    std::unordered_map<std::string, CachedStats>& measured_by_path
 ) {
     constexpr int col_w = 106;
     std::cout << "\nStrategy: " << strategy << "\n";
@@ -412,17 +431,34 @@ void print_strategy(
         std::cerr << "  [" << (i + 1) << "/" << instances.size() << "] "
                   << instance.name << "...\n";
 
-        try {
-            const auto stats = benchmark_instance(instance, path_meta);
+        const auto cache_key = strategy_cache_key(instance, path_meta);
+        auto cached = measured_by_path.find(cache_key);
+        if (cached == measured_by_path.end()) {
+            CachedStats measured;
+            try {
+                measured.stats = benchmark_instance(instance, path_meta);
+                measured.ok = true;
+            } catch (const std::exception& exc) {
+                measured.ok = false;
+                measured.error = exc.what();
+            }
+            cached = measured_by_path.emplace(cache_key, std::move(measured)).first;
+        } else {
+            std::cerr << "  -> " << instance.name << " strategy=" << strategy
+                      << ": reusing previous measurement for identical path\n";
+        }
+
+        const auto& cached_stats = cached->second;
+        if (cached_stats.ok) {
             std::cout << std::left << std::setw(50) << instance.name
                       << std::right << std::setw(8) << instance.num_tensors
                       << std::setw(11) << std::fixed << std::setprecision(2) << path_meta.log10_flops
                       << std::setw(12) << std::fixed << std::setprecision(2) << path_meta.log2_size
-                      << std::setw(13) << std::fixed << std::setprecision(3) << stats.median_ms
-                      << std::setw(10) << std::fixed << std::setprecision(3) << stats.iqr_ms
+                      << std::setw(13) << std::fixed << std::setprecision(3) << cached_stats.stats.median_ms
+                      << std::setw(10) << std::fixed << std::setprecision(3) << cached_stats.stats.iqr_ms
                       << "\n";
-        } catch (const std::exception& exc) {
-            std::cerr << "  -> " << instance.name << " (error: " << exc.what() << ")\n";
+        } else {
+            std::cerr << "  -> " << instance.name << " (error: " << cached_stats.error << ")\n";
             std::cout << std::left << std::setw(50) << instance.name
                       << std::right << std::setw(8) << instance.num_tensors
                       << std::setw(11) << std::fixed << std::setprecision(2) << path_meta.log10_flops
@@ -468,7 +504,8 @@ int main() {
     std::cout << "Timing: median ± IQR of " << kNumRuns << " runs ("
               << kNumWarmup << " warmup), path precomputed\n";
 
-    print_strategy("opt_flops", instances, opt_flops);
-    print_strategy("opt_size", instances, opt_size);
+    std::unordered_map<std::string, CachedStats> measured_by_path;
+    print_strategy("opt_flops", instances, opt_flops, measured_by_path);
+    print_strategy("opt_size", instances, opt_size, measured_by_path);
     return 0;
 }
