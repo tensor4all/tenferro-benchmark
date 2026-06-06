@@ -81,9 +81,9 @@ rg -n "Torch C\\+\\+|PyTorch Python|JAX Python|XLA CPU|tenferro-rs" \
 ```
 
 Instance JSON files that fail to read or parse are skipped with a warning. Instances that trigger a backend error are reported as `SKIP` with the reason on stderr.
-Instance JSON files may include an optional top-level `intent` string. It is
-human-facing metadata for why the benchmark exists; runners ignore it for
-timing, result identity, and cache keys.
+Instance JSON files may include optional top-level `intent` and `notes`
+strings. They are human-facing metadata for why the benchmark exists and how to
+interpret it; runners ignore them for timing, result identity, and cache keys.
 
 ## Run PyTorch and JAX baselines
 
@@ -116,6 +116,45 @@ BENCH_INSTANCE=tensornetwork_permutation_light_415 ./scripts/run_all.sh 4
 ```
 
 Instance name must match the `name` field in the JSON, which is normally the filename without `.json`.
+
+The tenferro Rust runner emits `PathAnalysis` / `PathWarning` lines for
+contraction paths that create very large intermediates. These diagnostics are
+ignored by `scripts/format_results.py`; they are there to identify path-driven
+losses before considering kernel-level optimizations. Set
+`TENFERRO_ANALYZE_PATH=1` to print the same path summary for every instance and
+strategy, not only warning-sized paths.
+
+To classify the latest Markdown report after a run:
+
+```bash
+uv run python scripts/analyze_einsum_gaps.py \
+  --report result/cpu/einsum.md \
+  --instances data/instances \
+  --threshold 1.15
+```
+
+Rows above the threshold are labeled as `path_intermediate` when the
+precomputed contraction path creates warning-sized intermediates, otherwise
+`kernel_or_executor`. Ratio-only regressions whose absolute gap is below
+`--min-delta-ms` (default: `0.5`) are labeled `small_absolute_gap`, which keeps
+tiny microbenchmark differences from driving kernel work. Use this before
+starting tenferro-rs or strided-rs kernel work; it prevents optimizing a kernel
+for a benchmark that is actually dominated by path choice or too small in
+absolute time to justify a new specialized path.
+
+Current 1T reports should be triaged this way before adding more kernels:
+
+- `kernel_or_executor`: investigate implementation overhead first.
+- `path_intermediate`: compare contraction strategies or path planning first.
+- `small_absolute_gap`: do not optimize unless the gap also shows up in a
+  larger instance or another workload.
+
+For example, the current `gm_queen5_5_3.wcsp / opt_flops` row is a
+`path_intermediate` case. With `TENFERRO_ANALYZE_PATH=1`, the runner reports a
+rank-17 maximum intermediate, `129140163` maximum intermediate elements, and
+`592127821` total intermediate elements. The `opt_size` path uses the same
+instance but caps the maximum intermediate at `43046721` elements, so this is a
+path-selection signal rather than evidence for another einsum microkernel.
 
 ## Binary diagnostic instances
 

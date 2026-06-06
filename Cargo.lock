@@ -3680,9 +3680,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
+name = "strided-einsum2"
+version = "0.1.0"
+source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
+dependencies = [
+ "faer",
+ "faer-traits",
+ "num-traits",
+ "smallvec",
+ "strided-kernel",
+ "strided-perm",
+ "strided-traits",
+ "strided-view",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "strided-kernel"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54#f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54"
+source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3694,7 +3710,7 @@ dependencies = [
 [[package]]
 name = "strided-perm"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54#f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54"
+source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
 dependencies = [
  "strided-view",
 ]
@@ -3702,7 +3718,7 @@ dependencies = [
 [[package]]
 name = "strided-traits"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54#f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54"
+source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3711,7 +3727,7 @@ dependencies = [
 [[package]]
 name = "strided-view"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54#f3e5a7b63d53ec634c3a4ee9febb50f7d176ee54"
+source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3846,6 +3862,7 @@ dependencies = [
  "num-complex",
  "num-traits",
  "smallvec",
+ "strided-einsum2",
  "strided-kernel",
  "tenferro-tensor",
  "thiserror 2.0.18",

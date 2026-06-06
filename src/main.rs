@@ -172,6 +172,164 @@ fn print_breakdown(
     );
 }
 
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+struct PathAnalysis {
+    steps: usize,
+    dot_steps: usize,
+    outer_steps: usize,
+    broadcast_mul_steps: usize,
+    max_rank: usize,
+    max_intermediate_elements: usize,
+    total_intermediate_elements: usize,
+}
+
+impl PathAnalysis {
+    fn should_warn(&self) -> bool {
+        self.max_intermediate_elements >= 50_000_000
+            || self.total_intermediate_elements >= 200_000_000
+    }
+}
+
+fn path_analysis_verbose_enabled() -> bool {
+    std::env::var_os("TENFERRO_ANALYZE_PATH").is_some()
+}
+
+fn checked_shape_product(shape: &[usize]) -> Result<usize, String> {
+    shape.iter().try_fold(1usize, |acc, &dim| {
+        acc.checked_mul(dim)
+            .ok_or_else(|| "path analysis shape product overflow".to_string())
+    })
+}
+
+fn analyze_path(
+    instance: &BenchmarkInstance,
+    path_meta: &PathMeta,
+) -> Result<PathAnalysis, String> {
+    let parsed = Subscripts::parse(&instance.format_string_colmajor).map_err(|e| format!("{e}"))?;
+    if parsed.inputs.len() != instance.shapes_colmajor.len() {
+        return Err(format!(
+            "subscript/input shape count mismatch: {} labels vs {} shapes",
+            parsed.inputs.len(),
+            instance.shapes_colmajor.len()
+        ));
+    }
+
+    let mut labels = parsed.inputs;
+    let final_output = parsed.output;
+    let mut shapes = instance.shapes_colmajor.clone();
+    let mut analysis = PathAnalysis {
+        steps: path_meta.path.len(),
+        ..PathAnalysis::default()
+    };
+
+    for &[lhs_index, rhs_index] in &path_meta.path {
+        if lhs_index >= labels.len() || rhs_index >= labels.len() || lhs_index == rhs_index {
+            return Err("path analysis contraction index out of range".into());
+        }
+
+        let output_labels =
+            intermediate_output_labels(&labels, &final_output, lhs_index, rhs_index)?;
+        let lhs_labels = &labels[lhs_index];
+        let rhs_labels = &labels[rhs_index];
+
+        let lhs_set: HashSet<u32> = lhs_labels.iter().copied().collect();
+        let rhs_set: HashSet<u32> = rhs_labels.iter().copied().collect();
+        let output_set: HashSet<u32> = output_labels.iter().copied().collect();
+        let common_labels: Vec<u32> = lhs_set.intersection(&rhs_set).copied().collect();
+        let has_contracted = common_labels
+            .iter()
+            .any(|label| !output_set.contains(label));
+        if has_contracted {
+            analysis.dot_steps += 1;
+        } else if common_labels.is_empty() {
+            analysis.outer_steps += 1;
+        } else {
+            analysis.broadcast_mul_steps += 1;
+        }
+
+        let mut dim_by_label: HashMap<u32, usize> = HashMap::new();
+        for (&label, &dim) in lhs_labels.iter().zip(shapes[lhs_index].iter()) {
+            dim_by_label.insert(label, dim);
+        }
+        for (&label, &dim) in rhs_labels.iter().zip(shapes[rhs_index].iter()) {
+            if let Some(&existing) = dim_by_label.get(&label) {
+                if existing != dim {
+                    return Err(format!(
+                        "path analysis dimension mismatch for label {label}: {existing} vs {dim}"
+                    ));
+                }
+            } else {
+                dim_by_label.insert(label, dim);
+            }
+        }
+
+        let mut output_shape = Vec::with_capacity(output_labels.len());
+        for &label in &output_labels {
+            let dim = dim_by_label
+                .get(&label)
+                .copied()
+                .ok_or_else(|| format!("path analysis missing dimension for label {label}"))?;
+            output_shape.push(dim);
+        }
+        let output_elements = checked_shape_product(&output_shape)?;
+        analysis.max_rank = analysis.max_rank.max(output_shape.len());
+        analysis.max_intermediate_elements =
+            analysis.max_intermediate_elements.max(output_elements);
+        analysis.total_intermediate_elements = analysis
+            .total_intermediate_elements
+            .checked_add(output_elements)
+            .ok_or_else(|| "path analysis total intermediate overflow".to_string())?;
+
+        let first_remove = lhs_index.max(rhs_index);
+        let second_remove = lhs_index.min(rhs_index);
+        labels.remove(first_remove);
+        labels.remove(second_remove);
+        shapes.remove(first_remove);
+        shapes.remove(second_remove);
+        labels.push(output_labels);
+        shapes.push(output_shape);
+    }
+
+    Ok(analysis)
+}
+
+fn maybe_print_path_analysis(
+    instance: &BenchmarkInstance,
+    strategy_name: &str,
+    path_meta: &PathMeta,
+) {
+    match analyze_path(instance, path_meta) {
+        Ok(analysis) => {
+            if path_analysis_verbose_enabled() || analysis.should_warn() {
+                eprintln!(
+                    "PathAnalysis: instance={} strategy={} steps={} dot={} outer={} broadcast_mul={} max_rank={} max_intermediate_elements={} total_intermediate_elements={}",
+                    instance.name,
+                    strategy_name,
+                    analysis.steps,
+                    analysis.dot_steps,
+                    analysis.outer_steps,
+                    analysis.broadcast_mul_steps,
+                    analysis.max_rank,
+                    analysis.max_intermediate_elements,
+                    analysis.total_intermediate_elements,
+                );
+            }
+            if analysis.should_warn() {
+                eprintln!(
+                    "PathWarning: instance={} strategy={} large_intermediate=true; compare path strategies before adding kernel-level optimizations",
+                    instance.name, strategy_name
+                );
+            }
+        }
+        Err(err) => {
+            eprintln!(
+                "PathAnalysis: instance={} strategy={} status=error message={err}",
+                instance.name, strategy_name
+            );
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum TenferroMode {
     Trace,
@@ -707,6 +865,7 @@ fn main() {
         for (i, instance) in instances.iter().enumerate() {
             eprintln!("  [{}/{}] {}...", i + 1, instances.len(), instance.name);
             let path_meta = get_path(&instance.paths);
+            maybe_print_path_analysis(instance, strategy_name, path_meta);
             let cache_key = strategy_cache_key(instance, path_meta);
             let result = if let Some(cached) = measured_by_path.get(&cache_key) {
                 eprintln!(
@@ -754,26 +913,35 @@ fn main() {
 mod tests {
     use super::*;
 
-    fn test_instance(name: &str) -> BenchmarkInstance {
+    fn instance_with(
+        name: &str,
+        format_string_colmajor: &str,
+        shapes: Vec<Vec<usize>>,
+    ) -> BenchmarkInstance {
+        let path = vec![[0, 1]];
         BenchmarkInstance {
             name: name.to_string(),
-            format_string_colmajor: "ji,kj->ki".to_string(),
-            shapes_colmajor: vec![vec![2, 2], vec![2, 2]],
+            format_string_colmajor: format_string_colmajor.to_string(),
+            shapes_colmajor: shapes,
             dtype: "float64".to_string(),
             num_tensors: 2,
             paths: PathInfo {
                 opt_size: PathMeta {
-                    path: vec![[0, 1]],
+                    path: path.clone(),
                     log2_size: 2.0,
                     log10_flops: 1.0,
                 },
                 opt_flops: PathMeta {
-                    path: vec![[0, 1]],
+                    path,
                     log2_size: 2.0,
                     log10_flops: 1.0,
                 },
             },
         }
+    }
+
+    fn test_instance(name: &str) -> BenchmarkInstance {
+        instance_with(name, "ji,kj->ki", vec![vec![2, 2], vec![2, 2]])
     }
 
     #[test]
@@ -802,5 +970,48 @@ mod tests {
             strategy_cache_key(&instance, &instance.paths.opt_flops),
             strategy_cache_key(&test_instance("other"), &instance.paths.opt_flops)
         );
+    }
+
+    #[test]
+    fn path_analysis_classifies_binary_dot() {
+        let instance = test_instance("matmul");
+        let analysis = analyze_path(&instance, &instance.paths.opt_flops).unwrap();
+
+        assert_eq!(
+            analysis,
+            PathAnalysis {
+                steps: 1,
+                dot_steps: 1,
+                outer_steps: 0,
+                broadcast_mul_steps: 0,
+                max_rank: 2,
+                max_intermediate_elements: 4,
+                total_intermediate_elements: 4,
+            }
+        );
+        assert!(!analysis.should_warn());
+    }
+
+    #[test]
+    fn path_analysis_classifies_outer_product() {
+        let instance = instance_with("outer", "a,b->ab", vec![vec![3], vec![5]]);
+        let analysis = analyze_path(&instance, &instance.paths.opt_flops).unwrap();
+
+        assert_eq!(analysis.outer_steps, 1);
+        assert_eq!(analysis.dot_steps, 0);
+        assert_eq!(analysis.broadcast_mul_steps, 0);
+        assert_eq!(analysis.max_rank, 2);
+        assert_eq!(analysis.max_intermediate_elements, 15);
+    }
+
+    #[test]
+    fn path_analysis_classifies_broadcast_multiply() {
+        let instance = instance_with("mul", "ab,ab->ab", vec![vec![2, 3], vec![2, 3]]);
+        let analysis = analyze_path(&instance, &instance.paths.opt_flops).unwrap();
+
+        assert_eq!(analysis.broadcast_mul_steps, 1);
+        assert_eq!(analysis.dot_steps, 0);
+        assert_eq!(analysis.outer_steps, 0);
+        assert_eq!(analysis.max_intermediate_elements, 6);
     }
 }

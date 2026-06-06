@@ -13,6 +13,7 @@ Detailed documentation was split out of this README:
 
 - [Setup and C++ LibTorch build](docs/setup-and-libtorch.md)
 - [Einsum benchmark usage and instances](docs/einsum-benchmarks.md)
+- [PyTorch binary einsum dispatch notes](docs/pytorch-einsum-dispatch.md)
 
 Benchmark results are not duplicated in this README. The files under
 `result/` are the source of truth:
