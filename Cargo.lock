@@ -3682,7 +3682,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "strided-einsum2"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
+source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
 dependencies = [
  "faer",
  "faer-traits",
@@ -3698,7 +3698,7 @@ dependencies = [
 [[package]]
 name = "strided-kernel"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
+source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3710,7 +3710,7 @@ dependencies = [
 [[package]]
 name = "strided-perm"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
+source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
 dependencies = [
  "strided-view",
 ]
@@ -3718,7 +3718,7 @@ dependencies = [
 [[package]]
 name = "strided-traits"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
+source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3727,7 +3727,7 @@ dependencies = [
 [[package]]
 name = "strided-view"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150#ae364b95c7e27c3cb3fcd5fe08574c31f9ee9150"
+source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
 dependencies = [
  "num-complex",
  "num-traits",
