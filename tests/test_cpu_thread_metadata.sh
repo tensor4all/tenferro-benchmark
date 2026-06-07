@@ -29,6 +29,7 @@ assert_thread_env_metadata() {
   BLIS_NUM_THREADS=1 \
   XLA_FLAGS="--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1" \
     uv run python scripts/collect_run_metadata.py \
+      --target-profile mac-cpu \
       --suite-id cpu/einsum \
       --suite-file benchmarks/cpu/einsum.yaml \
       --timestamp "2026-06-04T12:34:56+09:00" \

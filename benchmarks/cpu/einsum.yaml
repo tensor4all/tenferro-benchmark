@@ -9,7 +9,6 @@ defaults:
 backends:
   - tenferro-trace
   - tenferro-eager
-  - libtorch-cpu
   - pytorch-cpu
   - jax-cpu
 problems:

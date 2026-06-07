@@ -211,8 +211,11 @@ plans/
 
 # Benchmark results (machine-specific)
 data/results/
-result/*
+result/**
+!result/
+!result/**/
 !result/*.md
+!result/**/*.md
 
 # Repo-local external checkouts
 extern/

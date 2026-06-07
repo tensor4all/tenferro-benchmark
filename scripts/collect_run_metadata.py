@@ -17,7 +17,7 @@ from typing import Any
 
 import yaml
 
-from benchmark_layout import safe_suite_id_parts
+from benchmark_layout import safe_suite_id_parts, safe_target_profile
 
 ENV_KEYS = (
     "OMP_NUM_THREADS",
@@ -26,6 +26,7 @@ ENV_KEYS = (
     "RAYON_NUM_THREADS",
     "TENFERRO_CPU_BACKEND_KIND",
     "TENFERRO_OPT_DOT_DECOMPOSER",
+    "BENCHMARK_TARGET_PROFILE",
     "OPENBLAS_ROOT",
     "OPENBLAS_NUM_THREADS",
     "GOTO_NUM_THREADS",
@@ -87,6 +88,22 @@ def resolve_tenferro_commit(explicit_commit: str | None, tenferro_dir: Path | No
             "--tenferro-commit is required when --tenferro-dir is not provided"
         )
     return run_git_rev_parse(tenferro_dir)
+
+
+def git_dirty(checkout_dir: Path | None) -> bool | None:
+    if checkout_dir is None or not (checkout_dir / ".git").exists():
+        return None
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=checkout_dir,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+    return bool(result.stdout.strip())
 
 
 def non_empty_or_none(value: str | None) -> str | None:
@@ -393,18 +410,21 @@ def collect_python_backends() -> dict[str, Any]:
 
 def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
     safe_suite_id_parts(args.suite_id)
+    safe_target_profile(args.target_profile)
     tenferro_dir = args.tenferro_dir.expanduser() if args.tenferro_dir else None
     commit = resolve_tenferro_commit(args.tenferro_commit, tenferro_dir)
     tenferro_path = str(tenferro_dir) if tenferro_dir else "unknown"
 
     metadata: dict[str, Any] = {
         "schema_version": 1,
+        "target_profile": args.target_profile,
         "suite_id": args.suite_id,
         "suite_file": str(args.suite_file),
         "timestamp": args.timestamp,
         "tenferro_rs": {
             "path": tenferro_path,
             "commit": commit,
+            "dirty": git_dirty(tenferro_dir),
             "features": parse_features(args.features),
         },
         "environment": collect_environment(),
@@ -418,6 +438,7 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--target-profile", required=True)
     parser.add_argument("--suite-id", required=True)
     parser.add_argument("--suite-file", required=True, type=Path)
     parser.add_argument("--timestamp", required=True)

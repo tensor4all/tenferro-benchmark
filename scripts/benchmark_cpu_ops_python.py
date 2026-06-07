@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run PR884 CPU benchmark items for PyTorch or JAX and emit normalized CSV."""
+"""Run focused CPU benchmark items for PyTorch or JAX and emit normalized CSV."""
 
 from __future__ import annotations
 

@@ -17,7 +17,6 @@ PREFERRED_BACKENDS = [
     "tenferro-cuda-trace",
     "tenferro-cuda-eager",
     "pytorch-cuda",
-    "libtorch-cuda",
     "jax-cuda",
     "cublaslt",
     "cutlass",
@@ -30,7 +29,6 @@ BACKEND_LABELS = {
     "tenferro-cuda-eager": "tenferro-rs CUDA eager",
     "tenferro-cuda-trace": "tenferro-rs CUDA trace",
     "pytorch-cuda": "PyTorch CUDA",
-    "libtorch-cuda": "LibTorch CUDA",
     "jax-cuda": "JAX CUDA",
     "cublaslt": "cuBLASLt",
     "cutlass": "CUTLASS",
@@ -100,6 +98,7 @@ def run_metadata_lines(metadata: dict[str, Any] | None) -> list[str]:
     if metadata is None:
         return []
     lines = [
+        f"- Target profile: `{metadata.get('target_profile', 'unknown')}`",
         f"- Suite: `{metadata.get('suite_id', 'unknown')}`",
         f"- Suite file: `{metadata.get('suite_file', 'unknown')}`",
         f"- Timestamp: `{metadata.get('timestamp', 'unknown')}`",
@@ -136,7 +135,7 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
         lines.append(f"## {markdown_cell(suite_id)} / {markdown_cell(op)}")
         lines.append("")
         if op == "svd":
-            lines.append("> **SVD note:** SVD rows use synchronized timed regions and matched Rust/Python input generators. tenferro-rs CUDA uses its backend default driver policy, currently JAX-compatible gesvdj for matrices with both dimensions at most 1024 and gesvd otherwise. The cuSOLVER column pins torch.linalg.svd driver=gesvd as a QR-based cuSOLVER comparison; compare PyTorch/LibTorch/JAX default rows separately because they may use different SVD drivers and row-major framework layouts.")
+            lines.append("> **SVD note:** SVD rows use synchronized timed regions and matched Rust/Python input generators. tenferro-rs CUDA uses its backend default driver policy, currently JAX-compatible gesvdj for matrices with both dimensions at most 1024 and gesvd otherwise. The cuSOLVER column pins torch.linalg.svd driver=gesvd as a QR-based cuSOLVER comparison; compare PyTorch/JAX default rows separately because they may use different SVD drivers and row-major framework layouts.")
             lines.append("")
         header = "| Problem | " + " | ".join(markdown_cell(BACKEND_LABELS.get(b, b)) for b in backends) + " |"
         separator = "|---|" + "|".join("---:" for _ in backends) + "|"

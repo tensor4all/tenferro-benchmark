@@ -16,7 +16,6 @@ config = json.loads(config_path.read_text())
 
 assert config["build"]["dockerfile"] == "Dockerfile"
 assert config["containerEnv"]["OPENBLAS_ROOT"] == "/opt/openblas"
-assert config["containerEnv"]["PYTORCH_OPENBLAS_DIR"] == "${containerWorkspaceFolder}/extern/devcontainer/pytorch-openblas"
 assert config["containerEnv"]["USE_CUDA"] == "0"
 assert config["postCreateCommand"].startswith("uv sync")
 
@@ -45,5 +44,4 @@ done
 grep -q 'devcontainer up --workspace-folder .' "$ROOT/README.md"
 grep -q "devcontainer exec --workspace-folder ." "$ROOT/README.md"
 grep -q 'BENCH_INSTANCE=bin_matmul_256' "$ROOT/README.md"
-grep -q 'PYTORCH_OPENBLAS_DIR' "$ROOT/README.md"
-grep -q 'extern/devcontainer/pytorch-openblas' "$ROOT/README.md"
+grep -q 'BENCHMARK_TARGET_PROFILE=amd-cpu' "$ROOT/README.md"

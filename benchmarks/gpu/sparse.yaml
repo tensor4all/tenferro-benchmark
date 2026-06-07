@@ -9,7 +9,6 @@ defaults:
   verify: {reference: cpu_sparse_fp64, rtol: 1.0e-8, atol: 1.0e-10}
 backends:
   - pytorch-cuda
-  - libtorch-cuda
   - cusparse
   - ginkgo
 problems:

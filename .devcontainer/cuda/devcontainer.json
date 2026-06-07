@@ -8,8 +8,6 @@
   "runArgs": ["--gpus", "all"],
   "containerEnv": {
     "OPENBLAS_ROOT": "/opt/openblas",
-    "PYTORCH_OPENBLAS_DIR": "${containerWorkspaceFolder}/extern/devcontainer/pytorch-openblas",
-    "CMAKE_POLICY_VERSION_MINIMUM": "3.5",
     "USE_CUDA": "1",
     "USE_ROCM": "0",
     "USE_MPS": "0",

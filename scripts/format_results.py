@@ -1,13 +1,13 @@
 """Parse benchmark log files and format results as a markdown table.
 
 Usage:
-    python scripts/format_results.py data/results/cpu/einsum/<timestamp>/tenferro_trace_*.log data/results/cpu/einsum/<timestamp>/tenferro_eager_*.log
-    python scripts/format_results.py data/results/cpu/einsum/<timestamp>/*.log   # all backends
+    python scripts/format_results.py data/results/<target_profile>/cpu/einsum/<timestamp>/tenferro_trace_*.log data/results/<target_profile>/cpu/einsum/<timestamp>/tenferro_eager_*.log
+    python scripts/format_results.py data/results/<target_profile>/cpu/einsum/<timestamp>/*.log   # all backends
 
 Supports log formats produced by:
   - tenferro trace/eager (Rust) — columns: Instance Tensors log10FLOPS log2SIZE Median IQR Compile
   - strided-opteinsum (Rust)
-  - libtorch-cpu / pytorch-cpu / jax-cpu — columns: Instance Tensors log10FLOPS log2SIZE Median IQR
+  - pytorch-cpu / jax-cpu — columns: Instance Tensors log10FLOPS log2SIZE Median IQR
 """
 
 import re
@@ -56,8 +56,6 @@ def parse_log(
                     engine = "tenferro-trace"
                 elif "strided-opteinsum" in line.lower():
                     engine = "strided-opteinsum"
-                elif "libtorch-cpu" in line.lower():
-                    engine = "libtorch-cpu"
                 elif "pytorch-cpu" in line.lower():
                     engine = "pytorch-cpu"
                 elif "jax-cpu" in line.lower():
@@ -172,7 +170,6 @@ def format_markdown_table(
         "strided-opteinsum(faer)",
         "strided-opteinsum(blas)",
         "strided-opteinsum",
-        "libtorch-cpu",
         "pytorch-cpu",
         "jax-cpu",
         "omeinsum_path",
@@ -181,7 +178,6 @@ def format_markdown_table(
     core_modes = [
         "tenferro-eager",
         "tenferro-trace",
-        "libtorch-cpu",
         "pytorch-cpu",
         "jax-cpu",
     ]
@@ -204,7 +200,6 @@ def format_markdown_table(
         "strided-opteinsum": "strided-rs (ms)",
         "strided-opteinsum(faer)": "strided-rs faer (ms)",
         "strided-opteinsum(blas)": "strided-rs OpenBLAS (ms)",
-        "libtorch-cpu": "Torch C++ (ms)",
         "pytorch-cpu": "PyTorch Python (ms)",
         "jax-cpu": "JAX Python (XLA CPU dot) (ms)",
         "omeinsum_path": "OMEinsum.jl OpenBLAS (ms)",

@@ -89,12 +89,6 @@ def _run_one(suite_id, problem, backend, device_ordinal, *, suite_backends=None,
                          status="not_configured", reason=f"jax-cuda: op={op} not implemented",
                          path="phase2-runner", **kw)
         return _run_jax(suite_id, problem, backend, device_ordinal, **kw)
-    if backend == "libtorch-cuda":
-        if op not in _PYTORCH_OPS:
-            return _stub(suite_id, problem, backend, device_ordinal,
-                         status="not_configured", reason=f"libtorch-cuda: op={op} not implemented",
-                         path="phase2-runner", **kw)
-        return _run_libtorch_cuda(suite_id, problem, backend, device_ordinal, **kw)
     if backend == "cutlass":
         if op not in _CUTLASS_OPS:
             return _stub(suite_id, problem, backend, device_ordinal,
@@ -309,37 +303,6 @@ def _run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                       ver_status=ver_status, max_abs=max_abs, max_rel=max_rel,
                       rtol=rtol, atol=atol,
                       env=env)
-
-
-# ---------------------------------------------------------------------------
-# LibTorch CUDA runner (all ops via PyTorch CUDA → same ATen kernels as C++ LibTorch)
-# ---------------------------------------------------------------------------
-
-def _run_libtorch_cuda(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
-    """libtorch-cuda backend: dispatches to the same ATen CUDA kernels as C++ LibTorch.
-
-    This Python implementation calls the identical ATen operations that a
-    C++ LibTorch CUDA benchmark would call (torch::mm, torch::linalg::qr, etc.).
-    Python overhead is not part of the timed section — timing is measured
-    kernel dispatch + CUDA sync, same as pytorch-cuda.
-    """
-    kw = dict(ts=ts, bc=bc, tc=tc)
-    rec = _run_pytorch(suite_id, problem, backend, device_ordinal, **kw)
-    if isinstance(rec.get("execution"), dict):
-        rec["execution"]["execution_path"] = "phase2-measured-libtorch-cuda"
-        rec["execution"]["notes"] = (
-            "Python dispatch to ATen CUDA ops; identical kernel path to C++ LibTorch "
-            f"(torch {_torch_version()})"
-        )
-    return rec
-
-
-def _torch_version() -> str:
-    try:
-        import torch
-        return f"{torch.__version__} / CUDA {torch.version.cuda}"
-    except Exception:
-        return "unknown"
 
 
 # ---------------------------------------------------------------------------

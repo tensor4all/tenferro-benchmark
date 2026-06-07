@@ -6,6 +6,16 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
 TIMESTAMP="${GPU_BENCH_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
+BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-nvidia-gpu}"
+case "$BENCHMARK_TARGET_PROFILE" in
+    mac-cpu|amd-cpu|nvidia-gpu)
+        export BENCHMARK_TARGET_PROFILE
+        ;;
+    *)
+        echo "ERROR: BENCHMARK_TARGET_PROFILE must be mac-cpu, amd-cpu, or nvidia-gpu." >&2
+        exit 1
+        ;;
+esac
 RUN_TIMESTAMP_RFC3339="$(python3 - <<'PY'
 from datetime import datetime, timezone
 print(datetime.now(timezone.utc).isoformat())
@@ -13,7 +23,7 @@ PY
 )"
 
 SUITES_VALUE="${GPU_BENCH_SUITE:-benchmarks/gpu/dense.yaml,benchmarks/gpu/einsum.yaml,benchmarks/gpu/sparse.yaml}"
-BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,libtorch-cuda,jax-cuda,cublaslt,cutlass,cusolver,cusparse,ginkgo}"
+BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda,cublaslt,cutlass,cusolver,cusparse,ginkgo}"
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 PROBLEM_FILTER="${GPU_BENCH_PROBLEM:-}"
 
@@ -30,6 +40,7 @@ echo "============================================"
 echo "Suites:   $SUITES_VALUE"
 echo "Backends: $BACKENDS_VALUE"
 echo "Device:   cuda:$DEVICE_ORDINAL"
+echo "Target:   $BENCHMARK_TARGET_PROFILE"
 echo "Timestamp: $TIMESTAMP"
 echo ""
 
@@ -82,6 +93,7 @@ write_run_metadata() {
     tenferro_commit="$(resolve_git_commit "$tenferro_dir")"
     local args=(
         --suite-id "$suite_id"
+        --target-profile "$BENCHMARK_TARGET_PROFILE"
         --suite-file "$suite_file"
         --timestamp "$RUN_TIMESTAMP_RFC3339"
         --tenferro-dir "$tenferro_dir"
@@ -106,12 +118,12 @@ for suite in "${SUITES[@]}"; do
     fi
 
     suite_name="${suite_id#gpu/}"
-    RUN_DIR="$RESULTS_ROOT/gpu/$suite_name/$TIMESTAMP"
+    RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/$suite_name/$TIMESTAMP"
     RUN_YAML="$RUN_DIR/run.yaml"
     RESULT_JSONL="$RUN_DIR/records.jsonl"
     RUST_JSONL="$RUN_DIR/rust_records.jsonl"
     MARKDOWN_OUT="$RUN_DIR/report.md"
-    REPORT_OUT="$REPORTS_DIR/gpu/$suite_name.md"
+    REPORT_OUT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/$suite_name.md"
 
     mkdir -p "$RUN_DIR" "$(dirname "$REPORT_OUT")"
     : > "$RESULT_JSONL"

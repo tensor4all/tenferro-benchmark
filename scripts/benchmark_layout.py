@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 
 SUITE_ID_RE = re.compile(r"^(cpu|gpu)/([a-z0-9][a-z0-9_.-]*)$")
+TARGET_PROFILE_RE = re.compile(r"^(mac-cpu|amd-cpu|nvidia-gpu)$")
 
 
 @dataclass(frozen=True)
@@ -26,14 +27,26 @@ def safe_suite_id_parts(suite_id: str) -> tuple[str, str]:
     return match.group(1), match.group(2)
 
 
-def paths_for_suite_run(project_dir: Path, suite_id: str, timestamp: str) -> SuiteRunPaths:
+def safe_target_profile(target_profile: str) -> str:
+    if TARGET_PROFILE_RE.fullmatch(target_profile) is None:
+        raise ValueError(f"invalid target_profile: {target_profile!r}")
+    return target_profile
+
+
+def paths_for_suite_run(
+    project_dir: Path,
+    suite_id: str,
+    timestamp: str,
+    target_profile: str,
+) -> SuiteRunPaths:
     device, suite_name = safe_suite_id_parts(suite_id)
+    profile = safe_target_profile(target_profile)
     root = Path(project_dir)
-    run_dir = root / "data" / "results" / device / suite_name / timestamp
+    run_dir = root / "data" / "results" / profile / device / suite_name / timestamp
     return SuiteRunPaths(
         run_dir=run_dir,
         run_yaml=run_dir / "run.yaml",
         records_jsonl=run_dir / "records.jsonl",
         report_md=run_dir / "report.md",
-        latest_report=root / "result" / device / f"{suite_name}.md",
+        latest_report=root / "result" / profile / device / f"{suite_name}.md",
     )

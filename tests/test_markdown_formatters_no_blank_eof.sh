@@ -53,6 +53,7 @@ JSONL
 
 cat > "$TMP/run.yaml" <<'YAML'
 schema_version: 1
+target_profile: nvidia-gpu
 suite_id: gpu/dense
 suite_file: benchmarks/gpu/dense.yaml
 timestamp: "1999-01-01T00:00:00+00:00"

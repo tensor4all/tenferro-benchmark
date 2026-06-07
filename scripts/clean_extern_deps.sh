@@ -22,7 +22,7 @@ remove_checkout() {
     fi
 
     case "$path" in
-        "$PROJECT_DIR"/extern/tenferro-rs|"$PROJECT_DIR"/extern/pytorch-openblas)
+        "$PROJECT_DIR"/extern/tenferro-rs)
             log "removing ${path#$PROJECT_DIR/}"
             rm -rf "$path"
             ;;
@@ -34,7 +34,6 @@ remove_checkout() {
 }
 
 remove_checkout tenferro-rs
-remove_checkout pytorch-openblas
 
 if [[ -d "$EXTERN_DIR" ]] && ! find "$EXTERN_DIR" -mindepth 1 -maxdepth 1 | grep -q .; then
     log "removing empty extern directory"

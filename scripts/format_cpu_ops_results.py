@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Format PR884 CPU benchmark CSV rows as a backend comparison table."""
+"""Format CPU benchmark CSV rows as a backend comparison table."""
 
 from __future__ import annotations
 
@@ -16,7 +16,6 @@ def clean_markdown_eof(markdown: str) -> str:
 BACKEND_ORDER = [
     "tenferro-eager",
     "tenferro-trace",
-    "libtorch-cpu",
     "pytorch-cpu",
     "jax-cpu",
 ]
@@ -24,7 +23,6 @@ BACKEND_ORDER = [
 BACKEND_LABELS = {
     "tenferro-eager": "tenferro-rs eager mode (ms)",
     "tenferro-trace": "tenferro-rs trace mode (ms)",
-    "libtorch-cpu": "Torch C++ (ms)",
     "pytorch-cpu": "PyTorch Python (ms)",
     "jax-cpu": "JAX Python (XLA CPU) (ms)",
 }
@@ -82,7 +80,7 @@ def format_table(path: Path) -> str:
                 by_key[key][backend] = value
 
     lines = [
-        "## PR884 CPU Benchmark Items",
+        "## CPU Benchmark Items",
         "",
         "Median ± IQR (ms). Missing backends are shown as `-`.",
         "",

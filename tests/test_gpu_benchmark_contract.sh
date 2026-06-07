@@ -4,11 +4,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-RUN_DIR="data/results/gpu/dense/19990101_000000"
+RUN_DIR="data/results/nvidia-gpu/gpu/dense/19990101_000000"
 RUN_YAML="$RUN_DIR/run.yaml"
 JSONL="$RUN_DIR/records.jsonl"
 MARKDOWN="$RUN_DIR/report.md"
-REPORT="result/gpu/dense.md"
+REPORT="result/nvidia-gpu/gpu/dense.md"
 TMP="$(mktemp -d)"
 ARTIFACTS=("$RUN_YAML" "$JSONL" "$MARKDOWN" "$RUN_DIR/rust_records.jsonl" "$REPORT")
 
@@ -197,6 +197,7 @@ assert "Unknown backend cuda" in rec["execution"]["unsupported_reason"], rec
 PY
 
 GPU_BENCH_TIMESTAMP=19990101_000000 \
+BENCHMARK_TARGET_PROFILE=nvidia-gpu \
 GPU_BENCH_SUITE=benchmarks/gpu/dense.yaml \
 GPU_BENCH_BACKENDS=tenferro-cuda-trace,pytorch-cuda,cusolver,cutlass \
 GPU_BENCH_PROBLEM=dense_matmul_f64_3072 \
@@ -215,6 +216,7 @@ if rg -q '"environment"' "$JSONL"; then
 fi
 
 rg -n "GPU Benchmark Results" "$REPORT"
+rg -n "Target profile: \`nvidia-gpu\`" "$REPORT"
 rg -n "Suite: \`gpu/dense\`" "$REPORT"
 rg -n "dense_matmul_f64_3072" "$REPORT"
 rg -n "tenferro-rs CUDA trace" "$REPORT"

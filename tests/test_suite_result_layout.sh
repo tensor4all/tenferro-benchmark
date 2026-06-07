@@ -117,12 +117,15 @@ assert_benchmark_layout_api() {
   if ! uv run python - >"$TMP/out" 2>&1 <<'PY'; then
 from pathlib import Path
 
-from scripts.benchmark_layout import paths_for_suite_run, safe_suite_id_parts
+from scripts.benchmark_layout import paths_for_suite_run, safe_suite_id_parts, safe_target_profile
 
 root = Path.cwd()
 
 assert safe_suite_id_parts("cpu/einsum") == ("cpu", "einsum")
 assert safe_suite_id_parts("gpu/dense") == ("gpu", "dense")
+assert safe_target_profile("mac-cpu") == "mac-cpu"
+assert safe_target_profile("amd-cpu") == "amd-cpu"
+assert safe_target_profile("nvidia-gpu") == "nvidia-gpu"
 
 try:
     safe_suite_id_parts("../bad")
@@ -131,13 +134,20 @@ except ValueError as exc:
 else:
     raise AssertionError("../bad did not raise ValueError")
 
-paths = paths_for_suite_run(root, "gpu/einsum", "19990101_000000")
+try:
+    safe_target_profile("../bad")
+except ValueError as exc:
+    assert "invalid target_profile" in str(exc)
+else:
+    raise AssertionError("../bad did not raise ValueError")
+
+paths = paths_for_suite_run(root, "gpu/einsum", "19990101_000000", "nvidia-gpu")
 expected = {
-    "run_dir": Path("data/results/gpu/einsum/19990101_000000"),
-    "run_yaml": Path("data/results/gpu/einsum/19990101_000000/run.yaml"),
-    "records_jsonl": Path("data/results/gpu/einsum/19990101_000000/records.jsonl"),
-    "report_md": Path("data/results/gpu/einsum/19990101_000000/report.md"),
-    "latest_report": Path("result/gpu/einsum.md"),
+    "run_dir": Path("data/results/nvidia-gpu/gpu/einsum/19990101_000000"),
+    "run_yaml": Path("data/results/nvidia-gpu/gpu/einsum/19990101_000000/run.yaml"),
+    "records_jsonl": Path("data/results/nvidia-gpu/gpu/einsum/19990101_000000/records.jsonl"),
+    "report_md": Path("data/results/nvidia-gpu/gpu/einsum/19990101_000000/report.md"),
+    "latest_report": Path("result/nvidia-gpu/gpu/einsum.md"),
 }
 for field, rel_path in expected.items():
     actual = getattr(paths, field)
@@ -157,6 +167,7 @@ assert_collected_run_metadata() {
 
   if ! OPENBLAS_ROOT="$openblas_root" uv run python scripts/collect_run_metadata.py \
     --suite-id cpu/einsum \
+    --target-profile amd-cpu \
     --suite-file benchmarks/cpu/einsum.yaml \
     --timestamp "2026-06-03T12:34:56+09:00" \
     --tenferro-dir extern/tenferro-rs \
@@ -205,7 +216,7 @@ description: CPU selector suite using shared einsum problem definitions.
 defaults:
   run: {warmups: 1, runs: 3, timing_scope: steady_state_host_api}
   verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-backends: [tenferro-eager, libtorch-cpu, pytorch-cpu]
+backends: [tenferro-eager, pytorch-cpu]
 problems:
   source: benchmarks/cpu/einsum.yaml
   include: [bin_matmul_256]
@@ -232,12 +243,14 @@ assert_invalid suite "$TMP/legacy_suite_id.yaml" "legacy underscore suite ID"
 
 cat > "$TMP/run.yaml" <<'YAML'
 schema_version: 1
+target_profile: mac-cpu
 suite_id: cpu/einsum
 suite_file: benchmarks/cpu/einsum.yaml
 timestamp: "2026-06-03T12:34:56+09:00"
 tenferro_rs:
   path: extern/tenferro-rs
   commit: abcdef1
+  dirty: false
   features: [openblas]
 environment:
   hostname: ci-host
@@ -254,6 +267,7 @@ assert_valid run "$TMP/run.yaml" "valid run metadata"
 
 cat > "$TMP/run_with_benchmark_repo_commit.yaml" <<'YAML'
 schema_version: 1
+target_profile: mac-cpu
 suite_id: cpu/einsum
 suite_file: benchmarks/cpu/einsum.yaml
 timestamp: "2026-06-03T12:34:56+09:00"
@@ -261,6 +275,7 @@ benchmark_repo_commit: 0123456789abcdef
 tenferro_rs:
   path: extern/tenferro-rs
   commit: abcdef1
+  dirty: false
   features: [openblas]
 environment:
   hostname: ci-host
@@ -275,12 +290,14 @@ assert_invalid run "$TMP/run_with_benchmark_repo_commit.yaml" "run metadata with
 
 cat > "$TMP/run_with_environment_benchmark_repo_commit.yaml" <<'YAML'
 schema_version: 1
+target_profile: mac-cpu
 suite_id: cpu/einsum
 suite_file: benchmarks/cpu/einsum.yaml
 timestamp: "2026-06-03T12:34:56+09:00"
 tenferro_rs:
   path: extern/tenferro-rs
   commit: abcdef1
+  dirty: false
   features: [openblas]
 environment:
   hostname: ci-host

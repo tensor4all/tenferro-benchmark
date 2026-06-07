@@ -1,209 +1,34 @@
 # tenferro-benchmark
 
-Benchmark suite for [tenferro-rs](https://github.com/tensor4all/tenferro-rs) based on the [einsum benchmark](https://benchmark.einsum.org/).
+Benchmark suite for [tenferro-rs](https://github.com/tensor4all/tenferro-rs).
 
-This repository contains:
+The repository keeps the latest human-facing reports per target profile:
 
-- Rust benchmark runner for `tenferro-einsum`
-- C++ LibTorch benchmark runner for Torch CPU comparison
-- Python benchmark runner for PyTorch and JAX CPU comparison
-- Result formatting tools for unified markdown tables
+- macOS CPU: `result/mac-cpu/cpu/einsum.md`, `result/mac-cpu/cpu/cpu_ops.md`
+- Linux/AMD CPU: `result/amd-cpu/cpu/einsum.md`, `result/amd-cpu/cpu/cpu_ops.md`
+- NVIDIA GPU: `result/nvidia-gpu/gpu/dense.md`, `result/nvidia-gpu/gpu/einsum.md`, `result/nvidia-gpu/gpu/sparse.md`
 
-Detailed documentation was split out of this README:
+Historical reports are not archived in extra files. Use git history when older
+results are needed.
 
-- [Setup and C++ LibTorch build](docs/setup-and-libtorch.md)
-- [Einsum benchmark usage and instances](docs/einsum-benchmarks.md)
-- [PyTorch binary einsum dispatch notes](docs/pytorch-einsum-dispatch.md)
+## Workflows
 
-Benchmark results are not duplicated in this README. The files under
-`result/` are the source of truth:
+- [macOS CPU workflow](docs/macos-cpu.md): native run, no Docker, Accelerate.
+- [Linux CPU devcontainer workflow](docs/linux-cpu-devcontainer.md): Docker/devcontainer, OpenBLAS for tenferro, detected PyTorch provider.
+- [NVIDIA GPU devcontainer workflow](docs/gpu-devcontainer.md): CUDA devcontainer.
+- [Einsum suite and instance selection](docs/einsum-suite.md): source benchmark, selection rules, diagnostic cases, path strategies.
+- [Result layout and metadata](docs/results.md): `target_profile`, `suite_id`, `run.yaml`, latest reports.
+- [Architecture terminology](docs/architecture.md): suite, runner, backend, strategy, target profile.
+- [PyTorch einsum dispatch notes](docs/pytorch-einsum-dispatch.md): PyTorch source investigation notes.
 
-- CPU einsum results: [result/cpu/einsum.md](result/cpu/einsum.md)
-- CPU ops results: [result/cpu/cpu_ops.md](result/cpu/cpu_ops.md)
-- GPU dense results: [result/gpu/dense.md](result/gpu/dense.md)
-- GPU einsum results: [result/gpu/einsum.md](result/gpu/einsum.md)
-- GPU sparse results: [result/gpu/sparse.md](result/gpu/sparse.md)
+## Quick Smoke
 
-## Quick Start
-
-Prerequisites:
-
-- Rust and Cargo
-- CMake 3.20+
-- Python 3.12+ and [uv](https://docs.astral.sh/uv/)
-- Repo-local external checkouts under `extern/`
+macOS:
 
 ```bash
-brew install cmake
 uv sync
 ./scripts/setup_extern_deps.sh
-```
-
-On macOS, BLAS-backed tenferro CPU benchmarks use Accelerate (`system-accelerate`) by default, matching the standard PyTorch/JAX wheels. Linux and the devcontainer keep the OpenBLAS default (`system-openblas`).
-
-`scripts/setup_extern_deps.sh` prepares `extern/tenferro-rs`. By default, it reuses the current checkout as-is, including dirty changes, so benchmark runs record the exact checkout being measured instead of silently switching refs. Set `TENFERRO_UPDATE=1 TENFERRO_REF=<branch-or-commit>` only when you intentionally want setup to update the checkout. Set `SETUP_PYTORCH_OPENBLAS=1` only in Linux/devcontainer OpenBLAS workflows when you intentionally want setup to create or build the optional OpenBLAS-linked PyTorch/LibTorch checkout at `extern/pytorch-openblas`; it is disabled on macOS. `scripts/run_all.sh` sources setup automatically before running benchmarks. See [Setup and C++ LibTorch build](docs/setup-and-libtorch.md) for the full LibTorch/OpenBLAS build instructions.
-
-To remove these repo-local external checkouts:
-
-```bash
-./scripts/clean_extern_deps.sh
-```
-
-## Dev Container Workflow
-
-Prerequisites on the host:
-
-- Docker Desktop or another Docker engine
-- The `devcontainer` CLI
-
-From the host repository root, build and start the development container:
-
-```bash
-devcontainer up --workspace-folder .
-```
-
-If the devcontainer config changed and an older container already exists,
-recreate it:
-
-```bash
-devcontainer up --workspace-folder . --remove-existing-container
-```
-
-Run the benchmark suite inside the container from the host with
-`devcontainer exec`. The first run prepares `extern/tenferro-rs` if needed and
-builds an OpenBLAS-linked PyTorch/LibTorch checkout under
-`extern/devcontainer/pytorch-openblas`, so it can take a long time.
-
-```bash
-devcontainer exec --workspace-folder . bash -lc '\
-  BENCH_INSTANCE=bin_matmul_256 \
-  BENCH_RUNS=1 \
-  BENCH_WARMUPS=0 \
-  PUBLICATION_GATE_SUITE=small \
-    ./scripts/run_all.sh 1'
-```
-
-For normal benchmark results:
-
-```bash
-devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 1'
-devcontainer exec --workspace-folder . bash -lc './scripts/run_all.sh 4'
-```
-
-Each invocation writes one suite run under
-`data/results/cpu/einsum/<timestamp>/` with `run.yaml` and `report.md`. The
-latest human-facing reports are copied to `result/cpu/einsum.md` and
-`result/cpu/cpu_ops.md`.
-
-The devcontainer sets `OPENBLAS_ROOT=/opt/openblas` and installs Rust, CMake,
-Python 3.12, `uv`, OpenBLAS, and Linux linkage tools. It also sets
-`PYTORCH_OPENBLAS_DIR` to `extern/devcontainer/pytorch-openblas` inside the
-workspace so Linux container builds do not reuse a host-built macOS
-`extern/pytorch-openblas` checkout. Verify the Torch C++ library with `ldd`
-inside the container before trusting the Torch C++ column:
-
-```bash
-devcontainer exec --workspace-folder . bash -lc \
-  'ldd "$PYTORCH_OPENBLAS_DIR/torch/lib/libtorch_cpu.so" | rg -i openblas'
-```
-
-Generated reports include the exact `tenferro-rs` commit hash. Use it later to
-restore the benchmark dependency checkout:
-
-```bash
-devcontainer exec --workspace-folder . bash -lc \
-  'rg -n "Suite:|Threads:|tenferro-rs commit" result/cpu/einsum.md result/cpu/cpu_ops.md'
-```
-
-## GPU Benchmark Contract Workflow
-
-The GPU benchmark layer uses shared suite and result schemas so tenferro-rs,
-PyTorch Python, LibTorch C++, JAX, and vendor CUDA runners can report comparable
-records. Phase 1 validates the contract and report generation without requiring
-a GPU:
-
-```bash
-bash scripts/run_gpu_suite.sh
-```
-
-The smoke path emits structured `not_configured` and `unsupported` records
-instead of measuring kernels. This keeps schema and formatter tests runnable on
-CPU-only machines. Measured CUDA runners are outside this Phase 1 plan and
-require separate follow-up implementation plans.
-
-Validate suites and generated JSONL records manually:
-
-```bash
-uv run python scripts/validate_benchmark_suite.py \
-  benchmarks/gpu/dense.yaml \
-  benchmarks/gpu/einsum.yaml \
-  benchmarks/gpu/sparse.yaml
-
-uv run python scripts/validate_benchmark_suite.py --kind result \
-  data/results/gpu/dense/*/records.jsonl
-```
-
-The latest generated GPU reports are written per suite:
-
-- `result/gpu/dense.md`
-- `result/gpu/einsum.md`
-- `result/gpu/sparse.md`
-
-### Running on a Real GPU via devcontainer
-
-A CUDA-enabled devcontainer is provided for hosts with an NVIDIA GPU and the
-NVIDIA Container Toolkit installed. It uses
-`nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04` as the base image, sets
-`USE_CUDA=1`, and installs PyTorch and JAX with CUDA 12.6 wheels.
-
-Start the CUDA container:
-
-```bash
-devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
-```
-
-Install the vendor libraries needed by the `cutlass` and `ginkgo` backends
-(CUTLASS is a quick clone; Ginkgo is a CUDA build, ~10-15 min; persisted in
-named volumes so this is a one-time step):
-
-```bash
-devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
-  bash -lc './scripts/setup_gpu_vendors.sh all'
-```
-
-Run the GPU benchmark suite inside it:
-
-```bash
-devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
-  bash -lc './scripts/run_gpu_suite.sh'
-```
-
-This measures all 10 backends (tenferro-cuda trace/eager, PyTorch, LibTorch,
-JAX, cuBLASLt, CUTLASS, cuSOLVER, cuSPARSE, Ginkgo) and writes the report to
-`result/gpu/<suite>.md` for each suite YAML. Backends whose vendor library is
-absent degrade to `not_configured` rather than failing the suite.
-
-See `AGENTS.md` for the full GPU devcontainer workflow including environment
-verification, the backend/op matrix, and per-backend overrides.
-
-## Torch C++ Benchmark Workflow
-
-Use this OpenBLAS workflow when benchmark results must include the Torch C++ column. It is intended for Linux/devcontainer OpenBLAS runs; macOS CPU BLAS runs are fixed to Accelerate and skip the OpenBLAS LibTorch C++ runner.
-
-```bash
-export OPENBLAS_ROOT=/opt/openblas
-./scripts/setup_extern_deps.sh
-```
-
-Verify that LibTorch is linked to OpenBLAS before trusting Torch C++ numbers:
-
-```bash
-ldd extern/pytorch-openblas/torch/lib/libtorch_cpu.so | rg -i openblas
-```
-
-Run a quick end-to-end smoke that exercises tenferro-rs, Torch C++, PyTorch Python, JAX Python, and PR884 CPU table generation. The CPU table measures tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python rows.
-
-```bash
+BENCHMARK_TARGET_PROFILE=mac-cpu \
 BENCH_INSTANCE=bin_matmul_256 \
 BENCH_RUNS=1 \
 BENCH_WARMUPS=0 \
@@ -211,161 +36,64 @@ PUBLICATION_GATE_SUITE=small \
   ./scripts/run_all.sh 1
 ```
 
-For normal benchmark results:
+Linux devcontainer from the host:
 
 ```bash
-./scripts/run_all.sh 1
-./scripts/run_all.sh 4
+devcontainer up --workspace-folder .
+devcontainer exec --workspace-folder . bash -lc '\
+  BENCHMARK_TARGET_PROFILE=amd-cpu \
+  BENCH_INSTANCE=bin_matmul_256 \
+  BENCH_RUNS=1 \
+  BENCH_WARMUPS=0 \
+  PUBLICATION_GATE_SUITE=small \
+    ./scripts/run_all.sh 1'
 ```
 
-Each `run_all.sh` invocation writes timestamped raw logs, run metadata, and
-reports under `data/results/cpu/einsum/<timestamp>/`. The latest reports are
-copied to `result/cpu/einsum.md` and `result/cpu/cpu_ops.md`.
-
-The generated reports should include the comparison columns:
+GPU devcontainer from the host:
 
 ```bash
-rg -n "Threads:|Torch C\\+\\+|PyTorch Python|JAX Python|tenferro-rs" \
-  result/cpu/einsum.md result/cpu/cpu_ops.md
+devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
 ```
 
-## Human-Run Scripts
+## Comparison Backends
 
-The snippets below are intended to be copied and run by a human from the repository root.
+CPU reports compare:
 
-### Generate benchmark metadata
+- `tenferro-trace`
+- `tenferro-eager`
+- `pytorch-cpu`
+- `jax-cpu`
+
+GPU reports compare:
+
+- `tenferro-cuda-trace`
+- `tenferro-cuda-eager`
+- `pytorch-cuda`
+- `jax-cuda`
+- vendor-specific CUDA backends where meaningful
+
+C++ Torch/LibTorch runners are intentionally removed. PyTorch Python is the
+ATen comparison backend. The PyTorch CPU provider is detected at run time and
+recorded in `run.yaml` and generated reports; Linux does not source-build
+PyTorch to force OpenBLAS.
+
+## Development Checks
+
+Run these after changing benchmark scripts or schemas:
 
 ```bash
-uv run python scripts/generate_dataset.py
-```
-
-### Verify local builds
-
-```bash
-cmake -S cpp -B build/cpp-plan-test -DBUILD_LIBTORCH_BENCHMARK=OFF
+uv run python scripts/validate_benchmark_suite.py benchmarks/cpu/einsum.yaml
+uv run python scripts/validate_benchmark_suite.py benchmarks/gpu/dense.yaml benchmarks/gpu/einsum.yaml benchmarks/gpu/sparse.yaml
+bash tests/test_suite_result_layout.sh
+bash tests/test_run_all_docs_outputs.sh
+bash tests/test_clean_extern_deps.sh
+bash tests/test_setup_extern_tenferro_checkout.sh
+cmake -S cpp -B build/cpp-plan-test
 cmake --build build/cpp-plan-test --target einsum_plan_test
 ctest --test-dir build/cpp-plan-test --output-on-failure
-
-cargo check --no-default-features --features system-accelerate
 ```
-
-### Run tenferro-rs vs C++ Torch
-
-This runner is OpenBLAS-only and is disabled on macOS. Use it from the Linux devcontainer when needed:
-
-```bash
-export OPENBLAS_ROOT=/opt/openblas
-source ./scripts/setup_extern_deps.sh
-
-./scripts/run_tenferro_libtorch.sh 1
-```
-
-Run one instance:
-
-```bash
-BENCH_INSTANCE=bin_matmul_256 ./scripts/run_tenferro_libtorch.sh 1
-```
-
-### Run the main benchmark suite
-
-This runs tenferro-rs trace/eager, optional strided-rs faer, C++ LibTorch, Python PyTorch, JAX, and the PR884 CPU benchmark items. PR884 CPU-op rows include measured tenferro-rs eager mode, tenferro-rs trace mode, Torch C++, PyTorch Python, and JAX Python values.
-
-```bash
-./scripts/run_all.sh 1
-./scripts/run_all.sh 4
-```
-
-Raw logs and timestamped tables are written to `data/results/cpu/einsum/<timestamp>/`, summarized by `scripts/format_results.py`, and copied to:
-
-- [result/cpu/einsum.md](result/cpu/einsum.md)
-- [result/cpu/cpu_ops.md](result/cpu/cpu_ops.md)
-
-Each report includes the suite id, run metadata path, timestamp, and full
-`tenferro-rs` commit hash resolved from `TENFERRO_RS_DIR` or
-`extern/tenferro-rs`, so the benchmark checkout can be restored later with
-`git checkout <commit>`.
-
-### Run PyTorch and JAX Python baselines manually
-
-`scripts/run_all.sh` runs both Python baselines automatically. To run and format the backend logs manually:
-
-```bash
-export BENCHMARK_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-export BENCHMARK_RESULTS_DIR="data/results/cpu/einsum/${BENCHMARK_TIMESTAMP}"
-export OMP_NUM_THREADS=1
-export RAYON_NUM_THREADS=1
-source ./scripts/setup_extern_deps.sh
-mkdir -p "$BENCHMARK_RESULTS_DIR"
-
-./scripts/run_all_rust.sh 1
-
-uv run python scripts/benchmark_python.py --backend pytorch --num-threads 1 \
-  2>&1 | tee "$BENCHMARK_RESULTS_DIR/pytorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log"
-
-uv run python scripts/benchmark_python.py --backend jax --num-threads 1 \
-  2>&1 | tee "$BENCHMARK_RESULTS_DIR/jax_cpu_t1_${BENCHMARK_TIMESTAMP}.log"
-
-uv run python scripts/format_results.py \
-  "$BENCHMARK_RESULTS_DIR/tenferro_trace_t1_${BENCHMARK_TIMESTAMP}.log" \
-  "$BENCHMARK_RESULTS_DIR/tenferro_eager_t1_${BENCHMARK_TIMESTAMP}.log" \
-  "$BENCHMARK_RESULTS_DIR/pytorch_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
-  "$BENCHMARK_RESULTS_DIR/jax_cpu_t1_${BENCHMARK_TIMESTAMP}.log" \
-  | tee "$BENCHMARK_RESULTS_DIR/einsum_table_t1_${BENCHMARK_TIMESTAMP}.md"
-```
-
-### Run publication-gate microbenchmarks
-
-```bash
-./scripts/run_publication_gate.sh 1
-
-PUBLICATION_GATE_PROFILE=full ./scripts/run_publication_gate.sh 1
-PUBLICATION_GATE_SUITE=small ./scripts/run_publication_gate.sh 1
-PUBLICATION_GATE_SUITE=large ./scripts/run_publication_gate.sh 1
-PUBLICATION_GATE_SUITE=batched ./scripts/run_publication_gate.sh 1
-```
-
-Compare CPU backends:
-
-```bash
-PUBLICATION_GATE_FEATURES=cpu-faer ./scripts/run_publication_gate.sh 1
-PUBLICATION_GATE_FEATURES=system-accelerate ./scripts/run_publication_gate.sh 1
-PUBLICATION_GATE_FEATURES=system-openblas ./scripts/run_publication_gate.sh 1
-```
-
-## Project Structure
-
-```text
-tenferro-einsum-benchmark/
-  src/
-    main.rs
-    lib.rs
-  scripts/
-    run_all.sh
-    run_tenferro_libtorch.sh
-    run_all_rust.sh
-    run_all_libtorch.sh
-    run_all_python.sh
-    run_publication_gate.sh
-    setup_extern_deps.sh
-    clean_extern_deps.sh
-    benchmark_python.py
-    generate_dataset.py
-    format_results.py
-  data/
-    instances/
-    results/
-  cpp/
-  docs/
-  Cargo.toml
-  pyproject.toml
-```
-
-## References
-
-- [Einsum Benchmark](https://benchmark.einsum.org/)
-- [ti2-group/einsum_benchmark](https://github.com/ti2-group/einsum_benchmark)
-- [tensor4all/tenferro-rs](https://github.com/tensor4all/tenferro-rs)
-- [tensor4all/strided-rs-benchmark-suite](https://github.com/tensor4all/strided-rs-benchmark-suite)
 
 ## License
 

@@ -11,7 +11,6 @@ backends:
   - tenferro-cuda-trace
   - tenferro-cuda-eager
   - pytorch-cuda
-  - libtorch-cuda
   - jax-cuda
   - cublaslt
   - cutlass

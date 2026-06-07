@@ -279,7 +279,7 @@ def format_rows(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--report", type=Path, default=Path("result/cpu/einsum.md"))
+    parser.add_argument("--report", type=Path, default=Path("result/mac-cpu/cpu/einsum.md"))
     parser.add_argument("--instances", type=Path, default=Path("data/instances"))
     parser.add_argument("--threshold", type=float, default=1.15)
     parser.add_argument(

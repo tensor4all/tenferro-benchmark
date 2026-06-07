@@ -5,14 +5,12 @@ set -euo pipefail
 # Full benchmark runner:
 #   - tenferro trace/eager (Rust)
 #   - strided-rs / faer (Rust, optional)
-#   - LibTorch CPU (C++)
 #   - PyTorch/JAX CPU (Python)
-#   - PR884 CPU benchmark items where supported by repo-local runners
+#   - CPU benchmark items where supported by repo-local runners
 #
 # Usage: ./scripts/run_all.sh [NUM_THREADS]
 #
-# Delegates to run_all_rust.sh, run_all_libtorch.sh, and run_all_python.sh,
-# then formats results.
+# Delegates to run_all_rust.sh and run_all_python.sh, then formats results.
 # ---------------------------------------------------------------------------
 
 NUM_THREADS="${1:-1}"
@@ -49,6 +47,24 @@ REPORTS_DIR="$PROJECT_DIR/result"
 CPU_SUITE_ID="cpu/einsum"
 CPU_SUITE_FILE="$PROJECT_DIR/benchmarks/cpu/einsum.yaml"
 
+default_target_profile() {
+    case "$(benchmark_host_os)" in
+        Darwin) printf '%s\n' "mac-cpu" ;;
+        *) printf '%s\n' "amd-cpu" ;;
+    esac
+}
+
+BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-$(default_target_profile)}"
+case "$BENCHMARK_TARGET_PROFILE" in
+    mac-cpu|amd-cpu|nvidia-gpu)
+        export BENCHMARK_TARGET_PROFILE
+        ;;
+    *)
+        echo "ERROR: BENCHMARK_TARGET_PROFILE must be mac-cpu, amd-cpu, or nvidia-gpu." >&2
+        exit 1
+        ;;
+esac
+
 # shellcheck source=scripts/thread_env.sh
 source "$SCRIPT_DIR/thread_env.sh"
 
@@ -57,20 +73,6 @@ if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
     # paths are visible to the benchmark subprocesses below.
     # shellcheck source=scripts/setup_extern_deps.sh
     source "$SCRIPT_DIR/setup_extern_deps.sh"
-fi
-
-# If Torch_DIR is still unset (e.g. SKIP_EXTERN_SETUP=1), probe well-known
-# locations where an already-built OpenBLAS-linked LibTorch might live.
-if [[ -z "${Torch_DIR:-}" ]]; then
-    for _torch_candidate in \
-        "${PYTORCH_OPENBLAS_DIR:+${PYTORCH_OPENBLAS_DIR}/torch/share/cmake/Torch}" \
-        "$PROJECT_DIR/extern/devcontainer/pytorch-openblas/torch/share/cmake/Torch" \
-        "$PROJECT_DIR/extern/pytorch-openblas/torch/share/cmake/Torch"; do
-        [[ -n "$_torch_candidate" && -f "$_torch_candidate/TorchConfig.cmake" ]] || continue
-        export Torch_DIR="$_torch_candidate"
-        echo "[run_all.sh] Auto-detected Torch_DIR=$Torch_DIR"
-        break
-    done
 fi
 
 resolve_git_commit() {
@@ -188,6 +190,7 @@ write_run_metadata() {
     blas_impl="$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")"
     local args=(
         --suite-id "$CPU_SUITE_ID"
+        --target-profile "$BENCHMARK_TARGET_PROFILE"
         --suite-file "${CPU_SUITE_FILE#$PROJECT_DIR/}"
         --timestamp "$timestamp"
         --tenferro-dir "$tenferro_dir"
@@ -208,6 +211,7 @@ write_einsum_report() {
         echo "# Einsum Benchmark Results"
         echo ""
         echo "- Suite: \`$CPU_SUITE_ID\`"
+        echo "- Target profile: \`$BENCHMARK_TARGET_PROFILE\`"
         echo "- Suite file: \`${CPU_SUITE_FILE#$PROJECT_DIR/}\`"
         echo "- Run metadata: \`${CPU_RUN_YAML#$PROJECT_DIR/}\`"
         echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
@@ -237,7 +241,6 @@ write_einsum_report() {
             "$TENFERRO_TRACE_LOG" \
             "$TENFERRO_EAGER_LOG" \
             "$STRIDED_FAER_LOG" \
-            "$LIBTORCH_LOG" \
             "$PYTORCH_LOG" \
             "$JAX_LOG"; do
             [[ -f "$log" ]] && echo "- \`${log#$PROJECT_DIR/}\`"
@@ -254,6 +257,7 @@ write_cpu_report() {
         echo "# CPU Benchmark Results"
         echo ""
         echo "- Suite: \`cpu/cpu_ops\`"
+        echo "- Target profile: \`$BENCHMARK_TARGET_PROFILE\`"
         echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
         echo ""
         echo "Latest run: \`./scripts/run_all.sh $NUM_THREADS\`."
@@ -288,10 +292,10 @@ from datetime import datetime, timezone
 print(datetime.now(timezone.utc).isoformat())
 PY
 )"
-CPU_RUN_DIR="$RESULTS_ROOT/cpu/einsum/$BENCHMARK_TIMESTAMP"
+CPU_RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/cpu/einsum/$BENCHMARK_TIMESTAMP"
 CPU_RUN_YAML="$CPU_RUN_DIR/run.yaml"
-CPU_LATEST_REPORT="$REPORTS_DIR/cpu/einsum.md"
-CPU_OPS_LATEST_REPORT="$REPORTS_DIR/cpu/cpu_ops.md"
+CPU_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/einsum.md"
+CPU_OPS_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/cpu_ops.md"
 
 mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")"
 export BENCHMARK_RESULTS_DIR="$CPU_RUN_DIR"
@@ -306,6 +310,7 @@ echo "Project dir:  $PROJECT_DIR"
 echo "Threads:      $NUM_THREADS"
 echo "Timestamp:    $BENCHMARK_TIMESTAMP"
 echo "Suite:        $CPU_SUITE_ID"
+echo "Target:       $BENCHMARK_TARGET_PROFILE"
 echo "Run dir:      $CPU_RUN_DIR"
 echo "Features:     $TENFERRO_CPU_FEATURES"
 echo "CPU backend:  $TENFERRO_CPU_BACKEND_KIND"
@@ -321,17 +326,6 @@ write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
 "$SCRIPT_DIR/run_all_rust.sh" "$NUM_THREADS"
 
 # ---------------------------------------------------------------------------
-# C++ LibTorch benchmark
-# ---------------------------------------------------------------------------
-if [[ "$TENFERRO_CPU_FEATURES" == "system-openblas" ]]; then
-    if ! "$SCRIPT_DIR/run_all_libtorch.sh" "$NUM_THREADS"; then
-        echo "WARNING: LibTorch benchmark failed or is not configured; continuing with missing Torch C++ results." >&2
-    fi
-else
-    echo "Skipping OpenBLAS LibTorch C++ runner for TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES."
-fi
-
-# ---------------------------------------------------------------------------
 # Python benchmarks (PyTorch + JAX)
 # ---------------------------------------------------------------------------
 if ! "$SCRIPT_DIR/run_all_python.sh" "$NUM_THREADS"; then
@@ -339,17 +333,17 @@ if ! "$SCRIPT_DIR/run_all_python.sh" "$NUM_THREADS"; then
 fi
 
 # ---------------------------------------------------------------------------
-# Focused CPU benchmark items from tensor4all/tenferro-rs#884
+# Focused CPU benchmark items
 # ---------------------------------------------------------------------------
 CPU_OPS_LOG="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
 CPU_OPS_MD="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
 if [[ -x "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
     if ! "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
-        echo "WARNING: PR884 CPU benchmark items failed; continuing without CPU item results." >&2
+        echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
     fi
 elif [[ -f "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
     if ! bash "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
-        echo "WARNING: PR884 CPU benchmark items failed; continuing without CPU item results." >&2
+        echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
     fi
 fi
 
@@ -359,7 +353,6 @@ fi
 TENFERRO_TRACE_LOG="$CPU_RUN_DIR/tenferro_trace_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 TENFERRO_EAGER_LOG="$CPU_RUN_DIR/tenferro_eager_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 STRIDED_FAER_LOG="$CPU_RUN_DIR/strided_faer_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-LIBTORCH_LOG="$CPU_RUN_DIR/libtorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 PYTORCH_LOG="$CPU_RUN_DIR/pytorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 JAX_LOG="$CPU_RUN_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 MARKDOWN_TABLE="$CPU_RUN_DIR/einsum_table_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
@@ -370,7 +363,6 @@ LOGS=()
 [ -f "$TENFERRO_TRACE_LOG" ] && LOGS+=("$TENFERRO_TRACE_LOG")
 [ -f "$TENFERRO_EAGER_LOG" ] && LOGS+=("$TENFERRO_EAGER_LOG")
 [ -f "$STRIDED_FAER_LOG" ]   && LOGS+=("$STRIDED_FAER_LOG")
-[ -f "$LIBTORCH_LOG" ]       && LOGS+=("$LIBTORCH_LOG")
 [ -f "$PYTORCH_LOG" ]        && LOGS+=("$PYTORCH_LOG")
 [ -f "$JAX_LOG" ]            && LOGS+=("$JAX_LOG")
 
