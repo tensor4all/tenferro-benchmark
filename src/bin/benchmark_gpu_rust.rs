@@ -217,7 +217,11 @@ fn run_eager(
 
         // Verify last result against CPU reference
         let (ver_status, max_abs, max_rel) = if let Some(ref g) = last_out {
-            let cpu_out = run_eager_op(op, problem, &cpu_inputs).unwrap_or_default();
+            let cpu_out = if op == "solve" {
+                Vec::new()
+            } else {
+                run_eager_op(op, problem, &cpu_inputs).unwrap_or_default()
+            };
             verify_eager(
                 op,
                 g,
@@ -398,7 +402,11 @@ fn run_trace(
                 .iter()
                 .filter_map(|t| download_tensor(transfer_bk.runtime(), t).ok())
                 .collect();
-            let cpu_out = run_cpu_trace(op, problem, seed, gen).unwrap_or_default();
+            let cpu_out = if op == "solve" {
+                Vec::new()
+            } else {
+                run_cpu_trace(op, problem, seed, gen).unwrap_or_default()
+            };
             let cpu_inputs: Vec<Tensor> = cpu_inputs.iter().map(|(_, t)| t.clone()).collect();
             verify_tensors(op, &gpu_tensors, &cpu_out, &cpu_inputs, rtol, atol)
         } else {
@@ -555,7 +563,7 @@ fn build_and_upload_eager_inputs(
             let n = yaml_usize(&p["n"], 64);
             let rhs = yaml_usize(&p["rhs_cols"], 1);
             Ok(EagerInputs {
-                a: upload(tensor_f64(&[n, n], spd_data(n, seed)))?,
+                a: upload(tensor_f64(&[n, n], solve_matrix_data(n, seed, gen)))?,
                 b: Some(upload(tensor_f64(
                     &[n, rhs],
                     normal_data(&[n, rhs], seed + 100),
@@ -651,7 +659,7 @@ fn build_cpu_eager_inputs(
             let n = yaml_usize(&p["n"], 64);
             let rhs = yaml_usize(&p["rhs_cols"], 1);
             EagerInputs {
-                a: cpu(tensor_f64(&[n, n], spd_data(n, seed))),
+                a: cpu(tensor_f64(&[n, n], solve_matrix_data(n, seed, gen))),
                 b: Some(cpu(tensor_f64(
                     &[n, rhs],
                     normal_data(&[n, rhs], seed + 100),
@@ -831,7 +839,7 @@ fn build_trace_graph_inner(
             let p = &problem["linalg"];
             let n = yaml_usize(&p["n"], 64);
             let rhs = yaml_usize(&p["rhs_cols"], 1);
-            let (a, a_data) = inp!(&[n, n], spd_data(n, seed));
+            let (a, a_data) = inp!(&[n, n], solve_matrix_data(n, seed, gen));
             let (b, b_data) = inp!(&[n, rhs], normal_data(&[n, rhs], seed + 100));
             let out = tenferro_linalg::solve(&a, &b)?;
             Ok((vec![out], vec![(a, a_data), (b, b_data)]))
@@ -942,6 +950,7 @@ fn verify_tensors(
 ) -> (String, Option<f64>, Option<f64>) {
     let comparison = match op {
         "qr" => verify_qr(gpu, cpu_inputs),
+        "solve" => verify_solve(gpu, cpu_inputs),
         "svd" => verify_svd(gpu, cpu_inputs),
         "eigh" => verify_eigh(gpu, cpu_inputs),
         _ => {
@@ -958,6 +967,25 @@ fn verify_tensors(
         return ("skipped".to_string(), None, None);
     };
     compare_vectors(&actual, &expected, rtol, atol)
+}
+
+fn verify_solve(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f64>)> {
+    let (x_shape, x) = gpu.first().and_then(tensor_f64_parts)?;
+    let (a_shape, a) = cpu_inputs.first().and_then(tensor_f64_parts)?;
+    let (b_shape, b) = cpu_inputs.get(1).and_then(tensor_f64_parts)?;
+    if x_shape.len() != 2 || a_shape.len() != 2 || b_shape.len() != 2 {
+        return None;
+    }
+    let n = a_shape[0];
+    let rhs = x_shape[1];
+    if a_shape.as_slice() != [n, n]
+        || x_shape.as_slice() != [n, rhs]
+        || b_shape.as_slice() != [n, rhs]
+    {
+        return None;
+    }
+    let ax = matmul_col_major(&a, n, n, &x, n, rhs)?;
+    Some((ax, b))
 }
 
 fn verify_qr(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f64>)> {
@@ -1120,6 +1148,20 @@ fn spd_data(n: usize, seed: u64) -> Vec<f64> {
         }
     }
     out
+}
+
+fn solve_matrix_data(n: usize, seed: u64, gen: &str) -> Vec<f64> {
+    match gen {
+        "spd" => spd_data(n, seed),
+        "well_conditioned" => well_conditioned(n, n, seed),
+        _ => {
+            let mut d = normal_data(&[n, n], seed);
+            for j in 0..n {
+                d[j + n * j] += n as f64;
+            }
+            d
+        }
+    }
 }
 
 fn batched_matmul_cfg() -> DotGeneralConfig {

@@ -60,6 +60,50 @@ problems:
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
     only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
 
+  - id: dense_solve_f64_1024_rhs16
+    family: dense
+    op: solve
+    dtype: {a: f64, b: f64, c: f64}
+    layout: {tenferro: col_major, framework: row_major_contiguous}
+    data: {generator: well_conditioned, seed: 7}
+    linalg: {n: 1024, rhs_cols: 16}
+    run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+
+  - id: dense_solve_f64_2048_rhs16
+    family: dense
+    op: solve
+    dtype: {a: f64, b: f64, c: f64}
+    layout: {tenferro: col_major, framework: row_major_contiguous}
+    data: {generator: well_conditioned, seed: 8}
+    linalg: {n: 2048, rhs_cols: 16}
+    run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+
+  - id: dense_solve_f64_4096_rhs16
+    family: dense
+    op: solve
+    dtype: {a: f64, b: f64, c: f64}
+    layout: {tenferro: col_major, framework: row_major_contiguous}
+    data: {generator: well_conditioned, seed: 9}
+    linalg: {n: 4096, rhs_cols: 16}
+    run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+
+  - id: dense_solve_f64_2048_rhs128
+    family: dense
+    op: solve
+    dtype: {a: f64, b: f64, c: f64}
+    layout: {tenferro: col_major, framework: row_major_contiguous}
+    data: {generator: well_conditioned, seed: 10}
+    linalg: {n: 2048, rhs_cols: 128}
+    run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+
   - id: dense_svd_f64_256
     family: dense
     op: svd

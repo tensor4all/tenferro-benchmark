@@ -113,6 +113,54 @@ PY
   fi
 }
 
+assert_gpu_dense_large_solve_cases() {
+  if ! uv run python - >"$TMP/out" 2>&1 <<'PY'; then
+from pathlib import Path
+
+import yaml
+
+suite = yaml.safe_load(Path("benchmarks/gpu/dense.yaml").read_text())
+problems = {
+    problem["id"]: problem
+    for problem in suite["problems"]
+    if problem.get("op") == "solve"
+}
+expected = {
+    "dense_solve_f64_512_rhs16": (512, 16, "spd"),
+    "dense_solve_f64_1024_rhs16": (1024, 16, "well_conditioned"),
+    "dense_solve_f64_2048_rhs16": (2048, 16, "well_conditioned"),
+    "dense_solve_f64_4096_rhs16": (4096, 16, "well_conditioned"),
+    "dense_solve_f64_2048_rhs128": (2048, 128, "well_conditioned"),
+}
+missing = sorted(set(expected) - set(problems))
+if missing:
+    raise AssertionError(f"missing GPU dense solve cases: {missing}")
+for problem_id, (n, rhs_cols, generator) in expected.items():
+    problem = problems[problem_id]
+    assert problem["family"] == "dense"
+    assert problem["dtype"] == {"a": "f64", "b": "f64", "c": "f64"}
+    assert problem["data"]["generator"] == generator
+    assert problem["linalg"] == {"n": n, "rhs_cols": rhs_cols}
+    assert problem["run"] == {
+        "warmups": 2,
+        "runs": 5,
+        "timing_scope": "steady_state_host_api_plus_device_sync",
+    }
+    assert problem["verify"]["reference"] == "cpu_fp64"
+    assert problem["verify"]["residual_rtol"] == 1.0e-8
+    assert problem["only_backends"] == [
+        "tenferro-cuda-trace",
+        "tenferro-cuda-eager",
+        "pytorch-cuda",
+        "jax-cuda",
+        "cusolver",
+    ]
+PY
+    cat "$TMP/out" >&2
+    exit 1
+  fi
+}
+
 assert_benchmark_layout_api() {
   if ! uv run python - >"$TMP/out" 2>&1 <<'PY'; then
 from pathlib import Path
@@ -207,6 +255,7 @@ assert_yaml_list_contains benchmarks/cpu/einsum.yaml problems.include bin_matmul
 assert_top_level_backends benchmarks/gpu/dense.yaml
 assert_top_level_backends benchmarks/gpu/einsum.yaml
 assert_top_level_backends benchmarks/gpu/sparse.yaml
+assert_gpu_dense_large_solve_cases
 
 cat > "$TMP/cpu_selector_suite.yaml" <<'YAML'
 schema_version: 1

@@ -173,11 +173,15 @@ def _run_pytorch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         return _stub(suite_id, problem, backend, device_ordinal,
                      status="runtime_failed", reason=str(exc)[:500], path=path, **kw)
 
-    # Verification against CPU float64
+    # Verification against CPU float64. Solve uses a residual check so large
+    # GPU-oriented cases do not require an O(n^3) CPU reference solve.
     try:
-        cpu_data = _to_torch_cpu_f64(data)
-        cpu_fn = _torch_fn(op, cpu_data)
-        cpu_result = cpu_fn()
+        if op == "solve":
+            cpu_result = None
+        else:
+            cpu_data = _to_torch_cpu_f64(data)
+            cpu_fn = _torch_fn(op, cpu_data)
+            cpu_result = cpu_fn()
         ver_status, max_abs, max_rel = _verify_torch(op, result, cpu_result, data, rtol, atol)
     except Exception as exc:
         ver_status, max_abs, max_rel = "skipped", None, None
@@ -272,11 +276,15 @@ def _run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         return _stub(suite_id, problem, backend, device_ordinal,
                      status=status, reason=msg[:500], path=path, **kw)
 
-    # Verification against CPU float64
+    # Verification against CPU float64. Solve uses a residual check so large
+    # GPU-oriented cases do not require an O(n^3) CPU reference solve.
     try:
-        cpu_data_jax = _to_jax_cpu(data)
-        cpu_fn_jit, cpu_args = _jax_fn(op, cpu_data_jax)
-        cpu_result = jax.block_until_ready(cpu_fn_jit(*cpu_args))
+        if op == "solve":
+            cpu_result = None
+        else:
+            cpu_data_jax = _to_jax_cpu(data)
+            cpu_fn_jit, cpu_args = _jax_fn(op, cpu_data_jax)
+            cpu_result = jax.block_until_ready(cpu_fn_jit(*cpu_args))
         ver_status, max_abs, max_rel = _verify_jax(op, result, cpu_result, data, rtol, atol)
     except Exception:
         ver_status, max_abs, max_rel = "skipped", None, None
@@ -896,7 +904,12 @@ def _make_data_np(problem: dict) -> dict:
         p = problem["linalg"]
         n = p["n"]
         rhs = p.get("rhs_cols", 1)
-        A = spd(n, data_seed=seed) if generator == "spd" else normal(n, n, data_seed=seed) + n * np.eye(n, dtype=f64)
+        if generator == "spd":
+            A = spd(n, data_seed=seed)
+        elif generator == "well_conditioned":
+            A = well_conditioned(n, n, data_seed=seed)
+        else:
+            A = normal(n, n, data_seed=seed) + n * np.eye(n, dtype=f64)
         b = normal(n, rhs, data_seed=seed + 100)
         return {"op": op, "A": A, "b": b}
 
@@ -1104,7 +1117,17 @@ def _verify_torch(op, gpu_result, cpu_result, data, rtol, atol):
         return ("passed" if passed else "failed"), a_abs, a_rel
 
     try:
-        if op in ("matmul", "batched_matmul", "einsum", "solve"):
+        if op == "solve":
+            x = to_np(gpu_result)
+            A = to_np(data["A"])
+            b = to_np(data["b"])
+            residual = A @ x - b
+            b_norm = np.max(np.abs(b))
+            a = float(np.max(np.abs(residual)))
+            r = float(np.max(np.abs(residual) / max(float(b_norm), 1e-10)))
+            return check(a, r, b_norm)
+
+        if op in ("matmul", "batched_matmul", "einsum"):
             cpu_np = to_np(cpu_result)
             a = abs_err(gpu_result, cpu_np)
             r = rel_err(gpu_result, cpu_np)
@@ -1165,7 +1188,17 @@ def _verify_jax(op, gpu_result, cpu_result, data, rtol, atol):
         return ("passed" if passed else "failed"), a_abs, a_rel
 
     try:
-        if op in ("matmul", "batched_matmul", "einsum", "solve"):
+        if op == "solve":
+            x = to_np(gpu_result)
+            A = data["A"].astype(np.float64)
+            b = data["b"].astype(np.float64)
+            residual = A @ x - b
+            b_norm = np.max(np.abs(b))
+            a = float(np.max(np.abs(residual)))
+            r = float(np.max(np.abs(residual) / max(float(b_norm), 1e-10)))
+            return check(a, r, b_norm)
+
+        if op in ("matmul", "batched_matmul", "einsum"):
             cpu_np = to_np(cpu_result)
             a = abs_err(gpu_result, cpu_np)
             r = rel_err(gpu_result, cpu_np)

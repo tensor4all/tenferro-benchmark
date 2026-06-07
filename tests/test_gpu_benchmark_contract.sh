@@ -37,6 +37,8 @@ uv run python scripts/validate_benchmark_suite.py \
   benchmarks/gpu/einsum.yaml \
   benchmarks/gpu/sparse.yaml
 
+rg -n 'RUST_MIN_STACK="\$\{RUST_MIN_STACK:-67108864\}"' scripts/run_gpu_suite.sh
+
 cat > "$TMP/bad_ok_result.jsonl" <<'JSON'
 {"schema_version":1,"suite_id":"gpu/dense","problem_id":"bad_ok","op":"matmul","backend":"pytorch-cuda","status":"ok","timing":{"warmup_runs":0,"timed_runs":0,"compile_time_ms":null,"first_run_ms":null,"median_ms":null,"min_ms":null,"p95_ms":null,"iqr_ms":null,"timing_scope":"steady_state_host_api_plus_device_sync"},"verification":{"status":"skipped","reference_backend":null,"rtol":null,"atol":null},"environment":{"timestamp_utc":"not-a-date"},"execution":{"device":"cuda","device_ordinal":0,"execution_path":"contract-test","synchronization":"none","layout":"{}","dtype":"{}"}}
 JSON
@@ -194,6 +196,21 @@ rec = mod._run_one(
 )
 assert rec["status"] == "not_configured", rec
 assert "Unknown backend cuda" in rec["execution"]["unsupported_reason"], rec
+
+import numpy as np
+import torch
+
+solve_data = {
+    "A": np.array([[2.0, 0.0], [0.0, 4.0]], dtype=np.float64),
+    "b": np.array([[2.0], [8.0]], dtype=np.float64),
+}
+good_x = torch.tensor([[1.0], [2.0]], dtype=torch.float64)
+bad_cpu_reference = torch.zeros_like(good_x)
+assert mod._verify_torch("solve", good_x, bad_cpu_reference, solve_data, 1.0e-12, 1.0e-12)[0] == "passed"
+bad_x = torch.tensor([[1.0], [3.0]], dtype=torch.float64)
+assert mod._verify_torch("solve", bad_x, bad_cpu_reference, solve_data, 1.0e-12, 1.0e-12)[0] == "failed"
+assert mod._verify_jax("solve", np.array([[1.0], [2.0]]), np.zeros((2, 1)), solve_data, 1.0e-12, 1.0e-12)[0] == "passed"
+assert mod._verify_jax("solve", np.array([[1.0], [3.0]]), np.zeros((2, 1)), solve_data, 1.0e-12, 1.0e-12)[0] == "failed"
 PY
 
 GPU_BENCH_TIMESTAMP=19990101_000000 \

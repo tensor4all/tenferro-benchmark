@@ -26,6 +26,7 @@ SUITES_VALUE="${GPU_BENCH_SUITE:-benchmarks/gpu/dense.yaml,benchmarks/gpu/einsum
 BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda,cublaslt,cutlass,cusolver,cusparse,ginkgo}"
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 PROBLEM_FILTER="${GPU_BENCH_PROBLEM:-}"
+RUST_MIN_STACK="${RUST_MIN_STACK:-67108864}"
 
 cd "$PROJECT_DIR"
 
@@ -147,12 +148,14 @@ for suite in "${SUITES[@]}"; do
             echo "  Building benchmark_gpu_rust..."
             CUBECL_DEBUG_LOG=0 \
             CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+            RUST_MIN_STACK="$RUST_MIN_STACK" \
             LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
                 cargo build --release --features cuda --bin benchmark_gpu_rust 2>&1
             RUST_BUILT=1
         fi
         CUBECL_DEBUG_LOG=0 \
         CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+        RUST_MIN_STACK="$RUST_MIN_STACK" \
         LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
             "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
             "${RUST_BACKENDS[@]}" -- "$suite"
