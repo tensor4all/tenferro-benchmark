@@ -7,6 +7,7 @@ import argparse
 import json
 import sys
 from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown
+from collect_gpu_info import markdown as gpu_info_markdown, resolve_gpu_info
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -120,6 +121,11 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
 
     lines = ["# GPU Benchmark Results", ""]
     lines.extend(run_metadata_lines(run_metadata))
+    gpu_info = resolve_gpu_info(records, run_metadata)
+    gpu_markdown = gpu_info_markdown(gpu_info)
+    if gpu_markdown:
+        lines.append(gpu_markdown.rstrip())
+        lines.append("")
     lines.append(cpu_info_markdown(collect_cpu_info()).rstrip())
     lines.append("")
     lines.append("Median time is reported in milliseconds for `ok` records.")

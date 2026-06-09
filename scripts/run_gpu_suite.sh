@@ -125,6 +125,7 @@ write_run_metadata() {
         --tenferro-dir "$tenferro_dir"
         --features cuda
         --blas none
+        --cuda-device-ordinal "$DEVICE_ORDINAL"
         --output "$run_yaml"
     )
     if [[ -n "$tenferro_commit" ]]; then

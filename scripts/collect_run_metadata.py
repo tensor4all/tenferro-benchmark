@@ -17,6 +17,8 @@ from typing import Any
 
 import yaml
 
+from collect_gpu_info import collect_cuda_metadata
+
 from benchmark_layout import safe_suite_id_parts, safe_target_profile
 
 ENV_KEYS = (
@@ -433,6 +435,10 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
     if blas is not None:
         metadata["blas"] = blas
     metadata["python_backends"] = collect_python_backends()
+    if "cuda" in parse_features(args.features) and args.cuda_device_ordinal is not None:
+        cuda = collect_cuda_metadata(args.cuda_device_ordinal)
+        if cuda is not None:
+            metadata["cuda"] = cuda
     return metadata
 
 
@@ -447,6 +453,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tenferro-ref")
     parser.add_argument("--features", action="append", default=[])
     parser.add_argument("--blas", choices=["openblas", "accelerate", "none"])
+    parser.add_argument("--cuda-device-ordinal", type=int)
     parser.add_argument("--output", required=True, type=Path)
     return parser.parse_args()
 

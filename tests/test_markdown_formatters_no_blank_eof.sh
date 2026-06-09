@@ -57,11 +57,23 @@ target_profile: nvidia-gpu
 suite_id: gpu/dense
 suite_file: benchmarks/gpu/dense.yaml
 timestamp: "1999-01-01T00:00:00+00:00"
+cuda:
+  device_ordinal: 0
+  device_name: NVIDIA GeForce RTX 3060
+  device_uuid: GPU-00000000-0000-0000-0000-000000000000
+  device_memory_bytes: 12884901888
+  driver_version: 580.159.03
+  runtime_version: "12.8"
+  cuda_version: "13.0"
+  cudnn_version: "91002"
 YAML
 
 "${PY[@]}" "$ROOT/scripts/format_gpu_results.py" \
   "$TMP/gpu.jsonl" --run-metadata "$TMP/run.yaml" --output "$TMP/gpu.md"
 assert_clean_eof "$TMP/gpu.md"
+rg -n "## GPU Information" "$TMP/gpu.md"
+rg -n "NVIDIA GeForce RTX 3060" "$TMP/gpu.md"
+rg -n "cuda:0" "$TMP/gpu.md"
 
 "${PY[@]}" "$ROOT/scripts/format_gpu_results.py" \
   "$TMP/gpu.jsonl" --run-metadata "$TMP/run.yaml" > "$TMP/gpu_stdout.md"

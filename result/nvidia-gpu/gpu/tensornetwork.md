@@ -3,8 +3,19 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/tensornetwork`
 - Suite file: `benchmarks/gpu/tensornetwork.yaml`
-- Timestamp: `2026-06-09T03:35:06.626569+00:00`
+- Timestamp: `2026-06-09T03:41:21.536723+00:00`
 - tenferro-rs commit: `d30e592289abf59a7d91f0ec56eaadbe864220a6`
+
+## GPU Information
+
+- Device: `cuda:0`
+- Name: `NVIDIA GeForce RTX 3060`
+- UUID: `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`
+- Memory: `12 GiB`
+- Driver version: `580.159.03`
+- CUDA version: `13.0`
+- CUDA runtime: `12.6`
+- cuDNN version: `92300`
 
 ## CPU Information
 
@@ -29,4 +40,4 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA |
 |---|---:|---:|---:|
-| tensornetwork_permutation_optimized_f32 | 221.247 | 310.987 | 332.227 |
+| tensornetwork_permutation_optimized_f32 | 228.109 | 295.237 | 330.922 |

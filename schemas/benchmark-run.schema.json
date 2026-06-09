@@ -152,6 +152,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "device_ordinal": { "type": ["integer", "null"], "minimum": 0 },
         "device_name": { "type": ["string", "null"] },
         "device_uuid": { "type": ["string", "null"] },
         "device_memory_bytes": { "type": ["integer", "null"], "minimum": 0 },
