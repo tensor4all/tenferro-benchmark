@@ -6,7 +6,7 @@ The repository keeps the latest human-facing reports per target profile:
 
 - macOS CPU: `result/mac-cpu/cpu/einsum.md`, `result/mac-cpu/cpu/cpu_ops.md`
 - Linux/AMD CPU: `result/amd-cpu/cpu/einsum.md`, `result/amd-cpu/cpu/cpu_ops.md`
-- NVIDIA GPU: `result/nvidia-gpu/gpu/dense.md`, `result/nvidia-gpu/gpu/einsum.md`, `result/nvidia-gpu/gpu/sparse.md`
+- NVIDIA GPU: `result/nvidia-gpu/gpu/dense.md`, `result/nvidia-gpu/gpu/einsum.md`, `result/nvidia-gpu/gpu/sparse.md`, `result/nvidia-gpu/gpu/tensornetwork.md`
 
 Historical reports are not archived in extra files. Use git history when older
 results are needed.
@@ -17,6 +17,7 @@ results are needed.
 - [Linux CPU devcontainer workflow](docs/linux-cpu-devcontainer.md): Docker/devcontainer, OpenBLAS for tenferro, detected PyTorch provider.
 - [NVIDIA GPU devcontainer workflow](docs/gpu-devcontainer.md): CUDA devcontainer.
 - [Einsum suite and instance selection](docs/einsum-suite.md): source benchmark, selection rules, diagnostic cases, path strategies.
+- [GPU tensor network suite](docs/tensornetwork-gpu.md): TensorNetworkBenchmarks parity on CUDA.
 - [Result layout and metadata](docs/results.md): `target_profile`, `suite_id`, `run.yaml`, latest reports.
 - [Architecture terminology](docs/architecture.md): suite, runner, backend, strategy, target profile.
 - [PyTorch einsum dispatch notes](docs/pytorch-einsum-dispatch.md): PyTorch source investigation notes.
@@ -85,7 +86,7 @@ Run these after changing benchmark scripts or schemas:
 
 ```bash
 uv run python scripts/validate_benchmark_suite.py benchmarks/cpu/einsum.yaml
-uv run python scripts/validate_benchmark_suite.py benchmarks/gpu/dense.yaml benchmarks/gpu/einsum.yaml benchmarks/gpu/sparse.yaml
+uv run python scripts/validate_benchmark_suite.py benchmarks/gpu/dense.yaml benchmarks/gpu/einsum.yaml benchmarks/gpu/sparse.yaml benchmarks/gpu/tensornetwork.yaml
 bash tests/test_suite_result_layout.sh
 bash tests/test_run_all_docs_outputs.sh
 bash tests/test_clean_extern_deps.sh

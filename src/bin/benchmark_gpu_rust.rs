@@ -16,6 +16,11 @@ use tenferro_cpu::CpuBackend;
 use tenferro_einsum::eager_tensor as eager_einsum;
 use tenferro_gpu::{download_tensor, gpu_available, upload_tensor, CubeclBackend, CubeclRuntime};
 use tenferro_linalg::eager_tensor as eager_linalg;
+use tenferro_einsum_benchmark::tensornetwork::{
+    build_cpu_eager_inputs as build_tensor_network_cpu_inputs, contract_tree_eager,
+    contract_tree_trace, load_tensor_network, scalar_f32, scalar_f32_tensor,
+    tensor_f32_col_major, TensorNetworkFile, TensorNetworkSpec,
+};
 use tenferro_runtime::{
     traced_tensor, DotGeneralConfig, Error as TfError, GraphCompiler, GraphExecutor, Tensor,
     TracedTensor, TypedTensor,
@@ -129,6 +134,322 @@ fn dispatch(
 }
 
 // ---------------------------------------------------------------------------
+// Tensor network runner (TensorNetworkBenchmarks parity)
+// ---------------------------------------------------------------------------
+
+fn verify_tensor_network_scalar(
+    gpu: f32,
+    cpu: f32,
+    rtol: f64,
+    atol: f64,
+) -> (String, Option<f64>, Option<f64>) {
+    let max_abs = (gpu - cpu).abs() as f64;
+    let max_rel = max_abs / cpu.abs().max(1e-10_f32) as f64;
+    let norm = cpu.abs().max(1.0_f32) as f64;
+    let passed = max_abs <= atol + rtol * norm;
+    (
+        if passed { "passed" } else { "failed" }.to_string(),
+        Some(max_abs),
+        Some(max_rel),
+    )
+}
+
+fn build_gpu_eager_inputs(
+    network: &TensorNetworkFile,
+    spec: &TensorNetworkSpec,
+    ctx: std::sync::Arc<EagerRuntime>,
+    runtime: &CubeclRuntime,
+) -> Result<Vec<EagerTensor>, String> {
+    network
+        .inputs
+        .iter()
+        .map(|ixs| {
+            let shape = vec![spec.bond_dim; ixs.len()];
+            let cpu = tensor_f32_col_major(&shape, spec.fill_value);
+            let gpu = upload_tensor(runtime, &cpu).map_err(|e| format!("upload: {e}"))?;
+            Ok(EagerTensor::from_tensor_in(gpu, ctx.clone()))
+        })
+        .collect()
+}
+
+fn build_trace_inputs(
+    network: &TensorNetworkFile,
+    spec: &TensorNetworkSpec,
+    upload_rt: &CubeclRuntime,
+) -> Result<Vec<(TracedTensor, Tensor)>, String> {
+    network
+        .inputs
+        .iter()
+        .map(|ixs| {
+            let shape = vec![spec.bond_dim; ixs.len()];
+            let cpu = tensor_f32_col_major(&shape, spec.fill_value);
+            let tensor = upload_tensor(upload_rt, &cpu).map_err(|e| format!("upload: {e}"))?;
+            Ok((TracedTensor::from_tensor_concrete_shape(tensor.clone()), cpu))
+        })
+        .collect()
+}
+
+fn scalar_f32_from_eager_gpu(
+    result: &EagerTensor,
+    runtime: &CubeclRuntime,
+) -> Result<f32, String> {
+    let downloaded = download_tensor(runtime, result.data())
+        .map_err(|e| format!("download: {e}"))?;
+    scalar_f32_tensor(&downloaded)
+}
+
+fn run_eager_tensor_network(
+    suite_id: &str,
+    problem: &serde_yaml::Value,
+    backend: &str,
+    device_ordinal: usize,
+    ts: &str,
+    bc: Option<&str>,
+    tc: Option<&str>,
+) -> Value {
+    let n_warmup = yaml_usize(&problem["run"]["warmups"], 3);
+    let n_runs = yaml_usize(&problem["run"]["runs"], 10);
+    let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-4);
+    let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-5);
+    let exec_path = "phase2-measured-tenferro-cuda-eager-tensornetwork";
+
+    let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
+        let spec = TensorNetworkSpec::from_problem(problem, std::path::Path::new("."))?;
+        let network = load_tensor_network(&spec.source)?;
+        let transfer_bk =
+            CubeclBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
+        let compute_bk =
+            CubeclBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
+        let ctx = EagerRuntime::with_cuda_backend(compute_bk);
+        let gpu_inputs = build_gpu_eager_inputs(
+            &network,
+            &spec,
+            ctx.clone(),
+            transfer_bk.runtime(),
+        )?;
+        sync_cubecl_runtime(transfer_bk.runtime())?;
+        let cpu_ctx = EagerRuntime::with_cpu_backend(CpuBackend::default());
+        let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx.clone());
+
+        for _ in 0..n_warmup {
+            let _ = contract_tree_eager(&network.tree, &gpu_inputs)?;
+            sync_eager_runtime(&ctx)?;
+        }
+
+        let mut times_ms = Vec::with_capacity(n_runs);
+        let mut last_out: Option<EagerTensor> = None;
+        for _ in 0..n_runs {
+            let t0 = Instant::now();
+            let out = contract_tree_eager(&network.tree, &gpu_inputs)?;
+            sync_eager_runtime(&ctx)?;
+            times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
+            last_out = Some(out);
+        }
+
+        let cpu_scalar = scalar_f32(&contract_tree_eager(&network.tree, &cpu_inputs)?)?;
+        let last_out = last_out.ok_or("missing timed tensor network result".to_string())?;
+        let gpu_scalar = scalar_f32_from_eager_gpu(&last_out, transfer_bk.runtime())?;
+        let (ver_status, max_abs, max_rel) =
+            verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
+
+        Ok((times_ms, ver_status, max_abs, max_rel))
+    }));
+
+    match result {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
+            if ver_status == "failed" {
+                return stub(
+                    suite_id,
+                    problem,
+                    backend,
+                    device_ordinal,
+                    "verification_failed",
+                    &format!("max_abs={:.3e}", max_abs.unwrap_or(f64::NAN)),
+                    exec_path,
+                    ts,
+                    bc,
+                    tc,
+                );
+            }
+            let stats = timing_stats(&times_ms);
+            ok_record(
+                suite_id,
+                problem,
+                backend,
+                device_ordinal,
+                exec_path,
+                n_warmup,
+                n_runs,
+                stats,
+                &ver_status,
+                max_abs,
+                max_rel,
+                rtol,
+                atol,
+                ts,
+                bc,
+                tc,
+            )
+        }
+        Ok(Err(msg)) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            &msg,
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
+        Err(_) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            "panic during tensor network eager benchmark",
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
+    }
+}
+
+fn run_trace_tensor_network(
+    suite_id: &str,
+    problem: &serde_yaml::Value,
+    backend: &str,
+    device_ordinal: usize,
+    ts: &str,
+    bc: Option<&str>,
+    tc: Option<&str>,
+) -> Value {
+    let n_warmup = yaml_usize(&problem["run"]["warmups"], 3);
+    let n_runs = yaml_usize(&problem["run"]["runs"], 10);
+    let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-4);
+    let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-5);
+    let exec_path = "phase2-measured-tenferro-cuda-trace-tensornetwork";
+
+    let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
+        let spec = TensorNetworkSpec::from_problem(problem, std::path::Path::new("."))?;
+        let network = load_tensor_network(&spec.source)?;
+        let transfer_bk =
+            CubeclBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
+        let compute_bk =
+            CubeclBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
+        let trace_inputs = build_trace_inputs(&network, &spec, transfer_bk.runtime())?;
+        let output = contract_tree_trace(&network.tree, &trace_inputs)?;
+        sync_cubecl_runtime(transfer_bk.runtime())?;
+
+        let mut compiler = GraphCompiler::new();
+        let program = compiler
+            .compile_many(&[&output])
+            .map_err(|e| format!("compile: {e}"))?;
+
+        let mut executor = GraphExecutor::new(compute_bk);
+        executor
+            .register_extension(tenferro_einsum::register_runtime)
+            .map_err(|e| format!("register einsum: {e}"))?;
+
+        for _ in 0..n_warmup {
+            let out = executor
+                .run_many(&program)
+                .map_err(|e| format!("warmup: {e}"))?;
+            sync_cubecl_runtime(executor.backend().runtime())?;
+            black_box(out.len());
+        }
+
+        let mut times_ms = Vec::with_capacity(n_runs);
+        let mut gpu_scalar = None;
+        for _ in 0..n_runs {
+            let t0 = Instant::now();
+            let out = executor
+                .run_many(&program)
+                .map_err(|e| format!("run: {e}"))?;
+            sync_cubecl_runtime(executor.backend().runtime())?;
+            times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
+            let downloaded = download_tensor(transfer_bk.runtime(), &out[0])
+                .map_err(|e| format!("download: {e}"))?;
+            gpu_scalar = Some(scalar_f32_tensor(&downloaded)?);
+        }
+
+        let cpu_ctx = EagerRuntime::with_cpu_backend(CpuBackend::default());
+        let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx);
+        let cpu_scalar = scalar_f32(&contract_tree_eager(&network.tree, &cpu_inputs)?)?;
+        let gpu_scalar = gpu_scalar.ok_or("missing timed tensor network result")?;
+        let (ver_status, max_abs, max_rel) =
+            verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
+
+        Ok((times_ms, ver_status, max_abs, max_rel))
+    }));
+
+    match result {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
+            if ver_status == "failed" {
+                return stub(
+                    suite_id,
+                    problem,
+                    backend,
+                    device_ordinal,
+                    "verification_failed",
+                    &format!("max_abs={:.3e}", max_abs.unwrap_or(f64::NAN)),
+                    exec_path,
+                    ts,
+                    bc,
+                    tc,
+                );
+            }
+            let stats = timing_stats(&times_ms);
+            ok_record(
+                suite_id,
+                problem,
+                backend,
+                device_ordinal,
+                exec_path,
+                n_warmup,
+                n_runs,
+                stats,
+                &ver_status,
+                max_abs,
+                max_rel,
+                rtol,
+                atol,
+                ts,
+                bc,
+                tc,
+            )
+        }
+        Ok(Err(msg)) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            &msg,
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
+        Err(_) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            "panic during tensor network trace benchmark",
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Eager runner
 // ---------------------------------------------------------------------------
 
@@ -142,6 +463,9 @@ fn run_eager(
     tc: Option<&str>,
 ) -> Value {
     let op = problem["op"].as_str().unwrap_or("");
+    if op == "tensor_network_contract" {
+        return run_eager_tensor_network(suite_id, problem, backend, device_ordinal, ts, bc, tc);
+    }
     let supported = [
         "matmul",
         "batched_matmul",
@@ -315,6 +639,9 @@ fn run_trace(
     tc: Option<&str>,
 ) -> Value {
     let op = problem["op"].as_str().unwrap_or("");
+    if op == "tensor_network_contract" {
+        return run_trace_tensor_network(suite_id, problem, backend, device_ordinal, ts, bc, tc);
+    }
     let supported = [
         "matmul",
         "batched_matmul",

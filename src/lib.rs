@@ -1,3 +1,5 @@
+pub mod tensornetwork;
+
 use std::fmt::Display;
 
 use tenferro_einsum::{einsum_subscripts_with, ContractionTree, EinsumOptimize, Subscripts};

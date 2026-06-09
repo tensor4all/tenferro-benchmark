@@ -35,7 +35,8 @@ trap cleanup EXIT
 uv run python scripts/validate_benchmark_suite.py \
   benchmarks/gpu/dense.yaml \
   benchmarks/gpu/einsum.yaml \
-  benchmarks/gpu/sparse.yaml
+  benchmarks/gpu/sparse.yaml \
+  benchmarks/gpu/tensornetwork.yaml
 
 rg -n 'RUST_MIN_STACK="\$\{RUST_MIN_STACK:-67108864\}"' scripts/run_gpu_suite.sh
 

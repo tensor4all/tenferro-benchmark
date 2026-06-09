@@ -1,0 +1,30 @@
+schema_version: 1
+suite_id: gpu/tensornetwork
+title: GPU Tensor Network Benchmarks
+description: Tree-guided tensor network contraction for tenferro-rs vs GPU framework comparison.
+defaults:
+  device: {kind: cuda, ordinal: 0}
+  layout: {tenferro: col_major, framework: row_major_contiguous}
+  run: {warmups: 3, runs: 10, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: cpu_fp32_tree, rtol: 1.0e-4, atol: 1.0e-5}
+backends:
+  - tenferro-cuda-trace
+  - tenferro-cuda-eager
+  - pytorch-cuda
+  - jax-cuda
+problems:
+  - id: tensornetwork_permutation_optimized_f32
+    family: tensornetwork
+    op: tensor_network_contract
+    intent: Compare tenferro-rs CUDA backends against PyTorch/JAX on the TensorNetworkBenchmarks tree.
+    notes: Uses extern/TensorNetworkBenchmarks JSON for the problem only; OMEinsum.jl is not a comparison backend.
+    dtype: {a: f32, accum: f32}
+    layout: {tenferro: col_major, framework: row_major_contiguous}
+    data: {generator: tensornetwork_fill, seed: 0}
+    tensor_network:
+      source: extern/TensorNetworkBenchmarks/data/tensornetwork_permutation_optimized.json
+      bond_dim: 2
+      fill_value: 0.8408964152537145
+      execution: tree
+    run: {warmups: 3, runs: 10, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_fp32_tree, rtol: 1.0e-4, atol: 1.0e-5}
