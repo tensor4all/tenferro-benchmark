@@ -85,6 +85,31 @@ suite_id_for_file() {
     awk '$1 == "suite_id:" { print $2; exit }' "$1"
 }
 
+suite_backends_for_file() {
+    awk '
+        /^backends:/ { in_backends = 1; next }
+        in_backends && /^  - / { print $2; next }
+        in_backends && /^[^[:space:]]/ { exit }
+    ' "$1"
+}
+
+backends_for_suite() {
+    local suite="$1"
+    local -n _out="$2"
+    local suite_backend
+    local requested
+    _out=()
+    mapfile -t _suite_backends < <(suite_backends_for_file "$suite")
+    for requested in "${BACKENDS[@]}"; do
+        for suite_backend in "${_suite_backends[@]}"; do
+            if [[ "$requested" == "$suite_backend" ]]; then
+                _out+=("$requested")
+                break
+            fi
+        done
+    done
+}
+
 write_run_metadata() {
     local suite_id="$1"
     local suite_file="$2"
@@ -110,6 +135,77 @@ write_run_metadata() {
 
 RUST_BIN="$PROJECT_DIR/target/release/benchmark_gpu_rust"
 RUST_BUILT=0
+GPU_BENCH_BACKEND_SLEEP="${GPU_BENCH_BACKEND_SLEEP:-2}"
+
+build_rust_benchmark_if_needed() {
+    if [[ "$RUST_BUILT" != "0" ]]; then
+        return 0
+    fi
+    echo "  Building benchmark_gpu_rust..."
+    CUBECL_DEBUG_LOG=0 \
+    CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+    RUST_MIN_STACK="$RUST_MIN_STACK" \
+    LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+        cargo build --release --features cuda --bin benchmark_gpu_rust 2>&1
+    RUST_BUILT=1
+}
+
+run_rust_backend() {
+    local suite="$1"
+    local chunk_jsonl="$2"
+    shift 2
+    build_rust_benchmark_if_needed
+    CUBECL_DEBUG_LOG=0 \
+    CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+    RUST_MIN_STACK="$RUST_MIN_STACK" \
+    LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+        "$RUST_BIN" "$chunk_jsonl" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
+        "$@" -- "$suite"
+}
+
+run_python_backend() {
+    local suite="$1"
+    local chunk_jsonl="$2"
+    shift 2
+    "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_python.py" \
+        "$chunk_jsonl" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
+        "$@" -- "$suite"
+}
+
+run_suite_serial_by_backend() {
+    local suite="$1"
+    local suite_id="$2"
+    local run_dir="$3"
+    local result_jsonl="$4"
+    local backends_to_run=()
+
+    backends_for_suite "$suite" backends_to_run
+    if [[ ${#backends_to_run[@]} -eq 0 ]]; then
+        echo "No backends from GPU_BENCH_BACKENDS are listed in $suite; skipping runs."
+        return 0
+    fi
+
+    echo "Running $suite_id serially (one backend per process): ${backends_to_run[*]}"
+    for backend in "${backends_to_run[@]}"; do
+        echo ""
+        echo ">>> Backend: $backend"
+        local chunk="$run_dir/chunk_${backend}.jsonl"
+        : > "$chunk"
+
+        if [[ "$backend" == "tenferro-cuda-eager" || "$backend" == "tenferro-cuda-trace" ]]; then
+            run_rust_backend "$suite" "$chunk" "$backend"
+        else
+            run_python_backend "$suite" "$chunk" "$backend"
+        fi
+
+        if [[ -s "$chunk" ]]; then
+            cat "$chunk" >> "$result_jsonl"
+        fi
+
+        # Separate processes so PyTorch/JAX CUDA allocators release device memory.
+        sleep "$GPU_BENCH_BACKEND_SLEEP"
+    done
+}
 
 for suite in "${SUITES[@]}"; do
     suite_id="$(suite_id_for_file "$suite")"
@@ -130,36 +226,22 @@ for suite in "${SUITES[@]}"; do
     : > "$RESULT_JSONL"
     write_run_metadata "$suite_id" "$suite" "$RUN_YAML"
 
-    # Run Python benchmark (pytorch-cuda, jax-cuda, vendor backends)
-    if [[ ${#PYTHON_BACKENDS[@]} -gt 0 ]]; then
-        echo "Running Python benchmarks for $suite_id: ${PYTHON_BACKENDS[*]}"
-        "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_python.py" \
-            "$RESULT_JSONL" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
-            "${PYTHON_BACKENDS[@]}" -- "$suite"
-    fi
-
-    # Run Rust benchmark (tenferro-cuda-eager, tenferro-cuda-trace)
-    if [[ ${#RUST_BACKENDS[@]} -gt 0 ]]; then
-        echo "Running Rust GPU benchmarks for $suite_id: ${RUST_BACKENDS[*]}"
-        if [[ "$RUST_BUILT" == "0" ]]; then
-            # Always ask Cargo to build before measuring so source changes that affect
-            # synchronization or timing metadata cannot be hidden by a stale release
-            # binary from an earlier benchmark run.
-            echo "  Building benchmark_gpu_rust..."
-            CUBECL_DEBUG_LOG=0 \
-            CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
-            RUST_MIN_STACK="$RUST_MIN_STACK" \
-            LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-                cargo build --release --features cuda --bin benchmark_gpu_rust 2>&1
-            RUST_BUILT=1
+    if [[ "$suite_id" == "gpu/tensornetwork" ]]; then
+        run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL"
+    else
+        # Run Python benchmark (pytorch-cuda, jax-cuda, vendor backends)
+        if [[ ${#PYTHON_BACKENDS[@]} -gt 0 ]]; then
+            echo "Running Python benchmarks for $suite_id: ${PYTHON_BACKENDS[*]}"
+            run_python_backend "$suite" "$RESULT_JSONL" "${PYTHON_BACKENDS[@]}"
         fi
-        CUBECL_DEBUG_LOG=0 \
-        CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
-        RUST_MIN_STACK="$RUST_MIN_STACK" \
-        LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-            "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
-            "${RUST_BACKENDS[@]}" -- "$suite"
-        cat "$RUST_JSONL" >> "$RESULT_JSONL"
+
+        # Run Rust benchmark (tenferro-cuda-eager, tenferro-cuda-trace)
+        if [[ ${#RUST_BACKENDS[@]} -gt 0 ]]; then
+            echo "Running Rust GPU benchmarks for $suite_id: ${RUST_BACKENDS[*]}"
+            : > "$RUST_JSONL"
+            run_rust_backend "$suite" "$RUST_JSONL" "${RUST_BACKENDS[@]}"
+            cat "$RUST_JSONL" >> "$RESULT_JSONL"
+        fi
     fi
 
     if [[ ! -s "$RESULT_JSONL" ]]; then

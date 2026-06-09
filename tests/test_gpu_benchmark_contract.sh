@@ -39,6 +39,8 @@ uv run python scripts/validate_benchmark_suite.py \
   benchmarks/gpu/tensornetwork.yaml
 
 rg -n 'RUST_MIN_STACK="\$\{RUST_MIN_STACK:-67108864\}"' scripts/run_gpu_suite.sh
+rg -n 'run_suite_serial_by_backend' scripts/run_gpu_suite.sh
+rg -n 'suite_id" == "gpu/tensornetwork"' scripts/run_gpu_suite.sh
 
 cat > "$TMP/bad_ok_result.jsonl" <<'JSON'
 {"schema_version":1,"suite_id":"gpu/dense","problem_id":"bad_ok","op":"matmul","backend":"pytorch-cuda","status":"ok","timing":{"warmup_runs":0,"timed_runs":0,"compile_time_ms":null,"first_run_ms":null,"median_ms":null,"min_ms":null,"p95_ms":null,"iqr_ms":null,"timing_scope":"steady_state_host_api_plus_device_sync"},"verification":{"status":"skipped","reference_backend":null,"rtol":null,"atol":null},"environment":{"timestamp_utc":"not-a-date"},"execution":{"device":"cuda","device_ordinal":0,"execution_path":"contract-test","synchronization":"none","layout":"{}","dtype":"{}"}}

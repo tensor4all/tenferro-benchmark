@@ -11,7 +11,8 @@ backends:
   - tenferro-cuda-trace
   - tenferro-cuda-eager
   - pytorch-cuda
-  - jax-cuda
+  # Temporarily disabled: high peak VRAM on consumer GPUs. Restore by uncommenting:
+  # - jax-cuda
 problems:
   - id: tensornetwork_permutation_optimized_f32
     family: tensornetwork
