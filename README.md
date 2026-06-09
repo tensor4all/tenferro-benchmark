@@ -11,6 +11,11 @@ The repository keeps the latest human-facing reports per target profile:
 Historical reports are not archived in extra files. Use git history when older
 results are needed.
 
+The GPU tensor network benchmark uses problem data from
+[`extern/TensorNetworkBenchmarks/`](extern/TensorNetworkBenchmarks/), based on
+the upstream [TensorNetworkBenchmarks](https://github.com/TensorBFS/TensorNetworkBenchmarks)
+repository. See [GPU tensor network suite](docs/tensornetwork-gpu.md).
+
 ## Workflows
 
 - [macOS CPU workflow](docs/macos-cpu.md): native run, no Docker, Accelerate.
