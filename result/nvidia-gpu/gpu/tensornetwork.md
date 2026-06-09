@@ -3,30 +3,30 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/tensornetwork`
 - Suite file: `benchmarks/gpu/tensornetwork.yaml`
-- Timestamp: `2026-06-09T03:41:21.536723+00:00`
+- Timestamp: `2026-06-09T03:56:28.462842+00:00`
 - tenferro-rs commit: `d30e592289abf59a7d91f0ec56eaadbe864220a6`
 
 ## GPU Information
 
 - Device: `cuda:0`
-- Name: `NVIDIA GeForce RTX 3060`
-- UUID: `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`
-- Memory: `12 GiB`
-- Driver version: `580.159.03`
+- Name: `NVIDIA A100 80GB PCIe`
+- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
+- Memory: `80 GiB`
+- Driver version: `580.126.09`
 - CUDA version: `13.0`
 - CUDA runtime: `12.6`
 - cuDNN version: `92300`
 
 ## CPU Information
 
-- Model: `Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz`
-- Vendor: `GenuineIntel`
-- Logical CPUs: `36`
+- Model: `AMD EPYC 7713P 64-Core Processor`
+- Vendor: `AuthenticAMD`
+- Logical CPUs: `64`
 - Sockets: `1`
-- Cores per socket: `18`
-- Threads per core: `2`
+- Cores per socket: `64`
+- Threads per core: `1`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-124-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -40,4 +40,4 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA |
 |---|---:|---:|---:|
-| tensornetwork_permutation_optimized_f32 | 228.109 | 295.237 | 330.922 |
+| tensornetwork_permutation_optimized_f32 | 82.778 | 106.036 | 120.500 |

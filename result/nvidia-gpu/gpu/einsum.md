@@ -3,8 +3,19 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/einsum`
 - Suite file: `benchmarks/gpu/einsum.yaml`
-- Timestamp: `2026-06-07T01:20:58.621560+00:00`
+- Timestamp: `2026-06-09T03:56:28.462842+00:00`
 - tenferro-rs commit: `d30e592289abf59a7d91f0ec56eaadbe864220a6`
+
+## GPU Information
+
+- Device: `cuda:0`
+- Name: `NVIDIA A100 80GB PCIe`
+- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
+- Memory: `80 GiB`
+- Driver version: `580.126.09`
+- CUDA version: `13.0`
+- CUDA runtime: `12.6`
+- cuDNN version: `92300`
 
 ## CPU Information
 
@@ -29,4 +40,4 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| einsum_bin_matmul_3072_f64 | 3.338 | 3.224 | 3.155 | 3.552 | 3.157 | 3.481 | unsupported | unsupported | unsupported |
+| einsum_bin_matmul_3072_f64 | 3.209 | 3.206 | 3.153 | 3.315 | 3.161 | not configured | unsupported | unsupported | unsupported |
