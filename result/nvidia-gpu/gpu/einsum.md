@@ -3,30 +3,30 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/einsum`
 - Suite file: `benchmarks/gpu/einsum.yaml`
-- Timestamp: `2026-06-09T03:56:28.462842+00:00`
+- Timestamp: `2026-06-09T04:42:44.101326+00:00`
 - tenferro-rs commit: `d30e592289abf59a7d91f0ec56eaadbe864220a6`
 
 ## GPU Information
 
 - Device: `cuda:0`
-- Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
-- Memory: `80 GiB`
-- Driver version: `580.126.09`
+- Name: `NVIDIA GeForce RTX 3060`
+- UUID: `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`
+- Memory: `12 GiB`
+- Driver version: `580.159.03`
 - CUDA version: `13.0`
 - CUDA runtime: `12.6`
 - cuDNN version: `92300`
 
 ## CPU Information
 
-- Model: `AMD EPYC 7713P 64-Core Processor`
-- Vendor: `AuthenticAMD`
-- Logical CPUs: `64`
+- Model: `Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz`
+- Vendor: `GenuineIntel`
+- Logical CPUs: `36`
 - Sockets: `1`
-- Cores per socket: `64`
-- Threads per core: `1`
+- Cores per socket: `18`
+- Threads per core: `2`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-124-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -40,4 +40,4 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| einsum_bin_matmul_3072_f64 | 3.209 | 3.206 | 3.153 | 3.315 | 3.161 | not configured | unsupported | unsupported | unsupported |
+| einsum_bin_matmul_3072_f64 | 317.213 | 317.224 | 317.123 | 273.216 | 317.142 | 323.142 | unsupported | unsupported | unsupported |
