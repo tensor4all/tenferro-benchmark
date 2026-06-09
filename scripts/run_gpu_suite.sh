@@ -22,7 +22,7 @@ print(datetime.now(timezone.utc).isoformat())
 PY
 )"
 
-SUITES_VALUE="${GPU_BENCH_SUITE:-benchmarks/gpu/dense.yaml,benchmarks/gpu/einsum.yaml,benchmarks/gpu/sparse.yaml}"
+SUITES_VALUE="${GPU_BENCH_SUITE:-benchmarks/gpu/dense.yaml,benchmarks/gpu/einsum.yaml,benchmarks/gpu/sparse.yaml,benchmarks/gpu/tensornetwork.yaml}"
 BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda,cublaslt,cutlass,cusolver,cusparse,ginkgo}"
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 PROBLEM_FILTER="${GPU_BENCH_PROBLEM:-}"

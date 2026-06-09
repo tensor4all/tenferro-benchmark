@@ -27,6 +27,7 @@
         "matmul",
         "batched_matmul",
         "einsum",
+        "tensor_network_contract",
         "qr",
         "solve",
         "svd",

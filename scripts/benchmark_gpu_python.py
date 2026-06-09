@@ -19,8 +19,15 @@ from pathlib import Path
 
 import yaml
 
-_PYTORCH_OPS = {"matmul", "batched_matmul", "einsum", "qr", "solve", "svd", "eigh", "spmv", "spmm"}
-_JAX_OPS = {"matmul", "batched_matmul", "einsum", "qr", "solve", "svd", "eigh"}
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = SCRIPT_DIR.parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+import tensornetwork_contract as tnc
+
+_PYTORCH_OPS = {"matmul", "batched_matmul", "einsum", "tensor_network_contract", "qr", "solve", "svd", "eigh", "spmv", "spmm"}
+_JAX_OPS = {"matmul", "batched_matmul", "einsum", "tensor_network_contract", "qr", "solve", "svd", "eigh"}
 _CUBLASLT_OPS = {"matmul", "batched_matmul", "einsum"}
 _CUSOLVER_OPS = {"qr", "solve", "svd", "eigh"}
 _CUSPARSE_OPS = {"spmv", "spmm"}
@@ -82,12 +89,16 @@ def _run_one(suite_id, problem, backend, device_ordinal, *, suite_backends=None,
             return _stub(suite_id, problem, backend, device_ordinal,
                          status="not_configured", reason=f"pytorch-cuda: op={op} not implemented",
                          path="phase2-runner", **kw)
+        if op == "tensor_network_contract":
+            return _run_tensor_network_pytorch(suite_id, problem, backend, device_ordinal, **kw)
         return _run_pytorch(suite_id, problem, backend, device_ordinal, **kw)
     if backend == "jax-cuda":
         if op not in _JAX_OPS:
             return _stub(suite_id, problem, backend, device_ordinal,
                          status="not_configured", reason=f"jax-cuda: op={op} not implemented",
                          path="phase2-runner", **kw)
+        if op == "tensor_network_contract":
+            return _run_tensor_network_jax(suite_id, problem, backend, device_ordinal, **kw)
         return _run_jax(suite_id, problem, backend, device_ordinal, **kw)
     if backend == "cutlass":
         if op not in _CUTLASS_OPS:
@@ -213,6 +224,323 @@ def _run_pytorch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                       ver_status=ver_status, max_abs=max_abs, max_rel=max_rel,
                       rtol=rtol, atol=atol,
                       env=env)
+
+
+# ---------------------------------------------------------------------------
+# Tensor network runner (TensorNetworkBenchmarks parity)
+# ---------------------------------------------------------------------------
+
+def _tensor_network_spec(problem: dict) -> tuple[Path, int, float]:
+    tn = problem["tensor_network"]
+    source = tnc.resolve_source_path(PROJECT_DIR, tn["source"])
+    bond_dim = int(tn.get("bond_dim", tnc.DEFAULT_BOND_DIM))
+    fill_value = float(tn.get("fill_value", tnc.build_fill_value()))
+    return source, bond_dim, fill_value
+
+
+def _build_tensor_network_inputs_torch(source: Path, bond_dim: int, fill_value: float, device):
+    import torch
+
+    network = tnc.load_tensor_network(source)
+    tensors = [
+        fill_value
+        * torch.ones((bond_dim,) * len(ix), dtype=torch.float32, device=device)
+        for ix in network["inputs"]
+    ]
+    return network, tensors
+
+
+def _contract_tensor_network_torch(network: dict, tensors, device):
+    import torch
+
+    backend = tnc.IntegerLabelEinsumBackend(torch.einsum)
+    return tnc.contract_tree(network["tree"], tensors, backend)
+
+
+def _run_tensor_network_pytorch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
+    import torch
+
+    kw = dict(ts=ts, bc=bc, tc=tc)
+    device = torch.device(f"cuda:{device_ordinal}")
+    run_spec = problem.get("run", {})
+    n_warmup = run_spec.get("warmups", 3)
+    n_runs = run_spec.get("runs", 10)
+    verify_spec = problem.get("verify", {})
+    rtol = float(verify_spec.get("rtol", 1e-4))
+    atol = float(verify_spec.get("atol", 1e-5))
+    path = "phase2-measured-pytorch-cuda-tensornetwork"
+
+    try:
+        source, bond_dim, fill_value = _tensor_network_spec(problem)
+        network, gpu_tensors = _build_tensor_network_inputs_torch(
+            source, bond_dim, fill_value, device
+        )
+    except Exception as exc:
+        return _stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            status="runtime_failed",
+            reason=f"tensor network setup: {exc}",
+            path=path,
+            **kw,
+        )
+
+    try:
+        for _ in range(n_warmup):
+            _contract_tensor_network_torch(network, gpu_tensors, device)
+            torch.cuda.synchronize(device)
+
+        times_ms: list[float] = []
+        result = None
+        for _ in range(n_runs):
+            torch.cuda.synchronize(device)
+            t0 = time.perf_counter()
+            result = _contract_tensor_network_torch(network, gpu_tensors, device)
+            torch.cuda.synchronize(device)
+            times_ms.append((time.perf_counter() - t0) * 1000.0)
+    except torch.cuda.OutOfMemoryError as exc:
+        return _stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            status="oom",
+            reason=str(exc)[:500],
+            path=path,
+            **kw,
+        )
+    except Exception as exc:
+        return _stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            status="runtime_failed",
+            reason=str(exc)[:500],
+            path=path,
+            **kw,
+        )
+
+    try:
+        _, cpu_tensors = _build_tensor_network_inputs_torch(
+            source, bond_dim, fill_value, torch.device("cpu")
+        )
+        cpu_result = _contract_tensor_network_torch(network, cpu_tensors, torch.device("cpu"))
+        gpu_scalar = tnc.scalar_value(result)
+        cpu_scalar = tnc.scalar_value(cpu_result)
+        max_abs = abs(gpu_scalar - cpu_scalar)
+        max_rel = max_abs / max(abs(cpu_scalar), 1e-10)
+        ver_status = "passed" if max_abs <= atol + rtol * max(abs(cpu_scalar), 1.0) else "failed"
+    except Exception:
+        ver_status, max_abs, max_rel = "skipped", None, None
+
+    if ver_status == "failed":
+        return _stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            status="verification_failed",
+            reason=f"max_abs={max_abs:.3e} max_rel={max_rel:.3e}",
+            path=path,
+            ver_status="failed",
+            max_abs=max_abs,
+            max_rel=max_rel,
+            rtol=rtol,
+            atol=atol,
+            **kw,
+        )
+
+    first, med, min_t, p95, iqr = _timing_stats(times_ms)
+    props = torch.cuda.get_device_properties(device)
+    env = _base_env(device_ordinal, ts, bc, tc)
+    env.update(
+        {
+            "gpu_name": props.name,
+            "gpu_uuid": str(props.uuid) if hasattr(props, "uuid") else None,
+            "gpu_memory_bytes": props.total_memory,
+            "cuda_version": torch.version.cuda,
+            "cudnn_version": str(torch.backends.cudnn.version())
+            if torch.backends.cudnn.is_available()
+            else None,
+            "framework_version": f"torch={torch.__version__}",
+        }
+    )
+
+    return _ok_record(
+        suite_id,
+        problem,
+        backend,
+        device_ordinal,
+        path=path,
+        warmup_runs=n_warmup,
+        timed_runs=n_runs,
+        first_run_ms=first,
+        median_ms=med,
+        min_ms=min_t,
+        p95_ms=p95,
+        iqr_ms=iqr,
+        compile_time_ms=None,
+        ver_status=ver_status,
+        max_abs=max_abs,
+        max_rel=max_rel,
+        rtol=rtol,
+        atol=atol,
+        env=env,
+    )
+
+
+def _run_tensor_network_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
+    import jax
+    import jax.numpy as jnp
+
+    kw = dict(ts=ts, bc=bc, tc=tc)
+    run_spec = problem.get("run", {})
+    n_warmup = run_spec.get("warmups", 3)
+    n_runs = run_spec.get("runs", 10)
+    verify_spec = problem.get("verify", {})
+    rtol = float(verify_spec.get("rtol", 1e-4))
+    atol = float(verify_spec.get("atol", 1e-5))
+    path = "phase2-measured-jax-cuda-tensornetwork"
+
+    try:
+        cuda_devices = jax.devices("cuda")
+    except RuntimeError as exc:
+        return _stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            status="not_configured",
+            reason=str(exc)[:500],
+            path=path,
+            **kw,
+        )
+    if device_ordinal >= len(cuda_devices):
+        return _stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            status="not_configured",
+            reason=f"cuda device {device_ordinal} not available (found {len(cuda_devices)})",
+            path=path,
+            **kw,
+        )
+    dev = cuda_devices[device_ordinal]
+
+    try:
+        source, bond_dim, fill_value = _tensor_network_spec(problem)
+        network = tnc.load_tensor_network(source)
+        gpu_tensors = [
+            jax.device_put(
+                jnp.full((bond_dim,) * len(ix), fill_value, dtype=jnp.float32),
+                dev,
+            )
+            for ix in network["inputs"]
+        ]
+        backend_impl = tnc.IntegerLabelEinsumBackend(jnp.einsum)
+        contract = lambda tensors: tnc.contract_tree(network["tree"], tensors, backend_impl)
+    except Exception as exc:
+        return _stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            status="runtime_failed",
+            reason=f"tensor network setup: {exc}",
+            path=path,
+            **kw,
+        )
+
+    try:
+        for _ in range(n_warmup):
+            jax.block_until_ready(contract(gpu_tensors))
+
+        times_ms: list[float] = []
+        result = None
+        for _ in range(n_runs):
+            jax.block_until_ready(jnp.zeros(1, device=dev))
+            t0 = time.perf_counter()
+            result = jax.block_until_ready(contract(gpu_tensors))
+            times_ms.append((time.perf_counter() - t0) * 1000.0)
+    except Exception as exc:
+        msg = str(exc)
+        status = "oom" if "out of memory" in msg.lower() else "runtime_failed"
+        return _stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            status=status,
+            reason=msg[:500],
+            path=path,
+            **kw,
+        )
+
+    try:
+        cpu_tensors = [
+            jnp.full((bond_dim,) * len(ix), fill_value, dtype=jnp.float32)
+            for ix in network["inputs"]
+        ]
+        cpu_result = contract(cpu_tensors)
+        gpu_scalar = tnc.scalar_value(result)
+        cpu_scalar = tnc.scalar_value(cpu_result)
+        max_abs = abs(gpu_scalar - cpu_scalar)
+        max_rel = max_abs / max(abs(cpu_scalar), 1e-10)
+        ver_status = "passed" if max_abs <= atol + rtol * max(abs(cpu_scalar), 1.0) else "failed"
+    except Exception:
+        ver_status, max_abs, max_rel = "skipped", None, None
+
+    if ver_status == "failed":
+        return _stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            status="verification_failed",
+            reason=f"max_abs={max_abs:.3e} max_rel={max_rel:.3e}",
+            path=path,
+            ver_status="failed",
+            max_abs=max_abs,
+            max_rel=max_rel,
+            rtol=rtol,
+            atol=atol,
+            **kw,
+        )
+
+    first, med, min_t, p95, iqr = _timing_stats(times_ms)
+    env = _base_env(device_ordinal, ts, bc, tc)
+    env.update(
+        {
+            "gpu_name": dev.device_kind,
+            "framework_version": f"jax={jax.__version__}",
+        }
+    )
+
+    return _ok_record(
+        suite_id,
+        problem,
+        backend,
+        device_ordinal,
+        path=path,
+        warmup_runs=n_warmup,
+        timed_runs=n_runs,
+        first_run_ms=first,
+        median_ms=med,
+        min_ms=min_t,
+        p95_ms=p95,
+        iqr_ms=iqr,
+        compile_time_ms=None,
+        ver_status=ver_status,
+        max_abs=max_abs,
+        max_rel=max_rel,
+        rtol=rtol,
+        atol=atol,
+        env=env,
+    )
 
 
 # ---------------------------------------------------------------------------

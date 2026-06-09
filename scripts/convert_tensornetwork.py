@@ -264,9 +264,15 @@ def convert(
 
 
 def main():
-    base = Path(__file__).resolve().parent.parent.parent
-    src = base / "TensorNetworkBenchmarks" / "data" / "tensornetwork_permutation_optimized.json"
-    out_dir = base / "strided-rs-benchmark-suite" / "data" / "instances"
+    project_dir = Path(__file__).resolve().parent.parent
+    src = (
+        project_dir
+        / "extern"
+        / "TensorNetworkBenchmarks"
+        / "data"
+        / "tensornetwork_permutation_optimized.json"
+    )
+    out_dir = project_dir / "data" / "instances"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "tensornetwork_permutation_optimized.json"
 

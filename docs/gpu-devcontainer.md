@@ -41,6 +41,7 @@ Latest reports:
 - `result/nvidia-gpu/gpu/dense.md`
 - `result/nvidia-gpu/gpu/einsum.md`
 - `result/nvidia-gpu/gpu/sparse.md`
+- `result/nvidia-gpu/gpu/tensornetwork.md`
 
 Raw run data:
 
