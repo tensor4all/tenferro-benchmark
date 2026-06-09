@@ -1,0 +1,3 @@
+[submodule "extern/TensorNetworkBenchmarks"]
+	path = extern/TensorNetworkBenchmarks
+	url = https://github.com/TensorBFS/TensorNetworkBenchmarks.git
