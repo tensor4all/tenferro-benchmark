@@ -66,5 +66,5 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
 
 USER root
 
-RUN mkdir -p /home/vscode/.cargo/registry /home/vscode/.cargo/git /home/vscode/.cache/uv \
-    && chown -R vscode:vscode /home/vscode/.cargo /home/vscode/.cache
+RUN mkdir -p /home/vscode/.cargo/bin \
+    && chown -R vscode:vscode /home/vscode/.cargo

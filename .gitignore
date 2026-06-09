@@ -43,6 +43,8 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+.cargo-home
+.vendor/
 nosetests.xml
 coverage.xml
 *.cover
