@@ -21,6 +21,22 @@ use tenferro_tensor::{Tensor, TypedTensor};
 const NUM_WARMUPS: usize = 3;
 const NUM_RUNS: usize = 15;
 
+fn bench_env_usize(name: &str, default: usize) -> usize {
+    std::env::var(name)
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .filter(|&value| value > 0)
+        .unwrap_or(default)
+}
+
+fn bench_warmups() -> usize {
+    bench_env_usize("TENFERRO_BENCH_WARMUPS", NUM_WARMUPS)
+}
+
+fn bench_runs() -> usize {
+    bench_env_usize("TENFERRO_BENCH_RUNS", NUM_RUNS)
+}
+
 // ---------------------------------------------------------------------------
 // JSON schema
 // ---------------------------------------------------------------------------
@@ -367,6 +383,58 @@ impl TenferroMode {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum EagerOutputConsumer {
+    TensorRead,
+    Shape,
+    Data,
+}
+
+impl EagerOutputConsumer {
+    fn from_env() -> Self {
+        Self::from_env_value(
+            std::env::var("TENFERRO_EAGER_OUTPUT_CONSUMER")
+                .ok()
+                .as_deref(),
+        )
+    }
+
+    fn from_env_value(value: Option<&str>) -> Self {
+        match value.unwrap_or("tensor_read").to_ascii_lowercase().as_str() {
+            "tensor_read" | "read" | "no_materialization" | "no-materialization" => {
+                Self::TensorRead
+            }
+            "shape" => Self::Shape,
+            "data" | "materialize" | "materialization" => Self::Data,
+            _ => Self::TensorRead,
+        }
+    }
+
+    fn label(self) -> &'static str {
+        match self {
+            Self::TensorRead => "tensor_read",
+            Self::Shape => "shape",
+            Self::Data => "data",
+        }
+    }
+}
+
+fn consume_eager_output(output: &EagerTensor, consumer: EagerOutputConsumer) {
+    match consumer {
+        EagerOutputConsumer::TensorRead => {
+            black_box(output.shape());
+            let read = output.tensor_read();
+            black_box(read);
+        }
+        EagerOutputConsumer::Shape => {
+            black_box(output.shape());
+        }
+        EagerOutputConsumer::Data => {
+            black_box(output.data());
+        }
+    }
+}
+
 fn append_unique(labels: &mut Vec<u32>, label: u32) {
     if !labels.contains(&label) {
         labels.push(label);
@@ -486,10 +554,12 @@ fn run_instance_trace(
     let operands = create_operand_tensors(&instance.shapes_colmajor);
     let bindings = bind_operand_reads(&compiled.inputs, &operands)?;
     let program = &compiled.program;
+    let warmups = bench_warmups();
+    let runs = bench_runs();
 
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
-    for _ in 0..NUM_WARMUPS {
+    for _ in 0..warmups {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             executor.run_many_values_with_input_reads(program, &bindings)
         }));
@@ -499,8 +569,8 @@ fn run_instance_trace(
     }
 
     // Timed runs
-    let mut durations = Vec::with_capacity(NUM_RUNS);
-    for _ in 0..NUM_RUNS {
+    let mut durations = Vec::with_capacity(runs);
+    for _ in 0..runs {
         let t0 = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             executor.run_many_values_with_input_reads(program, &bindings)
@@ -515,8 +585,8 @@ fn run_instance_trace(
     let (median, iqr) = duration_stats(durations);
 
     if profile_bench_breakdown_enabled() {
-        let mut input_create = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut input_create = Vec::with_capacity(runs);
+        for _ in 0..runs {
             let started = Instant::now();
             let operands = create_operand_tensors(&instance.shapes_colmajor);
             input_create.push(started.elapsed());
@@ -530,8 +600,8 @@ fn run_instance_trace(
             input_create,
         );
 
-        let mut input_bind = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut input_bind = Vec::with_capacity(runs);
+        for _ in 0..runs {
             let started = Instant::now();
             let bindings = bind_operand_reads(&compiled.inputs, &operands)?;
             input_bind.push(started.elapsed());
@@ -545,8 +615,8 @@ fn run_instance_trace(
             input_bind,
         );
 
-        let mut executor_run = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut executor_run = Vec::with_capacity(runs);
+        for _ in 0..runs {
             let started = Instant::now();
             let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
                 executor.run_many_values_with_input_reads(program, &bindings)
@@ -576,12 +646,14 @@ struct EagerRunBreakdown {
     binary_setup: Duration,
     einsum_call: Duration,
     output_take: Duration,
+    output_consume: Duration,
 }
 
 fn contract_once_eager(
     instance: &BenchmarkInstance,
     path_meta: &PathMeta,
     source_operands: &[EagerTensor],
+    consumer: EagerOutputConsumer,
     mut profile: Option<&mut EagerRunBreakdown>,
 ) -> Result<EagerTensor, String> {
     let total_started = Instant::now();
@@ -636,6 +708,12 @@ fn contract_once_eager(
     let output = operands.pop().expect("checked operands length");
     if let Some(profile) = profile.as_deref_mut() {
         profile.output_take += started.elapsed();
+    }
+
+    let started = Instant::now();
+    consume_eager_output(&output, consumer);
+    if let Some(profile) = profile.as_deref_mut() {
+        profile.output_consume += started.elapsed();
         profile.total += total_started.elapsed();
     }
     Ok(output)
@@ -652,16 +730,19 @@ fn run_instance_eager(
 
     let ctx = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?);
     let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
+    let consumer = EagerOutputConsumer::from_env();
+    let warmups = bench_warmups();
+    let runs = bench_runs();
 
-    for _ in 0..NUM_WARMUPS {
-        let eval = contract_once_eager(instance, path_meta, &source_operands, None)?;
+    for _ in 0..warmups {
+        let eval = contract_once_eager(instance, path_meta, &source_operands, consumer, None)?;
         black_box(&eval);
     }
 
-    let mut durations = Vec::with_capacity(NUM_RUNS);
-    for _ in 0..NUM_RUNS {
+    let mut durations = Vec::with_capacity(runs);
+    for _ in 0..runs {
         let t0 = Instant::now();
-        let eval = contract_once_eager(instance, path_meta, &source_operands, None)?;
+        let eval = contract_once_eager(instance, path_meta, &source_operands, consumer, None)?;
         let elapsed = t0.elapsed();
         black_box(&eval);
         durations.push(elapsed);
@@ -670,8 +751,8 @@ fn run_instance_eager(
     let (median, iqr) = duration_stats(durations);
 
     if profile_bench_breakdown_enabled() {
-        let mut input_create = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut input_create = Vec::with_capacity(runs);
+        for _ in 0..runs {
             let started = Instant::now();
             let operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
             input_create.push(started.elapsed());
@@ -685,16 +766,22 @@ fn run_instance_eager(
             input_create,
         );
 
-        let mut total = Vec::with_capacity(NUM_RUNS);
-        let mut parse_subscripts = Vec::with_capacity(NUM_RUNS);
-        let mut operand_handles = Vec::with_capacity(NUM_RUNS);
-        let mut binary_setup = Vec::with_capacity(NUM_RUNS);
-        let mut einsum_call = Vec::with_capacity(NUM_RUNS);
-        let mut output_take = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut total = Vec::with_capacity(runs);
+        let mut parse_subscripts = Vec::with_capacity(runs);
+        let mut operand_handles = Vec::with_capacity(runs);
+        let mut binary_setup = Vec::with_capacity(runs);
+        let mut einsum_call = Vec::with_capacity(runs);
+        let mut output_take = Vec::with_capacity(runs);
+        let mut output_consume = Vec::with_capacity(runs);
+        for _ in 0..runs {
             let mut breakdown = EagerRunBreakdown::default();
-            let eval =
-                contract_once_eager(instance, path_meta, &source_operands, Some(&mut breakdown))?;
+            let eval = contract_once_eager(
+                instance,
+                path_meta,
+                &source_operands,
+                consumer,
+                Some(&mut breakdown),
+            )?;
             black_box(&eval);
             total.push(breakdown.total);
             parse_subscripts.push(breakdown.parse_subscripts);
@@ -702,6 +789,7 @@ fn run_instance_eager(
             binary_setup.push(breakdown.binary_setup);
             einsum_call.push(breakdown.einsum_call);
             output_take.push(breakdown.output_take);
+            output_consume.push(breakdown.output_consume);
         }
         print_breakdown(
             "tenferro-eager",
@@ -744,6 +832,13 @@ fn run_instance_eager(
             strategy_name,
             "eager.output_take",
             output_take,
+        );
+        print_breakdown(
+            "tenferro-eager",
+            instance,
+            strategy_name,
+            "eager.output_consume",
+            output_consume,
         );
     }
 
@@ -821,6 +916,8 @@ fn main() {
         std::env::var("TENFERRO_CPU_BACKEND_KIND").unwrap_or_else(|_| "default".into());
     let dot_decomposer =
         std::env::var("TENFERRO_OPT_DOT_DECOMPOSER").unwrap_or_else(|_| "0".into());
+    let warmups = bench_warmups();
+    let runs = bench_runs();
 
     println!("{backend_name} benchmark suite");
     println!("==================================");
@@ -832,9 +929,13 @@ fn main() {
     println!("Backend: {backend_name}");
     println!("TENFERRO_CPU_BACKEND_KIND={cpu_backend_kind}");
     println!("TENFERRO_OPT_DOT_DECOMPOSER={dot_decomposer}");
+    println!(
+        "TENFERRO_EAGER_OUTPUT_CONSUMER={}",
+        EagerOutputConsumer::from_env().label()
+    );
     println!("RAYON_NUM_THREADS={rayon_threads}, OMP_NUM_THREADS={omp_threads}");
     println!(
-        "Timing: median ± IQR of {NUM_RUNS} runs ({NUM_WARMUPS} warmup), {}",
+        "Timing: median ± IQR of {runs} runs ({warmups} warmup), {}",
         mode.timing_note()
     );
 
@@ -969,6 +1070,30 @@ mod tests {
         assert_ne!(
             strategy_cache_key(&instance, &instance.paths.opt_flops),
             strategy_cache_key(&test_instance("other"), &instance.paths.opt_flops)
+        );
+    }
+
+    #[test]
+    fn eager_output_consumer_parses_materialization_modes() {
+        assert_eq!(
+            EagerOutputConsumer::from_env_value(None),
+            EagerOutputConsumer::TensorRead
+        );
+        assert_eq!(
+            EagerOutputConsumer::from_env_value(Some("tensor_read")),
+            EagerOutputConsumer::TensorRead
+        );
+        assert_eq!(
+            EagerOutputConsumer::from_env_value(Some("shape")),
+            EagerOutputConsumer::Shape
+        );
+        assert_eq!(
+            EagerOutputConsumer::from_env_value(Some("data")),
+            EagerOutputConsumer::Data
+        );
+        assert_eq!(
+            EagerOutputConsumer::from_env_value(Some("unknown")),
+            EagerOutputConsumer::TensorRead
         );
     }
 

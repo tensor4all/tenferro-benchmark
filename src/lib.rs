@@ -1,8 +1,9 @@
 use std::fmt::Display;
 
 use tenferro_einsum::{einsum_subscripts_with, ContractionTree, EinsumOptimize, Subscripts};
-use tenferro_runtime::compiler::{CompilerOptions, OptimizerConfig};
-use tenferro_runtime::{DType, GraphCompiler, GraphProgram, TracedTensor};
+use tenferro_runtime::{
+    CompilerOptions, DType, GraphCompiler, GraphProgram, OptimizerConfig, TracedTensor,
+};
 
 pub struct CompiledEinsum {
     pub program: GraphProgram,

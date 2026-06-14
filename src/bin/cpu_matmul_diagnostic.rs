@@ -12,8 +12,9 @@ use tenferro_cpu::{CpuBackend, CpuBackendKind};
 use tenferro_einsum::{
     eager_tensor, ContractionTree, EinsumOptimize, EinsumSubscripts, Subscripts,
 };
-use tenferro_runtime::compiler::{CompilerOptions, OptimizerConfig};
-use tenferro_runtime::{GraphCompiler, GraphExecutor, TensorRead, TracedTensor};
+use tenferro_runtime::{
+    CompilerOptions, GraphCompiler, GraphExecutor, OptimizerConfig, TensorRead, TracedTensor,
+};
 use tenferro_tensor::{DotGeneralConfig, Tensor, TensorBuffer, TensorDot};
 
 const DEFAULT_N: usize = 1024;

@@ -276,6 +276,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cblas-sys"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8354a31ad0d37f735e74c1973343c99dde4461ea8626a2b8d4fea9e06b987255"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "cc"
 version = "1.2.62"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2163,6 +2172,9 @@ name = "lapack-src"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1bcb4a410d9e39126db6ef1b71814618d9f9c3db128e6db674a449cf6a8b668"
+dependencies = [
+ "accelerate-src",
+]
 
 [[package]]
 name = "lapack-sys"
@@ -3682,11 +3694,14 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "strided-einsum2"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
+source = "git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082#71bdd913158a87437e51f4f9b69cba4cac6f5082"
 dependencies = [
+ "cblas-sys 0.2.0",
  "faer",
  "faer-traits",
+ "num-complex",
  "num-traits",
+ "rayon",
  "smallvec",
  "strided-kernel",
  "strided-perm",
@@ -3698,11 +3713,13 @@ dependencies = [
 [[package]]
 name = "strided-kernel"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
+source = "git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082#71bdd913158a87437e51f4f9b69cba4cac6f5082"
 dependencies = [
  "num-complex",
  "num-traits",
  "pulp",
+ "rayon",
+ "smallvec",
  "strided-perm",
  "strided-view",
 ]
@@ -3710,15 +3727,16 @@ dependencies = [
 [[package]]
 name = "strided-perm"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
+source = "git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082#71bdd913158a87437e51f4f9b69cba4cac6f5082"
 dependencies = [
+ "rayon",
  "strided-view",
 ]
 
 [[package]]
 name = "strided-traits"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
+source = "git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082#71bdd913158a87437e51f4f9b69cba4cac6f5082"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3727,7 +3745,7 @@ dependencies = [
 [[package]]
 name = "strided-view"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/strided-rs?rev=f60f2900084c2597e35d227f5d7c71cbdd022d02#f60f2900084c2597e35d227f5d7c71cbdd022d02"
+source = "git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082#71bdd913158a87437e51f4f9b69cba4cac6f5082"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3855,12 +3873,13 @@ version = "0.1.0"
 dependencies = [
  "blas-src",
  "cblas-src",
- "cblas-sys",
+ "cblas-sys 0.1.4",
  "faer",
  "lapack",
  "lapack-src",
  "num-complex",
  "num-traits",
+ "rayon",
  "smallvec",
  "strided-einsum2",
  "strided-kernel",
