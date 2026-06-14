@@ -1,14 +1,51 @@
 {
   "name": "bin_matmul_256",
-  "intent": "Binary GEMM-shaped einsum diagnostic for measuring binary einsum fast path and wrapper overhead.",
   "format_string": "ij,jk->ik",
-  "shapes": [[256, 256], [256, 256]],
+  "shapes": [
+    [
+      256,
+      256
+    ],
+    [
+      256,
+      256
+    ]
+  ],
   "dtype": "float64",
   "num_tensors": 2,
   "paths": {
-    "opt_size": {"path": [[0, 1]], "log2_size": 16.0, "log10_flops": 7.2247},
-    "opt_flops": {"path": [[0, 1]], "log2_size": 16.0, "log10_flops": 7.2247}
+    "opt_size": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 16.0,
+      "log10_flops": 7.2247
+    },
+    "opt_flops": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 16.0,
+      "log10_flops": 7.2247
+    }
   },
   "format_string_colmajor": "ji,kj->ki",
-  "shapes_colmajor": [[256, 256], [256, 256]]
+  "shapes_colmajor": [
+    [
+      256,
+      256
+    ],
+    [
+      256,
+      256
+    ]
+  ],
+  "format_string_rowmajor": "ij,jk->ik",
+  "intent": "Binary GEMM-shaped einsum diagnostic for measuring binary einsum fast path and wrapper overhead."
 }

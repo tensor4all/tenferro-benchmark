@@ -5,11 +5,16 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-mkdir -p "$TMP/scripts" "$TMP/data/results" "$TMP/extern/tenferro-rs"
+mkdir -p "$TMP/scripts" "$TMP/data/results" "$TMP/extern/tenferro-rs" "$TMP/benchmarks/cpu"
 cp "$ROOT/scripts/run_all.sh" "$TMP/scripts/run_all.sh"
 cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/scripts/cpu_blas_provider.sh"
 cp "$ROOT/scripts/collect_cpu_info.py" "$TMP/scripts/collect_cpu_info.py"
 cp "$ROOT/scripts/thread_env.sh" "$TMP/scripts/thread_env.sh"
+cat > "$TMP/scripts/suite_instances.py" <<'PY'
+#!/usr/bin/env python3
+print("bin_matmul_256")
+PY
+cp "$ROOT/benchmarks/cpu/einsum.yaml" "$TMP/benchmarks/cpu/einsum.yaml"
 
 (
   cd "$TMP/extern/tenferro-rs"

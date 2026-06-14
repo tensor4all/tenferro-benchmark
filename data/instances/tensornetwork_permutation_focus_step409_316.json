@@ -1,7 +1,5 @@
 {
   "name": "tensornetwork_permutation_focus_step409_316",
-  "intent": "Focused final-permutation-heavy tensor-network subtree diagnostic for late contraction-step profiling.",
-  "notes": "tenferro-trace is measured through the TensorValue output API so a terminal transpose/permutation can remain a lazy owned view; PyTorch uses opt_einsum with torch's default output semantics.",
   "format_string": "bЊ,bА,bб,cτ,cД,cг,dЈ,dм,dѫ,eѫ,fξ,gB,gφ,gχ,hФ,iК,iг,jl,j3,jр,lΓ,lі,mΑ,mЌ,mх,nη,pв,pѕ,pѦ,qE,qЃ,qѠ,rO,rχ,rѦ,sK,sΜ,sЬ,tL,tЮ,tѤ,uU,uζ,uЂ,y7,y9,yх,zπ,zк,zќ,Bρ,Bл,DF,DЭ,Dэ,Eχ,EГ,FΚ,GВ,GЩ,Gэ,HU,HѪ,IЃ,IЈ,K1,KѠ,LT,Lѓ,Mξ,MΓ,MТ,OΑ,OХ,PΖ,PЋ,Pт,SЖ,SЬ,Sи,YЌ,Yћ,ZΧ,Z5,Zѩ,α3,αЛ,αб,β΢,βР,βќ,δζ,δΟ,δ0,ζѝ,ηЕ,ηк,νυ,ν΢,ν8,ξѝ,πт,πц,ρΘ,ρѥ,ςЀ,ςХ,ςѐ,σР,σЭ,σн,τѧ,υи,φА,φр,ψΚ,Β1,ΒЦ,Βн,ΓВ,ΖВ,Ζм,ΗΠ,ΗΤ,Ηч,ΘИ,Θз,ΚХ,Λћ,ΜФ,Μп,ΟЅ,ΟШ,ΡП,Ρр,Ρљ,Τі,Υѐ,ΥѠ,ΦР,ΦШ,Φф,Χъ,1Ѩ,3д,4з,5Ѕ,5ы,6ѫ,7ш,7Ѧ,8Б,8в,Ѐэ,Ѐѩ,ЂЋ,ЃЇ,ЄТ,ЅѢ,ІИ,Їю,Їћ,ЈЕ,Њц,Ћю,Ќъ,ЏД,ЏН,Џж,Ах,Бѥ,ДѪ,ЕШ,ЖЩ,Жж,Иі,КУ,Кш,Нг,Нл,Тѧ,Уз,Фѡ,Ьѥ,Эд,Юж,Юѝ,вњ,иф,кѕ,лё,мњ,нт,уѪ,фљ,цч,шѐ,ъѡ,юќ,ѕњ,Ѣѧ,b,c,d,g,j,l,m,p,q,r,s,t,u,y,z,B,D,E,G,K,L,M,O,P,S,U,Z,α,β,δ,ζ,η,ν,ξ,π,ρ,ς,σ,φ,χ,Α,Β,Γ,Ζ,Η,Θ,Κ,Μ,Ο,Ρ,Φ,1,3,5,7,8,Ѐ,Ђ,Ѓ,Ѕ,Ї,Ј,Ћ,Ќ,Џ,А,В,Г,Д,Е,Ж,И,К,Н,Р,Т,Ф,Х,Ш,Щ,Ь,Э,Ю,в,г,ж,з,и,к,л,м,н,р,т,ф,х,ц,ш,ъ,э,ю,ѐ,ѕ,і,љ,њ,ћ,ќ,ѝ,Ѡ,ѥ,Ѧ,ѧ,Ѫ,ѫ->БYЂΤПΑдпГΥѤЄUљыЩ΢υ",
   "shapes": [
     [
@@ -4842,5 +4840,7 @@
     [
       2
     ]
-  ]
+  ],
+  "intent": "Focused final-permutation-heavy tensor-network subtree diagnostic for late contraction-step profiling.",
+  "notes": "tenferro-trace is measured through the TensorValue output API so a terminal transpose/permutation can remain a lazy owned view; PyTorch uses opt_einsum with torch's default output semantics."
 }

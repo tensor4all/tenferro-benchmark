@@ -1,7 +1,5 @@
 {
   "name": "tensornetwork_permutation_light_415",
-  "intent": "Final-permutation-heavy tensor-network contraction diagnostic for measuring path execution without charging an extra compact-output materialization step.",
-  "notes": "tenferro-trace is measured through the TensorValue output API so a terminal transpose/permutation can remain a lazy owned view; PyTorch uses opt_einsum with torch's default output semantics.",
   "format_string": "aV,aυ,aП,bЊ,bА,bб,cτ,cД,cг,dЈ,dм,dѫ,eѫ,fξ,gB,gφ,gχ,hФ,iК,iг,jl,j3,jр,lΓ,lі,mΑ,mЌ,mх,nη,oω,o΢,oΥ,pв,pѕ,pѦ,qE,qЃ,qѠ,rO,rχ,rѦ,sK,sΜ,sЬ,tL,tЮ,tѤ,uU,uζ,uЂ,wε,xW,xμ,xБ,y7,y9,yх,zπ,zк,zќ,Aι,AΝ,Aџ,Bρ,Bл,Cω,CЂ,Cы,DF,DЭ,Dэ,Eχ,EГ,FΚ,GВ,GЩ,Gэ,HU,HѪ,IЃ,IЈ,JЗ,JѤ,K1,KѠ,LT,Lѓ,Mξ,MΓ,MТ,Nλ,NЯ,Nп,OΑ,OХ,PΖ,PЋ,Pт,SЖ,SЬ,Sи,Uκ,Vμ,VΣ,Wθ,Wє,Yκ,YЌ,Yћ,ZΧ,Z5,Zѩ,α3,αЛ,αб,β΢,βР,βќ,γЎ,γЧ,γо,δζ,δΟ,δ0,εЁ,εџ,ζѝ,ηЕ,ηк,θΩ,θГ,κо,λΤ,λЉ,μΑ,νυ,ν΢,ν8,ξѝ,πт,πц,ρΘ,ρѥ,ςЀ,ςХ,ςѐ,σР,σЭ,σн,τѧ,υи,φА,φр,ψΚ,ωП,Β1,ΒЦ,Βн,ΓВ,ΔΞ,ΔЯ,Δє,Εс,ΖВ,Ζм,ΗΠ,ΗΤ,Ηч,ΘИ,Θз,Ιс,ΚХ,Λћ,ΜФ,Μп,ΞЩ,Ξџ,ΟЅ,ΟШ,ΡП,Ρр,Ρљ,ΣЉ,ΣЧ,Τі,Υѐ,ΥѠ,ΦР,ΦШ,Φф,Χъ,Ωд,Ωы,1Ѩ,3д,4з,5Ѕ,5ы,6ѫ,7ш,7Ѧ,8Б,8в,Ѐэ,Ѐѩ,ЂЋ,ЃЇ,ЄЉ,ЄГ,ЄТ,ЅѢ,ІИ,Їю,Їћ,ЈЕ,Њц,Ћю,Ќъ,ЍЯ,Ўс,ЎѤ,ЏД,ЏН,Џж,Ах,Бѥ,ДѪ,ЕШ,ЖЩ,Жж,Зь,Зє,Иі,КУ,Кш,Нг,Нл,Тѧ,Уз,Фѡ,Чљ,Ьѥ,Эд,Юж,Юѝ,вњ,иф,кѕ,лё,мњ,нт,оп,уѪ,фљ,цч,шѐ,ъѡ,юќ,ѕњ,Ѣѧ,a,b,c,d,g,j,l,m,o,p,q,r,s,t,u,x,y,z,A,B,C,D,E,G,K,L,M,N,O,P,S,U,V,W,Y,Z,α,β,γ,δ,ε,ζ,η,θ,κ,λ,μ,ν,ξ,π,ρ,ς,σ,υ,φ,χ,ω,Α,Β,Γ,Δ,Ζ,Η,Θ,Κ,Μ,Ξ,Ο,Ρ,΢,Σ,Τ,Υ,Φ,Ω,1,3,5,7,8,Ѐ,Ђ,Ѓ,Є,Ѕ,Ї,Ј,Љ,Ћ,Ќ,Ў,Џ,А,Б,В,Г,Д,Е,Ж,З,И,К,Н,П,Р,Т,Ф,Х,Ч,Ш,Щ,Ь,Э,Ю,Я,в,г,д,ж,з,и,к,л,м,н,о,п,р,с,т,ф,х,ц,ш,ъ,ы,э,ю,ѐ,є,ѕ,і,љ,њ,ћ,ќ,ѝ,џ,Ѡ,Ѥ,ѥ,Ѧ,ѧ,Ѫ,ѫ->",
   "shapes": [
     [
@@ -6346,5 +6344,7 @@
     [
       2
     ]
-  ]
+  ],
+  "intent": "Final-permutation-heavy tensor-network contraction diagnostic for measuring path execution without charging an extra compact-output materialization step.",
+  "notes": "tenferro-trace is measured through the TensorValue output API so a terminal transpose/permutation can remain a lazy owned view; PyTorch uses opt_einsum with torch's default output semantics."
 }
