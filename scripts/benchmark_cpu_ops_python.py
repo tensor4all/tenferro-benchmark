@@ -68,6 +68,11 @@ def sizes_for(profile: str, quick: list[int], full: list[int]) -> list[int]:
     return full if profile == "full" else quick
 
 
+def large_linalg_jvp_vjp_sizes(profile: str) -> list[int]:
+    # O(n^3) linalg AD: 256x256 is single-digit ms; 512x512 reaches tens of ms.
+    return sizes_for(profile, [256, 512], [256, 512, 1024])
+
+
 def data(shape: tuple[int, ...], seed: int):
     import numpy as np
 
@@ -125,7 +130,227 @@ def bench(fn: Callable[[], object], sync: Callable[[object], None], runs: int, w
     return median_iqr(times)
 
 
-def emit_row(writer: csv.DictWriter, args, suite: str, benchmark: str, shape: str, fn, sync) -> None:
+TANGENT_SEED_OFFSET = 1000
+
+
+def tangent_seed(matrix_seed: int) -> int:
+    return matrix_seed + TANGENT_SEED_OFFSET
+
+
+def matrix_for_linalg_ad(op: str, n: int, seed: int):
+    if op in {"grad_sum_eigh", "grad_sum_solve"}:
+        return spd(n, seed)
+    return well_conditioned(n, seed)
+
+
+def emit_linalg_jvp_vjp_rows(
+    writer: csv.DictWriter,
+    args,
+    suite: str,
+    shape: str,
+    n: int,
+    matrix_seed: int,
+    *,
+    op: str,
+    loss_torch,
+    loss_jax,
+    rhs_seed: int | None = None,
+    rhs_cols: int = 1,
+) -> None:
+    matrix = matrix_for_linalg_ad(op, n, matrix_seed)
+    tangent = data((n, n), tangent_seed(matrix_seed))
+
+    def torch_run_jvp():
+        import torch
+        from torch.func import jvp
+
+        x = torch.tensor(matrix, dtype=torch.float64)
+        t = torch.tensor(tangent, dtype=torch.float64)
+        if op == "grad_sum_solve":
+            b = torch.tensor(data((n, rhs_cols), rhs_seed), dtype=torch.float64)
+            _, out = jvp(lambda a: loss_torch(a, b), (x,), (t,))
+        else:
+            _, out = jvp(loss_torch, (x,), (t,))
+        return out
+
+    def torch_run_vjp():
+        import torch
+        from torch.func import vjp
+
+        x = torch.tensor(matrix, dtype=torch.float64)
+        if op == "grad_sum_solve":
+            b = torch.tensor(data((n, rhs_cols), rhs_seed), dtype=torch.float64)
+            _, vjp_fn = vjp(lambda a: loss_torch(a, b), x)
+        else:
+            _, vjp_fn = vjp(loss_torch, x)
+        return vjp_fn(torch.tensor(1.0, dtype=torch.float64))[0]
+
+    def jax_run_jvp():
+        import jax
+        import jax.numpy as jnp
+
+        x = jnp.asarray(matrix, dtype=jnp.float64)
+        t = jnp.asarray(tangent, dtype=jnp.float64)
+        if op == "grad_sum_solve":
+            b = jnp.asarray(data((n, rhs_cols), rhs_seed), dtype=jnp.float64)
+            fn = lambda a: loss_jax(a, b)
+        else:
+            fn = loss_jax
+        return jax.jvp(fn, (x,), (t,))[1]
+
+    def jax_run_vjp():
+        import jax
+        import jax.numpy as jnp
+
+        x = jnp.asarray(matrix, dtype=jnp.float64)
+        if op == "grad_sum_solve":
+            b = jnp.asarray(data((n, rhs_cols), rhs_seed), dtype=jnp.float64)
+            fn = lambda a: loss_jax(a, b)
+        else:
+            fn = loss_jax
+        return jax.vjp(fn, x)[1](jnp.array(1.0))
+
+    if args.backend == "pytorch-cpu":
+        import torch
+
+        def sync(value):
+            if isinstance(value, torch.Tensor):
+                _ = value.numel()
+
+        emit_row(writer, args, suite, op, shape, torch_run_jvp, sync, phase="jvp")
+        emit_row(writer, args, suite, op, shape, torch_run_vjp, sync, phase="vjp")
+    else:
+        import jax
+
+        def sync(value):
+            jax.block_until_ready(value)
+
+        emit_row(writer, args, suite, op, shape, jax_run_jvp, sync, phase="jvp")
+        emit_row(writer, args, suite, op, shape, jax_run_vjp, sync, phase="vjp")
+
+
+def emit_linalg_jvp_vjp_suite(
+    writer: csv.DictWriter,
+    args,
+    suite: str,
+    shape: str,
+    n: int,
+    *,
+    svd_seed: int,
+    qr_seed: int,
+    eigh_seed: int,
+    lu_seed: int,
+    solve_matrix_seed: int,
+    solve_rhs_seed: int,
+) -> None:
+    emit_linalg_jvp_vjp_rows(
+        writer, args, suite, shape, n, svd_seed,
+        op="grad_sum_svd_s", loss_torch=torch_loss_svd_s, loss_jax=jax_loss_svd_s,
+    )
+    emit_linalg_jvp_vjp_rows(
+        writer, args, suite, shape, n, qr_seed,
+        op="grad_sum_qr", loss_torch=torch_loss_qr, loss_jax=jax_loss_qr,
+    )
+    emit_linalg_jvp_vjp_rows(
+        writer, args, suite, shape, n, eigh_seed,
+        op="grad_sum_eigh", loss_torch=torch_loss_eigh, loss_jax=jax_loss_eigh,
+    )
+    emit_linalg_jvp_vjp_rows(
+        writer, args, suite, shape, n, lu_seed,
+        op="grad_sum_lu", loss_torch=torch_loss_lu, loss_jax=jax_loss_lu,
+    )
+    emit_linalg_jvp_vjp_rows(
+        writer,
+        args,
+        suite,
+        f"{shape},rhs=1" if ",rhs=" not in shape else shape,
+        n,
+        solve_matrix_seed,
+        op="grad_sum_solve",
+        loss_torch=torch_loss_solve_wrt_a,
+        loss_jax=jax_loss_solve_wrt_a,
+        rhs_seed=solve_rhs_seed,
+        rhs_cols=1,
+    )
+
+
+def torch_loss_svd_s(a):
+    import torch
+
+    return torch.linalg.svd(a)[1].sum()
+
+
+def torch_loss_qr(a):
+    import torch
+
+    q, r = torch.linalg.qr(a)
+    return q.sum() + r.sum()
+
+
+def torch_loss_eigh(a):
+    import torch
+
+    return torch.linalg.eigh(a)[0].sum()
+
+
+def torch_loss_lu(a):
+    import torch
+
+    _, l, u = torch.linalg.lu(a)
+    return l.sum() + u.sum()
+
+
+def torch_loss_solve_wrt_a(a, b):
+    import torch
+
+    return torch.linalg.solve(a, b).sum()
+
+
+def jax_loss_svd_s(a):
+    import jax.numpy as jnp
+
+    return jnp.sum(jnp.linalg.svd(a, full_matrices=True)[1])
+
+
+def jax_loss_qr(a):
+    import jax.numpy as jnp
+
+    q, r = jnp.linalg.qr(a)
+    return jnp.sum(q) + jnp.sum(r)
+
+
+def jax_loss_eigh(a):
+    import jax.numpy as jnp
+
+    return jnp.sum(jnp.linalg.eigh(a)[0])
+
+
+def jax_loss_lu(a):
+    import jax.numpy as jnp
+    from jax.scipy.linalg import lu as scipy_lu
+
+    _, l, u = scipy_lu(a)
+    return jnp.sum(l) + jnp.sum(u)
+
+
+def jax_loss_solve_wrt_a(a, b):
+    import jax.numpy as jnp
+
+    return jnp.sum(jnp.linalg.solve(a, b))
+
+
+def emit_row(
+    writer: csv.DictWriter,
+    args,
+    suite: str,
+    benchmark: str,
+    shape: str,
+    fn,
+    sync,
+    *,
+    phase: str = "",
+) -> None:
+    name = f"{benchmark}_{phase}" if phase else benchmark
     try:
         median_ms, iqr_ms = bench(fn, sync, args.runs, args.warmups)
         status = "ok"
@@ -138,7 +363,7 @@ def emit_row(writer: csv.DictWriter, args, suite: str, benchmark: str, shape: st
     writer.writerow(
         {
             "suite": suite,
-            "benchmark": benchmark,
+            "benchmark": name,
             "dtype": "f64",
             "threads": args.num_threads,
             "shape": shape,
@@ -176,6 +401,19 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
             emit_row(writer, args, "small", "grad_sum_matmul_backward", f"{n}x{n}", lambda n=n: grad_torch_matmul(tensor(data((n, n), 8), True), tensor(data((n, n), 9), True)), sync)
             emit_row(writer, args, "small", "grad_sum_svd_s_backward", f"{n}x{n}", lambda n=n: grad_torch_svd(tensor(well_conditioned(n, 10), True)), sync)
             emit_row(writer, args, "small", "grad_sum_solve_backward", f"{n}x{n},rhs=1", lambda n=n: grad_torch_solve(tensor(spd(n, 11), True), tensor(data((n, 1), 12), True)), sync)
+            emit_linalg_jvp_vjp_suite(
+                writer,
+                args,
+                "small",
+                f"{n}x{n}",
+                n,
+                svd_seed=10,
+                qr_seed=4,
+                eigh_seed=5,
+                lu_seed=52,
+                solve_matrix_seed=11,
+                solve_rhs_seed=12,
+            )
     if suite_enabled("large"):
         for n in sizes_for(profile, [128, 256], [128, 256, 512, 1024]):
             emit_row(writer, args, "large", "matmul", f"{n}x{n}", lambda n=n: tensor(data((n, n), 21)) @ tensor(data((n, n), 22)), sync)
@@ -195,6 +433,20 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
             emit_row(writer, args, "large", "grad_sum_matmul_backward", f"{n}x{n}", lambda n=n: grad_torch_matmul(tensor(data((n, n), 32), True), tensor(data((n, n), 33), True)), sync)
             emit_row(writer, args, "large", "grad_sum_svd_s_backward", f"{n}x{n}", lambda n=n: grad_torch_svd(tensor(well_conditioned(n, 34), True)), sync)
             emit_row(writer, args, "large", "grad_sum_solve_backward", f"{n}x{n},rhs=1", lambda n=n: grad_torch_solve(tensor(spd(n, 35), True), tensor(data((n, 1), 36), True)), sync)
+        for n in large_linalg_jvp_vjp_sizes(profile):
+            emit_linalg_jvp_vjp_suite(
+                writer,
+                args,
+                "large",
+                f"{n}x{n}",
+                n,
+                svd_seed=34,
+                qr_seed=26,
+                eigh_seed=27,
+                lu_seed=54,
+                solve_matrix_seed=35,
+                solve_rhs_seed=36,
+            )
     if suite_enabled("batched"):
         batches = sizes_for(profile, [16, 64], [16, 64, 256, 1024])
         sizes = sizes_for(profile, [2, 4], [2, 4, 8, 16])
@@ -269,6 +521,19 @@ def run_jax(args, writer: csv.DictWriter) -> None:
             emit_row(writer, args, "small", "grad_sum_matmul_backward", f"{n}x{n}", lambda n=n: jax.grad(lambda x: jnp.sum(x @ array(data((n, n), 9))))(array(data((n, n), 8))), sync)
             emit_row(writer, args, "small", "grad_sum_svd_s_backward", f"{n}x{n}", lambda n=n: jax.grad(lambda x: jnp.sum(jnp.linalg.svd(x, full_matrices=True)[1]))(array(well_conditioned(n, 10))), sync)
             emit_row(writer, args, "small", "grad_sum_solve_backward", f"{n}x{n},rhs=1", lambda n=n: jax.grad(lambda x: jnp.sum(jnp.linalg.solve(x, array(data((n, 1), 12)))))(array(spd(n, 11))), sync)
+            emit_linalg_jvp_vjp_suite(
+                writer,
+                args,
+                "small",
+                f"{n}x{n}",
+                n,
+                svd_seed=10,
+                qr_seed=4,
+                eigh_seed=5,
+                lu_seed=52,
+                solve_matrix_seed=11,
+                solve_rhs_seed=12,
+            )
     if suite_enabled("large"):
         for n in sizes_for(profile, [128, 256], [128, 256, 512, 1024]):
             emit_row(writer, args, "large", "matmul", f"{n}x{n}", lambda n=n: array(data((n, n), 21)) @ array(data((n, n), 22)), sync)
@@ -287,6 +552,20 @@ def run_jax(args, writer: csv.DictWriter) -> None:
             emit_row(writer, args, "large", "grad_sum_matmul_backward", f"{n}x{n}", lambda n=n: jax.grad(lambda x: jnp.sum(x @ array(data((n, n), 33))))(array(data((n, n), 32))), sync)
             emit_row(writer, args, "large", "grad_sum_svd_s_backward", f"{n}x{n}", lambda n=n: jax.grad(lambda x: jnp.sum(jnp.linalg.svd(x, full_matrices=True)[1]))(array(well_conditioned(n, 34))), sync)
             emit_row(writer, args, "large", "grad_sum_solve_backward", f"{n}x{n},rhs=1", lambda n=n: jax.grad(lambda x: jnp.sum(jnp.linalg.solve(x, array(data((n, 1), 36)))))(array(spd(n, 35))), sync)
+        for n in large_linalg_jvp_vjp_sizes(profile):
+            emit_linalg_jvp_vjp_suite(
+                writer,
+                args,
+                "large",
+                f"{n}x{n}",
+                n,
+                svd_seed=34,
+                qr_seed=26,
+                eigh_seed=27,
+                lu_seed=54,
+                solve_matrix_seed=35,
+                solve_rhs_seed=36,
+            )
     if suite_enabled("batched"):
         batches = sizes_for(profile, [16, 64], [16, 64, 256, 1024])
         sizes = sizes_for(profile, [2, 4], [2, 4, 8, 16])

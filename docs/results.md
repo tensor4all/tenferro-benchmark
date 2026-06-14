@@ -16,9 +16,11 @@ result/
   mac-cpu/
     cpu/einsum.md
     cpu/cpu_ops.md
+    cpu/linalg_jvp_vjp.md
   amd-cpu/
     cpu/einsum.md
     cpu/cpu_ops.md
+    cpu/linalg_jvp_vjp.md
   nvidia-gpu/
     gpu/dense.md
     gpu/einsum.md

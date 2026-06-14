@@ -5,12 +5,15 @@ set -euo pipefail
 # CPU einsum benchmark runner:
 #   - tenferro-rs trace + eager (Rust)
 #   - PyTorch CPU + JAX CPU (Python)
-#   - optional CPU ops microbenchmarks
+#   - CPU ops microbenchmarks (primal linalg + JVP/VJP on trace + eager backward)
 #
 # Usage: ./scripts/run_all.sh [NUM_THREADS]
 #
 # Compares einsum performance for the instances listed in
 # benchmarks/cpu/einsum.yaml and writes result/<target_profile>/cpu/einsum.md.
+# CPU ops (including linalg JVP/VJP) are written to:
+#   result/<target_profile>/cpu/cpu_ops.md
+#   result/<target_profile>/cpu/linalg_jvp_vjp.md
 # ---------------------------------------------------------------------------
 
 NUM_THREADS="${1:-1}"
@@ -254,6 +257,39 @@ write_einsum_report() {
     } > "$report"
 }
 
+write_linalg_ad_report() {
+    local report="$1"
+    mkdir -p "$(dirname "$report")"
+    {
+        echo "# CPU Linalg JVP/VJP Benchmark Results"
+        echo ""
+        echo "- Suite: \`cpu/linalg_jvp_vjp\`"
+        echo "- Target profile: \`$BENCHMARK_TARGET_PROFILE\`"
+        echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
+        echo ""
+        echo "Latest run: \`./scripts/run_all.sh $NUM_THREADS\`."
+        echo ""
+        echo "Derived from the CPU ops CSV under \`${CPU_RUN_DIR#$PROJECT_DIR/}\`."
+        echo ""
+        if [[ -n "$TENFERRO_COMMIT" ]]; then
+            echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
+            echo ""
+        fi
+        write_cpu_info_section
+        echo ""
+        write_thread_env_section
+        echo ""
+        write_python_backend_section "$CPU_RUN_YAML"
+        echo ""
+        echo "## Threads: $NUM_THREADS"
+        echo ""
+        [[ -f "$CPU_OPS_LOG" ]] && echo "- CSV: \`${CPU_OPS_LOG#$PROJECT_DIR/}\`"
+        echo "- Source table: \`${LINALG_AD_MD#$PROJECT_DIR/}\`"
+        echo ""
+        cat "$LINALG_AD_MD"
+    } > "$report"
+}
+
 write_cpu_report() {
     local report="$1"
     mkdir -p "$(dirname "$report")"
@@ -300,6 +336,7 @@ CPU_RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/cpu/einsum/$BENCHMARK_TIMES
 CPU_RUN_YAML="$CPU_RUN_DIR/run.yaml"
 CPU_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/einsum.md"
 CPU_OPS_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/cpu_ops.md"
+CPU_LINALG_AD_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/linalg_jvp_vjp.md"
 
 mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")"
 export BENCHMARK_RESULTS_DIR="$CPU_RUN_DIR"
@@ -344,18 +381,26 @@ if ! "$SCRIPT_DIR/run_all_python.sh" "$NUM_THREADS"; then
 fi
 
 # ---------------------------------------------------------------------------
-# Focused CPU benchmark items
+# Focused CPU benchmark items (primal linalg, JVP/VJP on trace, backward on eager)
 # ---------------------------------------------------------------------------
 CPU_OPS_LOG="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
 CPU_OPS_MD="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
-if [[ -x "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
-    if ! "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
-        echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
+LINALG_AD_MD="$CPU_RUN_DIR/linalg_jvp_vjp_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
+export PUBLICATION_GATE_TENFERRO_MODE="${PUBLICATION_GATE_TENFERRO_MODE:-both}"
+if [[ "${SKIP_CPU_OPS:-0}" != "1" ]]; then
+    echo ""
+    echo "Running CPU ops benchmarks (linalg JVP/VJP on tenferro-trace)..."
+    if [[ -x "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
+        if ! "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
+            echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
+        fi
+    elif [[ -f "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
+        if ! bash "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
+            echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
+        fi
     fi
-elif [[ -f "$SCRIPT_DIR/run_cpu_ops.sh" ]]; then
-    if ! bash "$SCRIPT_DIR/run_cpu_ops.sh" "$NUM_THREADS"; then
-        echo "WARNING: CPU benchmark items failed; continuing without CPU item results." >&2
-    fi
+else
+    echo "Skipping CPU ops benchmarks (SKIP_CPU_OPS=1)."
 fi
 
 # ---------------------------------------------------------------------------
@@ -368,6 +413,7 @@ JAX_LOG="$CPU_RUN_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 MARKDOWN_TABLE="$CPU_RUN_DIR/einsum_table_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
 EINSUM_REPORT="$CPU_RUN_DIR/report.md"
 CPU_REPORT="$CPU_RUN_DIR/cpu_ops_report.md"
+LINALG_AD_REPORT="$CPU_RUN_DIR/linalg_jvp_vjp_report.md"
 
 LOGS=()
 [ -f "$TENFERRO_TRACE_LOG" ] && LOGS+=("$TENFERRO_TRACE_LOG")
@@ -376,8 +422,8 @@ LOGS=()
 [ -f "$JAX_LOG" ]            && LOGS+=("$JAX_LOG")
 
 if [ ${#LOGS[@]} -gt 0 ]; then
-    echo "Formatting results as markdown..."
-    mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")" "$(dirname "$CPU_OPS_LATEST_REPORT")"
+    echo "Formatting einsum results as markdown..."
+    mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")" "$(dirname "$CPU_OPS_LATEST_REPORT")" "$(dirname "$CPU_LINALG_AD_LATEST_REPORT")"
     if command -v uv >/dev/null 2>&1; then
         uv run python "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE" \
             || python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE"
@@ -385,20 +431,34 @@ if [ ${#LOGS[@]} -gt 0 ]; then
         python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE"
     fi
 
-    if [ -f "$CPU_OPS_LOG" ]; then
-        if command -v uv >/dev/null 2>&1; then
-            uv run python "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD" \
-                || python3 "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD"
-        else
-            python3 "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD"
-        fi
-    fi
-
     write_einsum_report "$EINSUM_REPORT"
     cp "$EINSUM_REPORT" "$CPU_LATEST_REPORT"
-    if [ -f "$CPU_OPS_MD" ]; then
-        write_cpu_report "$CPU_REPORT"
-        cp "$CPU_REPORT" "$CPU_OPS_LATEST_REPORT"
+    echo ""
+fi
+
+if [ -f "$CPU_OPS_LOG" ]; then
+    echo "Formatting CPU ops results as markdown..."
+    mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_OPS_LATEST_REPORT")" "$(dirname "$CPU_LINALG_AD_LATEST_REPORT")"
+    if command -v uv >/dev/null 2>&1; then
+        uv run python "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD" \
+            || python3 "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD"
+    else
+        python3 "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD"
+    fi
+    write_cpu_report "$CPU_REPORT"
+    cp "$CPU_REPORT" "$CPU_OPS_LATEST_REPORT"
+
+    if grep -Eq '_jvp,|_vjp,' "$CPU_OPS_LOG"; then
+        if command -v uv >/dev/null 2>&1; then
+            uv run python "$PROJECT_DIR/scripts/format_linalg_ad_results.py" "$CPU_OPS_LOG" | tee "$LINALG_AD_MD" \
+                || python3 "$PROJECT_DIR/scripts/format_linalg_ad_results.py" "$CPU_OPS_LOG" | tee "$LINALG_AD_MD"
+        else
+            python3 "$PROJECT_DIR/scripts/format_linalg_ad_results.py" "$CPU_OPS_LOG" | tee "$LINALG_AD_MD"
+        fi
+        write_linalg_ad_report "$LINALG_AD_REPORT"
+        cp "$LINALG_AD_REPORT" "$CPU_LINALG_AD_LATEST_REPORT"
+    else
+        echo "WARNING: no linalg JVP/VJP rows in $CPU_OPS_LOG; skipping linalg_jvp_vjp report." >&2
     fi
     echo ""
 fi
@@ -416,3 +476,5 @@ done
 [ -f "$CPU_LATEST_REPORT" ] && echo "  Latest:   $CPU_LATEST_REPORT"
 [ -f "$CPU_REPORT" ] && echo "  Report:   $CPU_REPORT"
 [ -f "$CPU_OPS_LATEST_REPORT" ] && echo "  Latest:   $CPU_OPS_LATEST_REPORT"
+[ -f "$LINALG_AD_REPORT" ] && echo "  Report:   $LINALG_AD_REPORT"
+[ -f "$CPU_LINALG_AD_LATEST_REPORT" ] && echo "  Latest:   $CPU_LINALG_AD_LATEST_REPORT"

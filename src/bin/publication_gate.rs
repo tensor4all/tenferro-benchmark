@@ -56,6 +56,14 @@ impl Profile {
     }
 }
 
+fn large_linalg_jvp_vjp_sizes(profile: Profile) -> &'static [usize] {
+    match profile {
+        // O(n^3) linalg AD: 256x256 is single-digit ms; 512x512 reaches tens of ms.
+        Profile::Quick => &[256, 512],
+        Profile::Full => &[256, 512, 1024],
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum SuiteFilter {
     All,
@@ -909,6 +917,55 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?])
             },
         ));
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(10),
+            LinalgAdLoss::SumSvdS { matrix_seed: 10 },
+        );
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(4),
+            LinalgAdLoss::SumQr { matrix_seed: 4 },
+        );
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(5),
+            LinalgAdLoss::SumEigh { matrix_seed: 5 },
+        );
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(52),
+            LinalgAdLoss::SumLu { matrix_seed: 52 },
+        );
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n},rhs=1"),
+            n,
+            tangent_seed(11),
+            LinalgAdLoss::SumSolveWrtA {
+                matrix_seed: 11,
+                rhs_seed: 12,
+                rhs_cols: 1,
+            },
+        );
     }
 }
 
@@ -1069,6 +1126,57 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok(vec![grad(&loss, &a)?, grad(&loss, &b)?])
             },
         ));
+    }
+    for &n in large_linalg_jvp_vjp_sizes(config.profile) {
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(34),
+            LinalgAdLoss::SumSvdS { matrix_seed: 34 },
+        );
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(26),
+            LinalgAdLoss::SumQr { matrix_seed: 26 },
+        );
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(27),
+            LinalgAdLoss::SumEigh { matrix_seed: 27 },
+        );
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(54),
+            LinalgAdLoss::SumLu { matrix_seed: 54 },
+        );
+        push_linalg_jvp_vjp_trace_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n},rhs=1"),
+            n,
+            tangent_seed(35),
+            LinalgAdLoss::SumSolveWrtA {
+                matrix_seed: 35,
+                rhs_seed: 36,
+                rhs_cols: 1,
+            },
+        );
     }
 }
 
@@ -1341,6 +1449,131 @@ fn ad_context() -> &'static AdContext {
 
 fn grad(output: &TracedTensor, wrt: &TracedTensor) -> tenferro_ad::error::Result<TracedTensor> {
     ad_context().grad(output, wrt)
+}
+
+fn jvp(
+    output: &TracedTensor,
+    wrt: &TracedTensor,
+    tangent: &TracedTensor,
+) -> tenferro_ad::error::Result<TracedTensor> {
+    ad_context().jvp(output, wrt, tangent)
+}
+
+fn vjp(
+    output: &TracedTensor,
+    wrt: &TracedTensor,
+    cotangent: &TracedTensor,
+) -> tenferro_ad::error::Result<TracedTensor> {
+    ad_context().vjp(output, wrt, cotangent)
+}
+
+const TANGENT_SEED_OFFSET: u64 = 1_000;
+
+fn tangent_seed(matrix_seed: u64) -> u64 {
+    matrix_seed.wrapping_add(TANGENT_SEED_OFFSET)
+}
+
+fn scalar_one() -> TracedTensor {
+    traced_tensor(&[], vec![1.0])
+}
+
+#[derive(Clone, Copy, Debug)]
+enum LinalgAdLoss {
+    SumSvdS { matrix_seed: u64 },
+    SumQr { matrix_seed: u64 },
+    SumEigh { matrix_seed: u64 },
+    SumLu { matrix_seed: u64 },
+    SumSolveWrtA {
+        matrix_seed: u64,
+        rhs_seed: u64,
+        rhs_cols: usize,
+    },
+}
+
+impl LinalgAdLoss {
+    fn op_name(self) -> &'static str {
+        match self {
+            Self::SumSvdS { .. } => "grad_sum_svd_s",
+            Self::SumQr { .. } => "grad_sum_qr",
+            Self::SumEigh { .. } => "grad_sum_eigh",
+            Self::SumLu { .. } => "grad_sum_lu",
+            Self::SumSolveWrtA { .. } => "grad_sum_solve",
+        }
+    }
+
+    fn build(self, n: usize) -> tenferro_ad::error::Result<(TracedTensor, TracedTensor)> {
+        match self {
+            Self::SumSvdS { matrix_seed } => {
+                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, matrix_seed));
+                let (_, s, _) = tenferro_linalg::svd(&a)?;
+                Ok((s.reduce_sum(&[0]), a))
+            }
+            Self::SumQr { matrix_seed } => {
+                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, matrix_seed));
+                let (q, r) = tenferro_linalg::qr(&a)?;
+                let loss = &q.reduce_sum(&[0, 1]) + &r.reduce_sum(&[0, 1]);
+                Ok((loss, a))
+            }
+            Self::SumEigh { matrix_seed } => {
+                let a = traced_tensor(&[n, n], spd_matrix(n, matrix_seed));
+                let (w, _) = tenferro_linalg::eigh(&a)?;
+                Ok((w.reduce_sum(&[0]), a))
+            }
+            Self::SumLu { matrix_seed } => {
+                let a = traced_tensor(&[n, n], well_conditioned_matrix(n, matrix_seed));
+                let (_, l, u, _) = tenferro_linalg::lu(&a)?;
+                let loss = &l.reduce_sum(&[0, 1]) + &u.reduce_sum(&[0, 1]);
+                Ok((loss, a))
+            }
+            Self::SumSolveWrtA {
+                matrix_seed,
+                rhs_seed,
+                rhs_cols,
+            } => {
+                let a = traced_tensor(&[n, n], spd_matrix(n, matrix_seed));
+                let b = traced_tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], rhs_seed));
+                let x = tenferro_linalg::solve(&a, &b)?;
+                Ok((x.reduce_sum(&[0, 1]), a))
+            }
+        }
+    }
+}
+
+fn push_linalg_jvp_vjp_trace_benches(
+    config: &BenchConfig,
+    rows: &mut Vec<Row>,
+    suite: &'static str,
+    shape: &str,
+    n: usize,
+    tangent_seed: u64,
+    loss: LinalgAdLoss,
+) {
+    let op = loss.op_name();
+    rows.push(bench_trace_row(
+        config,
+        suite,
+        op,
+        "jvp",
+        "f64",
+        shape,
+        || {
+            let (output, wrt) = loss.build(n)?;
+            let tangent = traced_tensor(&[n, n], data_for_shape(&[n, n], tangent_seed));
+            Ok(vec![jvp(&output, &wrt, &tangent)?])
+        },
+    ));
+    rows.push(bench_trace_row(
+        config,
+        suite,
+        op,
+        "vjp",
+        "f64",
+        shape,
+        || {
+            let (output, wrt) = loss.build(n)?;
+            Ok(vec![vjp(&output, &wrt, &scalar_one())?])
+        },
+    ));
 }
 
 fn tensor(shape: &[usize], data: Vec<f64>) -> Tensor {

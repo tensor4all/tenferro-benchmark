@@ -4,8 +4,8 @@ Benchmark suite for [tenferro-rs](https://github.com/tensor4all/tenferro-rs).
 
 The repository keeps the latest human-facing reports per target profile:
 
-- macOS CPU: `result/mac-cpu/cpu/einsum.md`, `result/mac-cpu/cpu/cpu_ops.md`
-- Linux/AMD CPU: `result/amd-cpu/cpu/einsum.md`, `result/amd-cpu/cpu/cpu_ops.md`
+- macOS CPU: `result/mac-cpu/cpu/einsum.md`, `result/mac-cpu/cpu/cpu_ops.md`, `result/mac-cpu/cpu/linalg_jvp_vjp.md`
+- Linux/AMD CPU: `result/amd-cpu/cpu/einsum.md`, `result/amd-cpu/cpu/cpu_ops.md`, `result/amd-cpu/cpu/linalg_jvp_vjp.md`
 - NVIDIA GPU: `result/nvidia-gpu/gpu/dense.md`, `result/nvidia-gpu/gpu/einsum.md`, `result/nvidia-gpu/gpu/sparse.md`, `result/nvidia-gpu/gpu/tensornetwork.md`
 
 Historical reports are not archived in extra files. Use git history when older

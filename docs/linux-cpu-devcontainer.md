@@ -56,6 +56,7 @@ Latest reports:
 
 - `result/amd-cpu/cpu/einsum.md`
 - `result/amd-cpu/cpu/cpu_ops.md`
+- `result/amd-cpu/cpu/linalg_jvp_vjp.md`
 
 Raw run data:
 

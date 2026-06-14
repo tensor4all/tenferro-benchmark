@@ -33,8 +33,10 @@ Expected latest report paths:
 
 - `result/mac-cpu/cpu/einsum.md`
 - `result/mac-cpu/cpu/cpu_ops.md`
+- `result/mac-cpu/cpu/linalg_jvp_vjp.md`
 - `result/amd-cpu/cpu/einsum.md`
 - `result/amd-cpu/cpu/cpu_ops.md`
+- `result/amd-cpu/cpu/linalg_jvp_vjp.md`
 - `result/nvidia-gpu/gpu/dense.md`
 - `result/nvidia-gpu/gpu/einsum.md`
 - `result/nvidia-gpu/gpu/sparse.md`
@@ -127,6 +129,8 @@ uv run python scripts/validate_benchmark_suite.py benchmarks/cpu/einsum.yaml
 uv run python scripts/validate_benchmark_suite.py benchmarks/gpu/dense.yaml benchmarks/gpu/einsum.yaml benchmarks/gpu/sparse.yaml
 bash tests/test_suite_result_layout.sh
 bash tests/test_run_all_docs_outputs.sh
+bash tests/test_cpu_ops_linalg_ad.sh
+bash tests/test_linalg_ad_results_formatter.sh
 bash tests/test_clean_extern_deps.sh
 bash tests/test_setup_extern_tenferro_checkout.sh
 cmake -S cpp -B build/cpp-plan-test
