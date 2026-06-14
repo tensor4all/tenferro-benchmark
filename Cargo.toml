@@ -80,3 +80,8 @@ path = "src/bin/publication_gate.rs"
 name = "benchmark_gpu_rust"
 path = "src/bin/benchmark_gpu_rust.rs"
 required-features = ["cuda"]
+
+[[example]]
+name = "svd_backward_panic_mwe"
+path = "examples/svd_backward_panic_mwe.rs"
+required-features = ["cpu-faer"]

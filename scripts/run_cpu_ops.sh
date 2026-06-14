@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # Runs the focused CPU benchmark items where this repository has a native
-# runner. The output is normalized to the backend-comparison CSV consumed by
+# runner. Includes primal linalg, trace-mode JVP/VJP (tenferro-trace), and
+# eager backward. Output is normalized to the backend-comparison CSV consumed by
 # format_cpu_ops_results.py.
 
 NUM_THREADS="${1:-1}"
@@ -17,6 +18,7 @@ source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
 PUBLICATION_GATE_FEATURES="$(normalize_cpu_blas_features "${PUBLICATION_GATE_FEATURES:-}")"
 export PUBLICATION_GATE_FEATURES
+export PUBLICATION_GATE_TENFERRO_MODE="${PUBLICATION_GATE_TENFERRO_MODE:-both}"
 
 # shellcheck source=scripts/thread_env.sh
 source "$SCRIPT_DIR/thread_env.sh"
@@ -26,6 +28,7 @@ mkdir -p "$RESULTS_DIR"
 
 RAW_LOG="$RESULTS_DIR/publication_gate_${PUBLICATION_GATE_FEATURES}_t${NUM_THREADS}_${PUBLICATION_GATE_PROFILE:-quick}_${PUBLICATION_GATE_SUITE:-all}_${TIMESTAMP}.csv"
 CPU_OPS_LOG="$RESULTS_DIR/cpu_ops_t${NUM_THREADS}_${TIMESTAMP}.csv"
+LINALG_AD_MD="$RESULTS_DIR/linalg_jvp_vjp_t${NUM_THREADS}_${TIMESTAMP}.md"
 
 ensure_blas_env_for_features "$PUBLICATION_GATE_FEATURES"
 
@@ -100,3 +103,18 @@ else
 fi
 
 echo "CPU ops results saved to: $CPU_OPS_LOG"
+if [[ -f "$CPU_OPS_LOG" ]]; then
+    linalg_ad_count="$(grep -Ec '_jvp,|_vjp,' "$CPU_OPS_LOG" || true)"
+    if [[ -z "$linalg_ad_count" || "$linalg_ad_count" == "0" ]]; then
+        echo "WARNING: no linalg JVP/VJP rows found in $CPU_OPS_LOG" >&2
+    else
+        echo "Linalg JVP/VJP rows: $linalg_ad_count"
+        if command -v uv >/dev/null 2>&1; then
+            uv run python "$SCRIPT_DIR/format_linalg_ad_results.py" "$CPU_OPS_LOG" > "$LINALG_AD_MD" \
+                || python3 "$SCRIPT_DIR/format_linalg_ad_results.py" "$CPU_OPS_LOG" > "$LINALG_AD_MD"
+        else
+            python3 "$SCRIPT_DIR/format_linalg_ad_results.py" "$CPU_OPS_LOG" > "$LINALG_AD_MD"
+        fi
+        echo "Linalg JVP/VJP markdown saved to: $LINALG_AD_MD"
+    fi
+fi

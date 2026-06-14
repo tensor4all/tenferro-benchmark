@@ -50,6 +50,7 @@ Latest reports:
 
 - `result/mac-cpu/cpu/einsum.md`
 - `result/mac-cpu/cpu/cpu_ops.md`
+- `result/mac-cpu/cpu/linalg_jvp_vjp.md`
 
 Raw run data:
 
