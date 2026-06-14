@@ -12,8 +12,11 @@ Usage:
     uv run python scripts/benchmark_python.py --backend jax [--num-threads N]
 
 Environment:
-    BENCH_INSTANCE  Run only the named instance (default: all)
-    OMP_NUM_THREADS Thread count (overridden by --num-threads)
+    BENCH_INSTANCE        Run only the named instance (default: all in suite)
+    BENCH_SUITE_INCLUDE    Comma-separated instance IDs from the suite YAML
+    BENCH_RUNS            Timed runs per instance (default: 15)
+    BENCH_WARMUPS         Warmup runs per instance (default: 3)
+    OMP_NUM_THREADS       Thread count (overridden by --num-threads)
 """
 
 from __future__ import annotations
@@ -30,9 +33,17 @@ SCRIPT_DIR = Path(__file__).parent
 PROJECT_DIR = SCRIPT_DIR.parent
 DATA_DIR = PROJECT_DIR / "data" / "instances"
 
-NUM_WARMUP = 3
-NUM_RUNS = 15
+NUM_WARMUP_DEFAULT = 3
+NUM_RUNS_DEFAULT = 15
 _PYTORCH_THREADS_CONFIGURED = False
+
+
+def bench_warmups() -> int:
+    return int(os.environ.get("BENCH_WARMUPS", NUM_WARMUP_DEFAULT))
+
+
+def bench_runs() -> int:
+    return int(os.environ.get("BENCH_RUNS", NUM_RUNS_DEFAULT))
 
 THREAD_ENV_KEYS = (
     "OMP_NUM_THREADS",
@@ -76,7 +87,14 @@ def parse_args() -> argparse.Namespace:
 # Data loading
 # ---------------------------------------------------------------------------
 
-def load_instances(instance_filter: str = "") -> list[dict]:
+def load_instances(instance_filter: str = "", suite_include: str = "") -> list[dict]:
+    if not suite_include:
+        suite_include = os.environ.get("BENCH_SUITE_INCLUDE", "")
+    allowed = (
+        {name.strip() for name in suite_include.split(",") if name.strip()}
+        if suite_include
+        else None
+    )
     paths = sorted(DATA_DIR.glob("*.json"))
     instances = []
     for path in paths:
@@ -86,7 +104,10 @@ def load_instances(instance_filter: str = "") -> list[dict]:
         except Exception as e:
             print(f"Warning: skip {path.name} ({e})", file=sys.stderr)
             continue
-        if instance_filter and d["name"] != instance_filter:
+        if instance_filter:
+            if d["name"] != instance_filter:
+                continue
+        elif allowed is not None and d["name"] not in allowed:
             continue
         instances.append(d)
     return instances
@@ -199,12 +220,12 @@ def benchmark_pytorch(
 
     try:
         # Warmup
-        for _ in range(NUM_WARMUP):
+        for _ in range(bench_warmups()):
             oe.contract(fmt, *operands, optimize=path, backend="torch")
 
         # Timed runs
         times: list[float] = []
-        for _ in range(NUM_RUNS):
+        for _ in range(bench_runs()):
             t0 = time.perf_counter()
             oe.contract(fmt, *operands, optimize=path, backend="torch")
             times.append((time.perf_counter() - t0) * 1000.0)
@@ -247,14 +268,14 @@ def benchmark_jax(
 
     try:
         # Warmup (first call includes JIT compilation)
-        for _ in range(NUM_WARMUP):
+        for _ in range(bench_warmups()):
             jax.block_until_ready(
                 oe.contract(fmt, *operands, optimize=path, backend="jax")
             )
 
         # Timed runs
         times: list[float] = []
-        for _ in range(NUM_RUNS):
+        for _ in range(bench_runs()):
             t0 = time.perf_counter()
             jax.block_until_ready(
                 oe.contract(fmt, *operands, optimize=path, backend="jax")
@@ -284,6 +305,9 @@ def main() -> None:
             file=sys.stderr,
         )
         sys.exit(1)
+    if not instances:
+        print("No benchmark instances matched the suite selection", file=sys.stderr)
+        sys.exit(1)
 
     # ---- Header ----
     print(f"{backend_name} einsum benchmark suite")
@@ -303,8 +327,8 @@ def main() -> None:
         print(f"JAX_DEFAULT_BACKEND={jax_backend}")
         print(f"JAX_DOT_BACKEND={xla_backend_name(jax_backend)}")
     print(
-        f"Timing: median ± IQR of {NUM_RUNS} runs "
-        f"({NUM_WARMUP} warmup), path precomputed"
+        f"Timing: median ± IQR of {bench_runs()} runs "
+        f"({bench_warmups()} warmup), path precomputed"
     )
 
     strategies = ["opt_flops", "opt_size"]

@@ -2,15 +2,15 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# Full benchmark runner:
-#   - tenferro trace/eager (Rust)
-#   - strided-rs / faer (Rust, optional)
-#   - PyTorch/JAX CPU (Python)
-#   - CPU benchmark items where supported by repo-local runners
+# CPU einsum benchmark runner:
+#   - tenferro-rs trace + eager (Rust)
+#   - PyTorch CPU + JAX CPU (Python)
+#   - optional CPU ops microbenchmarks
 #
 # Usage: ./scripts/run_all.sh [NUM_THREADS]
 #
-# Delegates to run_all_rust.sh and run_all_python.sh, then formats results.
+# Compares einsum performance for the instances listed in
+# benchmarks/cpu/einsum.yaml and writes result/<target_profile>/cpu/einsum.md.
 # ---------------------------------------------------------------------------
 
 NUM_THREADS="${1:-1}"
@@ -182,6 +182,11 @@ run_python_script() {
     fi
 }
 
+resolve_suite_instance_ids() {
+    local suite_file="$1"
+    run_python_script "$PROJECT_DIR/scripts/suite_instances.py" --suite-file "$suite_file"
+}
+
 write_run_metadata() {
     local run_yaml="$1"
     local timestamp="$2"
@@ -240,7 +245,6 @@ write_einsum_report() {
         for log in \
             "$TENFERRO_TRACE_LOG" \
             "$TENFERRO_EAGER_LOG" \
-            "$STRIDED_FAER_LOG" \
             "$PYTORCH_LOG" \
             "$JAX_LOG"; do
             [[ -f "$log" ]] && echo "- \`${log#$PROJECT_DIR/}\`"
@@ -303,13 +307,20 @@ export BENCHMARK_RESULTS_DIR="$CPU_RUN_DIR"
 ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 configure_cpu_thread_env "$NUM_THREADS"
 
+export BENCH_SUITE_FILE="${BENCH_SUITE_FILE:-${CPU_SUITE_FILE#$PROJECT_DIR/}}"
+BENCH_SUITE_INCLUDE="$(resolve_suite_instance_ids "$CPU_SUITE_FILE")"
+export BENCH_SUITE_INCLUDE
+SUITE_INSTANCE_COUNT="$(printf '%s' "$BENCH_SUITE_INCLUDE" | awk -F, '{print NF}')"
+
 echo "============================================"
-echo " tenferro benchmark suite"
+echo " CPU einsum benchmark suite"
 echo "============================================"
 echo "Project dir:  $PROJECT_DIR"
 echo "Threads:      $NUM_THREADS"
 echo "Timestamp:    $BENCHMARK_TIMESTAMP"
 echo "Suite:        $CPU_SUITE_ID"
+echo "Suite file:   ${CPU_SUITE_FILE#$PROJECT_DIR/}"
+echo "Instances:    $SUITE_INSTANCE_COUNT from ${CPU_SUITE_FILE#$PROJECT_DIR/}"
 echo "Target:       $BENCHMARK_TARGET_PROFILE"
 echo "Run dir:      $CPU_RUN_DIR"
 echo "Features:     $TENFERRO_CPU_FEATURES"
@@ -321,7 +332,7 @@ echo ""
 write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
 
 # ---------------------------------------------------------------------------
-# Rust benchmarks (tenferro trace/eager + strided-rs)
+# Einsum benchmarks (tenferro-rs + PyTorch + JAX)
 # ---------------------------------------------------------------------------
 "$SCRIPT_DIR/run_all_rust.sh" "$NUM_THREADS"
 
@@ -352,7 +363,6 @@ fi
 # ---------------------------------------------------------------------------
 TENFERRO_TRACE_LOG="$CPU_RUN_DIR/tenferro_trace_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 TENFERRO_EAGER_LOG="$CPU_RUN_DIR/tenferro_eager_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
-STRIDED_FAER_LOG="$CPU_RUN_DIR/strided_faer_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 PYTORCH_LOG="$CPU_RUN_DIR/pytorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 JAX_LOG="$CPU_RUN_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 MARKDOWN_TABLE="$CPU_RUN_DIR/einsum_table_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
@@ -362,7 +372,6 @@ CPU_REPORT="$CPU_RUN_DIR/cpu_ops_report.md"
 LOGS=()
 [ -f "$TENFERRO_TRACE_LOG" ] && LOGS+=("$TENFERRO_TRACE_LOG")
 [ -f "$TENFERRO_EAGER_LOG" ] && LOGS+=("$TENFERRO_EAGER_LOG")
-[ -f "$STRIDED_FAER_LOG" ]   && LOGS+=("$STRIDED_FAER_LOG")
 [ -f "$PYTORCH_LOG" ]        && LOGS+=("$PYTORCH_LOG")
 [ -f "$JAX_LOG" ]            && LOGS+=("$JAX_LOG")
 

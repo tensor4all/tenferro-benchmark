@@ -8,7 +8,20 @@ The macrobenchmark instances come from the
 row-major metadata from the source package and adds column-major metadata for
 tenferro-rs.
 
-Generate the source-derived instance JSON files:
+Tracked instance metadata lives under `data/instances/`. The base laptop-scale
+set matches
+[tenferro-einsum-benchmark](https://github.com/tensor4all/tenferro-einsum-benchmark);
+this repository adds extra diagnostic cases for tenferro-rs trace/eager,
+PyTorch, and JAX comparisons.
+
+Import the upstream JSON export when `extern/tenferro-einsum-benchmark` is
+available locally:
+
+```bash
+uv run python scripts/import_einsum_dataset.py
+```
+
+Regenerate directly from the `einsum_benchmark` Python package instead:
 
 ```bash
 uv run python scripts/generate_dataset.py

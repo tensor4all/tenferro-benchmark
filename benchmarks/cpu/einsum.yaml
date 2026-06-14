@@ -22,6 +22,7 @@ problems:
     - bin_batched_outer_product_compact_j16_k16_o64_t64
     - bin_batched_outer_product_noncompact_j16_k16_o64_t64
     - bin_elementwise_mul_2048x2048
+    - nary_matmul_chain_64
     - gm_queen5_5_3.wcsp
     - lm_batch_likelihood_brackets_4_4d
     - lm_batch_likelihood_sentence_3_12d

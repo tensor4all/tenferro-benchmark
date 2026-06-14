@@ -18,8 +18,22 @@ use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_runtime::{GraphExecutor, TensorRead, TracedTensor};
 use tenferro_tensor::{Tensor, TypedTensor};
 
-const NUM_WARMUPS: usize = 3;
-const NUM_RUNS: usize = 15;
+const DEFAULT_WARMUPS: usize = 3;
+const DEFAULT_RUNS: usize = 15;
+
+fn bench_warmups() -> usize {
+    std::env::var("BENCH_WARMUPS")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(DEFAULT_WARMUPS)
+}
+
+fn bench_runs() -> usize {
+    std::env::var("BENCH_RUNS")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(DEFAULT_RUNS)
+}
 
 // ---------------------------------------------------------------------------
 // JSON schema
@@ -489,7 +503,7 @@ fn run_instance_trace(
 
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
-    for _ in 0..NUM_WARMUPS {
+    for _ in 0..bench_warmups() {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             executor.run_many_values_with_input_reads(program, &bindings)
         }));
@@ -499,8 +513,8 @@ fn run_instance_trace(
     }
 
     // Timed runs
-    let mut durations = Vec::with_capacity(NUM_RUNS);
-    for _ in 0..NUM_RUNS {
+    let mut durations = Vec::with_capacity(bench_runs());
+    for _ in 0..bench_runs() {
         let t0 = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             executor.run_many_values_with_input_reads(program, &bindings)
@@ -515,8 +529,8 @@ fn run_instance_trace(
     let (median, iqr) = duration_stats(durations);
 
     if profile_bench_breakdown_enabled() {
-        let mut input_create = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut input_create = Vec::with_capacity(bench_runs());
+        for _ in 0..bench_runs() {
             let started = Instant::now();
             let operands = create_operand_tensors(&instance.shapes_colmajor);
             input_create.push(started.elapsed());
@@ -530,8 +544,8 @@ fn run_instance_trace(
             input_create,
         );
 
-        let mut input_bind = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut input_bind = Vec::with_capacity(bench_runs());
+        for _ in 0..bench_runs() {
             let started = Instant::now();
             let bindings = bind_operand_reads(&compiled.inputs, &operands)?;
             input_bind.push(started.elapsed());
@@ -545,8 +559,8 @@ fn run_instance_trace(
             input_bind,
         );
 
-        let mut executor_run = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut executor_run = Vec::with_capacity(bench_runs());
+        for _ in 0..bench_runs() {
             let started = Instant::now();
             let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
                 executor.run_many_values_with_input_reads(program, &bindings)
@@ -653,13 +667,13 @@ fn run_instance_eager(
     let ctx = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?);
     let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
 
-    for _ in 0..NUM_WARMUPS {
+    for _ in 0..bench_warmups() {
         let eval = contract_once_eager(instance, path_meta, &source_operands, None)?;
         black_box(&eval);
     }
 
-    let mut durations = Vec::with_capacity(NUM_RUNS);
-    for _ in 0..NUM_RUNS {
+    let mut durations = Vec::with_capacity(bench_runs());
+    for _ in 0..bench_runs() {
         let t0 = Instant::now();
         let eval = contract_once_eager(instance, path_meta, &source_operands, None)?;
         let elapsed = t0.elapsed();
@@ -670,8 +684,8 @@ fn run_instance_eager(
     let (median, iqr) = duration_stats(durations);
 
     if profile_bench_breakdown_enabled() {
-        let mut input_create = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut input_create = Vec::with_capacity(bench_runs());
+        for _ in 0..bench_runs() {
             let started = Instant::now();
             let operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
             input_create.push(started.elapsed());
@@ -685,13 +699,13 @@ fn run_instance_eager(
             input_create,
         );
 
-        let mut total = Vec::with_capacity(NUM_RUNS);
-        let mut parse_subscripts = Vec::with_capacity(NUM_RUNS);
-        let mut operand_handles = Vec::with_capacity(NUM_RUNS);
-        let mut binary_setup = Vec::with_capacity(NUM_RUNS);
-        let mut einsum_call = Vec::with_capacity(NUM_RUNS);
-        let mut output_take = Vec::with_capacity(NUM_RUNS);
-        for _ in 0..NUM_RUNS {
+        let mut total = Vec::with_capacity(bench_runs());
+        let mut parse_subscripts = Vec::with_capacity(bench_runs());
+        let mut operand_handles = Vec::with_capacity(bench_runs());
+        let mut binary_setup = Vec::with_capacity(bench_runs());
+        let mut einsum_call = Vec::with_capacity(bench_runs());
+        let mut output_take = Vec::with_capacity(bench_runs());
+        for _ in 0..bench_runs() {
             let mut breakdown = EagerRunBreakdown::default();
             let eval =
                 contract_once_eager(instance, path_meta, &source_operands, Some(&mut breakdown))?;
@@ -802,17 +816,41 @@ fn load_instances() -> Vec<BenchmarkInstance> {
         .collect()
 }
 
+fn filter_instances(mut instances: Vec<BenchmarkInstance>) -> Vec<BenchmarkInstance> {
+    if let Ok(filter) = std::env::var("BENCH_INSTANCE") {
+        if !filter.is_empty() {
+            instances.retain(|instance| instance.name == filter);
+            if instances.is_empty() {
+                eprintln!("BENCH_INSTANCE={filter:?}: no matching instance found");
+                std::process::exit(1);
+            }
+            return instances;
+        }
+    }
+
+    if let Ok(include) = std::env::var("BENCH_SUITE_INCLUDE") {
+        if !include.is_empty() {
+            let allowed: HashSet<String> = include
+                .split(',')
+                .map(str::trim)
+                .filter(|name| !name.is_empty())
+                .map(str::to_string)
+                .collect();
+            instances.retain(|instance| allowed.contains(&instance.name));
+        }
+    }
+
+    instances
+}
+
 fn main() {
     let mode = TenferroMode::from_env();
     let backend_name = mode.backend_name();
     let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data/instances");
-    let mut instances = load_instances();
-    if let Ok(filter) = std::env::var("BENCH_INSTANCE") {
-        instances.retain(|i| i.name == filter);
-        if instances.is_empty() {
-            eprintln!("BENCH_INSTANCE={filter:?}: no matching instance found");
-            std::process::exit(1);
-        }
+    let mut instances = filter_instances(load_instances());
+    if instances.is_empty() {
+        eprintln!("No benchmark instances matched the suite selection");
+        std::process::exit(1);
     }
 
     let rayon_threads = std::env::var("RAYON_NUM_THREADS").unwrap_or_else(|_| "unset".into());
@@ -834,7 +872,9 @@ fn main() {
     println!("TENFERRO_OPT_DOT_DECOMPOSER={dot_decomposer}");
     println!("RAYON_NUM_THREADS={rayon_threads}, OMP_NUM_THREADS={omp_threads}");
     println!(
-        "Timing: median ± IQR of {NUM_RUNS} runs ({NUM_WARMUPS} warmup), {}",
+        "Timing: median ± IQR of {} runs ({} warmup), {}",
+        bench_runs(),
+        bench_warmups(),
         mode.timing_note()
     );
 

@@ -1,7 +1,5 @@
 {
   "name": "gm_queen5_5_3.wcsp",
-  "intent": "N-ary contraction path stress case from the einsum benchmark suite.",
-  "notes": "The opt_flops path intentionally stresses high-rank broadcast/multiply intermediates: current analysis shows a rank-17 intermediate with 129,140,163 elements and roughly 592M total intermediate elements. The opt_size path caps the largest intermediate at 43,046,721 elements and is the better signal for normal performance comparisons; avoid adding microkernel-specific optimizations based only on the opt_flops loss.",
   "format_string": "ab,ac,ad,ae,af,ag,ak,am,ap,as,au,ay,bc,bd,be,bf,bg,bh,bl,bn,bq,bt,bv,cd,ce,cg,ch,ci,ck,cm,co,cr,cw,de,dh,di,dj,dl,dn,dp,ds,dx,ei,ej,em,eo,eq,et,eu,ey,fg,fh,fi,fj,fk,fl,fp,fr,fu,fx,gh,gi,gj,gk,gl,gm,gq,gs,gv,gy,hi,hj,hl,hm,hn,hp,hr,ht,hw,ij,im,in,io,iq,is,iu,ix,jn,jo,jr,jt,jv,jy,kl,km,kn,ko,kp,kq,ku,kw,lm,ln,lo,lp,lq,lr,lv,lx,mn,mo,mq,mr,ms,mu,mw,my,no,nr,ns,nt,nv,nx,os,ot,ow,oy,pq,pr,ps,pt,pu,pv,qr,qs,qt,qu,qv,qw,rs,rt,rv,rw,rx,st,sw,sx,sy,tx,ty,uv,uw,ux,uy,vw,vx,vy,wx,wy,xy->",
   "shapes": [
     [
@@ -2576,5 +2574,7 @@
       3,
       3
     ]
-  ]
+  ],
+  "intent": "N-ary contraction path stress case from the einsum benchmark suite.",
+  "notes": "The opt_flops path intentionally stresses high-rank broadcast/multiply intermediates: current analysis shows a rank-17 intermediate with 129,140,163 elements and roughly 592M total intermediate elements. The opt_size path caps the largest intermediate at 43,046,721 elements and is the better signal for normal performance comparisons; avoid adding microkernel-specific optimizations based only on the opt_flops loss."
 }
