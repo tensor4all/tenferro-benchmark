@@ -3694,6 +3694,21 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "strided-einsum2"
 version = "0.1.0"
+dependencies = [
+ "faer",
+ "faer-traits",
+ "num-traits",
+ "smallvec",
+ "strided-kernel 0.1.0",
+ "strided-perm 0.1.0",
+ "strided-traits 0.1.0",
+ "strided-view 0.1.0",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "strided-einsum2"
+version = "0.1.0"
 source = "git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082#71bdd913158a87437e51f4f9b69cba4cac6f5082"
 dependencies = [
  "cblas-sys 0.2.0",
@@ -3703,11 +3718,22 @@ dependencies = [
  "num-traits",
  "rayon",
  "smallvec",
- "strided-kernel",
- "strided-perm",
- "strided-traits",
- "strided-view",
+ "strided-kernel 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
+ "strided-perm 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
+ "strided-traits 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
+ "strided-view 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "strided-kernel"
+version = "0.1.0"
+dependencies = [
+ "num-complex",
+ "num-traits",
+ "pulp",
+ "strided-perm 0.1.0",
+ "strided-view 0.1.0",
 ]
 
 [[package]]
@@ -3720,8 +3746,28 @@ dependencies = [
  "pulp",
  "rayon",
  "smallvec",
- "strided-perm",
- "strided-view",
+ "strided-perm 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
+ "strided-view 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
+]
+
+[[package]]
+name = "strided-opteinsum"
+version = "0.1.0"
+dependencies = [
+ "num-complex",
+ "num-traits",
+ "omeco",
+ "strided-einsum2 0.1.0",
+ "strided-kernel 0.1.0",
+ "strided-view 0.1.0",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "strided-perm"
+version = "0.1.0"
+dependencies = [
+ "strided-view 0.1.0",
 ]
 
 [[package]]
@@ -3730,7 +3776,15 @@ version = "0.1.0"
 source = "git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082#71bdd913158a87437e51f4f9b69cba4cac6f5082"
 dependencies = [
  "rayon",
- "strided-view",
+ "strided-view 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
+]
+
+[[package]]
+name = "strided-traits"
+version = "0.1.0"
+dependencies = [
+ "num-complex",
+ "num-traits",
 ]
 
 [[package]]
@@ -3745,11 +3799,21 @@ dependencies = [
 [[package]]
 name = "strided-view"
 version = "0.1.0"
+dependencies = [
+ "num-complex",
+ "num-traits",
+ "strided-traits 0.1.0",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "strided-view"
+version = "0.1.0"
 source = "git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082#71bdd913158a87437e51f4f9b69cba4cac6f5082"
 dependencies = [
  "num-complex",
  "num-traits",
- "strided-traits",
+ "strided-traits 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
  "thiserror 1.0.69",
 ]
 
@@ -3881,8 +3945,8 @@ dependencies = [
  "num-traits",
  "rayon",
  "smallvec",
- "strided-einsum2",
- "strided-kernel",
+ "strided-einsum2 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
+ "strided-kernel 0.1.0 (git+https://github.com/tensor4all/strided-rs?rev=71bdd913158a87437e51f4f9b69cba4cac6f5082)",
  "tenferro-tensor",
  "thiserror 2.0.18",
 ]
@@ -3913,6 +3977,8 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml",
+ "strided-opteinsum",
+ "strided-view 0.1.0",
  "tenferro-ad",
  "tenferro-cpu",
  "tenferro-einsum",

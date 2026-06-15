@@ -13,6 +13,8 @@ tenferro-runtime  = { path = "extern/tenferro-rs/crates/tenferro-runtime", defau
 tenferro-tensor   = { path = "extern/tenferro-rs/crates/tenferro-tensor", default-features = false }
 tenferro-gpu      = { path = "extern/tenferro-rs/crates/tenferro-gpu", default-features = false, optional = true }
 tenferro-cpu      = { path = "extern/tenferro-rs/crates/tenferro-cpu", default-features = false, optional = true }
+strided-opteinsum = { path = "extern/strided-rs/strided-opteinsum", default-features = false, features = ["faer"], optional = true }
+strided-view      = { path = "extern/strided-rs/strided-view", optional = true }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -20,6 +22,7 @@ serde_yaml = "0.9"
 
 [features]
 default = ["cpu-faer"]
+opteinsum-compare = ["dep:strided-opteinsum", "dep:strided-view"]
 cpu-faer = [
     "tenferro-ad/cpu-faer",
     "tenferro-einsum/autodiff",
@@ -80,3 +83,8 @@ path = "src/bin/publication_gate.rs"
 name = "benchmark_gpu_rust"
 path = "src/bin/benchmark_gpu_rust.rs"
 required-features = ["cuda"]
+
+[[bin]]
+name = "opteinsum_compare"
+path = "src/bin/opteinsum_compare.rs"
+required-features = ["opteinsum-compare"]
