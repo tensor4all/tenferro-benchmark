@@ -6,8 +6,8 @@ use std::sync::Arc;
 
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_einsum::eager_tensor as eager_einsum;
-use tenferro_runtime::{GraphCompiler, TracedTensor, Tensor};
+use tenferro_einsum::{EagerEinsumExt, GraphCompilerEinsumExt};
+use tenferro_runtime::{GraphCompiler, Tensor, TracedTensor};
 use tenferro_tensor::TypedTensor;
 
 pub const DEFAULT_FILL_VALUE: f32 = 0.840_896_4; // 0.5f32.powf(0.4)
@@ -79,33 +79,30 @@ pub fn resolve_source_path(project_root: &Path, source: &str) -> PathBuf {
 }
 
 pub fn load_tensor_network(path: &Path) -> Result<TensorNetworkFile, String> {
-    let text = std::fs::read_to_string(path)
-        .map_err(|e| format!("read {}: {e}", path.display()))?;
+    let text =
+        std::fs::read_to_string(path).map_err(|e| format!("read {}: {e}", path.display()))?;
     serde_json::from_str(&text).map_err(|e| format!("parse {}: {e}", path.display()))
 }
 
-pub fn tensor_f32_col_major(shape: &[usize], fill_value: f32) -> Tensor {
+pub fn tensor_f32_col_major(shape: &[usize], fill_value: f32) -> Result<Tensor, String> {
     let len: usize = shape.iter().product();
-    Tensor::F32(TypedTensor::from_vec_col_major(
-        shape.to_vec(),
-        vec![fill_value; len],
-    ))
+    TypedTensor::from_vec_col_major(shape.to_vec(), vec![fill_value; len])
+        .map(Tensor::F32)
+        .map_err(|e| format!("{e}"))
 }
 
 pub fn build_cpu_eager_inputs(
     network: &TensorNetworkFile,
     spec: &TensorNetworkSpec,
     ctx: Arc<EagerRuntime>,
-) -> Vec<EagerTensor> {
+) -> Result<Vec<EagerTensor>, String> {
     network
         .inputs
         .iter()
         .map(|ixs| {
             let shape = vec![spec.bond_dim; ixs.len()];
-            EagerTensor::from_tensor_in(
-                tensor_f32_col_major(&shape, spec.fill_value),
-                ctx.clone(),
-            )
+            EagerTensor::from_tensor_in(tensor_f32_col_major(&shape, spec.fill_value)?, ctx.clone())
+                .map_err(|e| format!("{e}"))
         })
         .collect()
 }
@@ -131,7 +128,9 @@ pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<Ea
         .collect::<Result<_, _>>()?;
     let refs: Vec<&EagerTensor> = child_tensors.iter().collect();
     let expr = integer_labels_to_expr(&eins.ixs, &eins.iy);
-    eager_einsum::einsum(&refs, &expr).map_err(|e| format!("einsum ({expr}): {e}"))
+    refs.as_slice()
+        .einsum(&expr)
+        .map_err(|e| format!("einsum ({expr}): {e}"))
 }
 
 pub fn contract_tree_trace(
@@ -159,24 +158,21 @@ pub fn contract_tree_trace(
     let refs: Vec<&TracedTensor> = child_tensors.iter().collect();
     let expr = integer_labels_to_expr(&eins.ixs, &eins.iy);
     let mut compiler = GraphCompiler::new();
-    tenferro_einsum::einsum(&mut compiler, &refs, &expr).map_err(|e| format!("einsum ({expr}): {e}"))
+    compiler
+        .einsum(&refs, &expr)
+        .map_err(|e| format!("einsum ({expr}): {e}"))
 }
 
 pub fn scalar_f32(result: &EagerTensor) -> Result<f32, String> {
-    match result.data() {
-        Tensor::F32(t) => t
-            .host_data()
-            .first()
-            .copied()
-            .ok_or_else(|| "empty tensor result".to_string()),
-        other => Err(format!("expected F32 result, got {other:?}")),
-    }
+    let tensor = result.to_tensor().map_err(|e| format!("{e}"))?;
+    scalar_f32_tensor(&tensor)
 }
 
 pub fn scalar_f32_tensor(tensor: &Tensor) -> Result<f32, String> {
     match tensor {
         Tensor::F32(t) => t
             .host_data()
+            .map_err(|e| format!("{e}"))?
             .first()
             .copied()
             .ok_or_else(|| "empty tensor result".to_string()),
@@ -193,10 +189,7 @@ pub fn integer_labels_to_expr(ixs: &[Vec<usize>], iy: &[usize]) -> String {
     let mut labels: Vec<usize> = unique.into_iter().collect();
     labels.sort_unstable();
 
-    let     letters: Vec<char> = (65u8..90)
-        .chain(97u8..122)
-        .map(|c| c as char)
-        .collect();
+    let letters: Vec<char> = (65u8..90).chain(97u8..122).map(|c| c as char).collect();
     assert!(
         labels.len() <= letters.len(),
         "too many unique labels for ASCII einsum mapping"
@@ -209,11 +202,7 @@ pub fn integer_labels_to_expr(ixs: &[Vec<usize>], iy: &[usize]) -> String {
 
     let inputs = ixs
         .iter()
-        .map(|ix| {
-            ix.iter()
-                .map(|label| labelmap[label])
-                .collect::<String>()
-        })
+        .map(|ix| ix.iter().map(|label| labelmap[label]).collect::<String>())
         .collect::<Vec<_>>()
         .join(",");
     let output: String = iy.iter().map(|label| labelmap[label]).collect();

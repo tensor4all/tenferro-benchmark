@@ -2,8 +2,10 @@ pub mod tensornetwork;
 
 use std::fmt::Display;
 
-use tenferro_einsum::{einsum_subscripts_with, ContractionTree, EinsumOptimize, Subscripts};
-use tenferro_runtime::{CompilerOptions, DType, GraphCompiler, GraphProgram, OptimizerConfig, TracedTensor};
+use tenferro_einsum::{ContractionTree, EinsumOptimize, GraphCompilerEinsumExt, Subscripts};
+use tenferro_runtime::{
+    CompilerOptions, DType, GraphCompiler, GraphProgram, OptimizerConfig, TracedTensor,
+};
 
 pub struct CompiledEinsum {
     pub program: GraphProgram,
@@ -18,7 +20,8 @@ pub fn compile_einsum(
     let inputs: Vec<TracedTensor> = shapes
         .iter()
         .map(|shape| TracedTensor::input_concrete_shape(DType::F64, shape))
-        .collect();
+        .collect::<Result<_, _>>()
+        .map_err(|e| format!("{e}"))?;
     let input_refs: Vec<&TracedTensor> = inputs.iter().collect();
     let einsum_subscripts = subs.into();
     let pairs: Vec<(usize, usize)> = (0..tree.step_count())
@@ -28,13 +31,13 @@ pub fn compile_einsum(
     let owned_tree =
         ContractionTree::from_pairs(subs, &shape_refs, &pairs).map_err(|e| format!("{e}"))?;
     let mut compiler = GraphCompiler::with_compiler_options(compiler_options_from_env());
-    let output = einsum_subscripts_with(
-        &mut compiler,
-        &input_refs,
-        &einsum_subscripts,
-        EinsumOptimize::Tree(owned_tree),
-    )
-    .map_err(|e| format!("{e}"))?;
+    let output = compiler
+        .einsum_subscripts_with(
+            &input_refs,
+            &einsum_subscripts,
+            EinsumOptimize::Tree(owned_tree),
+        )
+        .map_err(|e| format!("{e}"))?;
     let input_specs: Vec<(&TracedTensor, DType, &[usize])> = inputs
         .iter()
         .zip(shapes.iter())

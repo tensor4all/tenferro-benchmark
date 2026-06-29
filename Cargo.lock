@@ -439,263 +439,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cubecl"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "cubecl-core",
- "cubecl-cuda",
- "cubecl-ir",
- "cubecl-runtime",
- "cubecl-std",
- "cubecl-wgpu",
- "half",
-]
-
-[[package]]
-name = "cubecl-common"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "backtrace",
- "bytemuck",
- "cfg-if",
- "cfg_aliases",
- "ciborium",
- "derive-new",
- "derive_more",
- "dirs",
- "embassy-futures",
- "embassy-time",
- "float4",
- "float8",
- "futures-lite",
- "half",
- "hashbrown 0.16.1",
- "log",
- "num-traits",
- "oneshot",
- "parking_lot",
- "portable-atomic",
- "portable-atomic-util",
- "rand 0.10.1",
- "sanitize-filename",
- "serde",
- "serde_bytes",
- "serde_json",
- "spin",
- "toml",
- "tynm",
- "wasm-bindgen-futures",
- "web-time",
- "xxhash-rust",
-]
-
-[[package]]
-name = "cubecl-core"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "bitflags",
- "bytemuck",
- "cubecl-common",
- "cubecl-ir",
- "cubecl-macros",
- "cubecl-runtime",
- "cubecl-zspace",
- "derive-new",
- "derive_more",
- "enumset",
- "float-ord",
- "half",
- "hashbrown 0.16.1",
- "log",
- "num-complex",
- "num-traits",
- "paste",
- "serde",
- "serde_json",
- "variadics_please",
-]
-
-[[package]]
-name = "cubecl-cpp"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "bytemuck",
- "cubecl-common",
- "cubecl-core",
- "cubecl-opt",
- "cubecl-runtime",
- "derive-new",
- "half",
- "itertools",
- "log",
-]
-
-[[package]]
-name = "cubecl-cuda"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "bytemuck",
- "cubecl-common",
- "cubecl-core",
- "cubecl-cpp",
- "cubecl-runtime",
- "cudarc",
- "derive-new",
- "half",
- "log",
- "serde",
-]
-
-[[package]]
-name = "cubecl-ir"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "cubecl-common",
- "cubecl-macros-internal",
- "derive-new",
- "derive_more",
- "enumset",
- "float-ord",
- "fnv",
- "foldhash 0.2.0",
- "half",
- "hashbrown 0.16.1",
- "num-complex",
- "num-traits",
- "portable-atomic",
- "serde",
- "variadics_please",
-]
-
-[[package]]
-name = "cubecl-macros"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "cubecl-common",
- "darling 0.23.0",
- "derive-new",
- "ident_case",
- "inflections",
- "prettyplease",
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
-name = "cubecl-macros-internal"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "darling 0.23.0",
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
-name = "cubecl-opt"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "cubecl-common",
- "cubecl-core",
- "cubecl-ir",
- "float-ord",
- "log",
- "num",
- "petgraph",
- "smallvec",
- "stable-vec",
- "type-map",
-]
-
-[[package]]
-name = "cubecl-runtime"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "ahash",
- "async-channel",
- "bytemuck",
- "cfg-if",
- "cfg_aliases",
- "cubecl-common",
- "cubecl-ir",
- "cubecl-zspace",
- "derive-new",
- "derive_more",
- "dirs",
- "enumset",
- "hashbrown 0.16.1",
- "log",
- "md5",
- "serde",
- "serde_json",
- "spin",
- "thiserror 2.0.18",
- "toml",
- "wasm-bindgen-futures",
- "web-time",
-]
-
-[[package]]
-name = "cubecl-std"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "cubecl-common",
- "cubecl-core",
- "cubecl-runtime",
- "half",
- "num-traits",
- "paste",
- "serde",
- "spin",
- "variadics_please",
-]
-
-[[package]]
-name = "cubecl-wgpu"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "async-channel",
- "bytemuck",
- "cfg-if",
- "cfg_aliases",
- "cubecl-common",
- "cubecl-core",
- "cubecl-ir",
- "cubecl-runtime",
- "derive-new",
- "derive_more",
- "half",
- "hashbrown 0.16.1",
- "log",
- "sanitize-filename",
- "wasm-bindgen-futures",
- "wgpu",
-]
-
-[[package]]
-name = "cubecl-zspace"
-version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=f5e5ec178f9aebca9362b829ffef708f720ff692#f5e5ec178f9aebca9362b829ffef708f720ff692"
-dependencies = [
- "derive-new",
- "serde",
- "smallvec",
-]
-
-[[package]]
 name = "cudarc"
 version = "0.19.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3085,6 +2828,263 @@ dependencies = [
 ]
 
 [[package]]
+name = "t4a-cubecl"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "half",
+ "t4a-cubecl-core",
+ "t4a-cubecl-cuda",
+ "t4a-cubecl-ir",
+ "t4a-cubecl-runtime",
+ "t4a-cubecl-std",
+ "t4a-cubecl-wgpu",
+]
+
+[[package]]
+name = "t4a-cubecl-common"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "backtrace",
+ "bytemuck",
+ "cfg-if",
+ "cfg_aliases",
+ "ciborium",
+ "derive-new",
+ "derive_more",
+ "dirs",
+ "embassy-futures",
+ "embassy-time",
+ "float4",
+ "float8",
+ "futures-lite",
+ "half",
+ "hashbrown 0.16.1",
+ "log",
+ "num-traits",
+ "oneshot",
+ "parking_lot",
+ "portable-atomic",
+ "portable-atomic-util",
+ "rand 0.10.1",
+ "sanitize-filename",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "spin",
+ "toml",
+ "tynm",
+ "wasm-bindgen-futures",
+ "web-time",
+ "xxhash-rust",
+]
+
+[[package]]
+name = "t4a-cubecl-core"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "bitflags",
+ "bytemuck",
+ "derive-new",
+ "derive_more",
+ "enumset",
+ "float-ord",
+ "half",
+ "hashbrown 0.16.1",
+ "log",
+ "num-complex",
+ "num-traits",
+ "paste",
+ "serde",
+ "serde_json",
+ "t4a-cubecl-common",
+ "t4a-cubecl-ir",
+ "t4a-cubecl-macros",
+ "t4a-cubecl-runtime",
+ "t4a-cubecl-zspace",
+ "variadics_please",
+]
+
+[[package]]
+name = "t4a-cubecl-cpp"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "bytemuck",
+ "derive-new",
+ "half",
+ "itertools",
+ "log",
+ "t4a-cubecl-common",
+ "t4a-cubecl-core",
+ "t4a-cubecl-opt",
+ "t4a-cubecl-runtime",
+]
+
+[[package]]
+name = "t4a-cubecl-cuda"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "bytemuck",
+ "cudarc",
+ "derive-new",
+ "half",
+ "log",
+ "serde",
+ "t4a-cubecl-common",
+ "t4a-cubecl-core",
+ "t4a-cubecl-cpp",
+ "t4a-cubecl-runtime",
+]
+
+[[package]]
+name = "t4a-cubecl-ir"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "derive-new",
+ "derive_more",
+ "enumset",
+ "float-ord",
+ "fnv",
+ "foldhash 0.2.0",
+ "half",
+ "hashbrown 0.16.1",
+ "num-complex",
+ "num-traits",
+ "portable-atomic",
+ "serde",
+ "t4a-cubecl-common",
+ "t4a-cubecl-macros-internal",
+ "variadics_please",
+]
+
+[[package]]
+name = "t4a-cubecl-macros"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "darling 0.23.0",
+ "derive-new",
+ "ident_case",
+ "inflections",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+ "t4a-cubecl-common",
+]
+
+[[package]]
+name = "t4a-cubecl-macros-internal"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "darling 0.23.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
+name = "t4a-cubecl-opt"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "float-ord",
+ "log",
+ "num",
+ "petgraph",
+ "smallvec",
+ "stable-vec",
+ "t4a-cubecl-common",
+ "t4a-cubecl-core",
+ "t4a-cubecl-ir",
+ "type-map",
+]
+
+[[package]]
+name = "t4a-cubecl-runtime"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "ahash",
+ "async-channel",
+ "bytemuck",
+ "cfg-if",
+ "cfg_aliases",
+ "derive-new",
+ "derive_more",
+ "dirs",
+ "enumset",
+ "hashbrown 0.16.1",
+ "log",
+ "md5",
+ "serde",
+ "serde_json",
+ "spin",
+ "t4a-cubecl-common",
+ "t4a-cubecl-ir",
+ "t4a-cubecl-zspace",
+ "thiserror 2.0.18",
+ "toml",
+ "wasm-bindgen-futures",
+ "web-time",
+]
+
+[[package]]
+name = "t4a-cubecl-std"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "half",
+ "num-traits",
+ "paste",
+ "serde",
+ "spin",
+ "t4a-cubecl-common",
+ "t4a-cubecl-core",
+ "t4a-cubecl-runtime",
+ "variadics_please",
+]
+
+[[package]]
+name = "t4a-cubecl-wgpu"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "async-channel",
+ "bytemuck",
+ "cfg-if",
+ "cfg_aliases",
+ "derive-new",
+ "derive_more",
+ "half",
+ "hashbrown 0.16.1",
+ "log",
+ "sanitize-filename",
+ "t4a-cubecl-common",
+ "t4a-cubecl-core",
+ "t4a-cubecl-ir",
+ "t4a-cubecl-runtime",
+ "wasm-bindgen-futures",
+ "wgpu",
+]
+
+[[package]]
+name = "t4a-cubecl-zspace"
+version = "0.10.0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+dependencies = [
+ "derive-new",
+ "serde",
+ "smallvec",
+]
+
+[[package]]
 name = "tar"
 version = "0.4.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3175,14 +3175,14 @@ dependencies = [
 name = "tenferro-gpu"
 version = "0.1.0"
 dependencies = [
- "cubecl",
- "cubecl-cuda",
- "cubecl-runtime",
  "cudarc",
  "libloading 0.8.9",
  "num-complex",
  "num-traits",
  "smallvec",
+ "t4a-cubecl",
+ "t4a-cubecl-cuda",
+ "t4a-cubecl-runtime",
  "tenferro-core-ops",
  "tenferro-tensor",
  "thiserror 2.0.18",
@@ -3215,15 +3215,15 @@ name = "tenferro-linalg"
 version = "0.1.0"
 dependencies = [
  "computegraph",
- "cubecl",
- "cubecl-cuda",
- "cubecl-runtime",
  "cudarc",
  "faer",
  "lapack",
  "libloading 0.8.9",
  "num-complex",
  "num-traits",
+ "t4a-cubecl",
+ "t4a-cubecl-cuda",
+ "t4a-cubecl-runtime",
  "tenferro-ad",
  "tenferro-cpu",
  "tenferro-gpu",
@@ -3331,7 +3331,7 @@ dependencies = [
 [[package]]
 name = "tidu"
 version = "0.1.0"
-source = "git+https://github.com/tensor4all/tidu-rs.git?rev=9934d8b775fcfbbad8e2daf3f9af54477da63e35#9934d8b775fcfbbad8e2daf3f9af54477da63e35"
+source = "git+https://github.com/tensor4all/tidu-rs.git?rev=77527ecb647fecd4918ea2d06d0065ddce4e5b1c#77527ecb647fecd4918ea2d06d0065ddce4e5b1c"
 dependencies = [
  "computegraph",
 ]

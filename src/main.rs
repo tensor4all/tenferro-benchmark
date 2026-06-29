@@ -12,8 +12,7 @@ use std::time::{Duration, Instant};
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{CpuBackend, CpuBackendKind};
-use tenferro_einsum::eager_tensor;
-use tenferro_einsum::{ContractionTree, Subscripts};
+use tenferro_einsum::{ContractionTree, EagerEinsumExt, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_runtime::{GraphExecutor, TensorRead, TracedTensor};
 use tenferro_tensor::{Tensor, TypedTensor};
@@ -110,18 +109,24 @@ fn path_to_pairs(n_inputs: usize, path: &[[usize; 2]]) -> Vec<(usize, usize)> {
 fn create_operand_tensors(shapes: &[Vec<usize>]) -> Vec<Tensor> {
     shapes
         .iter()
-        .map(|shape| Tensor::F64(TypedTensor::<f64>::zeros(shape.clone())))
+        .map(|shape| {
+            Tensor::F64(
+                TypedTensor::<f64>::zeros(shape.clone())
+                    .expect("benchmark zero tensor shape should be valid"),
+            )
+        })
         .collect()
 }
 
 fn create_eager_operands(
     shapes: &[Vec<usize>],
     ctx: &std::sync::Arc<EagerRuntime>,
-) -> Vec<EagerTensor> {
+) -> Result<Vec<EagerTensor>, String> {
     create_operand_tensors(shapes)
         .into_iter()
         .map(|tensor| EagerTensor::from_tensor_in(tensor, std::sync::Arc::clone(ctx)))
-        .collect()
+        .collect::<Result<_, _>>()
+        .map_err(|e| format!("{e}"))
 }
 
 fn bind_operand_reads<'a>(
@@ -633,7 +638,7 @@ fn contract_once_eager(
 
         let started = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            eager_tensor::einsum_subscripts(&input_refs, &binary_subscripts)
+            input_refs.as_slice().einsum_subscripts(&binary_subscripts)
         }));
         let result = unwrap_eval_result(result, "panic during eager execution")?;
         if let Some(profile) = profile.as_deref_mut() {
@@ -665,7 +670,7 @@ fn run_instance_eager(
     }
 
     let ctx = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?);
-    let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
+    let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
 
     for _ in 0..bench_warmups() {
         let eval = contract_once_eager(instance, path_meta, &source_operands, None)?;
@@ -687,7 +692,7 @@ fn run_instance_eager(
         let mut input_create = Vec::with_capacity(bench_runs());
         for _ in 0..bench_runs() {
             let started = Instant::now();
-            let operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
+            let operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
             input_create.push(started.elapsed());
             black_box(&operands);
         }
@@ -847,7 +852,7 @@ fn main() {
     let mode = TenferroMode::from_env();
     let backend_name = mode.backend_name();
     let data_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("data/instances");
-    let mut instances = filter_instances(load_instances());
+    let instances = filter_instances(load_instances());
     if instances.is_empty() {
         eprintln!("No benchmark instances matched the suite selection");
         std::process::exit(1);
