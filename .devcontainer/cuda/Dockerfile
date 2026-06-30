@@ -5,7 +5,11 @@ ENV OPENBLAS_ROOT=/opt/openblas
 ENV CMAKE_POLICY_VERSION_MINIMUM=3.5
 ENV CUDA_HOME=/usr/local/cuda
 ENV PATH="/home/vscode/.cargo/bin:/home/vscode/.local/bin:${PATH}"
-ENV LD_LIBRARY_PATH="${CUDA_HOME}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+ENV LD_LIBRARY_PATH="${OPENBLAS_ROOT}/lib:${CUDA_HOME}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+
+ARG OPENBLAS_VERSION=0.3.26
+ARG OPENBLAS_MAX_THREADS=64
+ARG OPENBLAS_DYNAMIC_ARCH=1
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -24,7 +28,6 @@ RUN apt-get update \
         libcutensor-dev \
         libffi-dev \
         libomp-dev \
-        libopenblas-dev \
         libssl-dev \
         ninja-build \
         patchelf \
@@ -48,14 +51,9 @@ RUN usermod  -l ${USERNAME} ubuntu \
     && echo "${USERNAME} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
-RUN set -eux; \
-    mkdir -p /opt/openblas/include /opt/openblas/lib; \
-    cblas_header="$(find /usr/include -name cblas.h | head -n 1)"; \
-    test -n "$cblas_header"; \
-    cp -a "$(dirname "$cblas_header")"/. /opt/openblas/include/; \
-    libopenblas="$(find /usr/lib \( -name 'libopenblas.so' -o -name 'libopenblas.so.*' \) | sort | head -n 1)"; \
-    test -n "$libopenblas"; \
-    ln -sf "$libopenblas" /opt/openblas/lib/libopenblas.so
+COPY .devcontainer/install_openblas.sh /usr/local/bin/install_openblas.sh
+
+RUN bash /usr/local/bin/install_openblas.sh
 
 USER vscode
 

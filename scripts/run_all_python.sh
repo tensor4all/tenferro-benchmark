@@ -18,6 +18,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
 
+# shellcheck source=scripts/python_venv.sh
+source "$SCRIPT_DIR/python_venv.sh"
+reset_benchmark_python_venv "$PROJECT_DIR"
+prepare_cpu_benchmark_python_venv "$PROJECT_DIR"
+
 # shellcheck source=scripts/thread_env.sh
 source "$SCRIPT_DIR/thread_env.sh"
 configure_cpu_thread_env "$NUM_THREADS"

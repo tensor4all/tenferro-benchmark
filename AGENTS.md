@@ -88,6 +88,20 @@ devcontainer exec --workspace-folder . bash -lc \
 
 `OPENBLAS_ROOT=/opt/openblas` is configured inside the devcontainer for
 tenferro `system-openblas` runs. PyTorch uses the installed wheel provider.
+The devcontainer OpenBLAS is source-built with threading enabled; verify this
+with the OpenBLAS runtime API, not `strings`, because parallel builds can still
+contain standalone diagnostic strings:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc 'python3 - <<PY
+import ctypes
+lib = ctypes.CDLL("/opt/openblas/lib/libopenblas.so")
+lib.openblas_get_config.restype = ctypes.c_char_p
+lib.openblas_get_parallel.restype = ctypes.c_int
+print(lib.openblas_get_config().decode())
+print(f"parallel={lib.openblas_get_parallel()}")
+PY'
+```
 
 ## Local Linux Linalg AD Repro
 
@@ -112,6 +126,23 @@ alias. To run specific thread counts, pass them explicitly:
 ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh 1 4
 ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh 4
 ```
+
+When updating this report from the host, run it inside the Linux devcontainer
+and force the tenferro OpenBLAS path:
+
+```bash
+devcontainer up --workspace-folder . --remove-existing-container
+devcontainer exec --workspace-folder . bash -lc '
+  export TENFERRO_CPU_FEATURES=system-openblas
+  export PUBLICATION_GATE_FEATURES=system-openblas
+  export TENFERRO_CPU_BACKEND_KIND=blas
+  ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
+```
+
+CPU benchmark entrypoints reset `.venv` before collection so stale Python
+wheels from another backend do not affect the run. Keep linalg repro collection
+sequential: one devcontainer benchmark command at a time, with no concurrent
+`run_all.sh`, `run_cpu_ops.sh`, or ad hoc linalg probes.
 
 ## GPU Devcontainer Workflow
 

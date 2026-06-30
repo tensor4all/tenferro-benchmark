@@ -13,6 +13,9 @@ BLAS/provider policy:
 
 - tenferro uses `system-openblas`.
 - `OPENBLAS_ROOT=/opt/openblas` inside the devcontainer.
+- `/opt/openblas` is built from OpenBLAS source with pthread threading enabled
+  (`USE_THREAD=1`, `USE_OPENMP=0`) instead of using Ubuntu's
+  `libopenblas-dev` package.
 - PyTorch Python uses the installed wheel provider. The benchmark records
   `BLAS_INFO`, `LAPACK_INFO`, and linked BLAS/LAPACK libraries in `run.yaml`.
 - The benchmark does not source-build PyTorch to force OpenBLAS.
@@ -62,4 +65,3 @@ Raw run data:
 
 - `data/results/amd-cpu/cpu/einsum/<timestamp>/run.yaml`
 - `data/results/amd-cpu/cpu/einsum/<timestamp>/report.md`
-

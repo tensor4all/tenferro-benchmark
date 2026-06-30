@@ -31,7 +31,7 @@ case "$RUN_TARGET_PROFILE" in
 esac
 
 export BENCHMARK_TARGET_PROFILE="$RUN_TARGET_PROFILE"
-export TENFERRO_CPU_FEATURES="${TENFERRO_CPU_FEATURES:-cpu-faer}"
+export TENFERRO_CPU_FEATURES="${TENFERRO_CPU_FEATURES:-system-openblas}"
 export PUBLICATION_GATE_FEATURES="${PUBLICATION_GATE_FEATURES:-$TENFERRO_CPU_FEATURES}"
 if [[ "$TENFERRO_CPU_FEATURES" == "cpu-faer" ]]; then
     export TENFERRO_CPU_BACKEND_KIND="${TENFERRO_CPU_BACKEND_KIND:-faer}"
@@ -102,6 +102,50 @@ sectionize_report() {
     ' "$report"
 }
 
+read_run_yaml_section_scalar() {
+    local run_yaml="$1"
+    local section="$2"
+    local key="$3"
+    awk -v section="$section" -v key="$key" '
+        $0 == section ":" {
+            in_section = 1
+            next
+        }
+        in_section && $0 ~ /^[^[:space:]]/ {
+            exit
+        }
+        in_section {
+            line = $0
+            sub(/^[[:space:]]+/, "", line)
+            if (line ~ "^" key ":[[:space:]]*") {
+                sub("^" key ":[[:space:]]*", "", line)
+                gsub(/^'\''|'\''$/, "", line)
+                gsub(/^"|"$/, "", line)
+                print line
+                exit
+            }
+        }
+    ' "$run_yaml"
+}
+
+write_blas_backend_summary() {
+    local run_yaml="$1"
+    local implementation version root library
+    implementation="$(read_run_yaml_section_scalar "$run_yaml" "blas" "implementation")"
+    version="$(read_run_yaml_section_scalar "$run_yaml" "blas" "version")"
+    root="$(read_run_yaml_section_scalar "$run_yaml" "blas" "root")"
+    library="$(read_run_yaml_section_scalar "$run_yaml" "blas" "library")"
+
+    echo "## Tenferro CPU BLAS Backend"
+    echo ""
+    echo "- tenferro-rs features: \`$TENFERRO_CPU_FEATURES\`"
+    echo "- TENFERRO_CPU_BACKEND_KIND: \`${TENFERRO_CPU_BACKEND_KIND:-}\`"
+    [[ -n "$implementation" ]] && echo "- BLAS implementation: \`$implementation\`"
+    [[ -n "$version" ]] && echo "- BLAS version: \`$version\`"
+    [[ -n "$root" ]] && echo "- BLAS root: \`$root\`"
+    [[ -n "$library" ]] && echo "- BLAS library: \`$library\`"
+}
+
 for threads in "${THREAD_COUNTS[@]}"; do
     validate_threads "$threads"
 done
@@ -165,6 +209,10 @@ done
     echo "This report is generated from sequential CPU runs. Do not compare it with"
     echo "measurements collected while another CPU benchmark process was running."
     echo ""
+    if [[ ${#RUN_DIRS_DONE[@]} -gt 0 && -f "$ROOT/${RUN_DIRS_DONE[0]}/run.yaml" ]]; then
+        write_blas_backend_summary "$ROOT/${RUN_DIRS_DONE[0]}/run.yaml"
+        echo ""
+    fi
     echo "## Run Inputs"
     echo ""
     for i in "${!THREADS_DONE[@]}"; do
