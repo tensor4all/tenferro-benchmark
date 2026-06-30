@@ -204,6 +204,49 @@ fn backend_name() -> &'static str {
     }
 }
 
+fn benchmark_name(op: &str, phase: &str) -> String {
+    if phase.is_empty() || phase == "primal" {
+        op.to_string()
+    } else {
+        format!("{op}_{phase}")
+    }
+}
+
+fn benchmark_filter_matches(op: &str, phase: &str) -> bool {
+    let Ok(filter) = env::var("CPU_OPS_BENCHMARK_FILTER") else {
+        return true;
+    };
+    let filter = filter.trim();
+    if filter.is_empty() {
+        return true;
+    }
+    let name = benchmark_name(op, phase);
+    filter
+        .split(',')
+        .map(str::trim)
+        .any(|item| item == op || item == name)
+}
+
+fn filtered_row(
+    suite: &'static str,
+    op: &'static str,
+    phase: &'static str,
+    dtype: &'static str,
+    shape: &str,
+) -> Row {
+    Row {
+        suite,
+        op,
+        phase,
+        dtype,
+        shape: shape.to_string(),
+        backend: "filtered",
+        median_ms: None,
+        iqr_ms: None,
+        status: "filtered".to_string(),
+    }
+}
+
 fn tenferro_mode_includes(mode: &str) -> bool {
     match env::var("PUBLICATION_GATE_TENFERRO_MODE")
         .or_else(|_| env::var("PUBLICATION_GATE_TENFERRO_MODES"))
@@ -1324,6 +1367,10 @@ fn bench_row(
     shape: &str,
     mut f: impl FnMut() -> tenferro_ad::error::Result<()>,
 ) -> Row {
+    if !benchmark_filter_matches(op, phase) {
+        return filtered_row(suite, op, phase, dtype, shape);
+    }
+
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         for _ in 0..config.warmups {
             f()?;
@@ -1386,6 +1433,10 @@ fn bench_trace_row(
     shape: &str,
     mut build: impl FnMut() -> tenferro_ad::error::Result<Vec<TracedTensor>>,
 ) -> Row {
+    if !benchmark_filter_matches(op, phase) {
+        return filtered_row(suite, op, phase, dtype, shape);
+    }
+
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         let outputs = build()?;
         let output_refs: Vec<&TracedTensor> = outputs.iter().collect();

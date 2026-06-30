@@ -64,6 +64,14 @@ def suite_enabled(suite: str) -> bool:
     return selected in {"all", suite}
 
 
+def benchmark_enabled(name: str, base: str | None = None) -> bool:
+    selected = os.environ.get("CPU_OPS_BENCHMARK_FILTER", "").strip()
+    if not selected:
+        return True
+    allowed = {item.strip() for item in selected.split(",") if item.strip()}
+    return name in allowed or (base is not None and base in allowed)
+
+
 def sizes_for(profile: str, quick: list[int], full: list[int]) -> list[int]:
     return full if profile == "full" else quick
 
@@ -157,6 +165,12 @@ def emit_linalg_jvp_vjp_rows(
     rhs_seed: int | None = None,
     rhs_cols: int = 1,
 ) -> None:
+    if not (
+        benchmark_enabled(f"{op}_jvp", op)
+        or benchmark_enabled(f"{op}_vjp", op)
+    ):
+        return
+
     matrix = matrix_for_linalg_ad(op, n, matrix_seed)
     tangent = data((n, n), tangent_seed(matrix_seed))
 
@@ -351,6 +365,9 @@ def emit_row(
     phase: str = "",
 ) -> None:
     name = f"{benchmark}_{phase}" if phase else benchmark
+    if not benchmark_enabled(name, benchmark):
+        return
+
     try:
         median_ms, iqr_ms = bench(fn, sync, args.runs, args.warmups)
         status = "ok"

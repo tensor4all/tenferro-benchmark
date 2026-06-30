@@ -55,6 +55,30 @@ devcontainer exec --workspace-folder . bash -lc '\
     ./scripts/run_all.sh 1'
 ```
 
+Linux linalg AD repro report with devcontainer OpenBLAS:
+
+```bash
+devcontainer up --workspace-folder . --remove-existing-container
+devcontainer exec --workspace-folder . bash -lc '
+  python3 - <<PY
+import ctypes
+lib = ctypes.CDLL("/opt/openblas/lib/libopenblas.so")
+lib.openblas_get_config.restype = ctypes.c_char_p
+lib.openblas_get_parallel.restype = ctypes.c_int
+print(lib.openblas_get_config().decode())
+print(f"parallel={lib.openblas_get_parallel()}")
+PY'
+devcontainer exec --workspace-folder . bash -lc '
+  export TENFERRO_CPU_FEATURES=system-openblas
+  export PUBLICATION_GATE_FEATURES=system-openblas
+  export TENFERRO_CPU_BACKEND_KIND=blas
+  ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
+```
+
+The repro writes `result/linux-cpu/cpu/linalg_jvp_jvp.md`. The devcontainer
+build installs a source-built OpenBLAS under `/opt/openblas`; verify it through
+the OpenBLAS runtime API above instead of relying on `strings`.
+
 GPU devcontainer from the host:
 
 ```bash

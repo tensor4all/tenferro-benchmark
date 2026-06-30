@@ -114,6 +114,50 @@ write_thread_env_section() {
     done
 }
 
+read_run_yaml_section_scalar() {
+    local run_yaml="$1"
+    local section="$2"
+    local key="$3"
+    awk -v section="$section" -v key="$key" '
+        $0 == section ":" {
+            in_section = 1
+            next
+        }
+        in_section && $0 ~ /^[^[:space:]]/ {
+            exit
+        }
+        in_section {
+            line = $0
+            sub(/^[[:space:]]+/, "", line)
+            if (line ~ "^" key ":[[:space:]]*") {
+                sub("^" key ":[[:space:]]*", "", line)
+                gsub(/^'\''|'\''$/, "", line)
+                gsub(/^"|"$/, "", line)
+                print line
+                exit
+            }
+        }
+    ' "$run_yaml"
+}
+
+write_blas_backend_section() {
+    local run_yaml="$1"
+    local implementation version root library
+    implementation="$(read_run_yaml_section_scalar "$run_yaml" "blas" "implementation")"
+    version="$(read_run_yaml_section_scalar "$run_yaml" "blas" "version")"
+    root="$(read_run_yaml_section_scalar "$run_yaml" "blas" "root")"
+    library="$(read_run_yaml_section_scalar "$run_yaml" "blas" "library")"
+
+    echo "## Tenferro CPU BLAS Backend"
+    echo ""
+    echo "- tenferro-rs features: \`$TENFERRO_CPU_FEATURES\`"
+    echo "- TENFERRO_CPU_BACKEND_KIND: \`${TENFERRO_CPU_BACKEND_KIND:-}\`"
+    [[ -n "$implementation" ]] && echo "- BLAS implementation: \`$implementation\`"
+    [[ -n "$version" ]] && echo "- BLAS version: \`$version\`"
+    [[ -n "$root" ]] && echo "- BLAS root: \`$root\`"
+    [[ -n "$library" ]] && echo "- BLAS library: \`$library\`"
+}
+
 write_python_backend_section() {
     local run_yaml="$1"
     echo "## Python Backend Providers"
@@ -236,6 +280,8 @@ write_einsum_report() {
         echo ""
         write_thread_env_section
         echo ""
+        write_blas_backend_section "$CPU_RUN_YAML"
+        echo ""
         write_python_backend_section "$CPU_RUN_YAML"
         echo ""
 
@@ -279,6 +325,8 @@ write_linalg_ad_report() {
         echo ""
         write_thread_env_section
         echo ""
+        write_blas_backend_section "$CPU_RUN_YAML"
+        echo ""
         write_python_backend_section "$CPU_RUN_YAML"
         echo ""
         echo "## Threads: $NUM_THREADS"
@@ -311,6 +359,8 @@ write_cpu_report() {
         write_cpu_info_section
         echo ""
         write_thread_env_section
+        echo ""
+        write_blas_backend_section "$CPU_RUN_YAML"
         echo ""
         write_python_backend_section "$CPU_RUN_YAML"
         echo ""
@@ -403,6 +453,14 @@ else
     echo "Skipping CPU ops benchmarks (SKIP_CPU_OPS=1)."
 fi
 
+# CPU benchmark entrypoints may reset .venv and replace Python wheels before
+# measuring. Refresh metadata after those setup hooks so provider detection
+# matches the Python backends that were actually timed.
+if [[ "$(benchmark_host_os)" == "Linux" && "$BENCHMARK_TARGET_PROFILE" != "nvidia-gpu" && -d "$PROJECT_DIR/.venv" ]]; then
+    export UV_NO_SYNC=1
+fi
+write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
+
 # ---------------------------------------------------------------------------
 # Collect all logs and format as markdown table
 # ---------------------------------------------------------------------------
@@ -478,3 +536,4 @@ done
 [ -f "$CPU_OPS_LATEST_REPORT" ] && echo "  Latest:   $CPU_OPS_LATEST_REPORT"
 [ -f "$LINALG_AD_REPORT" ] && echo "  Report:   $LINALG_AD_REPORT"
 [ -f "$CPU_LINALG_AD_LATEST_REPORT" ] && echo "  Latest:   $CPU_LINALG_AD_LATEST_REPORT"
+true

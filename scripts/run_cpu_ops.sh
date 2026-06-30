@@ -13,6 +13,11 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_DIR="${BENCHMARK_RESULTS_DIR:-$PROJECT_DIR/data/results}"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 
+# shellcheck source=scripts/python_venv.sh
+source "$SCRIPT_DIR/python_venv.sh"
+reset_benchmark_python_venv "$PROJECT_DIR"
+prepare_cpu_benchmark_python_venv "$PROJECT_DIR"
+
 # shellcheck source=scripts/cpu_blas_provider.sh
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
