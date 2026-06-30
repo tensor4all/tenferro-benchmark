@@ -89,6 +89,30 @@ devcontainer exec --workspace-folder . bash -lc \
 `OPENBLAS_ROOT=/opt/openblas` is configured inside the devcontainer for
 tenferro `system-openblas` runs. PyTorch uses the installed wheel provider.
 
+## Local Linux Linalg AD Repro
+
+For the local Linux CPU linalg JVP/VJP repro report, use:
+
+```bash
+./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh
+```
+
+By default the script runs 1T and 4T sequentially, with JAX forced to CPU, then
+writes the combined report to:
+
+```text
+result/linux-cpu/cpu/linalg_jvp_jvp.md
+```
+
+The benchmark runner still uses the maintained `amd-cpu` target profile for
+collection, then mirrors raw runs and report paths under the `linux-cpu` report
+alias. To run specific thread counts, pass them explicitly:
+
+```bash
+./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh 1 4
+./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh 4
+```
+
 ## GPU Devcontainer Workflow
 
 Use the CUDA devcontainer for NVIDIA GPU measurements.
