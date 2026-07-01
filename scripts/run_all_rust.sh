@@ -26,7 +26,7 @@ export TENFERRO_CPU_FEATURES
 case "${TENFERRO_CPU_BACKEND_KIND:-}" in
     "")
         case "$TENFERRO_CPU_FEATURES" in
-            system-openblas|system-accelerate)
+            system-openblas|system-accelerate|system-mkl)
                 export TENFERRO_CPU_BACKEND_KIND=blas
                 ;;
             *)
@@ -58,6 +58,7 @@ echo " Rust benchmark (threads=${NUM_THREADS})"
 echo "============================================"
 print_cpu_thread_env
 [[ -n "${OPENBLAS_ROOT:-}" ]] && echo "  OPENBLAS_ROOT=$OPENBLAS_ROOT"
+[[ -n "${MKLROOT:-}" ]] && echo "  MKLROOT=$MKLROOT"
 echo "  tenferro features=$TENFERRO_CPU_FEATURES"
 echo "  TENFERRO_CPU_BACKEND_KIND=$TENFERRO_CPU_BACKEND_KIND"
 echo ""

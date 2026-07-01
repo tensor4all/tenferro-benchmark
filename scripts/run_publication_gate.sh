@@ -44,11 +44,14 @@ case "$FEATURES" in
   system-accelerate)
     cargo run --release --bin publication_gate --no-default-features --features system-accelerate > "$LOG"
     ;;
+  system-mkl)
+    cargo run --release --bin publication_gate --no-default-features --features system-mkl > "$LOG"
+    ;;
   cuda)
     cargo run --release --bin publication_gate --no-default-features --features cuda > "$LOG"
     ;;
   *)
-    echo "Unsupported PUBLICATION_GATE_FEATURES=$FEATURES (use cpu-faer, system-openblas, system-accelerate, or cuda)" >&2
+    echo "Unsupported PUBLICATION_GATE_FEATURES=$FEATURES (use cpu-faer, system-openblas, system-accelerate, system-mkl, or cuda)" >&2
     exit 1
     ;;
 esac

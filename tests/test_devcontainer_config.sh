@@ -16,6 +16,7 @@ config = json.loads(config_path.read_text())
 
 assert config["build"]["dockerfile"] == "Dockerfile"
 assert config["containerEnv"]["OPENBLAS_ROOT"] == "/opt/openblas"
+assert config["containerEnv"]["MKLROOT"] == "/opt/intel/oneapi/mkl/latest"
 assert config["containerEnv"]["USE_CUDA"] == "0"
 assert config["postCreateCommand"].startswith("uv sync")
 
@@ -33,6 +34,7 @@ esac
 for required in \
     build-essential \
     cmake \
+    intel-oneapi-mkl-devel \
     OPENBLAS_VERSION \
     OPENBLAS_MAX_THREADS \
     install_openblas.sh \

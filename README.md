@@ -19,7 +19,7 @@ repository. See [GPU tensor network suite](docs/tensornetwork-gpu.md).
 ## Workflows
 
 - [macOS CPU workflow](docs/macos-cpu.md): native run, no Docker, Accelerate.
-- [Linux CPU devcontainer workflow](docs/linux-cpu-devcontainer.md): Docker/devcontainer, OpenBLAS for tenferro, detected PyTorch provider.
+- [Linux CPU devcontainer workflow](docs/linux-cpu-devcontainer.md): Docker/devcontainer, OpenBLAS default for tenferro, optional oneMKL, detected PyTorch provider.
 - [NVIDIA GPU devcontainer workflow](docs/gpu-devcontainer.md): CUDA devcontainer.
 - [Einsum suite and instance selection](docs/einsum-suite.md): source benchmark, selection rules, diagnostic cases, path strategies.
 - [GPU tensor network suite](docs/tensornetwork-gpu.md): TensorNetworkBenchmarks parity on CUDA.
@@ -76,8 +76,9 @@ devcontainer exec --workspace-folder . bash -lc '
 ```
 
 The repro writes `result/linux-cpu/cpu/linalg_jvp_jvp.md`. The devcontainer
-build installs a source-built OpenBLAS under `/opt/openblas`; verify it through
-the OpenBLAS runtime API above instead of relying on `strings`.
+build installs a source-built OpenBLAS under `/opt/openblas` and oneMKL under
+`/opt/intel/oneapi/mkl/latest`; verify OpenBLAS through the runtime API above
+instead of relying on `strings`.
 
 GPU devcontainer from the host:
 

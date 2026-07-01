@@ -70,7 +70,7 @@ with open(out_path, "w", newline="") as f:
         if phase and phase != "primal":
             benchmark = f"{benchmark}_{phase}"
         backend = row["backend"]
-        if backend in {"cpu-faer", "system-openblas", "system-accelerate", "cuda"}:
+        if backend in {"cpu-faer", "system-openblas", "system-accelerate", "system-mkl", "cuda"}:
             backend = "tenferro-eager"
         writer.writerow(
             {

@@ -137,14 +137,21 @@ ensure_tenferro_checkout() {
 main() {
     TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
     export TENFERRO_CPU_FEATURES
-    if [[ "$TENFERRO_CPU_FEATURES" == "system-openblas" ]]; then
-        ensure_openblas_root
-    fi
+    case "$TENFERRO_CPU_FEATURES" in
+        system-openblas)
+            ensure_openblas_root
+            ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
+            ;;
+        system-mkl)
+            ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
+            ;;
+    esac
     ensure_tenferro_checkout
 
     export TENFERRO_RS_DIR="$TENFERRO_DIR"
 
     [[ -n "${OPENBLAS_ROOT:-}" ]] && log "OPENBLAS_ROOT=$OPENBLAS_ROOT"
+    [[ -n "${MKLROOT:-}" ]] && log "MKLROOT=$MKLROOT"
     log "TENFERRO_RS_DIR=$TENFERRO_RS_DIR"
     log "TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES"
     return 0
