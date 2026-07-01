@@ -28,7 +28,7 @@ export TENFERRO_CPU_FEATURES
 case "${TENFERRO_CPU_BACKEND_KIND:-}" in
     "")
         case "$TENFERRO_CPU_FEATURES" in
-            system-openblas|system-accelerate)
+            system-openblas|system-accelerate|system-mkl)
                 export TENFERRO_CPU_BACKEND_KIND=blas
                 ;;
             *)
@@ -72,8 +72,8 @@ esac
 source "$SCRIPT_DIR/thread_env.sh"
 
 if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
-    # Source this so TENFERRO_RS_DIR and any explicitly configured OpenBLAS
-    # paths are visible to the benchmark subprocesses below.
+    # Source this so TENFERRO_RS_DIR and any explicitly configured BLAS paths
+    # are visible to the benchmark subprocesses below.
     # shellcheck source=scripts/setup_extern_deps.sh
     source "$SCRIPT_DIR/setup_extern_deps.sh"
 fi

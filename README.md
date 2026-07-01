@@ -19,7 +19,7 @@ repository. See [GPU tensor network suite](docs/tensornetwork-gpu.md).
 ## Workflows
 
 - [macOS CPU workflow](docs/macos-cpu.md): native run, no Docker, Accelerate.
-- [Linux CPU devcontainer workflow](docs/linux-cpu-devcontainer.md): Docker/devcontainer, OpenBLAS for tenferro, detected PyTorch provider.
+- [Linux CPU devcontainer workflow](docs/linux-cpu-devcontainer.md): Docker/devcontainer, OpenBLAS default for tenferro, optional oneMKL, detected PyTorch provider.
 - [NVIDIA GPU devcontainer workflow](docs/gpu-devcontainer.md): CUDA devcontainer.
 - [Einsum suite and instance selection](docs/einsum-suite.md): source benchmark, selection rules, diagnostic cases, path strategies.
 - [GPU tensor network suite](docs/tensornetwork-gpu.md): TensorNetworkBenchmarks parity on CUDA.
@@ -55,7 +55,7 @@ devcontainer exec --workspace-folder . bash -lc '\
     ./scripts/run_all.sh 1'
 ```
 
-Linux linalg AD repro report with devcontainer OpenBLAS:
+Linux linalg AD repro report with the devcontainer default OpenBLAS path:
 
 ```bash
 devcontainer up --workspace-folder . --remove-existing-container
@@ -76,8 +76,20 @@ devcontainer exec --workspace-folder . bash -lc '
 ```
 
 The repro writes `result/linux-cpu/cpu/linalg_jvp_jvp.md`. The devcontainer
-build installs a source-built OpenBLAS under `/opt/openblas`; verify it through
-the OpenBLAS runtime API above instead of relying on `strings`.
+build installs a source-built OpenBLAS under `/opt/openblas` and oneMKL under
+`/opt/intel/oneapi/mkl/latest`; verify OpenBLAS through the runtime API above
+instead of relying on `strings`.
+
+To collect the same repro with tenferro linked against oneMKL, use
+`system-mkl`:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc '
+  export TENFERRO_CPU_FEATURES=system-mkl
+  export PUBLICATION_GATE_FEATURES=system-mkl
+  export TENFERRO_CPU_BACKEND_KIND=blas
+  ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
+```
 
 GPU devcontainer from the host:
 

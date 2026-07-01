@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OPENBLAS_ROOT=/opt/openblas
+ENV MKLROOT=/opt/intel/oneapi/mkl/latest
 ENV CMAKE_POLICY_VERSION_MINIMUM=3.5
 ENV PATH="/home/vscode/.cargo/bin:/home/vscode/.local/bin:${PATH}"
 ENV LD_LIBRARY_PATH="${OPENBLAS_ROOT}/lib"
@@ -22,6 +23,7 @@ RUN apt-get update \
         gdb \
         gfortran \
         git \
+        gnupg \
         lld \
         libffi-dev \
         libomp-dev \
@@ -35,6 +37,15 @@ RUN apt-get update \
         python3.12-venv \
         ripgrep \
         zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+        | gpg --dearmor -o /usr/share/keyrings/oneapi-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
+        > /etc/apt/sources.list.d/oneAPI.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        intel-oneapi-mkl-devel \
     && rm -rf /var/lib/apt/lists/*
 
 COPY .devcontainer/install_openblas.sh /usr/local/bin/install_openblas.sh

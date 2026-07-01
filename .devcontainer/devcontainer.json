@@ -7,6 +7,7 @@
   "remoteUser": "vscode",
   "containerEnv": {
     "OPENBLAS_ROOT": "/opt/openblas",
+    "MKLROOT": "/opt/intel/oneapi/mkl/latest",
     "USE_CUDA": "0",
     "USE_ROCM": "0",
     "USE_MPS": "0",

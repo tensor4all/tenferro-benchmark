@@ -85,6 +85,17 @@
         },
         {
           "type": "object",
+          "required": ["implementation", "version", "root", "library"],
+          "additionalProperties": false,
+          "properties": {
+            "implementation": { "const": "mkl" },
+            "version": { "type": "string", "minLength": 1 },
+            "root": { "type": "string", "minLength": 1 },
+            "library": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
           "required": ["implementation", "version", "library"],
           "additionalProperties": false,
           "properties": {

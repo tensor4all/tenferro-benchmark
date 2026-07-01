@@ -103,6 +103,10 @@ print(f"parallel={lib.openblas_get_parallel()}")
 PY'
 ```
 
+Intel oneMKL is also installed in the default Linux CPU devcontainer under
+`/opt/intel/oneapi/mkl/latest` and exported as `MKLROOT`. It is opt-in for
+tenferro via `system-mkl`; the Linux CPU default remains `system-openblas`.
+
 ## Local Linux Linalg AD Repro
 
 For the local Linux CPU linalg JVP/VJP repro report, use:
@@ -127,14 +131,24 @@ alias. To run specific thread counts, pass them explicitly:
 ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh 4
 ```
 
-When updating this report from the host, run it inside the Linux devcontainer
-and force the tenferro OpenBLAS path:
+When updating this report from the host, run it inside the Linux devcontainer.
+For the default tenferro OpenBLAS path:
 
 ```bash
 devcontainer up --workspace-folder . --remove-existing-container
 devcontainer exec --workspace-folder . bash -lc '
   export TENFERRO_CPU_FEATURES=system-openblas
   export PUBLICATION_GATE_FEATURES=system-openblas
+  export TENFERRO_CPU_BACKEND_KIND=blas
+  ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
+```
+
+For an opt-in tenferro oneMKL run:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc '
+  export TENFERRO_CPU_FEATURES=system-mkl
+  export PUBLICATION_GATE_FEATURES=system-mkl
   export TENFERRO_CPU_BACKEND_KIND=blas
   ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
 ```

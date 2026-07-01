@@ -9,10 +9,19 @@ trap 'rm -rf "$TMP"' EXIT
 
 assert_thread_env_metadata() {
   local openblas_root="$TMP/openblas"
+  local mkl_root="$TMP/mkl"
   local output="$TMP/run.yaml"
+  local mkl_output="$TMP/run-mkl.yaml"
 
   mkdir -p "$openblas_root/lib"
   touch "$openblas_root/lib/libopenblas.dylib"
+  mkdir -p "$mkl_root/lib" "$mkl_root/include"
+  touch "$mkl_root/lib/libmkl_rt.so"
+  cat > "$mkl_root/include/mkl_version.h" <<'EOF'
+#define __INTEL_MKL__ 2026
+#define __INTEL_MKL_MINOR__ 0
+#define __INTEL_MKL_UPDATE__ 0
+EOF
 
   OMP_NUM_THREADS=1 \
   OMP_THREAD_LIMIT=1 \
@@ -39,13 +48,27 @@ assert_thread_env_metadata() {
       --blas openblas \
       --output "$output"
 
-  uv run python - "$output" <<'PY'
+  MKLROOT="$mkl_root" \
+    uv run python scripts/collect_run_metadata.py \
+      --target-profile amd-cpu \
+      --suite-id cpu/einsum \
+      --suite-file benchmarks/cpu/einsum.yaml \
+      --timestamp "2026-06-04T12:34:56+09:00" \
+      --tenferro-dir extern/tenferro-rs \
+      --tenferro-commit abcdef1 \
+      --features system-mkl \
+      --blas mkl \
+      --output "$mkl_output"
+
+  uv run python - "$output" "$mkl_output" "$mkl_root" <<'PY'
 import sys
 from pathlib import Path
 
 import yaml
 
 run = yaml.safe_load(Path(sys.argv[1]).read_text())
+mkl_run = yaml.safe_load(Path(sys.argv[2]).read_text())
+mkl_root = sys.argv[3]
 env = run["environment"]["env"]
 expected = {
     "OMP_NUM_THREADS": "1",
@@ -75,6 +98,17 @@ if jax.get("available"):
         raise SystemExit(f"expected JAX dot_backend to match provider: {jax}")
     if "lapack_provider" not in jax:
         raise SystemExit(f"expected JAX LAPACK provider metadata: {jax}")
+mkl = mkl_run.get("blas") or {}
+if mkl.get("implementation") != "mkl":
+    raise SystemExit(f"expected MKL BLAS metadata: {mkl}")
+if mkl.get("version") != "2026.0.0":
+    raise SystemExit(f"expected MKL version from header: {mkl}")
+if mkl.get("root") != mkl_root:
+    raise SystemExit(f"expected MKL root metadata: {mkl}")
+if not mkl.get("library", "").endswith("libmkl_rt.so"):
+    raise SystemExit(f"expected MKL library metadata: {mkl}")
+if mkl_run["environment"]["env"].get("MKLROOT") != mkl_root:
+    raise SystemExit(f"expected MKLROOT env metadata: {mkl_run['environment']['env']}")
 PY
 }
 

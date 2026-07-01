@@ -16,6 +16,8 @@ BLAS/provider policy:
 - `/opt/openblas` is built from OpenBLAS source with pthread threading enabled
   (`USE_THREAD=1`, `USE_OPENMP=0`) instead of using Ubuntu's
   `libopenblas-dev` package.
+- Intel oneMKL is installed under `/opt/intel/oneapi/mkl/latest` and exported
+  as `MKLROOT` for opt-in `system-mkl` runs.
 - PyTorch Python uses the installed wheel provider. The benchmark records
   `BLAS_INFO`, `LAPACK_INFO`, and linked BLAS/LAPACK libraries in `run.yaml`.
 - The benchmark does not source-build PyTorch to force OpenBLAS.
@@ -53,6 +55,16 @@ devcontainer exec --workspace-folder . bash -lc \
 
 devcontainer exec --workspace-folder . bash -lc \
   'BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_all.sh 4'
+```
+
+Opt-in MKL tenferro run:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc '\
+  BENCHMARK_TARGET_PROFILE=amd-cpu \
+  TENFERRO_CPU_FEATURES=system-mkl \
+  PUBLICATION_GATE_FEATURES=system-mkl \
+    ./scripts/run_all.sh 1'
 ```
 
 Latest reports:
