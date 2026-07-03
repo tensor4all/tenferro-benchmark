@@ -2,9 +2,11 @@
 
 Benchmark suite for [tenferro-rs](https://github.com/tensor4all/tenferro-rs).
 
+**Latest benchmark results:** [open the result index](result/README.md).
+
 The repository keeps the latest human-facing reports per target profile:
 
-- macOS CPU: `result/mac-cpu/cpu/einsum.md`, `result/mac-cpu/cpu/cpu_ops.md`
+- macOS CPU: [`result/mac-cpu/cpu/einsum.md`](result/mac-cpu/cpu/einsum.md), [`result/mac-cpu/cpu/cpu_ops.md`](result/mac-cpu/cpu/cpu_ops.md)
 - Linux/AMD CPU: `result/amd-cpu/cpu/einsum.md`, `result/amd-cpu/cpu/cpu_ops.md`
 - NVIDIA GPU: `result/nvidia-gpu/gpu/dense.md`, `result/nvidia-gpu/gpu/einsum.md`, `result/nvidia-gpu/gpu/sparse.md`
 
