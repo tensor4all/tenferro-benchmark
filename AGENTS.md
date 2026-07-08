@@ -37,6 +37,7 @@ Expected latest report paths:
 - `result/amd-cpu/cpu/einsum.md`
 - `result/amd-cpu/cpu/cpu_ops.md`
 - `result/amd-cpu/cpu/linalg_jvp_vjp.md`
+- `result/linux-cpu/cpu/linalg_jvp_jvp.md`
 - `result/nvidia-gpu/gpu/dense.md`
 - `result/nvidia-gpu/gpu/einsum.md`
 - `result/nvidia-gpu/gpu/sparse.md`
@@ -59,7 +60,9 @@ CPU comparisons use:
 C++ Torch/LibTorch is intentionally removed. Do not reintroduce LibTorch
 runners, `Torch_DIR`, or OpenBLAS-linked PyTorch source-build setup.
 
-Linux PyTorch CPU provider is not forced to match tenferro. Record the detected
+On Linux CPU devcontainer runs, PyTorch uses the installed wheel's MKL-backed
+provider. For fair CPU comparisons, run tenferro-rs with `system-mkl` inside the
+devcontainer rather than the default `system-openblas` path. Record the detected
 PyTorch provider in `run.yaml` using `torch.__config__.show()` and linked
 library inspection.
 
@@ -76,21 +79,36 @@ macOS BLAS-backed tenferro runs use Accelerate by default.
 
 ## Linux CPU Devcontainer Workflow
 
-Use the devcontainer/Docker path for Linux CPU measurements.
+Use the devcontainer/Docker path for Linux CPU measurements. **Always run Linux
+CPU benchmark collection inside the devcontainer, and prefer tenferro-rs
+`system-mkl` there** so tenferro-rs and PyTorch share the same MKL-backed BLAS
+stack.
 
 ```bash
 devcontainer up --workspace-folder .
-devcontainer exec --workspace-folder . bash -lc \
-  'BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_all.sh 1'
-devcontainer exec --workspace-folder . bash -lc \
-  'BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_all.sh 4'
+devcontainer exec --workspace-folder . bash -lc '
+  export TENFERRO_CPU_FEATURES=system-mkl
+  export PUBLICATION_GATE_FEATURES=system-mkl
+  export TENFERRO_CPU_BACKEND_KIND=blas
+  export BENCHMARK_TARGET_PROFILE=amd-cpu
+  ./scripts/run_all.sh 1'
+devcontainer exec --workspace-folder . bash -lc '
+  export TENFERRO_CPU_FEATURES=system-mkl
+  export PUBLICATION_GATE_FEATURES=system-mkl
+  export TENFERRO_CPU_BACKEND_KIND=blas
+  export BENCHMARK_TARGET_PROFILE=amd-cpu
+  ./scripts/run_all.sh 4'
 ```
 
-`OPENBLAS_ROOT=/opt/openblas` is configured inside the devcontainer for
-tenferro `system-openblas` runs. PyTorch uses the installed wheel provider.
-The devcontainer OpenBLAS is source-built with threading enabled; verify this
-with the OpenBLAS runtime API, not `strings`, because parallel builds can still
-contain standalone diagnostic strings:
+Intel oneMKL is installed in the default Linux CPU devcontainer under
+`/opt/intel/oneapi/mkl/latest` and exported as `MKLROOT`. PyTorch uses the
+installed wheel provider, which is MKL-backed on this path.
+
+`OPENBLAS_ROOT=/opt/openblas` is also configured for tenferro `system-openblas`
+runs, but treat that as an alternate backend for experiments, not the standard
+Linux CPU comparison path. The devcontainer OpenBLAS is source-built with
+threading enabled; verify this with the OpenBLAS runtime API, not `strings`,
+because parallel builds can still contain standalone diagnostic strings:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc 'python3 - <<PY
@@ -102,10 +120,6 @@ print(lib.openblas_get_config().decode())
 print(f"parallel={lib.openblas_get_parallel()}")
 PY'
 ```
-
-Intel oneMKL is also installed in the default Linux CPU devcontainer under
-`/opt/intel/oneapi/mkl/latest` and exported as `MKLROOT`. It is opt-in for
-tenferro via `system-mkl`; the Linux CPU default remains `system-openblas`.
 
 ## Local Linux Linalg AD Repro
 
@@ -131,24 +145,24 @@ alias. To run specific thread counts, pass them explicitly:
 ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh 4
 ```
 
-When updating this report from the host, run it inside the Linux devcontainer.
-For the default tenferro OpenBLAS path:
+When updating this report, **run it inside the Linux devcontainer with tenferro-rs
+`system-mkl`** so the report matches PyTorch's MKL-backed CPU path:
 
 ```bash
-devcontainer up --workspace-folder . --remove-existing-container
+devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=system-openblas
-  export PUBLICATION_GATE_FEATURES=system-openblas
+  export TENFERRO_CPU_FEATURES=system-mkl
+  export PUBLICATION_GATE_FEATURES=system-mkl
   export TENFERRO_CPU_BACKEND_KIND=blas
   ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
 ```
 
-For an opt-in tenferro oneMKL run:
+For an alternate tenferro OpenBLAS run:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=system-mkl
-  export PUBLICATION_GATE_FEATURES=system-mkl
+  export TENFERRO_CPU_FEATURES=system-openblas
+  export PUBLICATION_GATE_FEATURES=system-openblas
   export TENFERRO_CPU_BACKEND_KIND=blas
   ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
 ```
