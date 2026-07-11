@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/dense`
 - Suite file: `benchmarks/gpu/dense.yaml`
-- Timestamp: `2026-06-09T04:42:44.101326+00:00`
-- tenferro-rs commit: `d30e592289abf59a7d91f0ec56eaadbe864220a6`
+- Timestamp: `2026-07-11T05:42:50.797056+00:00`
+- tenferro-rs commit: `d5c768c7eb58f252e7855fea80bb6af5bb7ddb40`
 
 ## GPU Information
 
@@ -15,7 +15,7 @@
 - Driver version: `580.159.03`
 - CUDA version: `13.0`
 - CUDA runtime: `12.6`
-- cuDNN version: `92300`
+- cuDNN version: `92000`
 
 ## CPU Information
 
@@ -26,7 +26,7 @@
 - Cores per socket: `18`
 - Threads per core: `2`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-124-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-134-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -40,35 +40,35 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_batched_matmul_f64_b1024_256 | 187.202 | 187.196 | 187.846 | 160.306 | 186.228 | 1316.821 | unsupported | unsupported | unsupported |
+| dense_batched_matmul_f64_b1024_256 | 187.771 | 187.789 | 185.451 | not configured | 185.415 | 1320.999 | unsupported | unsupported | unsupported |
 
 ## gpu/dense / eigh
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_eigh_f64_1024 | 75.218 | 75.207 | 74.997 | 75.367 | unsupported | unsupported | 74.976 | unsupported | unsupported |
+| dense_eigh_f64_1024 | 74.624 | 74.604 | 74.920 | not configured | unsupported | unsupported | 74.799 | unsupported | unsupported |
 
 ## gpu/dense / matmul
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_matmul_f64_3072 | 315.007 | 315.005 | 314.581 | 272.769 | 316.203 | 322.248 | unsupported | unsupported | unsupported |
+| dense_matmul_f64_3072 | 314.397 | 314.413 | 312.095 | not configured | 312.061 | 317.962 | unsupported | unsupported | unsupported |
 
 ## gpu/dense / qr
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_qr_f64_1536 | 95.992 | 95.794 | 95.089 | 96.291 | unsupported | unsupported | 95.111 | unsupported | unsupported |
+| dense_qr_f64_1536 | 96.087 | 96.190 | 95.218 | not configured | unsupported | unsupported | 95.438 | unsupported | unsupported |
 
 ## gpu/dense / solve
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_solve_f64_1024_rhs16 | 11.741 | 11.603 | 10.571 | 11.020 | unsupported | unsupported | 10.575 | unsupported | unsupported |
-| dense_solve_f64_2048_rhs128 | 55.295 | 54.786 | 53.770 | 54.420 | unsupported | unsupported | 53.798 | unsupported | unsupported |
-| dense_solve_f64_2048_rhs16 | 50.900 | 48.208 | 47.897 | 48.545 | unsupported | unsupported | 47.963 | unsupported | unsupported |
-| dense_solve_f64_4096_rhs16 | 289.840 | 289.917 | 287.061 | 288.228 | unsupported | unsupported | 287.253 | unsupported | unsupported |
-| dense_solve_f64_512_rhs16 | 3.764 | 3.560 | 3.043 | 3.351 | unsupported | unsupported | 3.016 | unsupported | unsupported |
+| dense_solve_f64_1024_rhs16 | 11.840 | 11.588 | 10.591 | not configured | unsupported | unsupported | 10.604 | unsupported | unsupported |
+| dense_solve_f64_2048_rhs128 | 55.168 | 54.826 | 53.560 | not configured | unsupported | unsupported | 53.610 | unsupported | unsupported |
+| dense_solve_f64_2048_rhs16 | 48.586 | 48.886 | 48.109 | not configured | unsupported | unsupported | 48.072 | unsupported | unsupported |
+| dense_solve_f64_4096_rhs16 | 288.860 | 288.893 | 288.060 | not configured | unsupported | unsupported | 288.111 | unsupported | unsupported |
+| dense_solve_f64_512_rhs16 | 3.979 | 3.790 | 3.039 | not configured | unsupported | unsupported | 3.028 | unsupported | unsupported |
 
 ## gpu/dense / svd
 
@@ -76,4 +76,4 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_svd_f64_256 | 83.191 | 83.356 | 84.150 | 82.209 | unsupported | unsupported | 27.517 | unsupported | unsupported |
+| dense_svd_f64_256 | 82.595 | 82.595 | 84.124 | not configured | unsupported | unsupported | 27.538 | unsupported | unsupported |

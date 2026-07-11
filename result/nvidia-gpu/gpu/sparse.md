@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/sparse`
 - Suite file: `benchmarks/gpu/sparse.yaml`
-- Timestamp: `2026-06-09T04:42:44.101326+00:00`
-- tenferro-rs commit: `d30e592289abf59a7d91f0ec56eaadbe864220a6`
+- Timestamp: `2026-07-11T05:42:50.797056+00:00`
+- tenferro-rs commit: `d5c768c7eb58f252e7855fea80bb6af5bb7ddb40`
 
 ## GPU Information
 
@@ -15,7 +15,7 @@
 - Driver version: `580.159.03`
 - CUDA version: `13.0`
 - CUDA runtime: `12.6`
-- cuDNN version: `92300`
+- cuDNN version: `92000`
 
 ## CPU Information
 
@@ -26,7 +26,7 @@
 - Cores per socket: `18`
 - Threads per core: `2`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-124-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-134-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -40,10 +40,10 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | unsupported | unsupported | 108.379 | unsupported | unsupported | unsupported | unsupported | 108.383 | 1182.107 |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | unsupported | unsupported | 108.414 | unsupported | unsupported | unsupported | unsupported | 108.405 | 1182.073 |
 
 ## gpu/sparse / spmv
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sparse_synthetic_4m_64m_spmv_f64 | unsupported | unsupported | 19.813 | unsupported | unsupported | unsupported | unsupported | 19.818 | 100.123 |
+| sparse_synthetic_4m_64m_spmv_f64 | unsupported | unsupported | 19.621 | unsupported | unsupported | unsupported | unsupported | 19.632 | 98.922 |
