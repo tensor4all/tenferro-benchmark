@@ -13,18 +13,40 @@ use std::time::Instant;
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::CpuBackend;
-use tenferro_einsum::eager_tensor as eager_einsum;
-use tenferro_gpu::{download_tensor, gpu_available, upload_tensor, CubeclBackend, CubeclRuntime};
-use tenferro_linalg::eager_tensor as eager_linalg;
+use tenferro_einsum::{EagerEinsumExt, GraphCompilerEinsumExt};
+use tenferro_gpu::{download_tensor, gpu_available, upload_tensor, CudaBackend, CudaRuntime};
+use tenferro_linalg::{EagerTensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_einsum_benchmark::tensornetwork::{
     build_cpu_eager_inputs as build_tensor_network_cpu_inputs, contract_tree_eager,
     contract_tree_trace, load_tensor_network, scalar_f32, scalar_f32_tensor,
     tensor_f32_col_major, TensorNetworkFile, TensorNetworkSpec,
 };
 use tenferro_runtime::{
-    traced_tensor, DotGeneralConfig, Error as TfError, GraphCompiler, GraphExecutor, Tensor,
-    TracedTensor, TypedTensor,
+    DotGeneralConfig, Error as TfError, GraphCompiler, GraphExecutor, Tensor, TracedTensor,
 };
+use tenferro_tensor::TypedTensor;
+
+fn eager_from_tensor_in(tensor: Tensor, ctx: std::sync::Arc<EagerRuntime>) -> Result<EagerTensor, String> {
+    EagerTensor::from_tensor_in(tensor, ctx).map_err(|e| format!("{e}"))
+}
+
+trait EagerTensorDataCompat {
+    fn data(&self) -> Result<Tensor, String>;
+}
+
+impl EagerTensorDataCompat for EagerTensor {
+    fn data(&self) -> Result<Tensor, String> {
+        self.to_tensor().map_err(|e| format!("{e}"))
+    }
+}
+
+mod traced_tensor {
+    use super::*;
+
+    pub fn matmul(lhs: &TracedTensor, rhs: &TracedTensor) -> Result<TracedTensor, TfError> {
+        lhs.matmul(rhs)
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Entry point
@@ -158,16 +180,16 @@ fn build_gpu_eager_inputs(
     network: &TensorNetworkFile,
     spec: &TensorNetworkSpec,
     ctx: std::sync::Arc<EagerRuntime>,
-    runtime: &CubeclRuntime,
+    runtime: &CudaRuntime,
 ) -> Result<Vec<EagerTensor>, String> {
     network
         .inputs
         .iter()
         .map(|ixs| {
             let shape = vec![spec.bond_dim; ixs.len()];
-            let cpu = tensor_f32_col_major(&shape, spec.fill_value);
+            let cpu = tensor_f32_col_major(&shape, spec.fill_value)?;
             let gpu = upload_tensor(runtime, &cpu).map_err(|e| format!("upload: {e}"))?;
-            Ok(EagerTensor::from_tensor_in(gpu, ctx.clone()))
+            Ok(eager_from_tensor_in(gpu, ctx.clone())?)
         })
         .collect()
 }
@@ -175,25 +197,29 @@ fn build_gpu_eager_inputs(
 fn build_trace_inputs(
     network: &TensorNetworkFile,
     spec: &TensorNetworkSpec,
-    upload_rt: &CubeclRuntime,
+    upload_rt: &CudaRuntime,
 ) -> Result<Vec<(TracedTensor, Tensor)>, String> {
     network
         .inputs
         .iter()
         .map(|ixs| {
             let shape = vec![spec.bond_dim; ixs.len()];
-            let cpu = tensor_f32_col_major(&shape, spec.fill_value);
+            let cpu = tensor_f32_col_major(&shape, spec.fill_value)?;
             let tensor = upload_tensor(upload_rt, &cpu).map_err(|e| format!("upload: {e}"))?;
-            Ok((TracedTensor::from_tensor_concrete_shape(tensor.clone()), cpu))
+            Ok((
+                TracedTensor::from_tensor_concrete_shape(tensor.clone())
+                    .map_err(|e| format!("trace input: {e}"))?,
+                cpu,
+            ))
         })
         .collect()
 }
 
 fn scalar_f32_from_eager_gpu(
     result: &EagerTensor,
-    runtime: &CubeclRuntime,
+    runtime: &CudaRuntime,
 ) -> Result<f32, String> {
-    let downloaded = download_tensor(runtime, result.data())
+    let downloaded = download_tensor(runtime, &result.data()?)
         .map_err(|e| format!("download: {e}"))?;
     scalar_f32_tensor(&downloaded)
 }
@@ -217,9 +243,9 @@ fn run_eager_tensor_network(
         let spec = TensorNetworkSpec::from_problem(problem, std::path::Path::new("."))?;
         let network = load_tensor_network(&spec.source)?;
         let transfer_bk =
-            CubeclBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
+            CudaBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
         let compute_bk =
-            CubeclBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
+            CudaBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
         let ctx = EagerRuntime::with_cuda_backend(compute_bk);
         let gpu_inputs = build_gpu_eager_inputs(
             &network,
@@ -229,7 +255,8 @@ fn run_eager_tensor_network(
         )?;
         sync_cubecl_runtime(transfer_bk.runtime())?;
         let cpu_ctx = EagerRuntime::with_cpu_backend(CpuBackend::default());
-        let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx.clone());
+        let cpu_inputs =
+            build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx.clone())?;
 
         for _ in 0..n_warmup {
             let _ = contract_tree_eager(&network.tree, &gpu_inputs)?;
@@ -337,9 +364,9 @@ fn run_trace_tensor_network(
         let spec = TensorNetworkSpec::from_problem(problem, std::path::Path::new("."))?;
         let network = load_tensor_network(&spec.source)?;
         let transfer_bk =
-            CubeclBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
+            CudaBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
         let compute_bk =
-            CubeclBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
+            CudaBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
         let trace_inputs = build_trace_inputs(&network, &spec, transfer_bk.runtime())?;
         let output = contract_tree_trace(&network.tree, &trace_inputs)?;
         sync_cubecl_runtime(transfer_bk.runtime())?;
@@ -377,7 +404,7 @@ fn run_trace_tensor_network(
         }
 
         let cpu_ctx = EagerRuntime::with_cpu_backend(CpuBackend::default());
-        let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx);
+        let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx)?;
         let cpu_scalar = scalar_f32(&contract_tree_eager(&network.tree, &cpu_inputs)?)?;
         let gpu_scalar = gpu_scalar.ok_or("missing timed tensor network result")?;
         let (ver_status, max_abs, max_rel) =
@@ -501,9 +528,9 @@ fn run_eager(
         // CubeCL returns the same underlying device client for the same ordinal,
         // so both backends share the same CUDA stream.
         let transfer_bk =
-            CubeclBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
+            CudaBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
         let compute_bk =
-            CubeclBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
+            CudaBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
         let ctx = EagerRuntime::with_cuda_backend(compute_bk);
 
         let seed = problem["data"]["seed"].as_u64().unwrap_or(0);
@@ -679,9 +706,9 @@ fn run_trace(
         // Two backends sharing the same CubeCL device client.
         // Build the trace graph with GPU-uploaded tensors as embedded constants.
         let transfer_bk =
-            CubeclBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
+            CudaBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
         let compute_bk =
-            CubeclBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
+            CudaBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
 
         let (outputs, cpu_inputs) =
             build_trace_graph_gpu(op, problem, seed, gen, transfer_bk.runtime())
@@ -822,12 +849,12 @@ fn build_and_upload_eager_inputs(
     problem: &serde_yaml::Value,
     seed: u64,
     gen: &str,
-    rt: &CubeclRuntime,
+    rt: &CudaRuntime,
     ctx: std::sync::Arc<EagerRuntime>,
 ) -> Result<EagerInputs, String> {
     let upload = |t: Tensor| -> Result<EagerTensor, String> {
         let gpu_t = upload_tensor(rt, &t).map_err(|e| format!("upload: {e}"))?;
-        Ok(EagerTensor::from_tensor_in(gpu_t, ctx.clone()))
+        Ok(EagerTensor::from_tensor_in(gpu_t, ctx.clone()).map_err(|e| format!("{e}"))?)
     };
 
     match op {
@@ -924,7 +951,9 @@ fn build_cpu_eager_inputs(
     gen: &str,
 ) -> EagerInputs {
     let cpu_ctx = EagerRuntime::with_cpu_backend(CpuBackend::default());
-    let cpu = |t: Tensor| EagerTensor::from_tensor_in(t, cpu_ctx.clone());
+    let cpu = |t: Tensor| {
+        eager_from_tensor_in(t, cpu_ctx.clone()).expect("benchmark tensor should be valid")
+    };
 
     match op {
         "matmul" => {
@@ -1045,24 +1074,26 @@ fn run_eager_op(
                 .as_str()
                 .unwrap_or("ij,jk->ik");
             let refs: Vec<&EagerTensor> = inputs.extra.iter().collect();
-            let out = eager_einsum::einsum(&refs, expr).map_err(|e| format!("einsum: {e}"))?;
+            let out = refs.as_slice().einsum(expr).map_err(|e| format!("einsum: {e}"))?;
             Ok(vec![out])
         }
         "qr" => {
-            let (q, r) = eager_linalg::qr(&inputs.a).map_err(|e| format!("qr: {e}"))?;
+            let (q, r) = inputs.a.qr().map_err(|e| format!("qr: {e}"))?;
             Ok(vec![q, r])
         }
         "solve" => {
-            let x = eager_linalg::solve(&inputs.a, inputs.b.as_ref().unwrap())
+            let x = inputs
+                .a
+                .solve(inputs.b.as_ref().unwrap())
                 .map_err(|e| format!("solve: {e}"))?;
             Ok(vec![x])
         }
         "svd" => {
-            let (u, s, vh) = eager_linalg::svd(&inputs.a).map_err(|e| format!("svd: {e}"))?;
+            let (u, s, vh) = inputs.a.svd().map_err(|e| format!("svd: {e}"))?;
             Ok(vec![u, s, vh])
         }
         "eigh" => {
-            let (w, v) = eager_linalg::eigh(&inputs.a).map_err(|e| format!("eigh: {e}"))?;
+            let (w, v) = inputs.a.eigh().map_err(|e| format!("eigh: {e}"))?;
             Ok(vec![w, v])
         }
         _ => Err(format!("unknown op: {op}")),
@@ -1091,7 +1122,7 @@ fn build_trace_graph_gpu(
     problem: &serde_yaml::Value,
     seed: u64,
     gen: &str,
-    rt: &CubeclRuntime,
+    rt: &CudaRuntime,
 ) -> Result<(Vec<TracedTensor>, Vec<(TracedTensor, Tensor)>), TfError> {
     build_trace_graph_inner(op, problem, seed, gen, Some(rt))
 }
@@ -1101,7 +1132,7 @@ fn build_trace_graph_inner(
     problem: &serde_yaml::Value,
     seed: u64,
     gen: &str,
-    upload_rt: Option<&CubeclRuntime>,
+    upload_rt: Option<&CudaRuntime>,
 ) -> Result<(Vec<TracedTensor>, Vec<(TracedTensor, Tensor)>), TfError> {
     // Helper: create a TracedTensor with concrete shape from tensor data.
     // If upload_rt is Some, the data is uploaded to GPU first.
@@ -1113,7 +1144,7 @@ fn build_trace_graph_inner(
             } else {
                 cpu_d.clone()
             };
-            let t = TracedTensor::from_tensor_concrete_shape(tensor);
+            let t = TracedTensor::from_tensor_concrete_shape(tensor)?;
             (t, cpu_d)
         }};
     }
@@ -1124,7 +1155,7 @@ fn build_trace_graph_inner(
             let (m, n, k) = yshape3(p, "m", "n", "k");
             let (a, a_data) = inp!(&[m, k], normal_data(&[m, k], seed));
             let (b, b_data) = inp!(&[k, n], normal_data(&[k, n], seed + 1));
-            let out = traced_tensor::matmul(&a, &b);
+            let out = traced_tensor::matmul(&a, &b)?;
             Ok((vec![out], vec![(a, a_data), (b, b_data)]))
         }
         "batched_matmul" => {
@@ -1134,7 +1165,7 @@ fn build_trace_graph_inner(
             let (a, a_data) = inp!(&[m, k, batch], normal_data(&[m, k, batch], seed));
             let (b, b_data) = inp!(&[k, n, batch], normal_data(&[k, n, batch], seed + 1));
             let cfg = batched_matmul_cfg();
-            Ok((vec![a.dot_general(&b, cfg)], vec![(a, a_data), (b, b_data)]))
+            Ok((vec![a.dot_general(&b, cfg)?], vec![(a, a_data), (b, b_data)]))
         }
         "einsum" => {
             let p = &problem["einsum"];
@@ -1147,7 +1178,7 @@ fn build_trace_graph_inner(
             }
             let tensors: Vec<&TracedTensor> = inputs.iter().map(|(t, _)| t).collect();
             let mut compiler = GraphCompiler::new();
-            let out = tenferro_einsum::einsum(&mut compiler, &tensors, expr)?;
+            let out = compiler.einsum(&tensors, expr)?;
             Ok((vec![out], inputs))
         }
         "qr" => {
@@ -1159,7 +1190,7 @@ fn build_trace_graph_inner(
                 normal_data(&[m, n], seed)
             };
             let (a, a_data) = inp!(&[m, n], d);
-            let (q, r) = tenferro_linalg::qr(&a)?;
+            let (q, r) = a.qr()?;
             Ok((vec![q, r], vec![(a, a_data)]))
         }
         "solve" => {
@@ -1168,7 +1199,7 @@ fn build_trace_graph_inner(
             let rhs = yaml_usize(&p["rhs_cols"], 1);
             let (a, a_data) = inp!(&[n, n], solve_matrix_data(n, seed, gen));
             let (b, b_data) = inp!(&[n, rhs], normal_data(&[n, rhs], seed + 100));
-            let out = tenferro_linalg::solve(&a, &b)?;
+            let out = a.solve(&b)?;
             Ok((vec![out], vec![(a, a_data), (b, b_data)]))
         }
         "svd" => {
@@ -1180,7 +1211,7 @@ fn build_trace_graph_inner(
                 normal_data(&[m, n], seed)
             };
             let (a, a_data) = inp!(&[m, n], d);
-            let (u, s, vh) = tenferro_linalg::svd(&a)?;
+            let (u, s, vh) = a.svd()?;
             Ok((vec![u, s, vh], vec![(a, a_data)]))
         }
         "eigh" => {
@@ -1192,7 +1223,7 @@ fn build_trace_graph_inner(
                 normal_data(&[n, n], seed)
             };
             let (a, a_data) = inp!(&[n, n], d);
-            let (w, v) = tenferro_linalg::eigh(&a)?;
+            let (w, v) = a.eigh()?;
             Ok((vec![w, v], vec![(a, a_data)]))
         }
         _ => Err(TfError::Internal(format!("unsupported trace op: {op}"))),
@@ -1231,7 +1262,7 @@ fn sync_eager_runtime(ctx: &EagerRuntime) -> Result<(), String> {
         .map_err(|e| format!("eager runtime synchronize: {e}"))
 }
 
-fn sync_cubecl_runtime(rt: &CubeclRuntime) -> Result<(), String> {
+fn sync_cubecl_runtime(rt: &CudaRuntime) -> Result<(), String> {
     // Fair GPU timing must wait for queued device work without reading result
     // tensors back to the host. A full output download makes tenferro-rs look
     // worse for large outputs, while no synchronization makes async CUDA
@@ -1250,20 +1281,28 @@ fn verify_eager(
     gpu: &[EagerTensor],
     cpu_outputs: &[EagerTensor],
     cpu_inputs: &EagerInputs,
-    rt: &CubeclRuntime,
+    rt: &CudaRuntime,
     rtol: f64,
     atol: f64,
 ) -> (String, Option<f64>, Option<f64>) {
     let gpu_tensors: Vec<Tensor> = gpu
         .iter()
-        .filter_map(|t| download_tensor(rt, t.data()).ok())
+        .filter_map(|t| t.data().ok().and_then(|d| download_tensor(rt, &d).ok()))
         .collect();
-    let cpu_tensors: Vec<Tensor> = cpu_outputs.iter().map(|t| t.data().clone()).collect();
-    let mut input_tensors = vec![cpu_inputs.a.data().clone()];
+    let cpu_tensors: Vec<Tensor> = cpu_outputs
+        .iter()
+        .filter_map(|t| t.data().ok())
+        .collect();
+    let mut input_tensors = match cpu_inputs.a.data() {
+        Ok(a) => vec![a],
+        Err(_) => return ("skipped".to_string(), None, None),
+    };
     if let Some(b) = &cpu_inputs.b {
-        input_tensors.push(b.data().clone());
+        if let Ok(b_data) = b.data() {
+            input_tensors.push(b_data);
+        }
     }
-    input_tensors.extend(cpu_inputs.extra.iter().map(|t| t.data().clone()));
+    input_tensors.extend(cpu_inputs.extra.iter().filter_map(|t| t.data().ok()));
     verify_tensors(op, &gpu_tensors, &cpu_tensors, &input_tensors, rtol, atol)
 }
 
@@ -1371,7 +1410,10 @@ fn verify_eigh(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f
 
 fn tensor_f64_parts(t: &Tensor) -> Option<(Vec<usize>, Vec<f64>)> {
     if let Tensor::F64(typed) = t {
-        Some((typed.shape().to_vec(), typed.as_slice().to_vec()))
+        typed
+            .as_slice()
+            .ok()
+            .map(|data| (typed.shape().to_vec(), data.to_vec()))
     } else {
         None
     }
@@ -1434,7 +1476,10 @@ fn compare_vectors(
 // ---------------------------------------------------------------------------
 
 fn tensor_f64(shape: &[usize], data: Vec<f64>) -> Tensor {
-    Tensor::F64(TypedTensor::from_vec_col_major(shape.to_vec(), data))
+    Tensor::F64(
+        TypedTensor::from_vec_col_major(shape.to_vec(), data)
+            .expect("benchmark shape/data length should match"),
+    )
 }
 
 fn normal_data(shape: &[usize], seed: u64) -> Vec<f64> {
