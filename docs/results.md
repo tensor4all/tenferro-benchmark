@@ -25,6 +25,7 @@ result/
     gpu/dense.md
     gpu/einsum.md
     gpu/sparse.md
+    gpu/linalg_jvp_vjp.md
 ```
 
 Raw run data is written under `data/results/<target_profile>/<suite_id>/<timestamp>/`:

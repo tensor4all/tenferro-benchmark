@@ -6,7 +6,7 @@ The repository keeps the latest human-facing reports per target profile:
 
 - macOS CPU: `result/mac-cpu/cpu/einsum.md`, `result/mac-cpu/cpu/cpu_ops.md`, `result/mac-cpu/cpu/linalg_jvp_vjp.md`
 - Linux/AMD CPU: `result/amd-cpu/cpu/einsum.md`, `result/amd-cpu/cpu/cpu_ops.md`, `result/amd-cpu/cpu/linalg_jvp_vjp.md`
-- NVIDIA GPU: `result/nvidia-gpu/gpu/dense.md`, `result/nvidia-gpu/gpu/einsum.md`, `result/nvidia-gpu/gpu/sparse.md`, `result/nvidia-gpu/gpu/tensornetwork.md`
+- NVIDIA GPU: `result/nvidia-gpu/gpu/dense.md`, `result/nvidia-gpu/gpu/einsum.md`, `result/nvidia-gpu/gpu/sparse.md`, `result/nvidia-gpu/gpu/tensornetwork.md`, `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`
 
 Historical reports are not archived in extra files. Use git history when older
 results are needed.
@@ -97,6 +97,10 @@ GPU devcontainer from the host:
 devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
+
+# GPU linalg JVP/VJP (separate from the standard GPU suite)
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_linalg_jvp_vjp.sh'
 ```
 
 ## Comparison Backends
