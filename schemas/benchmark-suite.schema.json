@@ -157,7 +157,7 @@
         "id": { "type": "string", "minLength": 1 },
         "intent": { "type": "string", "minLength": 1 },
         "notes": { "type": "string", "minLength": 1 },
-        "family": { "enum": ["dense", "sparse", "einsum", "tensornetwork"] },
+        "family": { "enum": ["dense", "sparse", "einsum", "tensornetwork", "linalg_ad"] },
         "op": {
           "enum": [
             "matmul",
@@ -169,7 +169,9 @@
             "svd",
             "eigh",
             "spmv",
-            "spmm"
+            "spmm",
+            "jvp",
+            "vjp"
           ]
         },
         "dtype": { "$ref": "#/$defs/dtype" },
@@ -184,6 +186,7 @@
         "einsum": { "$ref": "#/$defs/einsum" },
         "tensor_network": { "$ref": "#/$defs/tensor_network" },
         "linalg": { "$ref": "#/$defs/linalg" },
+        "linalg_ad": { "$ref": "#/$defs/linalg_ad" },
         "sparse": { "$ref": "#/$defs/sparse" }
       },
       "allOf": [
@@ -215,6 +218,13 @@
         {
           "if": { "properties": { "family": { "const": "sparse" } } },
           "then": { "properties": { "op": { "enum": ["spmv", "spmm"] } } }
+        },
+        {
+          "if": { "properties": { "family": { "const": "linalg_ad" } } },
+          "then": {
+            "required": ["linalg_ad"],
+            "properties": { "op": { "enum": ["jvp", "vjp"] } }
+          }
         },
         {
           "if": { "properties": { "op": { "const": "matmul" } } },
@@ -428,6 +438,27 @@
         "rhs_cols": { "type": "integer", "minimum": 1 },
         "batch": { "type": "integer", "minimum": 1 },
         "full_matrices": { "type": "boolean" }
+      }
+    },
+    "linalg_ad": {
+      "type": "object",
+      "required": ["suite", "loss", "n", "matrix_seed"],
+      "additionalProperties": false,
+      "properties": {
+        "suite": { "enum": ["small", "large"] },
+        "loss": {
+          "enum": [
+            "grad_sum_svd_s",
+            "grad_sum_qr",
+            "grad_sum_eigh",
+            "grad_sum_lu",
+            "grad_sum_solve"
+          ]
+        },
+        "n": { "type": "integer", "minimum": 1 },
+        "matrix_seed": { "type": "integer", "minimum": 0 },
+        "rhs_seed": { "type": "integer", "minimum": 0 },
+        "rhs_cols": { "type": "integer", "minimum": 1 }
       }
     },
     "sparse": {

@@ -33,7 +33,9 @@
         "svd",
         "eigh",
         "spmv",
-        "spmm"
+        "spmm",
+        "jvp",
+        "vjp"
       ]
     },
     "backend": { "type": "string", "minLength": 1 },
