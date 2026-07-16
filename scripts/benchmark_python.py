@@ -104,6 +104,14 @@ def load_instances(instance_filter: str = "", suite_include: str = "") -> list[d
         except Exception as e:
             print(f"Warning: skip {path.name} ({e})", file=sys.stderr)
             continue
+        # data/instances/ also holds non-einsum pattern files (e.g.
+        # permutation_patterns.json for cpu/permutation) that are valid JSON
+        # but not a single-instance record; skip anything missing "name"
+        # instead of crashing, mirroring how the Rust einsum loader treats a
+        # missing required field as a parse failure and skips it.
+        if not isinstance(d, dict) or "name" not in d:
+            print(f"Warning: skip {path.name} (missing field 'name')", file=sys.stderr)
+            continue
         if instance_filter:
             if d["name"] != instance_filter:
                 continue

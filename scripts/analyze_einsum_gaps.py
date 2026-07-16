@@ -213,6 +213,11 @@ def load_instances(path: Path) -> dict[str, dict]:
     instances: dict[str, dict] = {}
     for item in sorted(path.glob("*.json")):
         data = json.loads(item.read_text())
+        # data/instances/ also holds non-einsum pattern files (e.g.
+        # permutation_patterns.json for cpu/permutation) that are valid JSON
+        # but not a single-instance record; skip anything missing "name".
+        if not isinstance(data, dict) or "name" not in data:
+            continue
         instances[data["name"]] = data
     return instances
 
