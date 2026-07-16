@@ -38,9 +38,9 @@
 //! `extern/strided-rs` alongside `extern/tenferro-rs`). It builds a
 //! `strided_view::StridedArray` directly from the pattern's source strides,
 //! permutes it with `.view().permute(perm)`, and times both
-//! `strided_perm::copy_into` and `copy_into_col_major` into a destination
-//! `StridedArray` allocated once and reused across iterations
-//! (`per_call_allocation: false`). The `strided-rs` feature also enables
+//! `strided_perm::copy_into` and `copy_into_col_major` into a freshly allocated
+//! destination `StridedArray` on every iteration. This matches tenferro's
+//! allocation-inclusive owned-tensor API semantics. The `strided-rs` feature also enables
 //! `strided-perm/parallel`, so `copy_into_par` / `copy_into_col_major_par`
 //! are timed too; whichever of the (up to four) variants is fastest is
 //! reported as the single `strided-rs` cell, with the winning variant name
@@ -609,10 +609,11 @@ fn run_participant(
                 );
             }
             if let Err(msg) = verify_output(&dst, &prepared.reference) {
-                finish!(base("verification_failed", "failed", false).with_note(msg), None::<Timing>);
+                finish!(base("verification_failed", "failed", true).with_note(msg), None::<Timing>);
                 return;
             }
             let timing = bench_n(warmup, iters, bytes, || {
+                let mut dst = vec![0.0f64; total];
                 unsafe {
                     naive_strided_copy(
                         prepared.src_data.as_ptr(),
@@ -624,7 +625,7 @@ fn run_participant(
                 };
                 black_box(dst.as_ptr());
             });
-            finish!(base("ok", "passed", false), Some(timing));
+            finish!(base("ok", "passed", true), Some(timing));
         }
         Participant::Memcpy => {
             let identity = pattern.perm.iter().copied().eq(0..pattern.perm.len());
@@ -632,7 +633,7 @@ fn run_participant(
                 && matches!(pattern.dst_layout, LayoutPattern::ColMajor);
             if !identity || !contiguous {
                 finish!(
-                    base("skipped", "skipped", false)
+                    base("skipped", "skipped", true)
                         .with_note("requires identity col-major pattern".into()),
                     None::<Timing>
                 );
@@ -643,16 +644,17 @@ fn run_participant(
                 std::ptr::copy_nonoverlapping(prepared.src_data.as_ptr(), dst.as_mut_ptr(), total);
             }
             if let Err(msg) = verify_output(&dst, &prepared.reference) {
-                finish!(base("verification_failed", "failed", false).with_note(msg), None::<Timing>);
+                finish!(base("verification_failed", "failed", true).with_note(msg), None::<Timing>);
                 return;
             }
             let timing = bench_n(warmup, iters, bytes, || {
+                let mut dst = vec![0.0f64; total];
                 unsafe {
                     std::ptr::copy_nonoverlapping(prepared.src_data.as_ptr(), dst.as_mut_ptr(), total)
                 };
                 black_box(dst.as_ptr());
             });
-            finish!(base("ok", "passed", false), Some(timing));
+            finish!(base("ok", "passed", true), Some(timing));
         }
         Participant::TenferroTranspose => {
             if !matches!(pattern.src_layout, LayoutPattern::ColMajor) {
@@ -754,7 +756,7 @@ fn run_hptt_participant(
         threads,
         status,
         correctness,
-        per_call_allocation: false,
+        per_call_allocation: true,
         warmup: None,
         iters: None,
         median_ms: None,
@@ -794,6 +796,7 @@ fn run_hptt_participant(
     }
 
     let timing = bench_n(warmup, iters, bytes, || {
+        let mut dst = vec![0.0f64; total];
         hptt::transpose_f64(
             &pattern.perm,
             1.0,
@@ -844,7 +847,7 @@ fn run_hptt_participant(
         threads,
         status: "skipped",
         correctness: "skipped",
-        per_call_allocation: false,
+        per_call_allocation: true,
         warmup: None,
         iters: None,
         median_ms: None,
@@ -883,7 +886,7 @@ fn run_strided_rs_participant(
         threads,
         status,
         correctness,
-        per_call_allocation: false,
+        per_call_allocation: true,
         warmup: None,
         iters: None,
         median_ms: None,
@@ -943,11 +946,12 @@ fn run_strided_rs_participant(
         return;
     }
 
-    // Time every correct variant against the reused destination and keep
-    // the fastest as the single reported `strided-rs` cell.
+    // Time every correct variant with a fresh destination allocation per
+    // call and keep the fastest as the single reported `strided-rs` cell.
     let mut best: Option<(&'static str, Timing)> = None;
     for (name, f) in verified.iter().copied() {
         let timing = bench_n(warmup, iters, bytes, || {
+            let mut dst = strided_view::StridedArray::<f64>::col_major(&prepared.out_shape);
             f(&mut dst.view_mut(), &src_perm).unwrap();
             black_box(dst.data().as_ptr());
         });
@@ -1000,7 +1004,7 @@ fn run_strided_rs_participant(
         threads,
         status: "skipped",
         correctness: "skipped",
-        per_call_allocation: false,
+        per_call_allocation: true,
         warmup: None,
         iters: None,
         median_ms: None,

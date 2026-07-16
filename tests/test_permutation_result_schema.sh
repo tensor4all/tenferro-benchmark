@@ -83,6 +83,17 @@ if validate_permutation_result "$INCONSISTENT_JSONL" >/dev/null 2>&1; then
     exit 1
 fi
 
+# --- successful records must use common allocation-inclusive semantics ------
+
+REUSED_DST_JSONL="$TMP/reused_dst_output.jsonl"
+cat >"$REUSED_DST_JSONL" <<'JSON'
+{"schema_version":1,"suite_id":"cpu/permutation","runner":"rust","pattern_id":"transpose_2d_256","label":"2D 256^2 transpose [1,0]","backend":"naive","shape":[256,256],"perm":[1,0],"dtype":"f64","elems":65536,"bytes_rw":1048576,"threads":1,"status":"ok","correctness":"passed","per_call_allocation":false,"warmup":0,"iters":1,"median_ms":0.1,"p25_ms":0.1,"p75_ms":0.1,"gbps":1.0,"notes":null}
+JSON
+if validate_permutation_result "$REUSED_DST_JSONL" >/dev/null 2>&1; then
+    echo "status=ok with per_call_allocation=false unexpectedly passed validation" >&2
+    exit 1
+fi
+
 # --- suite YAML must still validate -----------------------------------------
 
 "${PYTHON[@]}" scripts/validate_benchmark_suite.py benchmarks/cpu/permutation.yaml
