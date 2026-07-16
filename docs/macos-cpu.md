@@ -22,9 +22,10 @@ uv sync
 ./scripts/setup_extern_deps.sh
 ```
 
-cmake is not needed for this workflow. It is only required when opting into
-the `hptt` Cargo feature of the cpu/permutation suite (`brew install cmake`);
-see [permutation-suite.md](permutation-suite.md).
+cmake (`brew install cmake`) is not needed to run the benchmarks in this
+workflow. It is required only for the opt-in `hptt` Cargo feature of the
+cpu/permutation suite (see [permutation-suite.md](permutation-suite.md)) and
+for the C++ plan test in the Development Checks section of the README.
 
 Quick smoke:
 
