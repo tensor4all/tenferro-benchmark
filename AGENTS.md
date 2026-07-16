@@ -44,6 +44,7 @@ Expected latest report paths:
 - `result/nvidia-gpu/gpu/einsum.md`
 - `result/nvidia-gpu/gpu/sparse.md`
 - `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`
+- `result/nvidia-gpu/gpu/permutation.md`
 
 Raw runs are written under:
 
@@ -200,6 +201,24 @@ result/nvidia-gpu/gpu/linalg_jvp_vjp.md
 
 Run this sequentially after the standard GPU suite; do not overlap it with
 other GPU benchmark processes.
+
+For the GPU permutation / materialize-kernel report (CUDA port of
+`cpu/permutation`; see `docs/gpu-permutation-suite.md`):
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_permutation.sh'
+```
+
+Expected report path:
+
+```text
+result/nvidia-gpu/gpu/permutation.md
+```
+
+This is a standalone entry point, like `scripts/run_permutation.sh` is for
+`cpu/permutation`: it is not wired into `scripts/run_gpu_suite.sh`. Run it
+sequentially; do not overlap it with other GPU benchmark processes.
 
 If vendor libraries are needed:
 
