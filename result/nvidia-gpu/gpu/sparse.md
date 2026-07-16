@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/sparse`
 - Suite file: `benchmarks/gpu/sparse.yaml`
-- Timestamp: `2026-07-11T05:42:50.797056+00:00`
-- tenferro-rs commit: `d5c768c7eb58f252e7855fea80bb6af5bb7ddb40`
+- Timestamp: `2026-07-16T09:04:58.729638+00:00`
+- tenferro-rs commit: `8c267c636537d3d407925b61a2000f9bbe07e6a1`
 
 ## GPU Information
 
@@ -14,8 +14,8 @@
 - Memory: `12 GiB`
 - Driver version: `580.159.03`
 - CUDA version: `13.0`
-- CUDA runtime: `12.6`
-- cuDNN version: `92000`
+- CUDA runtime: `12.9`
+- cuDNN version: `92400`
 
 ## CPU Information
 
@@ -40,10 +40,10 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | unsupported | unsupported | 108.414 | unsupported | unsupported | unsupported | unsupported | 108.405 | 1182.073 |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | unsupported | unsupported | 108.331 | unsupported | unsupported | unsupported | unsupported | 108.337 | not configured |
 
 ## gpu/sparse / spmv
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| sparse_synthetic_4m_64m_spmv_f64 | unsupported | unsupported | 19.621 | unsupported | unsupported | unsupported | unsupported | 19.632 | 98.922 |
+| sparse_synthetic_4m_64m_spmv_f64 | unsupported | unsupported | 19.811 | unsupported | unsupported | unsupported | unsupported | 19.817 | not configured |
