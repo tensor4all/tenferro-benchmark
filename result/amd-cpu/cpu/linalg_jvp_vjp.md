@@ -2,13 +2,13 @@
 
 - Suite: `cpu/linalg_jvp_vjp`
 - Target profile: `amd-cpu`
-- Timestamp: `20260716_081717`
+- Timestamp: `20260716_100934`
 
 Latest run: `./scripts/run_all.sh 4`.
 
-Derived from the CPU ops CSV under `data/results/amd-cpu/cpu/einsum/20260716_081717`.
+Derived from the CPU ops CSV under `data/results/amd-cpu/cpu/einsum/20260716_100934`.
 
-- tenferro-rs commit: `8c267c636537d3d407925b61a2000f9bbe07e6a1`
+- tenferro-rs commit: `3abc9108e4f0500f4e75519711cdb4e21b9625df`
 
 ## CPU Information
 
@@ -53,8 +53,8 @@ Derived from the CPU ops CSV under `data/results/amd-cpu/cpu/einsum/20260716_081
 
 ## Threads: 4
 
-- CSV: `data/results/amd-cpu/cpu/einsum/20260716_081717/cpu_ops_t4_20260716_081717.csv`
-- Source table: `data/results/amd-cpu/cpu/einsum/20260716_081717/linalg_jvp_vjp_t4_20260716_081717.md`
+- CSV: `data/results/amd-cpu/cpu/einsum/20260716_100934/cpu_ops_t4_20260716_100934.csv`
+- Source table: `data/results/amd-cpu/cpu/einsum/20260716_100934/linalg_jvp_vjp_t4_20260716_100934.md`
 
 ## Linalg JVP/VJP Benchmark Items
 
@@ -65,56 +65,56 @@ tenferro-rs JVP/VJP use trace-mode `AdContext`; PyTorch uses `torch.func.jvp` /
 
 | suite | benchmark | dtype | threads | shape | tenferro-rs trace mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) |
 |---|---|---:|---:|---|---:|---:|---:|
-| large | `grad_sum_eigh_jvp` | f64 | 4 | `256x256` | 14.349 ± 0.314 | 7.679 ± 0.228 | 29.508 ± 0.288 |
-| large | `grad_sum_eigh_jvp` | f64 | 4 | `512x512` | 54.466 ± 0.378 | 27.081 ± 0.256 | 87.934 ± 0.916 |
-| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | 13.529 ± 0.174 | 6.663 ± 0.112 | 28.565 ± 0.634 |
-| large | `grad_sum_eigh_vjp` | f64 | 4 | `512x512` | 53.019 ± 0.855 | 20.258 ± 0.277 | 87.883 ± 2.625 |
-| large | `grad_sum_lu_jvp` | f64 | 4 | `256x256` | 6.396 ± 0.425 | 4.456 ± 0.006 | 7.057 ± 2.102 |
-| large | `grad_sum_lu_jvp` | f64 | 4 | `512x512` | 25.893 ± 0.493 | 23.894 ± 0.414 | 23.766 ± 2.318 |
-| large | `grad_sum_lu_vjp` | f64 | 4 | `256x256` | 5.733 ± 0.119 | 2.919 ± 0.106 | 10.291 ± 1.760 |
-| large | `grad_sum_lu_vjp` | f64 | 4 | `512x512` | 24.485 ± 0.034 | 11.530 ± 0.047 | 27.751 ± 5.654 |
-| large | `grad_sum_qr_jvp` | f64 | 4 | `256x256` | 9.085 ± 0.635 | 4.366 ± 0.020 | 12.854 ± 0.993 |
-| large | `grad_sum_qr_jvp` | f64 | 4 | `512x512` | 36.163 ± 0.597 | 18.448 ± 0.393 | 43.595 ± 0.802 |
-| large | `grad_sum_qr_vjp` | f64 | 4 | `256x256` | 9.266 ± 0.140 | 4.231 ± 0.015 | 13.872 ± 1.407 |
-| large | `grad_sum_qr_vjp` | f64 | 4 | `512x512` | 34.074 ± 0.485 | 18.301 ± 0.204 | 56.605 ± 10.465 |
-| large | `grad_sum_solve_jvp` | f64 | 4 | `256x256,rhs=1` | 1.594 ± 0.021 | 1.597 ± 0.030 | 4.157 ± 0.090 |
-| large | `grad_sum_solve_jvp` | f64 | 4 | `512x512,rhs=1` | 6.061 ± 0.049 | 3.159 ± 0.180 | 10.320 ± 0.164 |
-| large | `grad_sum_solve_vjp` | f64 | 4 | `256x256,rhs=1` | 1.154 ± 0.056 | 1.696 ± 0.040 | 5.579 ± 0.187 |
-| large | `grad_sum_solve_vjp` | f64 | 4 | `512x512,rhs=1` | 4.334 ± 0.061 | 4.531 ± 0.121 | 11.176 ± 1.702 |
-| large | `grad_sum_svd_s_jvp` | f64 | 4 | `256x256` | 22.354 ± 0.325 | 17.764 ± 0.317 | 52.812 ± 1.935 |
-| large | `grad_sum_svd_s_jvp` | f64 | 4 | `512x512` | 96.461 ± 0.638 | 80.634 ± 6.353 | 164.388 ± 1.464 |
-| large | `grad_sum_svd_s_vjp` | f64 | 4 | `256x256` | 21.732 ± 0.359 | 15.844 ± 0.093 | 50.359 ± 2.140 |
-| large | `grad_sum_svd_s_vjp` | f64 | 4 | `512x512` | 94.478 ± 0.455 | 63.366 ± 0.479 | 158.732 ± 6.097 |
-| small | `grad_sum_eigh_jvp` | f64 | 4 | `2x2` | 0.064 ± 0.009 | 0.336 ± 0.028 | 1.377 ± 0.026 |
-| small | `grad_sum_eigh_jvp` | f64 | 4 | `4x4` | 0.075 ± 0.005 | 0.357 ± 0.018 | 1.480 ± 0.026 |
-| small | `grad_sum_eigh_jvp` | f64 | 4 | `8x8` | 0.083 ± 0.006 | 0.368 ± 0.010 | 1.508 ± 0.029 |
-| small | `grad_sum_eigh_vjp` | f64 | 4 | `2x2` | 0.071 ± 0.017 | 0.321 ± 0.014 | 3.395 ± 0.096 |
-| small | `grad_sum_eigh_vjp` | f64 | 4 | `4x4` | 0.076 ± 0.007 | 0.333 ± 0.011 | 3.414 ± 0.100 |
-| small | `grad_sum_eigh_vjp` | f64 | 4 | `8x8` | 0.091 ± 0.019 | 0.343 ± 0.009 | 4.013 ± 0.954 |
-| small | `grad_sum_lu_jvp` | f64 | 4 | `2x2` | 0.080 ± 0.012 | 0.508 ± 0.011 | 1.925 ± 0.054 |
-| small | `grad_sum_lu_jvp` | f64 | 4 | `4x4` | 0.085 ± 0.017 | 0.510 ± 0.013 | 2.097 ± 0.049 |
-| small | `grad_sum_lu_jvp` | f64 | 4 | `8x8` | 0.090 ± 0.005 | 0.514 ± 0.017 | 3.026 ± 0.037 |
-| small | `grad_sum_lu_vjp` | f64 | 4 | `2x2` | 0.080 ± 0.008 | 0.463 ± 0.024 | 5.216 ± 0.159 |
-| small | `grad_sum_lu_vjp` | f64 | 4 | `4x4` | 0.080 ± 0.006 | 0.469 ± 0.026 | 5.593 ± 0.327 |
-| small | `grad_sum_lu_vjp` | f64 | 4 | `8x8` | 0.084 ± 0.002 | 0.462 ± 0.021 | 6.917 ± 1.631 |
-| small | `grad_sum_qr_jvp` | f64 | 4 | `2x2` | 0.187 ± 0.015 | 0.398 ± 0.016 | 3.070 ± 0.020 |
-| small | `grad_sum_qr_jvp` | f64 | 4 | `4x4` | 0.208 ± 0.011 | 0.399 ± 0.009 | 2.548 ± 0.054 |
-| small | `grad_sum_qr_jvp` | f64 | 4 | `8x8` | 0.215 ± 0.011 | 0.407 ± 0.015 | 2.255 ± 0.137 |
-| small | `grad_sum_qr_vjp` | f64 | 4 | `2x2` | 0.480 ± 0.006 | 0.443 ± 0.043 | 6.795 ± 1.329 |
-| small | `grad_sum_qr_vjp` | f64 | 4 | `4x4` | 0.475 ± 0.015 | 0.442 ± 0.026 | 6.472 ± 0.999 |
-| small | `grad_sum_qr_vjp` | f64 | 4 | `8x8` | 0.483 ± 0.029 | 0.446 ± 0.023 | 4.715 ± 1.290 |
-| small | `grad_sum_solve_jvp` | f64 | 4 | `2x2,rhs=1` | 0.050 ± 0.007 | 0.694 ± 0.010 | 2.275 ± 0.052 |
-| small | `grad_sum_solve_jvp` | f64 | 4 | `4x4,rhs=1` | 0.052 ± 0.006 | 0.696 ± 0.091 | 2.176 ± 0.130 |
-| small | `grad_sum_solve_jvp` | f64 | 4 | `8x8,rhs=1` | 0.057 ± 0.003 | 0.697 ± 0.058 | 2.308 ± 0.053 |
-| small | `grad_sum_solve_vjp` | f64 | 4 | `2x2,rhs=1` | 0.068 ± 0.007 | 0.453 ± 0.009 | 4.833 ± 0.802 |
-| small | `grad_sum_solve_vjp` | f64 | 4 | `4x4,rhs=1` | 0.074 ± 0.013 | 0.458 ± 0.015 | 4.971 ± 0.734 |
-| small | `grad_sum_solve_vjp` | f64 | 4 | `8x8,rhs=1` | 0.080 ± 0.011 | 0.459 ± 0.013 | 5.022 ± 0.101 |
-| small | `grad_sum_svd_s_jvp` | f64 | 4 | `2x2` | 0.042 ± 0.003 | 0.428 ± 0.011 | 2.059 ± 0.023 |
-| small | `grad_sum_svd_s_jvp` | f64 | 4 | `4x4` | 0.058 ± 0.001 | 0.436 ± 0.011 | 1.942 ± 0.016 |
-| small | `grad_sum_svd_s_jvp` | f64 | 4 | `8x8` | 0.078 ± 0.008 | 0.454 ± 0.009 | 1.861 ± 0.015 |
-| small | `grad_sum_svd_s_vjp` | f64 | 4 | `2x2` | 0.053 ± 0.003 | 0.361 ± 0.015 | 4.868 ± 0.210 |
-| small | `grad_sum_svd_s_vjp` | f64 | 4 | `4x4` | 0.063 ± 0.003 | 0.354 ± 0.007 | 4.950 ± 0.339 |
-| small | `grad_sum_svd_s_vjp` | f64 | 4 | `8x8` | 0.079 ± 0.010 | 0.382 ± 0.015 | 4.959 ± 0.181 |
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `256x256` | 13.875 ± 0.207 | 9.330 ± 0.425 | 29.603 ± 0.340 |
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `512x512` | 55.186 ± 0.238 | 27.444 ± 0.319 | 88.491 ± 1.155 |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | 13.857 ± 0.361 | 6.539 ± 0.329 | 28.735 ± 0.296 |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `512x512` | 53.473 ± 0.418 | 20.419 ± 0.131 | 87.502 ± 1.230 |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `256x256` | 6.181 ± 0.285 | 4.432 ± 0.038 | 8.390 ± 0.735 |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `512x512` | 25.755 ± 0.780 | 24.032 ± 0.094 | 21.056 ± 2.355 |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `256x256` | 5.773 ± 0.110 | 2.834 ± 0.045 | 10.279 ± 1.208 |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `512x512` | 24.647 ± 0.290 | 11.612 ± 0.425 | 26.781 ± 1.371 |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `256x256` | 9.070 ± 0.300 | 4.484 ± 0.032 | 13.436 ± 1.250 |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `512x512` | 35.758 ± 1.085 | 18.545 ± 0.116 | 45.213 ± 2.752 |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `256x256` | 9.125 ± 0.117 | 4.313 ± 0.028 | 14.295 ± 1.386 |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `512x512` | 34.135 ± 1.079 | 18.294 ± 0.110 | 59.749 ± 4.136 |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `256x256,rhs=1` | 1.692 ± 0.022 | 1.578 ± 0.032 | 4.147 ± 0.269 |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `512x512,rhs=1` | 6.231 ± 0.087 | 3.268 ± 0.135 | 10.265 ± 0.117 |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `256x256,rhs=1` | 1.234 ± 0.040 | 1.678 ± 0.027 | 5.500 ± 0.159 |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `512x512,rhs=1` | 4.431 ± 0.077 | 4.675 ± 0.098 | 10.894 ± 0.218 |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `256x256` | 20.825 ± 0.049 | 17.897 ± 0.271 | 52.259 ± 0.724 |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `512x512` | 96.337 ± 0.696 | 76.321 ± 0.480 | 162.473 ± 4.459 |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `256x256` | 21.611 ± 0.133 | 16.049 ± 0.158 | 50.482 ± 1.542 |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `512x512` | 95.077 ± 0.239 | 62.869 ± 0.170 | 161.060 ± 4.606 |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `2x2` | 0.112 ± 0.003 | 0.334 ± 0.026 | 1.477 ± 0.027 |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `4x4` | 0.116 ± 0.005 | 0.360 ± 0.013 | 1.355 ± 0.018 |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `8x8` | 0.125 ± 0.007 | 0.371 ± 0.013 | 1.542 ± 0.018 |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `2x2` | 0.121 ± 0.003 | 0.323 ± 0.015 | 3.551 ± 0.065 |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `4x4` | 0.127 ± 0.007 | 0.334 ± 0.012 | 3.903 ± 0.094 |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `8x8` | 0.135 ± 0.009 | 0.342 ± 0.015 | 4.721 ± 0.133 |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `2x2` | 0.117 ± 0.004 | 0.524 ± 0.025 | 2.015 ± 0.009 |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `4x4` | 0.117 ± 0.003 | 0.517 ± 0.028 | 2.056 ± 0.057 |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `8x8` | 0.122 ± 0.007 | 0.522 ± 0.014 | 3.105 ± 0.097 |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `2x2` | 0.120 ± 0.003 | 0.498 ± 0.077 | 5.795 ± 0.400 |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `4x4` | 0.121 ± 0.004 | 0.464 ± 0.031 | 5.730 ± 0.345 |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `8x8` | 0.128 ± 0.002 | 0.464 ± 0.020 | 6.297 ± 2.059 |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `2x2` | 0.316 ± 0.126 | 0.401 ± 0.014 | 3.176 ± 0.037 |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `4x4` | 0.280 ± 0.009 | 0.397 ± 0.012 | 2.581 ± 0.107 |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `8x8` | 0.283 ± 0.013 | 0.406 ± 0.011 | 2.578 ± 0.033 |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `2x2` | 0.594 ± 0.012 | 0.437 ± 0.018 | 6.989 ± 1.332 |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `4x4` | 0.531 ± 0.061 | 0.436 ± 0.021 | 6.452 ± 1.245 |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `8x8` | 0.592 ± 0.019 | 0.438 ± 0.042 | 5.256 ± 1.604 |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `2x2,rhs=1` | 0.073 ± 0.006 | 0.722 ± 0.049 | 2.386 ± 0.065 |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `4x4,rhs=1` | 0.073 ± 0.006 | 0.688 ± 0.083 | 2.341 ± 0.038 |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `8x8,rhs=1` | 0.073 ± 0.007 | 0.696 ± 0.060 | 2.584 ± 0.031 |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `2x2,rhs=1` | 0.116 ± 0.008 | 0.464 ± 0.052 | 5.132 ± 0.122 |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `4x4,rhs=1` | 0.116 ± 0.009 | 0.454 ± 0.011 | 4.288 ± 0.855 |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `8x8,rhs=1` | 0.116 ± 0.004 | 0.458 ± 0.014 | 5.177 ± 0.154 |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `2x2` | 0.093 ± 0.006 | 0.433 ± 0.011 | 1.970 ± 0.021 |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `4x4` | 0.073 ± 0.002 | 0.443 ± 0.021 | 1.899 ± 0.031 |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `8x8` | 0.089 ± 0.003 | 0.457 ± 0.012 | 1.800 ± 0.020 |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `2x2` | 0.105 ± 0.004 | 0.349 ± 0.029 | 4.992 ± 0.233 |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `4x4` | 0.083 ± 0.005 | 0.351 ± 0.010 | 5.081 ± 0.210 |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `8x8` | 0.098 ± 0.003 | 0.379 ± 0.015 | 4.721 ± 0.896 |
 
 ## Loss Definitions
 
