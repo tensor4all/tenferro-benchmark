@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV OPENBLAS_ROOT=/opt/openblas
 ENV MKLROOT=/opt/intel/oneapi/mkl/latest
 ENV CMAKE_POLICY_VERSION_MINIMUM=3.5
-ENV PATH="/home/vscode/.cargo/bin:/home/vscode/.local/bin:${PATH}"
+ENV PATH="/home/vscode/.cargo/bin:/home/vscode/.local/bin:/home/vscode/.juliaup/bin:${PATH}"
 ENV LD_LIBRARY_PATH="${OPENBLAS_ROOT}/lib"
 
 ARG OPENBLAS_VERSION=0.3.26
@@ -58,6 +58,11 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
         | sh -s -- -y --profile minimal --default-toolchain stable \
     && rustup component add clippy rustfmt \
     && curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Julia (via juliaup) is required by the cpu/permutation suite's Julia runners
+# (julia-base / strided-jl participants in scripts/benchmark_permutation.jl).
+RUN curl -fsSL https://install.julialang.org \
+        | sh -s -- --yes --default-channel release
 
 USER root
 

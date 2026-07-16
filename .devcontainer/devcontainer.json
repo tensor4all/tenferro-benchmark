@@ -14,7 +14,7 @@
     "USE_DISTRIBUTED": "0"
   },
   "remoteEnv": {
-    "PATH": "/home/vscode/.cargo/bin:/home/vscode/.local/bin:${containerEnv:PATH}"
+    "PATH": "/home/vscode/.cargo/bin:/home/vscode/.local/bin:/home/vscode/.juliaup/bin:${containerEnv:PATH}"
   },
   "mounts": [
     "source=tenferro-benchmark-cargo-registry,target=/home/vscode/.cargo/registry,type=volume",

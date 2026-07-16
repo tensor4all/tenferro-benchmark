@@ -184,6 +184,15 @@ def format_markdown(
             "via `RAYON_NUM_THREADS` / `OMP_NUM_THREADS` / `JULIA_NUM_THREADS`."
         )
         lines.append("")
+    elif platform.system() == "Linux":
+        lines.append(
+            "On the Linux CPU devcontainer, thread counts are controlled via "
+            "`RAYON_NUM_THREADS` / `OMP_NUM_THREADS` / `JULIA_NUM_THREADS`; no "
+            "CPU-affinity pinning (`taskset` / `numactl`) is applied, matching the "
+            "repository devcontainer convention. The controlled thread environment "
+            "is recorded per thread count in the run's `run_t<N>.yaml`."
+        )
+        lines.append("")
 
     lines.append(
         "`tenferro-transpose` is the eager `tenferro_cpu::transpose` structural op "

@@ -107,6 +107,26 @@ Intel oneMKL is installed in the default Linux CPU devcontainer under
 `/opt/intel/oneapi/mkl/latest` and exported as `MKLROOT`. PyTorch uses the
 installed wheel provider, which is MKL-backed on this path.
 
+The `cpu/permutation` suite is a standalone entry point (not wired into
+`run_all.sh`). Collect its `amd-cpu` report inside the same devcontainer; HPTT
+builds against the installed `cmake` + `libomp-dev`, and the Julia runners
+(`julia-base` / `strided-jl`) use the juliaup-provided Julia baked into the
+image:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc '
+  export TENFERRO_CPU_FEATURES=system-mkl
+  export TENFERRO_CPU_BACKEND_KIND=blas
+  export BENCHMARK_TARGET_PROFILE=amd-cpu
+  export PERMUTATION_EXTRA_FEATURES=hptt
+  ./scripts/run_permutation.sh 1 4'
+```
+
+Thread counts are controlled only via the runner's thread environment
+(`RAYON_NUM_THREADS` / `OMP_NUM_THREADS` / `JULIA_NUM_THREADS`, recorded per
+thread count in `run_t<N>.yaml`); no `taskset` / `numactl` CPU-affinity pinning
+is applied, matching the other devcontainer CPU suites.
+
 `OPENBLAS_ROOT=/opt/openblas` is also configured for tenferro `system-openblas`
 runs, but treat that as an alternate backend for experiments, not the standard
 Linux CPU comparison path. The devcontainer OpenBLAS is source-built with
