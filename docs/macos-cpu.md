@@ -18,10 +18,13 @@ BLAS policy:
 Setup:
 
 ```bash
-brew install cmake
 uv sync
 ./scripts/setup_extern_deps.sh
 ```
+
+cmake is not needed for this workflow. It is only required when opting into
+the `hptt` Cargo feature of the cpu/permutation suite (`brew install cmake`);
+see [permutation-suite.md](permutation-suite.md).
 
 Quick smoke:
 
