@@ -3,7 +3,7 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/linalg_jvp_vjp`
 - Suite file: `/workspaces/tenferro-benchmark/benchmarks/gpu/linalg_jvp_vjp.yaml`
-- Timestamp: `2026-07-11T06:17:40.618558+00:00`
+- Timestamp: `2026-07-11T06:29:55.094745+00:00`
 - tenferro-rs commit: `d5c768c7eb58f252e7855fea80bb6af5bb7ddb40`
 
 ## GPU Information
@@ -39,56 +39,56 @@ Timed runs include the host API call and backend-native device synchronization w
 
 | suite | benchmark | dtype | shape | tenferro-rs CUDA trace | PyTorch CUDA | JAX CUDA |
 |---|---|---:|---|---:|---:|---:|
-| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 9.722 ± 0.126 | 9.649 ± 0.071 | not configured |
-| large | `grad_sum_eigh_jvp` | f64 | `512x512` | 24.804 ± 0.136 | 26.310 ± 0.215 | not configured |
-| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 9.671 ± 0.209 | 0.676 ± 0.013 | not configured |
-| large | `grad_sum_eigh_vjp` | f64 | `512x512` | 24.966 ± 0.215 | 1.852 ± 0.119 | not configured |
-| large | `grad_sum_lu_jvp` | f64 | `256x256` | 2.595 ± 0.220 | 4.042 ± 0.061 | not configured |
-| large | `grad_sum_lu_jvp` | f64 | `512x512` | 11.001 ± 0.009 | 19.036 ± 0.147 | not configured |
-| large | `grad_sum_lu_vjp` | f64 | `256x256` | 2.621 ± 0.234 | 1.839 ± 0.026 | not configured |
-| large | `grad_sum_lu_vjp` | f64 | `512x512` | 11.264 ± 0.118 | 8.105 ± 0.067 | not configured |
-| large | `grad_sum_qr_jvp` | f64 | `256x256` | unsupported | 5.116 ± 0.038 | not configured |
-| large | `grad_sum_qr_jvp` | f64 | `512x512` | unsupported | 16.771 ± 0.009 | not configured |
-| large | `grad_sum_qr_vjp` | f64 | `256x256` | unsupported | 1.641 ± 0.077 | not configured |
-| large | `grad_sum_qr_vjp` | f64 | `512x512` | unsupported | 7.253 ± 0.090 | not configured |
-| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 1.746 ± 0.019 | 1.184 ± 0.034 | not configured |
-| large | `grad_sum_solve_jvp` | f64 | `512x512,rhs=1` | 3.590 ± 0.070 | 3.100 ± 0.035 | not configured |
-| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 1.754 ± 0.015 | 1.378 ± 0.042 | not configured |
-| large | `grad_sum_solve_vjp` | f64 | `512x512,rhs=1` | 3.587 ± 0.033 | 3.212 ± 0.065 | not configured |
-| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 82.133 ± 0.199 | 86.385 ± 0.069 | not configured |
-| large | `grad_sum_svd_s_jvp` | f64 | `512x512` | 270.605 ± 0.084 | 280.139 ± 0.104 | not configured |
-| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 82.322 ± 0.148 | 0.759 ± 0.013 | not configured |
-| large | `grad_sum_svd_s_vjp` | f64 | `512x512` | 270.656 ± 0.161 | 2.036 ± 0.014 | not configured |
-| small | `grad_sum_eigh_jvp` | f64 | `2x2` | 1.302 ± 0.105 | 0.681 ± 0.020 | not configured |
-| small | `grad_sum_eigh_jvp` | f64 | `4x4` | 0.765 ± 0.026 | 0.729 ± 0.006 | not configured |
-| small | `grad_sum_eigh_jvp` | f64 | `8x8` | 0.870 ± 0.049 | 0.857 ± 0.025 | not configured |
-| small | `grad_sum_eigh_vjp` | f64 | `2x2` | 0.764 ± 0.034 | 0.377 ± 0.025 | not configured |
-| small | `grad_sum_eigh_vjp` | f64 | `4x4` | 0.816 ± 0.094 | 0.389 ± 0.035 | not configured |
-| small | `grad_sum_eigh_vjp` | f64 | `8x8` | 0.891 ± 0.039 | 0.391 ± 0.016 | not configured |
-| small | `grad_sum_lu_jvp` | f64 | `2x2` | 0.987 ± 0.031 | 1.061 ± 0.031 | not configured |
-| small | `grad_sum_lu_jvp` | f64 | `4x4` | 0.990 ± 0.036 | 1.147 ± 0.041 | not configured |
-| small | `grad_sum_lu_jvp` | f64 | `8x8` | 0.999 ± 0.024 | 1.154 ± 0.030 | not configured |
-| small | `grad_sum_lu_vjp` | f64 | `2x2` | 0.896 ± 0.017 | 1.001 ± 0.019 | not configured |
-| small | `grad_sum_lu_vjp` | f64 | `4x4` | 0.914 ± 0.019 | 0.997 ± 0.024 | not configured |
-| small | `grad_sum_lu_vjp` | f64 | `8x8` | 0.927 ± 0.029 | 1.000 ± 0.027 | not configured |
-| small | `grad_sum_qr_jvp` | f64 | `2x2` | unsupported | 0.995 ± 0.094 | not configured |
-| small | `grad_sum_qr_jvp` | f64 | `4x4` | unsupported | 0.840 ± 0.023 | not configured |
-| small | `grad_sum_qr_jvp` | f64 | `8x8` | unsupported | 0.857 ± 0.020 | not configured |
-| small | `grad_sum_qr_vjp` | f64 | `2x2` | unsupported | 0.791 ± 0.109 | not configured |
-| small | `grad_sum_qr_vjp` | f64 | `4x4` | unsupported | 0.965 ± 0.028 | not configured |
-| small | `grad_sum_qr_vjp` | f64 | `8x8` | unsupported | 0.973 ± 0.022 | not configured |
-| small | `grad_sum_solve_jvp` | f64 | `2x2,rhs=1` | 0.822 ± 0.294 | 0.938 ± 0.020 | not configured |
-| small | `grad_sum_solve_jvp` | f64 | `4x4,rhs=1` | 1.096 ± 0.026 | 1.026 ± 0.035 | not configured |
-| small | `grad_sum_solve_jvp` | f64 | `8x8,rhs=1` | 1.100 ± 0.039 | 1.037 ± 0.030 | not configured |
-| small | `grad_sum_solve_vjp` | f64 | `2x2,rhs=1` | 1.146 ± 0.098 | 0.819 ± 0.034 | not configured |
-| small | `grad_sum_solve_vjp` | f64 | `4x4,rhs=1` | 1.095 ± 0.025 | 0.847 ± 0.069 | not configured |
-| small | `grad_sum_solve_vjp` | f64 | `8x8,rhs=1` | 1.115 ± 0.024 | 0.853 ± 0.056 | not configured |
-| small | `grad_sum_svd_s_jvp` | f64 | `2x2` | 1.743 ± 0.040 | 0.987 ± 0.018 | not configured |
-| small | `grad_sum_svd_s_jvp` | f64 | `4x4` | 1.452 ± 0.047 | 1.225 ± 0.013 | not configured |
-| small | `grad_sum_svd_s_jvp` | f64 | `8x8` | 1.659 ± 0.027 | 1.390 ± 0.055 | not configured |
-| small | `grad_sum_svd_s_vjp` | f64 | `2x2` | 1.535 ± 0.038 | 0.303 ± 0.041 | not configured |
-| small | `grad_sum_svd_s_vjp` | f64 | `4x4` | 1.459 ± 0.049 | 0.390 ± 0.023 | not configured |
-| small | `grad_sum_svd_s_vjp` | f64 | `8x8` | 1.695 ± 0.022 | 0.390 ± 0.018 | not configured |
+| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 9.765 ± 0.059 | 9.538 ± 0.125 | not configured |
+| large | `grad_sum_eigh_jvp` | f64 | `512x512` | 25.040 ± 0.189 | 26.176 ± 0.038 | not configured |
+| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 9.748 ± 0.205 | 9.504 ± 0.117 | not configured |
+| large | `grad_sum_eigh_vjp` | f64 | `512x512` | 25.000 ± 0.062 | 23.366 ± 0.162 | not configured |
+| large | `grad_sum_lu_jvp` | f64 | `256x256` | 2.825 ± 0.197 | 3.890 ± 0.165 | not configured |
+| large | `grad_sum_lu_jvp` | f64 | `512x512` | 10.999 ± 0.018 | 19.118 ± 0.032 | not configured |
+| large | `grad_sum_lu_vjp` | f64 | `256x256` | 2.713 ± 0.218 | 2.296 ± 0.101 | not configured |
+| large | `grad_sum_lu_vjp` | f64 | `512x512` | 11.271 ± 0.133 | 10.515 ± 0.009 | not configured |
+| large | `grad_sum_qr_jvp` | f64 | `256x256` | unsupported | 5.106 ± 0.068 | not configured |
+| large | `grad_sum_qr_jvp` | f64 | `512x512` | unsupported | 16.763 ± 0.007 | not configured |
+| large | `grad_sum_qr_vjp` | f64 | `256x256` | unsupported | 5.145 ± 0.168 | not configured |
+| large | `grad_sum_qr_vjp` | f64 | `512x512` | unsupported | 17.110 ± 0.006 | not configured |
+| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 1.667 ± 0.085 | 1.211 ± 0.040 | not configured |
+| large | `grad_sum_solve_jvp` | f64 | `512x512,rhs=1` | 3.606 ± 0.054 | 3.114 ± 0.052 | not configured |
+| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 1.939 ± 0.187 | 2.569 ± 0.156 | not configured |
+| large | `grad_sum_solve_vjp` | f64 | `512x512,rhs=1` | 3.578 ± 0.070 | 6.129 ± 0.080 | not configured |
+| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 82.803 ± 0.130 | 86.411 ± 0.105 | not configured |
+| large | `grad_sum_svd_s_jvp` | f64 | `512x512` | 271.795 ± 0.059 | 280.096 ± 0.051 | not configured |
+| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 82.927 ± 0.242 | 85.939 ± 0.178 | not configured |
+| large | `grad_sum_svd_s_vjp` | f64 | `512x512` | 271.799 ± 0.068 | 275.630 ± 0.235 | not configured |
+| small | `grad_sum_eigh_jvp` | f64 | `2x2` | 1.390 ± 0.173 | 0.680 ± 0.012 | not configured |
+| small | `grad_sum_eigh_jvp` | f64 | `4x4` | 0.731 ± 0.042 | 0.760 ± 0.013 | not configured |
+| small | `grad_sum_eigh_jvp` | f64 | `8x8` | 0.860 ± 0.025 | 0.858 ± 0.013 | not configured |
+| small | `grad_sum_eigh_vjp` | f64 | `2x2` | 0.773 ± 0.082 | 0.922 ± 0.169 | not configured |
+| small | `grad_sum_eigh_vjp` | f64 | `4x4` | 0.756 ± 0.063 | 0.890 ± 0.027 | not configured |
+| small | `grad_sum_eigh_vjp` | f64 | `8x8` | 1.013 ± 0.033 | 0.967 ± 0.065 | not configured |
+| small | `grad_sum_lu_jvp` | f64 | `2x2` | 0.980 ± 0.040 | 1.098 ± 0.007 | not configured |
+| small | `grad_sum_lu_jvp` | f64 | `4x4` | 0.869 ± 0.025 | 1.202 ± 0.028 | not configured |
+| small | `grad_sum_lu_jvp` | f64 | `8x8` | 1.001 ± 0.044 | 1.191 ± 0.054 | not configured |
+| small | `grad_sum_lu_vjp` | f64 | `2x2` | 0.887 ± 0.048 | 1.639 ± 0.102 | not configured |
+| small | `grad_sum_lu_vjp` | f64 | `4x4` | 0.891 ± 0.035 | 1.594 ± 0.121 | not configured |
+| small | `grad_sum_lu_vjp` | f64 | `8x8` | 0.998 ± 0.082 | 1.656 ± 0.120 | not configured |
+| small | `grad_sum_qr_jvp` | f64 | `2x2` | unsupported | 0.818 ± 0.027 | not configured |
+| small | `grad_sum_qr_jvp` | f64 | `4x4` | unsupported | 0.878 ± 0.024 | not configured |
+| small | `grad_sum_qr_jvp` | f64 | `8x8` | unsupported | 0.876 ± 0.029 | not configured |
+| small | `grad_sum_qr_vjp` | f64 | `2x2` | unsupported | 1.573 ± 0.201 | not configured |
+| small | `grad_sum_qr_vjp` | f64 | `4x4` | unsupported | 1.638 ± 0.172 | not configured |
+| small | `grad_sum_qr_vjp` | f64 | `8x8` | unsupported | 1.549 ± 0.073 | not configured |
+| small | `grad_sum_solve_jvp` | f64 | `2x2,rhs=1` | 1.139 ± 0.030 | 0.929 ± 0.006 | not configured |
+| small | `grad_sum_solve_jvp` | f64 | `4x4,rhs=1` | 1.138 ± 0.054 | 1.047 ± 0.009 | not configured |
+| small | `grad_sum_solve_jvp` | f64 | `8x8,rhs=1` | 1.123 ± 0.030 | 1.063 ± 0.043 | not configured |
+| small | `grad_sum_solve_vjp` | f64 | `2x2,rhs=1` | 1.069 ± 0.021 | 1.358 ± 0.040 | not configured |
+| small | `grad_sum_solve_vjp` | f64 | `4x4,rhs=1` | 1.096 ± 0.033 | 1.395 ± 0.099 | not configured |
+| small | `grad_sum_solve_vjp` | f64 | `8x8,rhs=1` | 1.082 ± 0.018 | 1.474 ± 0.117 | not configured |
+| small | `grad_sum_svd_s_jvp` | f64 | `2x2` | 1.619 ± 0.248 | 1.005 ± 0.013 | not configured |
+| small | `grad_sum_svd_s_jvp` | f64 | `4x4` | 1.439 ± 0.033 | 1.259 ± 0.013 | not configured |
+| small | `grad_sum_svd_s_jvp` | f64 | `8x8` | 1.648 ± 0.033 | 1.449 ± 0.043 | not configured |
+| small | `grad_sum_svd_s_vjp` | f64 | `2x2` | 1.758 ± 0.034 | 0.765 ± 0.139 | not configured |
+| small | `grad_sum_svd_s_vjp` | f64 | `4x4` | 1.494 ± 0.084 | 1.149 ± 0.148 | not configured |
+| small | `grad_sum_svd_s_vjp` | f64 | `8x8` | 1.661 ± 0.012 | 1.326 ± 0.071 | not configured |
 
 ## Loss Definitions
 

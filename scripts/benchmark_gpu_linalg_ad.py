@@ -193,8 +193,11 @@ def run_torch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                 def fn(a):
                     return loss_fn(a)
 
-            _, vjp_fn = vjp(fn, x)
-            runner = lambda: vjp_fn(torch.tensor(1.0, dtype=torch.float64, device=device))[0]
+            cotangent = torch.tensor(1.0, dtype=torch.float64, device=device)
+
+            def runner():
+                _, vjp_fn = vjp(fn, x)
+                return vjp_fn(cotangent)[0]
 
         med, iqr = bench(runner, sync, n_runs, n_warmup)
         return ok_record(
