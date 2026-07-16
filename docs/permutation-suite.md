@@ -104,13 +104,13 @@ Backend column names follow [architecture terminology](architecture.md).
 
 | backend | runner | measured path |
 |---|---|---|
-| `naive` | Rust | odometer index loop, baseline and correctness reference |
+| `naive` | Rust | allocate destination + odometer index loop; baseline and correctness reference |
 | `tenferro-transpose` | Rust | eager op `tenferro_cpu::structural::transpose` (`TensorStructural::transpose` on `CpuBackend`); internally `StridedView::permute` + `strided_kernel::copy_into` |
-| `tenferro-to-contiguous` | Rust | view API `TypedTensorView::transpose_view(perm)` followed by `to_contiguous()` |
-| `hptt` | Rust (`hptt` crate, feature-gated) | HPTT tensor transpose, contiguous cases only |
-| `strided-rs` (Rust `strided-rs` feature, on by default) | Rust | `strided_perm::copy_into` / `copy_into_col_major`, serial and parallel (`copy_into_par` / `copy_into_col_major_par`); the fastest of the (up to four) variants is reported |
-| `julia-base` | Julia | `permutedims!` for contiguous sources, generic `copyto!` for explicit-stride sources |
-| `strided-jl` | Julia | Strided.jl `@strided` materialization |
+| `tenferro-to-contiguous` | Rust | view API `TypedTensorView::transpose_view(perm)` followed by allocation-inclusive `to_contiguous()` |
+| `hptt` | Rust (`hptt` crate, feature-gated) | allocate destination + HPTT tensor transpose, contiguous cases only |
+| `strided-rs` (Rust `strided-rs` feature, on by default) | Rust | allocate destination + `strided_perm::copy_into` / `copy_into_col_major`, serial and parallel (`copy_into_par` / `copy_into_col_major_par`); the fastest of the (up to four) variants is reported |
+| `julia-base` | Julia | allocate destination + `permutedims!` for contiguous sources or generic `copyto!` for explicit-stride sources |
+| `strided-jl` | Julia | allocate destination + Strided.jl `@strided` materialization |
 
 Notes:
 
@@ -135,13 +135,17 @@ Notes:
 
 ### Allocation Semantics
 
-All backend columns measure **materialization including destination reuse,
-excluding destination allocation**: the destination buffer is allocated once
-per pattern outside the timed region, and each timed iteration overwrites it.
-If a tenferro API forces an allocation per call (e.g. `to_contiguous`
-returning a new owned tensor), the report must say so in a footnote for that
-column, because it is then not directly comparable to in-place columns on
-small patterns.
+All backend columns measure **fresh destination allocation plus
+materialization** on every timed call. The tenferro APIs return new owned
+tensors and do not expose a destination-reuse operation for these paths, so
+making every participant allocate is the common operation all backends can
+express. Source construction and lazy permutation-view construction remain
+outside the timed region.
+
+This policy makes the columns comparable as end-to-end materialization APIs.
+It intentionally does not isolate the underlying copy kernels or allocator
+implementations. A separate destination-reuse comparison would require a
+tenferro `copy_into`-style public API.
 
 ### Correctness Gate
 

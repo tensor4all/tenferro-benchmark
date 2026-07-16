@@ -214,17 +214,31 @@ function run_pattern(pattern, io::Union{IO,Nothing})
     any_failed = false
 
     if "julia-base" in participants
-        dst = Array{Float64}(undef, Tuple(out_shape))
         if pattern["src_layout"]["kind"] == "col_major"
             src_array = reshape(parent_data, Tuple(Int.(pattern["shape"])))
-            f = () -> permutedims!(dst, src_array, perm_tuple)
+            f = () -> begin
+                dst = Array{Float64}(undef, Tuple(out_shape))
+                permutedims!(dst, src_array, perm_tuple)
+                dst
+            end
         else
             src_base_perm = PermutedDimsArray(src, perm_tuple)
-            f = () -> copyto!(dst, src_base_perm)
+            f = () -> begin
+                dst = Array{Float64}(undef, Tuple(out_shape))
+                copyto!(dst, src_base_perm)
+                dst
+            end
         end
-        f()
-        err = verify_output(dst, reference)
-        record = base_record(pattern, "julia-base", total, bytes, THREADS)
+        actual = f()
+        err = verify_output(actual, reference)
+        record = base_record(
+            pattern,
+            "julia-base",
+            total,
+            bytes,
+            THREADS;
+            per_call_allocation = true,
+        )
         if err !== nothing
             record["status"] = "verification_failed"
             record["correctness"] = "failed"
@@ -239,12 +253,27 @@ function run_pattern(pattern, io::Union{IO,Nothing})
     end
 
     if "strided-jl" in participants
-        dst_parent = Vector{Float64}(undef, total)
-        dst = StridedView(dst_parent, Tuple(out_shape), Tuple(col_major_strides(out_shape)), 0)
-        f = () -> (@strided dst .= src_perm)
-        f()
-        err = verify_output(Array(dst), reference)
-        record = base_record(pattern, "strided-jl", total, bytes, THREADS)
+        f = () -> begin
+            dst_parent = Vector{Float64}(undef, total)
+            dst = StridedView(
+                dst_parent,
+                Tuple(out_shape),
+                Tuple(col_major_strides(out_shape)),
+                0,
+            )
+            @strided dst .= src_perm
+            dst
+        end
+        actual = f()
+        err = verify_output(Array(actual), reference)
+        record = base_record(
+            pattern,
+            "strided-jl",
+            total,
+            bytes,
+            THREADS;
+            per_call_allocation = true,
+        )
         if err !== nothing
             record["status"] = "verification_failed"
             record["correctness"] = "failed"

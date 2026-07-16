@@ -83,7 +83,7 @@
     },
     "per_call_allocation": {
       "type": "boolean",
-      "description": "True when the backend allocates a fresh destination on every timed call (e.g. tenferro-to-contiguous) instead of reusing one destination buffer across iterations."
+      "description": "True when the backend allocates a fresh destination on every timed call. Successful cpu/permutation measurements use allocation-inclusive semantics for every backend."
     },
     "warmup": { "type": ["integer", "null"], "minimum": 0 },
     "iters": { "type": ["integer", "null"], "minimum": 1 },
@@ -102,6 +102,7 @@
       "then": {
         "properties": {
           "correctness": { "const": "passed" },
+          "per_call_allocation": { "const": true },
           "warmup": { "type": "integer", "minimum": 0 },
           "iters": { "type": "integer", "minimum": 1 },
           "median_ms": { "type": "number", "minimum": 0 },

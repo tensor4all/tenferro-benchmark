@@ -141,7 +141,9 @@ devcontainer exec --workspace-folder . bash -lc '
 
 A standalone materialize/copy-kernel benchmark comparing tenferro-rs
 transpose paths against a naive odometer baseline, strided-rs, HPTT, Julia
-Base, and Strided.jl. Spec: [docs/permutation-suite.md](docs/permutation-suite.md).
+Base, and Strided.jl. Every timed call includes fresh destination allocation
+for a common end-to-end materialization comparison. Spec:
+[docs/permutation-suite.md](docs/permutation-suite.md).
 
 ```bash
 uv sync
