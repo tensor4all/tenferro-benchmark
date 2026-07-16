@@ -23,6 +23,69 @@ validate_permutation_result() {
     "${PYTHON[@]}" scripts/validate_benchmark_suite.py --kind permutation-result "$1"
 }
 
+# --- Pattern participants must match backend capability rules ---------------
+
+"${PYTHON[@]}" - <<'PY'
+import json
+from pathlib import Path
+
+import yaml
+
+patterns_path = Path("data/instances/permutation_patterns.json")
+suite_path = Path("benchmarks/cpu/permutation.yaml")
+patterns = json.loads(patterns_path.read_text())["patterns"]
+suite_backends = set(yaml.safe_load(suite_path.read_text())["backends"])
+
+for pattern in patterns:
+    pattern_id = pattern["id"]
+    participants = set(pattern["participants"])
+    src_col_major = pattern["src_layout"]["kind"] == "col_major"
+    dst_col_major = pattern["dst_layout"]["kind"] == "col_major"
+    identity = pattern["perm"] == list(range(len(pattern["perm"])))
+
+    unknown = participants - suite_backends
+    assert not unknown, f"{pattern_id}: unknown CPU participants: {sorted(unknown)}"
+
+    if "hptt" in participants:
+        assert src_col_major and dst_col_major, (
+            f"{pattern_id}: HPTT requires contiguous source and destination"
+        )
+    if "tenferro-transpose" in participants:
+        assert src_col_major, (
+            f"{pattern_id}: tenferro-transpose requires a compact col-major source"
+        )
+
+    if pattern_id == "memcpy_24d_contiguous":
+        assert identity and src_col_major and dst_col_major
+        assert participants == {"memcpy", "strided-rs"}
+        continue
+
+    required = {
+        "naive",
+        "tenferro-to-contiguous",
+        "strided-rs",
+        "julia-base",
+        "strided-jl",
+    }
+    assert required <= participants, (
+        f"{pattern_id}: missing common participants: {sorted(required - participants)}"
+    )
+
+    if src_col_major:
+        assert "tenferro-transpose" in participants, (
+            f"{pattern_id}: compact source must exercise tenferro-transpose"
+        )
+    else:
+        assert "tenferro-transpose" not in participants
+
+    if src_col_major and dst_col_major:
+        assert "hptt" in participants, (
+            f"{pattern_id}: HPTT-expressible pattern must exercise HPTT"
+        )
+    else:
+        assert "hptt" not in participants
+PY
+
 # --- Real Rust runner output must satisfy the schema -----------------------
 
 cargo build --release --bin benchmark_permutation >/dev/null

@@ -17,23 +17,28 @@ result/
     cpu/einsum.md
     cpu/cpu_ops.md
     cpu/linalg_jvp_vjp.md
+    cpu/permutation.md
   amd-cpu/
     cpu/einsum.md
     cpu/cpu_ops.md
     cpu/linalg_jvp_vjp.md
+    cpu/permutation.md
   nvidia-gpu/
     gpu/dense.md
     gpu/einsum.md
     gpu/sparse.md
     gpu/linalg_jvp_vjp.md
+    gpu/permutation.md
 ```
 
 Raw run data is written under `data/results/<target_profile>/<suite_id>/<timestamp>/`:
 
 ```text
 data/results/mac-cpu/cpu/einsum/<timestamp>/run.yaml
+data/results/mac-cpu/cpu/permutation/<timestamp>/run.yaml
 data/results/amd-cpu/cpu/einsum/<timestamp>/run.yaml
 data/results/nvidia-gpu/gpu/dense/<timestamp>/run.yaml
+data/results/nvidia-gpu/gpu/permutation/<timestamp>/run.yaml
 ```
 
 Historical report files are not maintained. Use git history to inspect older
