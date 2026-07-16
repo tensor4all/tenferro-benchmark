@@ -19,6 +19,17 @@ SETUP_EXTERN_MIGRATE_SIBLINGS="${SETUP_EXTERN_MIGRATE_SIBLINGS:-0}"
 
 TENFERRO_DIR="${TENFERRO_RS_DIR:-$EXTERN_DIR/tenferro-rs}"
 
+# extern/strided-rs provides the strided-perm / strided-view crates behind
+# benchmark_permutation's optional `strided-rs` Cargo feature (cpu/permutation
+# suite). Cargo resolves every path dependency's manifest even when the
+# feature enabling it is disabled, so this checkout must exist for any build
+# of this repository, not only ones that enable `--features strided-rs`.
+STRIDED_RS_REPO_URL="${STRIDED_RS_REPO_URL:-https://github.com/tensor4all/strided-rs.git}"
+STRIDED_RS_REF="${STRIDED_RS_REF:-main}"
+STRIDED_RS_UPDATE="${STRIDED_RS_UPDATE:-0}"
+
+STRIDED_RS_DIR="${STRIDED_RS_DIR:-$EXTERN_DIR/strided-rs}"
+
 log() {
     printf '[setup_extern_deps] %s\n' "$*" >&2
 }
@@ -134,6 +145,49 @@ ensure_tenferro_checkout() {
     clone_or_update_tenferro_checkout
 }
 
+clone_or_update_strided_rs_checkout() {
+    local name="strided-rs"
+    local dest="$STRIDED_RS_DIR"
+    local sibling="$PROJECT_DIR/../$name"
+
+    mkdir -p "$(dirname "$dest")"
+    if [[ -d "$dest/.git" ]]; then
+        log "$name already exists at ${dest#$PROJECT_DIR/}; reusing current checkout"
+        if [[ "$STRIDED_RS_UPDATE" == "1" ]]; then
+            checkout_git_ref "$name" "$dest" "$STRIDED_RS_REF"
+        fi
+        return
+    fi
+    if [[ -e "$dest" ]]; then
+        cat >&2 <<EOF
+$name exists at $dest, but it is not a git checkout.
+Remove it or set STRIDED_RS_DIR to a valid strided-rs checkout.
+EOF
+        return 1
+    fi
+
+    if [[ "$SETUP_EXTERN_MIGRATE_SIBLINGS" == "1" && -d "$sibling/.git" ]]; then
+        log "moving existing ../$name into extern/$name"
+        mv "$sibling" "$dest"
+        if [[ "$STRIDED_RS_UPDATE" == "1" ]]; then
+            checkout_git_ref "$name" "$dest" "$STRIDED_RS_REF"
+        fi
+        return
+    fi
+
+    log "cloning $name into ${dest#$PROJECT_DIR/}"
+    git clone --recursive "$STRIDED_RS_REPO_URL" "$dest"
+    if [[ "$STRIDED_RS_UPDATE" == "1" ]]; then
+        checkout_git_ref "$name" "$dest" "$STRIDED_RS_REF"
+    else
+        log "$name commit $(git -C "$dest" rev-parse --short HEAD)"
+    fi
+}
+
+ensure_strided_rs_checkout() {
+    clone_or_update_strided_rs_checkout
+}
+
 main() {
     TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
     export TENFERRO_CPU_FEATURES
@@ -147,12 +201,15 @@ main() {
             ;;
     esac
     ensure_tenferro_checkout
+    ensure_strided_rs_checkout
 
     export TENFERRO_RS_DIR="$TENFERRO_DIR"
+    export STRIDED_RS_DIR
 
     [[ -n "${OPENBLAS_ROOT:-}" ]] && log "OPENBLAS_ROOT=$OPENBLAS_ROOT"
     [[ -n "${MKLROOT:-}" ]] && log "MKLROOT=$MKLROOT"
     log "TENFERRO_RS_DIR=$TENFERRO_RS_DIR"
+    log "STRIDED_RS_DIR=$STRIDED_RS_DIR"
     log "TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES"
     return 0
 }

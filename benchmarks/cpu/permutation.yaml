@@ -1,0 +1,35 @@
+schema_version: 1
+suite_id: cpu/permutation
+title: CPU Permutation / Materialize Benchmarks
+description: >-
+  Materialize-kernel benchmark comparing tenferro-rs transpose/materialize
+  paths against a naive odometer baseline, HPTT, Julia Base, Strided.jl, and
+  strided-rs on identical permutation semantics. See docs/permutation-suite.md.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api}
+  verify: {reference: naive, rtol: 0, atol: 0}
+backends:
+  - naive
+  - tenferro-transpose
+  - tenferro-to-contiguous
+  - hptt
+  - strided-rs
+  - julia-base
+  - strided-jl
+  - memcpy
+problems:
+  source: data/instances/permutation_patterns.json
+  include:
+    - memcpy_24d_contiguous
+    - transpose_2d_256
+    - transpose_2d_1024
+    - transpose_2d_2048
+    - transpose_3d_256_201
+    - transpose_3d_256_102
+    - rotation_6d_32_32_32_32_16_16
+    - reverse_20d_2
+    - reverse_13d_2
+    - cyclic_13d_2
+    - tn_light_415_24d_scattered_to_colmajor
+    - tn_light_415_24d_contiguous_same_perm

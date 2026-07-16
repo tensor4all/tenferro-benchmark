@@ -34,9 +34,11 @@ Expected latest report paths:
 - `result/mac-cpu/cpu/einsum.md`
 - `result/mac-cpu/cpu/cpu_ops.md`
 - `result/mac-cpu/cpu/linalg_jvp_vjp.md`
+- `result/mac-cpu/cpu/permutation.md`
 - `result/amd-cpu/cpu/einsum.md`
 - `result/amd-cpu/cpu/cpu_ops.md`
 - `result/amd-cpu/cpu/linalg_jvp_vjp.md`
+- `result/amd-cpu/cpu/permutation.md`
 - `result/linux-cpu/cpu/linalg_jvp_jvp.md`
 - `result/nvidia-gpu/gpu/dense.md`
 - `result/nvidia-gpu/gpu/einsum.md`
