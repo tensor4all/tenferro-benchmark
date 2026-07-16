@@ -37,7 +37,8 @@ Out of scope:
 - AD in any form: trace graphs, linearize, transpose rules,
   backward/gradient, JVP/VJP. This suite never touches the trace machinery.
 - Einsum/contraction planner comparisons (`cpu/einsum` covers those).
-- GPU permutation (possible future `gpu/permutation` suite).
+- GPU permutation, which is covered by the implemented
+  [`gpu/permutation` suite](gpu-permutation-suite.md).
 - Row-major destinations. All destinations are compact col-major, matching
   tenferro's layout convention.
 
