@@ -17,9 +17,43 @@ num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
+hptt = { version = "0.4.1", optional = true }
+# Non-optional: benchmark_permutation always reports the actual size of
+# tenferro's global rayon pool (rayon::current_num_threads(), sized from
+# RAYON_NUM_THREADS at process start) as its `threads` field, regardless of
+# any Cargo feature.
+rayon = "1"
+# Optional path deps on extern/strided-rs (see scripts/setup_extern_deps.sh,
+# which clones it alongside extern/tenferro-rs), gated by the `strided-rs`
+# feature below. Cargo resolves every path dependency's manifest to build the
+# unit graph even when the feature enabling it is off, so a checkout without
+# extern/strided-rs would fail `cargo build` outright regardless of
+# `--features strided-rs`; that is why setup_extern_deps.sh fetches it
+# unconditionally, the same as extern/tenferro-rs.
+strided-perm = { path = "extern/strided-rs/strided-perm", default-features = false, optional = true }
+strided-view = { path = "extern/strided-rs/strided-view", optional = true }
 
 [features]
 default = ["cpu-faer"]
+# Gates the `hptt` participant in benchmark_permutation (cpu/permutation
+# suite). Builds the vendored HPTT C++ library via the `hptt` crate's cmake
+# build script; requires cmake and a C++ toolchain. Verified with
+# `cargo check --features hptt` / `cargo build --release --features hptt` on
+# both macOS (cmake installed via Homebrew, e.g. `brew install cmake`) and
+# Linux; not Linux-only. If the vendored HPTT CMakeLists ever rejects a newer
+# cmake (cmake >= 4 dropped compatibility with `cmake_minimum_required`
+# versions below 3.5), set `CMAKE_POLICY_VERSION_MINIMUM=3.5` in the
+# environment before building.
+hptt = ["dep:hptt"]
+# Gates the `strided-rs` participant in benchmark_permutation (cpu/permutation
+# suite): strided_perm::copy_into / copy_into_col_major materializing a
+# strided view built directly from the pattern's source strides, using
+# extern/strided-rs's strided-perm + strided-view crates (cloned by
+# scripts/setup_extern_deps.sh, mirroring how extern/tenferro-rs is fetched).
+# Also enables strided-perm's own `parallel` feature (copy_into_par /
+# copy_into_col_major_par) so 4-thread runs exercise strided-perm's rayon
+# path, matching this repo's other rayon-backed backends.
+strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel"]
 cpu-faer = [
     "tenferro-ad/cpu-faer",
     "tenferro-einsum/autodiff",
@@ -100,6 +134,10 @@ cuda = [
 [[bin]]
 name = "publication_gate"
 path = "src/bin/publication_gate.rs"
+
+[[bin]]
+name = "benchmark_permutation"
+path = "src/bin/benchmark_permutation.rs"
 
 [[bin]]
 name = "benchmark_gpu_rust"
