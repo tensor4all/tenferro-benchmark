@@ -243,7 +243,8 @@ Supervision checklist, restated as suite requirements:
 
 ## Future Work
 
-- `gpu/permutation` suite on CUDA.
+- `gpu/permutation` suite on CUDA: implemented, see
+  [`docs/gpu-permutation-suite.md`](gpu-permutation-suite.md).
 - Row-major destination variants if tenferro grows first-class row-major
   output support.
 - Coupling with `cpu/einsum` diagnostics: patterns derived from

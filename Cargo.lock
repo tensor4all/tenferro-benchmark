@@ -3684,6 +3684,7 @@ name = "tenferro-einsum-benchmark"
 version = "0.1.0"
 dependencies = [
  "hptt",
+ "libloading 0.8.9",
  "num-complex",
  "rayon",
  "serde",

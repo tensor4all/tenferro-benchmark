@@ -87,6 +87,16 @@ struct PermutePattern {
     participants: Vec<Participant>,
     #[allow(dead_code)]
     notes: Option<String>,
+    // The following two fields are consumed by the GPU permutation runner
+    // (src/bin/benchmark_gpu_permutation.rs, docs/gpu-permutation-suite.md);
+    // they are `#[serde(default)]` here purely so this CPU runner keeps
+    // parsing the shared pattern file under `deny_unknown_fields`.
+    #[allow(dead_code)]
+    #[serde(default)]
+    notes_gpu: Option<String>,
+    #[allow(dead_code)]
+    #[serde(default)]
+    participants_gpu: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]
