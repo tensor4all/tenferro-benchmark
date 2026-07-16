@@ -1,7 +1,6 @@
 # CPU Permutation Suite Specification
 
-Status: specification. The suite described here is not implemented yet. This
-document defines the porting work from
+Status: implemented. This document specifies the suite, ported from
 [`extern/strided-rs-benchmark-suite`](../extern/strided-rs-benchmark-suite/)'s
 permutation benchmark into the tenferro-benchmark schema and result policy.
 
