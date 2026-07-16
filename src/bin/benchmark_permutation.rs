@@ -10,7 +10,7 @@
 //! - `tenferro-transpose`: eager `CpuBackend::transpose` (compact col-major
 //!   input only)
 //! - `tenferro-to-contiguous`: `TypedTensorView::transpose_view` +
-//!   `to_contiguous()` (accepts arbitrary source strides)
+//!   `CpuBackend::to_contiguous` (accepts arbitrary source strides)
 //! - `hptt` (feature `hptt`, contiguous src/dst only)
 //! - `strided-rs` (feature `strided-rs`; `strided_perm::copy_into` /
 //!   `copy_into_col_major`, see below)
@@ -56,7 +56,9 @@ use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 
 use tenferro_cpu::CpuBackend;
-use tenferro_tensor::{Tensor, TensorStructural, TypedTensorView};
+use tenferro_tensor::{
+    Tensor, TensorStructural, TensorViewCanonicalization, TypedTensorView,
+};
 
 const PATTERN_PATH: &str = "data/instances/permutation_patterns.json";
 const SUITE_ID: &str = "cpu/permutation";
@@ -697,9 +699,10 @@ fn run_participant(
             let transposed = view
                 .transpose_view(&pattern.perm)
                 .expect("transpose_view must succeed on a validated permutation");
-            let compact = transposed
-                .to_contiguous()
-                .expect("to_contiguous must succeed");
+            let mut backend = CpuBackend::new();
+            let compact = backend
+                .to_contiguous(&transposed)
+                .expect("CpuBackend::to_contiguous must succeed");
             let actual = compact
                 .as_slice()
                 .expect("to_contiguous output must be host-contiguous");
@@ -708,7 +711,7 @@ fn run_participant(
                 return;
             }
             let timing = bench_n(warmup, iters, bytes, || {
-                let compact = transposed.to_contiguous().unwrap();
+                let compact = backend.to_contiguous(&transposed).unwrap();
                 black_box(compact.as_slice().unwrap().as_ptr());
             });
             finish!(base("ok", "passed", true), Some(timing));
@@ -1133,8 +1136,15 @@ mod tests {
                 &prepared.src_data,
             )
             .unwrap();
-            let compact = view.transpose_view(&pattern.perm).unwrap().to_contiguous().unwrap();
-            assert_eq!(compact.as_slice().unwrap(), prepared.reference.as_slice(), "{}", pattern.id);
+            let transposed = view.transpose_view(&pattern.perm).unwrap();
+            let mut backend = CpuBackend::new();
+            let compact = backend.to_contiguous(&transposed).unwrap();
+            assert_eq!(
+                compact.as_slice().unwrap(),
+                prepared.reference.as_slice(),
+                "{}",
+                pattern.id
+            );
         }
     }
 }
