@@ -147,10 +147,24 @@ write_run_metadata() {
     "${PYTHON[@]}" "$SCRIPT_DIR/collect_run_metadata.py" "${args[@]}"
 }
 
+validate_run_yaml() {
+    "${PYTHON[@]}" "$SCRIPT_DIR/validate_benchmark_suite.py" --kind run "$1"
+}
+
+# Validates each runner's JSONL output against schemas/permutation-result.schema.json
+# right after it's produced (records are machine-generated, so a schema
+# mismatch here means the runner and the schema have drifted apart).
+# scripts/format_permutation_results.py re-validates every input again before
+# formatting, so this is defense in depth, not the only check.
+validate_permutation_jsonl() {
+    "${PYTHON[@]}" "$SCRIPT_DIR/validate_benchmark_suite.py" --kind permutation-result "$1"
+}
+
 # Canonical run.yaml for the whole invocation (report header metadata is
 # thread-count independent; per-thread-count environment snapshots are
 # written separately below as run_t<N>.yaml).
 write_run_metadata "$RUN_YAML"
+validate_run_yaml "$RUN_YAML"
 
 echo "============================================"
 echo " CPU permutation benchmark suite"
@@ -194,9 +208,11 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     RUST_JSONL="$RUN_DIR/rust_output_t${NUM_THREADS}.jsonl"
     RUN_T_YAML="$RUN_DIR/run_t${NUM_THREADS}.yaml"
     write_run_metadata "$RUN_T_YAML"
+    validate_run_yaml "$RUN_T_YAML"
 
     echo "Running Rust permutation benchmarks (threads=$NUM_THREADS)..."
     BENCH_OUTPUT="$RUST_JSONL" "$PROJECT_DIR/target/release/benchmark_permutation"
+    validate_permutation_jsonl "$RUST_JSONL"
     INPUTS+=("$RUST_JSONL")
 
     JULIA_JSONL="$RUN_DIR/julia_output_t${NUM_THREADS}.jsonl"
@@ -208,7 +224,10 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
             JULIA_PROJECT="$PROJECT_DIR" BENCH_OUTPUT="$JULIA_JSONL" \
                 julia --project="$PROJECT_DIR" "$SCRIPT_DIR/benchmark_permutation.jl"
         )
-        [[ -s "$JULIA_JSONL" ]] && INPUTS+=("$JULIA_JSONL")
+        if [[ -s "$JULIA_JSONL" ]]; then
+            validate_permutation_jsonl "$JULIA_JSONL"
+            INPUTS+=("$JULIA_JSONL")
+        fi
     fi
 done
 

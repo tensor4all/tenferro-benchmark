@@ -8,11 +8,15 @@ Usage:
         [--run-metadata data/results/<target_profile>/cpu/permutation/<timestamp>/run.yaml]
 
 Each input is a JSON Lines file where every line is one record produced by
-src/bin/benchmark_permutation.rs or scripts/benchmark_permutation.jl (see
-docs/permutation-suite.md for the record shape). Records are grouped by
-`threads` so a suite run at more than one thread count renders one table per
-thread count. Missing backends are shown as `-`; the fastest backend per row
-is bolded.
+src/bin/benchmark_permutation.rs or scripts/benchmark_permutation.jl, matching
+schemas/permutation-result.schema.json (see docs/permutation-suite.md for the
+record shape). Every input file is validated against that schema before
+formatting; an invalid record aborts the whole run (records are
+machine-generated, so a schema violation means the runners and the schema
+have drifted apart, not a one-off data issue to warn past). Records are
+grouped by `threads` so a suite run at more than one thread count renders one
+table per thread count. Missing backends are shown as `-`; the fastest
+backend per row is bolded.
 """
 
 from __future__ import annotations
@@ -30,6 +34,10 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown  # noqa: E402
+from validate_benchmark_suite import (  # noqa: E402
+    PERMUTATION_RESULT_SCHEMA,
+    validate_results as validate_permutation_result_jsonl,
+)
 
 BACKEND_ORDER = [
     "naive",
@@ -229,11 +237,22 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     records: list[dict[str, Any]] = []
+    schema_ok = True
     for input_path in args.inputs:
         if input_path.exists():
+            if not validate_permutation_result_jsonl(input_path, PERMUTATION_RESULT_SCHEMA):
+                schema_ok = False
             records.extend(load_records(input_path))
         else:
             print(f"WARNING: {input_path} does not exist; skipping", file=sys.stderr)
+
+    if not schema_ok:
+        print(
+            "One or more input files do not match "
+            "schemas/permutation-result.schema.json; aborting.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     if not records:
         print("No permutation benchmark records found.", file=sys.stderr)

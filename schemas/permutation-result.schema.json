@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tensor4all.example/schemas/permutation-result.schema.json",
+  "title": "CPU Permutation Benchmark Result Record",
+  "description": "One JSON Lines record per (pattern, backend) measurement for the cpu/permutation suite, emitted by src/bin/benchmark_permutation.rs and scripts/benchmark_permutation.jl. Both runners share this exact record shape; see docs/permutation-suite.md. This is a suite-specific schema, not an extension of benchmark-result.schema.json: that schema's `op` enum is einsum/linalg/sparse-oriented (matmul, einsum, qr, ...) with no permutation/transpose/copy operation, its `status` enum has no `skipped` (used here for feature-gated/non-participating backends), and its required `execution`/`verification` sub-objects (device_ordinal, execution_path, synchronization, reference_backend, rtol, atol) do not fit a copy-kernel benchmark whose correctness gate is exact elementwise equality against a naive reference rather than a tolerance.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "suite_id",
+    "runner",
+    "pattern_id",
+    "label",
+    "backend",
+    "shape",
+    "perm",
+    "dtype",
+    "elems",
+    "bytes_rw",
+    "threads",
+    "status",
+    "correctness",
+    "per_call_allocation",
+    "warmup",
+    "iters",
+    "median_ms",
+    "p25_ms",
+    "p75_ms",
+    "gbps",
+    "notes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "suite_id": { "const": "cpu/permutation" },
+    "runner": {
+      "enum": ["rust", "julia"],
+      "description": "rust: src/bin/benchmark_permutation.rs. julia: scripts/benchmark_permutation.jl."
+    },
+    "pattern_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Matches an id in data/instances/permutation_patterns.json."
+    },
+    "label": { "type": "string", "minLength": 1 },
+    "backend": {
+      "enum": [
+        "naive",
+        "tenferro-transpose",
+        "tenferro-to-contiguous",
+        "hptt",
+        "strided-rs",
+        "julia-base",
+        "strided-jl",
+        "memcpy"
+      ]
+    },
+    "shape": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "integer", "minimum": 1 }
+    },
+    "perm": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "integer", "minimum": 0 }
+    },
+    "dtype": { "const": "f64" },
+    "elems": { "type": "integer", "minimum": 0 },
+    "bytes_rw": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Bytes read plus written per iteration (elems * sizeof(f64) * 2)."
+    },
+    "threads": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "rayon::current_num_threads() (Rust) or Threads.nthreads() (Julia) at the time this pattern ran."
+    },
+    "status": { "enum": ["ok", "skipped", "verification_failed"] },
+    "correctness": {
+      "enum": ["passed", "failed", "skipped"],
+      "description": "Result of comparing this backend's output elementwise against the naive reference before any timing."
+    },
+    "per_call_allocation": {
+      "type": "boolean",
+      "description": "True when the backend allocates a fresh destination on every timed call (e.g. tenferro-to-contiguous) instead of reusing one destination buffer across iterations."
+    },
+    "warmup": { "type": ["integer", "null"], "minimum": 0 },
+    "iters": { "type": ["integer", "null"], "minimum": 1 },
+    "median_ms": { "type": ["number", "null"], "minimum": 0 },
+    "p25_ms": { "type": ["number", "null"], "minimum": 0 },
+    "p75_ms": { "type": ["number", "null"], "minimum": 0 },
+    "gbps": { "type": ["number", "null"], "minimum": 0 },
+    "notes": { "type": ["string", "null"] }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "ok" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "correctness": { "const": "passed" },
+          "warmup": { "type": "integer", "minimum": 0 },
+          "iters": { "type": "integer", "minimum": 1 },
+          "median_ms": { "type": "number", "minimum": 0 },
+          "p25_ms": { "type": "number", "minimum": 0 },
+          "p75_ms": { "type": "number", "minimum": 0 },
+          "gbps": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "enum": ["skipped", "verification_failed"] } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "warmup": { "const": null },
+          "iters": { "const": null },
+          "median_ms": { "const": null },
+          "p25_ms": { "const": null },
+          "p75_ms": { "const": null },
+          "gbps": { "const": null }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "skipped" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": { "correctness": { "const": "skipped" } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "verification_failed" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": { "correctness": { "const": "failed" } }
+      }
+    }
+  ]
+}
