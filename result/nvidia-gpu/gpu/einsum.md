@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/einsum`
 - Suite file: `benchmarks/gpu/einsum.yaml`
-- Timestamp: `2026-07-16T09:04:58.729638+00:00`
-- tenferro-rs commit: `8c267c636537d3d407925b61a2000f9bbe07e6a1`
+- Timestamp: `2026-07-16T10:50:54.185318+00:00`
+- tenferro-rs commit: `3abc9108e4f0500f4e75519711cdb4e21b9625df`
 
 ## GPU Information
 
@@ -40,4 +40,4 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| einsum_bin_matmul_3072_f64 | 313.617 | 313.595 | 316.270 | 269.683 | 313.448 | not configured | unsupported | unsupported | unsupported |
+| einsum_bin_matmul_3072_f64 | 314.610 | 314.446 | 314.467 | 270.742 | 314.441 | not configured | unsupported | unsupported | unsupported |
