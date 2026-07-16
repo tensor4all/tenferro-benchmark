@@ -123,6 +123,17 @@ PERMUTATION_EXTRA_FEATURES=hptt \
 BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_permutation.sh 1 4
 ```
 
+For a quick trial run, the suite honors `PATTERN_ID` (restrict to one
+pattern), `BENCH_RUNS`, and `BENCH_WARMUPS`:
+
+```bash
+BENCHMARK_TARGET_PROFILE=mac-cpu \
+PATTERN_ID=transpose_2d_256 \
+BENCH_RUNS=1 \
+BENCH_WARMUPS=0 \
+  ./scripts/run_permutation.sh 1
+```
+
 This writes `result/<target_profile>/cpu/permutation.md`. Pattern definitions
 live in `data/instances/permutation_patterns.json` and are read by both the
 Rust and Julia runners; result records are validated against
