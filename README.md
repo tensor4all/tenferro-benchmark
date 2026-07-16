@@ -23,6 +23,7 @@ repository. See [GPU tensor network suite](docs/tensornetwork-gpu.md).
 - [NVIDIA GPU devcontainer workflow](docs/gpu-devcontainer.md): CUDA devcontainer.
 - [Einsum suite and instance selection](docs/einsum-suite.md): source benchmark, selection rules, diagnostic cases, path strategies.
 - [GPU tensor network suite](docs/tensornetwork-gpu.md): TensorNetworkBenchmarks parity on CUDA.
+- [CPU permutation suite](docs/permutation-suite.md): materialize-kernel benchmark comparing tenferro-rs transpose paths against HPTT, Julia Base, and Strided.jl. The suite's `hptt` Cargo feature builds the vendored HPTT C++ library and requires cmake and a C++ toolchain (macOS: `brew install cmake`); see the doc for details.
 - [Result layout and metadata](docs/results.md): `target_profile`, `suite_id`, `run.yaml`, latest reports.
 - [Architecture terminology](docs/architecture.md): suite, runner, backend, strategy, target profile.
 - [PyTorch einsum dispatch notes](docs/pytorch-einsum-dispatch.md): PyTorch source investigation notes.
