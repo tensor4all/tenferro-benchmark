@@ -107,7 +107,7 @@ Backend column names follow [architecture terminology](architecture.md).
 |---|---|---|
 | `naive` | Rust | allocate destination + odometer index loop; baseline and correctness reference |
 | `tenferro-transpose` | Rust | eager op `tenferro_cpu::structural::transpose` (`TensorStructural::transpose` on `CpuBackend`); internally `StridedView::permute` + `strided_kernel::copy_into` |
-| `tenferro-to-contiguous` | Rust | view API `TypedTensorView::transpose_view(perm)` followed by allocation-inclusive `to_contiguous()` |
+| `tenferro-to-contiguous` | Rust | view API `TypedTensorView::transpose_view(perm)` followed by allocation-inclusive `CpuBackend::to_contiguous(&transposed_view)` |
 | `hptt` | Rust (`hptt` crate, feature-gated) | allocate destination + HPTT tensor transpose, contiguous cases only |
 | `strided-rs` (Rust `strided-rs` feature, on by default) | Rust | allocate destination + `strided_perm::copy_into` / `copy_into_col_major`, serial and parallel (`copy_into_par` / `copy_into_col_major_par`); the fastest of the (up to four) variants is reported |
 | `julia-base` | Julia | allocate destination + `permutedims!` for contiguous sources or generic `copyto!` for explicit-stride sources |
@@ -117,9 +117,9 @@ Notes:
 
 - Neither tenferro column goes through trace, einsum, or AD machinery.
   `tenferro-transpose` is the eager structural op; `tenferro-to-contiguous` is
-  the user-facing lazy-view-then-materialize path. Both are reported so the
-  wrapper overhead over the shared `strided_kernel::copy_into` kernel is
-  visible.
+  the user-facing lazy-view-then-backend-materialize path. Both are invoked
+  through `CpuBackend`, so backend-specific canonicalization optimizations are
+  included when available.
 - `strided-rs` is kept as a reference column because tenferro's CPU kernel is
   built on the same `strided-kernel` family; a divergence between
   `tenferro-transpose` and `strided-rs` on the same pattern indicates wrapper
