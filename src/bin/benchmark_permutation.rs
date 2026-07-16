@@ -7,7 +7,7 @@
 //! destination and compares:
 //!
 //! - `naive`: Rust odometer loop (also the correctness reference)
-//! - `tenferro-transpose`: eager `tenferro_cpu::transpose` (compact col-major
+//! - `tenferro-transpose`: eager `CpuBackend::transpose` (compact col-major
 //!   input only)
 //! - `tenferro-to-contiguous`: `TypedTensorView::transpose_view` +
 //!   `to_contiguous()` (accepts arbitrary source strides)
@@ -55,7 +55,8 @@ use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 
-use tenferro_tensor::{Tensor, TypedTensorView};
+use tenferro_cpu::CpuBackend;
+use tenferro_tensor::{Tensor, TensorStructural, TypedTensorView};
 
 const PATTERN_PATH: &str = "data/instances/permutation_patterns.json";
 const SUITE_ID: &str = "cpu/permutation";
@@ -666,7 +667,9 @@ fn run_participant(
             }
             let tensor = Tensor::from_vec_col_major(pattern.shape.clone(), prepared.src_data.clone())
                 .expect("building source tensor must succeed");
-            let out = tenferro_cpu::transpose(&tensor, &pattern.perm)
+            let mut backend = CpuBackend::new();
+            let out = backend
+                .transpose(&tensor, &pattern.perm)
                 .expect("tenferro-transpose must succeed on a validated pattern");
             let actual = out
                 .as_slice::<f64>()
@@ -676,7 +679,7 @@ fn run_participant(
                 return;
             }
             let timing = bench_n(warmup, iters, bytes, || {
-                let out = tenferro_cpu::transpose(&tensor, &pattern.perm).unwrap();
+                let out = backend.transpose(&tensor, &pattern.perm).unwrap();
                 black_box(out.as_slice::<f64>().unwrap().as_ptr());
             });
             finish!(base("ok", "passed", true), Some(timing));
@@ -1113,7 +1116,8 @@ mod tests {
                 let tensor =
                     Tensor::from_vec_col_major(pattern.shape.clone(), prepared.src_data.clone())
                         .unwrap();
-                let out = tenferro_cpu::transpose(&tensor, &pattern.perm).unwrap();
+                let mut backend = CpuBackend::new();
+                let out = backend.transpose(&tensor, &pattern.perm).unwrap();
                 let actual = out.as_slice::<f64>().unwrap();
                 assert_eq!(actual, prepared.reference.as_slice(), "{}", pattern.id);
             }
