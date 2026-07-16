@@ -176,6 +176,16 @@ One runner per implementation family, all consuming
   `rayon::current_num_threads()`, not gated behind any feature.
 - Julia: `scripts/benchmark_permutation.jl`, ported from `permute.jl`.
   Strided.jl becomes a dependency of the repository Julia project.
+- Both runners emit one JSON Lines record per (pattern, backend) measurement,
+  in the single shared shape described by
+  `schemas/permutation-result.schema.json` (a suite-specific schema, since
+  `schemas/benchmark-result.schema.json`'s `op` enum is einsum/linalg/sparse-
+  oriented and has no permutation/copy operation or `skipped` status). Every
+  JSONL file is validated against that schema — by
+  `scripts/run_permutation.sh` right after each runner produces one, and
+  again by `scripts/format_permutation_results.py` before formatting — and a
+  schema violation aborts the run rather than being logged as a warning,
+  since these records are machine-generated.
 - Formatting: `scripts/format_permutation_results.py` aggregates per-runner
   JSON outputs from `data/results/.../cpu/permutation/<timestamp>/` into the
   latest report, following the existing `format_*_results.py` scripts.
@@ -184,9 +194,12 @@ One runner per implementation family, all consuming
   sequentially within one run directory/timestamp so the latest report has
   one section per thread count), records `run.yaml` via
   `scripts/collect_run_metadata.py`, and regenerates
-  `result/<target_profile>/cpu/permutation.md`. `scripts/run_all.sh` gains an
-  opt-in hook (or the script is documented as a standalone entry point) so
-  the latest report is reproducible from one command.
+  `result/<target_profile>/cpu/permutation.md`. `scripts/run_all.sh` has an
+  opt-in hook: set `RUN_PERMUTATION_SUITE=1` and it runs
+  `scripts/run_permutation.sh "$NUM_THREADS"` sequentially (with
+  `SKIP_EXTERN_SETUP=1`, since `run_all.sh` already ran extern setup) after
+  every other suite in that invocation completes. Off by default; run
+  `scripts/run_permutation.sh` directly for a standalone cpu/permutation run.
 
 Environment variables follow existing conventions: `BENCHMARK_TARGET_PROFILE`,
 `BENCH_RUNS`, `BENCH_WARMUPS`, and `PATTERN_ID` to run a single pattern while

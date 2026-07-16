@@ -17,6 +17,7 @@ PROJECT_DIR = Path(__file__).resolve().parents[1]
 SUITE_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-suite.schema.json"
 RUN_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-run.schema.json"
 RESULT_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-result.schema.json"
+PERMUTATION_RESULT_SCHEMA = PROJECT_DIR / "schemas" / "permutation-result.schema.json"
 
 
 class ValidationLoadError(Exception):
@@ -117,9 +118,9 @@ def validate_run(path: Path) -> bool:
     return validate_object(path, run, validator)
 
 
-def validate_results(path: Path) -> bool:
+def validate_results(path: Path, schema_path: Path = RESULT_SCHEMA) -> bool:
     try:
-        validator = validator_for(RESULT_SCHEMA)
+        validator = validator_for(schema_path)
     except ValidationLoadError as exc:
         print(exc, file=sys.stderr)
         return False
@@ -156,9 +157,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("paths", nargs="+", type=Path)
     parser.add_argument(
         "--kind",
-        choices=["suite", "run", "result"],
+        choices=["suite", "run", "result", "permutation-result"],
         default="suite",
-        help="Validate suite YAML, run YAML, or result JSONL records.",
+        help=(
+            "Validate suite YAML, run YAML, benchmark-result.schema.json JSONL "
+            "records, or cpu/permutation's permutation-result.schema.json JSONL "
+            "records."
+        ),
     )
     return parser.parse_args()
 
@@ -171,6 +176,8 @@ def main() -> int:
             ok = validate_suite(path) and ok
         elif args.kind == "run":
             ok = validate_run(path) and ok
+        elif args.kind == "permutation-result":
+            ok = validate_results(path, PERMUTATION_RESULT_SCHEMA) and ok
         else:
             ok = validate_results(path) and ok
     return 0 if ok else 1

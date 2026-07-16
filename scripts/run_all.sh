@@ -14,6 +14,10 @@ set -euo pipefail
 # CPU ops (including linalg JVP/VJP) are written to:
 #   result/<target_profile>/cpu/cpu_ops.md
 #   result/<target_profile>/cpu/linalg_jvp_vjp.md
+#
+# Set RUN_PERMUTATION_SUITE=1 to also run scripts/run_permutation.sh (the
+# cpu/permutation suite) sequentially after everything above completes; see
+# docs/permutation-suite.md. Off by default.
 # ---------------------------------------------------------------------------
 
 NUM_THREADS="${1:-1}"
@@ -518,6 +522,14 @@ if [ -f "$CPU_OPS_LOG" ]; then
     else
         echo "WARNING: no linalg JVP/VJP rows in $CPU_OPS_LOG; skipping linalg_jvp_vjp report." >&2
     fi
+    echo ""
+fi
+
+# Opt-in: cpu/permutation suite, run sequentially after every suite above.
+# SKIP_EXTERN_SETUP=1 avoids re-running setup_extern_deps.sh, already done above.
+if [[ "${RUN_PERMUTATION_SUITE:-0}" == "1" ]]; then
+    echo "Running cpu/permutation suite (RUN_PERMUTATION_SUITE=1)..."
+    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_permutation.sh" "$NUM_THREADS"
     echo ""
 fi
 
