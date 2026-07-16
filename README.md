@@ -44,6 +44,13 @@ All profiles:
   (Cargo resolves optional path-dependency manifests even when their feature
   is disabled), so run the setup script before building anything.
 
+For `mac-cpu`, run the "All profiles" commands directly on the host. For the
+devcontainer profiles (`amd-cpu` / `linux-cpu` / `nvidia-gpu`), run them
+**inside the corresponding devcontainer** (`devcontainer exec ... bash -lc
+'uv sync && ./scripts/setup_extern_deps.sh'`) — the setup script expects the
+container's `OPENBLAS_ROOT` / `MKLROOT` environment, and the container's
+`.venv` must be built with the container's wheels (see the GPU note below).
+
 Profile-specific:
 
 - `mac-cpu`: runs natively (no Docker); tenferro uses Accelerate.
@@ -142,9 +149,32 @@ Rust and Julia runners; result records are validated against
 
 ### GPU suites (CUDA devcontainer)
 
+The repo `.venv` is **shared between the CPU and CUDA devcontainers** (it
+lives in the bind-mounted workspace). A CPU-side `uv sync` — including the
+CPU devcontainer's own post-create hook — replaces the CUDA wheels with CPU
+ones. The GPU Python runners then **silently skip** `pytorch-cuda` /
+`jax-cuda` (they exit 0 and the report is simply missing those columns)
+rather than failing. Before collecting GPU results, install the CUDA Python
+backends inside the container and verify they see the GPU:
+
 ```bash
 devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
 
+# One-time, and again after ANY CPU-side `uv sync`:
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc '
+    (uv sync --frozen || uv sync)
+    uv pip install "torch>=2.12.0" --extra-index-url https://download.pytorch.org/whl/cu126
+    uv pip install "jax[cuda12]"
+    ./scripts/setup_extern_deps.sh
+    uv run python -c "import torch, jax; assert torch.cuda.is_available(); jax.devices(\"cuda\"); print(\"CUDA OK:\", torch.__version__)"'
+```
+
+If `nvidia-smi` fails inside a previously created container ("Failed to
+initialize NVML" / `CUDA_ERROR_NO_DEVICE`) while the host GPU is fine,
+`docker restart <container>` usually restores GPU access — no rebuild needed.
+
+```bash
 # gpu/dense, gpu/einsum, gpu/sparse, gpu/tensornetwork:
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
@@ -157,6 +187,26 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_permutation.sh'
 ```
+
+`gpu/permutation` honors the same quick-trial variables as the CPU suite
+(`PATTERN_ID`, `BENCH_RUNS`, `BENCH_WARMUPS`), plus `GPU_BENCH_DEVICE` for
+the CUDA ordinal:
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu \
+    PATTERN_ID=transpose_2d_256 BENCH_RUNS=1 BENCH_WARMUPS=0 \
+    ./scripts/run_gpu_permutation.sh'
+```
+
+After any GPU run, **check the generated report for the full backend set**
+(the [Comparison Backends](#comparison-backends) section lists what each
+suite compares; for `gpu/permutation` that is two tenferro columns, cuTENSOR,
+PyTorch CUDA, JAX CUDA, and memcpy-d2d). A column that is `-` on every row
+means that backend's runner skipped — usually the CUDA-wheels issue above.
+Like `run_all.sh`, these scripts **overwrite** the tracked latest reports
+under `result/nvidia-gpu/`; after a trial or partial run, restore them before
+committing (`git checkout -- result/`).
 
 The GPU tensor network benchmark uses problem data from
 [`extern/TensorNetworkBenchmarks/`](extern/TensorNetworkBenchmarks/), based on
