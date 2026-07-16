@@ -50,9 +50,12 @@ Profile-specific:
 - `amd-cpu` / `linux-cpu`: the [devcontainer CLI](https://github.com/devcontainers/cli)
   and Docker; tenferro defaults to OpenBLAS, oneMKL is optional.
 - `nvidia-gpu`: the CUDA devcontainer under `.devcontainer/cuda/`.
-- `cpu/permutation` suite: Julia (with the repo `Project.toml` providing
-  JSON.jl and Strided.jl) for the Julia backends, and — only if you opt in to
-  the HPTT column — cmake plus a C++ toolchain (macOS: `brew install cmake`),
+- `cpu/permutation` suite: Julia on `PATH` (e.g. [juliaup](https://github.com/JuliaLang/juliaup)
+  or `brew install julia`) for the Julia backends; the repo `Project.toml`
+  pulls in JSON.jl and Strided.jl via `Pkg.instantiate`. Without `julia`,
+  those columns are skipped with a warning. For the HPTT column (present in
+  the tracked latest reports), also install cmake plus a C++ toolchain
+  (macOS: `brew install cmake`) and pass `PERMUTATION_EXTRA_FEATURES=hptt`,
   because the `hptt` Cargo feature builds the vendored HPTT C++ library.
 
 Workflow guides per platform:
@@ -67,12 +70,30 @@ Workflow guides per platform:
 `scripts/run_all.sh [NUM_THREADS]` runs the CPU einsum suite
 (tenferro trace/eager vs PyTorch/JAX) plus the CPU ops microbenchmarks
 (primal linalg, JVP/VJP, eager backward), and regenerates
-`result/<target_profile>/cpu/{einsum,cpu_ops,linalg_jvp_vjp}.md`:
+`result/<target_profile>/cpu/{einsum,cpu_ops,linalg_jvp_vjp}.md`.
+Each invocation writes one thread-count snapshot and **overwrites** those
+three latest reports, so run thread counts sequentially when you want both
+1T and 4T data in raw runs; the tracked `mac-cpu` reports match a 4-thread
+collection:
 
 ```bash
 uv sync
 ./scripts/setup_extern_deps.sh
 BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 1
+BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 4
+```
+
+To regenerate all four tracked `result/mac-cpu/cpu/*.md` reports in the same
+shape as the published latest (4T einsum/ops, plus permutation at 1T and 4T
+with HPTT), run sequentially:
+
+```bash
+uv sync
+./scripts/setup_extern_deps.sh
+# Julia on PATH; for HPTT: brew install cmake (and a C++ toolchain)
+BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 4
+PERMUTATION_EXTRA_FEATURES=hptt \
+BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_permutation.sh 1 4
 ```
 
 Quick smoke (single small instance, one run, no warmup):
@@ -89,8 +110,10 @@ PUBLICATION_GATE_SUITE=small \
 Useful environment variables: `BENCH_INSTANCE` (restrict to one einsum
 instance), `BENCH_RUNS` / `BENCH_WARMUPS` (iteration counts),
 `TENFERRO_CPU_FEATURES` (BLAS provider: `system-accelerate`,
-`system-openblas`, `system-mkl`), `RUN_PERMUTATION_SUITE=1` (also run the
-`cpu/permutation` suite after everything else, sequentially).
+`system-openblas`, `system-mkl`; macOS defaults to `system-accelerate`),
+`RUN_PERMUTATION_SUITE=1` (also run the `cpu/permutation` suite after
+everything else, sequentially; HPTT still needs
+`PERMUTATION_EXTRA_FEATURES=hptt`).
 
 Note: a full or smoke `run_all.sh` invocation **overwrites** the tracked
 latest reports under `result/<target_profile>/`. If you only ran a smoke
@@ -116,9 +139,10 @@ Base, and Strided.jl. Spec: [docs/permutation-suite.md](docs/permutation-suite.m
 ```bash
 uv sync
 ./scripts/setup_extern_deps.sh
-# Multiple thread counts are measured sequentially in one run:
-BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_permutation.sh 1 4
-# Opt in to the HPTT column (requires cmake + C++ toolchain):
+# Multiple thread counts are measured sequentially in one run.
+# Without PERMUTATION_EXTRA_FEATURES=hptt the HPTT column is omitted (`-`);
+# without `julia` on PATH the Julia columns are omitted. Tracked latest
+# reports include both.
 PERMUTATION_EXTRA_FEATURES=hptt \
 BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_permutation.sh 1 4
 ```

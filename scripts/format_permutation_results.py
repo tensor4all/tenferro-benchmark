@@ -203,7 +203,7 @@ def format_markdown(
         lines.append("")
 
     lines.append(
-        "`tenferro-transpose` is the eager `tenferro_cpu::transpose` structural op "
+        "`tenferro-transpose` is the eager `CpuBackend::transpose` structural op "
         "(compact col-major input only); `tenferro-to-contiguous` is "
         "`TypedTensorView::transpose_view` + `to_contiguous()` (accepts arbitrary "
         "source strides). Both allocate a fresh destination on every call; every "
