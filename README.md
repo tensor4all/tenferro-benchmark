@@ -17,8 +17,11 @@ live in git history only.
 | `mac-cpu` | `cpu/cpu_ops` | [result/mac-cpu/cpu/cpu_ops.md](result/mac-cpu/cpu/cpu_ops.md) |
 | `mac-cpu` | `cpu/linalg_jvp_vjp` | [result/mac-cpu/cpu/linalg_jvp_vjp.md](result/mac-cpu/cpu/linalg_jvp_vjp.md) |
 | `mac-cpu` | `cpu/permutation` | [result/mac-cpu/cpu/permutation.md](result/mac-cpu/cpu/permutation.md) |
-| `amd-cpu` (Linux devcontainer) | `cpu/permutation` | [result/amd-cpu/cpu/permutation.md](result/amd-cpu/cpu/permutation.md) |
-| `linux-cpu` (Linux devcontainer) | linalg JVP/JVP repro | [result/linux-cpu/cpu/linalg_jvp_jvp.md](result/linux-cpu/cpu/linalg_jvp_jvp.md) |
+| `linux-cpu` (Linux devcontainer; collected as `amd-cpu`) | `cpu/einsum` | [result/linux-cpu/cpu/einsum.md](result/linux-cpu/cpu/einsum.md) |
+| `linux-cpu` | `cpu/cpu_ops` | [result/linux-cpu/cpu/cpu_ops.md](result/linux-cpu/cpu/cpu_ops.md) |
+| `linux-cpu` | `cpu/linalg_jvp_vjp` | [result/linux-cpu/cpu/linalg_jvp_vjp.md](result/linux-cpu/cpu/linalg_jvp_vjp.md) |
+| `linux-cpu` | `cpu/permutation` | [result/linux-cpu/cpu/permutation.md](result/linux-cpu/cpu/permutation.md) |
+| `linux-cpu` | linalg JVP/JVP repro | [result/linux-cpu/cpu/linalg_jvp_jvp.md](result/linux-cpu/cpu/linalg_jvp_jvp.md) |
 | `nvidia-gpu` (CUDA devcontainer) | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
 | `nvidia-gpu` | `gpu/sparse` | [result/nvidia-gpu/gpu/sparse.md](result/nvidia-gpu/gpu/sparse.md) |
