@@ -1001,13 +1001,10 @@ dependencies = [
  "generativity",
  "libm",
  "nano-gemm",
- "npyz",
  "num-complex",
  "num-traits",
  "private-gemm-x86",
  "pulp",
- "rand 0.9.4",
- "rand_distr",
  "rayon",
  "reborrow",
  "spindle",
@@ -2084,17 +2081,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "npyz"
-version = "0.8.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f0e759e014e630f90af745101b614f761306ddc541681e546649068e25ec1b9"
-dependencies = [
- "byteorder",
- "num-bigint",
- "py_literal",
-]
-
-[[package]]
 name = "nu-ansi-term"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2135,7 +2121,6 @@ checksum = "73f88a1307638156682bada9d7604135552957b7818057dcef22705b4d509495"
 dependencies = [
  "bytemuck",
  "num-traits",
- "rand 0.8.6",
 ]
 
 [[package]]
@@ -2403,49 +2388,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
 
 [[package]]
-name = "pest"
-version = "2.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0848c601009d37dfa3430c4666e147e49cdcf1b92ecd3e63657d8a5f19da662"
-dependencies = [
- "memchr",
- "ucd-trie",
-]
-
-[[package]]
-name = "pest_derive"
-version = "2.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11f486f1ea21e6c10ed15d5a7c77165d0ee443402f0780849d1768e7d9d6fe77"
-dependencies = [
- "pest",
- "pest_generator",
-]
-
-[[package]]
-name = "pest_generator"
-version = "2.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8040c4647b13b210a963c1ed407c1ff4fdfa01c31d6d2a098218702e6664f94f"
-dependencies = [
- "pest",
- "pest_meta",
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
-name = "pest_meta"
-version = "2.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89815c69d36021a140146f26659a81d6c2afa33d216d736dd4be5381a7362220"
-dependencies = [
- "pest",
- "sha2",
-]
-
-[[package]]
 name = "petgraph"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2587,19 +2529,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40e24eee682d89fb193496edf918a7f407d30175b2e785fe057e4392dfd182e0"
 
 [[package]]
-name = "py_literal"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "102df7a3d46db9d3891f178dcc826dc270a6746277a9ae6436f8d29fd490a8e1"
-dependencies = [
- "num-bigint",
- "num-complex",
- "num-traits",
- "pest",
- "pest_derive",
-]
-
-[[package]]
 name = "qd"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2634,15 +2563,6 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
 name = "rand"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ca0ecfa931c29007047d1bc58e623ab12e5590e8c7cc53200d5202b69266d8a"
-dependencies = [
- "rand_core 0.6.4",
-]
-
-[[package]]
-name = "rand"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44c5af06bb1b7d3216d91932aed5265164bf384dc89cd6ba05cf59a35f5f76ea"
@@ -2674,12 +2594,6 @@ dependencies = [
 
 [[package]]
 name = "rand_core"
-version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
-
-[[package]]
-name = "rand_core"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "76afc826de14238e6e8c374ddcc1fa19e374fd8dd986b0d2af0d02377261d83c"
@@ -2692,16 +2606,6 @@ name = "rand_core"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
-
-[[package]]
-name = "rand_distr"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a8615d50dcf34fa31f7ab52692afec947c4dd0ab803cc87cb3b0b4570ff7463"
-dependencies = [
- "num-traits",
- "rand 0.9.4",
-]
 
 [[package]]
 name = "range-alloc"
@@ -3183,8 +3087,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "strided-einsum2"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d088555a080392e32f3b2b5320428a59fadea4670a01598b3600f0c1e0d641b"
+source = "git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2#10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2"
 dependencies = [
  "cblas-sys 0.2.0",
  "faer",
@@ -3194,25 +3097,24 @@ dependencies = [
  "rayon",
  "smallvec",
  "strided-kernel",
- "strided-perm 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "strided-traits 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "strided-view 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-perm 0.3.0 (git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2)",
+ "strided-traits 0.3.0 (git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2)",
+ "strided-view 0.3.0 (git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2)",
  "thiserror 1.0.69",
 ]
 
 [[package]]
 name = "strided-kernel"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a326553651071421b6efa6335df4a330df05676d745e8aca75c270b1ca6b5df"
+source = "git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2#10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2"
 dependencies = [
  "num-complex",
  "num-traits",
  "pulp",
  "rayon",
  "smallvec",
- "strided-perm 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "strided-view 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-perm 0.3.0 (git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2)",
+ "strided-view 0.3.0 (git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2)",
 ]
 
 [[package]]
@@ -3226,11 +3128,10 @@ dependencies = [
 [[package]]
 name = "strided-perm"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6b0821ceb0ec2d4d1b7854adaf8ac64fff292d0aa295be2aeefaceb656f05eb"
+source = "git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2#10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2"
 dependencies = [
  "rayon",
- "strided-view 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-view 0.3.0 (git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2)",
 ]
 
 [[package]]
@@ -3244,8 +3145,7 @@ dependencies = [
 [[package]]
 name = "strided-traits"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00aef6d8445e24867d27efe3297e1655145274165d55c73f5ba8a276927106e5"
+source = "git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2#10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2"
 dependencies = [
  "num-complex",
  "num-traits",
@@ -3264,12 +3164,11 @@ dependencies = [
 [[package]]
 name = "strided-view"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b85fc00197753754faf203c458837f316ebfcc58704f05dab4a64ec30edde076"
+source = "git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2#10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2"
 dependencies = [
  "num-complex",
  "num-traits",
- "strided-traits 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-traits 0.3.0 (git+https://github.com/tensor4all/strided-rs.git?rev=10fc972d3c0f8cdfd4ecb45d21d815aebfd7d1f2)",
  "thiserror 1.0.69",
 ]
 
@@ -3354,7 +3253,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "half",
  "t4a-cubecl-core",
@@ -3368,7 +3267,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-common"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "backtrace",
  "bytemuck",
@@ -3407,7 +3306,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-core"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -3434,7 +3333,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-cpp"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "bytemuck",
  "derive-new",
@@ -3450,7 +3349,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-cuda"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "bytemuck",
  "cudarc",
@@ -3467,7 +3366,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-ir"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "derive-new",
  "derive_more",
@@ -3489,7 +3388,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-macros"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "darling 0.23.0",
  "derive-new",
@@ -3505,7 +3404,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-macros-internal"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "darling 0.23.0",
  "proc-macro2",
@@ -3516,7 +3415,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-opt"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "float-ord",
  "log",
@@ -3533,7 +3432,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-runtime"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "ahash",
  "async-channel",
@@ -3562,7 +3461,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-std"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "half",
  "num-traits",
@@ -3578,13 +3477,12 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-wgpu"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "async-channel",
  "bytemuck",
  "cfg-if",
  "cfg_aliases",
- "derive-new",
  "derive_more",
  "half",
  "hashbrown 0.16.1",
@@ -3601,7 +3499,7 @@ dependencies = [
 [[package]]
 name = "t4a-cubecl-zspace"
 version = "0.10.0"
-source = "git+https://github.com/tensor4all/cubecl.git?rev=6424d9da407d4bc10034aee3bae52705eb5d2da0#6424d9da407d4bc10034aee3bae52705eb5d2da0"
+source = "git+https://github.com/tensor4all/cubecl.git?rev=346135ab43cececf6405d52a3dbc987537402d27#346135ab43cececf6405d52a3dbc987537402d27"
 dependencies = [
  "derive-new",
  "serde",
@@ -3671,6 +3569,7 @@ dependencies = [
  "smallvec",
  "tenferro-ad",
  "tenferro-cpu",
+ "tenferro-gpu",
  "tenferro-internal-extension-macros",
  "tenferro-internal-ops",
  "tenferro-runtime",
@@ -3714,6 +3613,7 @@ dependencies = [
  "t4a-cubecl-cuda",
  "t4a-cubecl-runtime",
  "tenferro-core-ops",
+ "tenferro-cpu",
  "tenferro-tensor",
  "thiserror 2.0.18",
 ]
@@ -3762,6 +3662,7 @@ dependencies = [
  "tenferro-internal-ops",
  "tenferro-runtime",
  "tenferro-tensor",
+ "thiserror 2.0.18",
  "tidu",
 ]
 
@@ -4029,12 +3930,6 @@ name = "typenum"
 version = "1.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40ce102ab67701b8526c123c1bab5cbe42d7040ccfd0f64af1a385808d2f43de"
-
-[[package]]
-name = "ucd-trie"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2896d95c02a80c6d6a5d6e953d479f5ddf2dfdb6a244441010e373ac0fb88971"
 
 [[package]]
 name = "unicode-ident"
