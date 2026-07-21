@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Mirror the amd-cpu cpu/einsum and cpu/cpu_ops reports to the linux-cpu
-# report alias, following the same convention as
+# Mirror the amd-cpu CPU reports to the linux-cpu report alias, following the
+# same convention as
 # reproduce_linux_cpu_linalg_jvp_jvp.sh: the benchmark runner's maintained
 # Linux CPU target profile is amd-cpu, and linux-cpu reports are rewritten
 # aliases of amd-cpu runs (no re-measurement).
 #
 # Usage:
-#   ./scripts/mirror_linux_cpu_cpu_reports.sh THREADS:TIMESTAMP [THREADS:TIMESTAMP ...]
+#   ./scripts/mirror_linux_cpu_cpu_reports.sh THREADS:TIMESTAMP [THREADS:TIMESTAMP ...] [permutation:TIMESTAMP]
 # Example:
-#   ./scripts/mirror_linux_cpu_cpu_reports.sh 1:20260716_075234 4:20260716_081717
+#   ./scripts/mirror_linux_cpu_cpu_reports.sh 1:20260716_075234 4:20260716_081717 permutation:20260716_083000
 #
 # Each TIMESTAMP must name an existing full run under
 # data/results/<run_profile>/cpu/einsum/<TIMESTAMP>/ produced by
@@ -23,13 +23,27 @@ RUN_TARGET_PROFILE="${BENCHMARK_RUN_TARGET_PROFILE:-amd-cpu}"
 REPORT_TARGET_PROFILE="${BENCHMARK_REPORT_TARGET_PROFILE:-linux-cpu}"
 
 if [[ "$#" -eq 0 ]]; then
-    echo "Usage: $0 THREADS:TIMESTAMP [THREADS:TIMESTAMP ...]" >&2
+    echo "Usage: $0 THREADS:TIMESTAMP [THREADS:TIMESTAMP ...] [permutation:TIMESTAMP]" >&2
     exit 2
 fi
 
 THREADS_LIST=()
 TIMESTAMP_LIST=()
+PERMUTATION_TIMESTAMP=""
 for arg in "$@"; do
+    if [[ "$arg" == permutation:* ]]; then
+        timestamp="${arg#*:}"
+        if [[ -z "$timestamp" || -n "$PERMUTATION_TIMESTAMP" ]]; then
+            echo "Bad permutation input '$arg' (expected one permutation:TIMESTAMP)" >&2
+            exit 2
+        fi
+        if [[ ! -d "$ROOT/data/results/$RUN_TARGET_PROFILE/cpu/permutation/$timestamp" ]]; then
+            echo "Run directory not found: data/results/$RUN_TARGET_PROFILE/cpu/permutation/$timestamp" >&2
+            exit 2
+        fi
+        PERMUTATION_TIMESTAMP="$timestamp"
+        continue
+    fi
     threads="${arg%%:*}"
     timestamp="${arg#*:}"
     case "$threads" in
@@ -49,6 +63,11 @@ for arg in "$@"; do
     THREADS_LIST+=("$threads")
     TIMESTAMP_LIST+=("$timestamp")
 done
+
+if [[ "${#THREADS_LIST[@]}" -eq 0 ]]; then
+    echo "At least one THREADS:TIMESTAMP input is required" >&2
+    exit 2
+fi
 
 mirror_invocation="./scripts/mirror_linux_cpu_cpu_reports.sh $*"
 
@@ -83,6 +102,14 @@ for timestamp in "${TIMESTAMP_LIST[@]}"; do
     rm -rf "$alias_run_dir"
     cp -a "$source_run_dir" "$alias_run_dir"
 done
+
+if [[ -n "$PERMUTATION_TIMESTAMP" ]]; then
+    source_run_dir="$ROOT/data/results/$RUN_TARGET_PROFILE/cpu/permutation/$PERMUTATION_TIMESTAMP"
+    alias_run_dir="$ROOT/data/results/$REPORT_TARGET_PROFILE/cpu/permutation/$PERMUTATION_TIMESTAMP"
+    mkdir -p "$(dirname "$alias_run_dir")"
+    rm -rf "$alias_run_dir"
+    cp -a "$source_run_dir" "$alias_run_dir"
+fi
 
 write_alias_report() {
     local suite="$1"        # e.g. cpu/einsum
@@ -123,8 +150,39 @@ write_alias_report() {
     echo "Wrote $output"
 }
 
+write_permutation_alias_report() {
+    local source_report="$ROOT/result/$RUN_TARGET_PROFILE/cpu/permutation.md"
+    local output="$ROOT/result/$REPORT_TARGET_PROFILE/cpu/permutation.md"
+
+    if [[ ! -f "$source_report" ]]; then
+        echo "Missing permutation report: $source_report" >&2
+        exit 1
+    fi
+
+    {
+        echo "# Linux CPU Permutation Benchmark Results"
+        echo ""
+        echo "- Suite: \`cpu/permutation\`"
+        echo "- Target profile: \`$REPORT_TARGET_PROFILE\`"
+        echo "- Source timestamp: \`$PERMUTATION_TIMESTAMP\`"
+        echo ""
+        echo "Mirrored from \`data/results/$RUN_TARGET_PROFILE/cpu/permutation/$PERMUTATION_TIMESTAMP\`;"
+        echo "the raw-run alias is \`data/results/$REPORT_TARGET_PROFILE/cpu/permutation/$PERMUTATION_TIMESTAMP\`."
+        echo "Regenerate with \`$mirror_invocation\`."
+        echo ""
+        rewrite_report "$source_report" | sectionize_report
+    } > "$output"
+    echo "Wrote $output"
+}
+
 mkdir -p "$ROOT/result/$REPORT_TARGET_PROFILE/cpu"
 write_alias_report "cpu/einsum" "Linux CPU Einsum Benchmark Results" \
     "report.md" "$ROOT/result/$REPORT_TARGET_PROFILE/cpu/einsum.md"
 write_alias_report "cpu/cpu_ops" "Linux CPU Ops Benchmark Results" \
     "cpu_ops_report.md" "$ROOT/result/$REPORT_TARGET_PROFILE/cpu/cpu_ops.md"
+write_alias_report "cpu/linalg_jvp_vjp" "Linux CPU Linalg JVP/VJP Benchmark Results" \
+    "linalg_jvp_vjp_report.md" "$ROOT/result/$REPORT_TARGET_PROFILE/cpu/linalg_jvp_vjp.md"
+
+if [[ -n "$PERMUTATION_TIMESTAMP" ]]; then
+    write_permutation_alias_report
+fi
