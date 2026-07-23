@@ -17,28 +17,6 @@
       "participants_gpu": ["memcpy-d2d"]
     },
     {
-      "id": "transpose_2d_256",
-      "label": "2D 256^2 transpose [1,0]",
-      "dtype": "f64",
-      "shape": [256, 256],
-      "perm": [1, 0],
-      "src_layout": { "kind": "col_major" },
-      "dst_layout": { "kind": "col_major" },
-      "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
-    },
-    {
-      "id": "transpose_2d_1024",
-      "label": "2D 1024^2 transpose [1,0]",
-      "dtype": "f64",
-      "shape": [1024, 1024],
-      "perm": [1, 0],
-      "src_layout": { "kind": "col_major" },
-      "dst_layout": { "kind": "col_major" },
-      "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
-    },
-    {
       "id": "transpose_2d_2048",
       "label": "2D 2048^2 transpose [1,0]",
       "dtype": "f64",
@@ -84,34 +62,34 @@
       "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
     },
     {
-      "id": "reverse_20d_2",
-      "label": "20D 2^20 reverse",
+      "id": "reverse_23d_2",
+      "label": "23D 2^23 reverse",
       "dtype": "f64",
-      "shape": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-      "perm": [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+      "shape": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+      "perm": [22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "notes_gpu": "rank 20 exceeds cuTENSOR's documented mode limit on some builds; cutensor is listed as a participant but the runner verifies rank support at runtime and records status=skipped with a note instead of crashing if the library rejects it.",
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
+      "notes_gpu": "rank 23 exceeds cuTENSOR's documented mode limit on some builds; cutensor is listed as a participant but the runner verifies rank support at runtime and records status=skipped with a note instead of crashing if the library rejects it. jax-cuda is excluded because this rank is close to the known rank-24 XLA compile stall.",
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     },
     {
-      "id": "reverse_13d_2",
-      "label": "13D 2^13 reverse",
+      "id": "reverse_15d_3",
+      "label": "15D 3^15 reverse",
       "dtype": "f64",
-      "shape": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-      "perm": [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+      "shape": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+      "perm": [14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
       "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
     },
     {
-      "id": "cyclic_13d_2",
-      "label": "13D 2^13 cyclic [1,2,...,0]",
+      "id": "cyclic_15d_3",
+      "label": "15D 3^15 cyclic [1,2,...,0]",
       "dtype": "f64",
-      "shape": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-      "perm": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0],
+      "shape": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+      "perm": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],

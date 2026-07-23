@@ -21,14 +21,12 @@ problems:
   source: data/instances/permutation_patterns.json
   include:
     - memcpy_24d_contiguous
-    - transpose_2d_256
-    - transpose_2d_1024
     - transpose_2d_2048
     - transpose_3d_256_201
     - transpose_3d_256_102
     - rotation_6d_32_32_32_32_16_16
-    - reverse_20d_2
-    - reverse_13d_2
-    - cyclic_13d_2
+    - reverse_23d_2
+    - reverse_15d_3
+    - cyclic_15d_3
     - tn_light_415_24d_scattered_to_colmajor
     - tn_light_415_24d_contiguous_same_perm
