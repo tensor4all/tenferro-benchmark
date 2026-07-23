@@ -10,8 +10,7 @@ Measure the cost of materializing a strided/permuted `f64` tensor view into a
 contiguous column-major destination, and compare tenferro-rs against
 established transpose/permutation implementations on identical semantics:
 
-- naive baseline (Rust odometer loop)
-- tenferro-rs transpose/materialize paths
+- tenferro-rs `to_contiguous` materialization
 - HPTT
 - Julia Base (`permutedims!` / generic `copyto!`)
 - Strided.jl (`@strided` materialization)
@@ -105,9 +104,7 @@ Backend column names follow [architecture terminology](architecture.md).
 
 | backend | runner | measured path |
 |---|---|---|
-| `naive` | Rust | allocate destination + odometer index loop; baseline and correctness reference |
-| `tenferro-transpose` | Rust | eager op `tenferro_cpu::structural::transpose` (`TensorStructural::transpose` on `CpuBackend`); internally `StridedView::permute` + `strided_kernel::copy_into` |
-| `tenferro-to-contiguous` | Rust | view API `TypedTensorView::transpose_view(perm)` followed by allocation-inclusive `CpuBackend::to_contiguous(&transposed_view)` |
+| `tenferro-rs` | Rust | view API `TypedTensorView::transpose_view(perm)` followed by allocation-inclusive `CpuBackend::to_contiguous(&transposed_view)`; the metadata-only view is constructed outside timing |
 | `hptt` | Rust (`hptt` crate, feature-gated) | allocate destination + HPTT tensor transpose, contiguous cases only |
 | `strided-rs` (Rust `strided-rs` feature, on by default) | Rust | allocate destination + `strided_perm::copy_into` / `copy_into_col_major`, serial and parallel (`copy_into_par` / `copy_into_col_major_par`); the fastest of the (up to four) variants is reported |
 | `julia-base` | Julia | allocate destination + `permutedims!` for contiguous sources or generic `copyto!` for explicit-stride sources |
@@ -115,15 +112,13 @@ Backend column names follow [architecture terminology](architecture.md).
 
 Notes:
 
-- Neither tenferro column goes through trace, einsum, or AD machinery.
-  `tenferro-transpose` is the eager structural op; `tenferro-to-contiguous` is
-  the user-facing lazy-view-then-backend-materialize path. Both are invoked
-  through `CpuBackend`, so backend-specific canonicalization optimizations are
-  included when available.
-- `strided-rs` is kept as a reference column because tenferro's CPU kernel is
-  built on the same `strided-kernel` family; a divergence between
-  `tenferro-transpose` and `strided-rs` on the same pattern indicates wrapper
-  overhead, not kernel regression. It depends on `extern/strided-rs`'s
+- The tenferro column does not go through trace, einsum, or AD machinery. It
+  measures the user-facing lazy-view-then-backend-materialize path through
+  `CpuBackend`, so backend-specific canonicalization optimizations are included
+  when available.
+- `strided-rs` is kept as a reference column because it directly exercises
+  specialized strided-copy entry points against the same materialization
+  semantics. It depends on `extern/strided-rs`'s
   `strided-perm` / `strided-view` crates as optional path dependencies (Cargo
   feature `strided-rs`, on by default in `scripts/run_permutation.sh`);
   `scripts/setup_extern_deps.sh` clones `extern/strided-rs` unconditionally
@@ -137,8 +132,8 @@ Notes:
 ### Allocation Semantics
 
 All backend columns measure **fresh destination allocation plus
-materialization** on every timed call. The tenferro APIs return new owned
-tensors and do not expose a destination-reuse operation for these paths, so
+materialization** on every timed call. The tenferro API returns a new owned
+tensor and does not expose a destination-reuse operation for this path, so
 making every participant allocate is the common operation all backends can
 express. Source construction and lazy permutation-view construction remain
 outside the timed region.
@@ -150,9 +145,10 @@ tenferro `copy_into`-style public API.
 
 ### Correctness Gate
 
-Before timing, every participant's output is compared elementwise against the
-`naive` reference for the pattern's deterministic input. A mismatch fails the
-run for that pattern; incorrect implementations are never timed.
+Before timing, every participant's output is compared elementwise against an
+internal naive odometer reference for the pattern's deterministic input. The
+reference is generated once and is not a timed participant. A mismatch fails
+the run for that pattern; incorrect implementations are never timed.
 
 ### HPTT Eligibility
 
@@ -169,7 +165,7 @@ One runner per implementation family, all consuming
 `data/instances/permutation_patterns.json`:
 
 - Rust: `src/bin/benchmark_permutation.rs`, ported from the source suite's
-  `permute.rs` with the two tenferro backends added. A Cargo feature gates
+  `permute.rs` with the tenferro-rs backend added. A Cargo feature gates
   `hptt` (requires cmake and a C++ toolchain; builds on both macOS and Linux;
   not on by default, opt in via `PERMUTATION_EXTRA_FEATURES=hptt`). Another
   Cargo feature, `strided-rs` (on by default in `scripts/run_permutation.sh`),
@@ -234,12 +230,14 @@ investigating.
 
 Supervision checklist, restated as suite requirements:
 
-1. tenferro columns are eager materialize/copy paths only; no trace, no AD.
+1. The tenferro-rs column is the view-to-contiguous materialize path only; no
+   trace, eager structural transpose, or AD.
 2. HPTT rows exist only where the public HPTT API expresses the identical
    semantics (contiguous source and destination).
 3. Pattern definitions live in one JSON file consumed by all runners; no
    per-runner hardcoded shapes.
-4. Correctness is verified against the naive reference before any timing.
+4. Correctness is verified against the internal untimed odometer reference
+   before any timing.
 5. Input data is deterministic (`deterministic_index_value`); no RNG state in
    the comparison.
 6. Allocation semantics are uniform across columns or explicitly footnoted.

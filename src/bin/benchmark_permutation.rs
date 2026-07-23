@@ -6,10 +6,7 @@
 //! strided/permuted `f64` tensor view into a compact column-major
 //! destination and compares:
 //!
-//! - `naive`: Rust odometer loop (also the correctness reference)
-//! - `tenferro-transpose`: eager `CpuBackend::transpose` (compact col-major
-//!   input only)
-//! - `tenferro-to-contiguous`: `TypedTensorView::transpose_view` +
+//! - `tenferro-rs`: `TypedTensorView::transpose_view` +
 //!   `CpuBackend::to_contiguous` (accepts arbitrary source strides)
 //! - `hptt` (feature `hptt`, contiguous src/dst only)
 //! - `strided-rs` (feature `strided-rs`; `strided_perm::copy_into` /
@@ -19,9 +16,10 @@
 //! `julia-base` / `strided-jl` participants are measured by
 //! `scripts/benchmark_permutation.jl` and are ignored here.
 //!
-//! Every participant's output is compared elementwise against the `naive`
-//! reference before any timing; a mismatch is reported and fails the process
-//! (nonzero exit code) without corrupting other patterns' measurements.
+//! Every participant's output is compared elementwise against an internal
+//! naive odometer reference before any timing; the odometer itself is not a
+//! timed participant. A mismatch is reported and fails the process (nonzero
+//! exit code) without corrupting other patterns' measurements.
 //!
 //! Environment variables:
 //! - `PATTERN_ID`: run a single pattern id instead of the full suite.
@@ -56,9 +54,7 @@ use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 
 use tenferro_cpu::CpuBackend;
-use tenferro_tensor::{
-    Tensor, TensorStructural, TensorViewCanonicalization, TypedTensorView,
-};
+use tenferro_tensor::{TensorViewCanonicalization, TypedTensorView};
 
 const PATTERN_PATH: &str = "data/instances/permutation_patterns.json";
 const SUITE_ID: &str = "cpu/permutation";
@@ -113,9 +109,7 @@ enum LayoutPattern {
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 enum Participant {
-    Naive,
-    TenferroTranspose,
-    TenferroToContiguous,
+    TenferroRs,
     Hptt,
     StridedRs,
     JuliaBase,
@@ -126,9 +120,7 @@ enum Participant {
 impl Participant {
     fn as_str(self) -> &'static str {
         match self {
-            Participant::Naive => "naive",
-            Participant::TenferroTranspose => "tenferro-transpose",
-            Participant::TenferroToContiguous => "tenferro-to-contiguous",
+            Participant::TenferroRs => "tenferro-rs",
             Participant::Hptt => "hptt",
             Participant::StridedRs => "strided-rs",
             Participant::JuliaBase => "julia-base",
@@ -295,8 +287,8 @@ fn deterministic_data(total: usize) -> Vec<f64> {
     (0..total).map(|i| i as f64 + 1.0).collect()
 }
 
-/// Generic strided copy using odometer iteration. Also the correctness
-/// reference and the `naive` benchmark participant.
+/// Generic strided copy using odometer iteration for the untimed correctness
+/// reference.
 unsafe fn naive_strided_copy(
     src_ptr: *const f64,
     dst_ptr: *mut f64,
@@ -330,9 +322,6 @@ unsafe fn naive_strided_copy(
 struct PreparedPattern {
     src_data: Vec<f64>,
     src_strides: Vec<isize>,
-    out_shape: Vec<usize>,
-    src_perm_strides: Vec<isize>,
-    dst_strides: Vec<isize>,
     reference: Vec<f64>,
 }
 
@@ -360,9 +349,6 @@ fn prepare_pattern(pattern: &PermutePattern) -> PreparedPattern {
     PreparedPattern {
         src_data,
         src_strides,
-        out_shape,
-        src_perm_strides,
-        dst_strides,
         reference,
     }
 }
@@ -504,7 +490,12 @@ impl RecordSink {
     }
 }
 
-fn print_human_row(pattern: &PermutePattern, backend: &str, timing: Option<&Timing>, note: Option<&str>) {
+fn print_human_row(
+    pattern: &PermutePattern,
+    backend: &str,
+    timing: Option<&Timing>,
+    note: Option<&str>,
+) {
     match timing {
         Some(t) => println!(
             "  {backend:30} {ms:8.3} ms  ({p25:.3} / {p75:.3})  {gbps:6.2} GB/s",
@@ -555,30 +546,31 @@ fn run_participant(
     sink: &mut RecordSink,
 ) {
     let total = prepared.reference.len();
-    let base = |status: &'static str, correctness: &'static str, per_call_allocation: bool| ResultRecord {
-        schema_version: 1,
-        suite_id: SUITE_ID,
-        runner: "rust",
-        pattern_id: pattern.id.clone(),
-        label: pattern.label.clone(),
-        backend: participant.as_str(),
-        shape: pattern.shape.clone(),
-        perm: pattern.perm.clone(),
-        dtype: "f64",
-        elems: total,
-        bytes_rw: bytes,
-        threads,
-        status,
-        correctness,
-        per_call_allocation,
-        warmup: None,
-        iters: None,
-        median_ms: None,
-        p25_ms: None,
-        p75_ms: None,
-        gbps: None,
-        notes: None,
-    };
+    let base =
+        |status: &'static str, correctness: &'static str, per_call_allocation: bool| ResultRecord {
+            schema_version: 2,
+            suite_id: SUITE_ID,
+            runner: "rust",
+            pattern_id: pattern.id.clone(),
+            label: pattern.label.clone(),
+            backend: participant.as_str(),
+            shape: pattern.shape.clone(),
+            perm: pattern.perm.clone(),
+            dtype: "f64",
+            elems: total,
+            bytes_rw: bytes,
+            threads,
+            status,
+            correctness,
+            per_call_allocation,
+            warmup: None,
+            iters: None,
+            median_ms: None,
+            p25_ms: None,
+            p75_ms: None,
+            gbps: None,
+            notes: None,
+        };
 
     macro_rules! finish {
         ($record:expr, $timing:expr) => {{
@@ -599,36 +591,6 @@ fn run_participant(
     }
 
     match participant {
-        Participant::Naive => {
-            let mut dst = vec![0.0f64; total];
-            unsafe {
-                naive_strided_copy(
-                    prepared.src_data.as_ptr(),
-                    dst.as_mut_ptr(),
-                    &prepared.out_shape,
-                    &prepared.src_perm_strides,
-                    &prepared.dst_strides,
-                );
-            }
-            if let Err(msg) = verify_output(&dst, &prepared.reference) {
-                finish!(base("verification_failed", "failed", true).with_note(msg), None::<Timing>);
-                return;
-            }
-            let timing = bench_n(warmup, iters, bytes, || {
-                let mut dst = vec![0.0f64; total];
-                unsafe {
-                    naive_strided_copy(
-                        prepared.src_data.as_ptr(),
-                        dst.as_mut_ptr(),
-                        &prepared.out_shape,
-                        &prepared.src_perm_strides,
-                        &prepared.dst_strides,
-                    )
-                };
-                black_box(dst.as_ptr());
-            });
-            finish!(base("ok", "passed", true), Some(timing));
-        }
         Participant::Memcpy => {
             let identity = pattern.perm.iter().copied().eq(0..pattern.perm.len());
             let contiguous = matches!(pattern.src_layout, LayoutPattern::ColMajor)
@@ -646,49 +608,26 @@ fn run_participant(
                 std::ptr::copy_nonoverlapping(prepared.src_data.as_ptr(), dst.as_mut_ptr(), total);
             }
             if let Err(msg) = verify_output(&dst, &prepared.reference) {
-                finish!(base("verification_failed", "failed", true).with_note(msg), None::<Timing>);
+                finish!(
+                    base("verification_failed", "failed", true).with_note(msg),
+                    None::<Timing>
+                );
                 return;
             }
             let timing = bench_n(warmup, iters, bytes, || {
                 let mut dst = vec![0.0f64; total];
                 unsafe {
-                    std::ptr::copy_nonoverlapping(prepared.src_data.as_ptr(), dst.as_mut_ptr(), total)
+                    std::ptr::copy_nonoverlapping(
+                        prepared.src_data.as_ptr(),
+                        dst.as_mut_ptr(),
+                        total,
+                    )
                 };
                 black_box(dst.as_ptr());
             });
             finish!(base("ok", "passed", true), Some(timing));
         }
-        Participant::TenferroTranspose => {
-            if !matches!(pattern.src_layout, LayoutPattern::ColMajor) {
-                finish!(
-                    base("skipped", "skipped", true).with_note(
-                        "tenferro-transpose (eager op) requires a compact col-major source"
-                            .into()
-                    ),
-                    None::<Timing>
-                );
-                return;
-            }
-            let tensor = Tensor::from_vec_col_major(pattern.shape.clone(), prepared.src_data.clone())
-                .expect("building source tensor must succeed");
-            let mut backend = CpuBackend::new();
-            let out = backend
-                .transpose(&tensor, &pattern.perm)
-                .expect("tenferro-transpose must succeed on a validated pattern");
-            let actual = out
-                .as_slice::<f64>()
-                .expect("tenferro-transpose output must be f64");
-            if let Err(msg) = verify_output(actual, &prepared.reference) {
-                finish!(base("verification_failed", "failed", true).with_note(msg), None::<Timing>);
-                return;
-            }
-            let timing = bench_n(warmup, iters, bytes, || {
-                let out = backend.transpose(&tensor, &pattern.perm).unwrap();
-                black_box(out.as_slice::<f64>().unwrap().as_ptr());
-            });
-            finish!(base("ok", "passed", true), Some(timing));
-        }
-        Participant::TenferroToContiguous => {
+        Participant::TenferroRs => {
             let view = TypedTensorView::<f64>::from_slice(
                 pattern.shape.clone(),
                 prepared.src_strides.clone(),
@@ -707,7 +646,10 @@ fn run_participant(
                 .as_slice()
                 .expect("to_contiguous output must be host-contiguous");
             if let Err(msg) = verify_output(actual, &prepared.reference) {
-                finish!(base("verification_failed", "failed", true).with_note(msg), None::<Timing>);
+                finish!(
+                    base("verification_failed", "failed", true).with_note(msg),
+                    None::<Timing>
+                );
                 return;
             }
             let timing = bench_n(warmup, iters, bytes, || {
@@ -716,7 +658,9 @@ fn run_participant(
             });
             finish!(base("ok", "passed", true), Some(timing));
         }
-        Participant::Hptt => run_hptt_participant(pattern, prepared, warmup, iters, bytes, threads, sink),
+        Participant::Hptt => {
+            run_hptt_participant(pattern, prepared, warmup, iters, bytes, threads, sink)
+        }
         Participant::StridedRs => {
             run_strided_rs_participant(pattern, prepared, warmup, iters, bytes, threads, sink)
         }
@@ -745,7 +689,7 @@ fn run_hptt_participant(
 ) {
     let total = prepared.reference.len();
     let base = |status: &'static str, correctness: &'static str| ResultRecord {
-        schema_version: 1,
+        schema_version: 2,
         suite_id: SUITE_ID,
         runner: "rust",
         pattern_id: pattern.id.clone(),
@@ -836,7 +780,7 @@ fn run_hptt_participant(
 ) {
     let total = prepared.reference.len();
     let record = ResultRecord {
-        schema_version: 1,
+        schema_version: 2,
         suite_id: SUITE_ID,
         runner: "rust",
         pattern_id: pattern.id.clone(),
@@ -875,7 +819,7 @@ fn run_strided_rs_participant(
 ) {
     let total = prepared.reference.len();
     let base = |status: &'static str, correctness: &'static str| ResultRecord {
-        schema_version: 1,
+        schema_version: 2,
         suite_id: SUITE_ID,
         runner: "rust",
         pattern_id: pattern.id.clone(),
@@ -925,9 +869,15 @@ fn run_strided_rs_participant(
     // on the actual rayon pool size (`threads`) at runtime.
     let candidates: [(&'static str, CopyFn); 4] = [
         ("copy_into", strided_perm::copy_into as CopyFn),
-        ("copy_into_col_major", strided_perm::copy_into_col_major as CopyFn),
+        (
+            "copy_into_col_major",
+            strided_perm::copy_into_col_major as CopyFn,
+        ),
         ("copy_into_par", strided_perm::copy_into_par as CopyFn),
-        ("copy_into_col_major_par", strided_perm::copy_into_col_major_par as CopyFn),
+        (
+            "copy_into_col_major_par",
+            strided_perm::copy_into_col_major_par as CopyFn,
+        ),
     ];
 
     // Correctness gate before any timing: run each variant once and keep
@@ -958,7 +908,10 @@ fn run_strided_rs_participant(
             f(&mut dst.view_mut(), &src_perm).unwrap();
             black_box(dst.data().as_ptr());
         });
-        if best.as_ref().is_none_or(|(_, b)| timing.median_ms < b.median_ms) {
+        if best
+            .as_ref()
+            .is_none_or(|(_, b)| timing.median_ms < b.median_ms)
+        {
             best = Some((name, timing));
         }
     }
@@ -993,7 +946,7 @@ fn run_strided_rs_participant(
 ) {
     let total = prepared.reference.len();
     let record = ResultRecord {
-        schema_version: 1,
+        schema_version: 2,
         suite_id: SUITE_ID,
         runner: "rust",
         pattern_id: pattern.id.clone(),
@@ -1047,7 +1000,16 @@ fn run_pattern(pattern: &PermutePattern, sink: &mut RecordSink) {
         if !participant.is_rust_participant() {
             continue;
         }
-        run_participant(pattern, &prepared, participant, warmup, iters, bytes, threads, sink);
+        run_participant(
+            pattern,
+            &prepared,
+            participant,
+            warmup,
+            iters,
+            bytes,
+            threads,
+            sink,
+        );
     }
     println!();
 }
@@ -1101,9 +1063,10 @@ mod tests {
 
     #[test]
     fn bundled_patterns_are_valid() {
-        let suite =
-            load_pattern_suite_from_str(include_str!("../../data/instances/permutation_patterns.json"))
-                .unwrap();
+        let suite = load_pattern_suite_from_str(include_str!(
+            "../../data/instances/permutation_patterns.json"
+        ))
+        .unwrap();
         assert!(suite.patterns.iter().any(|p| p.id == "transpose_2d_1024"));
         assert!(suite
             .patterns
@@ -1112,22 +1075,13 @@ mod tests {
     }
 
     #[test]
-    fn tenferro_columns_match_naive_reference() {
-        let suite =
-            load_pattern_suite_from_str(include_str!("../../data/instances/permutation_patterns.json"))
-                .unwrap();
+    fn tenferro_rs_matches_odometer_reference() {
+        let suite = load_pattern_suite_from_str(include_str!(
+            "../../data/instances/permutation_patterns.json"
+        ))
+        .unwrap();
         for pattern in &suite.patterns {
             let prepared = prepare_pattern(pattern);
-
-            if matches!(pattern.src_layout, LayoutPattern::ColMajor) {
-                let tensor =
-                    Tensor::from_vec_col_major(pattern.shape.clone(), prepared.src_data.clone())
-                        .unwrap();
-                let mut backend = CpuBackend::new();
-                let out = backend.transpose(&tensor, &pattern.perm).unwrap();
-                let actual = out.as_slice::<f64>().unwrap();
-                assert_eq!(actual, prepared.reference.as_slice(), "{}", pattern.id);
-            }
 
             let view = TypedTensorView::<f64>::from_slice(
                 pattern.shape.clone(),

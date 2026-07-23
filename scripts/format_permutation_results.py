@@ -40,9 +40,7 @@ from validate_benchmark_suite import (  # noqa: E402
 )
 
 BACKEND_ORDER = [
-    "naive",
-    "tenferro-transpose",
-    "tenferro-to-contiguous",
+    "tenferro-rs",
     "hptt",
     "strided-rs",
     "julia-base",
@@ -51,9 +49,7 @@ BACKEND_ORDER = [
 ]
 
 BACKEND_LABELS = {
-    "naive": "naive odometer (ms)",
-    "tenferro-transpose": "tenferro-rs transpose (ms)",
-    "tenferro-to-contiguous": "tenferro-rs to_contiguous (ms)",
+    "tenferro-rs": "tenferro-rs (ms)",
     "hptt": "HPTT (ms)",
     "strided-rs": "strided-rs (ms)",
     "julia-base": "Julia Base (ms)",
@@ -203,16 +199,16 @@ def format_markdown(
         lines.append("")
 
     lines.append(
-        "`tenferro-transpose` is the eager `CpuBackend::transpose` structural op "
-        "(compact col-major input only); `tenferro-to-contiguous` is "
-        "`TypedTensorView::transpose_view` + `CpuBackend::to_contiguous` (accepts "
-        "arbitrary source strides). Every backend allocates a fresh destination "
-        "inside each timed call, so the table compares allocation-inclusive "
-        "end-to-end materialization rather than destination-reuse copy kernels. "
-        "`hptt` only participates in patterns with a contiguous source and "
-        "destination. Correctness is verified against the `naive` odometer "
-        "reference before any timing; a `FAILED` cell means that backend's output "
-        "did not match the reference for that pattern."
+        "`tenferro-rs` measures `TypedTensorView::transpose_view` followed by "
+        "`CpuBackend::to_contiguous`; the metadata-only `transpose_view` is built "
+        "outside the timed region, and `to_contiguous` accepts arbitrary source "
+        "strides. Every backend allocates a fresh destination inside each timed "
+        "call, so the table compares allocation-inclusive end-to-end materialization "
+        "rather than destination-reuse copy kernels. `hptt` only participates in "
+        "patterns with a contiguous source and destination. Correctness is verified "
+        "against an internal, untimed odometer reference before any timing; a "
+        "`FAILED` cell means that backend's output did not match the reference for "
+        "that pattern."
     )
     lines.append("")
 
