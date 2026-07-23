@@ -165,7 +165,7 @@ pattern), `BENCH_RUNS`, and `BENCH_WARMUPS`:
 
 ```bash
 BENCHMARK_TARGET_PROFILE=mac-cpu \
-PATTERN_ID=transpose_2d_256 \
+PATTERN_ID=transpose_2d_2048 \
 BENCH_RUNS=1 \
 BENCH_WARMUPS=0 \
   ./scripts/run_permutation.sh 1
@@ -225,7 +225,7 @@ the CUDA ordinal:
 ```bash
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu \
-    PATTERN_ID=transpose_2d_256 BENCH_RUNS=1 BENCH_WARMUPS=0 \
+    PATTERN_ID=transpose_2d_2048 BENCH_RUNS=1 BENCH_WARMUPS=0 \
     ./scripts/run_gpu_permutation.sh'
 ```
 

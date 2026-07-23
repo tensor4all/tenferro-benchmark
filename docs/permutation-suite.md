@@ -77,20 +77,22 @@ mechanism that keeps comparisons honest: a backend appears in a pattern's row
 only when it can express exactly the pattern's semantics (see
 [HPTT eligibility](#hptt-eligibility)).
 
-### Initial Pattern Set
+### Pattern Set
 
-Ported unchanged from the source suite:
+Adapted from the source suite. The high-rank reverse and cyclic cases use
+`2^23` or `3^15` elements so they measure materialization work rather than
+sub-0.1 ms fixed call and allocation overhead:
 
 | id | description |
 |---|---|
 | `memcpy_24d_contiguous` | memcpy baseline, 24D 2^24 identity permutation |
-| `transpose_2d_256` / `_1024` / `_2048` | 2D square transpose `[1,0]` |
+| `transpose_2d_2048` | 2D square transpose `[1,0]` |
 | `transpose_3d_256_201` | 3D 256^3 permutation `[2,0,1]` |
 | `transpose_3d_256_102` | 3D 256^3 permutation `[1,0,2]` |
 | `rotation_6d_32_32_32_32_16_16` | 6D rotation `[5,0,4,1,3,2]` |
-| `reverse_20d_2` | 20D 2^20 axis reversal |
-| `reverse_13d_2` | 13D 2^13 axis reversal |
-| `cyclic_13d_2` | 13D 2^13 cyclic shift |
+| `reverse_23d_2` | 23D 2^23 axis reversal |
+| `reverse_15d_3` | 15D 3^15 axis reversal |
+| `cyclic_15d_3` | 15D 3^15 cyclic shift |
 | `tn_light_415_24d_scattered_to_colmajor` | 24D explicit scattered source strides → col-major |
 | `tn_light_415_24d_contiguous_same_perm` | same 24D permutation, contiguous source |
 

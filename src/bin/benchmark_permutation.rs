@@ -1071,7 +1071,7 @@ mod tests {
             "../../data/instances/permutation_patterns.json"
         ))
         .unwrap();
-        assert!(suite.patterns.iter().any(|p| p.id == "transpose_2d_1024"));
+        assert!(suite.patterns.iter().any(|p| p.id == "transpose_2d_2048"));
         assert!(suite
             .patterns
             .iter()

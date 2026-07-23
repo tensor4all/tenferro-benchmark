@@ -78,10 +78,10 @@ Two fields are new, and only consumed by this suite's runners:
   exclusions or risks, parallel to the existing `notes` field.
 
 The pattern set is identical to `cpu/permutation`'s (see that document's
-"Initial Pattern Set" table): `memcpy_24d_contiguous`, `transpose_2d_256` /
-`_1024` / `_2048`, `transpose_3d_256_201`, `transpose_3d_256_102`,
-`rotation_6d_32_32_32_32_16_16`, `reverse_20d_2`, `reverse_13d_2`,
-`cyclic_13d_2`, `tn_light_415_24d_scattered_to_colmajor`, and
+"Pattern Set" table): `memcpy_24d_contiguous`, `transpose_2d_2048`,
+`transpose_3d_256_201`, `transpose_3d_256_102`,
+`rotation_6d_32_32_32_32_16_16`, `reverse_23d_2`, `reverse_15d_3`,
+`cyclic_15d_3`, `tn_light_415_24d_scattered_to_colmajor`, and
 `tn_light_415_24d_contiguous_same_perm`.
 
 ## Backends
@@ -204,8 +204,8 @@ does not abort the rest of the suite.
   killed, which would stall every full collection run. The logical
   semantics are perfectly expressible in `jnp.transpose`; compilation is
   the blocker, and eager mode goes through the same HLO compile path, so
-  it would not help. Rank 20 (`reverse_20d_2`) and rank 13 patterns
-  compile and measure fine, so `jax-cuda` stays a participant there.
+  it would not help. The rank-23 `reverse_23d_2` case is also excluded
+  from `jax-cuda` as a compile-time guard; the rank-15 cases remain participants.
 - **`tn_light_415_24d_scattered_to_colmajor`** (explicit source strides):
   `tenferro-cuda-to-contiguous`, `cutensor`, `pytorch-cuda` only.
   `tenferro-cuda-transpose` is excluded because the eager op only accepts a
@@ -224,7 +224,7 @@ does not abort the rest of the suite.
   materialize-kernel backends on both CPU and GPU, even though the other
   backends could trivially express an identity permutation.
 - **cuTENSOR rank limits**: some cuTENSOR builds cap the number of tensor
-  modes below this suite's largest patterns (rank 20 `reverse_20d_2`, rank
+  modes below this suite's largest patterns (rank 23 `reverse_23d_2`, rank
   24 `tn_light_415_24d_contiguous_same_perm`/`tn_light_415_24d_scattered_to_colmajor`).
   Rather than excluding `cutensor` from these patterns' `participants_gpu`
   up front, the JSON still lists it as a participant, and
