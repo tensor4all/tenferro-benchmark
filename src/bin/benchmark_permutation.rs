@@ -322,6 +322,8 @@ unsafe fn naive_strided_copy(
 struct PreparedPattern {
     src_data: Vec<f64>,
     src_strides: Vec<isize>,
+    #[cfg(feature = "strided-rs")]
+    out_shape: Vec<usize>,
     reference: Vec<f64>,
 }
 
@@ -349,6 +351,8 @@ fn prepare_pattern(pattern: &PermutePattern) -> PreparedPattern {
     PreparedPattern {
         src_data,
         src_strides,
+        #[cfg(feature = "strided-rs")]
+        out_shape,
         reference,
     }
 }
