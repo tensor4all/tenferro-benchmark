@@ -161,10 +161,10 @@ byte-identical to the other columns; the report footnote and the
 
 ### Allocation Semantics
 
-Same policy as `cpu/permutation`: every backend column measures
+Unlike the uniform allocation-inclusive `cpu/permutation` policy, GPU backend
+columns generally measure
 **materialization including destination reuse, excluding destination
-allocation**, with exceptions called out per column, exactly as the CPU
-suite calls out `tenferro-transpose` / `tenferro-to-contiguous`:
+allocation**, with exceptions called out per column:
 
 - `tenferro-cuda-transpose` and `tenferro-cuda-to-contiguous` both allocate
   a fresh device tensor on every call (their tenferro-rs public APIs return
@@ -209,15 +209,17 @@ does not abort the rest of the suite.
 - **`tn_light_415_24d_scattered_to_colmajor`** (explicit source strides):
   `tenferro-cuda-to-contiguous`, `cutensor`, `pytorch-cuda` only.
   `tenferro-cuda-transpose` is excluded because the eager op only accepts a
-  compact col-major `Tensor` (same reason `cpu/permutation` excludes
-  `tenferro-transpose` and HPTT from this pattern). `jax-cuda` is excluded
+  compact col-major `Tensor`. The CPU suite's view-based `tenferro-rs`
+  participant remains eligible for this pattern, while HPTT is excluded.
+  `jax-cuda` is excluded
   because JAX's public API (`jnp.transpose`, `jnp.reshape`, ...) cannot
   express an arbitrary-stride source view the way `torch.as_strided` or a
   tenferro `backend_region_view` can.
 - **`memcpy_24d_contiguous`**: `memcpy-d2d` only, mirroring the CPU
   precedent exactly -- the CPU pattern's `participants` is
   `["memcpy", "strided-rs"]`, i.e. only memcpy-family columns, never
-  `naive`/`tenferro-transpose`/`tenferro-to-contiguous`/HPTT/Julia. This
+  `tenferro-rs`/HPTT/Julia. The CPU odometer is an internal untimed
+  correctness reference rather than a participant. This
   pattern is a pure bandwidth baseline kept isolated from the
   materialize-kernel backends on both CPU and GPU, even though the other
   backends could trivially express an identity permutation.

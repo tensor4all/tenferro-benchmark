@@ -3,7 +3,8 @@ set -euo pipefail
 
 # ---------------------------------------------------------------------------
 # CPU permutation / materialize-kernel benchmark suite (cpu/permutation):
-#   - naive odometer baseline, tenferro-rs transpose paths (Rust)
+#   - tenferro-rs view-to-contiguous materialization (Rust), verified against
+#     an internal untimed odometer reference
 #   - strided-rs (Rust, `strided-rs` Cargo feature, enabled by default here;
 #     requires extern/strided-rs, cloned by scripts/setup_extern_deps.sh)
 #   - HPTT (Rust, `hptt` Cargo feature, NOT enabled by default; requires cmake

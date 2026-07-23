@@ -50,19 +50,13 @@ for pattern in patterns:
         assert src_col_major and dst_col_major, (
             f"{pattern_id}: HPTT requires contiguous source and destination"
         )
-    if "tenferro-transpose" in participants:
-        assert src_col_major, (
-            f"{pattern_id}: tenferro-transpose requires a compact col-major source"
-        )
-
     if pattern_id == "memcpy_24d_contiguous":
         assert identity and src_col_major and dst_col_major
         assert participants == {"memcpy", "strided-rs"}
         continue
 
     required = {
-        "naive",
-        "tenferro-to-contiguous",
+        "tenferro-rs",
         "strided-rs",
         "julia-base",
         "strided-jl",
@@ -70,13 +64,6 @@ for pattern in patterns:
     assert required <= participants, (
         f"{pattern_id}: missing common participants: {sorted(required - participants)}"
     )
-
-    if src_col_major:
-        assert "tenferro-transpose" in participants, (
-            f"{pattern_id}: compact source must exercise tenferro-transpose"
-        )
-    else:
-        assert "tenferro-transpose" not in participants
 
     if src_col_major and dst_col_major:
         assert "hptt" in participants, (
@@ -95,9 +82,10 @@ PATTERN_ID=transpose_2d_256 BENCH_RUNS=1 BENCH_WARMUPS=0 \
     BENCH_OUTPUT="$RUST_JSONL" ./target/release/benchmark_permutation >/dev/null
 test -s "$RUST_JSONL"
 validate_permutation_result "$RUST_JSONL"
-grep -q '"backend":"naive"' "$RUST_JSONL"
-grep -q '"backend":"tenferro-transpose"' "$RUST_JSONL"
-grep -q '"backend":"tenferro-to-contiguous"' "$RUST_JSONL"
+grep -q '"backend":"tenferro-rs"' "$RUST_JSONL"
+! grep -q '"backend":"naive"' "$RUST_JSONL"
+! grep -q '"backend":"tenferro-transpose"' "$RUST_JSONL"
+! grep -q '"backend":"tenferro-to-contiguous"' "$RUST_JSONL"
 grep -q '"runner":"rust"' "$RUST_JSONL"
 
 # --- Real Julia runner output must satisfy the schema (skip if no julia) ---
@@ -123,7 +111,7 @@ fi
 
 BAD_JSONL="$TMP/bad_output.jsonl"
 cat >"$BAD_JSONL" <<'JSON'
-{"schema_version":1,"suite_id":"cpu/permutation","runner":"rust","pattern_id":"transpose_2d_256","label":"2D 256^2 transpose [1,0]","backend":"not-a-real-backend","shape":[256,256],"perm":[1,0],"dtype":"f64","elems":65536,"bytes_rw":1048576,"threads":1,"status":"ok","correctness":"passed","per_call_allocation":false,"warmup":0,"iters":1,"median_ms":0.1,"p25_ms":0.1,"p75_ms":0.1,"gbps":1.0,"notes":null}
+{"schema_version":2,"suite_id":"cpu/permutation","runner":"rust","pattern_id":"transpose_2d_256","label":"2D 256^2 transpose [1,0]","backend":"not-a-real-backend","shape":[256,256],"perm":[1,0],"dtype":"f64","elems":65536,"bytes_rw":1048576,"threads":1,"status":"ok","correctness":"passed","per_call_allocation":false,"warmup":0,"iters":1,"median_ms":0.1,"p25_ms":0.1,"p75_ms":0.1,"gbps":1.0,"notes":null}
 JSON
 if validate_permutation_result "$BAD_JSONL" >/dev/null 2>&1; then
     echo "invalid backend name unexpectedly passed permutation-result validation" >&2
@@ -139,7 +127,7 @@ fi
 
 INCONSISTENT_JSONL="$TMP/inconsistent_output.jsonl"
 cat >"$INCONSISTENT_JSONL" <<'JSON'
-{"schema_version":1,"suite_id":"cpu/permutation","runner":"rust","pattern_id":"transpose_2d_256","label":"2D 256^2 transpose [1,0]","backend":"naive","shape":[256,256],"perm":[1,0],"dtype":"f64","elems":65536,"bytes_rw":1048576,"threads":1,"status":"ok","correctness":"failed","per_call_allocation":false,"warmup":0,"iters":1,"median_ms":0.1,"p25_ms":0.1,"p75_ms":0.1,"gbps":1.0,"notes":null}
+{"schema_version":2,"suite_id":"cpu/permutation","runner":"rust","pattern_id":"transpose_2d_256","label":"2D 256^2 transpose [1,0]","backend":"tenferro-rs","shape":[256,256],"perm":[1,0],"dtype":"f64","elems":65536,"bytes_rw":1048576,"threads":1,"status":"ok","correctness":"failed","per_call_allocation":false,"warmup":0,"iters":1,"median_ms":0.1,"p25_ms":0.1,"p75_ms":0.1,"gbps":1.0,"notes":null}
 JSON
 if validate_permutation_result "$INCONSISTENT_JSONL" >/dev/null 2>&1; then
     echo "status=ok with correctness=failed unexpectedly passed validation" >&2
@@ -150,7 +138,7 @@ fi
 
 REUSED_DST_JSONL="$TMP/reused_dst_output.jsonl"
 cat >"$REUSED_DST_JSONL" <<'JSON'
-{"schema_version":1,"suite_id":"cpu/permutation","runner":"rust","pattern_id":"transpose_2d_256","label":"2D 256^2 transpose [1,0]","backend":"naive","shape":[256,256],"perm":[1,0],"dtype":"f64","elems":65536,"bytes_rw":1048576,"threads":1,"status":"ok","correctness":"passed","per_call_allocation":false,"warmup":0,"iters":1,"median_ms":0.1,"p25_ms":0.1,"p75_ms":0.1,"gbps":1.0,"notes":null}
+{"schema_version":2,"suite_id":"cpu/permutation","runner":"rust","pattern_id":"transpose_2d_256","label":"2D 256^2 transpose [1,0]","backend":"tenferro-rs","shape":[256,256],"perm":[1,0],"dtype":"f64","elems":65536,"bytes_rw":1048576,"threads":1,"status":"ok","correctness":"passed","per_call_allocation":false,"warmup":0,"iters":1,"median_ms":0.1,"p25_ms":0.1,"p75_ms":0.1,"gbps":1.0,"notes":null}
 JSON
 if validate_permutation_result "$REUSED_DST_JSONL" >/dev/null 2>&1; then
     echo "status=ok with per_call_allocation=false unexpectedly passed validation" >&2

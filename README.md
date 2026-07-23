@@ -143,9 +143,10 @@ devcontainer exec --workspace-folder . bash -lc '
 ### CPU permutation suite (`cpu/permutation`)
 
 A standalone materialize/copy-kernel benchmark comparing tenferro-rs
-transpose paths against a naive odometer baseline, strided-rs, HPTT, Julia
-Base, and Strided.jl. Every timed call includes fresh destination allocation
-for a common end-to-end materialization comparison. Spec:
+`to_contiguous` against strided-rs, HPTT, Julia Base, and Strided.jl. An
+internal untimed odometer implementation provides the correctness reference.
+Every timed call includes fresh destination allocation for a common
+end-to-end materialization comparison. Spec:
 [docs/permutation-suite.md](docs/permutation-suite.md).
 
 ```bash
@@ -287,8 +288,8 @@ CPU einsum reports compare `tenferro-trace`, `tenferro-eager`, `pytorch-cpu`,
 and `jax-cpu`. GPU reports compare `tenferro-cuda-trace`,
 `tenferro-cuda-eager`, `pytorch-cuda`, `jax-cuda`, and vendor-specific CUDA
 backends where meaningful. The `cpu/permutation` suite has its own backend
-set (naive, tenferro transpose paths, HPTT, strided-rs, Julia Base,
-Strided.jl, memcpy); `gpu/permutation` compares tenferro CUDA transpose paths
+set (tenferro-rs `to_contiguous`, HPTT, strided-rs, Julia Base, Strided.jl,
+memcpy); `gpu/permutation` compares tenferro CUDA transpose paths
 against cuTENSOR, PyTorch/JAX CUDA, and a device-to-device memcpy baseline.
 
 C++ Torch/LibTorch runners are intentionally removed; PyTorch Python is the

@@ -134,7 +134,7 @@ function base_record(pattern, backend::String, total::Int, bytes::Int, threads::
                       status::String = "ok", correctness::String = "passed",
                       per_call_allocation::Bool = false)
     return Dict{String,Any}(
-        "schema_version" => 1,
+        "schema_version" => 2,
         "suite_id" => SUITE_ID,
         "runner" => "julia",
         "pattern_id" => pattern["id"],
