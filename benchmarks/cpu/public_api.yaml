@@ -11,6 +11,7 @@ backends:
   - tenferro-eager
   - tenferro-trace
   - pytorch-cpu
+  - jax-cpu
 problems:
   source: generated
   include:

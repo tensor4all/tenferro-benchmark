@@ -5,6 +5,7 @@ set -euo pipefail
 #   - tenferro-rs eager public Tensor/TensorLinalgExt APIs
 #   - tenferro-rs traced APIs, compiled once and executed repeatedly
 #   - PyTorch Python closest public equivalents where available
+#   - JAX Python public equivalents, compiled once with XLA and synchronized
 
 if [[ $# -eq 0 ]]; then
     THREAD_COUNTS=(1 4)
@@ -174,6 +175,37 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
             --num-threads "$NUM_THREADS" \
             --output "$CSV"
     fi
+
+    run_jax_group() {
+        local api_suite="$1"
+        local benchmark_filter="${2:-}"
+        if command -v uv >/dev/null 2>&1; then
+            PUBLIC_API_SUITE_FILTER="$api_suite" \
+                PUBLIC_API_BENCHMARK_FILTER="$benchmark_filter" \
+                uv run python "$SCRIPT_DIR/benchmark_cpu_public_api_jax.py" \
+                    --num-threads "$NUM_THREADS" \
+                    --output "$CSV"
+        else
+            PUBLIC_API_SUITE_FILTER="$api_suite" \
+                PUBLIC_API_BENCHMARK_FILTER="$benchmark_filter" \
+                python3 "$SCRIPT_DIR/benchmark_cpu_public_api_jax.py" \
+                    --num-threads "$NUM_THREADS" \
+                    --output "$CSV"
+        fi
+    }
+
+    # Keep large fixture families and XLA executable caches in separate
+    # processes, matching the process isolation used by the Rust runner.
+    run_jax_group cpu/elementwise_reduction "add,sub,mul,div,neg,abs,sign,maximum,minimum,compare_lt,select,sqrt,rsqrt"
+    run_jax_group cpu/elementwise_reduction "rem,clamp,exp,log,sin,cos,tanh"
+    run_jax_group cpu/elementwise_reduction "pow,expm1,log1p,chain_log1p_exp_mul"
+    run_jax_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1"
+    run_jax_group cpu/indexing_layout
+    run_jax_group cpu/linalg_uncovered
+    run_jax_group cpu/complex "conj"
+    run_jax_group cpu/complex "mul,div"
+    run_jax_group cpu/complex "exp,log"
+    run_jax_group cpu/complex "dot_general,svd,qr,eig,solve,cholesky,norm_fro"
     CSVS+=("$CSV")
 done
 
@@ -220,8 +252,9 @@ fi
     echo ""
     echo "## Timing Discipline"
     echo ""
-    echo "- Input fixture tensors are created during warmup and outside the measured region for both tenferro-rs and PyTorch."
+    echo "- Input fixture tensors are created during warmup and outside the measured region for tenferro-rs, PyTorch, and JAX."
     echo "- tenferro-rs trace graphs are constructed and compiled outside the measured region; each compiled graph is reused for every warmup and timed run."
+    echo "- JAX functions are compiled with \`jax.jit\` during warmup, outside the measured region; timed calls include dispatch through \`jax.block_until_ready\`."
     echo "- Each timed call creates the output tensor."
     echo "- PyTorch view-producing indexing operations are cloned inside the timed region to match tenferro-rs owned, materialized outputs."
     echo "- PyTorch complex conjugation uses \`torch.conj_physical\` to match tenferro-rs physical output rather than the lazy conjugate view from \`torch.conj\`."
