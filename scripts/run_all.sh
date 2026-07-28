@@ -15,6 +15,9 @@ set -euo pipefail
 #   result/<target_profile>/cpu/cpu_ops.md
 #   result/<target_profile>/cpu/linalg_jvp_vjp.md
 #
+# Set RUN_FFT_SUITE=1 to also run scripts/run_cpu_fft.sh (the cpu/fft suite)
+# sequentially after CPU ops.
+#
 # Set RUN_PERMUTATION_SUITE=1 to also run scripts/run_permutation.sh (the
 # cpu/permutation suite) sequentially after everything above completes; see
 # docs/permutation-suite.md. Off by default.
@@ -391,6 +394,8 @@ CPU_RUN_YAML="$CPU_RUN_DIR/run.yaml"
 CPU_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/einsum.md"
 CPU_OPS_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/cpu_ops.md"
 CPU_LINALG_AD_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/linalg_jvp_vjp.md"
+CPU_FFT_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/fft.md"
+CPU_PERMUTATION_LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/permutation.md"
 
 mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")"
 export BENCHMARK_RESULTS_DIR="$CPU_RUN_DIR"
@@ -525,6 +530,14 @@ if [ -f "$CPU_OPS_LOG" ]; then
     echo ""
 fi
 
+# Opt-in: cpu/fft suite, run sequentially after CPU ops so FFT timing does not
+# overlap other CPU benchmark processes.
+if [[ "${RUN_FFT_SUITE:-0}" == "1" ]]; then
+    echo "Running cpu/fft suite (RUN_FFT_SUITE=1)..."
+    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_cpu_fft.sh" "$NUM_THREADS"
+    echo ""
+fi
+
 # Opt-in: cpu/permutation suite, run sequentially after every suite above.
 # SKIP_EXTERN_SETUP=1 avoids re-running setup_extern_deps.sh, already done above.
 if [[ "${RUN_PERMUTATION_SUITE:-0}" == "1" ]]; then
@@ -548,4 +561,6 @@ done
 [ -f "$CPU_OPS_LATEST_REPORT" ] && echo "  Latest:   $CPU_OPS_LATEST_REPORT"
 [ -f "$LINALG_AD_REPORT" ] && echo "  Report:   $LINALG_AD_REPORT"
 [ -f "$CPU_LINALG_AD_LATEST_REPORT" ] && echo "  Latest:   $CPU_LINALG_AD_LATEST_REPORT"
+[ -f "$CPU_FFT_LATEST_REPORT" ] && echo "  Latest:   $CPU_FFT_LATEST_REPORT"
+[ -f "$CPU_PERMUTATION_LATEST_REPORT" ] && echo "  Latest:   $CPU_PERMUTATION_LATEST_REPORT"
 true
