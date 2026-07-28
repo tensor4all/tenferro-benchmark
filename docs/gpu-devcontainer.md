@@ -33,8 +33,15 @@ Run selected backends:
 
 ```bash
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
-  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_BACKENDS=pytorch-cuda,jax-cuda ./scripts/run_gpu_suite.sh'
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_BACKENDS=pytorch-cuda ./scripts/run_gpu_suite.sh'
 ```
+
+Standard GPU collection requires both tenferro-rs and PyTorch. JAX is not part
+of maintained GPU reports: during the 2026-07-28 A100 80GB permutation run,
+the JAX/XLA backend failed to complete after more than 20 minutes while using
+about 61 GiB of device memory, and earlier rank-24 compilation exceeded
+40 minutes. Keeping it in every refresh made the full suite operationally
+unreliable. Vendor backends remain optional references.
 
 Latest reports:
 
@@ -51,4 +58,3 @@ Raw run data:
 
 GPU timings must include backend-native device synchronization, but not output
 downloads. Output downloads belong to verification outside the timed region.
-

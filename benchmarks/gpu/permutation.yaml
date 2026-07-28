@@ -3,7 +3,7 @@ suite_id: gpu/permutation
 title: GPU Permutation / Materialize Benchmarks
 description: >-
   Materialize-kernel benchmark comparing tenferro-rs CUDA transpose/materialize
-  paths against cuTENSOR, PyTorch CUDA, JAX CUDA, and a device-to-device memcpy
+  paths against cuTENSOR, PyTorch CUDA, and a device-to-device memcpy
   baseline on identical permutation semantics. Ports docs/permutation-suite.md
   (cpu/permutation) to CUDA; see docs/gpu-permutation-suite.md.
 defaults:
@@ -15,7 +15,6 @@ backends:
   - tenferro-cuda-to-contiguous
   - cutensor
   - pytorch-cuda
-  - jax-cuda
   - memcpy-d2d
 problems:
   source: data/instances/permutation_patterns.json

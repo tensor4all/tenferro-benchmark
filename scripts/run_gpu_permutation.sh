@@ -4,7 +4,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 # GPU permutation / materialize-kernel benchmark suite (gpu/permutation):
 #   - tenferro-cuda-transpose, tenferro-cuda-to-contiguous, cutensor (Rust)
-#   - pytorch-cuda, jax-cuda, memcpy-d2d (Python)
+#   - pytorch-cuda, memcpy-d2d (Python)
 #
 # Usage: BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_permutation.sh
 #
@@ -13,7 +13,7 @@ set -euo pipefail
 # runner, then EACH Python backend as its own process, all SEQUENTIALLY
 # (never concurrently), per AGENTS.md timing discipline and GPU Timing
 # Fairness. The per-backend process split follows scripts/run_gpu_suite.sh
-# so PyTorch/JAX CUDA allocators release device memory between backends.
+# so framework CUDA allocators release device memory between backends.
 #
 # This is a STANDALONE entry point, exactly like scripts/run_permutation.sh
 # is for cpu/permutation: it is intentionally not wired into
@@ -141,11 +141,9 @@ BENCH_OUTPUT="$RUST_JSONL" \
 INPUTS=("$RUST_JSONL")
 
 # One process per Python backend, strictly sequential, mirroring
-# scripts/run_gpu_suite.sh: "Separate processes so PyTorch/JAX CUDA
-# allocators release device memory." In a shared process, JAX's default
-# XLA preallocation (~75% of the card) starves torch of memory for the
-# 2 GiB rotation_6d pattern; process exit releases it.
-for backend in pytorch-cuda jax-cuda memcpy-d2d; do
+# scripts/run_gpu_suite.sh: separate processes so framework CUDA allocators
+# release device memory before the next backend starts.
+for backend in pytorch-cuda memcpy-d2d; do
     echo "Running Python GPU permutation benchmarks ($backend)..."
     BACKEND_JSONL="$RUN_DIR/python_output_${backend}.jsonl"
     GPU_BENCH_DEVICE="$DEVICE_ORDINAL" \

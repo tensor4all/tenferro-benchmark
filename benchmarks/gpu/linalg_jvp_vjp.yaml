@@ -1,8 +1,8 @@
 schema_version: 1
 suite_id: gpu/linalg_jvp_vjp
 title: GPU Linalg JVP/VJP Benchmarks
-description: Trace-mode linalg automatic differentiation on CUDA for tenferro-rs,
-  PyTorch, and JAX.
+description: Trace-mode linalg automatic differentiation on CUDA for tenferro-rs and
+  PyTorch.
 defaults:
   device:
     kind: cuda
@@ -21,7 +21,6 @@ defaults:
 backends:
 - tenferro-cuda-trace
 - pytorch-cuda
-- jax-cuda
 problems:
 - id: linalg_ad_small_grad_sum_svd_s_jvp_f64_2
   family: linalg_ad

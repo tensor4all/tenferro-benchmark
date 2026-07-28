@@ -23,7 +23,7 @@ PY
 )"
 
 SUITES_VALUE="${GPU_BENCH_SUITE:-benchmarks/gpu/dense.yaml,benchmarks/gpu/einsum.yaml,benchmarks/gpu/sparse.yaml,benchmarks/gpu/tensornetwork.yaml}"
-BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda,cublaslt,cutlass,cusolver,cusparse,ginkgo}"
+BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,cublaslt,cutlass,cusolver,cusparse,ginkgo}"
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 PROBLEM_FILTER="${GPU_BENCH_PROBLEM:-}"
 RUST_MIN_STACK="${RUST_MIN_STACK:-67108864}"
@@ -203,7 +203,7 @@ run_suite_serial_by_backend() {
             cat "$chunk" >> "$result_jsonl"
         fi
 
-        # Separate processes so PyTorch/JAX CUDA allocators release device memory.
+        # Separate processes so framework CUDA allocators release device memory.
         sleep "$GPU_BENCH_BACKEND_SLEEP"
     done
 }
@@ -230,7 +230,7 @@ for suite in "${SUITES[@]}"; do
     if [[ "$suite_id" == "gpu/tensornetwork" ]]; then
         run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL"
     else
-        # Run Python benchmark (pytorch-cuda, jax-cuda, vendor backends)
+        # Run Python benchmark (pytorch-cuda and vendor backends)
         if [[ ${#PYTHON_BACKENDS[@]} -gt 0 ]]; then
             echo "Running Python benchmarks for $suite_id: ${PYTHON_BACKENDS[*]}"
             run_python_backend "$suite" "$RESULT_JSONL" "${PYTHON_BACKENDS[@]}"

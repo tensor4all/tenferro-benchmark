@@ -18,13 +18,11 @@ from collect_gpu_info import markdown as gpu_info_markdown, resolve_gpu_info
 BACKEND_ORDER = [
     "tenferro-cuda-trace",
     "pytorch-cuda",
-    "jax-cuda",
 ]
 
 BACKEND_LABELS = {
     "tenferro-cuda-trace": "tenferro-rs CUDA trace",
     "pytorch-cuda": "PyTorch CUDA",
-    "jax-cuda": "JAX CUDA",
 }
 
 LOSS_NOTES = {
@@ -132,7 +130,7 @@ def format_markdown(
     lines.append("")
     lines.append(
         "tenferro-rs JVP/VJP use trace-mode `AdContext` on CUDA; PyTorch uses "
-        "`torch.func.jvp` / `vjp` on CUDA; JAX uses `jax.jvp` / `jax.vjp` on CUDA."
+        "`torch.func.jvp` / `vjp` on CUDA."
     )
     tenferro_records = [r for r in records if r.get("backend") == "tenferro-cuda-trace"]
     if tenferro_records and all(r.get("status") == "unsupported" for r in tenferro_records):

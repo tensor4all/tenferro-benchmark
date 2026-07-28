@@ -13,7 +13,7 @@
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["memcpy", "strided-rs"],
-      "notes_gpu": "Mirrors the CPU precedent: this pattern is a pure bandwidth baseline isolated from the materialize-kernel backends, so only the memcpy-equivalent GPU participant (memcpy-d2d) is included; tenferro-cuda-transpose/tenferro-cuda-to-contiguous/cutensor/pytorch-cuda/jax-cuda are intentionally excluded even though they could trivially express an identity permutation.",
+      "notes_gpu": "Mirrors the CPU precedent: this pattern is a pure bandwidth baseline isolated from the materialize-kernel backends, so only the memcpy-equivalent GPU participant (memcpy-d2d) is included; tenferro-cuda-transpose/tenferro-cuda-to-contiguous/cutensor/pytorch-cuda are intentionally excluded even though they could trivially express an identity permutation.",
       "participants_gpu": ["memcpy-d2d"]
     },
     {
@@ -25,7 +25,7 @@
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "transpose_3d_256_201",
@@ -36,7 +36,7 @@
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "transpose_3d_256_102",
@@ -47,7 +47,7 @@
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "rotation_6d_32_32_32_32_16_16",
@@ -59,7 +59,7 @@
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
       "notes_gpu": "rotation_6d is the largest GPU pattern (2 GiB src + 2 GiB dst); cuTENSOR rank-6 descriptors are well within its supported range.",
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "reverse_23d_2",
@@ -70,7 +70,7 @@
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "notes_gpu": "rank 23 exceeds cuTENSOR's documented mode limit on some builds; cutensor is listed as a participant but the runner verifies rank support at runtime and records status=skipped with a note instead of crashing if the library rejects it. jax-cuda is excluded because this rank is close to the known rank-24 XLA compile stall.",
+      "notes_gpu": "rank 23 exceeds cuTENSOR's documented mode limit on some builds; cutensor is listed as a participant but the runner verifies rank support at runtime and records status=skipped with a note instead of crashing if the library rejects it.",
       "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     },
     {
@@ -82,7 +82,7 @@
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "cyclic_15d_3",
@@ -93,7 +93,7 @@
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda", "jax-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "tn_light_415_24d_scattered_to_colmajor",
@@ -108,7 +108,7 @@
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "strided-rs", "julia-base", "strided-jl"],
       "notes": "HPTT cannot represent arbitrary source strides through the public API. The tenferro-rs participant uses the view-based to_contiguous path and accepts this explicit-stride source.",
-      "notes_gpu": "tenferro-cuda-transpose (eager op) only accepts compact col-major input, and jax-cuda cannot express arbitrary source strides, so both are excluded here. tenferro-cuda-to-contiguous (view->contiguous materialize) and cutensor accept arbitrary strides through their public APIs; pytorch-cuda uses torch.as_strided to build the source view.",
+      "notes_gpu": "tenferro-cuda-transpose (eager op) only accepts compact col-major input, so it is excluded here. tenferro-cuda-to-contiguous (view->contiguous materialize) and cutensor accept arbitrary strides through their public APIs; pytorch-cuda uses torch.as_strided to build the source view.",
       "participants_gpu": ["tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     },
     {
@@ -120,7 +120,7 @@
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
       "participants": ["tenferro-rs", "hptt", "strided-rs", "julia-base", "strided-jl"],
-      "notes_gpu": "rank 24 exceeds cuTENSOR's documented mode limit on some builds; cutensor is listed as a participant but the runner verifies rank support at runtime and records status=skipped with a note instead of crashing if the library rejects it. jax-cuda is excluded via this participants gate: XLA's jit compilation of the rank-24 transpose does not complete in practical time (>40 min at 100% host CPU observed on jax 0.10.1 / RTX 3060 before being killed); the logical semantics are expressible in jnp.transpose, compilation is the blocker, and eager mode goes through the same HLO compile path so it would not help.",
+      "notes_gpu": "rank 24 exceeds cuTENSOR's documented mode limit on some builds; cutensor is listed as a participant but the runner verifies rank support at runtime and records status=skipped with a note instead of crashing if the library rejects it.",
       "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
     }
   ]
