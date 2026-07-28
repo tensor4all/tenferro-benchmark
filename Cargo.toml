@@ -152,6 +152,12 @@ cuda = [
     "tenferro-cpu?/cpu-faer",
     "dep:libloading",
 ]
+webgpu = [
+    "dep:tenferro-gpu",
+    "tenferro-gpu?/webgpu",
+    "dep:tenferro-cpu",
+    "tenferro-cpu?/cpu-faer",
+]
 
 [[bin]]
 name = "publication_gate"
@@ -183,6 +189,11 @@ required-features = ["cuda"]
 name = "benchmark_gpu_permutation"
 path = "src/bin/benchmark_gpu_permutation.rs"
 required-features = ["cuda"]
+
+[[bin]]
+name = "benchmark_gpu_permutation_webgpu"
+path = "src/bin/benchmark_gpu_permutation_webgpu.rs"
+required-features = ["webgpu"]
 
 [[example]]
 name = "svd_backward_panic_mwe"

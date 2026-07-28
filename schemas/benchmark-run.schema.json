@@ -16,7 +16,7 @@
   "properties": {
     "schema_version": { "const": 1 },
     "target_profile": {
-      "enum": ["mac-cpu", "amd-cpu", "nvidia-gpu"]
+      "enum": ["mac-cpu", "mac-gpu", "amd-cpu", "nvidia-gpu"]
     },
     "suite_id": {
       "type": "string",
@@ -28,7 +28,8 @@
     "environment": { "$ref": "#/$defs/environment" },
     "blas": { "$ref": "#/$defs/blas" },
     "python_backends": { "$ref": "#/$defs/python_backends" },
-    "cuda": { "$ref": "#/$defs/cuda" }
+    "cuda": { "$ref": "#/$defs/cuda" },
+    "metal": { "$ref": "#/$defs/metal" }
   },
   "$defs": {
     "tenferro_rs": {
@@ -158,6 +159,17 @@
         },
         { "type": "null" }
       ]
+    },
+    "metal": {
+      "type": "object",
+      "required": ["device_name", "runtime"],
+      "additionalProperties": true,
+      "properties": {
+        "device_name": { "type": "string", "minLength": 1 },
+        "runtime": { "type": "string", "minLength": 1 },
+        "os_version": { "type": ["string", "null"] },
+        "metal_version": { "type": ["string", "null"] }
+      }
     },
     "cuda": {
       "type": "object",

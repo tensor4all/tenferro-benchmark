@@ -51,7 +51,18 @@ BACKEND_LABELS = {
     "tenferro-cuda-to-contiguous": "tenferro-rs CUDA to_contiguous (ms)",
     "cutensor": "cuTENSOR (ms)",
     "pytorch-cuda": "PyTorch CUDA (ms)",
+    "tenferro-webgpu-transpose-baseline": "tenferro-rs wgpu baseline (ms)",
+    "tenferro-webgpu-to-contiguous": "tenferro-rs wgpu to_contiguous (ms)",
+    "pytorch-mps": "PyTorch MPS (ms)",
+    "jax-metal": "JAX Metal (ms)",
 }
+
+METAL_BACKEND_ORDER = [
+    "tenferro-webgpu-transpose-baseline",
+    "tenferro-webgpu-to-contiguous",
+    "pytorch-mps",
+    "jax-metal",
+]
 
 
 def clean_markdown_eof(markdown: str) -> str:
@@ -102,9 +113,9 @@ def format_cell(record: dict[str, Any] | None) -> tuple[str, float | None]:
         return text, float(median)
     if status == "verification_failed":
         return "FAILED", None
-    if status == "skipped":
+    if status in {"skipped", "not_configured", "runtime_failed"}:
         note = record.get("notes")
-        return f"skipped ({note})" if note else "skipped", None
+        return f"{status} ({note})" if note else status, None
     return str(status or "-"), None
 
 
@@ -128,6 +139,11 @@ def bold_fastest(cells: dict[str, tuple[str, float | None]]) -> dict[str, str]:
 
 
 def format_table(records: list[dict[str, Any]]) -> list[str]:
+    backend_order = (
+        METAL_BACKEND_ORDER
+        if any(record.get("target_profile") == "mac-gpu" for record in records)
+        else BACKEND_ORDER
+    )
     by_pattern: dict[tuple[str, str, str], dict[str, dict[str, Any]]] = defaultdict(dict)
     for record in records:
         key = (record["pattern_id"], record.get("label", ""), record.get("dtype", "f64"))
@@ -137,18 +153,18 @@ def format_table(records: list[dict[str, Any]]) -> list[str]:
         "Median (p25 / p75) in ms. Missing backends are shown as `-`; the "
         "fastest backend per pattern is **bolded**.",
         "",
-        "| pattern | label | " + " | ".join(BACKEND_LABELS[b] for b in BACKEND_ORDER) + " |",
-        "|---|---|" + "|".join("---:" for _ in BACKEND_ORDER) + "|",
+        "| pattern | label | " + " | ".join(BACKEND_LABELS[b] for b in backend_order) + " |",
+        "|---|---|" + "|".join("---:" for _ in backend_order) + "|",
     ]
 
     for key in sorted(by_pattern):
         pattern_id, label, _dtype = key
         backends = by_pattern[key]
-        if not any(backend in backends for backend in BACKEND_ORDER):
+        if not any(backend in backends for backend in backend_order):
             continue
-        cells = {b: format_cell(backends.get(b)) for b in BACKEND_ORDER}
+        cells = {b: format_cell(backends.get(b)) for b in backend_order}
         rendered = bold_fastest(cells)
-        row = [f"`{pattern_id}`", label] + [rendered[b] for b in BACKEND_ORDER]
+        row = [f"`{pattern_id}`", label] + [rendered[b] for b in backend_order]
         lines.append("| " + " | ".join(row) + " |")
 
     lines.append("")
@@ -174,13 +190,41 @@ def format_markdown(
             lines.append(f"- tenferro-rs commit: `{tenferro['commit']}`")
         lines.append("")
 
-    gpu_info = resolve_gpu_info(records, run_metadata)
-    gpu_block = gpu_info_markdown(gpu_info).rstrip()
-    if gpu_block:
-        lines.append(gpu_block)
+    is_metal = any(record.get("target_profile") == "mac-gpu" for record in records)
+    if is_metal:
+        metal = (run_metadata or {}).get("metal", {})
+        lines.append(f"- Metal device: `{metal.get('device_name', records[0].get('device', 'unknown'))}`")
+        lines.append(f"- Runtime: `{metal.get('runtime', 'wgpu/Metal')}`")
         lines.append("")
+    else:
+        gpu_info = resolve_gpu_info(records, run_metadata)
+        gpu_block = gpu_info_markdown(gpu_info).rstrip()
+        if gpu_block:
+            lines.append(gpu_block)
+            lines.append("")
 
-    lines.append(
+    if is_metal:
+        lines.append(
+            "`tenferro-webgpu-transpose-baseline` is the unoptimized native "
+            "CubeCL structural path captured before kernel work. "
+            "`tenferro-webgpu-to-contiguous` measures the public strided-view "
+            "materialization path. PyTorch MPS and JAX Metal are logical "
+            "framework comparisons; a backend without a Metal runtime is reported "
+            "as `not_configured` and is never allowed to fall back to CPU. "
+            "Every timed iteration ends with explicit device synchronization; "
+            "correctness downloads and JIT compilation are outside timing."
+        )
+        lines.append("")
+        lines.append(
+            "The mac-gpu patterns contain 3^15 or roughly 15 million f32 elements "
+            "(about 60 MiB per tensor). They remain below the baseline kernel's "
+            "one-dimensional 65,535-workgroup dispatch ceiling. "
+            "This M5 collection is the entry-gate baseline; the final tile sweep "
+            "must still be run on the issue's target M4 machine."
+        )
+        lines.append("")
+    else:
+        lines.append(
         "`tenferro-cuda-transpose` is the eager `TensorStructural::transpose` op on "
         "`CudaBackend` (compact col-major input only); `tenferro-cuda-to-contiguous` is "
         "`TypedTensor::backend_region_view` (source layout) + "
@@ -201,21 +245,22 @@ def format_markdown(
         "means the backend does not participate in that pattern's semantics (or, for "
         "`cutensor`, that the installed cuTENSOR library rejected the pattern's rank at "
         "runtime) -- both are reported as `skipped` rather than a failure."
-    )
-    lines.append("")
-    lines.append(
+        )
+        lines.append("")
+        lines.append(
         "The GPU-only pattern set is intentionally larger than the CPU permutation set: "
         "most rows contain 2^29 f64 elements (4 GiB per tensor) so A100-class "
         "measurements exercise steady-state device throughput at roughly the 10 ms "
         "scale instead of launch/synchronization overhead."
-    )
-    lines.append("")
+        )
+        lines.append("")
 
     memcpy_record = next(
         (
             record
             for record in records
-            if record.get("backend") == "memcpy-d2d" and record.get("status") == "ok"
+            if record.get("backend") in {"memcpy-d2d", "memcpy-metal-d2d"}
+            and record.get("status") == "ok"
         ),
         None,
     )
@@ -227,7 +272,7 @@ def format_markdown(
         lines.extend(
             [
                 "Device-copy baseline: "
-                f"`memcpy-d2d` median {float(memcpy_record['median_ms']):.3f} ms"
+                f"`{memcpy_record['backend']}` median {float(memcpy_record['median_ms']):.3f} ms"
                 f"{bandwidth_text} for `{memcpy_record.get('pattern_id', 'memcpy baseline')}`. "
                 "It is a bandwidth reference, not a permutation participant, so it is not "
                 "shown as a table column.",

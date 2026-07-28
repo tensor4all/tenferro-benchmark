@@ -4,6 +4,36 @@ Status: implemented. This document defines `gpu/permutation`, the CUDA port
 of [`cpu/permutation`](permutation-suite.md). Read that document first; this
 one only restates what differs on CUDA.
 
+## mac-gpu profile (wgpu/Metal entry gate)
+
+Issue #1507 adds `benchmarks/gpu/permutation-mac.yaml` as a profile-first
+entry gate. The profile uses F32 Metal-sized patterns from
+`data/instances/gpu_permutation_mac_patterns.json` and writes its latest
+report to `result/mac-gpu/gpu/permutation.md`. No native kernel optimization
+may begin until this profile has produced a correctness-checked baseline.
+
+The maintained columns are the pre-optimization
+`tenferro-webgpu-transpose-baseline`, the public
+`tenferro-webgpu-to-contiguous` path, PyTorch MPS, optional JAX Metal, and a
+Metal device-to-device copy ceiling. Each timed call is followed by explicit
+device synchronization. Correctness downloads and JAX compilation are
+outside the timed interval. Missing JAX Metal support is recorded as
+`not_configured`; CPU fallback is forbidden.
+
+The first baseline was collected on an **Apple M5 Max**, which is an accepted
+development substitute for this issue and is recorded truthfully in
+`run.yaml`. It does not replace the final Apple M4 tile sweep.
+
+The profile uses about 15 million F32 elements (roughly 60 MiB per tensor).
+This stays below the pre-optimization kernel's one-dimensional CubeCL
+dispatch ceiling of 65,535 workgroups at 256 elements per workgroup, allowing
+the baseline kernel itself to complete before dimension fusion is introduced.
+
+Development and pre-merge verification use a Linux A100 with both CUDA and
+wgpu/Vulkan runtimes. Optimization decisions are judged against the Metal
+baseline. The final validation is an Apple M4 sweep over the compile-time tile
+parameter, followed by a rerun of the selected tile against that baseline.
+
 ## Purpose
 
 Measure the cost of materializing a strided/permuted `f64` tensor view into

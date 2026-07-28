@@ -1,0 +1,29 @@
+schema_version: 1
+suite_id: gpu/permutation
+title: Metal Permutation / Materialize Benchmarks
+description: >-
+  F32 materialization benchmark for tenferro-rs wgpu/Metal, PyTorch MPS,
+  optional JAX Metal, and a Metal device-copy bandwidth baseline.
+defaults:
+  device: {kind: metal, ordinal: 0}
+  run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: naive, rtol: 0, atol: 0}
+backends:
+  - tenferro-webgpu-transpose-baseline
+  - tenferro-webgpu-to-contiguous
+  - pytorch-mps
+  - jax-metal
+  - memcpy-metal-d2d
+problems:
+  source: data/instances/gpu_permutation_mac_patterns.json
+  include:
+    - mac_memcpy_1d
+    - mac_transpose_2d
+    - mac_transpose_3d_201
+    - mac_transpose_3d_102
+    - mac_rotation_6d
+    - mac_reverse_21d
+    - mac_reverse_15d_3
+    - mac_cyclic_15d_3
+    - mac_tn_scattered
+    - mac_tn_contiguous
