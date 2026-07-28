@@ -74,6 +74,10 @@ prepare_cpu_benchmark_python_venv "$PROJECT_DIR"
 
 ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 
+# shellcheck source=scripts/benchmark_host_idle.sh
+source "$SCRIPT_DIR/benchmark_host_idle.sh"
+assert_benchmark_host_idle
+
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
 SUITE_ID="cpu/public_api"
@@ -148,6 +152,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_rust_group() {
         local api_suite="$1"
         local benchmark_filter="${2:-}"
+        assert_benchmark_host_idle
         PUBLIC_API_SUITE_FILTER="$api_suite" \
             PUBLIC_API_BENCHMARK_FILTER="$benchmark_filter" \
             cargo run --release --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_public_api -- \
@@ -160,12 +165,16 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_rust_group cpu/elementwise_reduction "pow,expm1,log1p,chain_log1p_exp_mul"
     run_rust_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1"
     run_rust_group cpu/indexing_layout
+    run_rust_group cpu/structural_shape
+    run_rust_group cpu/output_reuse
+    run_rust_group cpu/einsum_concrete
     run_rust_group cpu/linalg_uncovered
     run_rust_group cpu/complex "conj"
     run_rust_group cpu/complex "mul,div"
     run_rust_group cpu/complex "exp,log"
-    run_rust_group cpu/complex "dot_general,svd,qr,eig,solve,cholesky,norm_fro"
+    run_rust_group cpu/complex "dot_general,dot_general_with_conj,tensordot,svd,qr,eig,solve,cholesky,norm_fro"
 
+    assert_benchmark_host_idle
     if command -v uv >/dev/null 2>&1; then
         uv run python "$SCRIPT_DIR/benchmark_cpu_public_api_python.py" \
             --num-threads "$NUM_THREADS" \
@@ -179,6 +188,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_jax_group() {
         local api_suite="$1"
         local benchmark_filter="${2:-}"
+        assert_benchmark_host_idle
         if command -v uv >/dev/null 2>&1; then
             PUBLIC_API_SUITE_FILTER="$api_suite" \
                 PUBLIC_API_BENCHMARK_FILTER="$benchmark_filter" \
@@ -201,11 +211,13 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_jax_group cpu/elementwise_reduction "pow,expm1,log1p,chain_log1p_exp_mul"
     run_jax_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1"
     run_jax_group cpu/indexing_layout
+    run_jax_group cpu/structural_shape
+    run_jax_group cpu/einsum_concrete
     run_jax_group cpu/linalg_uncovered
     run_jax_group cpu/complex "conj"
     run_jax_group cpu/complex "mul,div"
     run_jax_group cpu/complex "exp,log"
-    run_jax_group cpu/complex "dot_general,svd,qr,eig,solve,cholesky,norm_fro"
+    run_jax_group cpu/complex "dot_general,dot_general_with_conj,tensordot,svd,qr,eig,solve,cholesky,norm_fro"
     CSVS+=("$CSV")
 done
 
@@ -222,6 +234,7 @@ fi
     echo "- Suite: \`$SUITE_ID\`"
     echo "- Target profile: \`$BENCHMARK_TARGET_PROFILE\`"
     echo "- Suite file: \`${SUITE_FILE#$PROJECT_DIR/}\`"
+    echo "- Public API coverage manifest: \`benchmarks/cpu/public_api_coverage.yaml\`"
     echo "- Run metadata: \`${RUN_YAML#$PROJECT_DIR/}\`"
     echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
     echo ""
@@ -255,11 +268,15 @@ fi
     echo "- Input fixture tensors are created during warmup and outside the measured region for tenferro-rs, PyTorch, and JAX."
     echo "- tenferro-rs trace graphs are constructed and compiled outside the measured region; each compiled graph is reused for every warmup and timed run."
     echo "- JAX functions are compiled with \`jax.jit\` during warmup, outside the measured region; timed calls include dispatch through \`jax.block_until_ready\`."
-    echo "- Each timed call creates the output tensor."
+    echo "- Allocation-returning API rows create their output tensor inside each timed call."
+    echo "- \`cpu/output_reuse\` rows allocate the destination during warmup and reuse it; tenferro-rs \`*_into\` is compared with PyTorch \`out=\`/\`copy_\`."
+    echo "- Trace mode is \`unsupported\` for caller-output rows because compiled tenferro-rs graphs own their output tensors; JAX is shown as missing because it has no equivalent mutable \`out=\` API."
     echo "- PyTorch view-producing indexing operations are cloned inside the timed region to match tenferro-rs owned, materialized outputs."
+    echo "- \`reshape\` is not force-materialized: each framework's public reshape storage semantics are part of the API behavior being compared."
     echo "- PyTorch complex conjugation uses \`torch.conj_physical\` to match tenferro-rs physical output rather than the lazy conjugate view from \`torch.conj\`."
     echo "- \`dynamic_update_slice\` reports trace mode as \`unsupported\` because tenferro-rs does not currently expose a corresponding \`TracedTensor\` API."
     echo "- \`full_piv_lu\` and \`full_piv_lu_solve\` are excluded because PyTorch has no direct public full-pivot equivalent; substituting \`torch.linalg.solve\` would compare different algorithms."
+    echo "- \`svd_full\` remains in the table even when the selected tenferro-rs provider reports it as unsupported."
     echo ""
     echo "## Threads: ${THREAD_COUNTS[*]}"
     echo ""

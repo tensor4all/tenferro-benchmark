@@ -1,0 +1,243 @@
+schema_version: 1
+scope:
+  description: Public tenferro-rs numerical tensor operations with a meaningful PyTorch CPU counterpart.
+  rules:
+    - TypedTensor and TensorRead spellings are aliases when they dispatch to the same backend kernel.
+    - Caller-owned-output APIs are distinct because allocation behavior changes.
+    - Graph construction, compilation, fixture allocation, and plan construction are outside timing.
+    - Provider-unsupported APIs remain present as explicit unsupported rows.
+
+coverage:
+  - family: elementwise
+    tenferro_apis:
+      - TensorElementwise::{add,add_read,sub,sub_read,mul,mul_read,div,div_read}
+      - TensorOpsExt::{add,sub,mul,div}
+      - TypedTensorOpsExt::{add,sub,mul,div}
+    pytorch: torch.{add,sub,mul,div}
+    disposition: measured
+    benchmarks: cpu/elementwise_reduction::{add,sub,mul,div}
+  - family: elementwise_output
+    tenferro_apis:
+      - TensorElementwise::{add_into,add_read_into,sub_into,sub_read_into,mul_into,mul_read_into,div_into,div_read_into}
+    pytorch: torch.{add,sub,mul,div}(out=...)
+    disposition: measured
+    benchmarks: cpu/output_reuse::{add_into,sub_into,mul_into,div_into}
+  - family: unary_elementwise
+    tenferro_apis:
+      - TensorElementwise::{neg,neg_read,abs,abs_read,sign,sign_read,conj,conj_read}
+      - TensorOpsExt::{neg,abs,sign,conj}
+      - TypedTensorOpsExt::{neg,abs,sign,conj}
+    pytorch: torch.{neg,abs,sign,conj_physical}
+    disposition: measured
+    benchmarks: cpu/elementwise_reduction::{neg,abs,sign}; cpu/complex/conj
+  - family: unary_elementwise_output
+    tenferro_apis:
+      - TensorElementwise::{neg_into,neg_read_into,conj_into,conj_read_into}
+    pytorch: torch.{neg,conj_physical}(out=...)
+    disposition: measured
+    benchmarks: cpu/output_reuse::{neg_into,conj_into}
+  - family: remaining_elementwise
+    tenferro_apis:
+      - TensorElementwise::{rem,rem_read,maximum,maximum_read,minimum,minimum_read,compare,compare_read,select,select_read,clamp,clamp_read}
+      - TensorOpsExt::{rem,maximum,minimum,compare,where_select,clamp}
+      - TypedTensorOpsExt::{rem,maximum,minimum,compare,clamp}
+      - TypedTensorMaskOpsExt::where_select
+    pytorch: torch.{remainder,maximum,minimum,lt,where,clamp}
+    disposition: measured
+    benchmarks: cpu/elementwise_reduction::{rem,maximum,minimum,compare_lt,select,clamp}
+  - family: analytic
+    tenferro_apis:
+      - TensorAnalytic::{exp,exp_read,log,log_read,sin,sin_read,cos,cos_read,tanh,tanh_read,sqrt,sqrt_read,rsqrt,rsqrt_read,pow,pow_read,expm1,expm1_read,log1p,log1p_read}
+      - TensorOpsExt::{exp,log,sin,cos,tanh,sqrt,rsqrt,pow,expm1,log1p}
+      - TypedTensorOpsExt::{exp,log,sin,cos,tanh,sqrt,rsqrt,pow,expm1,log1p}
+    pytorch: torch.{exp,log,sin,cos,tanh,sqrt,rsqrt,pow,expm1,log1p}
+    disposition: measured
+    benchmarks: cpu/elementwise_reduction::{exp,log,sin,cos,tanh,sqrt,rsqrt,pow,expm1,log1p}
+  - family: reductions
+    tenferro_apis:
+      - TensorReduction::{reduce_sum,reduce_sum_read,reduce_prod,reduce_prod_read,reduce_max,reduce_max_read,reduce_min,reduce_min_read}
+      - TensorOpsExt::reduce_sum
+      - TypedTensorOpsExt::reduce_sum
+    pytorch: torch.{sum,prod,max,min}
+    disposition: measured
+    benchmarks: cpu/elementwise_reduction::{reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1}
+
+  - family: structural
+    tenferro_apis:
+      - TensorStructural::{transpose,transpose_read,reshape,reshape_read,broadcast_in_dim,broadcast_in_dim_read,cast,convert,extract_diagonal,embed_diagonal,tril,triu}
+      - TensorOpsExt::{convert,cast,reshape,transpose}
+      - TypedTensorOpsExt::{reshape,transpose,broadcast_in_dim}
+    pytorch: Tensor.{transpose,reshape,expand,to,diagonal}; torch.{diag,tril,triu}
+    disposition: measured
+    benchmarks: cpu/structural_shape::{transpose,reshape,broadcast_in_dim,cast_f64_f32,extract_diagonal,embed_diagonal,tril,triu}
+  - family: contiguous_copy
+    tenferro_apis:
+      - TensorStructural::to_contiguous_read
+      - TensorViewCanonicalization::to_contiguous
+    pytorch: Tensor.contiguous
+    disposition: measured
+    benchmarks: cpu/permutation materialize rows
+  - family: caller_copy
+    tenferro_apis:
+      - TensorStructural::copy_read_into
+      - TensorViewCanonicalization::copy_into
+    pytorch: Tensor.copy_
+    disposition: measured
+    benchmarks: cpu/output_reuse/copy_read_into
+  - family: indexing
+    tenferro_apis:
+      - TensorIndexing::{gather,scatter,slice,dynamic_slice,dynamic_update_slice,pad,concatenate,reverse}
+    pytorch: torch.{gather,scatter}; Tensor slicing/update; torch.nn.functional.pad; torch.{cat,flip}
+    disposition: measured
+    benchmarks: cpu/indexing_layout::{gather,scatter,slice,dynamic_slice,dynamic_update_slice,pad,concatenate,reverse}
+  - family: traced_shape_convenience
+    tenferro_apis:
+      - TracedTensor::{slice_axis,take_axis,index_select,stack,concatenate}
+    pytorch: Tensor slicing; torch.{index_select,stack,cat}
+    disposition: alias
+    benchmarks: cpu/indexing_layout::{slice,gather,concatenate}
+    reason: Convenience graph builders lower to the measured primitive operations; graph construction is outside timing.
+
+  - family: dot
+    tenferro_apis:
+      - TensorDot::{dot_general,dot_general_read,dot_general_with_conj,dot_general_with_conj_read}
+      - TensorOpsExt::matmul
+      - TypedTensorOpsExt::matmul
+    pytorch: torch.matmul; conjugated torch.matmul
+    disposition: measured
+    benchmarks: cpu/complex::{dot_general,dot_general_with_conj}; cpu/einsum matmul rows
+  - family: dot_output
+    tenferro_apis:
+      - TensorDot::{dot_general_read_into,dot_general_read_into_accum}
+    pytorch: torch.mm(out=...); torch.addmm(out=...)
+    disposition: measured
+    benchmarks: cpu/output_reuse::{dot_general_read_into,dot_general_read_into_accum}
+  - family: dot_cached
+    tenferro_apis:
+      - TensorDot::{dot_general_cached,dot_general_read_cached,dot_general_with_conj_cached,dot_general_with_conj_read_cached,dot_general_read_into_accum_cached}
+      - BackendSession::{dot_general_cached,dot_general_read_cached,dot_general_with_conj_cached,dot_general_with_conj_read_cached,dot_general_read_into_accum_cached}
+    pytorch: warmed torch.matmul/torch.addmm with framework-owned caches
+    disposition: alias
+    benchmarks: cpu/einsum matmul rows; cpu/output_reuse/dot_general_read_into_accum
+    reason: PyTorch exposes no equivalent caller-owned GEMM plan object; warmed calls are the closest fair comparison.
+  - family: grouped_gemm
+    tenferro_apis:
+      - TensorDot::grouped_gemm_cached
+      - BackendSession::grouped_gemm_cached
+    pytorch: null
+    disposition: no_direct_pytorch
+    reason: PyTorch has no public heterogeneous grouped-GEMM CPU API.
+
+  - family: einsum
+    tenferro_apis:
+      - TensorEinsumExt::{einsum,einsum_subscripts}
+      - TypedTensorEinsumExt::{einsum,einsum_subscripts}
+      - TensorReadEinsumExt::{einsum_read,einsum_read_subscripts}
+      - TypedTensorReadEinsumExt::{einsum_read,einsum_read_subscripts}
+    pytorch: torch.einsum
+    disposition: measured
+    benchmarks: cpu/einsum_concrete/einsum_ij_jk_ik
+  - family: eager_and_traced_einsum
+    tenferro_apis:
+      - EagerEinsumExt::einsum
+      - TraceContextEinsumExt::{einsum,einsum_subscripts,einsum_with,einsum_subscripts_with}
+    pytorch: torch.einsum
+    disposition: measured
+    benchmarks: cpu/einsum report
+  - family: tensordot
+    tenferro_apis:
+      - TensorTensordotExt::tensordot
+      - TypedTensorTensordotExt::tensordot
+      - EagerTensorEinsumExt::tensordot
+      - TracedTensorEinsumExt::tensordot
+    pytorch: torch.tensordot
+    disposition: measured
+    benchmarks: cpu/complex/tensordot
+  - family: einsum_output
+    tenferro_apis:
+      - TensorEinsumIntoExt::{einsum_into,einsum_into_subscripts}
+      - TypedTensorEinsumIntoExt::{einsum_into,einsum_into_subscripts}
+      - TensorReadEinsumIntoExt::{einsum_read_into,einsum_read_into_subscripts}
+      - TypedTensorReadEinsumIntoExt::{einsum_read_into,einsum_read_into_subscripts}
+    pytorch: null
+    disposition: no_direct_pytorch
+    reason: torch.einsum has no out parameter.
+
+  - family: fft
+    tenferro_apis:
+      - TensorFftExt::{fft,ifft,rfft,irfft}
+      - TensorReadFftExt::{fft_read,ifft_read,rfft_read,irfft_read}
+      - FftExecutor::{fft,ifft,rfft,irfft}
+      - EagerTensorFftExt::{fft,ifft,rfft,irfft}
+      - TracedTensorFftExt::{fft,ifft,rfft,irfft}
+    pytorch: torch.fft.{fft,ifft,rfft,irfft}
+    disposition: measured
+    benchmarks: cpu/fft report
+
+  - family: linalg
+    tenferro_apis:
+      - TensorLinalgExt::{svd,qr,lu,solve,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
+      - TensorReadLinalgExt::{svd_read,qr_read,lu_read,solve_read,cholesky_read,eigh_read,eig_read,triangular_solve_read,slogdet_read,det_read,inv_read,eigvalsh_read,eigvals_read,pinv_read,pinv_with_rtol_read,norm_read}
+      - EagerTensorLinalgExt::{svd,qr,lu,solve,lstsq,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
+      - TracedTensorLinalgExt::{svd,qr,lu,solve,lstsq,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
+    pytorch: torch.linalg equivalents
+    disposition: measured
+    benchmarks: cpu/cpu_ops; cpu/linalg_uncovered
+  - family: full_svd
+    tenferro_apis:
+      - EagerTensorLinalgExt::svd_full
+      - TracedTensorLinalgExt::svd_full
+    pytorch: torch.linalg.svd(full_matrices=True)
+    disposition: measured_or_provider_unsupported
+    benchmarks: cpu/linalg_uncovered/svd_full
+  - family: linalg_options
+    tenferro_apis:
+      - TensorLinalgExt::{svd_with_options,qr_with_options,eigh_with_options}
+      - TensorReadLinalgExt::{svd_with_options_read,qr_with_options_read,eigh_with_options_read}
+      - EagerTensorLinalgExt::{svd_with_options,qr_with_options,eigh_with_options}
+      - TracedTensorLinalgExt::{svd_with_options,qr_with_options,eigh_with_options}
+    pytorch: torch.linalg.{svd,qr,eigh}
+    disposition: alias
+    benchmarks: cpu/cpu_ops primal SVD/QR/Eigh rows
+    reason: Default options lower to the measured operations; tenferro gauge controls have no direct PyTorch setting.
+  - family: full_pivot_lu
+    tenferro_apis:
+      - TensorLinalgExt::{full_piv_lu,full_piv_lu_solve}
+      - TensorReadLinalgExt::{full_piv_lu_read,full_piv_lu_solve_read}
+      - EagerTensorLinalgExt::{full_piv_lu,full_piv_lu_solve}
+      - TracedTensorLinalgExt::{full_piv_lu,full_piv_lu_solve}
+    pytorch: null
+    disposition: no_direct_pytorch
+    reason: torch.linalg exposes partial-pivot LU but no full-pivot LU decomposition/solve.
+
+  - family: automatic_differentiation
+    tenferro_apis:
+      - TracedTensorAdExt::{grad,jvp,vjp}
+      - EagerTensor::{backward,grad}
+    pytorch: torch.autograd; torch.func.{jvp,vjp}
+    disposition: measured
+    benchmarks: cpu/cpu_ops; cpu/linalg_jvp_vjp
+  - family: optional_ad
+    tenferro_apis:
+      - TracedTensorAdExt::{grad_optional,jvp_optional,vjp_optional}
+    pytorch: allow_unused/materialize_grads options
+    disposition: alias
+    benchmarks: cpu/cpu_ops; cpu/linalg_jvp_vjp
+    reason: Optional variants only change disconnected-gradient handling; connected workloads execute the same transforms.
+  - family: checkpoint
+    tenferro_apis:
+      - TracedTensorAdExt::checkpoint
+    pytorch: torch.utils.checkpoint
+    disposition: no_direct_timing_semantics
+    reason: The APIs expose different lifetime and recomputation boundaries, so a one-call speed comparison would not be fair.
+
+  - family: excluded_backend_infrastructure
+    tenferro_apis:
+      - TensorFusion
+      - TensorBuffer
+      - TensorDeviceTransfer
+      - TensorBackendCapability
+      - Runtime and GraphCompiler administration APIs
+    pytorch: null
+    disposition: out_of_scope
+    reason: Backend/runtime infrastructure is not a numerical tensor operation with matching PyTorch call semantics.

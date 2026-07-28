@@ -4,6 +4,8 @@ set -euo pipefail
 # Runs the CPU FFT benchmark suite:
 #   - tenferro-rs TensorFftExt one-shot execution
 #   - tenferro-rs FftExecutor with caller-owned plan cache
+#   - tenferro-rs EagerTensorFftExt with a reused eager runtime
+#   - tenferro-rs TracedTensorFftExt with one reused compiled graph
 #   - PyTorch torch.fft
 #
 # The initial suite intentionally measures only 1D transforms. That keeps the
@@ -77,6 +79,10 @@ prepare_cpu_benchmark_python_venv "$PROJECT_DIR"
 
 ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 
+# shellcheck source=scripts/benchmark_host_idle.sh
+source "$SCRIPT_DIR/benchmark_host_idle.sh"
+assert_benchmark_host_idle
+
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
 SUITE_ID="cpu/fft"
@@ -149,11 +155,13 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     CSV="$RUN_DIR/cpu_fft_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
     collect_run_metadata "$RUN_T_YAML"
 
+    assert_benchmark_host_idle
     cargo run --release --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_fft -- \
         --num-threads "$NUM_THREADS" \
         --lengths "${FFT_BENCH_LENGTHS:-1048576}" \
         --output "$CSV"
 
+    assert_benchmark_host_idle
     if command -v uv >/dev/null 2>&1; then
         uv run python "$SCRIPT_DIR/benchmark_cpu_fft_python.py" \
             --num-threads "$NUM_THREADS" \
@@ -215,6 +223,8 @@ fi
     echo "- Each timed call creates the output tensor."
     echo "- tenferro-rs immediate rows use one-shot \`TensorFftExt\` calls."
     echo "- tenferro-rs cached rows reuse a caller-owned \`FftExecutor\` across warmups and timed runs."
+    echo "- tenferro-rs eager rows reuse one \`EagerRuntime\` and input \`EagerTensor\`; setup is outside timing."
+    echo "- tenferro-rs trace rows construct and compile \`TracedTensorFftExt\` graphs outside timing and reuse the compiled program."
     echo "- PyTorch rows use \`torch.fft\` after warmup, allowing PyTorch internal planning/cache behavior."
     echo "- The primary fair comparison is cached \`FftExecutor\` versus warmed \`torch.fft\`; immediate rows are retained only as one-shot diagnostics."
     echo "- This initial suite only measures 1D transforms to avoid row-major/column-major batched-axis layout artifacts."

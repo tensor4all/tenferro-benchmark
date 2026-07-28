@@ -167,7 +167,7 @@ def compiled(fn: Callable[..., object], *inputs: LazyArray) -> Callable[[], obje
 def make_cases() -> list[Case]:
     import jax.numpy as jnp
     from jax import lax
-    from jax.scipy.linalg import solve_triangular
+    from jax.scipy.linalg import lu, solve_triangular
 
     fast_n = 33_554_432
     ew_n = 8_388_608
@@ -203,6 +203,11 @@ def make_cases() -> list[Case]:
     start = LazyArray(lambda: jnp.asarray([1024], dtype=jnp.int64))
     part_a = tensor_f64((1_048_576,), 1)
     part_b = tensor_f64((1_048_576,), 2)
+    structural_matrix = tensor_f64((4096, 4096), 1)
+    reshape_input = tensor_f64((33_554_432,), 1)
+    broadcast_input = tensor_f64((8192, 1), 1)
+    batched_diagonal_input = tensor_f64((8_388_608, 2, 2), 1)
+    diagonal_input = tensor_f64((8192,), 1)
 
     spd1536 = spd(1536)
     a160 = well_conditioned(160, 1)
@@ -213,6 +218,10 @@ def make_cases() -> list[Case]:
     a1024 = well_conditioned(1024, 1)
     a768 = well_conditioned(768, 1)
     rect = tensor_f64((512, 256), 1)
+    lu1024 = well_conditioned(1024, 1)
+    lstsq_a = tensor_f64((768, 384), 1)
+    lstsq_rhs = tensor_f64((768, 16), 2)
+    svd_full_a = tensor_f64((768, 384), 1)
     norm = tensor_f64((2048, 2048), 1)
 
     z_conj = tensor_c64((16_777_216,), 1)
@@ -276,6 +285,15 @@ def make_cases() -> list[Case]:
         (idx, "pad", "f64", "2097152", "edge padding", compiled(lambda a: jnp.pad(a, (128, 128)), update_base)),
         (idx, "concatenate", "f64", "1048576+1048576", "concatenate along axis 0", compiled(lambda a, b: jnp.concatenate((a, b)), part_a, part_b)),
         (idx, "reverse", "f64", "2097152", "reverse axis 0", compiled(jnp.flip, update_base)),
+        ("cpu/structural_shape", "transpose", "f64", "4096x4096", "materialized matrix transpose", compiled(jnp.transpose, structural_matrix)),
+        ("cpu/structural_shape", "reshape", "f64", "33554432 -> 8192x4096", "public reshape call; framework-native storage semantics", compiled(lambda a: jnp.reshape(a, (8192, 4096)), reshape_input)),
+        ("cpu/structural_shape", "broadcast_in_dim", "f64", "8192x1 -> 8192x4096", "materialized broadcast", compiled(lambda a: jnp.broadcast_to(a, (8192, 4096)), broadcast_input)),
+        ("cpu/structural_shape", "cast_f64_f32", "f64->f32", "33554432", "dtype cast", compiled(lambda a: a.astype(jnp.float32), reshape_input)),
+        ("cpu/structural_shape", "extract_diagonal", "f64", "8388608x2x2 -> 8388608x2", "batched matrix diagonal extraction", compiled(lambda a: jnp.diagonal(a, axis1=1, axis2=2), batched_diagonal_input)),
+        ("cpu/structural_shape", "embed_diagonal", "f64", "8192 -> 8192x8192", "embed vector as matrix diagonal", compiled(jnp.diag, diagonal_input)),
+        ("cpu/structural_shape", "tril", "f64", "4096x4096", "lower triangle", compiled(jnp.tril, structural_matrix)),
+        ("cpu/structural_shape", "triu", "f64", "4096x4096", "upper triangle", compiled(jnp.triu, structural_matrix)),
+        ("cpu/einsum_concrete", "einsum_ij_jk_ik", "f64", "1024x1024", "jnp.einsum allocation-returning API", compiled(lambda a, b: jnp.einsum("ij,jk->ik", a, b), tensor_f64((1024, 1024), 1), tensor_f64((1024, 1024), 2))),
         (lin, "cholesky", "f64", "1536x1536", "SPD input", compiled(jnp.linalg.cholesky, spd1536)),
         (lin, "eig", "f64", "160x160", "general input", compiled(jnp.linalg.eig, a160)),
         (lin, "eigvals", "f64", "192x192", "general input values only", compiled(jnp.linalg.eigvals, a192)),
@@ -285,6 +303,10 @@ def make_cases() -> list[Case]:
         (lin, "slogdet", "f64", "1024x1024", "well-conditioned input", compiled(jnp.linalg.slogdet, a1024)),
         (lin, "inv", "f64", "768x768", "well-conditioned input", compiled(jnp.linalg.inv, a768)),
         (lin, "pinv", "f64", "512x256", "rectangular input", compiled(jnp.linalg.pinv, rect)),
+        (lin, "pinv_with_rtol", "f64", "512x256", "rectangular input; rtol=1e-12", compiled(lambda a: jnp.linalg.pinv(a, rtol=1e-12), rect)),
+        (lin, "lu", "f64", "1024x1024", "partial-pivot LU", compiled(lu, lu1024)),
+        (lin, "lstsq", "f64", "768x384,rhs=16", "tall full-column-rank least-squares solve; solution output; JAX chooses its native solver", compiled(lambda a, b: jnp.linalg.lstsq(a, b)[0], lstsq_a, lstsq_rhs)),
+        (lin, "svd_full", "f64", "768x384", "full-matrices SVD", compiled(lambda a: jnp.linalg.svd(a, full_matrices=True), svd_full_a)),
         (lin, "norm_fro", "f64", "2048x2048", "Frobenius norm", compiled(lambda a: jnp.linalg.norm(a, ord="fro"), norm)),
         (cplx, "conj", "c64", "16777216", "physical complex conjugate output", compiled(jnp.conj, z_conj)),
         (cplx, "mul", "c64", "8388608", "complex elementwise", compiled(lambda a, b: a * b, z_mul, z_mul2)),
@@ -292,6 +314,8 @@ def make_cases() -> list[Case]:
         (cplx, "exp", "c64", "4194304", "complex analytic", compiled(jnp.exp, z_exp)),
         (cplx, "log", "c64", "4194304", "complex analytic", compiled(jnp.log, z_log)),
         (cplx, "dot_general", "c64", "640x640", "complex matrix multiply", compiled(lambda a, b: a @ b, z640a, z640b)),
+        (cplx, "dot_general_with_conj", "c64", "640x640", "conjugated-lhs complex matrix multiply", compiled(lambda a, b: jnp.conj(a) @ b, z640a, z640b)),
+        (cplx, "tensordot", "c64", "640x640", "complex matrix contraction over one axis", compiled(lambda a, b: jnp.tensordot(a, b, axes=1), z640a, z640b)),
         (cplx, "svd", "c64", "160x160", "complex SVD", compiled(lambda a: jnp.linalg.svd(a, full_matrices=True), z160)),
         (cplx, "qr", "c64", "256x256", "complex QR", compiled(lambda a: jnp.linalg.qr(a, mode="reduced"), z256)),
         (cplx, "eig", "c64", "112x112", "complex eig", compiled(jnp.linalg.eig, z112)),

@@ -1,22 +1,26 @@
 //! CPU public API benchmark runner for tenferro-rs APIs not covered by the
 //! focused FFT/einsum/permutation suites.
 
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::env;
 use std::fs::OpenOptions;
 use std::hint::black_box;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Instant;
 
 use num_complex::Complex64;
+use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{CpuBackend, CpuBackendKind};
-use tenferro_linalg::{TensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_einsum::{TensorDotAxes, TensorEinsumExt, TensorTensordotExt, TracedTensorEinsumExt};
+use tenferro_linalg::{EagerTensorLinalgExt, TensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
 use tenferro_tensor::{
-    CompareDir, DotGeneralConfig, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor,
-    TensorAnalytic, TensorDot, TensorElementwise, TensorIndexing, TensorReduction,
+    CompareDir, DType, DotGeneralAccumulation, DotGeneralConfig, GatherConfig, PadConfig,
+    ScatterConfig, SliceConfig, Tensor, TensorAnalytic, TensorDot, TensorElementwise,
+    TensorIndexing, TensorRead, TensorReduction, TensorStructural, TensorWrite,
 };
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
@@ -241,6 +245,123 @@ fn cases() -> Vec<Case> {
             concatenate_f64,
         ),
         idx("reverse", "f64", "2097152", "reverse axis 0", reverse_f64),
+        // Structural/shape APIs.
+        shape_op(
+            "transpose",
+            "f64",
+            "4096x4096",
+            "materialized matrix transpose",
+            transpose_f64,
+        ),
+        shape_op(
+            "reshape",
+            "f64",
+            "33554432 -> 8192x4096",
+            "public reshape call; framework-native storage semantics",
+            reshape_f64,
+        ),
+        shape_op(
+            "broadcast_in_dim",
+            "f64",
+            "8192x1 -> 8192x4096",
+            "materialized broadcast",
+            broadcast_f64,
+        ),
+        shape_op(
+            "cast_f64_f32",
+            "f64->f32",
+            "33554432",
+            "dtype cast",
+            cast_f64_f32,
+        ),
+        shape_op(
+            "extract_diagonal",
+            "f64",
+            "8388608x2x2 -> 8388608x2",
+            "batched matrix diagonal extraction",
+            extract_diagonal_f64,
+        ),
+        shape_op(
+            "embed_diagonal",
+            "f64",
+            "8192 -> 8192x8192",
+            "embed vector as matrix diagonal",
+            embed_diagonal_f64,
+        ),
+        shape_op("tril", "f64", "4096x4096", "lower triangle", tril_f64),
+        shape_op("triu", "f64", "4096x4096", "upper triangle", triu_f64),
+        // Caller-owned output APIs. Read-view spellings share these exact
+        // kernels and are mapped to these rows in the coverage manifest.
+        reuse(
+            "add_into",
+            "f64",
+            "33554432",
+            "caller-owned output",
+            add_into_f64,
+        ),
+        reuse(
+            "sub_into",
+            "f64",
+            "33554432",
+            "caller-owned output",
+            sub_into_f64,
+        ),
+        reuse(
+            "mul_into",
+            "f64",
+            "33554432",
+            "caller-owned output",
+            mul_into_f64,
+        ),
+        reuse(
+            "div_into",
+            "f64",
+            "33554432",
+            "caller-owned output",
+            div_into_f64,
+        ),
+        reuse(
+            "neg_into",
+            "f64",
+            "33554432",
+            "caller-owned output",
+            neg_into_f64,
+        ),
+        reuse(
+            "conj_into",
+            "c64",
+            "16777216",
+            "physical conjugate into caller-owned output",
+            conj_into_c64,
+        ),
+        reuse(
+            "copy_read_into",
+            "f64",
+            "33554432",
+            "copy into caller-owned output",
+            copy_read_into_f64,
+        ),
+        reuse(
+            "dot_general_read_into",
+            "f64",
+            "1024x1024",
+            "matrix multiply into caller-owned output",
+            dot_into_f64,
+        ),
+        reuse(
+            "dot_general_read_into_accum",
+            "f64",
+            "1024x1024",
+            "out = lhs @ rhs + out",
+            dot_into_accum_f64,
+        ),
+        concrete_einsum(
+            "einsum_ij_jk_ik",
+            "f64",
+            "1024x1024",
+            "TensorEinsumExt allocation-returning API",
+            einsum_ij_jk_f64,
+        ),
         // Uncovered linalg (#71).
         lin("cholesky", "f64", "1536x1536", "SPD input", cholesky_f64),
         lin("eig", "f64", "160x160", "general input", eig_f64),
@@ -275,6 +396,28 @@ fn cases() -> Vec<Case> {
         ),
         lin("inv", "f64", "768x768", "well-conditioned input", inv_f64),
         lin("pinv", "f64", "512x256", "rectangular input", pinv_f64),
+        lin(
+            "pinv_with_rtol",
+            "f64",
+            "512x256",
+            "rectangular input; rtol=1e-12",
+            pinv_with_rtol_f64,
+        ),
+        lin("lu", "f64", "1024x1024", "partial-pivot LU", lu_f64),
+        lin(
+            "lstsq",
+            "f64",
+            "768x384,rhs=16",
+            "tall full-column-rank QR least-squares solve",
+            lstsq_f64,
+        ),
+        lin(
+            "svd_full",
+            "f64",
+            "768x384",
+            "full-matrices SVD; unsupported providers are reported explicitly",
+            svd_full_f64,
+        ),
         lin("norm_fro", "f64", "2048x2048", "Frobenius norm", norm_f64),
         // Complex coverage (#74).
         cplx("conj", "c64", "16777216", "complex elementwise", conj_c64),
@@ -288,6 +431,20 @@ fn cases() -> Vec<Case> {
             "640x640",
             "complex matrix multiply",
             dot_c64,
+        ),
+        cplx(
+            "dot_general_with_conj",
+            "c64",
+            "640x640",
+            "conjugated-lhs complex matrix multiply",
+            dot_with_conj_c64,
+        ),
+        cplx(
+            "tensordot",
+            "c64",
+            "640x640",
+            "complex matrix contraction over one axis",
+            tensordot_c64,
         ),
         cplx("svd", "c64", "160x160", "complex SVD", svd_c64),
         cplx("qr", "c64", "256x256", "complex QR", qr_c64),
@@ -361,6 +518,57 @@ fn lin(
     }
 }
 
+fn shape_op(
+    benchmark: &'static str,
+    dtype: &'static str,
+    shape: &'static str,
+    notes: &'static str,
+    run: fn(&mut CpuBackend) -> tenferro_tensor::Result<()>,
+) -> Case {
+    Case {
+        suite: "cpu/structural_shape",
+        benchmark,
+        dtype,
+        shape,
+        notes,
+        run,
+    }
+}
+
+fn reuse(
+    benchmark: &'static str,
+    dtype: &'static str,
+    shape: &'static str,
+    notes: &'static str,
+    run: fn(&mut CpuBackend) -> tenferro_tensor::Result<()>,
+) -> Case {
+    Case {
+        suite: "cpu/output_reuse",
+        benchmark,
+        dtype,
+        shape,
+        notes,
+        run,
+    }
+}
+
+fn concrete_einsum(
+    benchmark: &'static str,
+    dtype: &'static str,
+    shape: &'static str,
+    notes: &'static str,
+    run: fn(&mut CpuBackend) -> tenferro_tensor::Result<()>,
+) -> Case {
+    Case {
+        suite: "cpu/einsum_concrete",
+        benchmark,
+        dtype,
+        shape,
+        notes,
+        run,
+    }
+}
+
 fn cplx(
     benchmark: &'static str,
     dtype: &'static str,
@@ -398,9 +606,10 @@ fn emit_case(
             )?;
         }
         Err(err) => {
+            let status = error_status(&err.to_string());
             writeln!(
                 writer,
-                "{},{},{},{},\"{}\",tenferro-eager,,,failed,\"{}\"",
+                "{},{},{},{},\"{}\",tenferro-eager,,,{status},\"{}\"",
                 case.suite,
                 case.benchmark,
                 case.dtype,
@@ -415,6 +624,32 @@ fn emit_case(
 }
 
 fn emit_trace_case(writer: &mut impl Write, args: &Args, case: &Case) -> BenchResult<()> {
+    if case.suite == "cpu/output_reuse" {
+        writeln!(
+            writer,
+            "{},{},{},{},\"{}\",tenferro-trace,,,unsupported,\"{}\"",
+            case.suite,
+            case.benchmark,
+            case.dtype,
+            args.num_threads,
+            csv_escape(case.shape),
+            "compiled traced execution owns its output tensors; no caller-output API",
+        )?;
+        return Ok(());
+    }
+    if case.suite == "cpu/einsum_concrete" {
+        writeln!(
+            writer,
+            "{},{},{},{},\"{}\",tenferro-trace,,,unsupported,\"{}\"",
+            case.suite,
+            case.benchmark,
+            case.dtype,
+            args.num_threads,
+            csv_escape(case.shape),
+            "TensorEinsumExt is a concrete Tensor API; traced einsum is measured by cpu/einsum",
+        )?;
+        return Ok(());
+    }
     if case.suite == "cpu/indexing_layout" && case.benchmark == "dynamic_update_slice" {
         writeln!(
             writer,
@@ -443,9 +678,10 @@ fn emit_trace_case(writer: &mut impl Write, args: &Args, case: &Case) -> BenchRe
             )?;
         }
         Err(err) => {
+            let status = error_status(&err.to_string());
             writeln!(
                 writer,
-                "{},{},{},{},\"{}\",tenferro-trace,,,failed,\"{}\"",
+                "{},{},{},{},\"{}\",tenferro-trace,,,{status},\"{}\"",
                 case.suite,
                 case.benchmark,
                 case.dtype,
@@ -532,6 +768,14 @@ fn cpu_backend_from_env() -> BenchResult<CpuBackend> {
 
 fn csv_escape(value: &str) -> String {
     value.replace('"', "\"\"")
+}
+
+fn error_status(message: &str) -> &'static str {
+    if message.to_ascii_lowercase().contains("unsupported") {
+        "unsupported"
+    } else {
+        "failed"
+    }
 }
 
 fn consume(tensor: Tensor) {
@@ -864,6 +1108,26 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         ("cpu/indexing_layout", "reverse") => {
             one(traced(tensor_f64(&[2_097_152], 1))?.reverse(&[0])?)
         }
+        ("cpu/structural_shape", "transpose") => {
+            one(traced(tensor_f64(&[4096, 4096], 1))?.transpose(&[1, 0])?)
+        }
+        ("cpu/structural_shape", "reshape") => {
+            one(traced(tensor_f64(&[33_554_432], 1))?.reshape(&[8192, 4096])?)
+        }
+        ("cpu/structural_shape", "broadcast_in_dim") => {
+            one(traced(tensor_f64(&[8192, 1], 1))?.broadcast_in_dim(&[8192, 4096], &[0, 1])?)
+        }
+        ("cpu/structural_shape", "cast_f64_f32") => {
+            one(traced(tensor_f64(&[33_554_432], 1))?.cast(DType::F32)?)
+        }
+        ("cpu/structural_shape", "extract_diagonal") => {
+            one(traced(tensor_f64(&[8_388_608, 2, 2], 1))?.extract_diag(1, 2)?)
+        }
+        ("cpu/structural_shape", "embed_diagonal") => {
+            one(traced(tensor_f64(&[8192], 1))?.embed_diag(0, 1)?)
+        }
+        ("cpu/structural_shape", "tril") => one(traced(tensor_f64(&[4096, 4096], 1))?.tril(0)?),
+        ("cpu/structural_shape", "triu") => one(traced(tensor_f64(&[4096, 4096], 1))?.triu(0)?),
         ("cpu/linalg_uncovered", "cholesky") => one(traced(spd(1536, 1))?.cholesky()?),
         ("cpu/linalg_uncovered", "eig") => {
             let (w, v) = traced(well_conditioned(160, 1))?.eig()?;
@@ -886,6 +1150,20 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         }
         ("cpu/linalg_uncovered", "inv") => one(traced(well_conditioned(768, 1))?.inv()?),
         ("cpu/linalg_uncovered", "pinv") => one(traced(tensor_f64(&[512, 256], 1))?.pinv()?),
+        ("cpu/linalg_uncovered", "pinv_with_rtol") => {
+            one(traced(tensor_f64(&[512, 256], 1))?.pinv_with_rtol(1e-12)?)
+        }
+        ("cpu/linalg_uncovered", "lu") => {
+            let (p, l, u, pivots) = traced(well_conditioned(1024, 1))?.lu()?;
+            Ok(vec![p, l, u, pivots])
+        }
+        ("cpu/linalg_uncovered", "lstsq") => {
+            one(traced(tensor_f64(&[768, 384], 1))?.lstsq(&traced(tensor_f64(&[768, 16], 2))?)?)
+        }
+        ("cpu/linalg_uncovered", "svd_full") => {
+            let (u, s, vt) = traced(tensor_f64(&[768, 384], 1))?.svd_full()?;
+            Ok(vec![u, s, vt])
+        }
         ("cpu/linalg_uncovered", "norm_fro") => {
             one(traced(tensor_f64(&[2048, 2048], 1))?.norm(None, Some(&[0, 1]), false)?)
         }
@@ -908,6 +1186,22 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
                 lhs_batch_dims: vec![],
                 rhs_batch_dims: vec![],
             },
+        )?),
+        ("cpu/complex", "dot_general_with_conj") => {
+            let lhs = traced(tensor_c64(&[640, 640], 1))?.conj()?;
+            one(lhs.dot_general(
+                &traced(tensor_c64(&[640, 640], 2))?,
+                DotGeneralConfig {
+                    lhs_contracting_dims: vec![1],
+                    rhs_contracting_dims: vec![0],
+                    lhs_batch_dims: vec![],
+                    rhs_batch_dims: vec![],
+                },
+            )?)
+        }
+        ("cpu/complex", "tensordot") => one(traced(tensor_c64(&[640, 640], 1))?.tensordot(
+            &traced(tensor_c64(&[640, 640], 2))?,
+            TensorDotAxes::Count(1),
         )?),
         ("cpu/complex", "svd") => {
             let (u, s, vt) = traced(tensor_c64(&[160, 160], 1))?.svd()?;
@@ -1154,6 +1448,186 @@ fn reverse_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     Ok(())
 }
 
+// Structural/shape.
+fn transpose_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.transpose(tensor_f64(&[4096, 4096], 1), &[1, 0])?);
+    Ok(())
+}
+fn reshape_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.reshape(tensor_f64(&[33_554_432], 1), &[8192, 4096])?);
+    Ok(())
+}
+fn broadcast_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.broadcast_in_dim(tensor_f64(&[8192, 1], 1), &[8192, 4096], &[0, 1])?);
+    Ok(())
+}
+fn cast_f64_f32(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.cast(tensor_f64(&[33_554_432], 1), DType::F32)?);
+    Ok(())
+}
+fn extract_diagonal_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.extract_diagonal(tensor_f64(&[8_388_608, 2, 2], 1), 1, 2)?);
+    Ok(())
+}
+fn embed_diagonal_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.embed_diagonal(tensor_f64(&[8192], 1), 0, 1)?);
+    Ok(())
+}
+fn tril_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.tril(tensor_f64(&[4096, 4096], 1), 0)?);
+    Ok(())
+}
+fn triu_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.triu(tensor_f64(&[4096, 4096], 1), 0)?);
+    Ok(())
+}
+
+thread_local! {
+    static REUSE_VECTOR_OUT: RefCell<Option<Tensor>> = const { RefCell::new(None) };
+    static REUSE_COMPLEX_OUT: RefCell<Option<Tensor>> = const { RefCell::new(None) };
+    static REUSE_MATRIX_OUT: RefCell<Option<Tensor>> = const { RefCell::new(None) };
+}
+
+fn with_complex_out(
+    run: impl FnOnce(TensorWrite<'_>) -> tenferro_tensor::Result<()>,
+) -> tenferro_tensor::Result<()> {
+    REUSE_COMPLEX_OUT.with(|slot| {
+        let mut output = slot.borrow_mut();
+        if output.is_none() {
+            *output = Some(Tensor::from_vec_col_major(
+                vec![16_777_216],
+                vec![Complex64::new(0.0, 0.0); 16_777_216],
+            )?);
+        }
+        run(TensorWrite::from_tensor(
+            output.as_mut().expect("complex output initialized"),
+        ))
+    })
+}
+
+fn with_vector_out(
+    run: impl FnOnce(TensorWrite<'_>) -> tenferro_tensor::Result<()>,
+) -> tenferro_tensor::Result<()> {
+    REUSE_VECTOR_OUT.with(|slot| {
+        let mut output = slot.borrow_mut();
+        if output.is_none() {
+            *output = Some(Tensor::from_vec_col_major(
+                vec![EW_FAST_N],
+                vec![0.0_f64; EW_FAST_N],
+            )?);
+        }
+        run(TensorWrite::from_tensor(
+            output.as_mut().expect("vector output initialized"),
+        ))
+    })
+}
+
+fn with_matrix_out(
+    run: impl FnOnce(TensorWrite<'_>) -> tenferro_tensor::Result<()>,
+) -> tenferro_tensor::Result<()> {
+    REUSE_MATRIX_OUT.with(|slot| {
+        let mut output = slot.borrow_mut();
+        if output.is_none() {
+            *output = Some(Tensor::from_vec_col_major(
+                vec![1024, 1024],
+                vec![0.0_f64; 1024 * 1024],
+            )?);
+        }
+        run(TensorWrite::from_tensor(
+            output.as_mut().expect("matrix output initialized"),
+        ))
+    })
+}
+
+fn add_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_vector_out(|out| {
+        b.add_into(
+            tensor_f64(&[EW_FAST_N], 1),
+            tensor_f64(&[EW_FAST_N], 2),
+            out,
+        )
+    })
+}
+fn sub_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_vector_out(|out| {
+        b.sub_into(
+            tensor_f64(&[EW_FAST_N], 1),
+            tensor_f64(&[EW_FAST_N], 2),
+            out,
+        )
+    })
+}
+fn mul_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_vector_out(|out| {
+        b.mul_into(
+            tensor_f64(&[EW_FAST_N], 1),
+            tensor_f64(&[EW_FAST_N], 2),
+            out,
+        )
+    })
+}
+fn div_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_vector_out(|out| {
+        b.div_into(
+            tensor_f64(&[EW_FAST_N], 1),
+            tensor_f64_positive(&[EW_FAST_N], 2),
+            out,
+        )
+    })
+}
+fn neg_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_vector_out(|out| b.neg_into(tensor_f64(&[EW_FAST_N], 1), out))
+}
+fn conj_into_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_complex_out(|out| b.conj_into(tensor_c64(&[16_777_216], 1), out))
+}
+fn copy_read_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_vector_out(|out| {
+        b.copy_read_into(TensorRead::from_tensor(tensor_f64(&[EW_FAST_N], 1)), out)
+    })
+}
+
+fn dot_config() -> DotGeneralConfig {
+    DotGeneralConfig {
+        lhs_contracting_dims: vec![1],
+        rhs_contracting_dims: vec![0],
+        lhs_batch_dims: vec![],
+        rhs_batch_dims: vec![],
+    }
+}
+
+fn dot_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_matrix_out(|out| {
+        b.dot_general_read_into(
+            TensorRead::from_tensor(tensor_f64(&[1024, 1024], 1)),
+            TensorRead::from_tensor(tensor_f64(&[1024, 1024], 2)),
+            &dot_config(),
+            out,
+        )
+    })
+}
+
+fn dot_into_accum_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_matrix_out(|out| {
+        b.dot_general_read_into_accum(
+            TensorRead::from_tensor(tensor_f64(&[1024, 1024], 1)),
+            TensorRead::from_tensor(tensor_f64(&[1024, 1024], 2)),
+            &dot_config(),
+            DotGeneralAccumulation::add_to(DType::F64)?,
+            out,
+        )
+    })
+}
+
+fn einsum_ij_jk_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(
+        [tensor_f64(&[1024, 1024], 1), tensor_f64(&[1024, 1024], 2)]
+            .einsum("ij,jk->ik", b)
+            .map_err(|error| error.into_tensor_error("einsum"))?,
+    );
+    Ok(())
+}
+
 // Linalg.
 fn cholesky_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(spd(1536, 1).cholesky(b)?);
@@ -1200,6 +1674,91 @@ fn pinv_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(tensor_f64(&[512, 256], 1).pinv(b)?);
     Ok(())
 }
+fn pinv_with_rtol_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(tensor_f64(&[512, 256], 1).pinv_with_rtol(1e-12, b)?);
+    Ok(())
+}
+fn lu_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    let (p, l, u, pivots) = well_conditioned(1024, 1).lu(b)?;
+    consume_many([p, l, u, pivots]);
+    Ok(())
+}
+
+thread_local! {
+    static LSTSQ_FIXTURE: RefCell<Option<(EagerTensor, EagerTensor)>> = const { RefCell::new(None) };
+    static SVD_FULL_FIXTURE: RefCell<Option<EagerTensor>> = const { RefCell::new(None) };
+}
+
+fn eager_cpu_context() -> Arc<EagerRuntime> {
+    EagerRuntime::with_cpu_backend(
+        match env::var("TENFERRO_CPU_BACKEND_KIND")
+            .unwrap_or_else(|_| "default".to_string())
+            .as_str()
+        {
+            "" | "default" => CpuBackend::new(),
+            "blas" => CpuBackend::with_kind(CpuBackendKind::Blas)
+                .expect("configured BLAS CPU backend should initialize"),
+            "faer" => CpuBackend::with_kind(CpuBackendKind::Faer)
+                .expect("configured faer CPU backend should initialize"),
+            other => panic!("unsupported TENFERRO_CPU_BACKEND_KIND={other}"),
+        },
+    )
+}
+
+fn eager_linalg_error(op: &'static str, error: tenferro_ad::Error) -> tenferro_tensor::Error {
+    tenferro_tensor::Error::extension(
+        op,
+        tenferro_linalg::LINALG_EXTENSION_FAMILY_ID,
+        error.kind(),
+        error,
+    )
+}
+
+fn lstsq_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    LSTSQ_FIXTURE.with(|slot| {
+        let mut fixture = slot.borrow_mut();
+        if fixture.is_none() {
+            let ctx = eager_cpu_context();
+            let a =
+                EagerTensor::from_tensor_in(tensor_f64(&[768, 384], 1).clone(), Arc::clone(&ctx))
+                    .expect("lstsq lhs fixture should initialize");
+            let rhs = EagerTensor::from_tensor_in(tensor_f64(&[768, 16], 2).clone(), ctx)
+                .expect("lstsq rhs fixture should initialize");
+            *fixture = Some((a, rhs));
+        }
+        let (a, rhs) = fixture.as_ref().expect("lstsq fixture initialized");
+        let output = a
+            .lstsq(rhs)
+            .map_err(|error| eager_linalg_error("lstsq", error))?;
+        black_box(output.shape().len());
+        black_box(output.dtype());
+        Ok(())
+    })
+}
+
+fn svd_full_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    SVD_FULL_FIXTURE.with(|slot| {
+        let mut fixture = slot.borrow_mut();
+        if fixture.is_none() {
+            *fixture = Some(
+                EagerTensor::from_tensor_in(
+                    tensor_f64(&[768, 384], 1).clone(),
+                    eager_cpu_context(),
+                )
+                .expect("full SVD fixture should initialize"),
+            );
+        }
+        let input = fixture.as_ref().expect("full SVD fixture initialized");
+        let (u, s, vt) = input
+            .svd_full()
+            .map_err(|error| eager_linalg_error("svd_full", error))?;
+        for output in [&u, &s, &vt] {
+            black_box(output.shape().len());
+            black_box(output.dtype());
+        }
+        Ok(())
+    })
+}
 fn norm_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(tensor_f64(&[2048, 2048], 1).norm(None, Some(&[0, 1]), false, b)?);
     Ok(())
@@ -1239,6 +1798,29 @@ fn dot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
             rhs_batch_dims: vec![],
         },
     )?);
+    Ok(())
+}
+fn dot_with_conj_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.dot_general_with_conj(
+        tensor_c64(&[640, 640], 1),
+        tensor_c64(&[640, 640], 2),
+        &DotGeneralConfig {
+            lhs_contracting_dims: vec![1],
+            rhs_contracting_dims: vec![0],
+            lhs_batch_dims: vec![],
+            rhs_batch_dims: vec![],
+        },
+        true,
+        false,
+    )?);
+    Ok(())
+}
+fn tensordot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(
+        tensor_c64(&[640, 640], 1)
+            .tensordot(tensor_c64(&[640, 640], 2), TensorDotAxes::Count(1), b)
+            .map_err(|err| err.into_tensor_error("tensordot"))?,
+    );
     Ok(())
 }
 fn svd_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
