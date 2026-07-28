@@ -37,24 +37,25 @@ def format_value(row: dict[str, str]) -> str:
     return f"{float(median_ms):.3f}"
 
 
-def format_table(path: Path) -> str:
+def format_table(paths: list[Path]) -> str:
     by_key: dict[tuple[str, str, str, str, str], dict[str, str]] = defaultdict(dict)
     notes: set[str] = set()
-    with path.open(newline="") as f:
-        for row in csv.DictReader(f):
-            key = (
-                row_value(row, "suite"),
-                row_value(row, "benchmark"),
-                row_value(row, "dtype"),
-                row_value(row, "threads"),
-                row_value(row, "shape"),
-            )
-            backend = row_value(row, "backend")
-            if backend:
-                by_key[key][backend] = format_value(row)
-            note = row_value(row, "notes")
-            if note:
-                notes.add(f"{backend}: {note}")
+    for path in paths:
+        with path.open(newline="") as f:
+            for row in csv.DictReader(f):
+                key = (
+                    row_value(row, "suite"),
+                    row_value(row, "benchmark"),
+                    row_value(row, "dtype"),
+                    row_value(row, "threads"),
+                    row_value(row, "shape"),
+                )
+                backend = row_value(row, "backend")
+                if backend:
+                    by_key[key][backend] = format_value(row)
+                note = row_value(row, "notes")
+                if note:
+                    notes.add(f"{backend}: {note}")
 
     lines = [
         "## CPU FFT Benchmark Items",
@@ -98,10 +99,10 @@ def format_table(path: Path) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <cpu-fft.csv>", file=sys.stderr)
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <cpu-fft.csv>...", file=sys.stderr)
         sys.exit(1)
-    sys.stdout.write(format_table(Path(sys.argv[1])))
+    sys.stdout.write(format_table([Path(value) for value in sys.argv[1:]]))
 
 
 if __name__ == "__main__":

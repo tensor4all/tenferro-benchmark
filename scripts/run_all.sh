@@ -537,16 +537,16 @@ fi
 # Opt-in: cpu/fft suite, run sequentially after CPU ops so FFT timing does not
 # overlap other CPU benchmark processes.
 if [[ "${RUN_FFT_SUITE:-0}" == "1" ]]; then
-    echo "Running cpu/fft suite (RUN_FFT_SUITE=1)..."
-    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_cpu_fft.sh" "$NUM_THREADS"
+    echo "Running cpu/fft suite for 1 and 4 threads (RUN_FFT_SUITE=1)..."
+    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_cpu_fft.sh" 1 4
     echo ""
 fi
 
 # Opt-in: cpu/public_api suite, run sequentially after CPU FFT if enabled.
 # SKIP_EXTERN_SETUP=1 avoids re-running setup_extern_deps.sh, already done above.
 if [[ "${RUN_PUBLIC_API_SUITE:-0}" == "1" ]]; then
-    echo "Running cpu/public_api suite (RUN_PUBLIC_API_SUITE=1)..."
-    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_cpu_public_api.sh" "$NUM_THREADS"
+    echo "Running cpu/public_api suite for 1 and 4 threads (RUN_PUBLIC_API_SUITE=1)..."
+    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_cpu_public_api.sh" 1 4
     echo ""
 fi
 

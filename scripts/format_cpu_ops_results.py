@@ -71,13 +71,14 @@ def normalize_row(row: dict[str, str]) -> tuple[tuple[str, str, str, str, str], 
     return (suite, benchmark, dtype, threads, shape), backend, value
 
 
-def format_table(path: Path) -> str:
+def format_table(paths: list[Path]) -> str:
     by_key: dict[tuple[str, str, str, str, str], dict[str, str]] = defaultdict(dict)
-    with path.open(newline="") as f:
-        for row in csv.DictReader(f):
-            key, backend, value = normalize_row(row)
-            if backend:
-                by_key[key][backend] = value
+    for path in paths:
+        with path.open(newline="") as f:
+            for row in csv.DictReader(f):
+                key, backend, value = normalize_row(row)
+                if backend:
+                    by_key[key][backend] = value
 
     lines = [
         "## CPU Benchmark Items",
@@ -109,10 +110,10 @@ def format_table(path: Path) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <cpu-ops.csv>", file=sys.stderr)
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <cpu-ops.csv>...", file=sys.stderr)
         sys.exit(1)
-    sys.stdout.write(format_table(Path(sys.argv[1])))
+    sys.stdout.write(format_table([Path(value) for value in sys.argv[1:]]))
 
 
 if __name__ == "__main__":
