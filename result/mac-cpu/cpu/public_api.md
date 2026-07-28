@@ -3,12 +3,12 @@
 - Suite: `cpu/public_api`
 - Target profile: `mac-cpu`
 - Suite file: `benchmarks/cpu/public_api.yaml`
-- Run metadata: `data/results/mac-cpu/cpu/public_api/20260728_174441/run.yaml`
-- Timestamp: `20260728_174441`
+- Run metadata: `data/results/mac-cpu/cpu/public_api/20260728_175226/run.yaml`
+- Timestamp: `20260728_175226`
 
 Latest run: `./scripts/run_cpu_public_api.sh 1 4`.
 
-This file is generated from sequential CPU public API runs under `data/results/mac-cpu/cpu/public_api/20260728_174441`.
+This file is generated from sequential CPU public API runs under `data/results/mac-cpu/cpu/public_api/20260728_175226`.
 
 - tenferro-rs commit: `80ebcc38ce11fb93385e8b6a1a49b613bc17452f`
 
@@ -29,7 +29,7 @@ This file is generated from sequential CPU public API runs under `data/results/m
 
 ### Threads: 1
 
-- Run metadata: `data/results/mac-cpu/cpu/public_api/20260728_174441/run_t1.yaml`
+- Run metadata: `data/results/mac-cpu/cpu/public_api/20260728_175226/run_t1.yaml`
 - OMP_NUM_THREADS: `1`
 - OMP_THREAD_LIMIT: `1`
 - OMP_DYNAMIC: `FALSE`
@@ -45,7 +45,7 @@ This file is generated from sequential CPU public API runs under `data/results/m
 
 ### Threads: 4
 
-- Run metadata: `data/results/mac-cpu/cpu/public_api/20260728_174441/run_t4.yaml`
+- Run metadata: `data/results/mac-cpu/cpu/public_api/20260728_175226/run_t4.yaml`
 - OMP_NUM_THREADS: `4`
 - OMP_THREAD_LIMIT: `4`
 - OMP_DYNAMIC: `FALSE`
@@ -63,14 +63,15 @@ This file is generated from sequential CPU public API runs under `data/results/m
 
 - Input fixture tensors are created during warmup and outside the measured region for both tenferro-rs and PyTorch.
 - Each timed call creates the output tensor.
-- `full_piv_lu` is intentionally excluded from this speed table because PyTorch has no direct public equivalent selected for this suite.
-- PyTorch `full_piv_lu_solve` uses `torch.linalg.solve` as the closest solve-level comparison.
+- PyTorch view-producing indexing operations are cloned inside the timed region to match tenferro-rs owned, materialized outputs.
+- PyTorch complex conjugation uses `torch.conj_physical` to match tenferro-rs physical output rather than the lazy conjugate view from `torch.conj`.
+- `full_piv_lu` and `full_piv_lu_solve` are excluded because PyTorch has no direct public full-pivot equivalent; substituting `torch.linalg.solve` would compare different algorithms.
 
 ## Threads: 1 4
 
-- CSV: `data/results/mac-cpu/cpu/public_api/20260728_174441/cpu_public_api_t1_20260728_174441.csv`
-- CSV: `data/results/mac-cpu/cpu/public_api/20260728_174441/cpu_public_api_t4_20260728_174441.csv`
-- Source table: `data/results/mac-cpu/cpu/public_api/20260728_174441/cpu_public_api_20260728_174441.md`
+- CSV: `data/results/mac-cpu/cpu/public_api/20260728_175226/cpu_public_api_t1_20260728_175226.csv`
+- CSV: `data/results/mac-cpu/cpu/public_api/20260728_175226/cpu_public_api_t4_20260728_175226.csv`
+- Source table: `data/results/mac-cpu/cpu/public_api/20260728_175226/cpu_public_api_20260728_175226.md`
 
 ## CPU Benchmark Items
 
@@ -78,121 +79,119 @@ Median ± IQR (ms). Missing backends are shown as `-`.
 
 | suite | benchmark | dtype | threads | shape | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) |
 |---|---|---:|---:|---|---:|---:|---:|---:|
-| cpu/complex | `cholesky` | c64 | 1 | `448x448` | 2.767 ± 0.020 | - | 3.138 ± 0.037 | - |
-| cpu/complex | `cholesky` | c64 | 4 | `448x448` | 2.802 ± 0.106 | - | 2.723 ± 0.081 | - |
-| cpu/complex | `conj` | c64 | 1 | `16777216` | 8.403 ± 0.107 | - | 0.002 ± 0.000 | - |
-| cpu/complex | `conj` | c64 | 4 | `16777216` | 5.818 ± 0.516 | - | 0.002 ± 0.000 | - |
-| cpu/complex | `div` | c64 | 1 | `8388608` | 7.603 ± 0.049 | - | 9.523 ± 0.867 | - |
-| cpu/complex | `div` | c64 | 4 | `8388608` | 4.658 ± 0.371 | - | 4.456 ± 0.340 | - |
-| cpu/complex | `dot_general_conj` | c64 | 1 | `640x640` | 6.521 ± 1.447 | - | 6.264 ± 0.097 | - |
-| cpu/complex | `dot_general_conj` | c64 | 4 | `640x640` | 9.344 ± 0.915 | - | 5.831 ± 0.282 | - |
-| cpu/complex | `eig` | c64 | 1 | `112x112` | 6.093 ± 0.031 | - | 6.903 ± 0.046 | - |
-| cpu/complex | `eig` | c64 | 4 | `112x112` | 6.425 ± 0.081 | - | 6.925 ± 0.088 | - |
-| cpu/complex | `exp` | c64 | 1 | `4194304` | 24.065 ± 0.651 | - | 22.443 ± 0.162 | - |
-| cpu/complex | `exp` | c64 | 4 | `4194304` | 7.431 ± 1.446 | - | 6.374 ± 0.343 | - |
-| cpu/complex | `log` | c64 | 1 | `4194304` | 26.182 ± 0.290 | - | 28.298 ± 0.074 | - |
-| cpu/complex | `log` | c64 | 4 | `4194304` | 8.427 ± 0.906 | - | 9.153 ± 0.709 | - |
-| cpu/complex | `mul` | c64 | 1 | `8388608` | 5.016 ± 0.370 | - | 4.617 ± 2.123 | - |
-| cpu/complex | `mul` | c64 | 4 | `8388608` | 4.503 ± 0.202 | - | 4.278 ± 0.238 | - |
-| cpu/complex | `norm_fro` | c64 | 1 | `2048x1536` | 20.893 ± 0.099 | - | 4.047 ± 0.083 | - |
-| cpu/complex | `norm_fro` | c64 | 4 | `2048x1536` | 9.733 ± 0.594 | - | 1.107 ± 0.055 | - |
-| cpu/complex | `qr` | c64 | 1 | `256x256` | 4.613 ± 0.055 | - | 4.823 ± 0.030 | - |
-| cpu/complex | `qr` | c64 | 4 | `256x256` | 4.676 ± 0.108 | - | 4.691 ± 0.059 | - |
-| cpu/complex | `solve` | c64 | 1 | `384x384,rhs=8` | 3.111 ± 0.047 | - | 3.197 ± 0.246 | - |
-| cpu/complex | `solve` | c64 | 4 | `384x384,rhs=8` | 3.400 ± 0.011 | - | 3.334 ± 0.066 | - |
-| cpu/complex | `svd` | c64 | 1 | `160x160` | 3.756 ± 0.051 | - | 3.839 ± 0.081 | - |
-| cpu/complex | `svd` | c64 | 4 | `160x160` | 3.816 ± 0.049 | - | 3.880 ± 0.065 | - |
-| cpu/elementwise_reduction | `abs` | f64 | 1 | `33554432` | 6.306 ± 0.216 | - | 6.342 ± 0.370 | - |
-| cpu/elementwise_reduction | `abs` | f64 | 4 | `33554432` | 5.570 ± 0.412 | - | 5.487 ± 0.331 | - |
-| cpu/elementwise_reduction | `add` | f64 | 1 | `33554432` | 9.763 ± 0.799 | - | 8.945 ± 0.679 | - |
-| cpu/elementwise_reduction | `add` | f64 | 4 | `33554432` | 8.842 ± 0.350 | - | 8.777 ± 0.168 | - |
-| cpu/elementwise_reduction | `chain_log1p_exp_mul` | f64 | 1 | `4194304` | 18.427 ± 0.130 | - | 22.379 ± 0.207 | - |
-| cpu/elementwise_reduction | `chain_log1p_exp_mul` | f64 | 4 | `4194304` | 6.935 ± 0.803 | - | 7.404 ± 2.171 | - |
-| cpu/elementwise_reduction | `clamp` | f64 | 1 | `8388608` | 3.087 ± 0.245 | - | 4.429 ± 0.273 | - |
-| cpu/elementwise_reduction | `clamp` | f64 | 4 | `8388608` | 2.948 ± 0.045 | - | 4.317 ± 0.112 | - |
-| cpu/elementwise_reduction | `compare_lt` | f64 | 1 | `33554432` | 38.848 ± 0.673 | - | 8.644 ± 0.118 | - |
-| cpu/elementwise_reduction | `compare_lt` | f64 | 4 | `33554432` | 8.880 ± 1.622 | - | 7.137 ± 0.674 | - |
-| cpu/elementwise_reduction | `cos` | f64 | 1 | `8388608` | 17.487 ± 0.177 | - | 20.994 ± 0.087 | - |
-| cpu/elementwise_reduction | `cos` | f64 | 4 | `8388608` | 5.252 ± 0.949 | - | 6.504 ± 0.332 | - |
-| cpu/elementwise_reduction | `div` | f64 | 1 | `33554432` | 8.956 ± 0.534 | - | 8.742 ± 0.626 | - |
-| cpu/elementwise_reduction | `div` | f64 | 4 | `33554432` | 8.553 ± 0.441 | - | 8.671 ± 0.082 | - |
-| cpu/elementwise_reduction | `exp` | f64 | 1 | `8388608` | 17.901 ± 0.039 | - | 14.931 ± 0.044 | - |
-| cpu/elementwise_reduction | `exp` | f64 | 4 | `8388608` | 5.554 ± 0.849 | - | 4.991 ± 0.300 | - |
-| cpu/elementwise_reduction | `expm1` | f64 | 1 | `4194304` | 8.958 ± 0.195 | - | 17.882 ± 0.452 | - |
-| cpu/elementwise_reduction | `expm1` | f64 | 4 | `4194304` | 2.915 ± 0.557 | - | 5.381 ± 0.208 | - |
-| cpu/elementwise_reduction | `log` | f64 | 1 | `8388608` | 16.388 ± 0.231 | - | 26.354 ± 0.111 | - |
-| cpu/elementwise_reduction | `log` | f64 | 4 | `8388608` | 5.078 ± 0.149 | - | 7.465 ± 0.347 | - |
-| cpu/elementwise_reduction | `log1p` | f64 | 1 | `4194304` | 10.918 ± 0.380 | - | 13.783 ± 0.887 | - |
-| cpu/elementwise_reduction | `log1p` | f64 | 4 | `4194304` | 3.945 ± 0.954 | - | 4.468 ± 0.840 | - |
-| cpu/elementwise_reduction | `maximum` | f64 | 1 | `33554432` | 9.179 ± 0.258 | - | 8.838 ± 0.272 | - |
-| cpu/elementwise_reduction | `maximum` | f64 | 4 | `33554432` | 8.665 ± 0.522 | - | 8.544 ± 0.464 | - |
-| cpu/elementwise_reduction | `minimum` | f64 | 1 | `33554432` | 8.919 ± 0.386 | - | 8.987 ± 0.350 | - |
-| cpu/elementwise_reduction | `minimum` | f64 | 4 | `33554432` | 8.622 ± 0.281 | - | 8.611 ± 0.328 | - |
-| cpu/elementwise_reduction | `mul` | f64 | 1 | `33554432` | 9.186 ± 0.299 | - | 8.869 ± 0.602 | - |
-| cpu/elementwise_reduction | `mul` | f64 | 4 | `33554432` | 8.906 ± 0.536 | - | 8.695 ± 0.572 | - |
-| cpu/elementwise_reduction | `neg` | f64 | 1 | `33554432` | 6.275 ± 0.214 | - | 6.477 ± 0.240 | - |
-| cpu/elementwise_reduction | `neg` | f64 | 4 | `33554432` | 5.755 ± 0.253 | - | 5.461 ± 0.089 | - |
-| cpu/elementwise_reduction | `pow` | f64 | 1 | `4194304` | 20.369 ± 0.229 | - | 44.608 ± 0.091 | - |
-| cpu/elementwise_reduction | `pow` | f64 | 4 | `4194304` | 7.205 ± 0.885 | - | 12.448 ± 0.952 | - |
-| cpu/elementwise_reduction | `reduce_max_axis0` | f64 | 1 | `2048x2048` | 6.154 ± 0.052 | - | 9.483 ± 0.504 | - |
-| cpu/elementwise_reduction | `reduce_max_axis0` | f64 | 4 | `2048x2048` | 6.391 ± 0.207 | - | 6.273 ± 0.720 | - |
-| cpu/elementwise_reduction | `reduce_min_axis1` | f64 | 1 | `4096x4096` | 3.781 ± 0.087 | - | 4.795 ± 0.147 | - |
-| cpu/elementwise_reduction | `reduce_min_axis1` | f64 | 4 | `4096x4096` | 3.811 ± 2.110 | - | 1.813 ± 0.025 | - |
-| cpu/elementwise_reduction | `reduce_prod_all` | f64 | 1 | `8192x4096` | 28.500 ± 0.635 | - | 4.138 ± 0.246 | - |
-| cpu/elementwise_reduction | `reduce_prod_all` | f64 | 4 | `8192x4096` | 7.586 ± 0.438 | - | 3.441 ± 0.332 | - |
-| cpu/elementwise_reduction | `reduce_sum_all` | f64 | 1 | `8192x4096` | 18.478 ± 0.197 | - | 4.006 ± 0.164 | - |
-| cpu/elementwise_reduction | `reduce_sum_all` | f64 | 4 | `8192x4096` | 4.942 ± 0.904 | - | 3.704 ± 0.342 | - |
-| cpu/elementwise_reduction | `rem` | f64 | 1 | `8388608` | 19.489 ± 0.260 | - | 22.650 ± 0.120 | - |
-| cpu/elementwise_reduction | `rem` | f64 | 4 | `8388608` | 5.504 ± 0.783 | - | 6.175 ± 0.275 | - |
-| cpu/elementwise_reduction | `rsqrt` | f64 | 1 | `33554432` | 12.869 ± 0.441 | - | 12.786 ± 0.071 | - |
-| cpu/elementwise_reduction | `rsqrt` | f64 | 4 | `33554432` | 5.717 ± 0.662 | - | 5.704 ± 0.588 | - |
-| cpu/elementwise_reduction | `select` | f64 | 1 | `33554432` | 12.225 ± 0.665 | - | 9.414 ± 0.424 | - |
-| cpu/elementwise_reduction | `select` | f64 | 4 | `33554432` | 11.845 ± 0.867 | - | 8.993 ± 0.511 | - |
-| cpu/elementwise_reduction | `sign` | f64 | 1 | `33554432` | 6.546 ± 0.495 | - | 6.507 ± 0.562 | - |
-| cpu/elementwise_reduction | `sign` | f64 | 4 | `33554432` | 5.874 ± 0.339 | - | 5.516 ± 0.521 | - |
-| cpu/elementwise_reduction | `sin` | f64 | 1 | `8388608` | 16.399 ± 0.037 | - | 18.066 ± 0.055 | - |
-| cpu/elementwise_reduction | `sin` | f64 | 4 | `8388608` | 5.146 ± 0.964 | - | 5.557 ± 0.573 | - |
-| cpu/elementwise_reduction | `sqrt` | f64 | 1 | `33554432` | 8.453 ± 0.047 | - | 8.442 ± 0.131 | - |
-| cpu/elementwise_reduction | `sqrt` | f64 | 4 | `33554432` | 5.679 ± 0.154 | - | 5.650 ± 0.328 | - |
-| cpu/elementwise_reduction | `sub` | f64 | 1 | `33554432` | 8.959 ± 0.388 | - | 8.878 ± 0.102 | - |
-| cpu/elementwise_reduction | `sub` | f64 | 4 | `33554432` | 9.031 ± 0.469 | - | 8.641 ± 0.466 | - |
-| cpu/elementwise_reduction | `tanh` | f64 | 1 | `8388608` | 23.018 ± 0.148 | - | 42.987 ± 0.279 | - |
-| cpu/elementwise_reduction | `tanh` | f64 | 4 | `8388608` | 6.341 ± 1.097 | - | 12.751 ± 1.175 | - |
-| cpu/indexing_layout | `concatenate` | f64 | 1 | `1048576+1048576` | 10.477 ± 0.092 | - | 0.353 ± 0.096 | - |
-| cpu/indexing_layout | `concatenate` | f64 | 4 | `1048576+1048576` | 10.476 ± 0.087 | - | 0.283 ± 0.008 | - |
-| cpu/indexing_layout | `dynamic_slice` | f64 | 1 | `4194304` | 10.989 ± 0.109 | - | 0.001 ± 0.000 | - |
-| cpu/indexing_layout | `dynamic_slice` | f64 | 4 | `4194304` | 9.989 ± 0.454 | - | 0.001 ± 0.000 | - |
-| cpu/indexing_layout | `dynamic_update_slice` | f64 | 1 | `2097152` | 5.316 ± 0.030 | - | 0.530 ± 0.036 | - |
-| cpu/indexing_layout | `dynamic_update_slice` | f64 | 4 | `2097152` | 5.432 ± 0.150 | - | 0.496 ± 0.029 | - |
-| cpu/indexing_layout | `gather` | f64 | 1 | `262144` | 4.423 ± 1.097 | - | 0.181 ± 0.003 | - |
-| cpu/indexing_layout | `gather` | f64 | 4 | `262144` | 4.290 ± 1.111 | - | 0.180 ± 0.001 | - |
-| cpu/indexing_layout | `pad` | f64 | 1 | `2097152` | 7.610 ± 0.107 | - | 0.566 ± 0.019 | - |
-| cpu/indexing_layout | `pad` | f64 | 4 | `2097152` | 7.567 ± 0.092 | - | 0.497 ± 0.008 | - |
-| cpu/indexing_layout | `reverse` | f64 | 1 | `2097152` | 5.305 ± 0.070 | - | 0.415 ± 0.097 | - |
-| cpu/indexing_layout | `reverse` | f64 | 4 | `2097152` | 5.276 ± 0.108 | - | 0.253 ± 0.010 | - |
-| cpu/indexing_layout | `scatter` | f64 | 1 | `262144` | 4.063 ± 0.061 | - | 0.279 ± 0.002 | - |
-| cpu/indexing_layout | `scatter` | f64 | 4 | `262144` | 4.042 ± 0.077 | - | 0.283 ± 0.023 | - |
-| cpu/indexing_layout | `slice` | f64 | 1 | `4194304` | 7.385 ± 0.067 | - | 0.001 ± 0.000 | - |
-| cpu/indexing_layout | `slice` | f64 | 4 | `4194304` | 7.435 ± 0.104 | - | 0.001 ± 0.000 | - |
-| cpu/linalg_uncovered | `cholesky` | f64 | 1 | `1536x1536` | 5.994 ± 1.433 | - | 14.393 ± 0.272 | - |
-| cpu/linalg_uncovered | `cholesky` | f64 | 4 | `1536x1536` | 6.209 ± 1.277 | - | 7.510 ± 0.117 | - |
-| cpu/linalg_uncovered | `det` | f64 | 1 | `1024x1024` | 5.246 ± 0.167 | - | 4.046 ± 0.277 | - |
-| cpu/linalg_uncovered | `det` | f64 | 4 | `1024x1024` | 5.294 ± 0.117 | - | 3.957 ± 0.103 | - |
-| cpu/linalg_uncovered | `eig` | f64 | 1 | `160x160` | 4.718 ± 0.097 | - | 5.253 ± 0.056 | - |
-| cpu/linalg_uncovered | `eig` | f64 | 4 | `160x160` | 4.727 ± 0.087 | - | 5.288 ± 0.066 | - |
-| cpu/linalg_uncovered | `eigvals` | f64 | 1 | `192x192` | 7.095 ± 0.119 | - | 4.693 ± 0.056 | - |
-| cpu/linalg_uncovered | `eigvals` | f64 | 4 | `192x192` | 7.150 ± 0.099 | - | 4.721 ± 0.069 | - |
-| cpu/linalg_uncovered | `eigvalsh` | f64 | 1 | `512x512` | 7.863 ± 0.063 | - | 0.283 ± 0.013 | - |
-| cpu/linalg_uncovered | `eigvalsh` | f64 | 4 | `512x512` | 7.884 ± 0.066 | - | 0.282 ± 0.003 | - |
-| cpu/linalg_uncovered | `full_piv_lu_solve` | f64 | 1 | `256x256,rhs=16` | 8.290 ± 0.053 | - | 0.197 ± 0.003 | - |
-| cpu/linalg_uncovered | `full_piv_lu_solve` | f64 | 4 | `256x256,rhs=16` | 8.827 ± 0.299 | - | 0.193 ± 0.002 | - |
-| cpu/linalg_uncovered | `inv` | f64 | 1 | `768x768` | 5.094 ± 0.059 | - | 5.293 ± 0.107 | - |
-| cpu/linalg_uncovered | `inv` | f64 | 4 | `768x768` | 4.933 ± 0.184 | - | 4.695 ± 0.085 | - |
-| cpu/linalg_uncovered | `norm_fro` | f64 | 1 | `2048x2048` | 23.335 ± 0.139 | - | 1.374 ± 0.013 | - |
-| cpu/linalg_uncovered | `norm_fro` | f64 | 4 | `2048x2048` | 8.383 ± 1.022 | - | 1.386 ± 0.036 | - |
-| cpu/linalg_uncovered | `pinv` | f64 | 1 | `512x256` | 6.451 ± 0.063 | - | 6.352 ± 0.105 | - |
-| cpu/linalg_uncovered | `pinv` | f64 | 4 | `512x256` | 6.617 ± 0.067 | - | 6.420 ± 0.132 | - |
-| cpu/linalg_uncovered | `slogdet` | f64 | 1 | `1024x1024` | 5.212 ± 0.159 | - | 4.005 ± 0.154 | - |
-| cpu/linalg_uncovered | `slogdet` | f64 | 4 | `1024x1024` | 5.323 ± 0.156 | - | 4.029 ± 0.097 | - |
-| cpu/linalg_uncovered | `triangular_solve` | f64 | 1 | `4096x4096,rhs=64` | 6.187 ± 0.315 | - | 4.567 ± 0.118 | - |
-| cpu/linalg_uncovered | `triangular_solve` | f64 | 4 | `4096x4096,rhs=64` | 6.868 ± 0.310 | - | 4.929 ± 0.215 | - |
+| cpu/complex | `cholesky` | c64 | 1 | `448x448` | 2.798 ± 0.060 | - | 3.062 ± 0.097 | - |
+| cpu/complex | `cholesky` | c64 | 4 | `448x448` | 2.759 ± 0.215 | - | 2.753 ± 0.038 | - |
+| cpu/complex | `conj` | c64 | 1 | `16777216` | 8.925 ± 1.862 | - | 6.758 ± 0.250 | - |
+| cpu/complex | `conj` | c64 | 4 | `16777216` | 6.361 ± 0.374 | - | 5.588 ± 0.626 | - |
+| cpu/complex | `div` | c64 | 1 | `8388608` | 7.591 ± 0.107 | - | 10.720 ± 0.263 | - |
+| cpu/complex | `div` | c64 | 4 | `8388608` | 6.108 ± 0.725 | - | 4.424 ± 0.280 | - |
+| cpu/complex | `dot_general` | c64 | 1 | `640x640` | 6.565 ± 1.051 | - | 6.617 ± 0.607 | - |
+| cpu/complex | `dot_general` | c64 | 4 | `640x640` | 6.175 ± 0.040 | - | 6.076 ± 0.321 | - |
+| cpu/complex | `eig` | c64 | 1 | `112x112` | 6.122 ± 0.035 | - | 6.893 ± 0.157 | - |
+| cpu/complex | `eig` | c64 | 4 | `112x112` | 6.204 ± 0.294 | - | 6.853 ± 0.301 | - |
+| cpu/complex | `exp` | c64 | 1 | `4194304` | 24.521 ± 0.371 | - | 23.011 ± 0.574 | - |
+| cpu/complex | `exp` | c64 | 4 | `4194304` | 8.996 ± 0.815 | - | 7.025 ± 0.041 | - |
+| cpu/complex | `log` | c64 | 1 | `4194304` | 26.210 ± 0.034 | - | 29.095 ± 0.563 | - |
+| cpu/complex | `log` | c64 | 4 | `4194304` | 10.718 ± 1.415 | - | 9.300 ± 1.198 | - |
+| cpu/complex | `mul` | c64 | 1 | `8388608` | 5.149 ± 0.419 | - | 5.146 ± 0.607 | - |
+| cpu/complex | `mul` | c64 | 4 | `8388608` | 5.498 ± 0.309 | - | 4.412 ± 0.223 | - |
+| cpu/complex | `norm_fro` | c64 | 1 | `2048x1536` | 20.960 ± 0.065 | - | 4.716 ± 0.410 | - |
+| cpu/complex | `norm_fro` | c64 | 4 | `2048x1536` | 9.341 ± 0.878 | - | 1.116 ± 0.014 | - |
+| cpu/complex | `qr` | c64 | 1 | `256x256` | 4.566 ± 0.042 | - | 4.915 ± 0.201 | - |
+| cpu/complex | `qr` | c64 | 4 | `256x256` | 4.475 ± 0.150 | - | 4.851 ± 0.146 | - |
+| cpu/complex | `solve` | c64 | 1 | `384x384,rhs=8` | 3.123 ± 0.061 | - | 3.253 ± 0.105 | - |
+| cpu/complex | `solve` | c64 | 4 | `384x384,rhs=8` | 3.408 ± 0.651 | - | 3.328 ± 0.081 | - |
+| cpu/complex | `svd` | c64 | 1 | `160x160` | 3.744 ± 0.125 | - | 3.889 ± 0.368 | - |
+| cpu/complex | `svd` | c64 | 4 | `160x160` | 3.626 ± 0.048 | - | 3.871 ± 0.034 | - |
+| cpu/elementwise_reduction | `abs` | f64 | 1 | `33554432` | 6.451 ± 1.062 | - | 6.646 ± 0.374 | - |
+| cpu/elementwise_reduction | `abs` | f64 | 4 | `33554432` | 5.896 ± 0.258 | - | 6.068 ± 1.140 | - |
+| cpu/elementwise_reduction | `add` | f64 | 1 | `33554432` | 8.819 ± 1.149 | - | 8.809 ± 0.384 | - |
+| cpu/elementwise_reduction | `add` | f64 | 4 | `33554432` | 9.200 ± 0.370 | - | 10.055 ± 1.124 | - |
+| cpu/elementwise_reduction | `chain_log1p_exp_mul` | f64 | 1 | `4194304` | 18.836 ± 1.100 | - | 22.758 ± 0.164 | - |
+| cpu/elementwise_reduction | `chain_log1p_exp_mul` | f64 | 4 | `4194304` | 9.483 ± 0.617 | - | 7.570 ± 1.449 | - |
+| cpu/elementwise_reduction | `clamp` | f64 | 1 | `8388608` | 3.454 ± 0.524 | - | 2.962 ± 0.084 | - |
+| cpu/elementwise_reduction | `clamp` | f64 | 4 | `8388608` | 3.715 ± 0.684 | - | 3.065 ± 0.279 | - |
+| cpu/elementwise_reduction | `compare_lt` | f64 | 1 | `33554432` | 39.189 ± 1.599 | - | 8.695 ± 0.144 | - |
+| cpu/elementwise_reduction | `compare_lt` | f64 | 4 | `33554432` | 10.217 ± 0.655 | - | 6.009 ± 0.186 | - |
+| cpu/elementwise_reduction | `cos` | f64 | 1 | `8388608` | 18.095 ± 0.313 | - | 21.069 ± 0.135 | - |
+| cpu/elementwise_reduction | `cos` | f64 | 4 | `8388608` | 7.355 ± 1.139 | - | 8.529 ± 1.201 | - |
+| cpu/elementwise_reduction | `div` | f64 | 1 | `33554432` | 8.985 ± 1.551 | - | 9.047 ± 0.597 | - |
+| cpu/elementwise_reduction | `div` | f64 | 4 | `33554432` | 9.070 ± 0.449 | - | 8.908 ± 0.455 | - |
+| cpu/elementwise_reduction | `exp` | f64 | 1 | `8388608` | 18.040 ± 0.655 | - | 14.941 ± 0.063 | - |
+| cpu/elementwise_reduction | `exp` | f64 | 4 | `8388608` | 6.821 ± 1.020 | - | 6.945 ± 0.951 | - |
+| cpu/elementwise_reduction | `expm1` | f64 | 1 | `4194304` | 9.077 ± 0.054 | - | 18.122 ± 0.119 | - |
+| cpu/elementwise_reduction | `expm1` | f64 | 4 | `4194304` | 3.685 ± 0.466 | - | 6.006 ± 1.416 | - |
+| cpu/elementwise_reduction | `log` | f64 | 1 | `8388608` | 16.641 ± 0.324 | - | 26.391 ± 0.128 | - |
+| cpu/elementwise_reduction | `log` | f64 | 4 | `8388608` | 7.286 ± 0.864 | - | 11.240 ± 2.700 | - |
+| cpu/elementwise_reduction | `log1p` | f64 | 1 | `4194304` | 11.077 ± 0.163 | - | 13.891 ± 0.073 | - |
+| cpu/elementwise_reduction | `log1p` | f64 | 4 | `4194304` | 5.627 ± 6.038 | - | 5.319 ± 0.963 | - |
+| cpu/elementwise_reduction | `maximum` | f64 | 1 | `33554432` | 9.361 ± 0.947 | - | 8.884 ± 0.262 | - |
+| cpu/elementwise_reduction | `maximum` | f64 | 4 | `33554432` | 9.047 ± 0.560 | - | 8.777 ± 0.509 | - |
+| cpu/elementwise_reduction | `minimum` | f64 | 1 | `33554432` | 9.146 ± 0.430 | - | 9.012 ± 0.325 | - |
+| cpu/elementwise_reduction | `minimum` | f64 | 4 | `33554432` | 9.361 ± 0.953 | - | 10.615 ± 0.482 | - |
+| cpu/elementwise_reduction | `mul` | f64 | 1 | `33554432` | 8.919 ± 0.206 | - | 8.682 ± 0.391 | - |
+| cpu/elementwise_reduction | `mul` | f64 | 4 | `33554432` | 9.070 ± 0.580 | - | 8.880 ± 0.453 | - |
+| cpu/elementwise_reduction | `neg` | f64 | 1 | `33554432` | 6.930 ± 1.136 | - | 6.663 ± 0.386 | - |
+| cpu/elementwise_reduction | `neg` | f64 | 4 | `33554432` | 6.003 ± 0.566 | - | 6.955 ± 0.326 | - |
+| cpu/elementwise_reduction | `pow` | f64 | 1 | `4194304` | 20.462 ± 0.069 | - | 45.970 ± 0.528 | - |
+| cpu/elementwise_reduction | `pow` | f64 | 4 | `4194304` | 8.859 ± 1.316 | - | 16.711 ± 1.256 | - |
+| cpu/elementwise_reduction | `reduce_max_axis0` | f64 | 1 | `2048x2048` | 5.891 ± 0.461 | - | 12.287 ± 0.220 | - |
+| cpu/elementwise_reduction | `reduce_max_axis0` | f64 | 4 | `2048x2048` | 6.251 ± 0.057 | - | 6.259 ± 0.568 | - |
+| cpu/elementwise_reduction | `reduce_min_axis1` | f64 | 1 | `4096x4096` | 3.759 ± 0.030 | - | 4.888 ± 0.486 | - |
+| cpu/elementwise_reduction | `reduce_min_axis1` | f64 | 4 | `4096x4096` | 3.821 ± 0.152 | - | 1.815 ± 0.033 | - |
+| cpu/elementwise_reduction | `reduce_prod_all` | f64 | 1 | `8192x4096` | 28.393 ± 0.301 | - | 4.333 ± 0.367 | - |
+| cpu/elementwise_reduction | `reduce_prod_all` | f64 | 4 | `8192x4096` | 9.807 ± 2.515 | - | 3.631 ± 0.085 | - |
+| cpu/elementwise_reduction | `reduce_sum_all` | f64 | 1 | `8192x4096` | 17.765 ± 0.271 | - | 4.102 ± 0.098 | - |
+| cpu/elementwise_reduction | `reduce_sum_all` | f64 | 4 | `8192x4096` | 6.219 ± 0.732 | - | 3.603 ± 0.241 | - |
+| cpu/elementwise_reduction | `rem` | f64 | 1 | `8388608` | 19.170 ± 0.119 | - | 22.793 ± 1.214 | - |
+| cpu/elementwise_reduction | `rem` | f64 | 4 | `8388608` | 6.470 ± 1.203 | - | 9.185 ± 1.453 | - |
+| cpu/elementwise_reduction | `rsqrt` | f64 | 1 | `33554432` | 12.802 ± 0.250 | - | 13.016 ± 0.148 | - |
+| cpu/elementwise_reduction | `rsqrt` | f64 | 4 | `33554432` | 6.529 ± 0.487 | - | 6.612 ± 0.567 | - |
+| cpu/elementwise_reduction | `select` | f64 | 1 | `33554432` | 12.236 ± 0.358 | - | 9.537 ± 0.236 | - |
+| cpu/elementwise_reduction | `select` | f64 | 4 | `33554432` | 11.919 ± 0.503 | - | 9.209 ± 0.217 | - |
+| cpu/elementwise_reduction | `sign` | f64 | 1 | `33554432` | 7.058 ± 1.301 | - | 6.876 ± 0.458 | - |
+| cpu/elementwise_reduction | `sign` | f64 | 4 | `33554432` | 6.388 ± 0.663 | - | 5.838 ± 0.424 | - |
+| cpu/elementwise_reduction | `sin` | f64 | 1 | `8388608` | 16.260 ± 0.128 | - | 18.107 ± 0.659 | - |
+| cpu/elementwise_reduction | `sin` | f64 | 4 | `8388608` | 6.246 ± 0.984 | - | 8.557 ± 1.270 | - |
+| cpu/elementwise_reduction | `sqrt` | f64 | 1 | `33554432` | 8.492 ± 0.153 | - | 8.719 ± 0.361 | - |
+| cpu/elementwise_reduction | `sqrt` | f64 | 4 | `33554432` | 6.429 ± 3.202 | - | 7.380 ± 0.579 | - |
+| cpu/elementwise_reduction | `sub` | f64 | 1 | `33554432` | 8.929 ± 1.085 | - | 8.923 ± 0.253 | - |
+| cpu/elementwise_reduction | `sub` | f64 | 4 | `33554432` | 8.879 ± 0.634 | - | 8.774 ± 0.485 | - |
+| cpu/elementwise_reduction | `tanh` | f64 | 1 | `8388608` | 22.919 ± 0.066 | - | 43.004 ± 0.200 | - |
+| cpu/elementwise_reduction | `tanh` | f64 | 4 | `8388608` | 8.873 ± 0.373 | - | 17.113 ± 1.604 | - |
+| cpu/indexing_layout | `concatenate` | f64 | 1 | `1048576+1048576` | 10.434 ± 0.084 | - | 0.378 ± 0.020 | - |
+| cpu/indexing_layout | `concatenate` | f64 | 4 | `1048576+1048576` | 10.802 ± 0.799 | - | 0.268 ± 0.006 | - |
+| cpu/indexing_layout | `dynamic_slice` | f64 | 1 | `4194304` | 10.177 ± 1.001 | - | 0.349 ± 0.009 | - |
+| cpu/indexing_layout | `dynamic_slice` | f64 | 4 | `4194304` | 10.486 ± 0.177 | - | 0.265 ± 0.022 | - |
+| cpu/indexing_layout | `dynamic_update_slice` | f64 | 1 | `2097152` | 5.653 ± 0.152 | - | 0.640 ± 0.054 | - |
+| cpu/indexing_layout | `dynamic_update_slice` | f64 | 4 | `2097152` | 5.816 ± 0.879 | - | 0.466 ± 0.040 | - |
+| cpu/indexing_layout | `gather` | f64 | 1 | `262144` | 4.150 ± 0.970 | - | 0.182 ± 0.001 | - |
+| cpu/indexing_layout | `gather` | f64 | 4 | `262144` | 2.937 ± 0.185 | - | 0.185 ± 0.006 | - |
+| cpu/indexing_layout | `pad` | f64 | 1 | `2097152` | 7.658 ± 0.086 | - | 0.655 ± 0.077 | - |
+| cpu/indexing_layout | `pad` | f64 | 4 | `2097152` | 8.394 ± 0.196 | - | 0.494 ± 0.007 | - |
+| cpu/indexing_layout | `reverse` | f64 | 1 | `2097152` | 5.295 ± 0.094 | - | 0.466 ± 0.120 | - |
+| cpu/indexing_layout | `reverse` | f64 | 4 | `2097152` | 6.011 ± 1.067 | - | 0.252 ± 0.008 | - |
+| cpu/indexing_layout | `scatter` | f64 | 1 | `262144` | 4.058 ± 0.024 | - | 0.288 ± 0.008 | - |
+| cpu/indexing_layout | `scatter` | f64 | 4 | `262144` | 4.233 ± 0.191 | - | 0.288 ± 0.020 | - |
+| cpu/indexing_layout | `slice` | f64 | 1 | `4194304` | 7.352 ± 0.076 | - | 0.655 ± 0.066 | - |
+| cpu/indexing_layout | `slice` | f64 | 4 | `4194304` | 7.488 ± 0.029 | - | 0.506 ± 0.009 | - |
+| cpu/linalg_uncovered | `cholesky` | f64 | 1 | `1536x1536` | 5.767 ± 1.295 | - | 14.985 ± 0.523 | - |
+| cpu/linalg_uncovered | `cholesky` | f64 | 4 | `1536x1536` | 5.805 ± 0.656 | - | 7.569 ± 0.545 | - |
+| cpu/linalg_uncovered | `det` | f64 | 1 | `1024x1024` | 5.139 ± 0.026 | - | 4.077 ± 0.250 | - |
+| cpu/linalg_uncovered | `det` | f64 | 4 | `1024x1024` | 6.003 ± 0.435 | - | 3.981 ± 0.072 | - |
+| cpu/linalg_uncovered | `eig` | f64 | 1 | `160x160` | 4.738 ± 0.114 | - | 5.242 ± 0.423 | - |
+| cpu/linalg_uncovered | `eig` | f64 | 4 | `160x160` | 4.493 ± 0.045 | - | 5.275 ± 0.050 | - |
+| cpu/linalg_uncovered | `eigvals` | f64 | 1 | `192x192` | 7.112 ± 0.036 | - | 4.630 ± 0.560 | - |
+| cpu/linalg_uncovered | `eigvals` | f64 | 4 | `192x192` | 6.845 ± 0.021 | - | 4.744 ± 0.095 | - |
+| cpu/linalg_uncovered | `eigvalsh` | f64 | 1 | `512x512` | 7.753 ± 0.145 | - | 0.290 ± 0.004 | - |
+| cpu/linalg_uncovered | `eigvalsh` | f64 | 4 | `512x512` | 7.983 ± 0.283 | - | 0.289 ± 0.020 | - |
+| cpu/linalg_uncovered | `inv` | f64 | 1 | `768x768` | 5.087 ± 0.075 | - | 5.375 ± 0.149 | - |
+| cpu/linalg_uncovered | `inv` | f64 | 4 | `768x768` | 5.056 ± 0.308 | - | 4.728 ± 0.169 | - |
+| cpu/linalg_uncovered | `norm_fro` | f64 | 1 | `2048x2048` | 23.386 ± 0.133 | - | 1.389 ± 0.009 | - |
+| cpu/linalg_uncovered | `norm_fro` | f64 | 4 | `2048x2048` | 11.869 ± 9.341 | - | 1.386 ± 0.030 | - |
+| cpu/linalg_uncovered | `pinv` | f64 | 1 | `512x256` | 6.431 ± 0.055 | - | 6.117 ± 0.132 | - |
+| cpu/linalg_uncovered | `pinv` | f64 | 4 | `512x256` | 7.058 ± 0.342 | - | 6.416 ± 0.110 | - |
+| cpu/linalg_uncovered | `slogdet` | f64 | 1 | `1024x1024` | 5.145 ± 0.216 | - | 3.838 ± 0.228 | - |
+| cpu/linalg_uncovered | `slogdet` | f64 | 4 | `1024x1024` | 5.595 ± 0.688 | - | 4.116 ± 0.107 | - |
+| cpu/linalg_uncovered | `triangular_solve` | f64 | 1 | `4096x4096,rhs=64` | 5.913 ± 0.299 | - | 4.703 ± 0.221 | - |
+| cpu/linalg_uncovered | `triangular_solve` | f64 | 4 | `4096x4096,rhs=64` | 7.709 ± 0.467 | - | 4.932 ± 0.124 | - |

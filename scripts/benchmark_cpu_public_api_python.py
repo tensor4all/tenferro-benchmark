@@ -255,6 +255,7 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
     x_slow = tensor_f64((slow_n,), 1)
     y_slow = tensor_f64((slow_n,), 2)
     xp_slow = tensor_f64_positive((slow_n,), 1)
+    exponent_slow = LazyTensor(lambda: torch.full((slow_n,), 1.5, dtype=torch.float64))
     matrix_sum = tensor_f64((8192, 4096), 1)
     prod_matrix = LazyTensor(lambda: torch.full((8192, 4096), 1.000001, dtype=torch.float64))
     matrix_max = tensor_f64((2048, 2048), 1)
@@ -279,8 +280,6 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
     rhs4096x64 = tensor_f64((4096, 64), 2)
     a1024 = well_conditioned(1024, 1)
     a768 = well_conditioned(768, 1)
-    a256 = well_conditioned(256, 1)
-    rhs256x16 = tensor_f64((256, 16), 2)
     rect512x256 = tensor_f64((512, 256), 1)
     norm2048 = tensor_f64((2048, 2048), 1)
     z_conj = tensor_c64((16_777_216,), 1)
@@ -316,7 +315,7 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/elementwise_reduction", "minimum", "f64", "33554432", "binary elementwise", lambda: torch.minimum(x_fast, y_fast)),
         ("cpu/elementwise_reduction", "compare_lt", "f64", "33554432", "ordered compare", lambda: x_fast < y_fast),
         ("cpu/elementwise_reduction", "select", "f64", "33554432", "ternary select", lambda: torch.where(cond_fast, x_fast, y_fast)),
-        ("cpu/elementwise_reduction", "clamp", "f64", "8388608", "clamp with tensor bounds", lambda: torch.minimum(torch.maximum(x, lower), upper)),
+        ("cpu/elementwise_reduction", "clamp", "f64", "8388608", "clamp with tensor bounds", lambda: torch.clamp(x, min=lower, max=upper)),
         ("cpu/elementwise_reduction", "exp", "f64", "8388608", "analytic unary", lambda: torch.exp(x)),
         ("cpu/elementwise_reduction", "log", "f64", "8388608", "analytic unary", lambda: torch.log(xp)),
         ("cpu/elementwise_reduction", "sin", "f64", "8388608", "analytic unary", lambda: torch.sin(x)),
@@ -324,7 +323,7 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/elementwise_reduction", "tanh", "f64", "8388608", "analytic unary", lambda: torch.tanh(x)),
         ("cpu/elementwise_reduction", "sqrt", "f64", "33554432", "analytic unary", lambda: torch.sqrt(xp_fast)),
         ("cpu/elementwise_reduction", "rsqrt", "f64", "33554432", "analytic unary", lambda: torch.rsqrt(xp_fast)),
-        ("cpu/elementwise_reduction", "pow", "f64", "4194304", "binary analytic", lambda: torch.pow(xp_slow, 1.5)),
+        ("cpu/elementwise_reduction", "pow", "f64", "4194304", "binary analytic with tensor exponent", lambda: torch.pow(xp_slow, exponent_slow)),
         ("cpu/elementwise_reduction", "expm1", "f64", "4194304", "analytic unary", lambda: torch.expm1(x_slow)),
         ("cpu/elementwise_reduction", "log1p", "f64", "4194304", "analytic unary", lambda: torch.log1p(xp_slow)),
         ("cpu/elementwise_reduction", "chain_log1p_exp_mul", "f64", "4194304", "short elementwise chain", lambda: torch.exp(torch.log1p(xp_slow)) * y_slow),
@@ -334,8 +333,8 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/elementwise_reduction", "reduce_min_axis1", "f64", "4096x4096", "axis reduction", lambda: torch.min(matrix_min, dim=1).values),
         ("cpu/indexing_layout", "gather", "f64", "262144", "1D gather", lambda: torch.gather(base_gather, 0, gather_idx)),
         ("cpu/indexing_layout", "scatter", "f64", "262144", "1D scatter", lambda: torch.zeros_like(base_gather).scatter(0, scatter_idx, updates_gather)),
-        ("cpu/indexing_layout", "slice", "f64", "4194304", "static slice", lambda: base_slice[1024 : 4_194_304 - 1024 : 2]),
-        ("cpu/indexing_layout", "dynamic_slice", "f64", "4194304", "runtime-start slice", lambda: base_slice[1024 : 1024 + 2_097_152]),
+        ("cpu/indexing_layout", "slice", "f64", "4194304", "static slice materialized to owned output", lambda: base_slice[1024 : 4_194_304 - 1024 : 2].clone()),
+        ("cpu/indexing_layout", "dynamic_slice", "f64", "4194304", "runtime-start slice materialized to owned output", lambda: base_slice[1024 : 1024 + 2_097_152].clone()),
         ("cpu/indexing_layout", "dynamic_update_slice", "f64", "2097152", "runtime-start update", lambda: dynamic_update(base_update, update_half)),
         ("cpu/indexing_layout", "pad", "f64", "2097152", "edge padding", lambda: F.pad(base_update, (128, 128))),
         ("cpu/indexing_layout", "concatenate", "f64", "1048576+1048576", "concatenate along axis 0", lambda: torch.cat((part_a, part_b), dim=0)),
@@ -350,13 +349,12 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/linalg_uncovered", "inv", "f64", "768x768", "well-conditioned input", lambda: torch.linalg.inv(a768)),
         ("cpu/linalg_uncovered", "pinv", "f64", "512x256", "rectangular input", lambda: torch.linalg.pinv(rect512x256)),
         ("cpu/linalg_uncovered", "norm_fro", "f64", "2048x2048", "Frobenius norm", lambda: torch.linalg.norm(norm2048, ord="fro")),
-        ("cpu/linalg_uncovered", "full_piv_lu_solve", "f64", "256x256,rhs=16", "PyTorch direct solve", lambda: torch.linalg.solve(a256, rhs256x16)),
-        ("cpu/complex", "conj", "c64", "16777216", "complex elementwise", lambda: torch.conj(z_conj)),
+        ("cpu/complex", "conj", "c64", "16777216", "physical complex conjugate output", lambda: torch.conj_physical(z_conj)),
         ("cpu/complex", "mul", "c64", "8388608", "complex elementwise", lambda: z_mul * z_mul2),
         ("cpu/complex", "div", "c64", "8388608", "complex elementwise", lambda: z_mul / zden),
         ("cpu/complex", "exp", "c64", "4194304", "complex analytic", lambda: torch.exp(z_exp)),
         ("cpu/complex", "log", "c64", "4194304", "complex analytic", lambda: torch.log(zlog)),
-        ("cpu/complex", "dot_general_conj", "c64", "640x640", "complex matrix multiply", lambda: z640a @ z640b),
+        ("cpu/complex", "dot_general", "c64", "640x640", "complex matrix multiply", lambda: z640a @ z640b),
         ("cpu/complex", "svd", "c64", "160x160", "complex SVD", lambda: torch.linalg.svd(z160, full_matrices=True)),
         ("cpu/complex", "qr", "c64", "256x256", "complex QR", lambda: torch.linalg.qr(z256, mode="reduced")),
         ("cpu/complex", "eig", "c64", "112x112", "complex eig", lambda: torch.linalg.eig(z112)),

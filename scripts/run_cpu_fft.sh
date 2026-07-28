@@ -216,6 +216,7 @@ fi
     echo "- tenferro-rs immediate rows use one-shot \`TensorFftExt\` calls."
     echo "- tenferro-rs cached rows reuse a caller-owned \`FftExecutor\` across warmups and timed runs."
     echo "- PyTorch rows use \`torch.fft\` after warmup, allowing PyTorch internal planning/cache behavior."
+    echo "- The primary fair comparison is cached \`FftExecutor\` versus warmed \`torch.fft\`; immediate rows are retained only as one-shot diagnostics."
     echo "- This initial suite only measures 1D transforms to avoid row-major/column-major batched-axis layout artifacts."
     echo ""
     echo "## Threads: ${THREAD_COUNTS[*]}"

@@ -16,8 +16,8 @@ BACKEND_ORDER = [
 ]
 
 BACKEND_LABELS = {
-    "tenferro-fft-immediate": "tenferro-rs immediate (ms)",
-    "tenferro-fft-executor-cached": "tenferro-rs FftExecutor cached (ms)",
+    "tenferro-fft-immediate": "tenferro-rs one-shot diagnostic (ms)",
+    "tenferro-fft-executor-cached": "tenferro-rs cached primary (ms)",
     "pytorch-cpu": "PyTorch torch.fft (ms)",
 }
 
@@ -63,6 +63,7 @@ def format_table(paths: list[Path]) -> str:
         "Median ± IQR (ms). Missing backends are shown as `-`.",
         "",
         "Timing scope: input tensors are created outside the timed region; each timed call creates the FFT output tensor. "
+        "The primary comparison is tenferro-rs FftExecutor cached versus warmed PyTorch torch.fft; one-shot tenferro-rs rows are diagnostic. "
         "Rows are limited to 1D transforms so tenferro-rs column-major layout and PyTorch row-major layout do not change the measured transform axis.",
         "",
         "| suite | benchmark | dtype | threads | shape | "

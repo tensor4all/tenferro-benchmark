@@ -162,7 +162,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_rust_group cpu/complex "conj"
     run_rust_group cpu/complex "mul,div"
     run_rust_group cpu/complex "exp,log"
-    run_rust_group cpu/complex "dot_general_conj,svd,qr,eig,solve,cholesky,norm_fro"
+    run_rust_group cpu/complex "dot_general,svd,qr,eig,solve,cholesky,norm_fro"
 
     if command -v uv >/dev/null 2>&1; then
         uv run python "$SCRIPT_DIR/benchmark_cpu_public_api_python.py" \
@@ -221,8 +221,9 @@ fi
     echo ""
     echo "- Input fixture tensors are created during warmup and outside the measured region for both tenferro-rs and PyTorch."
     echo "- Each timed call creates the output tensor."
-    echo "- \`full_piv_lu\` is intentionally excluded from this speed table because PyTorch has no direct public equivalent selected for this suite."
-    echo "- PyTorch \`full_piv_lu_solve\` uses \`torch.linalg.solve\` as the closest solve-level comparison."
+    echo "- PyTorch view-producing indexing operations are cloned inside the timed region to match tenferro-rs owned, materialized outputs."
+    echo "- PyTorch complex conjugation uses \`torch.conj_physical\` to match tenferro-rs physical output rather than the lazy conjugate view from \`torch.conj\`."
+    echo "- \`full_piv_lu\` and \`full_piv_lu_solve\` are excluded because PyTorch has no direct public full-pivot equivalent; substituting \`torch.linalg.solve\` would compare different algorithms."
     echo ""
     echo "## Threads: ${THREAD_COUNTS[*]}"
     echo ""

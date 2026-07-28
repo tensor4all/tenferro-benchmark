@@ -275,13 +275,6 @@ fn cases() -> Vec<Case> {
         lin("inv", "f64", "768x768", "well-conditioned input", inv_f64),
         lin("pinv", "f64", "512x256", "rectangular input", pinv_f64),
         lin("norm_fro", "f64", "2048x2048", "Frobenius norm", norm_f64),
-        lin(
-            "full_piv_lu_solve",
-            "f64",
-            "256x256,rhs=16",
-            "tenferro full pivot solve; PyTorch uses direct solve",
-            full_piv_lu_solve_f64,
-        ),
         // Complex coverage (#74).
         cplx("conj", "c64", "16777216", "complex elementwise", conj_c64),
         cplx("mul", "c64", "8388608", "complex elementwise", mul_c64),
@@ -289,7 +282,7 @@ fn cases() -> Vec<Case> {
         cplx("exp", "c64", "4194304", "complex analytic", exp_c64),
         cplx("log", "c64", "4194304", "complex analytic", log_c64),
         cplx(
-            "dot_general_conj",
+            "dot_general",
             "c64",
             "640x640",
             "complex matrix multiply",
@@ -926,11 +919,6 @@ fn norm_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(tensor_f64(&[2048, 2048], 1).norm(None, Some(&[0, 1]), false, b)?);
     Ok(())
 }
-fn full_piv_lu_solve_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(well_conditioned(256, 1).full_piv_lu_solve(tensor_f64(&[256, 16], 2), b)?);
-    Ok(())
-}
-
 // Complex.
 fn conj_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.conj(tensor_c64(&[16_777_216], 1))?);
