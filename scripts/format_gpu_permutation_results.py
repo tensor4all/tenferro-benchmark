@@ -203,6 +203,13 @@ def format_markdown(
         "runtime) -- both are reported as `skipped` rather than a failure."
     )
     lines.append("")
+    lines.append(
+        "The GPU-only pattern set is intentionally larger than the CPU permutation set: "
+        "most rows contain 2^29 f64 elements (4 GiB per tensor) so A100-class "
+        "measurements exercise steady-state device throughput at roughly the 10 ms "
+        "scale instead of launch/synchronization overhead."
+    )
+    lines.append("")
 
     memcpy_record = next(
         (

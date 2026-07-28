@@ -48,11 +48,9 @@ Following [Result Layout and Metadata](results.md) and `AGENTS.md`:
 - Suite definition: `benchmarks/gpu/permutation.yaml`, valid against
   `schemas/benchmark-suite.schema.json` and checked by
   `scripts/validate_benchmark_suite.py`.
-- Pattern data: `data/instances/permutation_patterns.json` -- the same file
-  `cpu/permutation` uses. Every pattern carries a `participants_gpu` array
-  (parallel to the CPU-only `participants` array) so the two suites share
-  one source of truth for shapes/perms/strides/semantics while keeping
-  independent backend eligibility lists.
+- Pattern data: `data/instances/gpu_permutation_patterns.json`. GPU patterns
+  are intentionally separate from `cpu/permutation`: their shapes are sized
+  for device execution and must not silently enlarge the CPU workload.
 - Raw runs: `data/results/nvidia-gpu/gpu/permutation/<timestamp>/` with the
   standard `run.yaml` metadata.
 - Latest report (tracked, overwritten per profile): `result/nvidia-gpu/gpu/permutation.md`.
@@ -61,27 +59,24 @@ Following [Result Layout and Metadata](results.md) and `AGENTS.md`:
 
 ## Pattern Schema
 
-Unchanged from `cpu/permutation`: `data/instances/permutation_patterns.json`
-still has one `version`, `index_base: 0`,
+`data/instances/gpu_permutation_patterns.json` has one `version`,
+`index_base: 0`,
 `semantics: "out[i0,...,ik] = src[i_perm0,...,i_permk]"`, and
 `data: "deterministic_index_value"` at the top level, with one entry per
 pattern (`id`, `label`, `dtype`, `shape`, `perm`, `src_layout`, `dst_layout`).
-Two fields are new, and only consumed by this suite's runners:
+The GPU-specific field is:
 
 - `participants_gpu`: the per-pattern allowlist of GPU backend columns,
   exactly like `participants` gates CPU backend columns. A backend appears
   in a pattern's row only when it can express exactly the pattern's
   semantics (see [Participant Eligibility](#participant-eligibility)
   below).
-- `notes_gpu` (optional): free-text rationale for a pattern's GPU-specific
-  exclusions or risks, parallel to the existing `notes` field.
-
-The pattern set is identical to `cpu/permutation`'s (see that document's
-"Pattern Set" table): `memcpy_24d_contiguous`, `transpose_2d_2048`,
-`transpose_3d_256_201`, `transpose_3d_256_102`,
-`rotation_6d_32_32_32_32_16_16`, `reverse_23d_2`, `reverse_15d_3`,
-`cyclic_15d_3`, `tn_light_415_24d_scattered_to_colmajor`, and
-`tn_light_415_24d_contiguous_same_perm`.
+The pattern families and permutation semantics mirror `cpu/permutation`, but
+most GPU cases contain 2^29 `f64` elements (4 GiB per tensor). This makes the
+steady-state measurement large enough to target roughly 10 ms-scale execution
+on an A100-class GPU instead of measuring launch/synchronization overhead.
+`reverse_18d_3` and `cyclic_18d_3` use 3^18 elements, the nearest practical
+power-of-three size.
 
 ## Backends
 
@@ -188,25 +183,23 @@ does not abort the rest of the suite.
 `participants_gpu` is the per-pattern allowlist, mirroring how
 `participants` gates `cpu/permutation`'s HPTT column:
 
-- **All contiguous-source (`col_major`) patterns**: all four permutation
+- **All contiguous-source (`col_major`) permutation patterns**: all four permutation
   backends -- `tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`,
   `cutensor`, and `pytorch-cuda`.
-- **`tn_light_415_24d_scattered_to_colmajor`** (explicit source strides):
+- **`tn_light_415_24d_scattered_to_colmajor_gpu`** (explicit source strides):
   `tenferro-cuda-to-contiguous`, `cutensor`, `pytorch-cuda` only.
   `tenferro-cuda-transpose` is excluded because the eager op only accepts a
   compact col-major `Tensor`. The CPU suite's view-based `tenferro-rs`
   participant remains eligible for this pattern, while HPTT is excluded.
-- **`memcpy_24d_contiguous`**: `memcpy-d2d` only, mirroring the CPU
-  precedent exactly -- the CPU pattern's `participants` is
-  `["memcpy", "strided-rs"]`, i.e. only memcpy-family columns, never
-  `tenferro-rs`/HPTT/Julia. The CPU odometer is an internal untimed
-  correctness reference rather than a participant. This
+- **`memcpy_24d_64x2`**: `memcpy-d2d` only. The host-computed reference is
+  an untimed correctness check rather than a participant. This
   pattern is a pure bandwidth baseline kept isolated from the
   materialize-kernel backends on both CPU and GPU, even though the other
   backends could trivially express an identity permutation.
 - **cuTENSOR rank limits**: some cuTENSOR builds cap the number of tensor
-  modes below this suite's largest patterns (rank 23 `reverse_23d_2`, rank
-  24 `tn_light_415_24d_contiguous_same_perm`/`tn_light_415_24d_scattered_to_colmajor`).
+  modes below this suite's high-rank patterns (rank 23
+  `reverse_23d_128x2`, rank 24 `tn_light_415_24d_contiguous_same_perm_gpu`/
+  `tn_light_415_24d_scattered_to_colmajor_gpu`).
   Rather than excluding `cutensor` from these patterns' `participants_gpu`
   up front, the JSON still lists it as a participant, and
   `src/bin/benchmark_gpu_permutation.rs` verifies rank support **at
@@ -214,13 +207,11 @@ does not abort the rest of the suite.
   / `cutensorCreatePlan` reject the configuration, the runner records
   `status: skipped` with a note instead of crashing the whole binary.
 
-Every exclusion is documented with a `notes_gpu` entry in
-`data/instances/permutation_patterns.json`, the same convention the CPU
-suite uses for its `notes` field.
+Every exclusion is explicit in the pattern's `participants_gpu` list.
 
 ## Runner Design
 
-Two runners, both consuming `data/instances/permutation_patterns.json`:
+Two runners, both consuming `data/instances/gpu_permutation_patterns.json`:
 
 - Rust: `src/bin/benchmark_gpu_permutation.rs`
   (`required-features = ["cuda"]`), covering `tenferro-cuda-transpose`,
@@ -293,13 +284,11 @@ same path baked into `.devcontainer/cuda/devcontainer.json`
 - Reported as median with p25/p75 in milliseconds, plus bandwidth in GB/s
   (`bytes = 2 * elems * 8`, i.e. one read plus one write of `f64`, the same
   formula `cpu/permutation` uses).
-- Hardware sizing sanity: the largest pattern
-  (`rotation_6d_32_32_32_32_16_16`, 2^24 elements) is 2 GiB source + 2 GiB
-  destination = 4 GiB, well within a 12 GiB RTX 3060's memory. `f64`
-  permutation is a pure memory-bound copy kernel; consumer-card `f64` FLOP
-  throttling (RTX 3060's `f64` throughput is a small fraction of its `f32`
-  throughput) is irrelevant here, since no arithmetic happens beyond the
-  data movement itself.
+- Hardware sizing sanity: a typical 2^29-element pattern is 4 GiB source +
+  4 GiB destination = 8 GiB before backend/runtime overhead. The maintained
+  report targets the 80 GiB A100 profile; smaller GPUs may need ad hoc
+  `PATTERN_ID` probes or a reduced local pattern file. `f64` permutation is
+  a pure memory-bound copy kernel, so arithmetic throughput is irrelevant.
 
 ## Record Shape
 
