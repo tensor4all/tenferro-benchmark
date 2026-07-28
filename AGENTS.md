@@ -99,6 +99,15 @@ CPU benchmark collection inside the devcontainer, and prefer tenferro-rs
 `system-mkl` there** so tenferro-rs and PyTorch share the same MKL-backed BLAS
 stack.
 
+Before building or collecting benchmarks, check that the existing devcontainer
+was created from the current `.devcontainer/Dockerfile` and
+`.devcontainer/devcontainer.json`. If it predates relevant devcontainer changes
+or required tools and libraries are missing, recreate it with
+`devcontainer up --workspace-folder . --remove-existing-container`. In
+particular, verify that `MKLROOT` resolves to an installed oneMKL tree before a
+`system-mkl` run; do not silently fall back to an older image or another BLAS
+backend.
+
 ```bash
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash -lc '
