@@ -11,9 +11,12 @@ use std::time::Instant;
 
 use serde_json::{json, Value};
 use tenferro_ad::AdContext;
-use tenferro_gpu::{gpu_available, upload_tensor, CudaBackend, CudaRuntime};
+use tenferro_gpu::{
+    cuda_runtime_engine_id, cuda_runtime_engine_registration, gpu_available, upload_tensor,
+    CudaBackend, CudaRuntime,
+};
 use tenferro_linalg::TracedTensorLinalgExt;
-use tenferro_runtime::{GraphCompiler, GraphExecutor, Tensor, TracedTensor};
+use tenferro_runtime::{GraphCompiler, Runtime, Tensor, TracedTensor};
 use tenferro_tensor::TypedTensor;
 
 fn main() {
@@ -59,8 +62,11 @@ fn main() {
         }
     }
 
-    std::fs::write(out_path, lines.join("\n") + if lines.is_empty() { "" } else { "\n" })
-        .expect("failed to write output");
+    std::fs::write(
+        out_path,
+        lines.join("\n") + if lines.is_empty() { "" } else { "\n" },
+    )
+    .expect("failed to write output");
 }
 
 fn dispatch(
@@ -93,7 +99,9 @@ fn dispatch(
             CudaBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
         let compute_bk =
             CudaBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
-        let ad = problem["linalg_ad"].as_mapping().ok_or("missing linalg_ad block")?;
+        let ad = problem["linalg_ad"]
+            .as_mapping()
+            .ok_or("missing linalg_ad block")?;
         let loss = yaml_str(ad.get("loss").unwrap_or(&serde_yaml::Value::Null), "");
         let n = yaml_usize(ad.get("n").unwrap_or(&serde_yaml::Value::Null), 0);
         let matrix_seed = yaml_u64(ad.get("matrix_seed").unwrap_or(&serde_yaml::Value::Null), 0);
@@ -101,12 +109,7 @@ fn dispatch(
         let rhs_cols = yaml_usize(ad.get("rhs_cols").unwrap_or(&serde_yaml::Value::Null), 1);
 
         let loss_spec = parse_loss(loss, matrix_seed, rhs_seed, rhs_cols)?;
-        let outputs = build_ad_outputs(
-            phase,
-            n,
-            &loss_spec,
-            transfer_bk.runtime(),
-        )?;
+        let outputs = build_ad_outputs(phase, n, &loss_spec, transfer_bk.runtime())?;
         sync_runtime(transfer_bk.runtime())?;
 
         let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
@@ -115,29 +118,23 @@ fn dispatch(
             .compile_many(&output_refs)
             .map_err(|e| format!("compile: {e}"))?;
 
-        let mut executor = GraphExecutor::new(compute_bk);
-        executor
-            .register_extension(tenferro_einsum::register_runtime)
-            .map_err(|e| format!("register einsum: {e}"))?;
-        executor
-            .register_extension(tenferro_linalg::register_runtime)
-            .map_err(|e| format!("register linalg: {e}"))?;
+        let runtime = cuda_runtime_with_extensions(&compute_bk)?;
 
         for _ in 0..n_warmup {
-            let out = executor
-                .run_many(&program)
+            let out = runtime
+                .run_compiled(&program, &[])
                 .map_err(|e| format!("warmup: {e}"))?;
-            sync_runtime(executor.backend().runtime())?;
+            sync_runtime(compute_bk.runtime())?;
             black_box(out.len());
         }
 
         let mut times_ms = Vec::with_capacity(n_runs);
         for _ in 0..n_runs {
             let t0 = Instant::now();
-            let out = executor
-                .run_many(&program)
+            let out = runtime
+                .run_compiled(&program, &[])
                 .map_err(|e| format!("run: {e}"))?;
-            sync_runtime(executor.backend().runtime())?;
+            sync_runtime(compute_bk.runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
             black_box(out.len());
         }
@@ -188,10 +185,18 @@ fn dispatch(
 
 #[derive(Clone, Copy)]
 enum LossKind {
-    SvdS { matrix_seed: u64 },
-    Qr { matrix_seed: u64 },
-    Eigh { matrix_seed: u64 },
-    Lu { matrix_seed: u64 },
+    SvdS {
+        matrix_seed: u64,
+    },
+    Qr {
+        matrix_seed: u64,
+    },
+    Eigh {
+        matrix_seed: u64,
+    },
+    Lu {
+        matrix_seed: u64,
+    },
     Solve {
         matrix_seed: u64,
         rhs_seed: u64,
@@ -199,7 +204,12 @@ enum LossKind {
     },
 }
 
-fn parse_loss(loss: &str, matrix_seed: u64, rhs_seed: u64, rhs_cols: usize) -> Result<LossKind, String> {
+fn parse_loss(
+    loss: &str,
+    matrix_seed: u64,
+    rhs_seed: u64,
+    rhs_cols: usize,
+) -> Result<LossKind, String> {
     Ok(match loss {
         "grad_sum_svd_s" => LossKind::SvdS { matrix_seed },
         "grad_sum_qr" => LossKind::Qr { matrix_seed },
@@ -258,28 +268,40 @@ fn build_loss(
         LossKind::SvdS { matrix_seed } => {
             let a = upload_traced(rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
             let (_, s, _) = a.svd().map_err(|e| format!("svd: {e}"))?;
-            let out = s.reduce_sum(&[0]).map_err(|e| format!("reduce: {e}"))?;
+            let out = s
+                .reduce_sum(Some(&[0]))
+                .map_err(|e| format!("reduce: {e}"))?;
             Ok((out, a))
         }
         LossKind::Qr { matrix_seed } => {
             let a = upload_traced(rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
             let (q, r) = a.qr().map_err(|e| format!("qr: {e}"))?;
-            let q_sum = q.reduce_sum(&[0, 1]).map_err(|e| format!("reduce: {e}"))?;
-            let r_sum = r.reduce_sum(&[0, 1]).map_err(|e| format!("reduce: {e}"))?;
+            let q_sum = q
+                .reduce_sum(Some(&[0, 1]))
+                .map_err(|e| format!("reduce: {e}"))?;
+            let r_sum = r
+                .reduce_sum(Some(&[0, 1]))
+                .map_err(|e| format!("reduce: {e}"))?;
             let loss = (&q_sum + &r_sum).map_err(|e| format!("add: {e}"))?;
             Ok((loss, a))
         }
         LossKind::Eigh { matrix_seed } => {
             let a = upload_traced(rt, &[n, n], spd_matrix(n, matrix_seed))?;
             let (w, _) = a.eigh().map_err(|e| format!("eigh: {e}"))?;
-            let out = w.reduce_sum(&[0]).map_err(|e| format!("reduce: {e}"))?;
+            let out = w
+                .reduce_sum(Some(&[0]))
+                .map_err(|e| format!("reduce: {e}"))?;
             Ok((out, a))
         }
         LossKind::Lu { matrix_seed } => {
             let a = upload_traced(rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
             let (_, l, u, _) = a.lu().map_err(|e| format!("lu: {e}"))?;
-            let l_sum = l.reduce_sum(&[0, 1]).map_err(|e| format!("reduce: {e}"))?;
-            let u_sum = u.reduce_sum(&[0, 1]).map_err(|e| format!("reduce: {e}"))?;
+            let l_sum = l
+                .reduce_sum(Some(&[0, 1]))
+                .map_err(|e| format!("reduce: {e}"))?;
+            let u_sum = u
+                .reduce_sum(Some(&[0, 1]))
+                .map_err(|e| format!("reduce: {e}"))?;
             let loss = (&l_sum + &u_sum).map_err(|e| format!("add: {e}"))?;
             Ok((loss, a))
         }
@@ -291,13 +313,19 @@ fn build_loss(
             let a = upload_traced(rt, &[n, n], spd_matrix(n, matrix_seed))?;
             let b = upload_traced(rt, &[n, rhs_cols], data_for_shape(&[n, rhs_cols], rhs_seed))?;
             let x = a.solve(&b).map_err(|e| format!("solve: {e}"))?;
-            let out = x.reduce_sum(&[0, 1]).map_err(|e| format!("reduce: {e}"))?;
+            let out = x
+                .reduce_sum(Some(&[0, 1]))
+                .map_err(|e| format!("reduce: {e}"))?;
             Ok((out, a))
         }
     }
 }
 
-fn upload_traced(rt: &CudaRuntime, shape: &[usize], data: Vec<f64>) -> Result<TracedTensor, String> {
+fn upload_traced(
+    rt: &CudaRuntime,
+    shape: &[usize],
+    data: Vec<f64>,
+) -> Result<TracedTensor, String> {
     let cpu = tensor_f64(shape, data);
     let gpu = upload_tensor(rt, &cpu).map_err(|e| format!("upload: {e}"))?;
     TracedTensor::from_tensor_concrete_shape(gpu).map_err(|e| format!("trace input: {e}"))
@@ -307,9 +335,11 @@ fn ad_context() -> &'static AdContext {
     static AD_CONTEXT: OnceLock<AdContext> = OnceLock::new();
     AD_CONTEXT.get_or_init(|| {
         AdContext::builder()
-            .with_extension_rules(
-                tenferro_linalg::ad_rules().expect("tenferro-linalg AD rules should register"),
+            .with_semantic_extension_rules(
+                tenferro_linalg::semantic_ad_rules()
+                    .expect("tenferro-linalg semantic AD rules should register"),
             )
+            .expect("tenferro-linalg semantic AD rules should merge")
             .build()
             .expect("tenferro AD context should build")
     })
@@ -329,6 +359,31 @@ fn vjp(
     cotangent: &TracedTensor,
 ) -> tenferro_ad::error::Result<TracedTensor> {
     ad_context().vjp(output, wrt, cotangent)
+}
+
+fn cuda_runtime_with_extensions(backend: &CudaBackend) -> Result<Runtime, String> {
+    let engine_id = cuda_runtime_engine_id().map_err(|e| format!("CUDA engine id: {e}"))?;
+    let mut builder = Runtime::builder();
+    builder
+        .register_engine(
+            cuda_runtime_engine_registration(backend).map_err(|e| format!("CUDA engine: {e}"))?,
+        )
+        .map_err(|e| format!("register CUDA engine: {e}"))?;
+    builder
+        .install_extension_module(
+            tenferro_einsum::extension_module::<CudaBackend>(engine_id.clone())
+                .map_err(|e| format!("einsum extension: {e}"))?,
+        )
+        .map_err(|e| format!("install einsum extension: {e}"))?;
+    builder
+        .install_extension_module(
+            tenferro_linalg::extension_module::<CudaBackend>(engine_id)
+                .map_err(|e| format!("linalg extension: {e}"))?,
+        )
+        .map_err(|e| format!("install linalg extension: {e}"))?;
+    builder
+        .build()
+        .map_err(|e| format!("build CUDA runtime: {e}"))
 }
 
 fn sync_runtime(rt: &CudaRuntime) -> Result<(), String> {

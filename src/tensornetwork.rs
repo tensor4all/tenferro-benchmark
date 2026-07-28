@@ -8,10 +8,10 @@ use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_einsum::EagerEinsumExt;
 #[cfg(feature = "cuda")]
-use tenferro_einsum::GraphCompilerEinsumExt;
+use tenferro_einsum::TraceContextEinsumExt;
 use tenferro_runtime::Tensor;
 #[cfg(feature = "cuda")]
-use tenferro_runtime::{GraphCompiler, TracedTensor};
+use tenferro_runtime::{TraceContext, TraceValue};
 use tenferro_tensor::TypedTensor;
 
 pub const DEFAULT_FILL_VALUE: f32 = 0.840_896_4; // 0.5f32.powf(0.4)
@@ -139,9 +139,10 @@ pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<Ea
 
 #[cfg(feature = "cuda")]
 pub fn contract_tree_trace(
+    trace: &mut TraceContext,
     node: &TreeNode,
-    inputs: &[(TracedTensor, Tensor)],
-) -> Result<TracedTensor, String> {
+    inputs: &[TraceValue],
+) -> Result<TraceValue, String> {
     if node.isleaf {
         let index = node
             .tensorindex
@@ -150,21 +151,19 @@ pub fn contract_tree_trace(
             .ok_or("tensorindex must be >= 1")?;
         return inputs
             .get(index)
-            .map(|(t, _)| t.clone())
+            .copied()
             .ok_or_else(|| format!("tensorindex {index} out of range"));
     }
 
     let eins = node.eins.as_ref().ok_or("internal node missing eins")?;
     let args = node.args.as_ref().ok_or("internal node missing args")?;
-    let child_tensors: Vec<TracedTensor> = args
+    let child_tensors: Vec<TraceValue> = args
         .iter()
-        .map(|child| contract_tree_trace(child, inputs))
+        .map(|child| contract_tree_trace(trace, child, inputs))
         .collect::<Result<_, _>>()?;
-    let refs: Vec<&TracedTensor> = child_tensors.iter().collect();
     let expr = integer_labels_to_expr(&eins.ixs, &eins.iy);
-    let mut compiler = GraphCompiler::new();
-    compiler
-        .einsum(&refs, &expr)
+    trace
+        .einsum(&child_tensors, &expr)
         .map_err(|e| format!("einsum ({expr}): {e}"))
 }
 

@@ -12,12 +12,11 @@ backends:
   - tenferro-cuda-eager
   - pytorch-cuda
   # Temporarily disabled: high peak VRAM on consumer GPUs. Restore by uncommenting:
-  # - jax-cuda
 problems:
   - id: tensornetwork_permutation_optimized_f32
     family: tensornetwork
     op: tensor_network_contract
-    intent: Compare tenferro-rs CUDA backends against PyTorch/JAX on the TensorNetworkBenchmarks tree.
+    intent: Compare tenferro-rs CUDA backends against PyTorch on the TensorNetworkBenchmarks tree.
     notes: Uses extern/TensorNetworkBenchmarks JSON for the problem only; OMEinsum.jl is not a comparison backend.
     dtype: {a: f32, accum: f32}
     layout: {tenferro: col_major, framework: row_major_contiguous}

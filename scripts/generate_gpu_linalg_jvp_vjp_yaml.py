@@ -106,8 +106,8 @@ def main() -> None:
         "suite_id": "gpu/linalg_jvp_vjp",
         "title": "GPU Linalg JVP/VJP Benchmarks",
         "description": (
-            "Trace-mode linalg automatic differentiation on CUDA for tenferro-rs, "
-            "PyTorch, and JAX."
+            "Trace-mode linalg automatic differentiation on CUDA for tenferro-rs "
+            "and PyTorch."
         ),
         "defaults": {
             "device": {"kind": "cuda", "ordinal": 0},
@@ -125,7 +125,6 @@ def main() -> None:
         "backends": [
             "tenferro-cuda-trace",
             "pytorch-cuda",
-            "jax-cuda",
         ],
         "problems": build_problems(),
     }

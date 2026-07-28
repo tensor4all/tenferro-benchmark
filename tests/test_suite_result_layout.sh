@@ -152,7 +152,6 @@ for problem_id, (n, rhs_cols, generator) in expected.items():
         "tenferro-cuda-trace",
         "tenferro-cuda-eager",
         "pytorch-cuda",
-        "jax-cuda",
         "cusolver",
     ]
 PY

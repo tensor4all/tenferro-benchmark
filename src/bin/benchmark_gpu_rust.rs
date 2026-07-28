@@ -13,20 +13,28 @@ use std::time::Instant;
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::CpuBackend;
-use tenferro_einsum::{EagerEinsumExt, GraphCompilerEinsumExt};
-use tenferro_gpu::{download_tensor, gpu_available, upload_tensor, CudaBackend, CudaRuntime};
-use tenferro_linalg::{EagerTensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_einsum::{EagerEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::tensornetwork::{
     build_cpu_eager_inputs as build_tensor_network_cpu_inputs, contract_tree_eager,
-    contract_tree_trace, load_tensor_network, scalar_f32, scalar_f32_tensor,
-    tensor_f32_col_major, TensorNetworkFile, TensorNetworkSpec,
+    contract_tree_trace, load_tensor_network, scalar_f32, scalar_f32_tensor, tensor_f32_col_major,
+    TensorNetworkFile, TensorNetworkSpec,
 };
+use tenferro_gpu::{
+    cuda_runtime_engine_id, cuda_runtime_engine_registration, download_tensor, gpu_available,
+    upload_tensor, CudaBackend, CudaRuntime,
+};
+use tenferro_linalg::{EagerTensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
-    DotGeneralConfig, Error as TfError, GraphCompiler, GraphExecutor, Tensor, TracedTensor,
+    DType, DotGeneralConfig, Error as TfError, GraphCompiler, Runtime, Tensor, TraceContext,
+    TracedTensor,
 };
 use tenferro_tensor::TypedTensor;
 
-fn eager_from_tensor_in(tensor: Tensor, ctx: std::sync::Arc<EagerRuntime>) -> Result<EagerTensor, String> {
+fn eager_from_tensor_in(
+    tensor: Tensor,
+    ctx: std::sync::Arc<EagerRuntime>,
+) -> Result<EagerTensor, String> {
     EagerTensor::from_tensor_in(tensor, ctx).map_err(|e| format!("{e}"))
 }
 
@@ -198,29 +206,84 @@ fn build_trace_inputs(
     network: &TensorNetworkFile,
     spec: &TensorNetworkSpec,
     upload_rt: &CudaRuntime,
-) -> Result<Vec<(TracedTensor, Tensor)>, String> {
+) -> Result<Vec<(Tensor, Tensor)>, String> {
     network
         .inputs
         .iter()
         .map(|ixs| {
             let shape = vec![spec.bond_dim; ixs.len()];
             let cpu = tensor_f32_col_major(&shape, spec.fill_value)?;
-            let tensor = upload_tensor(upload_rt, &cpu).map_err(|e| format!("upload: {e}"))?;
-            Ok((
-                TracedTensor::from_tensor_concrete_shape(tensor.clone())
-                    .map_err(|e| format!("trace input: {e}"))?,
-                cpu,
-            ))
+            let gpu = upload_tensor(upload_rt, &cpu).map_err(|e| format!("upload: {e}"))?;
+            Ok((gpu, cpu))
         })
         .collect()
 }
 
-fn scalar_f32_from_eager_gpu(
-    result: &EagerTensor,
-    runtime: &CudaRuntime,
-) -> Result<f32, String> {
-    let downloaded = download_tensor(runtime, &result.data()?)
-        .map_err(|e| format!("download: {e}"))?;
+fn cuda_runtime_with_extensions(backend: &CudaBackend, linalg: bool) -> Result<Runtime, String> {
+    let mut builder = Runtime::builder();
+    builder
+        .register_engine(
+            cuda_runtime_engine_registration(backend).map_err(|e| format!("CUDA engine: {e}"))?,
+        )
+        .map_err(|e| format!("register CUDA engine: {e}"))?;
+    builder
+        .install_extension_module(
+            tenferro_einsum::extension_module::<CudaBackend>(
+                cuda_runtime_engine_id().map_err(|e| format!("CUDA engine id: {e}"))?,
+            )
+            .map_err(|e| format!("einsum extension: {e}"))?,
+        )
+        .map_err(|e| format!("install einsum extension: {e}"))?;
+    if linalg {
+        builder
+            .install_extension_module(
+                tenferro_linalg::extension_module::<CudaBackend>(
+                    cuda_runtime_engine_id().map_err(|e| format!("CUDA engine id: {e}"))?,
+                )
+                .map_err(|e| format!("linalg extension: {e}"))?,
+            )
+            .map_err(|e| format!("install linalg extension: {e}"))?;
+    }
+    builder
+        .build()
+        .map_err(|e| format!("build CUDA runtime: {e}"))
+}
+
+fn cpu_runtime_with_extensions(linalg: bool) -> Result<Runtime, String> {
+    let backend = CpuBackend::new();
+    let mut builder = Runtime::builder();
+    builder
+        .register_engine(
+            tenferro_cpu::runtime_engine_registration(&backend)
+                .map_err(|e| format!("CPU engine: {e}"))?,
+        )
+        .map_err(|e| format!("register CPU engine: {e}"))?;
+    builder
+        .install_extension_module(
+            tenferro_einsum::extension_module::<CpuBackend>(
+                tenferro_cpu::runtime_engine_id().map_err(|e| format!("CPU engine id: {e}"))?,
+            )
+            .map_err(|e| format!("einsum extension: {e}"))?,
+        )
+        .map_err(|e| format!("install einsum extension: {e}"))?;
+    if linalg {
+        builder
+            .install_extension_module(
+                tenferro_linalg::extension_module::<CpuBackend>(
+                    tenferro_cpu::runtime_engine_id().map_err(|e| format!("CPU engine id: {e}"))?,
+                )
+                .map_err(|e| format!("linalg extension: {e}"))?,
+            )
+            .map_err(|e| format!("install linalg extension: {e}"))?;
+    }
+    builder
+        .build()
+        .map_err(|e| format!("build CPU runtime: {e}"))
+}
+
+fn scalar_f32_from_eager_gpu(result: &EagerTensor, runtime: &CudaRuntime) -> Result<f32, String> {
+    let downloaded =
+        download_tensor(runtime, &result.data()?).map_err(|e| format!("download: {e}"))?;
     scalar_f32_tensor(&downloaded)
 }
 
@@ -247,16 +310,11 @@ fn run_eager_tensor_network(
         let compute_bk =
             CudaBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
         let ctx = EagerRuntime::with_cuda_backend(compute_bk);
-        let gpu_inputs = build_gpu_eager_inputs(
-            &network,
-            &spec,
-            ctx.clone(),
-            transfer_bk.runtime(),
-        )?;
+        let gpu_inputs =
+            build_gpu_eager_inputs(&network, &spec, ctx.clone(), transfer_bk.runtime())?;
         sync_cubecl_runtime(transfer_bk.runtime())?;
         let cpu_ctx = EagerRuntime::with_cpu_backend(CpuBackend::default());
-        let cpu_inputs =
-            build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx.clone())?;
+        let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx.clone())?;
 
         for _ in 0..n_warmup {
             let _ = contract_tree_eager(&network.tree, &gpu_inputs)?;
@@ -368,24 +426,36 @@ fn run_trace_tensor_network(
         let compute_bk =
             CudaBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
         let trace_inputs = build_trace_inputs(&network, &spec, transfer_bk.runtime())?;
-        let output = contract_tree_trace(&network.tree, &trace_inputs)?;
+        let mut trace = TraceContext::new();
+        let values = network
+            .inputs
+            .iter()
+            .map(|ixs| {
+                trace
+                    .input(ProgramInputSpec::new(
+                        DType::F32,
+                        vec![spec.bond_dim; ixs.len()].into_iter().map(Into::into),
+                    ))
+                    .map_err(|e| format!("trace input: {e}"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let output = contract_tree_trace(&mut trace, &network.tree, &values)?;
+        let graph = trace
+            .finish(&[output])
+            .map_err(|e| format!("finish trace: {e}"))?;
         sync_cubecl_runtime(transfer_bk.runtime())?;
 
-        let mut compiler = GraphCompiler::new();
-        let program = compiler
-            .compile_many(&[&output])
+        let program = GraphCompiler::new()
+            .compile_traced_graph(&graph)
             .map_err(|e| format!("compile: {e}"))?;
-
-        let mut executor = GraphExecutor::new(compute_bk);
-        executor
-            .register_extension(tenferro_einsum::register_runtime)
-            .map_err(|e| format!("register einsum: {e}"))?;
+        let runtime = cuda_runtime_with_extensions(&compute_bk, false)?;
+        let gpu_inputs: Vec<&Tensor> = trace_inputs.iter().map(|(gpu, _)| gpu).collect();
 
         for _ in 0..n_warmup {
-            let out = executor
-                .run_many(&program)
+            let out = runtime
+                .run_compiled(&program, &gpu_inputs)
                 .map_err(|e| format!("warmup: {e}"))?;
-            sync_cubecl_runtime(executor.backend().runtime())?;
+            sync_cubecl_runtime(compute_bk.runtime())?;
             black_box(out.len());
         }
 
@@ -393,10 +463,10 @@ fn run_trace_tensor_network(
         let mut gpu_scalar = None;
         for _ in 0..n_runs {
             let t0 = Instant::now();
-            let out = executor
-                .run_many(&program)
+            let out = runtime
+                .run_compiled(&program, &gpu_inputs)
                 .map_err(|e| format!("run: {e}"))?;
-            sync_cubecl_runtime(executor.backend().runtime())?;
+            sync_cubecl_runtime(compute_bk.runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
             let downloaded = download_tensor(transfer_bk.runtime(), &out[0])
                 .map_err(|e| format!("download: {e}"))?;
@@ -656,6 +726,173 @@ fn run_eager(
 // Trace runner
 // ---------------------------------------------------------------------------
 
+fn run_semantic_trace_einsum(
+    suite_id: &str,
+    problem: &serde_yaml::Value,
+    backend: &str,
+    device_ordinal: usize,
+    ts: &str,
+    bc: Option<&str>,
+    tc: Option<&str>,
+) -> Value {
+    let n_warmup = yaml_usize(&problem["run"]["warmups"], 3);
+    let n_runs = yaml_usize(&problem["run"]["runs"], 7);
+    let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
+    let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
+    let exec_path = "phase2-measured-tenferro-cuda-trace";
+
+    let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
+        let seed = problem["data"]["seed"].as_u64().unwrap_or(0);
+        let p = &problem["einsum"];
+        let expr = p["format_rowmajor"].as_str().unwrap_or("ij,jk->ik");
+        let shapes = yaml_shapes(p);
+
+        let cpu_inputs: Vec<Tensor> = shapes
+            .iter()
+            .enumerate()
+            .map(|(i, shape)| tensor_f64(shape, normal_data(shape, seed + i as u64)))
+            .collect();
+
+        let mut trace = TraceContext::new();
+        let values = shapes
+            .iter()
+            .map(|shape| {
+                trace
+                    .input(ProgramInputSpec::new(
+                        DType::F64,
+                        shape.iter().copied().map(Into::into),
+                    ))
+                    .map_err(|e| format!("trace input: {e}"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let output = trace
+            .einsum(&values, expr)
+            .map_err(|e| format!("einsum ({expr}): {e}"))?;
+        let graph = trace
+            .finish(&[output])
+            .map_err(|e| format!("finish trace: {e}"))?;
+        let program = GraphCompiler::new()
+            .compile_traced_graph(&graph)
+            .map_err(|e| format!("compile: {e}"))?;
+
+        let compute_bk =
+            CudaBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
+        let gpu_inputs = cpu_inputs
+            .iter()
+            .map(|tensor| {
+                upload_tensor(compute_bk.runtime(), tensor).map_err(|e| format!("upload: {e}"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        sync_cubecl_runtime(compute_bk.runtime())?;
+        let gpu_input_refs: Vec<&Tensor> = gpu_inputs.iter().collect();
+        let runtime = cuda_runtime_with_extensions(&compute_bk, false)?;
+
+        for _ in 0..n_warmup {
+            let out = runtime
+                .run_compiled(&program, &gpu_input_refs)
+                .map_err(|e| format!("warmup: {e}"))?;
+            sync_cubecl_runtime(compute_bk.runtime())?;
+            black_box(out.len());
+        }
+
+        let mut times_ms = Vec::with_capacity(n_runs);
+        let mut last_out = None;
+        for _ in 0..n_runs {
+            let t0 = Instant::now();
+            let out = runtime
+                .run_compiled(&program, &gpu_input_refs)
+                .map_err(|e| format!("run: {e}"))?;
+            sync_cubecl_runtime(compute_bk.runtime())?;
+            times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
+            last_out = Some(out);
+        }
+
+        let gpu_outputs = last_out
+            .ok_or("missing timed einsum result")?
+            .iter()
+            .map(|tensor| {
+                download_tensor(compute_bk.runtime(), tensor)
+                    .map_err(|e| format!("download result: {e}"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let cpu_input_refs: Vec<&Tensor> = cpu_inputs.iter().collect();
+        let cpu_outputs = cpu_runtime_with_extensions(false)?
+            .run_compiled(&program, &cpu_input_refs)
+            .map_err(|e| format!("CPU reference: {e}"))?;
+        let (ver_status, max_abs, max_rel) = verify_tensors(
+            "einsum",
+            &gpu_outputs,
+            &cpu_outputs,
+            &cpu_inputs,
+            rtol,
+            atol,
+        );
+
+        Ok((times_ms, ver_status, max_abs, max_rel))
+    }));
+
+    match result {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
+            if ver_status == "failed" {
+                return stub(
+                    suite_id,
+                    problem,
+                    backend,
+                    device_ordinal,
+                    "verification_failed",
+                    &format!("max_abs={:.3e}", max_abs.unwrap_or(f64::NAN)),
+                    exec_path,
+                    ts,
+                    bc,
+                    tc,
+                );
+            }
+            ok_record(
+                suite_id,
+                problem,
+                backend,
+                device_ordinal,
+                exec_path,
+                n_warmup,
+                n_runs,
+                timing_stats(&times_ms),
+                &ver_status,
+                max_abs,
+                max_rel,
+                rtol,
+                atol,
+                ts,
+                bc,
+                tc,
+            )
+        }
+        Ok(Err(msg)) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            &msg,
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
+        Err(_) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            "panic during semantic einsum trace benchmark",
+            exec_path,
+            ts,
+            bc,
+            tc,
+        ),
+    }
+}
+
 fn run_trace(
     suite_id: &str,
     problem: &serde_yaml::Value,
@@ -669,15 +906,10 @@ fn run_trace(
     if op == "tensor_network_contract" {
         return run_trace_tensor_network(suite_id, problem, backend, device_ordinal, ts, bc, tc);
     }
-    let supported = [
-        "matmul",
-        "batched_matmul",
-        "einsum",
-        "qr",
-        "solve",
-        "svd",
-        "eigh",
-    ];
+    if op == "einsum" {
+        return run_semantic_trace_einsum(suite_id, problem, backend, device_ordinal, ts, bc, tc);
+    }
+    let supported = ["matmul", "batched_matmul", "qr", "solve", "svd", "eigh"];
     if !supported.contains(&op) {
         return stub(
             suite_id,
@@ -720,20 +952,14 @@ fn run_trace(
             .compile_many(&output_refs)
             .map_err(|e| format!("compile: {e}"))?;
 
-        let mut executor = GraphExecutor::new(compute_bk);
-        executor
-            .register_extension(tenferro_einsum::register_runtime)
-            .map_err(|e| format!("register einsum: {e}"))?;
-        executor
-            .register_extension(tenferro_linalg::register_runtime)
-            .map_err(|e| format!("register linalg: {e}"))?;
+        let runtime = cuda_runtime_with_extensions(&compute_bk, true)?;
 
         // Warmup (triggers JIT compilation on first run)
         for _ in 0..n_warmup {
-            let out = executor
-                .run_many(&program)
+            let out = runtime
+                .run_compiled(&program, &[])
                 .map_err(|e| format!("warmup: {e}"))?;
-            sync_cubecl_runtime(executor.backend().runtime())?;
+            sync_cubecl_runtime(compute_bk.runtime())?;
             black_box(out.len());
         }
 
@@ -742,10 +968,10 @@ fn run_trace(
         let mut last_out: Option<Vec<Tensor>> = None;
         for _ in 0..n_runs {
             let t0 = Instant::now();
-            let out = executor
-                .run_many(&program)
+            let out = runtime
+                .run_compiled(&program, &[])
                 .map_err(|e| format!("run: {e}"))?;
-            sync_cubecl_runtime(executor.backend().runtime())?;
+            sync_cubecl_runtime(compute_bk.runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
             last_out = Some(out);
         }
@@ -1074,7 +1300,10 @@ fn run_eager_op(
                 .as_str()
                 .unwrap_or("ij,jk->ik");
             let refs: Vec<&EagerTensor> = inputs.extra.iter().collect();
-            let out = refs.as_slice().einsum(expr).map_err(|e| format!("einsum: {e}"))?;
+            let out = refs
+                .as_slice()
+                .einsum(expr)
+                .map_err(|e| format!("einsum: {e}"))?;
             Ok(vec![out])
         }
         "qr" => {
@@ -1165,22 +1394,14 @@ fn build_trace_graph_inner(
             let (a, a_data) = inp!(&[m, k, batch], normal_data(&[m, k, batch], seed));
             let (b, b_data) = inp!(&[k, n, batch], normal_data(&[k, n, batch], seed + 1));
             let cfg = batched_matmul_cfg();
-            Ok((vec![a.dot_general(&b, cfg)?], vec![(a, a_data), (b, b_data)]))
+            Ok((
+                vec![a.dot_general(&b, cfg)?],
+                vec![(a, a_data), (b, b_data)],
+            ))
         }
-        "einsum" => {
-            let p = &problem["einsum"];
-            let expr = p["format_rowmajor"].as_str().unwrap_or("ij,jk->ik");
-            let shapes = yaml_shapes(p);
-            let mut inputs: Vec<(TracedTensor, Tensor)> = Vec::new();
-            for (i, sh) in shapes.iter().enumerate() {
-                let (t, d) = inp!(sh.as_slice(), normal_data(sh, seed + i as u64));
-                inputs.push((t, d));
-            }
-            let tensors: Vec<&TracedTensor> = inputs.iter().map(|(t, _)| t).collect();
-            let mut compiler = GraphCompiler::new();
-            let out = compiler.einsum(&tensors, expr)?;
-            Ok((vec![out], inputs))
-        }
+        "einsum" => Err(TfError::Internal(
+            "einsum uses the semantic TraceContext runner".to_string(),
+        )),
         "qr" => {
             let p = &problem["linalg"];
             let (m, n) = (yaml_usize(&p["m"], 64), yaml_usize(&p["n"], 64));
@@ -1243,14 +1464,9 @@ fn run_cpu_trace(
     let program = compiler
         .compile_many(&output_refs)
         .map_err(|e| format!("{e}"))?;
-    let mut executor = GraphExecutor::new(CpuBackend::default());
-    executor
-        .register_extension(tenferro_einsum::register_runtime)
-        .map_err(|e| format!("{e}"))?;
-    executor
-        .register_extension(tenferro_linalg::register_runtime)
-        .map_err(|e| format!("{e}"))?;
-    executor.run_many(&program).map_err(|e| format!("{e}"))
+    cpu_runtime_with_extensions(true)?
+        .run_compiled(&program, &[])
+        .map_err(|e| format!("{e}"))
 }
 
 // ---------------------------------------------------------------------------
@@ -1289,10 +1505,7 @@ fn verify_eager(
         .iter()
         .filter_map(|t| t.data().ok().and_then(|d| download_tensor(rt, &d).ok()))
         .collect();
-    let cpu_tensors: Vec<Tensor> = cpu_outputs
-        .iter()
-        .filter_map(|t| t.data().ok())
-        .collect();
+    let cpu_tensors: Vec<Tensor> = cpu_outputs.iter().filter_map(|t| t.data().ok()).collect();
     let mut input_tensors = match cpu_inputs.a.data() {
         Ok(a) => vec![a],
         Err(_) => return ("skipped".to_string(), None, None),

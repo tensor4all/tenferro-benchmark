@@ -8,12 +8,11 @@ one only restates what differs on CUDA.
 
 Measure the cost of materializing a strided/permuted `f64` tensor view into
 a contiguous column-major destination **on the GPU**, and compare tenferro-rs
-against cuTENSOR, PyTorch CUDA, and JAX CUDA on identical semantics:
+against cuTENSOR and PyTorch CUDA on identical semantics:
 
 - tenferro-rs CUDA transpose/materialize paths
 - cuTENSOR (`cutensorPermute`)
 - PyTorch CUDA
-- JAX CUDA
 - a device-to-device `memcpy` bandwidth baseline
 
 This is a **materialize/copy kernel benchmark**, not an einsum or AD
@@ -28,7 +27,7 @@ In scope:
   resident on a CUDA device.
 - Copy from a strided source layout (permuted col-major or explicit
   strides) into a compact col-major destination.
-- Same-semantics comparison against cuTENSOR, PyTorch CUDA, and JAX CUDA,
+- Same-semantics comparison against cuTENSOR and PyTorch CUDA,
   with correctness verification before timing.
 
 Out of scope:
@@ -94,7 +93,6 @@ Backend column names follow [architecture terminology](architecture.md).
 | `tenferro-cuda-to-contiguous` | Rust | `TypedTensor::backend_region_view` (source layout) + `TypedTensorView::transpose_view(perm)` + `TensorViewCanonicalization::to_contiguous` (accepts arbitrary source strides) |
 | `cutensor` | Rust | direct cuTENSOR 2.x `cutensorPermute`, dlopen'd from this benchmark repo |
 | `pytorch-cuda` | Python | `dst.copy_(src_view)` + `torch.cuda.synchronize()` |
-| `jax-cuda` | Python | jit-compiled `jnp.transpose` + `.block_until_ready()` |
 | `memcpy-d2d` | Python (torch) | `dst.copy_(src)` + `torch.cuda.synchronize()`, contiguous identity permutation only |
 
 Notes:
@@ -103,6 +101,13 @@ Notes:
   as `cpu/permutation`'s policy. `tenferro-cuda-transpose` is the eager
   structural op; `tenferro-cuda-to-contiguous` is the user-facing
   lazy-view-then-materialize path.
+- Use `tenferro-cuda-to-contiguous` as the primary tenferro-rs column when
+  comparing against framework-level APIs: it matches PyTorch's
+  view/`permute`-then-materialize path most closely. Use
+  `tenferro-cuda-transpose` when comparing direct structural
+  permutation primitives or kernels, especially against cuTENSOR. The report
+  retains both columns because they answer these different questions; they
+  should not be treated as interchangeable tenferro-rs modes.
 - tenferro's own cuTENSOR FFI bindings
   (`extern/tenferro-rs/crates/tenferro-gpu/src/cubecl/ffi/cutensor.rs`) only
   cover contraction (`dot_general`), because that is all the production
@@ -139,25 +144,20 @@ which correctly materializes non-contiguous strided views) against the
 host-computed reference; physical byte layout only matters for the timing
 measurement, not for correctness.
 
-### JAX Physical Destination Layout (Asymmetry)
+### Why JAX Is Not Collected
 
-JAX gets no equivalent treatment, and this is an explicit, unavoidable
-asymmetry: `jnp.transpose` under `jit` materializes its output in XLA's
-default **row-major** layout, and JAX's public API offers no way to request
-a column-major (or any custom) physical layout for a device array output.
-So at the byte level `jax-cuda` performs the reversal-conjugate permutation
-task -- writing the row-major materialization of the same logical
-permutation -- not the identical col-major write the other five backends
-perform. Logical semantics and the correctness gate are unaffected
-(verification compares logical values, which are layout-independent). The
-byte-level task difficulty class is equivalent: a row-major materialization
-of permutation `p` over shape `s` moves exactly the same bytes with the
-same mirrored gather/scatter stride structure as a col-major
-materialization of the reversal-conjugated permutation over the reversed
-shape (the same shape multiset). The `jax-cuda` column is therefore
-comparable as a same-class permutation-materialize measurement, but not
-byte-identical to the other columns; the report footnote and the
-`jax-cuda` records' `notes` field state this explicitly.
+JAX is intentionally excluded from maintained GPU benchmark reports. During
+the 2026-07-28 A100 80GB collection, the permutation runner remained inside
+the JAX/XLA path for more than 20 minutes while using one host CPU core and
+about 61 GiB of device memory, without completing the backend run. Earlier
+rank-24 testing had already shown compilation taking more than 40 minutes.
+This makes routine full-suite refreshes impractical. JAX also cannot request
+the compact column-major destination used by the other participants.
+
+The required framework comparison is therefore tenferro-rs versus PyTorch.
+Vendor backends such as cuTENSOR remain optional references. The Python JAX
+implementation remains available for ad hoc experiments, but standard
+collection scripts and suite backend lists do not invoke it.
 
 ### Allocation Semantics
 
@@ -171,10 +171,6 @@ allocation**, with exceptions called out per column:
   owned tensors); this is footnoted in the report, same as the CPU pair.
 - `cutensor`, `pytorch-cuda`, and `memcpy-d2d` reuse a destination buffer
   allocated once per pattern outside the timed region.
-- `jax-cuda` allocates a fresh output array per call (JAX is a functional,
-  immutable-array API with no in-place destination parameter); this is
-  footnoted in the report, mirroring how the CPU report footnotes
-  tenferro's allocation semantics.
 
 ### Correctness Gate
 
@@ -192,29 +188,14 @@ does not abort the rest of the suite.
 `participants_gpu` is the per-pattern allowlist, mirroring how
 `participants` gates `cpu/permutation`'s HPTT column:
 
-- **All contiguous-source (`col_major`) patterns**: all five timed
+- **All contiguous-source (`col_major`) patterns**: all four permutation
   backends -- `tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`,
-  `cutensor`, `pytorch-cuda`, `jax-cuda` -- with one exception
-  (`tn_light_415_24d_contiguous_same_perm`, below).
-- **`tn_light_415_24d_contiguous_same_perm`** (rank 24, contiguous source):
-  `jax-cuda` is excluded via the participants gate, the same mechanism as
-  the explicit-stride exclusion. XLA's jit compilation of the rank-24
-  transpose does not complete in practical time -- observed running for
-  over 40 minutes at 100% host CPU (jax 0.10.1, RTX 3060) before being
-  killed, which would stall every full collection run. The logical
-  semantics are perfectly expressible in `jnp.transpose`; compilation is
-  the blocker, and eager mode goes through the same HLO compile path, so
-  it would not help. The rank-23 `reverse_23d_2` case is also excluded
-  from `jax-cuda` as a compile-time guard; the rank-15 cases remain participants.
+  `cutensor`, and `pytorch-cuda`.
 - **`tn_light_415_24d_scattered_to_colmajor`** (explicit source strides):
   `tenferro-cuda-to-contiguous`, `cutensor`, `pytorch-cuda` only.
   `tenferro-cuda-transpose` is excluded because the eager op only accepts a
   compact col-major `Tensor`. The CPU suite's view-based `tenferro-rs`
   participant remains eligible for this pattern, while HPTT is excluded.
-  `jax-cuda` is excluded
-  because JAX's public API (`jnp.transpose`, `jnp.reshape`, ...) cannot
-  express an arbitrary-stride source view the way `torch.as_strided` or a
-  tenferro `backend_region_view` can.
 - **`memcpy_24d_contiguous`**: `memcpy-d2d` only, mirroring the CPU
   precedent exactly -- the CPU pattern's `participants` is
   `["memcpy", "strided-rs"]`, i.e. only memcpy-family columns, never
@@ -250,13 +231,9 @@ Two runners, both consuming `data/instances/permutation_patterns.json`:
   `tenferro_gpu`'s explicit `CudaRuntime::synchronize()` as the
   timing-region boundary (see [Timing Policy](#timing-policy)).
 - Python: `scripts/benchmark_gpu_permutation_python.py`, covering
-  `pytorch-cuda`, `jax-cuda`, and `memcpy-d2d`. Follows the argument/env
-  handling and sync discipline of `scripts/benchmark_gpu_python.py`
-  (`torch.cuda.synchronize()` / `jax.block_until_ready()` as the timing
-  boundary, `jax.config.update("jax_enable_x64", True)` set unconditionally
-  before any JAX array is created -- **mandatory**, since JAX silently
-  downcasts to `f32` otherwise, which would silently break the bit-exact
-  correctness gate).
+  `pytorch-cuda` and `memcpy-d2d`. Follows the argument/env handling and
+  synchronization discipline of `scripts/benchmark_gpu_python.py`;
+  `torch.cuda.synchronize()` defines the timing boundary.
 - Formatting: `scripts/format_gpu_permutation_results.py` aggregates the
   two runners' JSONL outputs into the latest report, modeled closely on
   `scripts/format_permutation_results.py` but embedding GPU info (via
@@ -264,21 +241,16 @@ Two runners, both consuming `data/instances/permutation_patterns.json`:
   uses) instead of CPU info, and rendering a single table (no per-thread-count
   sections, since this suite has no CPU-thread dimension) with column order
   `tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`, `cutensor`,
-  `pytorch-cuda`, `jax-cuda`, `memcpy-d2d`.
+  and `pytorch-cuda`. The `memcpy-d2d`
+  measurement is rendered once as a device-bandwidth baseline rather than as
+  a mostly-empty per-pattern table column.
 - Orchestration: `scripts/run_gpu_permutation.sh` runs the Rust runner and
   then each Python backend **sequentially** (never concurrently, per
   `AGENTS.md` timing discipline and GPU Timing Fairness), records `run.yaml`
   via `scripts/collect_run_metadata.py`, and regenerates
   `result/nvidia-gpu/gpu/permutation.md`. Each Python backend
-  (`pytorch-cuda`, `jax-cuda`, `memcpy-d2d`) runs as its **own process**,
-  following `scripts/run_gpu_suite.sh`'s precedent ("Separate processes so
-  PyTorch/JAX CUDA allocators release device memory"): in a shared process,
-  JAX's default XLA preallocation grabs roughly 75% of device memory on
-  initialization and never returns it, which starves PyTorch of the 2 GiB
-  it needs for the largest pattern; process exit releases the allocation.
-  JAX's deployment-default allocator behavior is deliberately left intact
-  (no `XLA_PYTHON_CLIENT_PREALLOCATE=false`) as the more representative
-  measurement. It requires
+  (`pytorch-cuda`, `memcpy-d2d`) runs as its **own process** so its CUDA
+  allocator releases device memory before the next backend. It requires
   `BENCHMARK_TARGET_PROFILE=nvidia-gpu` (rejects any other value) and is a
   **standalone entry point**, exactly like `scripts/run_permutation.sh` is
   for `cpu/permutation`: it is intentionally not wired into
@@ -300,8 +272,7 @@ same path baked into `.devcontainer/cuda/devcontainer.json`
   timed region is host API dispatch plus backend-native device
   synchronization only -- CUDA stream/device sync
   (`tenferro_gpu::CudaRuntime::synchronize`, `cutensorPermute` followed by
-  the same runtime sync, `torch.cuda.synchronize()`,
-  `jax.Array.block_until_ready()`). No D2H downloads happen inside any
+  the same runtime sync, `torch.cuda.synchronize()`). No D2H downloads happen inside any
   timed region; downloads for correctness verification always happen once,
   before the timed loop, per `AGENTS.md`'s GPU Timing Fairness policy.
 - All setup happens **outside** the timed region -- this is a
@@ -311,9 +282,8 @@ same path baked into `.devcontainer/cuda/devcontainer.json`
   `cutensorCreatePlan`) is built **once per pattern, outside the timed
   region**, so the `cutensor` column measures steady-state kernel execution
   with planning cost excluded; likewise torch's `torch.as_strided` /
-  `.permute` view construction, JAX's one-time `jit` compilation (absorbed
-  by warmup), and every H2D upload (`upload_tensor`, `torch...to(device)`,
-  `jax.device_put`) are performed once per pattern/backend before any timed
+  `.permute` view construction and every H2D upload
+  (`upload_tensor`, `torch...to(device)`) are performed once per pattern/backend before any timed
   iteration. Timed regions contain only dispatch of the already-planned
   materialize op plus device synchronization.
 - Per-pattern iteration counts scale with pattern size, matching
@@ -365,7 +335,7 @@ Supervision checklist, restated as suite requirements (parallel to
 5. Input data is deterministic (`deterministic_index_value`); no RNG state
    in the comparison.
 6. Allocation semantics are uniform across columns or explicitly footnoted
-   (`tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`, `jax-cuda`).
+   (`tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`).
 7. Downloads never happen inside a timed region (`AGENTS.md` GPU Timing
    Fairness); the Rust and Python runtimes never run concurrently
    (`AGENTS.md` Benchmark Timing Discipline).

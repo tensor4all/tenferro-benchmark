@@ -103,7 +103,7 @@ LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIB
 cat "$RUST_JSONL" >> "$RESULT_JSONL"
 sleep "$GPU_BENCH_BACKEND_SLEEP"
 
-for backend in pytorch-cuda jax-cuda; do
+for backend in pytorch-cuda; do
     echo "Running $backend linalg AD benchmarks..."
     chunk="$RUN_DIR/chunk_${backend}.jsonl"
     : > "$chunk"

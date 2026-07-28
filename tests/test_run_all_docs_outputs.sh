@@ -162,8 +162,8 @@ assert_any_file() {
 
 (
   cd "$TMP"
-  BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 1 >/tmp/run_all_docs_test.out
-  BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 4 >>/tmp/run_all_docs_test.out
+  BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 1 >"$TMP/run_all_docs_test.out"
+  BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 4 >>"$TMP/run_all_docs_test.out"
 )
 
 assert_any_file "$TMP/data/results/amd-cpu/cpu/einsum/*/run.yaml"
