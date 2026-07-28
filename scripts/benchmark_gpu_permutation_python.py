@@ -50,7 +50,7 @@ from typing import Any
 import numpy as np
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
-PATTERN_PATH = PROJECT_DIR / "data" / "instances" / "permutation_patterns.json"
+PATTERN_PATH = PROJECT_DIR / "data" / "instances" / "gpu_permutation_patterns.json"
 SUITE_ID = "gpu/permutation"
 
 ALL_BACKENDS = ("pytorch-cuda", "jax-cuda", "memcpy-d2d")

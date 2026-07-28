@@ -17,15 +17,15 @@ backends:
   - pytorch-cuda
   - memcpy-d2d
 problems:
-  source: data/instances/permutation_patterns.json
+  source: data/instances/gpu_permutation_patterns.json
   include:
-    - memcpy_24d_contiguous
-    - transpose_2d_2048
-    - transpose_3d_256_201
-    - transpose_3d_256_102
-    - rotation_6d_32_32_32_32_16_16
-    - reverse_23d_2
-    - reverse_15d_3
-    - cyclic_15d_3
-    - tn_light_415_24d_scattered_to_colmajor
-    - tn_light_415_24d_contiguous_same_perm
+    - memcpy_24d_64x2
+    - transpose_2d_32768_16384
+    - transpose_3d_1024_1024_512_201
+    - transpose_3d_1024_1024_512_102
+    - rotation_6d_64_32_32_32_16_16
+    - reverse_23d_128x2
+    - reverse_18d_3
+    - cyclic_18d_3
+    - tn_light_415_24d_scattered_to_colmajor_gpu
+    - tn_light_415_24d_contiguous_same_perm_gpu

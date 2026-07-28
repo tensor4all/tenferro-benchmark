@@ -20,7 +20,7 @@ set -euo pipefail
 # scripts/run_gpu_suite.sh.
 #
 # Compares permutation-kernel performance for the patterns listed in
-# benchmarks/gpu/permutation.yaml / data/instances/permutation_patterns.json
+# benchmarks/gpu/permutation.yaml / data/instances/gpu_permutation_patterns.json
 # (`participants_gpu` per pattern) and writes
 # result/nvidia-gpu/gpu/permutation.md.
 #

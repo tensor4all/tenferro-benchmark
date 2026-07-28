@@ -48,11 +48,11 @@ use tenferro_gpu::cuda_interop::raw_cuda_stream;
 use tenferro_gpu::{device_ptr, download_tensor, gpu_available, upload_tensor, CudaBackend};
 use tenferro_tensor::{Tensor, TensorStructural, TensorViewCanonicalization, TypedTensor};
 
-const PATTERN_PATH: &str = "data/instances/permutation_patterns.json";
+const PATTERN_PATH: &str = "data/instances/gpu_permutation_patterns.json";
 const SUITE_ID: &str = "gpu/permutation";
 
 // ---------------------------------------------------------------------------
-// Pattern schema (subset of data/instances/permutation_patterns.json; no
+// Pattern schema (subset of data/instances/gpu_permutation_patterns.json; no
 // `deny_unknown_fields` so CPU-only keys such as `participants` / `notes`
 // are simply ignored here).
 // ---------------------------------------------------------------------------
