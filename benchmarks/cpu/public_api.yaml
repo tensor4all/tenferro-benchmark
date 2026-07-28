@@ -9,6 +9,7 @@ defaults:
   verify: {reference: pytorch, rtol: 1.0e-5, atol: 1.0e-6}
 backends:
   - tenferro-eager
+  - tenferro-trace
   - pytorch-cpu
 problems:
   source: generated
