@@ -10,11 +10,12 @@ use std::sync::{Arc, OnceLock};
 use std::time::{Duration, Instant};
 
 use tenferro_ad::{AdContext, EagerRuntime, EagerTensor};
-use tenferro_cpu::CpuBackend;
-use tenferro_einsum::{EagerEinsumExt, GraphCompilerEinsumExt};
+use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
+use tenferro_einsum::{EagerEinsumExt, TraceContextEinsumExt};
 use tenferro_linalg::{EagerTensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
-    DotGeneralConfig, Error, ErrorPhase, GraphCompiler, GraphExecutor, Tensor, TracedTensor,
+    DotGeneralConfig, Error, ErrorPhase, GraphCompiler, Runtime, Tensor, TraceContext, TracedTensor,
 };
 use tenferro_tensor::TypedTensor;
 
@@ -884,22 +885,7 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok(vec![traced_tensor::matmul(&a, &b)])
             },
         ));
-        rows.push(bench_trace_row(
-            config,
-            "small",
-            "einsum_ij_jk_ik",
-            "primal",
-            "f64",
-            &format!("{n}x{n}"),
-            || {
-                let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 1));
-                let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 2));
-                let mut compiler = GraphCompiler::new();
-                Ok(vec![compiler.einsum(&[&a, &b], "ij,jk->ik").map_err(
-                    |error| runtime_einsum_error(error, ErrorPhase::GraphBuild),
-                )?])
-            },
-        ));
+        rows.push(bench_einsum_trace_row(config, n));
         rows.push(bench_trace_row(
             config,
             "small",
@@ -1459,22 +1445,16 @@ fn bench_trace_row(
         let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
         let mut compiler = GraphCompiler::new();
         let program = compiler.compile_many(&output_refs)?;
-        let mut executor = GraphExecutor::new(CpuBackend::new());
-        executor
-            .register_extension(tenferro_einsum::register_runtime)
-            .map_err(|err| Error::Internal(err.to_string()))?;
-        executor
-            .register_extension(tenferro_linalg::register_runtime)
-            .map_err(|err| Error::Internal(err.to_string()))?;
+        let runtime = cpu_runtime_with_extensions()?;
 
         for _ in 0..config.warmups {
-            let out = executor.run_many(&program)?;
+            let out = runtime.run_compiled(&program, &[])?;
             black_box(out.len());
         }
         let mut times = Vec::with_capacity(config.runs);
         for _ in 0..config.runs {
             let start = Instant::now();
-            let out = executor.run_many(&program)?;
+            let out = runtime.run_compiled(&program, &[])?;
             black_box(out.len());
             times.push(start.elapsed());
         }
@@ -1521,6 +1501,122 @@ fn bench_trace_row(
     }
 }
 
+fn cpu_runtime_with_extensions() -> Result<Runtime, Error> {
+    let backend = CpuBackend::new();
+    let engine_id = runtime_engine_id().map_err(|err| Error::Internal(err.to_string()))?;
+    let mut builder = Runtime::builder();
+    builder
+        .register_engine(
+            runtime_engine_registration(&backend)
+                .map_err(|err| Error::Internal(err.to_string()))?,
+        )
+        .map_err(|err| Error::Internal(err.to_string()))?;
+    builder
+        .install_extension_module(
+            tenferro_einsum::extension_module::<CpuBackend>(engine_id.clone())
+                .map_err(|err| Error::Internal(err.to_string()))?,
+        )
+        .map_err(|err| Error::Internal(err.to_string()))?;
+    builder
+        .install_extension_module(
+            tenferro_linalg::extension_module::<CpuBackend>(engine_id)
+                .map_err(|err| Error::Internal(err.to_string()))?,
+        )
+        .map_err(|err| Error::Internal(err.to_string()))?;
+    builder
+        .build()
+        .map_err(|err| Error::Internal(err.to_string()))
+}
+
+fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
+    let suite = "small";
+    let op = "einsum_ij_jk_ik";
+    let phase = "primal";
+    let dtype = "f64";
+    let shape = format!("{n}x{n}");
+    if !benchmark_filter_matches(op, phase) {
+        return filtered_row(suite, op, phase, dtype, &shape);
+    }
+
+    let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+        let a = tensor(&[n, n], data_for_shape(&[n, n], 1));
+        let b = tensor(&[n, n], data_for_shape(&[n, n], 2));
+        let mut trace = TraceContext::new();
+        let a_value = trace
+            .input_with_default(
+                ProgramInputSpec::new(a.dtype(), [n.into(), n.into()]),
+                Arc::new(a),
+            )
+            .map_err(|err| Error::Internal(err.to_string()))?;
+        let b_value = trace
+            .input_with_default(
+                ProgramInputSpec::new(b.dtype(), [n.into(), n.into()]),
+                Arc::new(b),
+            )
+            .map_err(|err| Error::Internal(err.to_string()))?;
+        let output = trace
+            .einsum(&[a_value, b_value], "ij,jk->ik")
+            .map_err(|error| runtime_einsum_error(error, ErrorPhase::GraphBuild))?;
+        let graph = trace
+            .finish(&[output])
+            .map_err(|err| Error::Internal(err.to_string()))?;
+        let program = GraphCompiler::new().compile_traced_graph(&graph)?;
+        let runtime = cpu_runtime_with_extensions()?;
+
+        for _ in 0..config.warmups {
+            let out = runtime.run_compiled(&program, &[])?;
+            black_box(out.len());
+        }
+        let mut times = Vec::with_capacity(config.runs);
+        for _ in 0..config.runs {
+            let start = Instant::now();
+            let out = runtime.run_compiled(&program, &[])?;
+            black_box(out.len());
+            times.push(start.elapsed());
+        }
+        Ok::<_, Error>(times)
+    }));
+
+    match result {
+        Ok(Ok(times)) => {
+            let (median, iqr) = median_iqr_ms(times);
+            Row {
+                suite,
+                op,
+                phase,
+                dtype,
+                shape,
+                backend: "tenferro-trace",
+                median_ms: Some(median),
+                iqr_ms: Some(iqr),
+                status: "ok".to_string(),
+            }
+        }
+        Ok(Err(err)) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape,
+            backend: "tenferro-trace",
+            median_ms: None,
+            iqr_ms: None,
+            status: format!("error: {err}"),
+        },
+        Err(_) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape,
+            backend: "tenferro-trace",
+            median_ms: None,
+            iqr_ms: None,
+            status: "panic".to_string(),
+        },
+    }
+}
+
 fn cpu_ctx() -> Arc<EagerRuntime> {
     EagerRuntime::with_cpu_backend_and_ad_context(CpuBackend::new(), ad_context())
 }
@@ -1529,9 +1625,11 @@ fn ad_context() -> &'static AdContext {
     static AD_CONTEXT: OnceLock<AdContext> = OnceLock::new();
     AD_CONTEXT.get_or_init(|| {
         AdContext::builder()
-            .with_extension_rules(
-                tenferro_linalg::ad_rules().expect("tenferro-linalg AD rules should register"),
+            .with_semantic_extension_rules(
+                tenferro_linalg::semantic_ad_rules()
+                    .expect("tenferro-linalg AD rules should register"),
             )
+            .expect("tenferro-linalg semantic AD rules should merge")
             .build()
             .expect("tenferro AD context should build")
     })

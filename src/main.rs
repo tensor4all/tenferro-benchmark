@@ -11,11 +11,11 @@ use std::time::{Duration, Instant};
 
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{CpuBackend, CpuBackendKind};
+use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend, CpuBackendKind};
 use tenferro_einsum::{ContractionTree, EagerEinsumExt, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
-use tenferro_runtime::{GraphExecutor, TensorRead, TracedTensor};
-use tenferro_tensor::{Tensor, TypedTensor};
+use tenferro_runtime::{Runtime, Tensor};
+use tenferro_tensor::TypedTensor;
 
 const DEFAULT_WARMUPS: usize = 3;
 const DEFAULT_RUNS: usize = 15;
@@ -129,22 +129,18 @@ fn create_eager_operands(
         .map_err(|e| format!("{e}"))
 }
 
-fn bind_operand_reads<'a>(
-    inputs: &'a [TracedTensor],
+fn bind_operands<'a>(
+    input_count: usize,
     operands: &'a [Tensor],
-) -> Result<Vec<(&'a TracedTensor, TensorRead<'a>)>, String> {
-    if inputs.len() != operands.len() {
+) -> Result<Vec<&'a Tensor>, String> {
+    if input_count != operands.len() {
         return Err(format!(
             "operand count mismatch: graph expects {} inputs but runner created {}",
-            inputs.len(),
+            input_count,
             operands.len()
         ));
     }
-    Ok(inputs
-        .iter()
-        .zip(operands.iter())
-        .map(|(input, operand)| (input, TensorRead::from_tensor(operand)))
-        .collect())
+    Ok(operands.iter().collect())
 }
 
 fn cpu_backend_from_env() -> Result<CpuBackend, String> {
@@ -160,6 +156,23 @@ fn cpu_backend_from_env() -> Result<CpuBackend, String> {
             "unknown TENFERRO_CPU_BACKEND_KIND={other:?}; use default, blas, or faer"
         )),
     }
+}
+
+fn cpu_runtime_with_einsum() -> Result<Runtime, String> {
+    let backend = cpu_backend_from_env()?;
+    let mut builder = Runtime::builder();
+    builder
+        .register_engine(runtime_engine_registration(&backend).map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?;
+    builder
+        .install_extension_module(
+            tenferro_einsum::extension_module::<CpuBackend>(
+                runtime_engine_id().map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
+    builder.build().map_err(|e| e.to_string())
 }
 
 fn profile_bench_breakdown_enabled() -> bool {
@@ -380,7 +393,7 @@ impl TenferroMode {
 
     fn timing_note(self) -> &'static str {
         match self {
-            Self::Trace => "graph compiled once, output TensorValue preserves final lazy views",
+            Self::Trace => "graph compiled once, executed through Runtime::run_compiled",
             Self::Eager => "precomputed path, eager binary contractions",
         }
     }
@@ -497,24 +510,20 @@ fn run_instance_trace(
         eprintln!("{:#?}", compiled.program);
     }
 
-    let mut executor = GraphExecutor::new(cpu_backend_from_env()?);
-    executor
-        .register_extension(tenferro_einsum::register_runtime)
-        .map_err(|e| format!("{e}"))?;
+    let runtime = cpu_runtime_with_einsum()?;
 
     let operands = create_operand_tensors(&instance.shapes_colmajor);
-    let bindings = bind_operand_reads(&compiled.inputs, &operands)?;
+    let bindings = bind_operands(compiled.input_count, &operands)?;
     let program = &compiled.program;
 
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
     for _ in 0..bench_warmups() {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            executor.run_many_values_with_input_reads(program, &bindings)
+            runtime.run_compiled(program, &bindings)
         }));
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
         black_box(&eval);
-        executor.reclaim_value_outputs(eval);
     }
 
     // Timed runs
@@ -522,12 +531,11 @@ fn run_instance_trace(
     for _ in 0..bench_runs() {
         let t0 = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            executor.run_many_values_with_input_reads(program, &bindings)
+            runtime.run_compiled(program, &bindings)
         }));
         let elapsed = t0.elapsed();
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
         black_box(&eval);
-        executor.reclaim_value_outputs(eval);
         durations.push(elapsed);
     }
 
@@ -552,7 +560,7 @@ fn run_instance_trace(
         let mut input_bind = Vec::with_capacity(bench_runs());
         for _ in 0..bench_runs() {
             let started = Instant::now();
-            let bindings = bind_operand_reads(&compiled.inputs, &operands)?;
+            let bindings = bind_operands(compiled.input_count, &operands)?;
             input_bind.push(started.elapsed());
             black_box(&bindings);
         }
@@ -568,12 +576,11 @@ fn run_instance_trace(
         for _ in 0..bench_runs() {
             let started = Instant::now();
             let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-                executor.run_many_values_with_input_reads(program, &bindings)
+                runtime.run_compiled(program, &bindings)
             }));
             let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
             executor_run.push(started.elapsed());
             black_box(&eval);
-            executor.reclaim_value_outputs(eval);
         }
         print_breakdown(
             "tenferro-trace",

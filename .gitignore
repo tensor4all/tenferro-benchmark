@@ -227,3 +227,5 @@ docs/superpowers
 .worktrees/
 # agentic-tests
 docs/test-reports
+
+Cargo.lock

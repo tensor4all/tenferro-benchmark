@@ -19,6 +19,17 @@ headroom, and runtime thread pools, which distorts medians and IQRs.
 Parallel shell/tool execution is fine for non-timing work such as file
 inspection or tests that do not measure benchmark performance.
 
+## tenferro-rs Checkout Freshness
+
+Before building or collecting benchmarks, inspect `extern/tenferro-rs`. If the
+checkout is on the `main` branch, run `git pull` there so the build and
+benchmark use the latest `main` revision. Preserve an explicitly detached or
+pinned checkout unless the user asks to move it.
+
+When creating a PR that includes benchmark results, add a PR comment listing
+the exact commands used to collect those measurements, including relevant
+environment-variable assignments and thread counts.
+
 ## Target Profiles
 
 Use target profiles to keep latest reports for multiple hardware classes:

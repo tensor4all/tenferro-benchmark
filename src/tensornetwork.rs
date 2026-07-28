@@ -6,8 +6,12 @@ use std::sync::Arc;
 
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_einsum::{EagerEinsumExt, GraphCompilerEinsumExt};
-use tenferro_runtime::{GraphCompiler, Tensor, TracedTensor};
+use tenferro_einsum::EagerEinsumExt;
+#[cfg(feature = "cuda")]
+use tenferro_einsum::GraphCompilerEinsumExt;
+use tenferro_runtime::Tensor;
+#[cfg(feature = "cuda")]
+use tenferro_runtime::{GraphCompiler, TracedTensor};
 use tenferro_tensor::TypedTensor;
 
 pub const DEFAULT_FILL_VALUE: f32 = 0.840_896_4; // 0.5f32.powf(0.4)
@@ -133,6 +137,7 @@ pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<Ea
         .map_err(|e| format!("einsum ({expr}): {e}"))
 }
 
+#[cfg(feature = "cuda")]
 pub fn contract_tree_trace(
     node: &TreeNode,
     inputs: &[(TracedTensor, Tensor)],
