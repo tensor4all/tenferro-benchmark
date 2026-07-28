@@ -44,6 +44,7 @@ Expected latest report paths:
 
 - `result/mac-cpu/cpu/einsum.md`
 - `result/mac-cpu/cpu/cpu_ops.md`
+- `result/mac-cpu/cpu/public_api.md`
 - `result/mac-cpu/cpu/linalg_jvp_vjp.md`
 - `result/mac-cpu/cpu/permutation.md`
 - `result/amd-cpu/cpu/einsum.md`
@@ -91,6 +92,75 @@ BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 4
 ```
 
 macOS BLAS-backed tenferro runs use Accelerate by default.
+
+### Updating the macOS Public API Report
+
+Collect the publication report on native macOS with the full profile. Run the
+1-thread and 4-thread cases sequentially in one invocation:
+
+```bash
+PUBLICATION_GATE_PROFILE=full BENCHMARK_TARGET_PROFILE=mac-cpu \
+  ./scripts/run_cpu_public_api.sh 1 4
+```
+
+The full profile uses 3 warmups and 15 measured runs per row. Before collection,
+follow the tenferro-rs checkout freshness policy above and stop other benchmark,
+compiler, and test processes. The runner's idle-host guard should remain enabled
+for publication measurements; `BENCHMARK_ALLOW_BUSY_HOST=1` is for diagnostics
+only. If the guard rejects the run, wait for the competing process to finish and
+rerun instead of bypassing it.
+
+The command writes raw runs under:
+
+```text
+data/results/mac-cpu/cpu/public_api/<timestamp>/
+```
+
+and updates the latest report at:
+
+```text
+result/mac-cpu/cpu/public_api.md
+```
+
+Keep these fairness rules when changing or extending the suite:
+
+- Treat `benchmarks/cpu/public_api_coverage.yaml` as the operation-level coverage
+  manifest. An API spelling may be an alias only when it reaches the same backend
+  operation; do not blanket-alias distinct non-contiguous `TensorRead` paths.
+- Construct equivalent logical fixture values in tenferro-rs, PyTorch, and JAX,
+  while preserving each backend's native layout. Do not charge one backend for a
+  layout conversion that another backend performs outside the timed region.
+- Compare materializing operations with materializing operations. Keep metadata-
+  only view benchmarks separate, under `cpu/view_metadata` where applicable.
+- Compare tenferro-rs `_into` output reuse with PyTorch `out=` or `copy_` output
+  reuse. Mark a backend unsupported when it has no equivalent operation.
+- Do not synthesize a missing public operation by timing a composition of other
+  operations. Keep unsupported combinations as explicit report rows.
+- Keep the `direct` column limited to immediate public operations. Do not label an
+  `EagerTensor` wrapper path as direct merely because it executes eagerly.
+
+After collection, verify that the report names the new raw-run timestamp and
+tenferro-rs commit, includes both thread counts, and contains no duplicate
+`(suite, benchmark, dtype, threads, shape, backend)` rows. Inspect `run_t1.yaml`
+and `run_t4.yaml` for the recorded backend, feature, and thread metadata. If a
+run is noisy or incomplete, rerun the suite; do not hand-edit generated timing
+values or status rows.
+
+Run these checks after changing the public API suite or its update path:
+
+```bash
+bash -n scripts/run_cpu_public_api.sh scripts/benchmark_host_idle.sh
+cargo check --features system-accelerate --bin benchmark_cpu_public_api
+uv run python -m py_compile scripts/benchmark_cpu_public_api_python.py \
+  scripts/benchmark_cpu_public_api_jax.py scripts/format_cpu_ops_results.py
+uv run python scripts/validate_benchmark_suite.py benchmarks/cpu/public_api.yaml
+bash tests/test_suite_result_layout.sh
+bash tests/test_run_all_docs_outputs.sh
+```
+
+When a PR includes the refreshed report, include the exact collection command
+above in the PR comment, together with any additional relevant environment
+variables, as required by the benchmark-result policy.
 
 ## Linux CPU Devcontainer Workflow
 
