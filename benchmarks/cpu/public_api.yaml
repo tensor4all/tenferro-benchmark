@@ -1,0 +1,19 @@
+schema_version: 1
+suite_id: cpu/public_api
+title: CPU Public API Coverage Benchmarks
+description: Representative CPU benchmarks for public tenferro-rs APIs not covered by the focused FFT, einsum, permutation, and linalg AD suites.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  layout: {tenferro: col_major, framework: row_major_contiguous}
+  run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api}
+  verify: {reference: pytorch, rtol: 1.0e-5, atol: 1.0e-6}
+backends:
+  - tenferro-eager
+  - pytorch-cpu
+problems:
+  source: generated
+  include:
+    - elementwise_reduction_public_api
+    - indexing_layout_public_api
+    - linalg_uncovered_public_api
+    - complex_public_api

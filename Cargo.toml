@@ -162,6 +162,10 @@ name = "benchmark_cpu_fft"
 path = "src/bin/benchmark_cpu_fft.rs"
 
 [[bin]]
+name = "benchmark_cpu_public_api"
+path = "src/bin/benchmark_cpu_public_api.rs"
+
+[[bin]]
 name = "benchmark_gpu_rust"
 path = "src/bin/benchmark_gpu_rust.rs"
 required-features = ["cuda"]
