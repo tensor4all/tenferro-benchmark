@@ -3,25 +3,25 @@
 - Suite: `cpu/einsum`
 - Target profile: `amd-cpu`
 - Suite file: `benchmarks/cpu/einsum.yaml`
-- Run metadata: `data/results/amd-cpu/cpu/einsum/20260723_051422/run.yaml`
-- Timestamp: `20260723_051422`
+- Run metadata: `data/results/amd-cpu/cpu/einsum/20260728_023431/run.yaml`
+- Timestamp: `20260728_023431`
 
 Latest run: `./scripts/run_all.sh 4`.
 
-This file is generated from one suite run under `data/results/amd-cpu/cpu/einsum/20260723_051422`.
+This file is generated from one suite run under `data/results/amd-cpu/cpu/einsum/20260728_023431`.
 
-- tenferro-rs commit: `68855c2b65b5adc42dccca9bac04fd136a8f14c8`
+- tenferro-rs commit: `80ebcc38ce11fb93385e8b6a1a49b613bc17452f`
 
 ## CPU Information
 
-- Model: `Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz`
-- Vendor: `GenuineIntel`
-- Logical CPUs: `36`
+- Model: `AMD EPYC 7713P 64-Core Processor`
+- Vendor: `AuthenticAMD`
+- Logical CPUs: `64`
 - Sockets: `1`
-- Cores per socket: `18`
-- Threads per core: `2`
+- Cores per socket: `64`
+- Threads per core: `1`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-136-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
 
 ## Thread Environment
 
@@ -43,7 +43,7 @@ This file is generated from one suite run under `data/results/amd-cpu/cpu/einsum
 - tenferro-rs features: `system-mkl`
 - TENFERRO_CPU_BACKEND_KIND: `blas`
 - BLAS implementation: `mkl`
-- BLAS version: `2026.0.0`
+- BLAS version: `2026.0.1`
 - BLAS root: `/opt/intel/oneapi/mkl/latest`
 - BLAS library: `/opt/intel/oneapi/mkl/latest/lib/libmkl_rt.so`
 
@@ -55,14 +55,14 @@ This file is generated from one suite run under `data/results/amd-cpu/cpu/einsum
 
 ## Threads: 4
 
-- Source table: `data/results/amd-cpu/cpu/einsum/20260723_051422/einsum_table_t4_20260723_051422.md`
+- Source table: `data/results/amd-cpu/cpu/einsum/20260728_023431/einsum_table_t4_20260728_023431.md`
 
 Logs:
 
-- `data/results/amd-cpu/cpu/einsum/20260723_051422/tenferro_trace_t4_20260723_051422.log`
-- `data/results/amd-cpu/cpu/einsum/20260723_051422/tenferro_eager_t4_20260723_051422.log`
-- `data/results/amd-cpu/cpu/einsum/20260723_051422/pytorch_cpu_t4_20260723_051422.log`
-- `data/results/amd-cpu/cpu/einsum/20260723_051422/jax_cpu_t4_20260723_051422.log`
+- `data/results/amd-cpu/cpu/einsum/20260728_023431/tenferro_trace_t4_20260728_023431.log`
+- `data/results/amd-cpu/cpu/einsum/20260728_023431/tenferro_eager_t4_20260728_023431.log`
+- `data/results/amd-cpu/cpu/einsum/20260728_023431/pytorch_cpu_t4_20260728_023431.log`
+- `data/results/amd-cpu/cpu/einsum/20260728_023431/jax_cpu_t4_20260728_023431.log`
 
 #### Strategy: opt_flops
 
@@ -70,7 +70,7 @@ Median ± IQR (ms). OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
 
 | Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|
-| bin_matmul_256 | **0.283 ± 0.017** | 0.288 ± 0.017 | 0.695 ± 0.015 | 1.028 ± 0.314 |
+| bin_matmul_256 | 2.099 ± 0.040 | 1.083 ± 0.023 | 0.848 ± 0.003 | **0.688 ± 0.144** |
 
 #### Strategy: opt_size
 
@@ -78,4 +78,4 @@ Median ± IQR (ms). OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
 
 | Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|
-| bin_matmul_256 | **0.283 ± 0.017** | 0.288 ± 0.017 | 0.695 ± 0.015 | 1.028 ± 0.314 |
+| bin_matmul_256 | 2.099 ± 0.040 | 1.083 ± 0.023 | 0.848 ± 0.003 | **0.688 ± 0.144** |
