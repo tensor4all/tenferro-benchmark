@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import csv
+import os
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -21,7 +22,9 @@ BACKEND_ORDER = [
 ]
 
 BACKEND_LABELS = {
-    "tenferro-eager": "tenferro-rs eager mode (ms)",
+    "tenferro-eager": os.environ.get(
+        "CPU_FORMAT_TENFERRO_EAGER_LABEL", "tenferro-rs eager mode (ms)"
+    ),
     "tenferro-trace": "tenferro-rs trace mode (ms)",
     "pytorch-cpu": "PyTorch Python (ms)",
     "jax-cpu": "JAX Python (XLA CPU) (ms)",

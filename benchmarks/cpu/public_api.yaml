@@ -17,5 +17,9 @@ problems:
   include:
     - elementwise_reduction_public_api
     - indexing_layout_public_api
+    - structural_shape_public_api
+    - view_metadata_public_api
+    - output_reuse_public_api
+    - concrete_einsum_public_api
     - linalg_uncovered_public_api
     - complex_public_api

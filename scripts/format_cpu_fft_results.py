@@ -11,13 +11,19 @@ from pathlib import Path
 
 BACKEND_ORDER = [
     "tenferro-fft-immediate",
+    "tenferro-fft-read",
     "tenferro-fft-executor-cached",
+    "tenferro-fft-eager",
+    "tenferro-fft-trace",
     "pytorch-cpu",
 ]
 
 BACKEND_LABELS = {
     "tenferro-fft-immediate": "tenferro-rs one-shot diagnostic (ms)",
+    "tenferro-fft-read": "tenferro-rs TensorRead API (ms)",
     "tenferro-fft-executor-cached": "tenferro-rs cached primary (ms)",
+    "tenferro-fft-eager": "tenferro-rs eager mode (ms)",
+    "tenferro-fft-trace": "tenferro-rs trace mode (ms)",
     "pytorch-cpu": "PyTorch torch.fft (ms)",
 }
 
@@ -63,7 +69,7 @@ def format_table(paths: list[Path]) -> str:
         "Median ± IQR (ms). Missing backends are shown as `-`.",
         "",
         "Timing scope: input tensors are created outside the timed region; each timed call creates the FFT output tensor. "
-        "The primary comparison is tenferro-rs FftExecutor cached versus warmed PyTorch torch.fft; one-shot tenferro-rs rows are diagnostic. "
+        "The primary eager comparison is tenferro-rs FftExecutor cached versus warmed PyTorch torch.fft; traced rows reuse one compiled graph and one-shot rows are diagnostic. "
         "Rows are limited to 1D transforms so tenferro-rs column-major layout and PyTorch row-major layout do not change the measured transform axis.",
         "",
         "| suite | benchmark | dtype | threads | shape | "
