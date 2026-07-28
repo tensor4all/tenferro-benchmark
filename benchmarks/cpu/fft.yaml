@@ -1,0 +1,24 @@
+schema_version: 1
+suite_id: cpu/fft
+title: CPU FFT Benchmarks
+description: CPU FFT benchmark suite comparing tenferro-rs public FFT APIs with PyTorch torch.fft.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  layout: {tenferro: col_major, framework: row_major_contiguous}
+  run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api}
+  verify: {reference: pytorch, rtol: 1.0e-5, atol: 1.0e-6}
+backends:
+  - tenferro-fft-immediate
+  - tenferro-fft-executor-cached
+  - pytorch-cpu
+problems:
+  source: generated
+  include:
+    - fft_c32_1d
+    - fft_c64_1d
+    - ifft_c32_1d
+    - ifft_c64_1d
+    - rfft_f32_1d
+    - rfft_f64_1d
+    - irfft_c32_1d
+    - irfft_c64_1d
