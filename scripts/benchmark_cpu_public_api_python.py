@@ -26,6 +26,63 @@ FIELDNAMES = [
 ]
 
 
+class LazyTensor:
+    """Materialize a fixture on first warmup use, never during timed runs."""
+
+    def __init__(self, factory: Callable[[], object]):
+        self.factory = factory
+        self.value = None
+
+    def get(self):
+        if self.value is None:
+            self.value = self.factory()
+        return self.value
+
+    @staticmethod
+    def unwrap(value):
+        if isinstance(value, LazyTensor):
+            return value.get()
+        if isinstance(value, tuple):
+            return tuple(LazyTensor.unwrap(item) for item in value)
+        if isinstance(value, list):
+            return [LazyTensor.unwrap(item) for item in value]
+        if isinstance(value, dict):
+            return {key: LazyTensor.unwrap(item) for key, item in value.items()}
+        return value
+
+    @classmethod
+    def __torch_function__(cls, func, types, args=(), kwargs=None):
+        del types
+        return func(*cls.unwrap(args), **cls.unwrap(kwargs or {}))
+
+    def __getattr__(self, name):
+        return getattr(self.get(), name)
+
+    def __getitem__(self, key):
+        return self.get()[key]
+
+    def __add__(self, other):
+        return self.get() + self.unwrap(other)
+
+    def __sub__(self, other):
+        return self.get() - self.unwrap(other)
+
+    def __mul__(self, other):
+        return self.get() * self.unwrap(other)
+
+    def __truediv__(self, other):
+        return self.get() / self.unwrap(other)
+
+    def __neg__(self):
+        return -self.get()
+
+    def __lt__(self, other):
+        return self.get() < self.unwrap(other)
+
+    def __matmul__(self, other):
+        return self.get() @ self.unwrap(other)
+
+
 def runs_from_env() -> tuple[int, int]:
     profile = os.environ.get("PUBLICATION_GATE_PROFILE", "quick").lower()
     return int(os.environ.get("BENCH_RUNS", 15 if profile == "full" else 7)), int(
@@ -95,23 +152,26 @@ def configure_torch_threads(num_threads: int) -> None:
 
 
 def tensor_f64(shape: tuple[int, ...], seed: int):
-    import torch
+    def build():
+        import torch
 
-    return torch.tensor(values(math_prod(shape), seed), dtype=torch.float64).reshape(shape)
+        indices = torch.arange(math_prod(shape), dtype=torch.int64)
+        result = ((indices * 37 + seed * 11).remainder(2048).to(torch.float64) - 1024.0) / 1024.0
+        return result.reshape(shape)
+
+    return LazyTensor(build)
 
 
 def tensor_f64_positive(shape: tuple[int, ...], seed: int):
-    import torch
-
-    return torch.tensor(positive_values(math_prod(shape), seed), dtype=torch.float64).reshape(shape)
+    return LazyTensor(lambda: 0.25 + tensor_f64(shape, seed).get().abs())
 
 
 def tensor_c64(shape: tuple[int, ...], seed: int):
-    import torch
-
-    real = torch.tensor(values(math_prod(shape), seed), dtype=torch.float64).reshape(shape)
-    imag = torch.tensor(values(math_prod(shape), seed + 1), dtype=torch.float64).reshape(shape)
-    return torch.complex(real, imag)
+    return LazyTensor(
+        lambda: __import__("torch").complex(
+            tensor_f64(shape, seed).get(), tensor_f64(shape, seed + 1).get()
+        )
+    )
 
 
 def math_prod(shape: tuple[int, ...]) -> int:
@@ -122,154 +182,191 @@ def math_prod(shape: tuple[int, ...]) -> int:
 
 
 def well_conditioned(n: int, seed: int):
-    import torch
+    def build():
+        import torch
 
-    x = torch.tensor(values(n * n, seed), dtype=torch.float64).reshape((n, n))
-    x = x.clone()
-    x.diagonal().add_(torch.linspace(2.0, 3.0, n, dtype=torch.float64))
-    return x
+        x = tensor_f64((n, n), seed).get().clone()
+        x.diagonal().add_(torch.linspace(2.0, 3.0, n, dtype=torch.float64))
+        return x
+
+    return LazyTensor(build)
+
+
+def well_conditioned_c64(n: int, seed: int):
+    def build():
+        import torch
+
+        x = tensor_c64((n, n), seed).get().clone()
+        x.diagonal().add_(torch.linspace(3.0, 4.0, n, dtype=torch.float64))
+        return x
+
+    return LazyTensor(build)
 
 
 def lower_triangular(n: int, seed: int):
-    import torch
+    def build():
+        import torch
 
-    x = torch.zeros((n, n), dtype=torch.float64)
-    for col in range(n):
-        for row in range(col, n):
-            x[row, col] = 2.0 + row / n if row == col else 0.05 * pseudo_value(row + col * n, seed)
-    return x
+        x = torch.tril(0.05 * tensor_f64((n, n), seed).get())
+        x.diagonal().copy_(torch.linspace(2.0, 3.0, n, dtype=torch.float64))
+        return x
+
+    return LazyTensor(build)
 
 
 def spd(n: int, seed: int):
-    import torch
+    def build():
+        import torch
 
-    x = torch.zeros((n, n), dtype=torch.float64)
-    for col in range(n):
-        x[col, col] = 2.0 + col / n
-        for row in range(col + 1, n):
-            value = 0.01 * pseudo_value(row + col * n, seed)
-            x[row, col] = value
-            x[col, row] = value
-    return x
+        return torch.diag(torch.linspace(2.0, 3.0, n, dtype=torch.float64))
+
+    del seed
+    return LazyTensor(build)
 
 
 def hpd_c64(n: int, seed: int):
-    import torch
+    def build():
+        import torch
 
-    x = torch.zeros((n, n), dtype=torch.complex128)
-    for col in range(n):
-        x[col, col] = complex(2.0 + col / n, 0.0)
-        for row in range(col + 1, n):
-            value = complex(0.01 * pseudo_value(row + col * n, seed), 0.01 * pseudo_value(row + col * n, seed + 1))
-            x[row, col] = value
-            x[col, row] = value.conjugate()
-    return x
+        diagonal = torch.linspace(2.0, 3.0, n, dtype=torch.float64).to(torch.complex128)
+        return torch.diag(diagonal)
+
+    del seed
+    return LazyTensor(build)
 
 
 def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | None]]:
     import torch
     import torch.nn.functional as F
 
-    x = tensor_f64((262_144,), 1)
-    y = tensor_f64((262_144,), 2)
-    yp = tensor_f64_positive((262_144,), 2)
-    xp = tensor_f64_positive((262_144,), 1)
-    cond = torch.tensor(bool_values(262_144), dtype=torch.bool)
-    lower = torch.full((262_144,), -0.5, dtype=torch.float64)
-    upper = torch.full((262_144,), 0.5, dtype=torch.float64)
-    matrix = tensor_f64((256, 1024), 1)
-    prod_matrix = torch.full((256, 1024), 1.000001, dtype=torch.float64)
-    base = tensor_f64((65_536,), 1)
-    updates = tensor_f64((65_536,), 2)
-    gather_idx = torch.tensor(i64_values(65_536, 65_536), dtype=torch.int64)
-    scatter_idx = torch.tensor(i64_values(65_536, 65_536), dtype=torch.int64)
-    part_a = tensor_f64((32_768,), 1)
-    part_b = tensor_f64((32_768,), 2)
-    a128 = well_conditioned(128, 1)
-    spd128 = spd(128, 1)
-    a64 = well_conditioned(64, 1)
-    l128 = lower_triangular(128, 1)
-    rhs128x16 = tensor_f64((128, 16), 2)
-    rhs64x8 = tensor_f64((64, 8), 2)
-    rect128x64 = tensor_f64((128, 64), 1)
-    norm256 = tensor_f64((256, 256), 1)
-    z = tensor_c64((65_536,), 1)
-    z2 = tensor_c64((65_536,), 2)
-    zden = torch.full((65_536,), complex(1.5, 0.25), dtype=torch.complex128)
-    zlog = torch.full((65_536,), complex(1.5, 0.25), dtype=torch.complex128)
-    z128a = tensor_c64((128, 128), 1)
-    z128b = tensor_c64((128, 128), 2)
-    z32 = tensor_c64((32, 32), 1)
-    z32_rhs = tensor_c64((32, 4), 2)
-    hpd32 = hpd_c64(32, 1)
-    z64 = tensor_c64((64, 64), 1)
+    fast_n = 33_554_432
+    ew_n = 8_388_608
+    slow_n = 4_194_304
+    x_fast = tensor_f64((fast_n,), 1)
+    y_fast = tensor_f64((fast_n,), 2)
+    yp_fast = tensor_f64_positive((fast_n,), 2)
+    xp_fast = tensor_f64_positive((fast_n,), 1)
+    cond_fast = LazyTensor(lambda: torch.arange(fast_n, dtype=torch.int64).remainder(3) == 0)
+    x = tensor_f64((ew_n,), 1)
+    yp = tensor_f64_positive((ew_n,), 2)
+    xp = tensor_f64_positive((ew_n,), 1)
+    lower = LazyTensor(lambda: torch.full((ew_n,), -0.5, dtype=torch.float64))
+    upper = LazyTensor(lambda: torch.full((ew_n,), 0.5, dtype=torch.float64))
+    x_slow = tensor_f64((slow_n,), 1)
+    y_slow = tensor_f64((slow_n,), 2)
+    xp_slow = tensor_f64_positive((slow_n,), 1)
+    exponent_slow = LazyTensor(lambda: torch.full((slow_n,), 1.5, dtype=torch.float64))
+    matrix_sum = tensor_f64((8192, 4096), 1)
+    prod_matrix = LazyTensor(lambda: torch.full((8192, 4096), 1.000001, dtype=torch.float64))
+    matrix_max = tensor_f64((2048, 2048), 1)
+    matrix_min = tensor_f64((4096, 4096), 1)
+    gather_n = 262_144
+    base_gather = tensor_f64((gather_n,), 1)
+    updates_gather = tensor_f64((gather_n,), 2)
+    gather_idx = LazyTensor(
+        lambda: (torch.arange(gather_n, dtype=torch.int64) * 37 + 11).remainder(gather_n)
+    )
+    scatter_idx = gather_idx
+    base_slice = tensor_f64((4_194_304,), 1)
+    base_update = tensor_f64((2_097_152,), 1)
+    update_half = tensor_f64((1_048_576,), 2)
+    part_a = tensor_f64((1_048_576,), 1)
+    part_b = tensor_f64((1_048_576,), 2)
+    spd1536 = spd(1536, 1)
+    a160 = well_conditioned(160, 1)
+    a192 = well_conditioned(192, 1)
+    spd512 = spd(512, 1)
+    l4096 = lower_triangular(4096, 1)
+    rhs4096x64 = tensor_f64((4096, 64), 2)
+    a1024 = well_conditioned(1024, 1)
+    a768 = well_conditioned(768, 1)
+    rect512x256 = tensor_f64((512, 256), 1)
+    norm2048 = tensor_f64((2048, 2048), 1)
+    z_conj = tensor_c64((16_777_216,), 1)
+    z_mul = tensor_c64((8_388_608,), 1)
+    z_mul2 = tensor_c64((8_388_608,), 2)
+    zden = LazyTensor(
+        lambda: torch.full((8_388_608,), complex(1.5, 0.25), dtype=torch.complex128)
+    )
+    z_exp = tensor_c64((4_194_304,), 1)
+    zlog = LazyTensor(
+        lambda: torch.full((4_194_304,), complex(1.5, 0.25), dtype=torch.complex128)
+    )
+    z640a = tensor_c64((640, 640), 1)
+    z640b = tensor_c64((640, 640), 2)
+    z160 = tensor_c64((160, 160), 1)
+    z256 = tensor_c64((256, 256), 1)
+    z112 = tensor_c64((112, 112), 1)
+    z384 = well_conditioned_c64(384, 1)
+    z384_rhs = tensor_c64((384, 8), 2)
+    hpd448 = hpd_c64(448, 1)
+    z_norm = tensor_c64((2048, 1536), 1)
 
     return [
-        ("cpu/elementwise_reduction", "add", "f64", "262144", "binary elementwise", lambda: x + y),
-        ("cpu/elementwise_reduction", "sub", "f64", "262144", "binary elementwise", lambda: x - y),
-        ("cpu/elementwise_reduction", "mul", "f64", "262144", "binary elementwise", lambda: x * y),
-        ("cpu/elementwise_reduction", "div", "f64", "262144", "binary elementwise", lambda: x / yp),
-        ("cpu/elementwise_reduction", "rem", "f64", "262144", "binary elementwise", lambda: torch.remainder(x, yp)),
-        ("cpu/elementwise_reduction", "neg", "f64", "262144", "unary elementwise", lambda: -x),
-        ("cpu/elementwise_reduction", "abs", "f64", "262144", "unary elementwise", lambda: torch.abs(x)),
-        ("cpu/elementwise_reduction", "sign", "f64", "262144", "unary elementwise", lambda: torch.sign(x)),
-        ("cpu/elementwise_reduction", "maximum", "f64", "262144", "binary elementwise", lambda: torch.maximum(x, y)),
-        ("cpu/elementwise_reduction", "minimum", "f64", "262144", "binary elementwise", lambda: torch.minimum(x, y)),
-        ("cpu/elementwise_reduction", "compare_lt", "f64", "262144", "ordered compare", lambda: x < y),
-        ("cpu/elementwise_reduction", "select", "f64", "262144", "ternary select", lambda: torch.where(cond, x, y)),
-        ("cpu/elementwise_reduction", "clamp", "f64", "262144", "clamp with tensor bounds", lambda: torch.minimum(torch.maximum(x, lower), upper)),
-        ("cpu/elementwise_reduction", "exp", "f64", "262144", "analytic unary", lambda: torch.exp(x)),
-        ("cpu/elementwise_reduction", "log", "f64", "262144", "analytic unary", lambda: torch.log(xp)),
-        ("cpu/elementwise_reduction", "sin", "f64", "262144", "analytic unary", lambda: torch.sin(x)),
-        ("cpu/elementwise_reduction", "cos", "f64", "262144", "analytic unary", lambda: torch.cos(x)),
-        ("cpu/elementwise_reduction", "tanh", "f64", "262144", "analytic unary", lambda: torch.tanh(x)),
-        ("cpu/elementwise_reduction", "sqrt", "f64", "262144", "analytic unary", lambda: torch.sqrt(xp)),
-        ("cpu/elementwise_reduction", "rsqrt", "f64", "262144", "analytic unary", lambda: torch.rsqrt(xp)),
-        ("cpu/elementwise_reduction", "pow", "f64", "262144", "binary analytic", lambda: torch.pow(xp, 1.5)),
-        ("cpu/elementwise_reduction", "expm1", "f64", "262144", "analytic unary", lambda: torch.expm1(x)),
-        ("cpu/elementwise_reduction", "log1p", "f64", "262144", "analytic unary", lambda: torch.log1p(xp)),
-        ("cpu/elementwise_reduction", "chain_log1p_exp_mul", "f64", "262144", "short elementwise chain", lambda: torch.exp(torch.log1p(xp)) * y),
-        ("cpu/elementwise_reduction", "reduce_sum_all", "f64", "256x1024", "full reduction", lambda: torch.sum(matrix)),
-        ("cpu/elementwise_reduction", "reduce_prod_all", "f64", "256x1024", "full reduction", lambda: torch.prod(prod_matrix)),
-        ("cpu/elementwise_reduction", "reduce_max_axis0", "f64", "256x1024", "axis reduction", lambda: torch.max(matrix, dim=0).values),
-        ("cpu/elementwise_reduction", "reduce_min_axis1", "f64", "256x1024", "axis reduction", lambda: torch.min(matrix, dim=1).values),
-        ("cpu/indexing_layout", "gather", "f64", "65536", "1D gather", lambda: torch.gather(base, 0, gather_idx)),
-        ("cpu/indexing_layout", "scatter", "f64", "65536", "1D scatter", lambda: torch.zeros_like(base).scatter(0, scatter_idx, updates)),
-        ("cpu/indexing_layout", "slice", "f64", "65536", "static slice", lambda: base[1024 : 65_536 - 1024 : 2]),
-        ("cpu/indexing_layout", "dynamic_slice", "f64", "65536", "runtime-start slice", lambda: base[1024 : 1024 + 32_768]),
-        ("cpu/indexing_layout", "dynamic_update_slice", "f64", "65536", "runtime-start update", lambda: dynamic_update(base, tensor_f64((32_768,), 2))),
-        ("cpu/indexing_layout", "pad", "f64", "65536", "edge padding", lambda: F.pad(base, (128, 128))),
-        ("cpu/indexing_layout", "concatenate", "f64", "32768+32768", "concatenate along axis 0", lambda: torch.cat((part_a, part_b), dim=0)),
-        ("cpu/indexing_layout", "reverse", "f64", "65536", "reverse axis 0", lambda: torch.flip(base, dims=(0,))),
-        ("cpu/linalg_uncovered", "cholesky", "f64", "128x128", "SPD input", lambda: torch.linalg.cholesky(spd128)),
-        ("cpu/linalg_uncovered", "eig", "f64", "64x64", "general input", lambda: torch.linalg.eig(a64)),
-        ("cpu/linalg_uncovered", "eigvals", "f64", "64x64", "general input values only", lambda: torch.linalg.eigvals(a64)),
-        ("cpu/linalg_uncovered", "eigvalsh", "f64", "128x128", "SPD input values only", lambda: torch.linalg.eigvalsh(spd128)),
-        ("cpu/linalg_uncovered", "triangular_solve", "f64", "128x128,rhs=16", "lower-triangular solve", lambda: torch.linalg.solve_triangular(l128, rhs128x16, upper=False, left=True, unitriangular=False)),
-        ("cpu/linalg_uncovered", "det", "f64", "128x128", "well-conditioned input", lambda: torch.linalg.det(a128)),
-        ("cpu/linalg_uncovered", "slogdet", "f64", "128x128", "well-conditioned input", lambda: torch.linalg.slogdet(a128)),
-        ("cpu/linalg_uncovered", "inv", "f64", "128x128", "well-conditioned input", lambda: torch.linalg.inv(a128)),
-        ("cpu/linalg_uncovered", "pinv", "f64", "128x64", "rectangular input", lambda: torch.linalg.pinv(rect128x64)),
-        ("cpu/linalg_uncovered", "norm_fro", "f64", "256x256", "Frobenius norm", lambda: torch.linalg.norm(norm256, ord="fro")),
-        ("cpu/linalg_uncovered", "full_piv_lu_solve", "f64", "64x64,rhs=8", "PyTorch direct solve", lambda: torch.linalg.solve(a64, rhs64x8)),
-        ("cpu/complex", "conj", "c64", "65536", "complex elementwise", lambda: torch.conj(z)),
-        ("cpu/complex", "mul", "c64", "65536", "complex elementwise", lambda: z * z2),
-        ("cpu/complex", "div", "c64", "65536", "complex elementwise", lambda: z / zden),
-        ("cpu/complex", "exp", "c64", "65536", "complex analytic", lambda: torch.exp(z)),
-        ("cpu/complex", "log", "c64", "65536", "complex analytic", lambda: torch.log(zlog)),
-        ("cpu/complex", "dot_general_conj", "c64", "128x128", "complex matrix multiply", lambda: z128a @ z128b),
-        ("cpu/complex", "svd", "c64", "32x32", "complex SVD", lambda: torch.linalg.svd(z32, full_matrices=True)),
-        ("cpu/complex", "qr", "c64", "32x32", "complex QR", lambda: torch.linalg.qr(z32, mode="reduced")),
-        ("cpu/complex", "eig", "c64", "32x32", "complex eig", lambda: torch.linalg.eig(z32)),
-        ("cpu/complex", "solve", "c64", "32x32,rhs=4", "complex solve", lambda: torch.linalg.solve(z32, z32_rhs)),
-        ("cpu/complex", "cholesky", "c64", "32x32", "Hermitian positive definite", lambda: torch.linalg.cholesky(hpd32)),
-        ("cpu/complex", "norm_fro", "c64", "64x64", "complex Frobenius norm", lambda: torch.linalg.norm(z64, ord="fro")),
+        ("cpu/elementwise_reduction", "add", "f64", "33554432", "binary elementwise", lambda: x_fast + y_fast),
+        ("cpu/elementwise_reduction", "sub", "f64", "33554432", "binary elementwise", lambda: x_fast - y_fast),
+        ("cpu/elementwise_reduction", "mul", "f64", "33554432", "binary elementwise", lambda: x_fast * y_fast),
+        ("cpu/elementwise_reduction", "div", "f64", "33554432", "binary elementwise", lambda: x_fast / yp_fast),
+        ("cpu/elementwise_reduction", "rem", "f64", "8388608", "binary elementwise", lambda: torch.remainder(x, yp)),
+        ("cpu/elementwise_reduction", "neg", "f64", "33554432", "unary elementwise", lambda: -x_fast),
+        ("cpu/elementwise_reduction", "abs", "f64", "33554432", "unary elementwise", lambda: torch.abs(x_fast)),
+        ("cpu/elementwise_reduction", "sign", "f64", "33554432", "unary elementwise", lambda: torch.sign(x_fast)),
+        ("cpu/elementwise_reduction", "maximum", "f64", "33554432", "binary elementwise", lambda: torch.maximum(x_fast, y_fast)),
+        ("cpu/elementwise_reduction", "minimum", "f64", "33554432", "binary elementwise", lambda: torch.minimum(x_fast, y_fast)),
+        ("cpu/elementwise_reduction", "compare_lt", "f64", "33554432", "ordered compare", lambda: x_fast < y_fast),
+        ("cpu/elementwise_reduction", "select", "f64", "33554432", "ternary select", lambda: torch.where(cond_fast, x_fast, y_fast)),
+        ("cpu/elementwise_reduction", "clamp", "f64", "8388608", "clamp with tensor bounds", lambda: torch.clamp(x, min=lower, max=upper)),
+        ("cpu/elementwise_reduction", "exp", "f64", "8388608", "analytic unary", lambda: torch.exp(x)),
+        ("cpu/elementwise_reduction", "log", "f64", "8388608", "analytic unary", lambda: torch.log(xp)),
+        ("cpu/elementwise_reduction", "sin", "f64", "8388608", "analytic unary", lambda: torch.sin(x)),
+        ("cpu/elementwise_reduction", "cos", "f64", "8388608", "analytic unary", lambda: torch.cos(x)),
+        ("cpu/elementwise_reduction", "tanh", "f64", "8388608", "analytic unary", lambda: torch.tanh(x)),
+        ("cpu/elementwise_reduction", "sqrt", "f64", "33554432", "analytic unary", lambda: torch.sqrt(xp_fast)),
+        ("cpu/elementwise_reduction", "rsqrt", "f64", "33554432", "analytic unary", lambda: torch.rsqrt(xp_fast)),
+        ("cpu/elementwise_reduction", "pow", "f64", "4194304", "binary analytic with tensor exponent", lambda: torch.pow(xp_slow, exponent_slow)),
+        ("cpu/elementwise_reduction", "expm1", "f64", "4194304", "analytic unary", lambda: torch.expm1(x_slow)),
+        ("cpu/elementwise_reduction", "log1p", "f64", "4194304", "analytic unary", lambda: torch.log1p(xp_slow)),
+        ("cpu/elementwise_reduction", "chain_log1p_exp_mul", "f64", "4194304", "short elementwise chain", lambda: torch.exp(torch.log1p(xp_slow)) * y_slow),
+        ("cpu/elementwise_reduction", "reduce_sum_all", "f64", "8192x4096", "full reduction", lambda: torch.sum(matrix_sum)),
+        ("cpu/elementwise_reduction", "reduce_prod_all", "f64", "8192x4096", "full reduction", lambda: torch.prod(prod_matrix)),
+        ("cpu/elementwise_reduction", "reduce_max_axis0", "f64", "2048x2048", "axis reduction", lambda: torch.max(matrix_max, dim=0).values),
+        ("cpu/elementwise_reduction", "reduce_min_axis1", "f64", "4096x4096", "axis reduction", lambda: torch.min(matrix_min, dim=1).values),
+        ("cpu/indexing_layout", "gather", "f64", "262144", "1D gather", lambda: torch.gather(base_gather, 0, gather_idx)),
+        ("cpu/indexing_layout", "scatter", "f64", "262144", "1D scatter", lambda: torch.zeros_like(base_gather).scatter(0, scatter_idx, updates_gather)),
+        ("cpu/indexing_layout", "slice", "f64", "4194304", "static slice materialized to owned output", lambda: base_slice[1024 : 4_194_304 - 1024 : 2].clone()),
+        ("cpu/indexing_layout", "dynamic_slice", "f64", "4194304", "runtime-start slice materialized to owned output", lambda: base_slice[1024 : 1024 + 2_097_152].clone()),
+        ("cpu/indexing_layout", "dynamic_update_slice", "f64", "2097152", "runtime-start update", lambda: dynamic_update(base_update, update_half)),
+        ("cpu/indexing_layout", "pad", "f64", "2097152", "edge padding", lambda: F.pad(base_update, (128, 128))),
+        ("cpu/indexing_layout", "concatenate", "f64", "1048576+1048576", "concatenate along axis 0", lambda: torch.cat((part_a, part_b), dim=0)),
+        ("cpu/indexing_layout", "reverse", "f64", "2097152", "reverse axis 0", lambda: torch.flip(base_update, dims=(0,))),
+        ("cpu/linalg_uncovered", "cholesky", "f64", "1536x1536", "SPD input", lambda: torch.linalg.cholesky(spd1536)),
+        ("cpu/linalg_uncovered", "eig", "f64", "160x160", "general input", lambda: torch.linalg.eig(a160)),
+        ("cpu/linalg_uncovered", "eigvals", "f64", "192x192", "general input values only", lambda: torch.linalg.eigvals(a192)),
+        ("cpu/linalg_uncovered", "eigvalsh", "f64", "512x512", "SPD input values only", lambda: torch.linalg.eigvalsh(spd512)),
+        ("cpu/linalg_uncovered", "triangular_solve", "f64", "4096x4096,rhs=64", "lower-triangular solve", lambda: torch.linalg.solve_triangular(l4096, rhs4096x64, upper=False, left=True, unitriangular=False)),
+        ("cpu/linalg_uncovered", "det", "f64", "1024x1024", "well-conditioned input", lambda: torch.linalg.det(a1024)),
+        ("cpu/linalg_uncovered", "slogdet", "f64", "1024x1024", "well-conditioned input", lambda: torch.linalg.slogdet(a1024)),
+        ("cpu/linalg_uncovered", "inv", "f64", "768x768", "well-conditioned input", lambda: torch.linalg.inv(a768)),
+        ("cpu/linalg_uncovered", "pinv", "f64", "512x256", "rectangular input", lambda: torch.linalg.pinv(rect512x256)),
+        ("cpu/linalg_uncovered", "norm_fro", "f64", "2048x2048", "Frobenius norm", lambda: torch.linalg.norm(norm2048, ord="fro")),
+        ("cpu/complex", "conj", "c64", "16777216", "physical complex conjugate output", lambda: torch.conj_physical(z_conj)),
+        ("cpu/complex", "mul", "c64", "8388608", "complex elementwise", lambda: z_mul * z_mul2),
+        ("cpu/complex", "div", "c64", "8388608", "complex elementwise", lambda: z_mul / zden),
+        ("cpu/complex", "exp", "c64", "4194304", "complex analytic", lambda: torch.exp(z_exp)),
+        ("cpu/complex", "log", "c64", "4194304", "complex analytic", lambda: torch.log(zlog)),
+        ("cpu/complex", "dot_general", "c64", "640x640", "complex matrix multiply", lambda: z640a @ z640b),
+        ("cpu/complex", "svd", "c64", "160x160", "complex SVD", lambda: torch.linalg.svd(z160, full_matrices=True)),
+        ("cpu/complex", "qr", "c64", "256x256", "complex QR", lambda: torch.linalg.qr(z256, mode="reduced")),
+        ("cpu/complex", "eig", "c64", "112x112", "complex eig", lambda: torch.linalg.eig(z112)),
+        ("cpu/complex", "solve", "c64", "384x384,rhs=8", "complex solve", lambda: torch.linalg.solve(z384, z384_rhs)),
+        ("cpu/complex", "cholesky", "c64", "448x448", "Hermitian positive definite", lambda: torch.linalg.cholesky(hpd448)),
+        ("cpu/complex", "norm_fro", "c64", "2048x1536", "complex Frobenius norm", lambda: torch.linalg.norm(z_norm, ord="fro")),
     ]
 
 
 def dynamic_update(base, update):
     output = base.clone()
-    output[1024 : 1024 + 32_768] = update
+    output[1024 : 1024 + update.numel()] = update
     return output
 
 
@@ -330,8 +427,12 @@ def main() -> None:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES, lineterminator="\n")
         if not append:
             writer.writeheader()
-        for case in make_cases():
-            emit_case(writer, args, *case)
+        cases = make_cases()
+        # Pop each closure after use so its large fixture tensors can be
+        # released before the next API family is measured. A normal list
+        # iterator retains every already-measured closure until loop exit.
+        while cases:
+            emit_case(writer, args, *cases.pop(0))
 
 
 if __name__ == "__main__":

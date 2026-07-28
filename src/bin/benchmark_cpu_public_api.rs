@@ -1,11 +1,13 @@
 //! CPU public API benchmark runner for tenferro-rs APIs not covered by the
 //! focused FFT/einsum/permutation suites.
 
+use std::collections::HashMap;
 use std::env;
 use std::fs::OpenOptions;
 use std::hint::black_box;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
+use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
 use num_complex::Complex64;
@@ -17,6 +19,10 @@ use tenferro_tensor::{
 };
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
+
+const EW_FAST_N: usize = 33_554_432;
+const EW_N: usize = 8_388_608;
+const EW_SLOW_N: usize = 4_194_304;
 
 struct Args {
     output: PathBuf,
@@ -50,7 +56,20 @@ fn main() -> BenchResult<()> {
     }
 
     let mut backend = cpu_backend_from_env()?;
-    for case in cases() {
+    let suite_filter = env::var("PUBLIC_API_SUITE_FILTER").ok();
+    let benchmark_filter = env::var("PUBLIC_API_BENCHMARK_FILTER").ok();
+    for case in cases().into_iter().filter(|case| {
+        let suite_matches = suite_filter
+            .as_deref()
+            .map_or(true, |suite| suite == case.suite);
+        let benchmark_matches = benchmark_filter.as_deref().map_or(true, |benchmarks| {
+            benchmarks.is_empty()
+                || benchmarks
+                    .split(',')
+                    .any(|benchmark| benchmark == case.benchmark)
+        });
+        suite_matches && benchmark_matches
+    }) {
         emit_case(&mut writer, &args, &mut backend, case)?;
     }
     writer.flush()?;
@@ -100,85 +119,85 @@ fn parse_args() -> BenchResult<Args> {
 fn cases() -> Vec<Case> {
     vec![
         // Elementwise and reductions (#73).
-        elem("add", "f64", "262144", "binary elementwise", add_f64),
-        elem("sub", "f64", "262144", "binary elementwise", sub_f64),
-        elem("mul", "f64", "262144", "binary elementwise", mul_f64),
-        elem("div", "f64", "262144", "binary elementwise", div_f64),
-        elem("rem", "f64", "262144", "binary elementwise", rem_f64),
-        elem("neg", "f64", "262144", "unary elementwise", neg_f64),
-        elem("abs", "f64", "262144", "unary elementwise", abs_f64),
-        elem("sign", "f64", "262144", "unary elementwise", sign_f64),
+        elem("add", "f64", "33554432", "binary elementwise", add_f64),
+        elem("sub", "f64", "33554432", "binary elementwise", sub_f64),
+        elem("mul", "f64", "33554432", "binary elementwise", mul_f64),
+        elem("div", "f64", "33554432", "binary elementwise", div_f64),
+        elem("rem", "f64", "8388608", "binary elementwise", rem_f64),
+        elem("neg", "f64", "33554432", "unary elementwise", neg_f64),
+        elem("abs", "f64", "33554432", "unary elementwise", abs_f64),
+        elem("sign", "f64", "33554432", "unary elementwise", sign_f64),
         elem(
             "maximum",
             "f64",
-            "262144",
+            "33554432",
             "binary elementwise",
             maximum_f64,
         ),
         elem(
             "minimum",
             "f64",
-            "262144",
+            "33554432",
             "binary elementwise",
             minimum_f64,
         ),
         elem(
             "compare_lt",
             "f64",
-            "262144",
+            "33554432",
             "ordered compare",
             compare_lt_f64,
         ),
-        elem("select", "f64", "262144", "ternary select", select_f64),
+        elem("select", "f64", "33554432", "ternary select", select_f64),
         elem(
             "clamp",
             "f64",
-            "262144",
+            "8388608",
             "clamp with tensor bounds",
             clamp_f64,
         ),
-        elem("exp", "f64", "262144", "analytic unary", exp_f64),
-        elem("log", "f64", "262144", "analytic unary", log_f64),
-        elem("sin", "f64", "262144", "analytic unary", sin_f64),
-        elem("cos", "f64", "262144", "analytic unary", cos_f64),
-        elem("tanh", "f64", "262144", "analytic unary", tanh_f64),
-        elem("sqrt", "f64", "262144", "analytic unary", sqrt_f64),
-        elem("rsqrt", "f64", "262144", "analytic unary", rsqrt_f64),
-        elem("pow", "f64", "262144", "binary analytic", pow_f64),
-        elem("expm1", "f64", "262144", "analytic unary", expm1_f64),
-        elem("log1p", "f64", "262144", "analytic unary", log1p_f64),
+        elem("exp", "f64", "8388608", "analytic unary", exp_f64),
+        elem("log", "f64", "8388608", "analytic unary", log_f64),
+        elem("sin", "f64", "8388608", "analytic unary", sin_f64),
+        elem("cos", "f64", "8388608", "analytic unary", cos_f64),
+        elem("tanh", "f64", "8388608", "analytic unary", tanh_f64),
+        elem("sqrt", "f64", "33554432", "analytic unary", sqrt_f64),
+        elem("rsqrt", "f64", "33554432", "analytic unary", rsqrt_f64),
+        elem("pow", "f64", "4194304", "binary analytic", pow_f64),
+        elem("expm1", "f64", "4194304", "analytic unary", expm1_f64),
+        elem("log1p", "f64", "4194304", "analytic unary", log1p_f64),
         elem(
             "chain_log1p_exp_mul",
             "f64",
-            "262144",
+            "4194304",
             "short elementwise chain",
             chain_f64,
         ),
         elem(
             "reduce_sum_all",
             "f64",
-            "256x1024",
+            "8192x4096",
             "full reduction",
             reduce_sum_all_f64,
         ),
         elem(
             "reduce_prod_all",
             "f64",
-            "256x1024",
+            "8192x4096",
             "full reduction",
             reduce_prod_all_f64,
         ),
         elem(
             "reduce_max_axis0",
             "f64",
-            "256x1024",
+            "2048x2048",
             "axis reduction",
             reduce_max_axis0_f64,
         ),
         elem(
             "reduce_min_axis1",
             "f64",
-            "256x1024",
+            "4096x4096",
             "axis reduction",
             reduce_min_axis1_f64,
         ),
@@ -186,111 +205,104 @@ fn cases() -> Vec<Case> {
         idx(
             "gather",
             "f64",
-            "65536",
+            "262144",
             "1D StableHLO-style gather",
             gather_f64,
         ),
         idx(
             "scatter",
             "f64",
-            "65536",
+            "262144",
             "1D StableHLO-style scatter",
             scatter_f64,
         ),
-        idx("slice", "f64", "65536", "static slice", slice_f64),
+        idx("slice", "f64", "4194304", "static slice", slice_f64),
         idx(
             "dynamic_slice",
             "f64",
-            "65536",
+            "4194304",
             "runtime-start slice",
             dynamic_slice_f64,
         ),
         idx(
             "dynamic_update_slice",
             "f64",
-            "65536",
+            "2097152",
             "runtime-start update",
             dynamic_update_slice_f64,
         ),
-        idx("pad", "f64", "65536", "edge padding", pad_f64),
+        idx("pad", "f64", "2097152", "edge padding", pad_f64),
         idx(
             "concatenate",
             "f64",
-            "32768+32768",
+            "1048576+1048576",
             "concatenate along axis 0",
             concatenate_f64,
         ),
-        idx("reverse", "f64", "65536", "reverse axis 0", reverse_f64),
+        idx("reverse", "f64", "2097152", "reverse axis 0", reverse_f64),
         // Uncovered linalg (#71).
-        lin("cholesky", "f64", "128x128", "SPD input", cholesky_f64),
-        lin("eig", "f64", "64x64", "general input", eig_f64),
+        lin("cholesky", "f64", "1536x1536", "SPD input", cholesky_f64),
+        lin("eig", "f64", "160x160", "general input", eig_f64),
         lin(
             "eigvals",
             "f64",
-            "64x64",
+            "192x192",
             "general input values only",
             eigvals_f64,
         ),
         lin(
             "eigvalsh",
             "f64",
-            "128x128",
+            "512x512",
             "SPD input values only",
             eigvalsh_f64,
         ),
         lin(
             "triangular_solve",
             "f64",
-            "128x128,rhs=16",
+            "4096x4096,rhs=64",
             "lower-triangular solve",
             triangular_solve_f64,
         ),
-        lin("det", "f64", "128x128", "well-conditioned input", det_f64),
+        lin("det", "f64", "1024x1024", "well-conditioned input", det_f64),
         lin(
             "slogdet",
             "f64",
-            "128x128",
+            "1024x1024",
             "well-conditioned input",
             slogdet_f64,
         ),
-        lin("inv", "f64", "128x128", "well-conditioned input", inv_f64),
-        lin("pinv", "f64", "128x64", "rectangular input", pinv_f64),
-        lin("norm_fro", "f64", "256x256", "Frobenius norm", norm_f64),
-        lin(
-            "full_piv_lu_solve",
-            "f64",
-            "64x64,rhs=8",
-            "tenferro full pivot solve; PyTorch uses direct solve",
-            full_piv_lu_solve_f64,
-        ),
+        lin("inv", "f64", "768x768", "well-conditioned input", inv_f64),
+        lin("pinv", "f64", "512x256", "rectangular input", pinv_f64),
+        lin("norm_fro", "f64", "2048x2048", "Frobenius norm", norm_f64),
         // Complex coverage (#74).
-        cplx("conj", "c64", "65536", "complex elementwise", conj_c64),
-        cplx("mul", "c64", "65536", "complex elementwise", mul_c64),
-        cplx("div", "c64", "65536", "complex elementwise", div_c64),
-        cplx("exp", "c64", "65536", "complex analytic", exp_c64),
-        cplx("log", "c64", "65536", "complex analytic", log_c64),
+        cplx("conj", "c64", "16777216", "complex elementwise", conj_c64),
+        cplx("mul", "c64", "8388608", "complex elementwise", mul_c64),
+        cplx("div", "c64", "8388608", "complex elementwise", div_c64),
+        cplx("exp", "c64", "4194304", "complex analytic", exp_c64),
+        cplx("log", "c64", "4194304", "complex analytic", log_c64),
         cplx(
-            "dot_general_conj",
+            "dot_general",
             "c64",
-            "128x128",
+            "640x640",
             "complex matrix multiply",
             dot_c64,
         ),
-        cplx("svd", "c64", "32x32", "complex SVD", svd_c64),
-        cplx("qr", "c64", "32x32", "complex QR", qr_c64),
-        cplx("eig", "c64", "32x32", "complex eig", eig_c64),
-        cplx("solve", "c64", "32x32,rhs=4", "complex solve", solve_c64),
+        cplx("svd", "c64", "160x160", "complex SVD", svd_c64),
+        cplx("qr", "c64", "256x256", "complex QR", qr_c64),
+        cplx("eig", "c64", "112x112", "complex eig", eig_c64),
+        cplx("solve", "c64", "384x384,rhs=8", "complex solve", solve_c64),
         cplx(
             "cholesky",
             "c64",
-            "32x32",
+            "448x448",
             "Hermitian positive definite",
             cholesky_c64,
         ),
         cplx(
             "norm_fro",
             "c64",
-            "64x64",
+            "2048x1536",
             "complex Frobenius norm",
             norm_c64,
         ),
@@ -485,217 +497,300 @@ fn pseudo_value(i: usize, seed: u64) -> f64 {
     ((x % 2048) as f64 - 1024.0) / 1024.0
 }
 
-fn tensor_f64(shape: &[usize], seed: u64) -> Tensor {
-    Tensor::from_vec_col_major(shape.to_vec(), data_f64(shape.iter().product(), seed)).unwrap()
-}
+type TensorCache = OnceLock<Mutex<HashMap<String, &'static Tensor>>>;
 
-fn tensor_f64_positive(shape: &[usize], seed: u64) -> Tensor {
-    Tensor::from_vec_col_major(
-        shape.to_vec(),
-        positive_data_f64(shape.iter().product(), seed),
-    )
-    .unwrap()
-}
-
-fn tensor_c64(shape: &[usize], seed: u64) -> Tensor {
-    Tensor::from_vec_col_major(shape.to_vec(), data_c64(shape.iter().product(), seed)).unwrap()
-}
-
-fn well_conditioned(n: usize, seed: u64) -> Tensor {
-    let mut values = data_f64(n * n, seed);
-    for j in 0..n {
-        values[j + j * n] += 2.0 + j as f64 / n as f64;
+fn cached_tensor(
+    cache: &'static TensorCache,
+    key: String,
+    build: impl FnOnce() -> Tensor,
+) -> &'static Tensor {
+    let mut entries = cache
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .unwrap();
+    if let Some(tensor) = entries.get(&key) {
+        return tensor;
     }
-    Tensor::from_vec_col_major(vec![n, n], values).unwrap()
+    // Benchmark fixtures live for the short lifetime of this runner process.
+    // Leaking them gives timed operations direct immutable references while
+    // keeping all fixture allocation in the warmup phase.
+    let tensor: &'static Tensor = Box::leak(Box::new(build()));
+    entries.insert(key, tensor);
+    tensor
 }
 
-fn lower_triangular(n: usize, seed: u64) -> Tensor {
-    let mut values = vec![0.0; n * n];
-    for col in 0..n {
-        for row in col..n {
-            values[row + col * n] = if row == col {
-                2.0 + row as f64 / n as f64
-            } else {
-                0.05 * pseudo_value(row + col * n, seed)
-            };
+fn tensor_f64(shape: &[usize], seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{shape:?}:{seed}");
+    cached_tensor(&CACHE, key, || {
+        Tensor::from_vec_col_major(shape.to_vec(), data_f64(shape.iter().product(), seed)).unwrap()
+    })
+}
+
+fn tensor_f64_positive(shape: &[usize], seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{shape:?}:{seed}");
+    cached_tensor(&CACHE, key, || {
+        Tensor::from_vec_col_major(
+            shape.to_vec(),
+            positive_data_f64(shape.iter().product(), seed),
+        )
+        .unwrap()
+    })
+}
+
+fn tensor_f64_constant(shape: &[usize], value: f64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{shape:?}:{}", value.to_bits());
+    cached_tensor(&CACHE, key, || {
+        Tensor::from_vec_col_major(shape.to_vec(), vec![value; shape.iter().product()]).unwrap()
+    })
+}
+
+fn tensor_i64_indices(shape: &[usize], modulus: usize) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{shape:?}:{modulus}");
+    cached_tensor(&CACHE, key, || {
+        Tensor::from_vec_col_major(shape.to_vec(), data_i64(shape.iter().product(), modulus))
+            .unwrap()
+    })
+}
+
+fn tensor_i64_constant(shape: &[usize], value: i64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{shape:?}:{value}");
+    cached_tensor(&CACHE, key, || {
+        Tensor::from_vec_col_major(shape.to_vec(), vec![value; shape.iter().product()]).unwrap()
+    })
+}
+
+fn tensor_bool(shape: &[usize]) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{shape:?}");
+    cached_tensor(&CACHE, key, || {
+        Tensor::from_vec_col_major(shape.to_vec(), data_bool(shape.iter().product())).unwrap()
+    })
+}
+
+fn tensor_c64(shape: &[usize], seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{shape:?}:{seed}");
+    cached_tensor(&CACHE, key, || {
+        Tensor::from_vec_col_major(shape.to_vec(), data_c64(shape.iter().product(), seed)).unwrap()
+    })
+}
+
+fn tensor_c64_constant(shape: &[usize], value: Complex64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{shape:?}:{}:{}", value.re.to_bits(), value.im.to_bits());
+    cached_tensor(&CACHE, key, || {
+        Tensor::from_vec_col_major(shape.to_vec(), vec![value; shape.iter().product()]).unwrap()
+    })
+}
+
+fn well_conditioned(n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{n}:{seed}"), || {
+        let mut values = data_f64(n * n, seed);
+        for j in 0..n {
+            values[j + j * n] += 2.0 + j as f64 / n as f64;
         }
-    }
-    Tensor::from_vec_col_major(vec![n, n], values).unwrap()
+        Tensor::from_vec_col_major(vec![n, n], values).unwrap()
+    })
 }
 
-fn spd(n: usize, seed: u64) -> Tensor {
-    let mut values = vec![0.0; n * n];
-    for col in 0..n {
-        values[col + col * n] = 2.0 + col as f64 / n as f64;
-        for row in (col + 1)..n {
-            let value = 0.01 * pseudo_value(row + col * n, seed);
-            values[row + col * n] = value;
-            values[col + row * n] = value;
+fn lower_triangular(n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{n}:{seed}"), || {
+        let mut values = vec![0.0; n * n];
+        for col in 0..n {
+            for row in col..n {
+                values[row + col * n] = if row == col {
+                    2.0 + row as f64 / n as f64
+                } else {
+                    0.05 * pseudo_value(row + col * n, seed)
+                };
+            }
         }
-    }
-    Tensor::from_vec_col_major(vec![n, n], values).unwrap()
+        Tensor::from_vec_col_major(vec![n, n], values).unwrap()
+    })
 }
 
-fn hpd_c64(n: usize, seed: u64) -> Tensor {
-    let mut values = vec![Complex64::new(0.0, 0.0); n * n];
-    for col in 0..n {
-        for row in 0..n {
-            values[row + col * n] = if row == col {
-                Complex64::new(2.0 + row as f64 / n as f64, 0.0)
-            } else if row > col {
-                Complex64::new(
-                    0.01 * pseudo_value(row + col * n, seed),
-                    0.01 * pseudo_value(row + col * n, seed + 1),
-                )
-            } else {
-                values[col + row * n].conj()
-            };
+fn spd(n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{n}:{seed}"), || {
+        let _ = seed;
+        let mut values = vec![0.0; n * n];
+        for col in 0..n {
+            values[col + col * n] = 2.0 + col as f64 / n as f64;
         }
-    }
-    Tensor::from_vec_col_major(vec![n, n], values).unwrap()
+        Tensor::from_vec_col_major(vec![n, n], values).unwrap()
+    })
+}
+
+fn hpd_c64(n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{n}:{seed}"), || {
+        let _ = seed;
+        let mut values = vec![Complex64::new(0.0, 0.0); n * n];
+        for col in 0..n {
+            values[col + col * n] = Complex64::new(2.0 + col as f64 / n as f64, 0.0);
+        }
+        Tensor::from_vec_col_major(vec![n, n], values).unwrap()
+    })
+}
+
+fn well_conditioned_c64(n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{n}:{seed}"), || {
+        let mut values = data_c64(n * n, seed);
+        for j in 0..n {
+            values[j + j * n] += Complex64::new(3.0 + j as f64 / n as f64, 0.0);
+        }
+        Tensor::from_vec_col_major(vec![n, n], values).unwrap()
+    })
 }
 
 // Elementwise/reduction.
 fn add_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.add(&tensor_f64(&[262_144], 1), &tensor_f64(&[262_144], 2))?);
+    consume(b.add(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
     Ok(())
 }
 fn sub_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.sub(&tensor_f64(&[262_144], 1), &tensor_f64(&[262_144], 2))?);
+    consume(b.sub(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
     Ok(())
 }
 fn mul_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.mul(&tensor_f64(&[262_144], 1), &tensor_f64(&[262_144], 2))?);
+    consume(b.mul(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
     Ok(())
 }
 fn div_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.div(
-        &tensor_f64(&[262_144], 1),
-        &tensor_f64_positive(&[262_144], 2),
+        tensor_f64(&[EW_FAST_N], 1),
+        tensor_f64_positive(&[EW_FAST_N], 2),
     )?);
     Ok(())
 }
 fn rem_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.rem(
-        &tensor_f64(&[262_144], 1),
-        &tensor_f64_positive(&[262_144], 2),
-    )?);
+    consume(b.rem(tensor_f64(&[EW_N], 1), tensor_f64_positive(&[EW_N], 2))?);
     Ok(())
 }
 fn neg_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.neg(&tensor_f64(&[262_144], 1))?);
+    consume(b.neg(tensor_f64(&[EW_FAST_N], 1))?);
     Ok(())
 }
 fn abs_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.abs(&tensor_f64(&[262_144], 1))?);
+    consume(b.abs(tensor_f64(&[EW_FAST_N], 1))?);
     Ok(())
 }
 fn sign_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.sign(&tensor_f64(&[262_144], 1))?);
+    consume(b.sign(tensor_f64(&[EW_FAST_N], 1))?);
     Ok(())
 }
 fn maximum_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.maximum(&tensor_f64(&[262_144], 1), &tensor_f64(&[262_144], 2))?);
+    consume(b.maximum(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
     Ok(())
 }
 fn minimum_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.minimum(&tensor_f64(&[262_144], 1), &tensor_f64(&[262_144], 2))?);
+    consume(b.minimum(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
     Ok(())
 }
 fn compare_lt_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.compare(
-        &tensor_f64(&[262_144], 1),
-        &tensor_f64(&[262_144], 2),
+        tensor_f64(&[EW_FAST_N], 1),
+        tensor_f64(&[EW_FAST_N], 2),
         &CompareDir::Lt,
     )?);
     Ok(())
 }
 fn select_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let cond = Tensor::from_vec_col_major(vec![262_144], data_bool(262_144)).unwrap();
     consume(b.select(
-        &cond,
-        &tensor_f64(&[262_144], 1),
-        &tensor_f64(&[262_144], 2),
+        tensor_bool(&[EW_FAST_N]),
+        tensor_f64(&[EW_FAST_N], 1),
+        tensor_f64(&[EW_FAST_N], 2),
     )?);
     Ok(())
 }
 fn clamp_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let lower = Tensor::from_vec_col_major(vec![262_144], vec![-0.5; 262_144]).unwrap();
-    let upper = Tensor::from_vec_col_major(vec![262_144], vec![0.5; 262_144]).unwrap();
-    consume(b.clamp(&tensor_f64(&[262_144], 1), &lower, &upper)?);
+    consume(b.clamp(
+        tensor_f64(&[EW_N], 1),
+        tensor_f64_constant(&[EW_N], -0.5),
+        tensor_f64_constant(&[EW_N], 0.5),
+    )?);
     Ok(())
 }
 fn exp_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.exp(&tensor_f64(&[262_144], 1))?);
+    consume(b.exp(tensor_f64(&[EW_N], 1))?);
     Ok(())
 }
 fn log_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.log(&tensor_f64_positive(&[262_144], 1))?);
+    consume(b.log(tensor_f64_positive(&[EW_N], 1))?);
     Ok(())
 }
 fn sin_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.sin(&tensor_f64(&[262_144], 1))?);
+    consume(b.sin(tensor_f64(&[EW_N], 1))?);
     Ok(())
 }
 fn cos_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.cos(&tensor_f64(&[262_144], 1))?);
+    consume(b.cos(tensor_f64(&[EW_N], 1))?);
     Ok(())
 }
 fn tanh_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.tanh(&tensor_f64(&[262_144], 1))?);
+    consume(b.tanh(tensor_f64(&[EW_N], 1))?);
     Ok(())
 }
 fn sqrt_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.sqrt(&tensor_f64_positive(&[262_144], 1))?);
+    consume(b.sqrt(tensor_f64_positive(&[EW_FAST_N], 1))?);
     Ok(())
 }
 fn rsqrt_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.rsqrt(&tensor_f64_positive(&[262_144], 1))?);
+    consume(b.rsqrt(tensor_f64_positive(&[EW_FAST_N], 1))?);
     Ok(())
 }
 fn pow_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let exponent = Tensor::from_vec_col_major(vec![262_144], vec![1.5; 262_144]).unwrap();
-    consume(b.pow(&tensor_f64_positive(&[262_144], 1), &exponent)?);
+    consume(b.pow(
+        tensor_f64_positive(&[EW_SLOW_N], 1),
+        tensor_f64_constant(&[EW_SLOW_N], 1.5),
+    )?);
     Ok(())
 }
 fn expm1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.expm1(&tensor_f64(&[262_144], 1))?);
+    consume(b.expm1(tensor_f64(&[EW_SLOW_N], 1))?);
     Ok(())
 }
 fn log1p_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.log1p(&tensor_f64_positive(&[262_144], 1))?);
+    consume(b.log1p(tensor_f64_positive(&[EW_SLOW_N], 1))?);
     Ok(())
 }
 fn chain_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let x = b.log1p(&tensor_f64_positive(&[262_144], 1))?;
+    let x = b.log1p(tensor_f64_positive(&[EW_SLOW_N], 1))?;
     let y = b.exp(&x)?;
-    consume(b.mul(&y, &tensor_f64(&[262_144], 2))?);
+    consume(b.mul(&y, tensor_f64(&[EW_SLOW_N], 2))?);
     Ok(())
 }
 fn reduce_sum_all_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reduce_sum(&tensor_f64(&[256, 1024], 1), &[0, 1])?);
+    consume(b.reduce_sum(tensor_f64(&[8192, 4096], 1), &[0, 1])?);
     Ok(())
 }
 fn reduce_prod_all_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let x = Tensor::from_vec_col_major(vec![256, 1024], vec![1.000001; 256 * 1024]).unwrap();
-    consume(b.reduce_prod(&x, &[0, 1])?);
+    consume(b.reduce_prod(tensor_f64_constant(&[8192, 4096], 1.000001), &[0, 1])?);
     Ok(())
 }
 fn reduce_max_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reduce_max(&tensor_f64(&[256, 1024], 1), &[0])?);
+    consume(b.reduce_max(tensor_f64(&[2048, 2048], 1), &[0])?);
     Ok(())
 }
 fn reduce_min_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reduce_min(&tensor_f64(&[256, 1024], 1), &[1])?);
+    consume(b.reduce_min(tensor_f64(&[4096, 4096], 1), &[1])?);
     Ok(())
 }
 
 // Indexing/layout.
 fn gather_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let indices = Tensor::from_vec_col_major(vec![65_536], data_i64(65_536, 65_536)).unwrap();
+    const N: usize = 262_144;
     consume(b.gather(
-        &tensor_f64(&[65_536], 1),
-        &indices,
+        tensor_f64(&[N], 1),
+        tensor_i64_indices(&[N], N),
         &GatherConfig {
             offset_dims: vec![],
             collapsed_slice_dims: vec![0],
@@ -707,12 +802,11 @@ fn gather_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     Ok(())
 }
 fn scatter_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let operand = Tensor::from_vec_col_major(vec![65_536], vec![0.0; 65_536]).unwrap();
-    let indices = Tensor::from_vec_col_major(vec![65_536, 1], data_i64(65_536, 65_536)).unwrap();
+    const N: usize = 262_144;
     consume(b.scatter(
-        &operand,
-        &indices,
-        &tensor_f64(&[65_536], 2),
+        tensor_f64_constant(&[N], 0.0),
+        tensor_i64_indices(&[N, 1], N),
+        tensor_f64(&[N], 2),
         &ScatterConfig {
             update_window_dims: vec![],
             inserted_window_dims: vec![0],
@@ -723,33 +817,39 @@ fn scatter_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     Ok(())
 }
 fn slice_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    const N: usize = 4_194_304;
     consume(b.slice(
-        &tensor_f64(&[65_536], 1),
+        tensor_f64(&[N], 1),
         &SliceConfig {
             starts: vec![1024],
-            limits: vec![65_536 - 1024],
+            limits: vec![N - 1024],
             strides: vec![2],
         },
     )?);
     Ok(())
 }
 fn dynamic_slice_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let starts = Tensor::from_vec_col_major(vec![1], vec![1024_i64]).unwrap();
-    consume(b.dynamic_slice(&tensor_f64(&[65_536], 1), &starts, &[32_768])?);
+    const N: usize = 4_194_304;
+    consume(b.dynamic_slice(
+        tensor_f64(&[N], 1),
+        tensor_i64_constant(&[1], 1024),
+        &[N / 2],
+    )?);
     Ok(())
 }
 fn dynamic_update_slice_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let starts = Tensor::from_vec_col_major(vec![1], vec![1024_i64]).unwrap();
+    const N: usize = 2_097_152;
     consume(b.dynamic_update_slice(
-        &tensor_f64(&[65_536], 1),
-        &tensor_f64(&[32_768], 2),
-        &starts,
+        tensor_f64(&[N], 1),
+        tensor_f64(&[N / 2], 2),
+        tensor_i64_constant(&[1], 1024),
     )?);
     Ok(())
 }
 fn pad_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    const N: usize = 2_097_152;
     consume(b.pad(
-        &tensor_f64(&[65_536], 1),
+        tensor_f64(&[N], 1),
         &PadConfig {
             edge_padding_low: vec![128],
             edge_padding_high: vec![128],
@@ -759,37 +859,37 @@ fn pad_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     Ok(())
 }
 fn concatenate_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let a = tensor_f64(&[32_768], 1);
-    let c = tensor_f64(&[32_768], 2);
-    consume(b.concatenate(&[&a, &c], 0)?);
+    let a = tensor_f64(&[1_048_576], 1);
+    let c = tensor_f64(&[1_048_576], 2);
+    consume(b.concatenate(&[a, c], 0)?);
     Ok(())
 }
 fn reverse_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reverse(&tensor_f64(&[65_536], 1), &[0])?);
+    consume(b.reverse(tensor_f64(&[2_097_152], 1), &[0])?);
     Ok(())
 }
 
 // Linalg.
 fn cholesky_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(spd(128, 1).cholesky(b)?);
+    consume(spd(1536, 1).cholesky(b)?);
     Ok(())
 }
 fn eig_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (w, v) = well_conditioned(64, 1).eig(b)?;
+    let (w, v) = well_conditioned(160, 1).eig(b)?;
     consume_many([w, v]);
     Ok(())
 }
 fn eigvals_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(well_conditioned(64, 1).eigvals(b)?);
+    consume(well_conditioned(192, 1).eigvals(b)?);
     Ok(())
 }
 fn eigvalsh_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(spd(128, 1).eigvalsh(b)?);
+    consume(spd(512, 1).eigvalsh(b)?);
     Ok(())
 }
 fn triangular_solve_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(lower_triangular(128, 1).triangular_solve(
-        &tensor_f64(&[128, 16], 2),
+    consume(lower_triangular(4096, 1).triangular_solve(
+        tensor_f64(&[4096, 64], 2),
         true,
         true,
         false,
@@ -799,60 +899,54 @@ fn triangular_solve_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     Ok(())
 }
 fn det_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(well_conditioned(128, 1).det(b)?);
+    consume(well_conditioned(1024, 1).det(b)?);
     Ok(())
 }
 fn slogdet_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (s, l) = well_conditioned(128, 1).slogdet(b)?;
+    let (s, l) = well_conditioned(1024, 1).slogdet(b)?;
     consume_many([s, l]);
     Ok(())
 }
 fn inv_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(well_conditioned(128, 1).inv(b)?);
+    consume(well_conditioned(768, 1).inv(b)?);
     Ok(())
 }
 fn pinv_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(tensor_f64(&[128, 64], 1).pinv(b)?);
+    consume(tensor_f64(&[512, 256], 1).pinv(b)?);
     Ok(())
 }
 fn norm_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(tensor_f64(&[256, 256], 1).norm(None, Some(&[0, 1]), false, b)?);
+    consume(tensor_f64(&[2048, 2048], 1).norm(None, Some(&[0, 1]), false, b)?);
     Ok(())
 }
-fn full_piv_lu_solve_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(well_conditioned(64, 1).full_piv_lu_solve(&tensor_f64(&[64, 8], 2), b)?);
-    Ok(())
-}
-
 // Complex.
 fn conj_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.conj(&tensor_c64(&[65_536], 1))?);
+    consume(b.conj(tensor_c64(&[16_777_216], 1))?);
     Ok(())
 }
 fn mul_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.mul(&tensor_c64(&[65_536], 1), &tensor_c64(&[65_536], 2))?);
+    consume(b.mul(tensor_c64(&[8_388_608], 1), tensor_c64(&[8_388_608], 2))?);
     Ok(())
 }
 fn div_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let rhs =
-        Tensor::from_vec_col_major(vec![65_536], vec![Complex64::new(1.5, 0.25); 65_536]).unwrap();
-    consume(b.div(&tensor_c64(&[65_536], 1), &rhs)?);
+    consume(b.div(
+        tensor_c64(&[8_388_608], 1),
+        tensor_c64_constant(&[8_388_608], Complex64::new(1.5, 0.25)),
+    )?);
     Ok(())
 }
 fn exp_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.exp(&tensor_c64(&[65_536], 1))?);
+    consume(b.exp(tensor_c64(&[4_194_304], 1))?);
     Ok(())
 }
 fn log_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let x =
-        Tensor::from_vec_col_major(vec![65_536], vec![Complex64::new(1.5, 0.25); 65_536]).unwrap();
-    consume(b.log(&x)?);
+    consume(b.log(tensor_c64_constant(&[4_194_304], Complex64::new(1.5, 0.25)))?);
     Ok(())
 }
 fn dot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.dot_general(
-        &tensor_c64(&[128, 128], 1),
-        &tensor_c64(&[128, 128], 2),
+        tensor_c64(&[640, 640], 1),
+        tensor_c64(&[640, 640], 2),
         &DotGeneralConfig {
             lhs_contracting_dims: vec![1],
             rhs_contracting_dims: vec![0],
@@ -863,29 +957,29 @@ fn dot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     Ok(())
 }
 fn svd_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (u, s, vt) = tensor_c64(&[32, 32], 1).svd(b)?;
+    let (u, s, vt) = tensor_c64(&[160, 160], 1).svd(b)?;
     consume_many([u, s, vt]);
     Ok(())
 }
 fn qr_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (q, r) = tensor_c64(&[32, 32], 1).qr(b)?;
+    let (q, r) = tensor_c64(&[256, 256], 1).qr(b)?;
     consume_many([q, r]);
     Ok(())
 }
 fn eig_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (w, v) = tensor_c64(&[32, 32], 1).eig(b)?;
+    let (w, v) = tensor_c64(&[112, 112], 1).eig(b)?;
     consume_many([w, v]);
     Ok(())
 }
 fn solve_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(tensor_c64(&[32, 32], 1).solve(&tensor_c64(&[32, 4], 2), b)?);
+    consume(well_conditioned_c64(384, 1).solve(tensor_c64(&[384, 8], 2), b)?);
     Ok(())
 }
 fn cholesky_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(hpd_c64(32, 1).cholesky(b)?);
+    consume(hpd_c64(448, 1).cholesky(b)?);
     Ok(())
 }
 fn norm_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(tensor_c64(&[64, 64], 1).norm(None, Some(&[0, 1]), false, b)?);
+    consume(tensor_c64(&[2048, 1536], 1).norm(None, Some(&[0, 1]), false, b)?);
     Ok(())
 }

@@ -16,8 +16,8 @@ BACKEND_ORDER = [
 ]
 
 BACKEND_LABELS = {
-    "tenferro-fft-immediate": "tenferro-rs immediate (ms)",
-    "tenferro-fft-executor-cached": "tenferro-rs FftExecutor cached (ms)",
+    "tenferro-fft-immediate": "tenferro-rs one-shot diagnostic (ms)",
+    "tenferro-fft-executor-cached": "tenferro-rs cached primary (ms)",
     "pytorch-cpu": "PyTorch torch.fft (ms)",
 }
 
@@ -37,24 +37,25 @@ def format_value(row: dict[str, str]) -> str:
     return f"{float(median_ms):.3f}"
 
 
-def format_table(path: Path) -> str:
+def format_table(paths: list[Path]) -> str:
     by_key: dict[tuple[str, str, str, str, str], dict[str, str]] = defaultdict(dict)
     notes: set[str] = set()
-    with path.open(newline="") as f:
-        for row in csv.DictReader(f):
-            key = (
-                row_value(row, "suite"),
-                row_value(row, "benchmark"),
-                row_value(row, "dtype"),
-                row_value(row, "threads"),
-                row_value(row, "shape"),
-            )
-            backend = row_value(row, "backend")
-            if backend:
-                by_key[key][backend] = format_value(row)
-            note = row_value(row, "notes")
-            if note:
-                notes.add(f"{backend}: {note}")
+    for path in paths:
+        with path.open(newline="") as f:
+            for row in csv.DictReader(f):
+                key = (
+                    row_value(row, "suite"),
+                    row_value(row, "benchmark"),
+                    row_value(row, "dtype"),
+                    row_value(row, "threads"),
+                    row_value(row, "shape"),
+                )
+                backend = row_value(row, "backend")
+                if backend:
+                    by_key[key][backend] = format_value(row)
+                note = row_value(row, "notes")
+                if note:
+                    notes.add(f"{backend}: {note}")
 
     lines = [
         "## CPU FFT Benchmark Items",
@@ -62,6 +63,7 @@ def format_table(path: Path) -> str:
         "Median ± IQR (ms). Missing backends are shown as `-`.",
         "",
         "Timing scope: input tensors are created outside the timed region; each timed call creates the FFT output tensor. "
+        "The primary comparison is tenferro-rs FftExecutor cached versus warmed PyTorch torch.fft; one-shot tenferro-rs rows are diagnostic. "
         "Rows are limited to 1D transforms so tenferro-rs column-major layout and PyTorch row-major layout do not change the measured transform axis.",
         "",
         "| suite | benchmark | dtype | threads | shape | "
@@ -98,10 +100,10 @@ def format_table(path: Path) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <cpu-fft.csv>", file=sys.stderr)
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <cpu-fft.csv>...", file=sys.stderr)
         sys.exit(1)
-    sys.stdout.write(format_table(Path(sys.argv[1])))
+    sys.stdout.write(format_table([Path(value) for value in sys.argv[1:]]))
 
 
 if __name__ == "__main__":

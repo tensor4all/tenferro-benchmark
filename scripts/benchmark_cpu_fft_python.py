@@ -25,7 +25,7 @@ def parse_lengths(value: str) -> list[int]:
 
 
 def lengths_from_env() -> list[int]:
-    value = os.environ.get("FFT_BENCH_LENGTHS", "1024,65536")
+    value = os.environ.get("FFT_BENCH_LENGTHS", "1048576")
     return parse_lengths(value)
 
 

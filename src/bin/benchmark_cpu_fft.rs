@@ -168,7 +168,7 @@ fn lengths_from_env() -> Vec<usize> {
         .ok()
         .and_then(|value| parse_lengths(&value).ok())
         .filter(|values| !values.is_empty())
-        .unwrap_or_else(|| vec![1024, 65536])
+        .unwrap_or_else(|| vec![1_048_576])
 }
 
 fn parse_lengths(value: &str) -> BenchResult<Vec<usize>> {

@@ -10,7 +10,11 @@ set -euo pipefail
 # transform axis contiguous for both tenferro-rs column-major tensors and
 # PyTorch row-major tensors, avoiding layout-driven batched FFT artifacts.
 
-NUM_THREADS="${1:-1}"
+if [[ $# -eq 0 ]]; then
+    THREAD_COUNTS=(1 4)
+else
+    THREAD_COUNTS=("$@")
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -72,7 +76,6 @@ reset_benchmark_python_venv "$PROJECT_DIR"
 prepare_cpu_benchmark_python_venv "$PROJECT_DIR"
 
 ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
-configure_cpu_thread_env "$NUM_THREADS"
 
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
@@ -88,8 +91,7 @@ PY
 
 RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/cpu/fft/$BENCHMARK_TIMESTAMP"
 RUN_YAML="$RUN_DIR/run.yaml"
-CSV="$RUN_DIR/cpu_fft_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
-TABLE="$RUN_DIR/cpu_fft_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
+TABLE="$RUN_DIR/cpu_fft_${BENCHMARK_TIMESTAMP}.md"
 REPORT="$RUN_DIR/report.md"
 LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/fft.md"
 TENFERRO_DIR="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
@@ -101,61 +103,76 @@ fi
 mkdir -p "$RUN_DIR" "$(dirname "$LATEST_REPORT")"
 
 blas_impl_for_metadata="$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")"
-metadata_args=(
-    --suite-id "$SUITE_ID"
-    --target-profile "$BENCHMARK_TARGET_PROFILE"
-    --suite-file "${SUITE_FILE#$PROJECT_DIR/}"
-    --timestamp "$RUN_TIMESTAMP_RFC3339"
-    --tenferro-dir "$TENFERRO_DIR"
-    --features "$TENFERRO_CPU_FEATURES"
-    --blas "$blas_impl_for_metadata"
-    --output "$RUN_YAML"
-)
-[[ -n "$TENFERRO_COMMIT" ]] && metadata_args+=(--tenferro-commit "$TENFERRO_COMMIT")
+collect_run_metadata() {
+    local output="$1"
+    local metadata_args=(
+        --suite-id "$SUITE_ID"
+        --target-profile "$BENCHMARK_TARGET_PROFILE"
+        --suite-file "${SUITE_FILE#$PROJECT_DIR/}"
+        --timestamp "$RUN_TIMESTAMP_RFC3339"
+        --tenferro-dir "$TENFERRO_DIR"
+        --features "$TENFERRO_CPU_FEATURES"
+        --blas "$blas_impl_for_metadata"
+        --output "$output"
+    )
+    [[ -n "$TENFERRO_COMMIT" ]] && metadata_args+=(--tenferro-commit "$TENFERRO_COMMIT")
+    if command -v uv >/dev/null 2>&1; then
+        uv run python "$SCRIPT_DIR/collect_run_metadata.py" "${metadata_args[@]}" \
+            || python3 "$SCRIPT_DIR/collect_run_metadata.py" "${metadata_args[@]}"
+    else
+        python3 "$SCRIPT_DIR/collect_run_metadata.py" "${metadata_args[@]}"
+    fi
+}
 
-if command -v uv >/dev/null 2>&1; then
-    uv run python "$SCRIPT_DIR/collect_run_metadata.py" "${metadata_args[@]}" \
-        || python3 "$SCRIPT_DIR/collect_run_metadata.py" "${metadata_args[@]}"
-else
-    python3 "$SCRIPT_DIR/collect_run_metadata.py" "${metadata_args[@]}"
-fi
+configure_cpu_thread_env "${THREAD_COUNTS[0]}"
+collect_run_metadata "$RUN_YAML"
 
 echo "CPU FFT benchmark suite"
 echo "Project dir:  $PROJECT_DIR"
-echo "Threads:      $NUM_THREADS"
+echo "Thread counts: ${THREAD_COUNTS[*]}"
 echo "Timestamp:    $BENCHMARK_TIMESTAMP"
 echo "Suite:        $SUITE_ID"
 echo "Target:       $BENCHMARK_TARGET_PROFILE"
 echo "Run dir:      $RUN_DIR"
 echo "Features:     $TENFERRO_CPU_FEATURES"
 echo "CPU backend:  $TENFERRO_CPU_BACKEND_KIND"
-echo "FFT lengths:  ${FFT_BENCH_LENGTHS:-1024,65536}"
+echo "FFT lengths:  ${FFT_BENCH_LENGTHS:-1048576}"
 [[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
-print_cpu_thread_env
 echo ""
 
-cargo run --release --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_fft -- \
-    --num-threads "$NUM_THREADS" \
-    --lengths "${FFT_BENCH_LENGTHS:-1024,65536}" \
-    --output "$CSV"
+CSVS=()
+for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
+    echo "--- Thread count: $NUM_THREADS ---"
+    configure_cpu_thread_env "$NUM_THREADS"
+    print_cpu_thread_env
+    RUN_T_YAML="$RUN_DIR/run_t${NUM_THREADS}.yaml"
+    CSV="$RUN_DIR/cpu_fft_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
+    collect_run_metadata "$RUN_T_YAML"
+
+    cargo run --release --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_fft -- \
+        --num-threads "$NUM_THREADS" \
+        --lengths "${FFT_BENCH_LENGTHS:-1048576}" \
+        --output "$CSV"
+
+    if command -v uv >/dev/null 2>&1; then
+        uv run python "$SCRIPT_DIR/benchmark_cpu_fft_python.py" \
+            --num-threads "$NUM_THREADS" \
+            --lengths "${FFT_BENCH_LENGTHS:-1048576}" \
+            --output "$CSV"
+    else
+        python3 "$SCRIPT_DIR/benchmark_cpu_fft_python.py" \
+            --num-threads "$NUM_THREADS" \
+            --lengths "${FFT_BENCH_LENGTHS:-1048576}" \
+            --output "$CSV"
+    fi
+    CSVS+=("$CSV")
+done
 
 if command -v uv >/dev/null 2>&1; then
-    uv run python "$SCRIPT_DIR/benchmark_cpu_fft_python.py" \
-        --num-threads "$NUM_THREADS" \
-        --lengths "${FFT_BENCH_LENGTHS:-1024,65536}" \
-        --output "$CSV"
+    uv run python "$SCRIPT_DIR/format_cpu_fft_results.py" "${CSVS[@]}" | tee "$TABLE" \
+        || python3 "$SCRIPT_DIR/format_cpu_fft_results.py" "${CSVS[@]}" | tee "$TABLE"
 else
-    python3 "$SCRIPT_DIR/benchmark_cpu_fft_python.py" \
-        --num-threads "$NUM_THREADS" \
-        --lengths "${FFT_BENCH_LENGTHS:-1024,65536}" \
-        --output "$CSV"
-fi
-
-if command -v uv >/dev/null 2>&1; then
-    uv run python "$SCRIPT_DIR/format_cpu_fft_results.py" "$CSV" | tee "$TABLE" \
-        || python3 "$SCRIPT_DIR/format_cpu_fft_results.py" "$CSV" | tee "$TABLE"
-else
-    python3 "$SCRIPT_DIR/format_cpu_fft_results.py" "$CSV" | tee "$TABLE"
+    python3 "$SCRIPT_DIR/format_cpu_fft_results.py" "${CSVS[@]}" | tee "$TABLE"
 fi
 
 {
@@ -167,9 +184,9 @@ fi
     echo "- Run metadata: \`${RUN_YAML#$PROJECT_DIR/}\`"
     echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
     echo ""
-    echo "Latest run: \`./scripts/run_cpu_fft.sh $NUM_THREADS\`."
+    echo "Latest run: \`./scripts/run_cpu_fft.sh ${THREAD_COUNTS[*]}\`."
     echo ""
-    echo "This file is generated from one CPU FFT run under \`${RUN_DIR#$PROJECT_DIR/}\`."
+    echo "This file is generated from sequential CPU FFT runs under \`${RUN_DIR#$PROJECT_DIR/}\`."
     echo ""
     [[ -n "$TENFERRO_COMMIT" ]] && echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
     [[ -n "$TENFERRO_COMMIT" ]] && echo ""
@@ -180,22 +197,16 @@ fi
         python3 "$SCRIPT_DIR/collect_cpu_info.py" --markdown
     fi
     echo ""
-    echo "## Thread Environment"
-    echo ""
-    for key in \
-        OMP_NUM_THREADS \
-        OMP_THREAD_LIMIT \
-        OMP_DYNAMIC \
-        RAYON_NUM_THREADS \
-        OPENBLAS_NUM_THREADS \
-        GOTO_NUM_THREADS \
-        MKL_NUM_THREADS \
-        VECLIB_MAXIMUM_THREADS \
-        VECLIB_NUM_THREADS \
-        NUMEXPR_NUM_THREADS \
-        BLIS_NUM_THREADS \
-        XLA_FLAGS; do
-        echo "- ${key}: \`${!key:-}\`"
+    echo "## Thread Environments"
+    for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
+        configure_cpu_thread_env "$NUM_THREADS"
+        echo ""
+        echo "### Threads: $NUM_THREADS"
+        echo ""
+        echo "- Run metadata: \`data/results/$BENCHMARK_TARGET_PROFILE/cpu/fft/$BENCHMARK_TIMESTAMP/run_t${NUM_THREADS}.yaml\`"
+        for key in OMP_NUM_THREADS OMP_THREAD_LIMIT OMP_DYNAMIC RAYON_NUM_THREADS OPENBLAS_NUM_THREADS GOTO_NUM_THREADS MKL_NUM_THREADS VECLIB_MAXIMUM_THREADS VECLIB_NUM_THREADS NUMEXPR_NUM_THREADS BLIS_NUM_THREADS XLA_FLAGS; do
+            echo "- ${key}: \`${!key:-}\`"
+        done
     done
     echo ""
     echo "## Timing Discipline"
@@ -205,11 +216,14 @@ fi
     echo "- tenferro-rs immediate rows use one-shot \`TensorFftExt\` calls."
     echo "- tenferro-rs cached rows reuse a caller-owned \`FftExecutor\` across warmups and timed runs."
     echo "- PyTorch rows use \`torch.fft\` after warmup, allowing PyTorch internal planning/cache behavior."
+    echo "- The primary fair comparison is cached \`FftExecutor\` versus warmed \`torch.fft\`; immediate rows are retained only as one-shot diagnostics."
     echo "- This initial suite only measures 1D transforms to avoid row-major/column-major batched-axis layout artifacts."
     echo ""
-    echo "## Threads: $NUM_THREADS"
+    echo "## Threads: ${THREAD_COUNTS[*]}"
     echo ""
-    echo "- CSV: \`${CSV#$PROJECT_DIR/}\`"
+    for CSV in "${CSVS[@]}"; do
+        echo "- CSV: \`${CSV#$PROJECT_DIR/}\`"
+    done
     echo "- Source table: \`${TABLE#$PROJECT_DIR/}\`"
     echo ""
     cat "$TABLE"
@@ -219,7 +233,7 @@ cp "$REPORT" "$LATEST_REPORT"
 
 echo ""
 echo "CPU FFT benchmark complete"
-echo "CSV:      $CSV"
+for CSV in "${CSVS[@]}"; do echo "CSV:      $CSV"; done
 echo "Table:    $TABLE"
 echo "Report:   $REPORT"
 echo "Latest:   $LATEST_REPORT"
