@@ -156,8 +156,15 @@ def tensor_f64(shape: tuple[int, ...], seed: int):
         import torch
 
         indices = torch.arange(math_prod(shape), dtype=torch.int64)
-        result = ((indices * 37 + seed * 11).remainder(2048).to(torch.float64) - 1024.0) / 1024.0
-        return result.reshape(shape)
+        # Match the low 11 bits of the Rust LCG exactly.  The Rust fixture is
+        # loaded as column-major, so reverse/permute dimensions to preserve the
+        # same logical values while keeping a native row-major PyTorch tensor.
+        result = (
+            (indices * 1837 + seed * 335).remainder(2048).to(torch.float64) - 1024.0
+        ) / 1024.0
+        if len(shape) < 2:
+            return result.reshape(shape)
+        return result.reshape(tuple(reversed(shape))).permute(tuple(reversed(range(len(shape))))).contiguous()
 
     return LazyTensor(build)
 
@@ -186,7 +193,7 @@ def well_conditioned(n: int, seed: int):
         import torch
 
         x = tensor_f64((n, n), seed).get().clone()
-        x.diagonal().add_(torch.linspace(2.0, 3.0, n, dtype=torch.float64))
+        x.diagonal().add_(2.0 + torch.arange(n, dtype=torch.float64) / n)
         return x
 
     return LazyTensor(build)
@@ -197,7 +204,7 @@ def well_conditioned_c64(n: int, seed: int):
         import torch
 
         x = tensor_c64((n, n), seed).get().clone()
-        x.diagonal().add_(torch.linspace(3.0, 4.0, n, dtype=torch.float64))
+        x.diagonal().add_(3.0 + torch.arange(n, dtype=torch.float64) / n)
         return x
 
     return LazyTensor(build)
@@ -208,7 +215,7 @@ def lower_triangular(n: int, seed: int):
         import torch
 
         x = torch.tril(0.05 * tensor_f64((n, n), seed).get())
-        x.diagonal().copy_(torch.linspace(2.0, 3.0, n, dtype=torch.float64))
+        x.diagonal().copy_(2.0 + torch.arange(n, dtype=torch.float64) / n)
         return x
 
     return LazyTensor(build)
@@ -218,7 +225,7 @@ def spd(n: int, seed: int):
     def build():
         import torch
 
-        return torch.diag(torch.linspace(2.0, 3.0, n, dtype=torch.float64))
+        return torch.diag(2.0 + torch.arange(n, dtype=torch.float64) / n)
 
     del seed
     return LazyTensor(build)
@@ -228,7 +235,7 @@ def hpd_c64(n: int, seed: int):
     def build():
         import torch
 
-        diagonal = torch.linspace(2.0, 3.0, n, dtype=torch.float64).to(torch.complex128)
+        diagonal = (2.0 + torch.arange(n, dtype=torch.float64) / n).to(torch.complex128)
         return torch.diag(diagonal)
 
     del seed
@@ -354,13 +361,17 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/indexing_layout", "concatenate", "f64", "1048576+1048576", "concatenate along axis 0", lambda: torch.cat((part_a, part_b), dim=0)),
         ("cpu/indexing_layout", "reverse", "f64", "2097152", "reverse axis 0", lambda: torch.flip(base_update, dims=(0,))),
         ("cpu/structural_shape", "transpose", "f64", "4096x4096", "materialized matrix transpose", lambda: structural_matrix.transpose(0, 1).contiguous()),
-        ("cpu/structural_shape", "reshape", "f64", "33554432 -> 8192x4096", "public reshape call; framework-native storage semantics", lambda: reshape_input.reshape(8192, 4096)),
+        ("cpu/structural_shape", "reshape", "f64", "33554432 -> 8192x4096", "materialized reshape; clone makes PyTorch perform the same output-sized write", lambda: reshape_input.reshape(8192, 4096).clone()),
         ("cpu/structural_shape", "broadcast_in_dim", "f64", "8192x1 -> 8192x4096", "materialized broadcast", lambda: broadcast_input.expand(8192, 4096).clone()),
         ("cpu/structural_shape", "cast_f64_f32", "f64->f32", "33554432", "dtype cast", lambda: reshape_input.to(torch.float32)),
         ("cpu/structural_shape", "extract_diagonal", "f64", "8388608x2x2 -> 8388608x2", "batched matrix diagonal extraction", lambda: batched_diagonal_input.diagonal(dim1=1, dim2=2).clone()),
         ("cpu/structural_shape", "embed_diagonal", "f64", "8192 -> 8192x8192", "embed vector as matrix diagonal", lambda: torch.diag(diagonal_input)),
         ("cpu/structural_shape", "tril", "f64", "4096x4096", "lower triangle", lambda: torch.tril(structural_matrix)),
         ("cpu/structural_shape", "triu", "f64", "4096x4096", "upper triangle", lambda: torch.triu(structural_matrix)),
+        ("cpu/view_metadata", "reshape_view", "f64", "33554432 -> 8192x4096", "metadata-only view reshape; no output-sized copy", lambda: reshape_input.reshape(8192, 4096)),
+        ("cpu/view_metadata", "transpose_view", "f64", "4096x4096", "metadata-only transpose view; no output-sized copy", lambda: structural_matrix.transpose(0, 1)),
+        ("cpu/view_metadata", "slice_view", "f64", "4194304 -> 2096128", "metadata-only strided slice view; no output-sized copy", lambda: base_slice[1024:-1024:2]),
+        ("cpu/view_metadata", "broadcast_in_dim_view", "f64", "8192x1 -> 8192x4096", "metadata-only zero-stride broadcast view; no output-sized copy", lambda: broadcast_input.expand(8192, 4096)),
         ("cpu/output_reuse", "add_into", "f64", "33554432", "torch.add out= caller-owned output", lambda: torch.add(x_fast, y_fast, out=reuse_vector_out)),
         ("cpu/output_reuse", "sub_into", "f64", "33554432", "torch.sub out= caller-owned output", lambda: torch.sub(x_fast, y_fast, out=reuse_vector_out)),
         ("cpu/output_reuse", "mul_into", "f64", "33554432", "torch.mul out= caller-owned output", lambda: torch.mul(x_fast, y_fast, out=reuse_vector_out)),
@@ -391,7 +402,7 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/complex", "exp", "c64", "4194304", "complex analytic", lambda: torch.exp(z_exp)),
         ("cpu/complex", "log", "c64", "4194304", "complex analytic", lambda: torch.log(zlog)),
         ("cpu/complex", "dot_general", "c64", "640x640", "complex matrix multiply", lambda: z640a @ z640b),
-        ("cpu/complex", "dot_general_with_conj", "c64", "640x640", "conjugated-lhs complex matrix multiply", lambda: torch.conj_physical(z640a) @ z640b),
+        ("cpu/complex", "dot_general_with_conj", "c64", "640x640", "conjugated-lhs matrix multiply using PyTorch's lazy conjugate view", lambda: torch.conj(z640a) @ z640b),
         ("cpu/complex", "tensordot", "c64", "640x640", "complex matrix contraction over one axis", lambda: torch.tensordot(z640a, z640b, dims=1)),
         ("cpu/complex", "svd", "c64", "160x160", "complex SVD", lambda: torch.linalg.svd(z160, full_matrices=True)),
         ("cpu/complex", "qr", "c64", "256x256", "complex QR", lambda: torch.linalg.qr(z256, mode="reduced")),

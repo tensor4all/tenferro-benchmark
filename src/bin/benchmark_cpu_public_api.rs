@@ -20,7 +20,7 @@ use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
 use tenferro_tensor::{
     CompareDir, DType, DotGeneralAccumulation, DotGeneralConfig, GatherConfig, PadConfig,
     ScatterConfig, SliceConfig, Tensor, TensorAnalytic, TensorDot, TensorElementwise,
-    TensorIndexing, TensorRead, TensorReduction, TensorStructural, TensorWrite,
+    TensorIndexing, TensorRead, TensorReduction, TensorStructural, TensorValue, TensorWrite,
 };
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
@@ -257,7 +257,7 @@ fn cases() -> Vec<Case> {
             "reshape",
             "f64",
             "33554432 -> 8192x4096",
-            "public reshape call; framework-native storage semantics",
+            "materialized reshape output",
             reshape_f64,
         ),
         shape_op(
@@ -290,6 +290,34 @@ fn cases() -> Vec<Case> {
         ),
         shape_op("tril", "f64", "4096x4096", "lower triangle", tril_f64),
         shape_op("triu", "f64", "4096x4096", "upper triangle", triu_f64),
+        view_op(
+            "reshape_view",
+            "f64",
+            "33554432 -> 8192x4096",
+            "metadata-only view reshape; no output-sized copy",
+            reshape_view_f64,
+        ),
+        view_op(
+            "transpose_view",
+            "f64",
+            "4096x4096",
+            "metadata-only transpose view; no output-sized copy",
+            transpose_view_f64,
+        ),
+        view_op(
+            "slice_view",
+            "f64",
+            "4194304 -> 2096128",
+            "metadata-only strided slice view; no output-sized copy",
+            slice_view_f64,
+        ),
+        view_op(
+            "broadcast_in_dim_view",
+            "f64",
+            "8192x1 -> 8192x4096",
+            "metadata-only zero-stride broadcast view; no output-sized copy",
+            broadcast_view_f64,
+        ),
         // Caller-owned output APIs. Read-view spellings share these exact
         // kernels and are mapped to these rows in the coverage manifest.
         reuse(
@@ -552,6 +580,23 @@ fn reuse(
     }
 }
 
+fn view_op(
+    benchmark: &'static str,
+    dtype: &'static str,
+    shape: &'static str,
+    notes: &'static str,
+    run: fn(&mut CpuBackend) -> tenferro_tensor::Result<()>,
+) -> Case {
+    Case {
+        suite: "cpu/view_metadata",
+        benchmark,
+        dtype,
+        shape,
+        notes,
+        run,
+    }
+}
+
 fn concrete_einsum(
     benchmark: &'static str,
     dtype: &'static str,
@@ -624,6 +669,19 @@ fn emit_case(
 }
 
 fn emit_trace_case(writer: &mut impl Write, args: &Args, case: &Case) -> BenchResult<()> {
+    if case.suite == "cpu/view_metadata" {
+        writeln!(
+            writer,
+            "{},{},{},{},\"{}\",tenferro-trace,,,unsupported,\"{}\"",
+            case.suite,
+            case.benchmark,
+            case.dtype,
+            args.num_threads,
+            csv_escape(case.shape),
+            "TensorValue view metadata APIs are concrete-only; traced tensors use graph operations",
+        )?;
+        return Ok(());
+    }
     if case.suite == "cpu/output_reuse" {
         writeln!(
             writer,
@@ -647,6 +705,19 @@ fn emit_trace_case(writer: &mut impl Write, args: &Args, case: &Case) -> BenchRe
             args.num_threads,
             csv_escape(case.shape),
             "TensorEinsumExt is a concrete Tensor API; traced einsum is measured by cpu/einsum",
+        )?;
+        return Ok(());
+    }
+    if case.suite == "cpu/complex" && case.benchmark == "dot_general_with_conj" {
+        writeln!(
+            writer,
+            "{},{},{},{},\"{}\",tenferro-trace,,,unsupported,\"{}\"",
+            case.suite,
+            case.benchmark,
+            case.dtype,
+            args.num_threads,
+            csv_escape(case.shape),
+            "no public TracedTensor dot_general_with_conj API; an explicit conj+dot graph is different work",
         )?;
         return Ok(());
     }
@@ -1187,18 +1258,6 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
                 rhs_batch_dims: vec![],
             },
         )?),
-        ("cpu/complex", "dot_general_with_conj") => {
-            let lhs = traced(tensor_c64(&[640, 640], 1))?.conj()?;
-            one(lhs.dot_general(
-                &traced(tensor_c64(&[640, 640], 2))?,
-                DotGeneralConfig {
-                    lhs_contracting_dims: vec![1],
-                    rhs_contracting_dims: vec![0],
-                    lhs_batch_dims: vec![],
-                    rhs_batch_dims: vec![],
-                },
-            )?)
-        }
         ("cpu/complex", "tensordot") => one(traced(tensor_c64(&[640, 640], 1))?.tensordot(
             &traced(tensor_c64(&[640, 640], 2))?,
             TensorDotAxes::Count(1),
@@ -1479,6 +1538,54 @@ fn tril_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
 }
 fn triu_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.triu(tensor_f64(&[4096, 4096], 1), 0)?);
+    Ok(())
+}
+
+type TensorValueCache = OnceLock<Mutex<HashMap<String, &'static TensorValue>>>;
+
+fn tensor_value_f64(shape: &[usize], seed: u64) -> &'static TensorValue {
+    static CACHE: TensorValueCache = OnceLock::new();
+    let key = format!("{shape:?}:{seed}");
+    let mut entries = CACHE
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .unwrap();
+    if let Some(value) = entries.get(&key) {
+        return value;
+    }
+    let tensor = Tensor::from_vec_col_major(shape.to_vec(), data_f64(shape.iter().product(), seed))
+        .expect("view fixture should initialize");
+    let value: &'static TensorValue = Box::leak(Box::new(TensorValue::from_tensor(tensor)));
+    entries.insert(key, value);
+    value
+}
+
+fn consume_value(value: TensorValue) {
+    black_box(value.shape().len());
+    black_box(value.dtype());
+}
+
+fn reshape_view_f64(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume_value(tensor_value_f64(&[33_554_432], 1).reshape_view([8192, 4096])?);
+    Ok(())
+}
+
+fn transpose_view_f64(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume_value(tensor_value_f64(&[4096, 4096], 1).transpose_view([1, 0])?);
+    Ok(())
+}
+
+fn slice_view_f64(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume_value(tensor_value_f64(&[4_194_304], 1).slice_view(&SliceConfig {
+        starts: vec![1024],
+        limits: vec![4_194_304 - 1024],
+        strides: vec![2],
+    })?);
+    Ok(())
+}
+
+fn broadcast_view_f64(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume_value(tensor_value_f64(&[8192, 1], 1).broadcast_in_dim_view([8192, 4096], [0, 1])?);
     Ok(())
 }
 

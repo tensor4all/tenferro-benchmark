@@ -83,8 +83,9 @@ def tensor_f64(shape: tuple[int, ...], seed: int) -> LazyArray:
         import jax.numpy as jnp
 
         indices = jnp.arange(math_prod(shape), dtype=jnp.int64)
-        values = ((indices * 37 + seed * 11) % 2048).astype(jnp.float64)
-        return ((values - 1024.0) / 1024.0).reshape(shape)
+        # Match the Rust fixture's LCG low bits and column-major logical order.
+        values = ((indices * 1837 + seed * 335) % 2048).astype(jnp.float64)
+        return jnp.reshape((values - 1024.0) / 1024.0, shape, order="F")
 
     return LazyArray(build)
 
@@ -114,7 +115,7 @@ def well_conditioned(n: int, seed: int) -> LazyArray:
         lambda: tensor_f64((n, n), seed)
         .get()
         .at[jnp.diag_indices(n)]
-        .add(jnp.linspace(2.0, 3.0, n, dtype=jnp.float64))
+        .add(2.0 + jnp.arange(n, dtype=jnp.float64) / n)
     )
 
 
@@ -125,7 +126,7 @@ def well_conditioned_c64(n: int, seed: int) -> LazyArray:
         lambda: tensor_c64((n, n), seed)
         .get()
         .at[jnp.diag_indices(n)]
-        .add(jnp.linspace(3.0, 4.0, n, dtype=jnp.float64))
+        .add(3.0 + jnp.arange(n, dtype=jnp.float64) / n)
     )
 
 
@@ -135,7 +136,7 @@ def lower_triangular(n: int, seed: int) -> LazyArray:
     def build():
         value = jnp.tril(0.05 * tensor_f64((n, n), seed).get())
         return value.at[jnp.diag_indices(n)].set(
-            jnp.linspace(2.0, 3.0, n, dtype=jnp.float64)
+            2.0 + jnp.arange(n, dtype=jnp.float64) / n
         )
 
     return LazyArray(build)
@@ -144,7 +145,7 @@ def lower_triangular(n: int, seed: int) -> LazyArray:
 def spd(n: int) -> LazyArray:
     import jax.numpy as jnp
 
-    return LazyArray(lambda: jnp.diag(jnp.linspace(2.0, 3.0, n, dtype=jnp.float64)))
+    return LazyArray(lambda: jnp.diag(2.0 + jnp.arange(n, dtype=jnp.float64) / n))
 
 
 def hpd_c64(n: int) -> LazyArray:
@@ -152,7 +153,7 @@ def hpd_c64(n: int) -> LazyArray:
 
     return LazyArray(
         lambda: jnp.diag(
-            jnp.linspace(2.0, 3.0, n, dtype=jnp.float64).astype(jnp.complex128)
+            (2.0 + jnp.arange(n, dtype=jnp.float64) / n).astype(jnp.complex128)
         )
     )
 
@@ -286,7 +287,7 @@ def make_cases() -> list[Case]:
         (idx, "concatenate", "f64", "1048576+1048576", "concatenate along axis 0", compiled(lambda a, b: jnp.concatenate((a, b)), part_a, part_b)),
         (idx, "reverse", "f64", "2097152", "reverse axis 0", compiled(jnp.flip, update_base)),
         ("cpu/structural_shape", "transpose", "f64", "4096x4096", "materialized matrix transpose", compiled(jnp.transpose, structural_matrix)),
-        ("cpu/structural_shape", "reshape", "f64", "33554432 -> 8192x4096", "public reshape call; framework-native storage semantics", compiled(lambda a: jnp.reshape(a, (8192, 4096)), reshape_input)),
+        ("cpu/structural_shape", "reshape", "f64", "33554432 -> 8192x4096", "materialized reshape; JAX arrays have value semantics and no public strided-view contract", compiled(lambda a: jnp.reshape(a, (8192, 4096)), reshape_input)),
         ("cpu/structural_shape", "broadcast_in_dim", "f64", "8192x1 -> 8192x4096", "materialized broadcast", compiled(lambda a: jnp.broadcast_to(a, (8192, 4096)), broadcast_input)),
         ("cpu/structural_shape", "cast_f64_f32", "f64->f32", "33554432", "dtype cast", compiled(lambda a: a.astype(jnp.float32), reshape_input)),
         ("cpu/structural_shape", "extract_diagonal", "f64", "8388608x2x2 -> 8388608x2", "batched matrix diagonal extraction", compiled(lambda a: jnp.diagonal(a, axis1=1, axis2=2), batched_diagonal_input)),

@@ -1,11 +1,13 @@
 schema_version: 1
 scope:
-  description: Public tenferro-rs numerical tensor operations with a meaningful PyTorch CPU counterpart.
+  description: Operation-level coverage of public tenferro-rs numerical tensor APIs with a meaningful PyTorch CPU counterpart.
   rules:
-    - TypedTensor and TensorRead spellings are aliases when they dispatch to the same backend kernel.
+    - TypedTensor wrappers and TensorRead values backed by an owned contiguous Tensor are aliases only when they dispatch to the same backend kernel.
+    - Non-contiguous TensorRead paths are not aliases; any claimed coverage must name a dedicated view/materialization benchmark.
     - Caller-owned-output APIs are distinct because allocation behavior changes.
     - Graph construction, compilation, fixture allocation, and plan construction are outside timing.
     - Provider-unsupported APIs remain present as explicit unsupported rows.
+    - Thin call-layer spellings are aliases only when they dispatch the same operation; this suite compares operation work, not wrapper-call nanoseconds.
 
 coverage:
   - family: elementwise
@@ -70,6 +72,31 @@ coverage:
     pytorch: Tensor.{transpose,reshape,expand,to,diagonal}; torch.{diag,tril,triu}
     disposition: measured
     benchmarks: cpu/structural_shape::{transpose,reshape,broadcast_in_dim,cast_f64_f32,extract_diagonal,embed_diagonal,tril,triu}
+  - family: view_metadata
+    tenferro_apis:
+      - TensorValue::{transpose_view,reshape_view,slice_view,broadcast_in_dim_view}
+      - TensorOwnedView::{transpose_view,reshape_view,slice_view,broadcast_in_dim_view}
+      - TypedTensorView::{transpose_view,try_reshape,try_slice,try_slice_axis}
+      - TypedTensorViewMut::{transpose_view,try_reshape,try_slice,try_slice_axis}
+    pytorch: Tensor.{transpose,reshape,slicing,expand}
+    disposition: measured
+    benchmarks: cpu/view_metadata
+    reason: Dedicated metadata-only rows compare view creation without mixing it into materialized operation timings; JAX has no public strided-view/aliasing contract.
+  - family: eager_tensor_operation_spellings
+    tenferro_apis:
+      - EagerTensor::{add,sub,mul,neg,exp,reduce_sum,dot_general,dot_general_with_conj,matmul,transpose,reshape,slice,broadcast_in_dim,convert,cast,pad,reverse,gather,scatter,dynamic_slice,concatenate,extract_diag,embed_diag,tril,triu,reduce_prod,reduce_max,reduce_min}
+      - EagerSliceBuilder
+    pytorch: corresponding torch/Tensor operations
+    disposition: alias
+    benchmarks: cpu/public_api operation rows; cpu/cpu_ops matmul rows
+    reason: These immediate call-layer methods dispatch the same measured backend operations. The report labels the concrete column as direct API rather than claiming to measure EagerTensor wrapper overhead.
+  - family: eager_tensor_scalar_scale
+    tenferro_apis:
+      - EagerTensor::{scale_real,scale_complex}
+    pytorch: Tensor multiplied by a scalar
+    disposition: alias
+    benchmarks: cpu/elementwise_reduction/mul; cpu/complex/mul
+    reason: The methods construct a rank-0 scalar and dispatch the measured multiplication operation; scalar construction overhead is intentionally outside the operation-level comparison.
   - family: contiguous_copy
     tenferro_apis:
       - TensorStructural::to_contiguous_read
@@ -173,16 +200,25 @@ coverage:
     pytorch: torch.fft.{fft,ifft,rfft,irfft}
     disposition: measured
     benchmarks: cpu/fft report
+    reason: TensorReadFftExt has dedicated rows because it includes a distinct materialization and one-shot planning path.
 
   - family: linalg
     tenferro_apis:
       - TensorLinalgExt::{svd,qr,lu,solve,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
       - TensorReadLinalgExt::{svd_read,qr_read,lu_read,solve_read,cholesky_read,eigh_read,eig_read,triangular_solve_read,slogdet_read,det_read,inv_read,eigvalsh_read,eigvals_read,pinv_read,pinv_with_rtol_read,norm_read}
-      - EagerTensorLinalgExt::{svd,qr,lu,solve,lstsq,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
+      - TypedTensorLinalgExt::{svd,qr,lu,solve,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals}
+      - EagerTensorLinalgExt::lstsq
       - TracedTensorLinalgExt::{svd,qr,lu,solve,lstsq,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
     pytorch: torch.linalg equivalents
     disposition: measured
     benchmarks: cpu/cpu_ops; cpu/linalg_uncovered
+  - family: eager_linalg_operation_spellings
+    tenferro_apis:
+      - EagerTensorLinalgExt::{svd,qr,lu,solve,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
+    pytorch: torch.linalg equivalents
+    disposition: alias
+    benchmarks: cpu/cpu_ops; cpu/linalg_uncovered
+    reason: These immediate call-layer methods dispatch the same measured linalg operations; lstsq and svd_full remain direct EagerTensor measurements because no concrete spelling exists.
   - family: full_svd
     tenferro_apis:
       - EagerTensorLinalgExt::svd_full

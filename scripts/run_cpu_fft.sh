@@ -3,6 +3,7 @@ set -euo pipefail
 
 # Runs the CPU FFT benchmark suite:
 #   - tenferro-rs TensorFftExt one-shot execution
+#   - tenferro-rs TensorReadFftExt including its documented materialization path
 #   - tenferro-rs FftExecutor with caller-owned plan cache
 #   - tenferro-rs EagerTensorFftExt with a reused eager runtime
 #   - tenferro-rs TracedTensorFftExt with one reused compiled graph
@@ -222,6 +223,7 @@ fi
     echo "- Input tensors are created outside the timed region."
     echo "- Each timed call creates the output tensor."
     echo "- tenferro-rs immediate rows use one-shot \`TensorFftExt\` calls."
+    echo "- tenferro-rs read rows call \`TensorReadFftExt\` on an owned contiguous \`TensorRead\`; its documented materialization and one-shot plan are inside timing."
     echo "- tenferro-rs cached rows reuse a caller-owned \`FftExecutor\` across warmups and timed runs."
     echo "- tenferro-rs eager rows reuse one \`EagerRuntime\` and input \`EagerTensor\`; setup is outside timing."
     echo "- tenferro-rs trace rows construct and compile \`TracedTensorFftExt\` graphs outside timing and reuse the compiled program."

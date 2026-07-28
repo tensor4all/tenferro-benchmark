@@ -11,6 +11,7 @@ from pathlib import Path
 
 BACKEND_ORDER = [
     "tenferro-fft-immediate",
+    "tenferro-fft-read",
     "tenferro-fft-executor-cached",
     "tenferro-fft-eager",
     "tenferro-fft-trace",
@@ -19,6 +20,7 @@ BACKEND_ORDER = [
 
 BACKEND_LABELS = {
     "tenferro-fft-immediate": "tenferro-rs one-shot diagnostic (ms)",
+    "tenferro-fft-read": "tenferro-rs TensorRead API (ms)",
     "tenferro-fft-executor-cached": "tenferro-rs cached primary (ms)",
     "tenferro-fft-eager": "tenferro-rs eager mode (ms)",
     "tenferro-fft-trace": "tenferro-rs trace mode (ms)",
