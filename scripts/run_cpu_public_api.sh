@@ -3,6 +3,7 @@ set -euo pipefail
 
 # Runs the CPU public API coverage benchmark suite:
 #   - tenferro-rs eager public Tensor/TensorLinalgExt APIs
+#   - tenferro-rs traced APIs, compiled once and executed repeatedly
 #   - PyTorch Python closest public equivalents where available
 
 if [[ $# -eq 0 ]]; then
@@ -220,9 +221,11 @@ fi
     echo "## Timing Discipline"
     echo ""
     echo "- Input fixture tensors are created during warmup and outside the measured region for both tenferro-rs and PyTorch."
+    echo "- tenferro-rs trace graphs are constructed and compiled outside the measured region; each compiled graph is reused for every warmup and timed run."
     echo "- Each timed call creates the output tensor."
     echo "- PyTorch view-producing indexing operations are cloned inside the timed region to match tenferro-rs owned, materialized outputs."
     echo "- PyTorch complex conjugation uses \`torch.conj_physical\` to match tenferro-rs physical output rather than the lazy conjugate view from \`torch.conj\`."
+    echo "- \`dynamic_update_slice\` reports trace mode as \`unsupported\` because tenferro-rs does not currently expose a corresponding \`TracedTensor\` API."
     echo "- \`full_piv_lu\` and \`full_piv_lu_solve\` are excluded because PyTorch has no direct public full-pivot equivalent; substituting \`torch.linalg.solve\` would compare different algorithms."
     echo ""
     echo "## Threads: ${THREAD_COUNTS[*]}"
