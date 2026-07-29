@@ -42,6 +42,15 @@ kernel. `16x8-p1-v1` had the lowest observed transpose median (1.463 ms) and
 is the development default. This M5 choice remains provisional until the
 required M4 sweep.
 
+A queue-throughput diagnostic separated kernel work from one-submit-per-call
+latency. Across three warmed 101-iteration passes sharing one final
+synchronization, `16x8-p1-v1` had a 0.427 ms median per transpose versus
+0.516 ms for `generic` and 0.432 ms for the next-best `32x8-p1-v1`.
+The selected tile is therefore about 17% faster than the generic kernel and
+matches the roughly 0.42 ms Metal device-copy reference when dispatches share
+a command buffer. The larger synchronized single-call number is dominated by
+CubeCL/wgpu command encoding and submission latency, not the transpose kernel.
+
 The selected-tile rerun kept every tenferro wgpu row within the campaign's
 +20% stop-the-line limit relative to the entry baseline. The direct 2D
 transpose moved from 1.472 ms to 1.486 ms (about +1%). The dimension-fusion
