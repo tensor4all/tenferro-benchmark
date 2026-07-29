@@ -50,6 +50,9 @@ The selected tile is therefore about 17% faster than the generic kernel and
 matches the roughly 0.42 ms Metal device-copy reference when dispatches share
 a command buffer. The larger synchronized single-call number is dominated by
 CubeCL/wgpu command encoding and submission latency, not the transpose kernel.
+The same diagnostic justified reinstating the compact batched-transpose path:
+for `mac_transpose_3d_102`, its 0.405 ms median was 17% below the generic
+kernel's 0.490 ms median even though per-call synchronized medians were flat.
 
 The selected-tile rerun kept every tenferro wgpu row within the campaign's
 +20% stop-the-line limit relative to the entry baseline. The direct 2D
