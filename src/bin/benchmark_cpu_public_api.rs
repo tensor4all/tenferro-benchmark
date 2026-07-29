@@ -7,7 +7,7 @@ use std::env;
 use std::fs::OpenOptions;
 use std::hint::black_box;
 use std::io::{BufWriter, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Instant;
 
@@ -31,9 +31,111 @@ const EW_SLOW_N: usize = 4_194_304;
 
 struct Args {
     output: PathBuf,
+    attribution_output: Option<PathBuf>,
     num_threads: usize,
     runs: usize,
     warmups: usize,
+    execution_filter: ExecutionFilter,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ExecutionFilter {
+    Both,
+    Direct,
+    Trace,
+}
+
+impl ExecutionFilter {
+    fn parse(value: Option<&str>) -> BenchResult<Self> {
+        match value.unwrap_or("both") {
+            "" | "both" => Ok(Self::Both),
+            "direct" => Ok(Self::Direct),
+            "trace" => Ok(Self::Trace),
+            value => Err(format!(
+                "unsupported PUBLIC_API_EXECUTION_FILTER={value}; expected both, direct, or trace"
+            )
+            .into()),
+        }
+    }
+
+    const fn runs_direct(self) -> bool {
+        matches!(self, Self::Both | Self::Direct)
+    }
+
+    const fn runs_trace(self) -> bool {
+        matches!(self, Self::Both | Self::Trace)
+    }
+}
+
+struct AttributionRow<'a> {
+    suite: &'a str,
+    benchmark: &'a str,
+    path: &'a str,
+    stage: &'a str,
+    threads: usize,
+    sample: usize,
+    elapsed_ms: f64,
+}
+
+fn write_attribution_header(writer: &mut impl Write) -> std::io::Result<()> {
+    writeln!(
+        writer,
+        "suite,benchmark,path,stage,threads,sample,elapsed_ms"
+    )
+}
+
+fn write_attribution_row(writer: &mut impl Write, row: &AttributionRow<'_>) -> std::io::Result<()> {
+    writeln!(
+        writer,
+        "{},{},{},{},{},{},{:.6}",
+        row.suite, row.benchmark, row.path, row.stage, row.threads, row.sample, row.elapsed_ms,
+    )
+}
+
+struct AttributionSink {
+    writer: BufWriter<std::fs::File>,
+    threads: usize,
+}
+
+impl AttributionSink {
+    fn open(path: &Path, threads: usize) -> BenchResult<Self> {
+        let file = OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .write(true)
+            .open(path)?;
+        let mut writer = BufWriter::new(file);
+        write_attribution_header(&mut writer)?;
+        Ok(Self { writer, threads })
+    }
+
+    fn record(
+        &mut self,
+        case: &Case,
+        path: &'static str,
+        stage: &'static str,
+        sample: usize,
+        elapsed: std::time::Duration,
+    ) -> BenchResult<()> {
+        write_attribution_row(
+            &mut self.writer,
+            &AttributionRow {
+                suite: case.suite,
+                benchmark: case.benchmark,
+                path,
+                stage,
+                threads: self.threads,
+                sample,
+                elapsed_ms: elapsed.as_secs_f64() * 1000.0,
+            },
+        )?;
+        Ok(())
+    }
+
+    fn flush(&mut self) -> BenchResult<()> {
+        self.writer.flush()?;
+        Ok(())
+    }
 }
 
 struct Case {
@@ -61,6 +163,11 @@ fn main() -> BenchResult<()> {
     }
 
     let mut backend = cpu_backend_from_env()?;
+    let mut attribution = args
+        .attribution_output
+        .as_ref()
+        .map(|path| AttributionSink::open(path, args.num_threads))
+        .transpose()?;
     let suite_filter = env::var("PUBLIC_API_SUITE_FILTER").ok();
     let benchmark_filter = env::var("PUBLIC_API_BENCHMARK_FILTER").ok();
     for case in cases().into_iter().filter(|case| {
@@ -75,9 +182,18 @@ fn main() -> BenchResult<()> {
         });
         suite_matches && benchmark_matches
     }) {
-        emit_case(&mut writer, &args, &mut backend, &case)?;
+        emit_case(
+            &mut writer,
+            &args,
+            &mut backend,
+            &case,
+            attribution.as_mut(),
+        )?;
     }
     writer.flush()?;
+    if let Some(attribution) = attribution.as_mut() {
+        attribution.flush()?;
+    }
     Ok(())
 }
 
@@ -107,6 +223,10 @@ fn parse_args() -> BenchResult<Args> {
         .to_ascii_lowercase();
     Ok(Args {
         output: output.ok_or("--output is required")?,
+        attribution_output: env::var("PUBLIC_API_ATTRIBUTION_OUTPUT")
+            .ok()
+            .filter(|value| !value.is_empty())
+            .map(PathBuf::from),
         num_threads: num_threads
             .or_else(|| env::var("RAYON_NUM_THREADS").ok()?.parse::<usize>().ok())
             .unwrap_or(1),
@@ -118,6 +238,9 @@ fn parse_args() -> BenchResult<Args> {
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
             .unwrap_or(3),
+        execution_filter: ExecutionFilter::parse(
+            env::var("PUBLIC_API_EXECUTION_FILTER").ok().as_deref(),
+        )?,
     })
 }
 
@@ -642,39 +765,49 @@ fn emit_case(
     args: &Args,
     backend: &mut CpuBackend,
     case: &Case,
+    mut attribution: Option<&mut AttributionSink>,
 ) -> BenchResult<()> {
-    match time_case(args, backend, case.run) {
-        Ok((median_ms, iqr_ms)) => {
-            writeln!(
-                writer,
-                "{},{},{},{},\"{}\",tenferro-eager,{median_ms:.6},{iqr_ms:.6},ok,\"{}\"",
-                case.suite,
-                case.benchmark,
-                case.dtype,
-                args.num_threads,
-                csv_escape(case.shape),
-                csv_escape(case.notes),
-            )?;
-        }
-        Err(err) => {
-            let status = error_status(&err.to_string());
-            writeln!(
-                writer,
-                "{},{},{},{},\"{}\",tenferro-eager,,,{status},\"{}\"",
-                case.suite,
-                case.benchmark,
-                case.dtype,
-                args.num_threads,
-                csv_escape(case.shape),
-                csv_escape(&err.to_string()),
-            )?;
+    if args.execution_filter.runs_direct() {
+        match time_case(args, backend, case, attribution.as_deref_mut()) {
+            Ok((median_ms, iqr_ms)) => {
+                writeln!(
+                    writer,
+                    "{},{},{},{},\"{}\",tenferro-eager,{median_ms:.6},{iqr_ms:.6},ok,\"{}\"",
+                    case.suite,
+                    case.benchmark,
+                    case.dtype,
+                    args.num_threads,
+                    csv_escape(case.shape),
+                    csv_escape(case.notes),
+                )?;
+            }
+            Err(err) => {
+                let status = error_status(&err.to_string());
+                writeln!(
+                    writer,
+                    "{},{},{},{},\"{}\",tenferro-eager,,,{status},\"{}\"",
+                    case.suite,
+                    case.benchmark,
+                    case.dtype,
+                    args.num_threads,
+                    csv_escape(case.shape),
+                    csv_escape(&err.to_string()),
+                )?;
+            }
         }
     }
-    emit_trace_case(writer, args, case)?;
+    if args.execution_filter.runs_trace() {
+        emit_trace_case(writer, args, case, attribution.as_deref_mut())?;
+    }
     Ok(())
 }
 
-fn emit_trace_case(writer: &mut impl Write, args: &Args, case: &Case) -> BenchResult<()> {
+fn emit_trace_case(
+    writer: &mut impl Write,
+    args: &Args,
+    case: &Case,
+    attribution: Option<&mut AttributionSink>,
+) -> BenchResult<()> {
     if case.suite == "cpu/view_metadata" {
         writeln!(
             writer,
@@ -741,7 +874,7 @@ fn emit_trace_case(writer: &mut impl Write, args: &Args, case: &Case) -> BenchRe
         return Ok(());
     }
 
-    match time_trace_case(args, case) {
+    match time_trace_case(args, case, attribution) {
         Ok((median_ms, iqr_ms)) => {
             writeln!(
                 writer,
@@ -774,37 +907,68 @@ fn emit_trace_case(writer: &mut impl Write, args: &Args, case: &Case) -> BenchRe
 fn time_case(
     args: &Args,
     backend: &mut CpuBackend,
-    run: fn(&mut CpuBackend) -> tenferro_tensor::Result<()>,
+    case: &Case,
+    mut attribution: Option<&mut AttributionSink>,
 ) -> BenchResult<(f64, f64)> {
     for _ in 0..args.warmups {
-        run(backend)?;
+        (case.run)(backend)?;
     }
     let mut times = Vec::with_capacity(args.runs);
-    for _ in 0..args.runs {
+    for sample in 0..args.runs {
         let start = Instant::now();
-        run(backend)?;
-        times.push(start.elapsed().as_secs_f64() * 1000.0);
+        (case.run)(backend)?;
+        let elapsed = start.elapsed();
+        if let Some(attribution) = attribution.as_deref_mut() {
+            attribution.record(case, "direct", "steady_execute", sample, elapsed)?;
+        }
+        times.push(elapsed.as_secs_f64() * 1000.0);
     }
     Ok(median_iqr(&times))
 }
 
-fn time_trace_case(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
+fn time_trace_case(
+    args: &Args,
+    case: &Case,
+    mut attribution: Option<&mut AttributionSink>,
+) -> BenchResult<(f64, f64)> {
     // Fixture creation, graph construction, and compilation are deliberately
     // outside the measured region. Timings cover execution of the reused
     // compiled graph, including creation of its owned output tensors.
+    let start = Instant::now();
     let outputs = build_trace_case(case)?;
-    let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
-    let program = GraphCompiler::new().compile_many(&output_refs)?;
-    let runtime = cpu_trace_runtime()?;
-
-    for _ in 0..args.warmups {
-        consume_many(runtime.run_compiled(&program, &[])?);
+    if let Some(attribution) = attribution.as_deref_mut() {
+        attribution.record(case, "trace", "graph_build", 0, start.elapsed())?;
     }
-    let mut times = Vec::with_capacity(args.runs);
-    for _ in 0..args.runs {
+    let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
+    let start = Instant::now();
+    let program = GraphCompiler::new().compile_many(&output_refs)?;
+    if let Some(attribution) = attribution.as_deref_mut() {
+        attribution.record(case, "trace", "compile", 0, start.elapsed())?;
+    }
+    let start = Instant::now();
+    let runtime = cpu_trace_runtime()?;
+    if let Some(attribution) = attribution.as_deref_mut() {
+        attribution.record(case, "trace", "runtime_build", 0, start.elapsed())?;
+    }
+
+    for warmup in 0..args.warmups {
         let start = Instant::now();
         consume_many(runtime.run_compiled(&program, &[])?);
-        times.push(start.elapsed().as_secs_f64() * 1000.0);
+        if warmup == 0 {
+            if let Some(attribution) = attribution.as_deref_mut() {
+                attribution.record(case, "trace", "first_execute", 0, start.elapsed())?;
+            }
+        }
+    }
+    let mut times = Vec::with_capacity(args.runs);
+    for sample in 0..args.runs {
+        let start = Instant::now();
+        consume_many(runtime.run_compiled(&program, &[])?);
+        let elapsed = start.elapsed();
+        if let Some(attribution) = attribution.as_deref_mut() {
+            attribution.record(case, "trace", "steady_execute", sample, elapsed)?;
+        }
+        times.push(elapsed.as_secs_f64() * 1000.0);
     }
     Ok(median_iqr(&times))
 }
@@ -2004,5 +2168,51 @@ mod tests {
         }
 
         assert!(nonzero_off_diagonal > 0);
+    }
+
+    #[test]
+    fn execution_filter_defaults_to_both_and_accepts_explicit_paths() {
+        let both = ExecutionFilter::parse(None).unwrap();
+        assert!(both.runs_direct());
+        assert!(both.runs_trace());
+
+        let direct = ExecutionFilter::parse(Some("direct")).unwrap();
+        assert!(direct.runs_direct());
+        assert!(!direct.runs_trace());
+
+        let trace = ExecutionFilter::parse(Some("trace")).unwrap();
+        assert!(!trace.runs_direct());
+        assert!(trace.runs_trace());
+    }
+
+    #[test]
+    fn execution_filter_rejects_unknown_values() {
+        let error = ExecutionFilter::parse(Some("eager")).unwrap_err();
+        assert!(error.to_string().contains("PUBLIC_API_EXECUTION_FILTER"));
+    }
+
+    #[test]
+    fn attribution_csv_has_stable_stage_identity() {
+        let mut csv = Vec::new();
+        write_attribution_header(&mut csv).unwrap();
+        write_attribution_row(
+            &mut csv,
+            &AttributionRow {
+                suite: "cpu/linalg_uncovered",
+                benchmark: "eigvals",
+                path: "trace",
+                stage: "compile",
+                threads: 4,
+                sample: 0,
+                elapsed_ms: 1.25,
+            },
+        )
+        .unwrap();
+
+        assert_eq!(
+            String::from_utf8(csv).unwrap(),
+            "suite,benchmark,path,stage,threads,sample,elapsed_ms\n\
+             cpu/linalg_uncovered,eigvals,trace,compile,4,0,1.250000\n"
+        );
     }
 }
