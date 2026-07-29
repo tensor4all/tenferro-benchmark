@@ -115,7 +115,7 @@ impl AttributionSink {
         path: &'static str,
         stage: &'static str,
         sample: usize,
-        elapsed: std::time::Duration,
+        elapsed_ms: f64,
     ) -> BenchResult<()> {
         write_attribution_row(
             &mut self.writer,
@@ -126,7 +126,7 @@ impl AttributionSink {
                 stage,
                 threads: self.threads,
                 sample,
-                elapsed_ms: elapsed.as_secs_f64() * 1000.0,
+                elapsed_ms,
             },
         )?;
         Ok(())
@@ -797,7 +797,7 @@ fn emit_case(
         }
     }
     if args.execution_filter.runs_trace() {
-        emit_trace_case(writer, args, case, attribution.as_deref_mut())?;
+        emit_trace_case(writer, args, case, attribution)?;
     }
     Ok(())
 }
@@ -908,20 +908,21 @@ fn time_case(
     args: &Args,
     backend: &mut CpuBackend,
     case: &Case,
-    mut attribution: Option<&mut AttributionSink>,
+    attribution: Option<&mut AttributionSink>,
 ) -> BenchResult<(f64, f64)> {
     for _ in 0..args.warmups {
         (case.run)(backend)?;
     }
     let mut times = Vec::with_capacity(args.runs);
-    for sample in 0..args.runs {
+    for _ in 0..args.runs {
         let start = Instant::now();
         (case.run)(backend)?;
-        let elapsed = start.elapsed();
-        if let Some(attribution) = attribution.as_deref_mut() {
-            attribution.record(case, "direct", "steady_execute", sample, elapsed)?;
+        times.push(start.elapsed().as_secs_f64() * 1000.0);
+    }
+    if let Some(attribution) = attribution {
+        for (sample, &elapsed_ms) in times.iter().enumerate() {
+            attribution.record(case, "direct", "steady_execute", sample, elapsed_ms)?;
         }
-        times.push(elapsed.as_secs_f64() * 1000.0);
     }
     Ok(median_iqr(&times))
 }
@@ -929,46 +930,46 @@ fn time_case(
 fn time_trace_case(
     args: &Args,
     case: &Case,
-    mut attribution: Option<&mut AttributionSink>,
+    attribution: Option<&mut AttributionSink>,
 ) -> BenchResult<(f64, f64)> {
     // Fixture creation, graph construction, and compilation are deliberately
     // outside the measured region. Timings cover execution of the reused
     // compiled graph, including creation of its owned output tensors.
     let start = Instant::now();
     let outputs = build_trace_case(case)?;
-    if let Some(attribution) = attribution.as_deref_mut() {
-        attribution.record(case, "trace", "graph_build", 0, start.elapsed())?;
-    }
+    let graph_build_ms = start.elapsed().as_secs_f64() * 1000.0;
     let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
     let start = Instant::now();
     let program = GraphCompiler::new().compile_many(&output_refs)?;
-    if let Some(attribution) = attribution.as_deref_mut() {
-        attribution.record(case, "trace", "compile", 0, start.elapsed())?;
-    }
+    let compile_ms = start.elapsed().as_secs_f64() * 1000.0;
     let start = Instant::now();
     let runtime = cpu_trace_runtime()?;
-    if let Some(attribution) = attribution.as_deref_mut() {
-        attribution.record(case, "trace", "runtime_build", 0, start.elapsed())?;
-    }
+    let runtime_build_ms = start.elapsed().as_secs_f64() * 1000.0;
 
+    let mut first_execute_ms = None;
     for warmup in 0..args.warmups {
         let start = Instant::now();
         consume_many(runtime.run_compiled(&program, &[])?);
         if warmup == 0 {
-            if let Some(attribution) = attribution.as_deref_mut() {
-                attribution.record(case, "trace", "first_execute", 0, start.elapsed())?;
-            }
+            first_execute_ms = Some(start.elapsed().as_secs_f64() * 1000.0);
         }
     }
     let mut times = Vec::with_capacity(args.runs);
-    for sample in 0..args.runs {
+    for _ in 0..args.runs {
         let start = Instant::now();
         consume_many(runtime.run_compiled(&program, &[])?);
-        let elapsed = start.elapsed();
-        if let Some(attribution) = attribution.as_deref_mut() {
-            attribution.record(case, "trace", "steady_execute", sample, elapsed)?;
+        times.push(start.elapsed().as_secs_f64() * 1000.0);
+    }
+    if let Some(attribution) = attribution {
+        attribution.record(case, "trace", "graph_build", 0, graph_build_ms)?;
+        attribution.record(case, "trace", "compile", 0, compile_ms)?;
+        attribution.record(case, "trace", "runtime_build", 0, runtime_build_ms)?;
+        if let Some(elapsed_ms) = first_execute_ms {
+            attribution.record(case, "trace", "first_execute", 0, elapsed_ms)?;
         }
-        times.push(elapsed.as_secs_f64() * 1000.0);
+        for (sample, &elapsed_ms) in times.iter().enumerate() {
+            attribution.record(case, "trace", "steady_execute", sample, elapsed_ms)?;
+        }
     }
     Ok(median_iqr(&times))
 }

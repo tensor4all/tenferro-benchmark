@@ -121,6 +121,10 @@ CARGO_TARGET_DIR="$TARGET" \
 
 Run stage attribution for one row and one path:
 
+The publication wrapper rejects both diagnostic variables so a filtered or
+multi-invocation run cannot overwrite the latest report or truncate one shared
+attribution file. Invoke the Rust binary directly as shown below.
+
 ```bash
 PUBLIC_API_SUITE_FILTER=cpu/linalg_uncovered \
 PUBLIC_API_BENCHMARK_FILTER=eigvals \
