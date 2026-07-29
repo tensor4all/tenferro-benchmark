@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 
 SUITE_ID_RE = re.compile(r"^(cpu|gpu)/([a-z0-9][a-z0-9_.-]*)$")
-TARGET_PROFILE_RE = re.compile(r"^(mac-cpu|amd-cpu|nvidia-gpu)$")
+TARGET_PROFILE_RE = re.compile(r"^(mac-cpu|mac-gpu|amd-cpu|nvidia-gpu)$")
 
 
 @dataclass(frozen=True)

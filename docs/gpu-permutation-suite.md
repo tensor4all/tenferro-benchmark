@@ -4,6 +4,75 @@ Status: implemented. This document defines `gpu/permutation`, the CUDA port
 of [`cpu/permutation`](permutation-suite.md). Read that document first; this
 one only restates what differs on CUDA.
 
+## mac-gpu profile (wgpu/Metal entry gate)
+
+Issue #1507 adds `benchmarks/gpu/permutation-mac.yaml` as a profile-first
+entry gate. The profile uses F32 Metal-sized patterns from
+`data/instances/gpu_permutation_mac_patterns.json` and writes its latest
+report to `result/mac-gpu/gpu/permutation.md`. No native kernel optimization
+may begin until this profile has produced a correctness-checked baseline.
+
+The maintained columns are the pre-optimization
+`tenferro-webgpu-transpose-baseline`, the public
+`tenferro-webgpu-to-contiguous` path, PyTorch MPS, optional JAX Metal, and a
+Metal device-to-device copy ceiling. Each timed call is followed by explicit
+device synchronization. Correctness downloads and JAX compilation are
+outside the timed interval. Missing JAX Metal support is recorded as
+`not_configured`; CPU fallback is forbidden.
+
+The first baseline was collected on an **Apple M5 Max**, which is an accepted
+development substitute for this issue and is recorded truthfully in
+`run.yaml`. It does not replace the final Apple M4 tile sweep.
+
+The profile uses about 15 million F32 elements (roughly 60 MiB per tensor).
+This stays below the pre-optimization kernel's one-dimensional CubeCL
+dispatch ceiling of 65,535 workgroups at 256 elements per workgroup, allowing
+the baseline kernel itself to complete before dimension fusion is introduced.
+
+Development and pre-merge verification use a Linux A100 with both CUDA and
+wgpu/Vulkan runtimes. Optimization decisions are judged against the Metal
+baseline. The final validation is an Apple M4 sweep over the compile-time tile
+parameter, followed by a rerun of the selected tile against that baseline.
+
+The development sweep on M5 tested `generic`, `8x8-p1-v1`,
+`16x8-p1-v1`, `16x8-p1-v2`, `32x8-p1-v1`, `32x8-p1-v2`, and
+`32x8-p1-v4`. The 2D transpose medians were all within 0.02 ms because this
+profile times fresh destination allocation and synchronization as well as the
+kernel. `16x8-p1-v1` had the lowest observed transpose median (1.463 ms) and
+is the development default. This M5 choice remains provisional until the
+required M4 sweep.
+
+A queue-throughput diagnostic separated kernel work from one-submit-per-call
+latency. Across three warmed 101-iteration passes sharing one final
+synchronization, `16x8-p1-v1` had a 0.427 ms median per transpose versus
+0.516 ms for `generic` and 0.432 ms for the next-best `32x8-p1-v1`.
+The selected tile is therefore about 17% faster than the generic kernel and
+matches the roughly 0.42 ms Metal device-copy reference when dispatches share
+a command buffer. The larger synchronized single-call number is dominated by
+CubeCL/wgpu command encoding and submission latency, not the transpose kernel.
+The same diagnostic justified reinstating the compact batched-transpose path:
+for `mac_transpose_3d_102`, its 0.405 ms median was 17% below the generic
+kernel's 0.490 ms median even though per-call synchronized medians were flat.
+
+The selected-tile rerun kept every tenferro wgpu row within the campaign's
++20% stop-the-line limit relative to the entry baseline. The direct 2D
+transpose moved from 1.472 ms to 1.486 ms (about +1%). The dimension-fusion
+cases improved materially: `mac_tn_contiguous` moved from 2.616 ms to
+1.485 ms, and `mac_tn_scattered` view materialization moved from 2.648 ms
+to 1.455 ms (about 43% and 45% faster, respectively).
+
+Both tenferro and PyTorch MPS allocate a fresh destination on every timed
+call. PyTorch's current MPS copy implementation uses a 2D strided dispatch and
+specialized inner-contiguous/16-byte copy paths. Consequently, framework
+medians now have matched destination-allocation semantics, but remain
+end-to-end host-API measurements rather than isolated kernel timings.
+
+The Linux A100 validation command must exercise both CUDA and wgpu/Vulkan.
+During the M5 development run the configured A100 SSH endpoints were
+unreachable (VPN/internal DNS unavailable), so the dual-runtime execution
+remains a required pre-merge check rather than being silently replaced by a
+macOS compile.
+
 ## Purpose
 
 Measure the cost of materializing a strided/permuted `f64` tensor view into

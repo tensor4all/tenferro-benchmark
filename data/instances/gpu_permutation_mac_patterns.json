@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "index_base": 0,
+  "semantics": "out[i0,...,ik] = src[i_perm0,...,i_permk]",
+  "data": "deterministic_index_value",
+  "notes": "Metal F32 patterns sized for stable device measurements without assuming A100-scale memory.",
+  "patterns": [
+    {
+      "id": "mac_memcpy_1d", "label": "60 MiB device copy", "dtype": "f32",
+      "shape": [15728640], "perm": [0],
+      "src_layout": {"kind": "col_major"}, "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["memcpy-metal-d2d"]
+    },
+    {
+      "id": "mac_transpose_2d", "label": "4096x3840 transpose [1,0]", "dtype": "f32",
+      "shape": [4096, 3840], "perm": [1, 0],
+      "src_layout": {"kind": "col_major"}, "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["tenferro-webgpu-transpose-baseline", "tenferro-webgpu-to-contiguous", "pytorch-mps", "jax-metal"]
+    },
+    {
+      "id": "mac_transpose_3d_201", "label": "256x256x240 transpose [2,0,1]", "dtype": "f32",
+      "shape": [256, 256, 240], "perm": [2, 0, 1],
+      "src_layout": {"kind": "col_major"}, "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["tenferro-webgpu-transpose-baseline", "tenferro-webgpu-to-contiguous", "pytorch-mps", "jax-metal"]
+    },
+    {
+      "id": "mac_transpose_3d_102", "label": "256x256x240 transpose [1,0,2]", "dtype": "f32",
+      "shape": [256, 256, 240], "perm": [1, 0, 2],
+      "src_layout": {"kind": "col_major"}, "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["tenferro-webgpu-transpose-baseline", "tenferro-webgpu-to-contiguous", "pytorch-mps", "jax-metal"]
+    },
+    {
+      "id": "mac_rotation_6d", "label": "64x32x32x15x4x4 rotation", "dtype": "f32",
+      "shape": [64, 32, 32, 15, 4, 4], "perm": [5, 0, 4, 1, 3, 2],
+      "src_layout": {"kind": "col_major"}, "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["tenferro-webgpu-transpose-baseline", "tenferro-webgpu-to-contiguous", "pytorch-mps", "jax-metal"]
+    },
+    {
+      "id": "mac_reverse_21d", "label": "21D 15x2^20 reverse", "dtype": "f32",
+      "shape": [15,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+      "perm": [20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0],
+      "src_layout": {"kind": "col_major"}, "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["tenferro-webgpu-transpose-baseline", "tenferro-webgpu-to-contiguous", "pytorch-mps", "jax-metal"]
+    },
+    {
+      "id": "mac_reverse_15d_3", "label": "15D 3^15 reverse", "dtype": "f32",
+      "shape": [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+      "perm": [14,13,12,11,10,9,8,7,6,5,4,3,2,1,0],
+      "src_layout": {"kind": "col_major"}, "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["tenferro-webgpu-transpose-baseline", "tenferro-webgpu-to-contiguous", "pytorch-mps", "jax-metal"]
+    },
+    {
+      "id": "mac_cyclic_15d_3", "label": "15D 3^15 cyclic", "dtype": "f32",
+      "shape": [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+      "perm": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,0],
+      "src_layout": {"kind": "col_major"}, "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["tenferro-webgpu-transpose-baseline", "tenferro-webgpu-to-contiguous", "pytorch-mps", "jax-metal"]
+    },
+    {
+      "id": "mac_tn_scattered", "label": "21D scattered source -> col-major", "dtype": "f32",
+      "shape": [15,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+      "perm": [0,1,2,3,19,4,20,5,6,7,8,9,10,11,12,13,14,15,16,17,18],
+      "src_layout": {"kind": "explicit_strides", "strides": [1,15,30,60,3932160,120,7864320,240,480,960,1920,3840,7680,15360,30720,61440,122880,245760,491520,983040,1966080]},
+      "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["tenferro-webgpu-to-contiguous", "pytorch-mps", "jax-metal"]
+    },
+    {
+      "id": "mac_tn_contiguous", "label": "21D contiguous source, TN permutation", "dtype": "f32",
+      "shape": [15,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+      "perm": [0,1,2,3,19,4,20,5,6,7,8,9,10,11,12,13,14,15,16,17,18],
+      "src_layout": {"kind": "col_major"}, "dst_layout": {"kind": "col_major"},
+      "participants_gpu": ["tenferro-webgpu-transpose-baseline", "tenferro-webgpu-to-contiguous", "pytorch-mps", "jax-metal"]
+    }
+  ]
+}

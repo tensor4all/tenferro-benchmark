@@ -68,7 +68,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "kind": { "enum": ["cpu", "cuda"] },
+        "kind": { "enum": ["cpu", "cuda", "metal"] },
         "ordinal": { "type": "integer", "minimum": 0 }
       }
     },
