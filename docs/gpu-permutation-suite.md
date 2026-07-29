@@ -34,6 +34,26 @@ wgpu/Vulkan runtimes. Optimization decisions are judged against the Metal
 baseline. The final validation is an Apple M4 sweep over the compile-time tile
 parameter, followed by a rerun of the selected tile against that baseline.
 
+The development sweep on M5 tested `generic`, `8x8-p1-v1`,
+`16x8-p1-v1`, `16x8-p1-v2`, `32x8-p1-v1`, `32x8-p1-v2`, and
+`32x8-p1-v4`. The 2D transpose medians were all within 0.02 ms because this
+profile times fresh destination allocation and synchronization as well as the
+kernel. `16x8-p1-v1` had the lowest observed transpose median (1.463 ms) and
+is the development default. This M5 choice remains provisional until the
+required M4 sweep.
+
+PyTorch MPS reuses a destination allocation in this profile, whereas both
+tenferro columns allocate a fresh output on every timed call. PyTorch's current
+MPS copy implementation also uses a 2D strided dispatch and specialized
+inner-contiguous/16-byte copy paths. Consequently, framework medians identify
+an end-to-end gap but must not be interpreted as isolated kernel timings.
+
+The Linux A100 validation command must exercise both CUDA and wgpu/Vulkan.
+During the M5 development run the configured A100 SSH endpoints were
+unreachable (VPN/internal DNS unavailable), so the dual-runtime execution
+remains a required pre-merge check rather than being silently replaced by a
+macOS compile.
+
 ## Purpose
 
 Measure the cost of materializing a strided/permuted `f64` tensor view into

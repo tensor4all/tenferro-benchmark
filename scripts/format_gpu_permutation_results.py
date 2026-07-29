@@ -51,7 +51,7 @@ BACKEND_LABELS = {
     "tenferro-cuda-to-contiguous": "tenferro-rs CUDA to_contiguous (ms)",
     "cutensor": "cuTENSOR (ms)",
     "pytorch-cuda": "PyTorch CUDA (ms)",
-    "tenferro-webgpu-transpose-baseline": "tenferro-rs wgpu baseline (ms)",
+    "tenferro-webgpu-transpose-baseline": "tenferro-rs wgpu native (ms)",
     "tenferro-webgpu-to-contiguous": "tenferro-rs wgpu to_contiguous (ms)",
     "pytorch-mps": "PyTorch MPS (ms)",
     "jax-metal": "JAX Metal (ms)",
@@ -205,22 +205,25 @@ def format_markdown(
 
     if is_metal:
         lines.append(
-            "`tenferro-webgpu-transpose-baseline` is the unoptimized native "
-            "CubeCL structural path captured before kernel work. "
+            "`tenferro-webgpu-transpose-baseline` is the historical profile identifier "
+            "for the native CubeCL structural path; the recorded tenferro revision and "
+            "`TENFERRO_NATIVE_TRANSPOSE_TILE` value distinguish baseline and optimized runs. "
             "`tenferro-webgpu-to-contiguous` measures the public strided-view "
             "materialization path. PyTorch MPS and JAX Metal are logical "
             "framework comparisons; a backend without a Metal runtime is reported "
             "as `not_configured` and is never allowed to fall back to CPU. "
             "Every timed iteration ends with explicit device synchronization; "
-            "correctness downloads and JIT compilation are outside timing."
+            "correctness downloads and JIT compilation are outside timing. tenferro "
+            "allocates a fresh destination per call, while PyTorch MPS reuses one "
+            "destination allocation per pattern, so their host-API medians are not a "
+            "kernel-only comparison."
         )
         lines.append("")
         lines.append(
             "The mac-gpu patterns contain 3^15 or roughly 15 million f32 elements "
-            "(about 60 MiB per tensor). They remain below the baseline kernel's "
-            "one-dimensional 65,535-workgroup dispatch ceiling. "
-            "This M5 collection is the entry-gate baseline; the final tile sweep "
-            "must still be run on the issue's target M4 machine."
+            "(about 60 MiB per tensor). The entry-gate baseline and development tile "
+            "sweep were collected on M5. This is an accepted development substitute, "
+            "but the final tile sweep must still be run on the issue's target M4 machine."
         )
         lines.append("")
     else:

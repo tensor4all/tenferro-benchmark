@@ -206,9 +206,31 @@ fn verify(actual: &[f32], expected: &[f32]) -> Result<(), String> {
         .zip(expected)
         .position(|(actual, expected)| actual != expected)
         .map_or(Ok(()), |index| {
+            let mismatches = actual
+                .iter()
+                .zip(expected)
+                .enumerate()
+                .filter(|(_, (actual, expected))| actual != expected)
+                .take(8)
+                .map(|(index, (actual, expected))| {
+                    format!("{index}: actual={actual} expected={expected}")
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            let probes = [239usize, 240, 255, 256, 257, 65_535, 65_536, 65_537]
+                .into_iter()
+                .filter(|&probe| probe < actual.len())
+                .map(|probe| {
+                    format!(
+                        "{probe}: actual={} expected={}",
+                        actual[probe], expected[probe]
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
             Err(format!(
-                "mismatch at {index}: actual={} expected={}",
-                actual[index], expected[index]
+                "mismatch at {index}: actual={} expected={}; first mismatches: {mismatches}; probes: {probes}",
+                actual[index], expected[index],
             ))
         })
 }
@@ -254,7 +276,11 @@ fn run_transpose(
         iters,
         Some(timing),
         "passed",
-        Some("pre-optimization native structural kernel baseline".into()),
+        Some(format!(
+            "native planner path; eligible 2D transposes use comptime tile {}; \
+             fresh destination allocated per call",
+            env::var("TENFERRO_NATIVE_TRANSPOSE_TILE").unwrap_or_else(|_| "16x8-p1-v1".into())
+        )),
     )
 }
 
@@ -306,7 +332,11 @@ fn run_to_contiguous(
         iters,
         Some(timing),
         "passed",
-        Some("view metadata construction and correctness download excluded".into()),
+        Some(format!(
+            "shared native planner; eligible 2D transposes use comptime tile {}; \
+             fresh destination allocated per call; view metadata and correctness download excluded",
+            env::var("TENFERRO_NATIVE_TRANSPOSE_TILE").unwrap_or_else(|_| "16x8-p1-v1".into())
+        )),
     )
 }
 
@@ -338,7 +368,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter(|pattern| filter.as_ref().is_none_or(|filter| filter == &pattern.id))
     {
         let total = pattern.shape.iter().product();
-        let data: Vec<f32> = (0..total).map(|index| (index % 65521) as f32).collect();
+        let data: Vec<f32> = (0..total).map(|index| index as f32).collect();
         let expected = reference(pattern, &data);
         for participant in &pattern.participants_gpu {
             let record = match participant.as_str() {

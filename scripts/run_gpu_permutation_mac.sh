@@ -31,6 +31,7 @@ if [[ -n "$(git -C "$tenferro_dir" status --porcelain)" ]]; then
 fi
 export GPU_BENCH_DEVICE_NAME="$device_name"
 export TENFERRO_BENCH_REVISION="$tenferro_revision"
+export TENFERRO_NATIVE_TRANSPOSE_TILE="${TENFERRO_NATIVE_TRANSPOSE_TILE:-16x8-p1-v1}"
 
 uv run python scripts/validate_benchmark_suite.py benchmarks/gpu/permutation-mac.yaml
 
@@ -52,6 +53,7 @@ environment:
   cpu: "$device_name"
   env:
     BENCHMARK_TARGET_PROFILE: mac-gpu
+    TENFERRO_NATIVE_TRANSPOSE_TILE: "$TENFERRO_NATIVE_TRANSPOSE_TILE"
 metal:
   device_name: "$device_name"
   runtime: wgpu/Metal
