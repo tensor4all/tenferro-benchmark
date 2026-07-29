@@ -42,6 +42,13 @@ kernel. `16x8-p1-v1` had the lowest observed transpose median (1.463 ms) and
 is the development default. This M5 choice remains provisional until the
 required M4 sweep.
 
+The selected-tile rerun kept every tenferro wgpu row within the campaign's
++20% stop-the-line limit relative to the entry baseline. The direct 2D
+transpose moved from 1.472 ms to 1.486 ms (about +1%). The dimension-fusion
+cases improved materially: `mac_tn_contiguous` moved from 2.616 ms to
+1.485 ms, and `mac_tn_scattered` view materialization moved from 2.648 ms
+to 1.455 ms (about 43% and 45% faster, respectively).
+
 PyTorch MPS reuses a destination allocation in this profile, whereas both
 tenferro columns allocate a fresh output on every timed call. PyTorch's current
 MPS copy implementation also uses a 2D strided dispatch and specialized
