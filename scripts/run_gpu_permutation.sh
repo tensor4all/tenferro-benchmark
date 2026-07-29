@@ -3,7 +3,8 @@ set -euo pipefail
 
 # ---------------------------------------------------------------------------
 # GPU permutation / materialize-kernel benchmark suite (gpu/permutation):
-#   - tenferro-cuda-transpose, tenferro-cuda-to-contiguous, cutensor (Rust)
+#   - tenferro-cuda-transpose, tenferro-cuda-to-contiguous,
+#     tenferro-cuda-destination-reuse, cutensor (Rust)
 #   - pytorch-cuda, memcpy-d2d (Python)
 #
 # Usage: BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_permutation.sh
@@ -129,7 +130,7 @@ LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIB
 RUST_JSONL="$RUN_DIR/rust_output.jsonl"
 GPU_BENCH_BACKEND_SLEEP="${GPU_BENCH_BACKEND_SLEEP:-2}"
 
-echo "Running Rust GPU permutation benchmarks (tenferro-cuda-transpose, tenferro-cuda-to-contiguous, cutensor)..."
+echo "Running Rust GPU permutation benchmarks (tenferro-cuda-transpose, tenferro-cuda-to-contiguous, tenferro-cuda-destination-reuse, cutensor)..."
 CUBECL_DEBUG_LOG=0 \
 CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
 RUST_MIN_STACK="$RUST_MIN_STACK" \

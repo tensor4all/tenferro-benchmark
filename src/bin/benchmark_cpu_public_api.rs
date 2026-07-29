@@ -221,11 +221,17 @@ fn cases() -> Vec<Case> {
             "1D StableHLO-style scatter",
             scatter_f64,
         ),
-        idx("slice", "f64", "4194304", "static slice", slice_f64),
+        idx(
+            "slice",
+            "f64",
+            "4194304 -> 2096128",
+            "static slice",
+            slice_f64,
+        ),
         idx(
             "dynamic_slice",
             "f64",
-            "4194304",
+            "4194304 -> 2097152",
             "runtime-start slice",
             dynamic_slice_f64,
         ),
@@ -1011,10 +1017,14 @@ fn lower_triangular(n: usize, seed: u64) -> &'static Tensor {
 fn spd(n: usize, seed: u64) -> &'static Tensor {
     static CACHE: TensorCache = OnceLock::new();
     cached_tensor(&CACHE, format!("{n}:{seed}"), || {
-        let _ = seed;
+        let source = data_f64(n * n, seed);
+        let scale = 0.125 / n as f64;
         let mut values = vec![0.0; n * n];
         for col in 0..n {
-            values[col + col * n] = 2.0 + col as f64 / n as f64;
+            for row in 0..n {
+                values[row + col * n] = scale * (source[row + col * n] + source[col + row * n]);
+            }
+            values[col + col * n] += 2.0 + col as f64 / n as f64;
         }
         Tensor::from_vec_col_major(vec![n, n], values).unwrap()
     })
@@ -1956,4 +1966,43 @@ fn cholesky_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
 fn norm_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(tensor_c64(&[2048, 1536], 1).norm(None, Some(&[0, 1]), false, b)?);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn spd_fixture_is_dense_symmetric_and_strictly_diagonally_dominant() {
+        let n = 3;
+        let values = spd(n, 7).as_slice::<f64>().unwrap();
+        let expected = [
+            1.9408365885416667,
+            -0.010172526041666666,
+            0.038818359375,
+            -0.010172526041666666,
+            2.3721516927083335,
+            0.004475911458333333,
+            0.038818359375,
+            0.004475911458333333,
+            2.636800130208333,
+        ];
+        let mut nonzero_off_diagonal = 0;
+
+        assert_eq!(values, expected);
+        for col in 0..n {
+            let mut off_diagonal_sum = 0.0;
+            for row in 0..n {
+                let value = values[row + col * n];
+                assert_eq!(value, values[col + row * n]);
+                if row != col {
+                    off_diagonal_sum += value.abs();
+                    nonzero_off_diagonal += usize::from(value != 0.0);
+                }
+            }
+            assert!(values[col + col * n] > off_diagonal_sum);
+        }
+
+        assert!(nonzero_off_diagonal > 0);
+    }
 }

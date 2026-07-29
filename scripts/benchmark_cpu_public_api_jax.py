@@ -142,10 +142,17 @@ def lower_triangular(n: int, seed: int) -> LazyArray:
     return LazyArray(build)
 
 
-def spd(n: int) -> LazyArray:
+def spd(n: int, seed: int) -> LazyArray:
     import jax.numpy as jnp
 
-    return LazyArray(lambda: jnp.diag(2.0 + jnp.arange(n, dtype=jnp.float64) / n))
+    def build():
+        source = tensor_f64((n, n), seed).get()
+        matrix = (0.125 / n) * (source + source.T)
+        return matrix.at[jnp.diag_indices(n)].add(
+            2.0 + jnp.arange(n, dtype=jnp.float64) / n
+        )
+
+    return LazyArray(build)
 
 
 def hpd_c64(n: int) -> LazyArray:
@@ -210,10 +217,10 @@ def make_cases() -> list[Case]:
     batched_diagonal_input = tensor_f64((8_388_608, 2, 2), 1)
     diagonal_input = tensor_f64((8192,), 1)
 
-    spd1536 = spd(1536)
+    spd1536 = spd(1536, 1)
     a160 = well_conditioned(160, 1)
     a192 = well_conditioned(192, 1)
-    spd512 = spd(512)
+    spd512 = spd(512, 1)
     l4096 = lower_triangular(4096, 1)
     rhs4096 = tensor_f64((4096, 64), 2)
     a1024 = well_conditioned(1024, 1)
@@ -280,8 +287,8 @@ def make_cases() -> list[Case]:
         (elem, "reduce_min_axis1", "f64", "4096x4096", "axis reduction", compiled(lambda a: jnp.min(a, axis=1), matrix_min)),
         (idx, "gather", "f64", "262144", "1D gather", compiled(lambda a, i: jnp.take(a, i), gather_base, gather_idx)),
         (idx, "scatter", "f64", "262144", "1D scatter", compiled(lambda a, i, u: jnp.zeros_like(a).at[i].set(u), gather_base, gather_idx, gather_updates)),
-        (idx, "slice", "f64", "4194304", "static slice materialized output", compiled(lambda a: a[1024 : 4_194_304 - 1024 : 2], slice_base)),
-        (idx, "dynamic_slice", "f64", "4194304", "runtime-start slice", compiled(lambda a, s: lax.dynamic_slice(a, (s[0],), (2_097_152,)), slice_base, start)),
+        (idx, "slice", "f64", "4194304 -> 2096128", "static slice materialized output", compiled(lambda a: a[1024 : 4_194_304 - 1024 : 2], slice_base)),
+        (idx, "dynamic_slice", "f64", "4194304 -> 2097152", "runtime-start slice", compiled(lambda a, s: lax.dynamic_slice(a, (s[0],), (2_097_152,)), slice_base, start)),
         (idx, "dynamic_update_slice", "f64", "2097152", "runtime-start update", compiled(lambda a, u, s: lax.dynamic_update_slice(a, u, (s[0],)), update_base, update_half, start)),
         (idx, "pad", "f64", "2097152", "edge padding", compiled(lambda a: jnp.pad(a, (128, 128)), update_base)),
         (idx, "concatenate", "f64", "1048576+1048576", "concatenate along axis 0", compiled(lambda a, b: jnp.concatenate((a, b)), part_a, part_b)),
