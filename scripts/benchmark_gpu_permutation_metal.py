@@ -71,7 +71,7 @@ def base_record(pattern: dict, backend: str) -> dict:
         "elems": elems,
         "bytes_rw": elems * 8,
         "device": DEVICE_NAME,
-        "per_call_allocation": backend == "jax-metal",
+        "per_call_allocation": backend != "memcpy-metal-d2d",
         "warmup": int(os.environ.get("BENCH_WARMUPS", "3")),
         "iters": max(1, int(os.environ.get("BENCH_RUNS", "7"))),
     }
@@ -141,20 +141,30 @@ def run_pytorch(pattern: dict, backend: str) -> dict:
     view = torch.as_strided(source, pattern["shape"], source_strides(pattern))
     permuted = view.permute(*pattern["perm"])
     out_shape = [pattern["shape"][axis] for axis in pattern["perm"]]
-    destination_storage = torch.empty(total, dtype=torch.float32, device="mps")
-    destination = torch.as_strided(
-        destination_storage, out_shape, source_strides({"shape": out_shape, "src_layout": {"kind": "col_major"}})
-    )
+
+    def allocate_destination():
+        storage = torch.empty(total, dtype=torch.float32, device="mps")
+        return torch.as_strided(
+            storage,
+            out_shape,
+            source_strides({"shape": out_shape, "src_layout": {"kind": "col_major"}}),
+        )
+
+    destination = allocate_destination()
     destination.copy_(permuted)
     torch.mps.synchronize()
     if not np.array_equal(destination.cpu().numpy(), expected_array(pattern, host)):
         return unavailable_record(pattern, backend, "PyTorch MPS correctness mismatch", "verification_failed")
 
+    holder = [destination]
+
     def operation() -> None:
+        destination = allocate_destination()
         destination.copy_(permuted)
+        holder[0] = destination
 
     values = timed(record, operation, torch.mps.synchronize)
-    return ok_record(record, values, "compact column-major destination allocated once and reused")
+    return ok_record(record, values, "fresh compact column-major destination per timed call")
 
 
 def run_jax(pattern: dict) -> dict:

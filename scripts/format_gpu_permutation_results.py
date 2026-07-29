@@ -213,10 +213,10 @@ def format_markdown(
             "framework comparisons; a backend without a Metal runtime is reported "
             "as `not_configured` and is never allowed to fall back to CPU. "
             "Every timed iteration ends with explicit device synchronization; "
-            "correctness downloads and JIT compilation are outside timing. tenferro "
-            "allocates a fresh destination per call, while PyTorch MPS reuses one "
-            "destination allocation per pattern, so their host-API medians are not a "
-            "kernel-only comparison."
+            "correctness downloads and JIT compilation are outside timing. "
+            "Both tenferro and PyTorch MPS allocate a fresh destination per timed "
+            "call; the medians remain end-to-end host-API measurements rather than "
+            "isolated kernel timings."
         )
         lines.append("")
         lines.append(

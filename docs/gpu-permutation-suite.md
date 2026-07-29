@@ -49,11 +49,11 @@ cases improved materially: `mac_tn_contiguous` moved from 2.616 ms to
 1.485 ms, and `mac_tn_scattered` view materialization moved from 2.648 ms
 to 1.455 ms (about 43% and 45% faster, respectively).
 
-PyTorch MPS reuses a destination allocation in this profile, whereas both
-tenferro columns allocate a fresh output on every timed call. PyTorch's current
-MPS copy implementation also uses a 2D strided dispatch and specialized
-inner-contiguous/16-byte copy paths. Consequently, framework medians identify
-an end-to-end gap but must not be interpreted as isolated kernel timings.
+Both tenferro and PyTorch MPS allocate a fresh destination on every timed
+call. PyTorch's current MPS copy implementation uses a 2D strided dispatch and
+specialized inner-contiguous/16-byte copy paths. Consequently, framework
+medians now have matched destination-allocation semantics, but remain
+end-to-end host-API measurements rather than isolated kernel timings.
 
 The Linux A100 validation command must exercise both CUDA and wgpu/Vulkan.
 During the M5 development run the configured A100 SSH endpoints were

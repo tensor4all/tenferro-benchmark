@@ -42,6 +42,16 @@ for pattern in patterns.values():
         assert "tenferro-webgpu-to-contiguous" in participants
         assert "pytorch-mps" in participants
         assert "jax-metal" in participants
+
+metal_runner = Path("scripts/benchmark_gpu_permutation_metal.py").read_text()
+assert '"per_call_allocation": backend != "memcpy-metal-d2d"' in metal_runner
+assert "fresh compact column-major destination per timed call" in metal_runner
+
+formatter = Path("scripts/format_gpu_permutation_results.py").read_text()
+specification = Path("docs/gpu-permutation-suite.md").read_text()
+allocation_contract = "Both tenferro and PyTorch MPS allocate a fresh destination"
+assert allocation_contract in formatter
+assert allocation_contract in specification
 PY
 
 rg -q 'status="not_configured"' scripts/benchmark_gpu_permutation_metal.py
