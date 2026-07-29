@@ -7,6 +7,13 @@ set -euo pipefail
 #   - PyTorch Python closest public equivalents where available
 #   - JAX Python public equivalents, compiled once with XLA and synchronized
 
+for diagnostic_variable in PUBLIC_API_EXECUTION_FILTER PUBLIC_API_ATTRIBUTION_OUTPUT; do
+    if [[ -n "${!diagnostic_variable:-}" ]]; then
+        echo "ERROR: $diagnostic_variable is diagnostic-only; invoke benchmark_cpu_public_api directly so a partial run cannot overwrite the publication report." >&2
+        exit 1
+    fi
+done
+
 if [[ $# -eq 0 ]]; then
     THREAD_COUNTS=(1 4)
 else
