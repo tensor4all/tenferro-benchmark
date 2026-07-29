@@ -13,6 +13,7 @@ defaults:
 backends:
   - tenferro-cuda-transpose
   - tenferro-cuda-to-contiguous
+  - tenferro-cuda-destination-reuse
   - cutensor
   - pytorch-cuda
   - memcpy-d2d

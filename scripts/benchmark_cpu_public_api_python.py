@@ -225,9 +225,11 @@ def spd(n: int, seed: int):
     def build():
         import torch
 
-        return torch.diag(2.0 + torch.arange(n, dtype=torch.float64) / n)
+        source = tensor_f64((n, n), seed).get()
+        matrix = (0.125 / n) * (source + source.T)
+        matrix.diagonal().add_(2.0 + torch.arange(n, dtype=torch.float64) / n)
+        return matrix
 
-    del seed
     return LazyTensor(build)
 
 
@@ -354,8 +356,8 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/elementwise_reduction", "reduce_min_axis1", "f64", "4096x4096", "axis reduction", lambda: torch.min(matrix_min, dim=1).values),
         ("cpu/indexing_layout", "gather", "f64", "262144", "1D gather", lambda: torch.gather(base_gather, 0, gather_idx)),
         ("cpu/indexing_layout", "scatter", "f64", "262144", "1D scatter", lambda: torch.zeros_like(base_gather).scatter(0, scatter_idx, updates_gather)),
-        ("cpu/indexing_layout", "slice", "f64", "4194304", "static slice materialized to owned output", lambda: base_slice[1024 : 4_194_304 - 1024 : 2].clone()),
-        ("cpu/indexing_layout", "dynamic_slice", "f64", "4194304", "runtime-start slice materialized to owned output", lambda: base_slice[1024 : 1024 + 2_097_152].clone()),
+        ("cpu/indexing_layout", "slice", "f64", "4194304 -> 2096128", "static slice materialized to owned output", lambda: base_slice[1024 : 4_194_304 - 1024 : 2].clone()),
+        ("cpu/indexing_layout", "dynamic_slice", "f64", "4194304 -> 2097152", "runtime-start slice materialized to owned output", lambda: base_slice[1024 : 1024 + 2_097_152].clone()),
         ("cpu/indexing_layout", "dynamic_update_slice", "f64", "2097152", "runtime-start update", lambda: dynamic_update(base_update, update_half)),
         ("cpu/indexing_layout", "pad", "f64", "2097152", "edge padding", lambda: F.pad(base_update, (128, 128))),
         ("cpu/indexing_layout", "concatenate", "f64", "1048576+1048576", "concatenate along axis 0", lambda: torch.cat((part_a, part_b), dim=0)),

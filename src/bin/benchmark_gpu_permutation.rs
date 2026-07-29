@@ -11,8 +11,11 @@
 //!   the source layout) + `TypedTensorView::transpose_view(perm)` +
 //!   `TensorViewCanonicalization::to_contiguous` (accepts arbitrary source
 //!   strides), mirroring the CPU runner's view composition
+//! - `tenferro-cuda-destination-reuse`: public
+//!   `TensorStructural::copy_read_into` from a compact source into an
+//!   inverse-permuted caller-owned destination view
 //! - `cutensor`: direct cuTENSOR 2.x `cutensorPermute`, dlopen'd from this
-//!   binary (tenferro's own cuTENSOR FFI binds only contraction)
+//!   binary as a raw vendor-library control
 //!
 //! `pytorch-cuda`, `jax-cuda`, and `memcpy-d2d` are measured by
 //! `scripts/benchmark_gpu_permutation_python.py` and are ignored here.
@@ -46,7 +49,10 @@ use serde::{Deserialize, Serialize};
 
 use tenferro_gpu::cuda_interop::raw_cuda_stream;
 use tenferro_gpu::{device_ptr, download_tensor, gpu_available, upload_tensor, CudaBackend};
-use tenferro_tensor::{Tensor, TensorStructural, TensorViewCanonicalization, TypedTensor};
+use tenferro_tensor::{
+    Tensor, TensorRead, TensorStructural, TensorViewCanonicalization, TensorViewMut, TensorWrite,
+    TypedTensor,
+};
 
 const PATTERN_PATH: &str = "data/instances/gpu_permutation_patterns.json";
 const SUITE_ID: &str = "gpu/permutation";
@@ -156,6 +162,14 @@ fn output_shape(pattern: &PermutePattern) -> Vec<usize> {
         .iter()
         .map(|&axis| pattern.shape[axis])
         .collect()
+}
+
+fn inverse_permutation(perm: &[usize]) -> Vec<usize> {
+    let mut inverse = vec![0; perm.len()];
+    for (output_axis, &input_axis) in perm.iter().enumerate() {
+        inverse[input_axis] = output_axis;
+    }
+    inverse
 }
 
 fn deterministic_data(total: usize) -> Vec<f64> {
@@ -458,9 +472,9 @@ fn finish_skip(record: ResultRecord, sink: &mut RecordSink) {
 }
 
 // ---------------------------------------------------------------------------
-// cuTENSOR permutation FFI (dlopen). tenferro-gpu's own cuTENSOR bindings
-// only cover contraction (dot_general); permutation is bound directly here.
-// Style mirrors
+// Raw-control cuTENSOR permutation FFI (dlopen). tenferro-gpu's production
+// FFI binds contraction and permutation, but those internals and cached plan
+// types are intentionally private. Style mirrors
 // extern/tenferro-rs/crates/tenferro-gpu/src/cubecl/ffi/cutensor.rs, with
 // the extra function pointer surfaced by
 // extern/tenferro-rs/docs/plans/2026-02-23-cuda-backend-impl-plan.md
@@ -1053,6 +1067,116 @@ fn run_tenferro_cuda_to_contiguous(
 }
 
 #[allow(clippy::too_many_arguments)]
+fn run_tenferro_cuda_destination_reuse(
+    pattern: &PermutePattern,
+    prepared: &PreparedPattern,
+    warmup: usize,
+    iters: usize,
+    bytes: usize,
+    device_name: &str,
+    backend: &mut CudaBackend,
+    sink: &mut RecordSink,
+) {
+    let total = prepared.reference.len();
+    let name: &'static str = "tenferro-cuda-destination-reuse";
+    if !matches!(pattern.src_layout, LayoutPattern::ColMajor) {
+        finish_skip(
+            base_record(
+                pattern,
+                name,
+                total,
+                bytes,
+                device_name,
+                "skipped",
+                "skipped",
+                false,
+            )
+            .with_note("CudaBackend::copy_read_into requires a compact col-major source".into()),
+            sink,
+        );
+        return;
+    }
+
+    let host_source = Tensor::from_vec_col_major(pattern.shape.clone(), prepared.src_data.clone())
+        .expect("building source tensor must succeed");
+    let gpu_source =
+        upload_tensor(backend.runtime(), &host_source).expect("source upload must succeed");
+    let host_destination = Tensor::from_vec_col_major(
+        prepared.out_shape.clone(),
+        vec![0.0_f64; prepared.reference.len()],
+    )
+    .expect("building destination tensor must succeed");
+    let mut gpu_destination = upload_tensor(backend.runtime(), &host_destination)
+        .expect("destination upload must succeed");
+    let inverse_perm = inverse_permutation(&pattern.perm);
+
+    let execute = |backend: &mut CudaBackend, destination: &mut Tensor| {
+        let Tensor::F64(destination) = destination else {
+            unreachable!("upload_tensor preserves destination dtype");
+        };
+        let destination_view = destination
+            .as_view_mut()
+            .transpose_view(&inverse_perm)
+            .expect("inverse destination view must match the source shape");
+        backend.copy_read_into(
+            TensorRead::from_tensor(&gpu_source),
+            TensorWrite::from_view(TensorViewMut::F64(destination_view)),
+        )
+    };
+
+    execute(backend, &mut gpu_destination)
+        .expect("CudaBackend::copy_read_into must succeed on a validated pattern");
+    backend.runtime().synchronize().expect("device sync");
+    let downloaded =
+        download_tensor(backend.runtime(), &gpu_destination).expect("download must succeed");
+    let actual = downloaded
+        .as_slice::<f64>()
+        .expect("tenferro-cuda-destination-reuse output must be f64");
+    if let Err(msg) = verify_output(actual, &prepared.reference) {
+        finish_skip(
+            base_record(
+                pattern,
+                name,
+                total,
+                bytes,
+                device_name,
+                "verification_failed",
+                "failed",
+                false,
+            )
+            .with_note(msg),
+            sink,
+        );
+        return;
+    }
+
+    let timing = bench_n(warmup, iters, bytes, || {
+        execute(backend, &mut gpu_destination).unwrap();
+        backend.runtime().synchronize().unwrap();
+        black_box(&gpu_destination);
+    });
+    finish_ok(
+        base_record(
+            pattern,
+            name,
+            total,
+            bytes,
+            device_name,
+            "ok",
+            "passed",
+            false,
+        )
+        .with_note(
+            "public CudaBackend::copy_read_into; caller-owned destination allocated once and \
+             reused; per-call destination-view metadata construction included"
+                .into(),
+        ),
+        timing,
+        sink,
+    );
+}
+
+#[allow(clippy::too_many_arguments)]
 fn run_cutensor(
     pattern: &PermutePattern,
     prepared: &PreparedPattern,
@@ -1208,8 +1332,26 @@ fn run_pattern(
             "tenferro-cuda-to-contiguous" => run_tenferro_cuda_to_contiguous(
                 pattern, &prepared, warmup, iters, bytes, device_name, backend, sink,
             ),
+            "tenferro-cuda-destination-reuse" => run_tenferro_cuda_destination_reuse(
+                pattern,
+                &prepared,
+                warmup,
+                iters,
+                bytes,
+                device_name,
+                backend,
+                sink,
+            ),
             "cutensor" => run_cutensor(
-                pattern, &prepared, warmup, iters, bytes, device_name, backend, cutensor, sink,
+                pattern,
+                &prepared,
+                warmup,
+                iters,
+                bytes,
+                device_name,
+                backend,
+                cutensor,
+                sink,
             ),
             // pytorch-cuda / jax-cuda / memcpy-d2d are measured by
             // scripts/benchmark_gpu_permutation_python.py.

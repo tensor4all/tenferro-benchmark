@@ -23,7 +23,7 @@
       "perm": [1, 0],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "tenferro-cuda-destination-reuse", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "transpose_3d_1024_1024_512_201",
@@ -33,7 +33,7 @@
       "perm": [2, 0, 1],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "tenferro-cuda-destination-reuse", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "transpose_3d_1024_1024_512_102",
@@ -43,7 +43,7 @@
       "perm": [1, 0, 2],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "tenferro-cuda-destination-reuse", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "rotation_6d_64_32_32_32_16_16",
@@ -53,7 +53,7 @@
       "perm": [5, 0, 4, 1, 3, 2],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "tenferro-cuda-destination-reuse", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "reverse_23d_128x2",
@@ -63,7 +63,7 @@
       "perm": [22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "tenferro-cuda-destination-reuse", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "reverse_18d_3",
@@ -73,7 +73,7 @@
       "perm": [17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "tenferro-cuda-destination-reuse", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "cyclic_18d_3",
@@ -83,7 +83,7 @@
       "perm": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "tenferro-cuda-destination-reuse", "cutensor", "pytorch-cuda"]
     },
     {
       "id": "tn_light_415_24d_scattered_to_colmajor_gpu",
@@ -106,7 +106,7 @@
       "perm": [0, 1, 2, 3, 22, 4, 23, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
       "src_layout": { "kind": "col_major" },
       "dst_layout": { "kind": "col_major" },
-      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "cutensor", "pytorch-cuda"]
+      "participants_gpu": ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous", "tenferro-cuda-destination-reuse", "cutensor", "pytorch-cuda"]
     }
   ]
 }

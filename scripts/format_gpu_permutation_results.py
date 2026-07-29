@@ -18,8 +18,9 @@ scripts/format_permutation_results.py (the cpu/permutation formatter), but:
   (a GPU name string) instead of `threads`, so this renders a single table
   rather than one table per thread count.
 - Column order: tenferro-cuda-transpose, tenferro-cuda-to-contiguous,
-  cutensor, pytorch-cuda. The memcpy-d2d result is rendered once
-  as a bandwidth baseline instead of as a mostly-empty comparison column.
+  tenferro-cuda-destination-reuse, cutensor, pytorch-cuda. The memcpy-d2d
+  result is rendered once as a bandwidth baseline instead of as a mostly-empty
+  comparison column.
 
 Missing backends are shown as `-`; the fastest backend per row is bolded.
 """
@@ -42,6 +43,7 @@ from collect_gpu_info import markdown as gpu_info_markdown, resolve_gpu_info  # 
 BACKEND_ORDER = [
     "tenferro-cuda-transpose",
     "tenferro-cuda-to-contiguous",
+    "tenferro-cuda-destination-reuse",
     "cutensor",
     "pytorch-cuda",
 ]
@@ -49,6 +51,7 @@ BACKEND_ORDER = [
 BACKEND_LABELS = {
     "tenferro-cuda-transpose": "tenferro-rs CUDA transpose (ms)",
     "tenferro-cuda-to-contiguous": "tenferro-rs CUDA to_contiguous (ms)",
+    "tenferro-cuda-destination-reuse": "tenferro-rs CUDA copy_read_into (ms)",
     "cutensor": "cuTENSOR (ms)",
     "pytorch-cuda": "PyTorch CUDA (ms)",
     "tenferro-webgpu-transpose-baseline": "tenferro-rs wgpu native (ms)",
@@ -237,8 +240,13 @@ def format_markdown(
         "`tenferro-cuda-to-contiguous` is the primary like-for-like column for PyTorch's "
         "view/permute-then-materialize path. "
         "`tenferro-cuda-transpose` is the direct structural-permutation comparison for "
-        "primitive/kernel-oriented backends such as cuTENSOR. Both allocate a fresh device tensor on every "
-        "call; `cutensor`, `pytorch-cuda`, and `memcpy-d2d` reuse a destination buffer "
+        "primitive/kernel-oriented backends such as cuTENSOR. Both public tenferro columns allocate "
+        "a fresh device tensor on every call. `tenferro-cuda-destination-reuse` calls the public "
+        "`CudaBackend::copy_read_into` override from a compact source into an inverse-permuted "
+        "caller-owned destination view allocated once outside timing. The production path uses "
+        "the native CUDA copy kernel, so it is distinct from the raw cuTENSOR control. Its "
+        "per-call destination-view metadata construction is included in the timed public API dispatch. "
+        "`cutensor`, `pytorch-cuda`, and `memcpy-d2d` also reuse a destination buffer "
         "allocated once per pattern. "
         "`memcpy-d2d` only "
         "participates in the contiguous identity-permutation baseline pattern. "

@@ -155,16 +155,20 @@ Backend column names follow [architecture terminology](architecture.md).
 |---|---|---|
 | `tenferro-cuda-transpose` | Rust | eager `TensorStructural::transpose` on `CudaBackend` (compact col-major source only) |
 | `tenferro-cuda-to-contiguous` | Rust | `TypedTensor::backend_region_view` (source layout) + `TypedTensorView::transpose_view(perm)` + `TensorViewCanonicalization::to_contiguous` (accepts arbitrary source strides) |
+| `tenferro-cuda-destination-reuse` | Rust | public `CudaBackend::copy_read_into` from a compact source into an inverse-permuted caller-owned destination view allocated once outside timing |
 | `cutensor` | Rust | direct cuTENSOR 2.x `cutensorPermute`, dlopen'd from this benchmark repo |
 | `pytorch-cuda` | Python | `dst.copy_(src_view)` + `torch.cuda.synchronize()` |
 | `memcpy-d2d` | Python (torch) | `dst.copy_(src)` + `torch.cuda.synchronize()`, contiguous identity permutation only |
 
 Notes:
 
-- Neither tenferro column goes through trace, einsum, or AD machinery, same
-  as `cpu/permutation`'s policy. `tenferro-cuda-transpose` is the eager
-  structural op; `tenferro-cuda-to-contiguous` is the user-facing
-  lazy-view-then-materialize path.
+- None of the tenferro-buffer columns goes through trace, einsum, or AD
+  machinery, same as `cpu/permutation`'s policy.
+  `tenferro-cuda-transpose` is the eager structural op;
+  `tenferro-cuda-to-contiguous` is the user-facing
+  lazy-view-then-materialize path, and
+  `tenferro-cuda-destination-reuse` is the public caller-owned output path
+  described below.
 - Use `tenferro-cuda-to-contiguous` as the primary tenferro-rs column when
   comparing against framework-level APIs: it matches PyTorch's
   view/`permute`-then-materialize path most closely. Use
@@ -172,19 +176,19 @@ Notes:
   permutation primitives or kernels, especially against cuTENSOR. The report
   retains both columns because they answer these different questions; they
   should not be treated as interchangeable tenferro-rs modes.
-- tenferro's own cuTENSOR FFI bindings
-  (`extern/tenferro-rs/crates/tenferro-gpu/src/cubecl/ffi/cutensor.rs`) only
-  cover contraction (`dot_general`), because that is all the production
-  backend needs today. This suite dlopens the same vendor cuTENSOR library
-  a second time, from a small self-contained FFI module inside
+- tenferro's production cuTENSOR FFI bindings
+  (`extern/tenferro-rs/crates/tenferro-gpu/src/cubecl/ffi/cutensor.rs`) cover
+  contraction and structural permutation. This suite independently dlopens
+  the same vendor cuTENSOR library from a small self-contained FFI module inside
   `src/bin/benchmark_gpu_permutation.rs` (`mod cutensor_ffi`), binding just
   the permutation entry points (`cutensorCreateTensorDescriptor`,
   `cutensorCreatePermutation`, `cutensorCreatePlanPreference`,
   `cutensorCreatePlan`, `cutensorPermute`). This mirrors the style of
   tenferro's own FFI (dlopen via `libloading`, `TENFERRO_CUTENSOR_PATH`
   search path with the same default fallback path, RAII wrappers with
-  `Drop`-based cleanup) without depending on `tenferro-gpu` internals that
-  are not part of its public API.
+  `Drop`-based cleanup) because the production FFI and cached plan types are
+  intentionally private. This independent binding is only the raw `cutensor`
+  control column; tenferro-labeled columns use public backend APIs.
 - LibTorch/PyTorch C++ is intentionally not part of this suite; `AGENTS.md`'s
   CPU Backend Policy (no LibTorch) also applies here -- only the Python
   PyTorch wheel is used, as `gpu/dense`/`gpu/einsum`/`gpu/linalg_jvp_vjp`
@@ -233,6 +237,17 @@ allocation**, with exceptions called out per column:
 - `tenferro-cuda-transpose` and `tenferro-cuda-to-contiguous` both allocate
   a fresh device tensor on every call (their tenferro-rs public APIs return
   owned tensors); this is footnoted in the report, same as the CPU pair.
+- `tenferro-cuda-destination-reuse` calls the public
+  `TensorStructural::copy_read_into` override on `CudaBackend`. It copies a
+  compact source into an inverse-permuted mutable view of a caller-owned
+  compact output, expressing the same logical permutation without allocating
+  the output per call. Its destination is created once outside timing. The
+  current production implementation uses the native CUDA copy kernel rather
+  than the cuTENSOR permutation cache, so this row is a distinct public
+  dispatch path, not a relabeled raw cuTENSOR control. The inverse permutation
+  and destination allocation are one-time setup. The API consumes its mutable
+  view argument, so per-call destination-view metadata construction is
+  included in the timed public API dispatch.
 - `cutensor`, `pytorch-cuda`, and `memcpy-d2d` reuse a destination buffer
   allocated once per pattern outside the timed region.
 
@@ -252,14 +267,16 @@ does not abort the rest of the suite.
 `participants_gpu` is the per-pattern allowlist, mirroring how
 `participants` gates `cpu/permutation`'s HPTT column:
 
-- **All contiguous-source (`col_major`) permutation patterns**: all four permutation
-  backends -- `tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`,
+- **All contiguous-source (`col_major`) permutation patterns**: all five
+  permutation backends -- `tenferro-cuda-transpose`,
+  `tenferro-cuda-to-contiguous`, `tenferro-cuda-destination-reuse`,
   `cutensor`, and `pytorch-cuda`.
 - **`tn_light_415_24d_scattered_to_colmajor_gpu`** (explicit source strides):
   `tenferro-cuda-to-contiguous`, `cutensor`, `pytorch-cuda` only.
-  `tenferro-cuda-transpose` is excluded because the eager op only accepts a
-  compact col-major `Tensor`. The CPU suite's view-based `tenferro-rs`
-  participant remains eligible for this pattern, while HPTT is excluded.
+  `tenferro-cuda-transpose` and `tenferro-cuda-destination-reuse` are excluded
+  because the eager transpose and CUDA `copy_read_into` APIs require a compact
+  col-major source. The CPU suite's view-based `tenferro-rs` participant
+  remains eligible for this pattern, while HPTT is excluded.
 - **`memcpy_24d_64x2`**: `memcpy-d2d` only. The host-computed reference is
   an untimed correctness check rather than a participant. This
   pattern is a pure bandwidth baseline kept isolated from the
@@ -284,7 +301,8 @@ Two runners, both consuming `data/instances/gpu_permutation_patterns.json`:
 
 - Rust: `src/bin/benchmark_gpu_permutation.rs`
   (`required-features = ["cuda"]`), covering `tenferro-cuda-transpose`,
-  `tenferro-cuda-to-contiguous`, and `cutensor`. Builds a single
+  `tenferro-cuda-to-contiguous`, `tenferro-cuda-destination-reuse`, and
+  `cutensor`. Builds a single
   `CudaBackend` for the whole run; uploads the pattern's deterministic data
   once per pattern/backend combination via `tenferro_gpu::upload_tensor`,
   runs the correctness gate, then times the steady-state op with
@@ -300,8 +318,9 @@ Two runners, both consuming `data/instances/gpu_permutation_patterns.json`:
   `scripts/collect_gpu_info.py`, the same helper `format_gpu_results.py`
   uses) instead of CPU info, and rendering a single table (no per-thread-count
   sections, since this suite has no CPU-thread dimension) with column order
-  `tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`, `cutensor`,
-  and `pytorch-cuda`. The `memcpy-d2d`
+  `tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`,
+  `tenferro-cuda-destination-reuse`, `cutensor`, and `pytorch-cuda`. The
+  `memcpy-d2d`
   measurement is rendered once as a device-bandwidth baseline rather than as
   a mostly-empty per-pattern table column.
 - Orchestration: `scripts/run_gpu_permutation.sh` runs the Rust runner and
@@ -335,17 +354,20 @@ same path baked into `.devcontainer/cuda/devcontainer.json`
   the same runtime sync, `torch.cuda.synchronize()`). No D2H downloads happen inside any
   timed region; downloads for correctness verification always happen once,
   before the timed loop, per `AGENTS.md`'s GPU Timing Fairness policy.
-- All setup happens **outside** the timed region -- this is a
+- One-time setup happens **outside** the timed region -- this is a
   fairness-relevant choice, made explicit here the same way the CPU spec
-  documents HPTT's contract: the cuTENSOR plan (`cutensorCreateTensorDescriptor`
+  documents HPTT's contract. The cuTENSOR plan (`cutensorCreateTensorDescriptor`
   / `cutensorCreatePermutation` / `cutensorCreatePlanPreference` /
   `cutensorCreatePlan`) is built **once per pattern, outside the timed
   region**, so the `cutensor` column measures steady-state kernel execution
   with planning cost excluded; likewise torch's `torch.as_strided` /
   `.permute` view construction and every H2D upload
   (`upload_tensor`, `torch...to(device)`) are performed once per pattern/backend before any timed
-  iteration. Timed regions contain only dispatch of the already-planned
-  materialize op plus device synchronization.
+  iteration. The destination-reuse tenferro row must reconstruct the consumed
+  mutable destination-view argument on each call; that O(rank) metadata work
+  is included as part of its public API dispatch. Timed regions otherwise
+  contain only dispatch of the already-planned materialize op plus device
+  synchronization.
 - Per-pattern iteration counts scale with pattern size, matching
   `cpu/permutation`'s Rust runner exactly: patterns with `elems >= 2^23`
   use `warmup=3, iters=15`; smaller patterns use `warmup=5, iters=40`.
@@ -393,7 +415,8 @@ Supervision checklist, restated as suite requirements (parallel to
 5. Input data is deterministic (`deterministic_index_value`); no RNG state
    in the comparison.
 6. Allocation semantics are uniform across columns or explicitly footnoted
-   (`tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`).
+   (`tenferro-cuda-transpose`, `tenferro-cuda-to-contiguous`, and the
+   caller-owned `tenferro-cuda-destination-reuse` path).
 7. Downloads never happen inside a timed region (`AGENTS.md` GPU Timing
    Fairness); the Rust and Python runtimes never run concurrently
    (`AGENTS.md` Benchmark Timing Discipline).
