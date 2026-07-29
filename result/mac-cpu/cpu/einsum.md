@@ -3,27 +3,27 @@
 - Suite: `cpu/einsum`
 - Target profile: `mac-cpu`
 - Suite file: `benchmarks/cpu/einsum.yaml`
-- Run metadata: `data/results/mac-cpu/cpu/einsum/20260728_100627/run.yaml`
-- Timestamp: `20260728_100627`
+- Run metadata: `data/results/mac-cpu/cpu/einsum/20260729_195802/run.yaml`
+- Timestamp: `20260729_195802`
 
 Latest run: `./scripts/run_all.sh 4`.
 
-This file is generated from one suite run under `data/results/mac-cpu/cpu/einsum/20260728_100627`.
+This file is generated from one suite run under `data/results/mac-cpu/cpu/einsum/20260729_195802`.
 
-- tenferro-rs commit: `80ebcc38ce11fb93385e8b6a1a49b613bc17452f`
+- tenferro-rs commit: `57c41c218356e871532e4dea4465a6bcf2d6c8fb`
 
 ## CPU Information
 
-- Model: `Apple M4`
+- Model: `Apple M5 Max`
 - Vendor: `Apple`
-- Logical CPUs: `10`
-- Physical CPUs: `10`
+- Logical CPUs: `18`
+- Physical CPUs: `18`
 - Sockets: `1`
-- Cores per socket: `10`
+- Cores per socket: `18`
 - Threads per core: `1`
 - NUMA nodes: `1`
-- Performance levels: `Performance: 4 physical / 4 logical (L1i 192 KiB, L1d 128 KiB, L2 16 MiB, 4 CPUs/L2); Efficiency: 6 physical / 6 logical (L1i 128 KiB, L1d 64 KiB, L2 4 MiB, 6 CPUs/L2)`
-- Python platform: `macOS-26.5.2-arm64-arm-64bit`
+- Performance levels: `Super: 6 physical / 6 logical (L1i 192 KiB, L1d 128 KiB, L2 16 MiB, 6 CPUs/L2); Performance: 12 physical / 12 logical (L1i 128 KiB, L1d 64 KiB, L2 8 MiB, 6 CPUs/L2)`
+- Python platform: `macOS-26.5.1-arm64-arm-64bit`
 
 ## Thread Environment
 
@@ -57,14 +57,14 @@ This file is generated from one suite run under `data/results/mac-cpu/cpu/einsum
 
 ## Threads: 4
 
-- Source table: `data/results/mac-cpu/cpu/einsum/20260728_100627/einsum_table_t4_20260728_100627.md`
+- Source table: `data/results/mac-cpu/cpu/einsum/20260729_195802/einsum_table_t4_20260729_195802.md`
 
 Logs:
 
-- `data/results/mac-cpu/cpu/einsum/20260728_100627/tenferro_trace_t4_20260728_100627.log`
-- `data/results/mac-cpu/cpu/einsum/20260728_100627/tenferro_eager_t4_20260728_100627.log`
-- `data/results/mac-cpu/cpu/einsum/20260728_100627/pytorch_cpu_t4_20260728_100627.log`
-- `data/results/mac-cpu/cpu/einsum/20260728_100627/jax_cpu_t4_20260728_100627.log`
+- `data/results/mac-cpu/cpu/einsum/20260729_195802/tenferro_trace_t4_20260729_195802.log`
+- `data/results/mac-cpu/cpu/einsum/20260729_195802/tenferro_eager_t4_20260729_195802.log`
+- `data/results/mac-cpu/cpu/einsum/20260729_195802/pytorch_cpu_t4_20260729_195802.log`
+- `data/results/mac-cpu/cpu/einsum/20260729_195802/jax_cpu_t4_20260729_195802.log`
 
 #### Strategy: opt_flops
 
@@ -72,25 +72,25 @@ Median ± IQR (ms). OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
 
 | Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|
-| bin_batched_matmul_b32_m128_n128_k128 | 0.865 ± 0.178 | 0.561 ± 0.078 | **0.405 ± 0.007** | 0.629 ± 0.050 |
-| bin_batched_matmul_b32_m64_n64_k64 | 0.155 ± 0.034 | **0.094 ± 0.005** | 0.099 ± 0.008 | 0.194 ± 0.017 |
-| bin_batched_outer_product_compact_j16_k16_o64_t64 | 0.110 ± 0.011 | 0.130 ± 0.033 | **0.096 ± 0.003** | 0.135 ± 0.030 |
-| bin_batched_outer_product_noncompact_j16_k16_o64_t64 | 0.163 ± 0.011 | 0.133 ± 0.017 | **0.107 ± 0.005** | 0.150 ± 0.019 |
-| bin_elementwise_mul_2048x2048 | 1.233 ± 0.092 | 1.210 ± 0.084 | **1.119 ± 0.062** | 1.532 ± 0.037 |
-| bin_matmul_1024 | 5.273 ± 0.096 | 4.739 ± 0.162 | **4.379 ± 0.075** | 7.979 ± 0.616 |
-| bin_matmul_256 | 0.130 ± 0.008 | 0.091 ± 0.001 | **0.086 ± 0.001** | 0.266 ± 0.025 |
-| bin_outer_product_4096 | **1.777 ± 0.028** | 1.797 ± 0.078 | 1.803 ± 0.060 | 1.905 ± 0.141 |
-| gm_queen5_5_3.wcsp | 691.927 ± 35.689 | 763.248 ± 36.270 | **654.675 ± 90.630** | 812.936 ± 108.915 |
-| lm_batch_likelihood_brackets_4_4d | 8.997 ± 0.317 | 14.382 ± 1.956 | 10.847 ± 3.185 | **7.275 ± 0.229** |
-| lm_batch_likelihood_sentence_3_12d | 14.363 ± 0.363 | 25.089 ± 2.373 | 24.621 ± 1.611 | **12.090 ± 0.341** |
-| lm_batch_likelihood_sentence_4_4d | 9.228 ± 0.695 | 16.343 ± 0.549 | 9.610 ± 0.930 | **7.318 ± 0.369** |
-| nary_matmul_chain_64 | 0.039 ± 0.019 | 0.032 ± 0.001 | **0.030 ± 0.002** | 0.085 ± 0.004 |
-| str_matrix_chain_multiplication_100 | **2.903 ± 0.132** | 4.086 ± 0.160 | 3.185 ± 0.097 | 7.176 ± 0.244 |
-| str_mps_varying_inner_product_200 | 7.206 ± 0.169 | 13.151 ± 0.244 | **6.468 ± 0.305** | 15.121 ± 0.268 |
-| str_nw_mera_closed_120 | 166.124 ± 0.566 | 174.089 ± 16.452 | **148.611 ± 6.641** | 369.009 ± 119.774 |
-| str_nw_mera_open_26 | 159.343 ± 2.464 | 169.556 ± 6.434 | **124.079 ± 7.923** | 283.661 ± 16.811 |
-| tensornetwork_permutation_focus_step409_316 | **84.095 ± 15.248** | 98.837 ± 14.739 | 98.140 ± 5.585 | 128.573 ± 10.311 |
-| tensornetwork_permutation_light_415 | **72.746 ± 14.908** | 121.196 ± 5.045 | 98.842 ± 3.139 | 157.064 ± 3.665 |
+| bin_batched_matmul_b32_m128_n128_k128 | 0.783 ± 0.162 | 0.550 ± 0.181 | 0.378 ± 0.016 | **0.361 ± 0.042** |
+| bin_batched_matmul_b32_m64_n64_k64 | 0.174 ± 0.014 | 0.109 ± 0.034 | **0.095 ± 0.005** | 0.180 ± 0.039 |
+| bin_batched_outer_product_compact_j16_k16_o64_t64 | **0.065 ± 0.010** | 0.075 ± 0.021 | 0.066 ± 0.007 | 0.128 ± 0.017 |
+| bin_batched_outer_product_noncompact_j16_k16_o64_t64 | 0.169 ± 0.024 | 0.070 ± 0.014 | **0.067 ± 0.012** | 0.131 ± 0.022 |
+| bin_elementwise_mul_2048x2048 | 0.642 ± 0.022 | 0.631 ± 0.025 | **0.610 ± 0.088** | 0.809 ± 0.085 |
+| bin_matmul_1024 | 6.711 ± 2.170 | 4.580 ± 0.257 | 4.806 ± 1.997 | **3.516 ± 0.508** |
+| bin_matmul_256 | 0.135 ± 0.008 | 0.099 ± 0.007 | **0.096 ± 0.020** | 0.232 ± 0.026 |
+| bin_outer_product_4096 | 0.597 ± 0.056 | **0.578 ± 0.014** | 0.621 ± 0.042 | 0.653 ± 0.046 |
+| gm_queen5_5_3.wcsp | 604.274 ± 40.110 | 475.788 ± 14.135 | 485.998 ± 8.673 | **461.929 ± 15.771** |
+| lm_batch_likelihood_brackets_4_4d | 7.681 ± 0.123 | 10.908 ± 0.190 | 7.951 ± 0.783 | **5.830 ± 0.098** |
+| lm_batch_likelihood_sentence_3_12d | 9.958 ± 0.314 | 14.244 ± 0.482 | 17.528 ± 1.044 | **7.184 ± 0.307** |
+| lm_batch_likelihood_sentence_4_4d | 8.323 ± 0.132 | 11.787 ± 0.128 | 7.936 ± 0.138 | **6.293 ± 0.482** |
+| nary_matmul_chain_64 | 0.032 ± 0.006 | 0.037 ± 0.004 | **0.024 ± 0.001** | 0.079 ± 0.017 |
+| str_matrix_chain_multiplication_100 | **2.716 ± 0.042** | 3.759 ± 0.082 | 2.758 ± 0.081 | 6.232 ± 0.220 |
+| str_mps_varying_inner_product_200 | 6.772 ± 2.650 | 12.481 ± 0.402 | **5.386 ± 0.076** | 14.115 ± 0.258 |
+| str_nw_mera_closed_120 | 156.636 ± 8.560 | 148.609 ± 2.919 | 143.748 ± 4.026 | **89.506 ± 1.189** |
+| str_nw_mera_open_26 | 146.946 ± 5.437 | 139.655 ± 2.537 | 121.895 ± 2.316 | **70.466 ± 1.803** |
+| tensornetwork_permutation_focus_step409_316 | 87.685 ± 3.929 | 89.455 ± 4.516 | 77.679 ± 8.134 | **76.565 ± 5.664** |
+| tensornetwork_permutation_light_415 | 91.583 ± 3.641 | 82.989 ± 7.323 | **78.814 ± 0.580** | 83.032 ± 10.076 |
 
 #### Strategy: opt_size
 
@@ -98,22 +98,22 @@ Median ± IQR (ms). OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
 
 | Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) |
 |---|---:|---:|---:|---:|
-| bin_batched_matmul_b32_m128_n128_k128 | 0.865 ± 0.178 | 0.561 ± 0.078 | **0.405 ± 0.007** | 0.629 ± 0.050 |
-| bin_batched_matmul_b32_m64_n64_k64 | 0.155 ± 0.034 | **0.094 ± 0.005** | 0.099 ± 0.008 | 0.194 ± 0.017 |
-| bin_batched_outer_product_compact_j16_k16_o64_t64 | 0.110 ± 0.011 | 0.130 ± 0.033 | **0.096 ± 0.003** | 0.135 ± 0.030 |
-| bin_batched_outer_product_noncompact_j16_k16_o64_t64 | 0.163 ± 0.011 | 0.133 ± 0.017 | **0.107 ± 0.005** | 0.150 ± 0.019 |
-| bin_elementwise_mul_2048x2048 | 1.233 ± 0.092 | 1.210 ± 0.084 | **1.119 ± 0.062** | 1.532 ± 0.037 |
-| bin_matmul_1024 | 5.273 ± 0.096 | 4.739 ± 0.162 | **4.379 ± 0.075** | 7.979 ± 0.616 |
-| bin_matmul_256 | 0.130 ± 0.008 | 0.091 ± 0.001 | **0.086 ± 0.001** | 0.266 ± 0.025 |
-| bin_outer_product_4096 | **1.777 ± 0.028** | 1.797 ± 0.078 | 1.803 ± 0.060 | 1.905 ± 0.141 |
-| gm_queen5_5_3.wcsp | **184.349 ± 21.848** | 281.121 ± 13.975 | 254.245 ± 5.347 | 374.315 ± 15.906 |
-| lm_batch_likelihood_brackets_4_4d | 9.939 ± 0.429 | 14.743 ± 0.762 | 9.312 ± 0.381 | **7.690 ± 0.406** |
-| lm_batch_likelihood_sentence_3_12d | 15.676 ± 0.946 | 23.112 ± 0.794 | 23.448 ± 1.141 | **13.839 ± 0.860** |
-| lm_batch_likelihood_sentence_4_4d | 10.279 ± 0.500 | 15.015 ± 0.304 | 9.290 ± 0.744 | **7.080 ± 0.310** |
-| nary_matmul_chain_64 | 0.039 ± 0.019 | 0.032 ± 0.001 | **0.030 ± 0.002** | 0.085 ± 0.004 |
-| str_matrix_chain_multiplication_100 | **2.868 ± 0.173** | 3.993 ± 0.129 | 3.173 ± 0.085 | 8.474 ± 0.579 |
-| str_mps_varying_inner_product_200 | **7.486 ± 0.249** | 13.399 ± 0.254 | 7.665 ± 0.315 | 16.533 ± 0.194 |
-| str_nw_mera_closed_120 | 139.720 ± 1.226 | 141.201 ± 0.980 | **126.118 ± 0.363** | 401.041 ± 33.258 |
-| str_nw_mera_open_26 | 166.008 ± 4.107 | 164.788 ± 1.397 | **119.180 ± 1.590** | 290.024 ± 9.123 |
-| tensornetwork_permutation_focus_step409_316 | **84.095 ± 15.248** | 98.837 ± 14.739 | 98.140 ± 5.585 | 128.573 ± 10.311 |
-| tensornetwork_permutation_light_415 | **72.746 ± 14.908** | 121.196 ± 5.045 | 98.842 ± 3.139 | 157.064 ± 3.665 |
+| bin_batched_matmul_b32_m128_n128_k128 | 0.783 ± 0.162 | 0.550 ± 0.181 | 0.378 ± 0.016 | **0.361 ± 0.042** |
+| bin_batched_matmul_b32_m64_n64_k64 | 0.174 ± 0.014 | 0.109 ± 0.034 | **0.095 ± 0.005** | 0.180 ± 0.039 |
+| bin_batched_outer_product_compact_j16_k16_o64_t64 | **0.065 ± 0.010** | 0.075 ± 0.021 | 0.066 ± 0.007 | 0.128 ± 0.017 |
+| bin_batched_outer_product_noncompact_j16_k16_o64_t64 | 0.169 ± 0.024 | 0.070 ± 0.014 | **0.067 ± 0.012** | 0.131 ± 0.022 |
+| bin_elementwise_mul_2048x2048 | 0.642 ± 0.022 | 0.631 ± 0.025 | **0.610 ± 0.088** | 0.809 ± 0.085 |
+| bin_matmul_1024 | 6.711 ± 2.170 | 4.580 ± 0.257 | 4.806 ± 1.997 | **3.516 ± 0.508** |
+| bin_matmul_256 | 0.135 ± 0.008 | 0.099 ± 0.007 | **0.096 ± 0.020** | 0.232 ± 0.026 |
+| bin_outer_product_4096 | 0.597 ± 0.056 | **0.578 ± 0.014** | 0.621 ± 0.042 | 0.653 ± 0.046 |
+| gm_queen5_5_3.wcsp | **154.207 ± 6.269** | 190.452 ± 19.633 | 193.958 ± 7.615 | 158.229 ± 7.714 |
+| lm_batch_likelihood_brackets_4_4d | 8.328 ± 0.089 | 11.446 ± 0.230 | 11.052 ± 0.700 | **5.846 ± 0.240** |
+| lm_batch_likelihood_sentence_3_12d | 10.366 ± 0.226 | 15.133 ± 0.978 | 18.998 ± 1.328 | **7.251 ± 0.249** |
+| lm_batch_likelihood_sentence_4_4d | 8.520 ± 0.106 | 12.018 ± 1.187 | 10.824 ± 0.531 | **5.422 ± 0.365** |
+| nary_matmul_chain_64 | 0.032 ± 0.006 | 0.037 ± 0.004 | **0.024 ± 0.001** | 0.079 ± 0.017 |
+| str_matrix_chain_multiplication_100 | 2.901 ± 0.243 | 4.007 ± 0.336 | **2.780 ± 0.131** | 6.300 ± 0.162 |
+| str_mps_varying_inner_product_200 | **7.591 ± 0.161** | 12.805 ± 0.293 | 11.704 ± 1.013 | 15.529 ± 0.387 |
+| str_nw_mera_closed_120 | 137.657 ± 1.564 | 133.219 ± 1.380 | 130.531 ± 2.883 | **86.709 ± 2.207** |
+| str_nw_mera_open_26 | 142.044 ± 4.872 | 140.807 ± 3.645 | 124.481 ± 2.352 | **76.569 ± 1.850** |
+| tensornetwork_permutation_focus_step409_316 | 87.685 ± 3.929 | 89.455 ± 4.516 | 77.679 ± 8.134 | **76.565 ± 5.664** |
+| tensornetwork_permutation_light_415 | 91.583 ± 3.641 | 82.989 ± 7.323 | **78.814 ± 0.580** | 83.032 ± 10.076 |
