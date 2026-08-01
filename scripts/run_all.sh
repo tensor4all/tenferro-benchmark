@@ -288,6 +288,13 @@ PY
     echo "- Julia is column-major like tenferro-rs, so the einsum runner uses"
     echo "  \`format_string_colmajor\` / \`shapes_colmajor\` directly with no"
     echo "  PyTorch/JAX-style layout reconstruction."
+    echo "- OMEinsum dispatches its pairwise contractions to Julia's own BLAS"
+    echo "  (libblastrampoline, OpenBLAS by default; the provider that ran is"
+    echo "  reported above). When that differs from the provider tenferro-rs and"
+    echo "  PyTorch link against, matmul-shaped rows partly compare BLAS"
+    echo "  implementations rather than einsum-runtime overhead; read them"
+    echo "  together with the recorded providers. \`docs/einsum-suite.md\` records"
+    echo "  the measured OMEinsum-over-its-own-BLAS overhead."
 }
 
 run_python_script() {

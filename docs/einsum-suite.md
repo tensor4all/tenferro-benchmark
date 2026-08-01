@@ -137,4 +137,17 @@ Notes:
   `format_string_colmajor` / `shapes_colmajor` directly; no PyTorch/JAX-style
   layout reconstruction is needed to preserve the same logical fixture
   values.
+- **The BLAS provider dominates matmul-shaped rows.** OMEinsum dispatches
+  pairwise contractions to Julia's own BLAS through libblastrampoline,
+  which defaults to OpenBLAS, while tenferro-rs and PyTorch link whatever
+  the profile selects (Accelerate on macOS). The provider that actually ran
+  is recorded as `julia.blas_provider` in `run.yaml` alongside the other
+  backends' providers, and the column is labeled "OMEinsum.jl OpenBLAS" for
+  that reason. On an Apple-silicon host a 256x256 `float64` GEMM measured
+  0.70 ms through Julia's OpenBLAS versus 0.92 ms for the same contraction
+  through `DynamicEinCode` — i.e. OMEinsum adds roughly 30% over its own
+  BLAS, and any larger gap against the tenferro/PyTorch columns on
+  matmul-dominated instances is a BLAS-implementation difference, not
+  einsum-runtime overhead. Read these rows together with the recorded
+  providers rather than as a framework-versus-framework result.
 

@@ -205,7 +205,7 @@ here; DynamicEinCode construction happened once in `build_plan`.
 """
 function run_plan(steps::Vector{Step}, n_inputs::Int, operands::Vector{Array{Float64}})
     if isempty(steps)
-        return n_inputs == 1 ? operands[1] : operands[1]
+        return operands[1]
     end
     tensors = Vector{Any}(undef, n_inputs + length(steps))
     for i in 1:n_inputs
