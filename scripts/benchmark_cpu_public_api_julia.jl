@@ -361,9 +361,17 @@ function linalg_uncovered_cases()
     svd_full_a = tensor_f64((768, 384), 1)
     norm2048 = tensor_f64((2048, 2048), 1)
 
+    # Factorization rows materialize their factors. A Julia `Factorization`
+    # object keeps the factors packed in LAPACK's working storage (the
+    # Cholesky factor shares the input's other triangle, `lu` packs L and U
+    # into one matrix, `qr` keeps Q as reflectors), whereas the tenferro-rs
+    # and PyTorch columns return separate materialized tensors. Timing the
+    # compact object would compare strictly less work, so the factors are
+    # materialized inside the timed call, matching the suite's existing
+    # materialized-output discipline.
     cases = Vector{Tuple{String,String,String,String,String,Function}}()
-    push!(cases, ("cpu/linalg_uncovered", "cholesky", "f64", "1536x1536", "SPD input",
-        () -> cholesky(Symmetric(spd1536))))
+    push!(cases, ("cpu/linalg_uncovered", "cholesky", "f64", "1536x1536", "SPD input; factor materialized",
+        () -> Matrix(cholesky(Symmetric(spd1536)).L)))
     push!(cases, ("cpu/linalg_uncovered", "eig", "f64", "160x160", "general input",
         () -> eigen(a160)))
     push!(cases, ("cpu/linalg_uncovered", "eigvals", "f64", "192x192", "general input values only",
@@ -382,10 +390,14 @@ function linalg_uncovered_cases()
         () -> pinv(rect512x256)))
     push!(cases, ("cpu/linalg_uncovered", "pinv_with_rtol", "f64", "512x256", "rectangular input; rtol=1e-12",
         () -> pinv(rect512x256; rtol = 1e-12)))
-    push!(cases, ("cpu/linalg_uncovered", "lu", "f64", "1024x1024", "partial-pivot LU",
-        () -> lu(lu1024)))
-    push!(cases, ("cpu/linalg_uncovered", "lstsq", "f64", "768x384,rhs=16", "tall full-column-rank QR least-squares solve",
-        () -> lstsq_a \ lstsq_rhs))
+    push!(cases, ("cpu/linalg_uncovered", "lu", "f64", "1024x1024", "partial-pivot LU; P/L/U materialized",
+        () -> (factorization = lu(lu1024); (factorization.P, factorization.L, factorization.U))))
+    # `lstsq_a \ lstsq_rhs` would run a column-pivoted (rank-revealing) QR,
+    # which is the LAPACK `gelsy` algorithm rather than the `gels` driver the
+    # PyTorch row selects. `qr(A) \ b` is the unpivoted public spelling and
+    # therefore the like-for-like comparison.
+    push!(cases, ("cpu/linalg_uncovered", "lstsq", "f64", "768x384,rhs=16", "tall full-column-rank QR least-squares solve; unpivoted QR to match the GELS driver",
+        () -> qr(lstsq_a) \ lstsq_rhs))
     push!(cases, ("cpu/linalg_uncovered", "svd_full", "f64", "768x384", "full-matrices SVD",
         () -> svd(svd_full_a; full = true)))
     push!(cases, ("cpu/linalg_uncovered", "norm_fro", "f64", "2048x2048", "Frobenius norm",
@@ -558,14 +570,14 @@ function complex_cases()
         () -> z640a * z640b, nothing))
     push!(cases, ("cpu/complex", "svd", "c64", "160x160", "complex SVD",
         () -> svd(z160; full = true), nothing))
-    push!(cases, ("cpu/complex", "qr", "c64", "256x256", "complex QR",
-        () -> qr(z256), nothing))
+    push!(cases, ("cpu/complex", "qr", "c64", "256x256", "complex QR; Q/R materialized",
+        () -> (factorization = qr(z256); (Matrix(factorization.Q), factorization.R)), nothing))
     push!(cases, ("cpu/complex", "eig", "c64", "112x112", "complex eig",
         () -> eigen(z112), nothing))
     push!(cases, ("cpu/complex", "solve", "c64", "384x384,rhs=8", "complex solve",
         () -> z384 \ z384_rhs, nothing))
-    push!(cases, ("cpu/complex", "cholesky", "c64", "448x448", "Hermitian positive definite",
-        () -> cholesky(Hermitian(hpd448)), nothing))
+    push!(cases, ("cpu/complex", "cholesky", "c64", "448x448", "Hermitian positive definite; factor materialized",
+        () -> Matrix(cholesky(Hermitian(hpd448)).L), nothing))
     push!(cases, ("cpu/complex", "norm_fro", "c64", "2048x1536", "complex Frobenius norm",
         () -> norm(z_norm), nothing))
     return cases
