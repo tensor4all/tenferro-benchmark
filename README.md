@@ -60,13 +60,15 @@ Profile-specific:
 - `amd-cpu` / `linux-cpu`: the [devcontainer CLI](https://github.com/devcontainers/cli)
   and Docker; tenferro defaults to OpenBLAS, oneMKL is optional.
 - `nvidia-gpu`: the CUDA devcontainer under `.devcontainer/cuda/`.
-- `cpu/permutation` suite: Julia on `PATH` (e.g. [juliaup](https://github.com/JuliaLang/juliaup)
-  or `brew install julia`) for the Julia backends; the repo `Project.toml`
-  pulls in JSON.jl and Strided.jl via `Pkg.instantiate`. Without `julia`,
-  those columns are skipped with a warning. For the HPTT column (present in
-  the tracked latest reports), also install cmake plus a C++ toolchain
-  (macOS: `brew install cmake`) and pass `PERMUTATION_EXTRA_FEATURES=hptt`,
-  because the `hptt` Cargo feature builds the vendored HPTT C++ library.
+- `cpu/permutation` and `cpu/public_api` suites: Julia on `PATH` (e.g.
+  [juliaup](https://github.com/JuliaLang/juliaup) or `brew install julia`)
+  for the `julia-base`/`strided-jl` columns; the repo `Project.toml` pulls in
+  JSON.jl, LinearAlgebra (stdlib), and Strided.jl via `Pkg.instantiate`.
+  Without `julia`, those columns are skipped with a warning. For the HPTT
+  column (present in the tracked latest `cpu/permutation` reports), also
+  install cmake plus a C++ toolchain (macOS: `brew install cmake`) and pass
+  `PERMUTATION_EXTRA_FEATURES=hptt`, because the `hptt` Cargo feature builds
+  the vendored HPTT C++ library.
 
 Workflow guides per platform:
 [macOS CPU](docs/macos-cpu.md) ·
@@ -291,6 +293,20 @@ backends where meaningful. The `cpu/permutation` suite has its own backend
 set (tenferro-rs `to_contiguous`, HPTT, strided-rs, Julia Base, Strided.jl,
 memcpy); `gpu/permutation` compares tenferro CUDA transpose paths
 against cuTENSOR, PyTorch/JAX CUDA, and a device-to-device memcpy baseline.
+
+The `cpu/public_api` suite additionally compares two Julia columns,
+`julia-base` (natural Base/LinearAlgebra spellings, e.g. `permutedims!`,
+`cholesky`, `eigen`) and `strided-jl` (natural
+[Strided.jl](https://github.com/Jutho/Strided.jl) `@strided` fused-broadcast
+spellings), populated only where each spelling naturally applies:
+`strided-jl` covers the elementwise/chain/transpose rows and has no natural
+spelling for reductions or dense linalg, so those stay `julia-base`-only.
+Julia is column-major like tenferro-rs, so these columns need no
+PyTorch/JAX-style layout reconstruction to preserve the same logical fixture
+values. **Attribution**: Strided.jl is prior art for tenferro-rs' strided-rs
+kernel layer (both implement strided-array views and fused, cache-blocked
+elementwise/permutation kernels); the `strided-jl` column exists to make that
+lineage visible in the comparison, not merely to add another backend.
 
 C++ Torch/LibTorch runners are intentionally removed; PyTorch Python is the
 ATen comparison backend. The PyTorch CPU provider is detected at run time and

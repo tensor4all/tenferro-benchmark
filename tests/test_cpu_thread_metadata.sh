@@ -37,6 +37,7 @@ EOF
   NUMEXPR_NUM_THREADS=1 \
   BLIS_NUM_THREADS=1 \
   XLA_FLAGS="--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1" \
+  JULIA_NUM_THREADS=1 \
     uv run python scripts/collect_run_metadata.py \
       --target-profile mac-cpu \
       --suite-id cpu/einsum \
@@ -84,6 +85,7 @@ expected = {
     "NUMEXPR_NUM_THREADS": "1",
     "BLIS_NUM_THREADS": "1",
     "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1",
+    "JULIA_NUM_THREADS": "1",
 }
 missing = {key: value for key, value in expected.items() if env.get(key) != value}
 if missing:

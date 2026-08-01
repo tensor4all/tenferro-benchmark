@@ -28,6 +28,7 @@
     "environment": { "$ref": "#/$defs/environment" },
     "blas": { "$ref": "#/$defs/blas" },
     "python_backends": { "$ref": "#/$defs/python_backends" },
+    "julia": { "$ref": "#/$defs/julia_backend" },
     "cuda": { "$ref": "#/$defs/cuda" },
     "metal": { "$ref": "#/$defs/metal" }
   },
@@ -135,6 +136,19 @@
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
         },
+        "reason": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "julia_backend": {
+      "type": "object",
+      "required": ["available"],
+      "additionalProperties": false,
+      "properties": {
+        "available": { "type": "boolean" },
+        "version": { "type": ["string", "null"], "minLength": 1 },
+        "strided_version": { "type": ["string", "null"], "minLength": 1 },
+        "blas_provider": { "type": ["string", "null"], "minLength": 1 },
+        "threads": { "type": ["integer", "null"], "minimum": 0 },
         "reason": { "type": ["string", "null"], "minLength": 1 }
       }
     },
