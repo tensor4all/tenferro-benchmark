@@ -273,6 +273,12 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
         run_julia_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1"
         run_julia_group cpu/structural_shape
         run_julia_group cpu/linalg_uncovered
+        run_julia_group cpu/indexing_layout
+        run_julia_group cpu/view_metadata
+        run_julia_group cpu/output_reuse
+        run_julia_group cpu/complex "conj"
+        run_julia_group cpu/complex "mul,div,exp,log"
+        run_julia_group cpu/complex "dot_general,dot_general_with_conj,tensordot,svd,qr,eig,solve,cholesky,norm_fro"
     fi
     CSVS+=("$CSV")
 done
@@ -339,16 +345,22 @@ fi
     echo "- Trace mode is \`unsupported\` for caller-output rows because compiled tenferro-rs graphs own their output tensors; JAX is shown as missing because it has no equivalent mutable \`out=\` API."
     echo "- PyTorch view-producing indexing operations are cloned inside the timed region to match tenferro-rs owned, materialized outputs."
     echo "- \`reshape\` compares materialized outputs: PyTorch clones its reshape view inside timing to match tenferro-rs' output-sized write; JAX has value semantics and no public strided-view contract."
-    echo "- \`cpu/view_metadata\` separately compares concrete tenferro-rs and PyTorch view creation without an output-sized copy; trace mode is unsupported and JAX is missing because neither exposes the same concrete strided-view contract."
+    echo "- \`cpu/view_metadata\` separately compares concrete tenferro-rs, PyTorch, and Julia (\`julia-base\`) view creation without an output-sized copy; trace mode is unsupported and JAX is missing because neither exposes the same concrete strided-view contract."
+    echo "- Julia \`cpu/view_metadata\` rows are \`reshape\`/\`transpose\`/\`@view\` lazy wrappers with no output-sized copy; \`broadcast_in_dim_view\` has no natural Base spelling and stays missing for Julia."
+    echo "- Julia \`cpu/output_reuse\` rows use broadcast-into (\`.=\`), \`mul!\`, and \`copyto!\` with destinations allocated during warmup and reused, the same reuse discipline as the tenferro-rs \`_into\`/PyTorch \`out=\` rows above."
     echo "- Rust, PyTorch, and JAX fixtures contain identical logical values. Python/JAX reconstruct the Rust column-major fixture in each framework's native layout before timing."
     echo "- PyTorch complex conjugation uses \`torch.conj_physical\` to match tenferro-rs physical output rather than the lazy conjugate view from \`torch.conj\`."
-    echo "- \`dot_general_with_conj\` instead uses PyTorch's lazy conjugate view so conjugation can be handled by the contraction, matching tenferro-rs' conjugation flags; trace is unsupported because there is no equivalent public traced API."
+    echo "- \`dot_general_with_conj\` instead uses PyTorch's lazy conjugate view so conjugation can be handled by the contraction, matching tenferro-rs' conjugation flags; trace is unsupported because there is no equivalent public traced API. Julia's \`dot_general_with_conj\` row materializes the conjugate before the GEMM instead, since Julia has no lazy conj-without-transpose spelling that BLAS can fuse."
+    echo "- \`pad\` has no natural Base spelling and stays missing for Julia."
     echo "- \`dynamic_update_slice\` reports trace mode as \`unsupported\` because tenferro-rs does not currently expose a corresponding \`TracedTensor\` API."
     echo "- \`full_piv_lu\` and \`full_piv_lu_solve\` are excluded because PyTorch has no direct public full-pivot equivalent; substituting \`torch.linalg.solve\` would compare different algorithms."
     echo "- \`svd_full\` remains in the table even when the selected tenferro-rs provider reports it as unsupported."
     echo "- Julia is column-major, like tenferro-rs, so the \`julia-base\`/\`strided-jl\` columns need no PyTorch/JAX-style layout reconstruction to keep the same logical fixture values."
     echo "- Julia warmup runs move JIT compilation outside the measured region, the same way PyTorch/JAX warmups do."
-    echo "- \`julia-base\` uses the natural Base/LinearAlgebra spelling and \`strided-jl\` the natural Strided.jl (\`@strided\`) spelling; each is populated only for rows where that spelling naturally applies (reductions and dense linalg have no natural Strided.jl spelling, so \`strided-jl\` is elementwise/chain/transpose only)."
+    echo "- Julia factorization rows materialize their factors inside the timed call (\`cholesky\` returns the factor matrix, \`lu\` returns P/L/U, \`qr\` returns Q/R). A Julia \`Factorization\` keeps its factors packed in LAPACK's working storage, so timing the compact object would compare strictly less work than the tenferro-rs and PyTorch columns, which return separate materialized tensors."
+    echo "- Julia dense linalg rows run through Julia's own BLAS/LAPACK (libblastrampoline, by default OpenBLAS), recorded as \`julia.blas_provider\` in the run metadata. When that differs from the provider tenferro-rs and PyTorch link against (Accelerate on macOS), those rows partly compare BLAS implementations rather than framework overhead; read them together with the recorded providers."
+    echo "- The Julia \`lstsq\` row uses \`qr(a) \\ rhs\` rather than \`a \\ rhs\`: the bare backslash runs a column-pivoted, rank-revealing QR (the LAPACK \`gelsy\` algorithm), while the PyTorch row selects the \`gels\` driver, so the unpivoted spelling is the like-for-like comparison."
+    echo "- \`julia-base\` uses the natural Base/LinearAlgebra spelling and \`strided-jl\` the natural Strided.jl (\`@strided\`) spelling; each is populated only for rows where that spelling naturally applies (reductions and dense linalg have no natural Strided.jl spelling, so \`strided-jl\` covers elementwise/chain/transpose rows, the elementwise \`cpu/output_reuse\` \`_into\` rows, and the elementwise \`cpu/complex\` rows conj/mul/div/exp/log)."
     echo "- Strided.jl (https://github.com/Jutho/Strided.jl) is prior art for tenferro-rs' strided-rs kernel layer; the \`strided-jl\` column credits that lineage directly in the report."
     echo ""
     echo "## Threads: ${THREAD_COUNTS[*]}"

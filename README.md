@@ -296,11 +296,19 @@ against cuTENSOR, PyTorch/JAX CUDA, and a device-to-device memcpy baseline.
 
 The `cpu/public_api` suite additionally compares two Julia columns,
 `julia-base` (natural Base/LinearAlgebra spellings, e.g. `permutedims!`,
-`cholesky`, `eigen`) and `strided-jl` (natural
+`cholesky`, `eigen`, `gather`/`slice` indexing, `reshape`/`transpose`/`@view`
+metadata-only views, broadcast-into/`mul!`/`copyto!` output reuse, and
+complex Base/LinearAlgebra spellings) and `strided-jl` (natural
 [Strided.jl](https://github.com/Jutho/Strided.jl) `@strided` fused-broadcast
 spellings), populated only where each spelling naturally applies:
-`strided-jl` covers the elementwise/chain/transpose rows and has no natural
-spelling for reductions or dense linalg, so those stay `julia-base`-only.
+`strided-jl` covers the elementwise/chain/transpose rows, the elementwise
+`cpu/output_reuse` `_into` rows, and the elementwise `cpu/complex` rows
+(conj/mul/div/exp/log); reductions and dense linalg have no natural
+Strided.jl spelling, so those stay `julia-base`-only. `julia-base` also now
+covers `cpu/indexing_layout`, `cpu/view_metadata`, `cpu/output_reuse`, and
+`cpu/complex`, with a few rows left missing where Julia Base has no natural
+spelling: `pad` (edge padding), `broadcast_in_dim_view` (a zero-stride
+broadcast array view), and `extract_diagonal` (batched diagonal extraction).
 Julia is column-major like tenferro-rs, so these columns need no
 PyTorch/JAX-style layout reconstruction to preserve the same logical fixture
 values. **Attribution**: Strided.jl is prior art for tenferro-rs' strided-rs
