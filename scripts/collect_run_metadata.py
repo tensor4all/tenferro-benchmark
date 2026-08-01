@@ -484,11 +484,15 @@ _JULIA_PROBE = r"""
 using LinearAlgebra
 try
     strided_version = "unknown"
+    omeinsum_version = "unknown"
     try
         import Pkg
         for (_, info) in Pkg.dependencies()
             if info.name == "Strided" && info.version !== nothing
                 strided_version = string(info.version)
+            end
+            if info.name == "OMEinsum" && info.version !== nothing
+                omeinsum_version = string(info.version)
             end
         end
     catch
@@ -496,6 +500,7 @@ try
     blas_provider = replace(sprint(show, LinearAlgebra.BLAS.get_config()), "\n" => " | ")
     println("JULIA_VERSION=", VERSION)
     println("STRIDED_VERSION=", strided_version)
+    println("OMEINSUM_VERSION=", omeinsum_version)
     println("BLAS_PROVIDER=", blas_provider)
     println("THREADS=", Threads.nthreads())
 catch e
@@ -541,6 +546,7 @@ def collect_julia_backend() -> dict[str, Any]:
         "available": True,
         "version": non_empty_or_none(values.get("JULIA_VERSION")),
         "strided_version": non_empty_or_none(values.get("STRIDED_VERSION")),
+        "omeinsum_version": non_empty_or_none(values.get("OMEINSUM_VERSION")),
         "blas_provider": non_empty_or_none(values.get("BLAS_PROVIDER")),
         "threads": threads,
     }

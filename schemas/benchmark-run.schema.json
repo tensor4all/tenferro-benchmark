@@ -147,6 +147,7 @@
         "available": { "type": "boolean" },
         "version": { "type": ["string", "null"], "minLength": 1 },
         "strided_version": { "type": ["string", "null"], "minLength": 1 },
+        "omeinsum_version": { "type": ["string", "null"], "minLength": 1 },
         "blas_provider": { "type": ["string", "null"], "minLength": 1 },
         "threads": { "type": ["integer", "null"], "minimum": 0 },
         "reason": { "type": ["string", "null"], "minLength": 1 }

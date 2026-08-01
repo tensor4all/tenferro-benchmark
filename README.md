@@ -60,11 +60,13 @@ Profile-specific:
 - `amd-cpu` / `linux-cpu`: the [devcontainer CLI](https://github.com/devcontainers/cli)
   and Docker; tenferro defaults to OpenBLAS, oneMKL is optional.
 - `nvidia-gpu`: the CUDA devcontainer under `.devcontainer/cuda/`.
-- `cpu/permutation` and `cpu/public_api` suites: Julia on `PATH` (e.g.
-  [juliaup](https://github.com/JuliaLang/juliaup) or `brew install julia`)
-  for the `julia-base`/`strided-jl` columns; the repo `Project.toml` pulls in
-  JSON.jl, LinearAlgebra (stdlib), and Strided.jl via `Pkg.instantiate`.
-  Without `julia`, those columns are skipped with a warning. For the HPTT
+- `cpu/permutation`, `cpu/public_api`, and `cpu/einsum` suites: Julia on
+  `PATH` (e.g. [juliaup](https://github.com/JuliaLang/juliaup) or
+  `brew install julia`) for the `julia-base`/`strided-jl` columns
+  (`cpu/permutation`/`cpu/public_api`) and the `omeinsum-jl` column
+  (`cpu/einsum`); the repo `Project.toml` pulls in JSON.jl, LinearAlgebra
+  (stdlib), Strided.jl, and OMEinsum.jl via `Pkg.instantiate`. Without
+  `julia`, those columns are skipped with a warning. For the HPTT
   column (present in the tracked latest `cpu/permutation` reports), also
   install cmake plus a C++ toolchain (macOS: `brew install cmake`) and pass
   `PERMUTATION_EXTRA_FEATURES=hptt`, because the `hptt` Cargo feature builds
@@ -287,7 +289,8 @@ the runtime API above instead of relying on `strings`.
 ## Comparison Backends
 
 CPU einsum reports compare `tenferro-trace`, `tenferro-eager`, `pytorch-cpu`,
-and `jax-cpu`. GPU reports compare `tenferro-cuda-trace`,
+`jax-cpu`, and `omeinsum-jl` (Julia; see [docs/einsum-suite.md](docs/einsum-suite.md#backends)).
+GPU reports compare `tenferro-cuda-trace`,
 `tenferro-cuda-eager`, `pytorch-cuda`, `jax-cuda`, and vendor-specific CUDA
 backends where meaningful. The `cpu/permutation` suite has its own backend
 set (tenferro-rs `to_contiguous`, HPTT, strided-rs, Julia Base, Strided.jl,
