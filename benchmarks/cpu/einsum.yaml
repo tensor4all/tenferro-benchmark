@@ -11,6 +11,7 @@ backends:
   - tenferro-eager
   - pytorch-cpu
   - jax-cpu
+  - omeinsum-jl
 problems:
   source: data/instances
   include:

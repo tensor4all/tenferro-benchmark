@@ -5,6 +5,8 @@ set -euo pipefail
 # CPU einsum benchmark runner:
 #   - tenferro-rs trace + eager (Rust)
 #   - PyTorch CPU + JAX CPU (Python)
+#   - OMEinsum.jl (Julia), forced through each instance's precomputed
+#     contraction path (mode omeinsum_path); see docs/einsum-suite.md
 #   - CPU ops microbenchmarks (primal linalg + JVP/VJP on trace + eager backward)
 #
 # Usage: ./scripts/run_all.sh [NUM_THREADS]
@@ -86,6 +88,15 @@ if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
     # are visible to the benchmark subprocesses below.
     # shellcheck source=scripts/setup_extern_deps.sh
     source "$SCRIPT_DIR/setup_extern_deps.sh"
+fi
+
+HAVE_JULIA=0
+if command -v julia >/dev/null 2>&1; then
+    HAVE_JULIA=1
+    echo "Instantiating Julia project (OMEinsum.jl)..."
+    (cd "$PROJECT_DIR" && julia --project="$PROJECT_DIR" -e 'import Pkg; Pkg.instantiate()')
+else
+    echo "WARNING: julia not found on PATH; skipping omeinsum-jl column." >&2
 fi
 
 resolve_git_commit() {
@@ -229,6 +240,56 @@ for key in ("pytorch", "jax"):
 PY
 }
 
+write_julia_backend_section() {
+    local run_yaml="$1"
+    echo "## Julia / OMEinsum.jl Backend"
+    echo ""
+    run_python_script - "$run_yaml" <<'PY'
+import sys
+from pathlib import Path
+
+try:
+    import yaml
+except Exception as exc:  # noqa: BLE001
+    print(f"- unavailable: PyYAML is not available ({exc})")
+    raise SystemExit(0)
+
+run_path = Path(sys.argv[1])
+try:
+    run = yaml.safe_load(run_path.read_text())
+except Exception as exc:  # noqa: BLE001
+    print(f"- unavailable: failed to read run metadata ({exc})")
+    raise SystemExit(0)
+
+julia = (run or {}).get("julia") or {}
+if not julia.get("available"):
+    reason = julia.get("reason") or "unavailable"
+    print(f"- Julia: unavailable ({reason})")
+    raise SystemExit(0)
+
+details = [f"version `{julia.get('version') or 'unknown'}`"]
+if julia.get("omeinsum_version"):
+    details.append(f"OMEinsum.jl `{julia['omeinsum_version']}`")
+if julia.get("blas_provider"):
+    details.append(f"BLAS provider `{julia['blas_provider']}`")
+if julia.get("threads") is not None:
+    details.append(f"probe threads `{julia['threads']}`")
+print("- Julia: " + ", ".join(details))
+PY
+    echo ""
+    echo "- \`omeinsum-jl\` (mode \`omeinsum_path\` in the log/report) always"
+    echo "  executes the instance's precomputed \`opt_flops\`/\`opt_size\` path via"
+    echo "  \`OMEinsum.DynamicEinCode\` pairwise contractions; OMEinsum's own"
+    echo "  contraction-order optimizer is never invoked, so the comparison"
+    echo "  against tenferro/PyTorch/JAX (which also use the precomputed path)"
+    echo "  stays fair."
+    echo "- \`JULIA_NUM_THREADS\` also pins \`LinearAlgebra.BLAS.set_num_threads\`,"
+    echo "  matching the BLAS thread pinning used by the other CPU backends."
+    echo "- Julia is column-major like tenferro-rs, so the einsum runner uses"
+    echo "  \`format_string_colmajor\` / \`shapes_colmajor\` directly with no"
+    echo "  PyTorch/JAX-style layout reconstruction."
+}
+
 run_python_script() {
     local script="$1"
     shift
@@ -294,6 +355,8 @@ write_einsum_report() {
         echo ""
         write_python_backend_section "$CPU_RUN_YAML"
         echo ""
+        write_julia_backend_section "$CPU_RUN_YAML"
+        echo ""
 
         echo "## Threads: $NUM_THREADS"
         echo ""
@@ -305,8 +368,9 @@ write_einsum_report() {
             "$TENFERRO_TRACE_LOG" \
             "$TENFERRO_EAGER_LOG" \
             "$PYTORCH_LOG" \
-            "$JAX_LOG"; do
-            [[ -f "$log" ]] && echo "- \`${log#$PROJECT_DIR/}\`"
+            "$JAX_LOG" \
+            "$JULIA_LOG"; do
+            [[ -f "$log" && -s "$log" ]] && echo "- \`${log#$PROJECT_DIR/}\`"
         done
         echo ""
         cat "$MARKDOWN_TABLE"
@@ -444,6 +508,26 @@ if ! "$SCRIPT_DIR/run_all_python.sh" "$NUM_THREADS"; then
 fi
 
 # ---------------------------------------------------------------------------
+# OMEinsum.jl (Julia) -- fresh process per invocation, forced through each
+# instance's precomputed contraction path (mode omeinsum_path); see
+# docs/einsum-suite.md. configure_cpu_thread_env above already exported
+# JULIA_NUM_THREADS, which the runner also uses to pin
+# LinearAlgebra.BLAS.set_num_threads for parity with the other backends.
+# ---------------------------------------------------------------------------
+JULIA_LOG="$CPU_RUN_DIR/julia_omeinsum_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+if [[ "$HAVE_JULIA" == "1" ]]; then
+    echo ""
+    echo "Running OMEinsum.jl einsum benchmark (threads=$NUM_THREADS)..."
+    if ! (
+        cd "$PROJECT_DIR"
+        JULIA_PROJECT="$PROJECT_DIR" \
+            julia --project="$PROJECT_DIR" "$SCRIPT_DIR/benchmark_einsum_omeinsum.jl" | tee "$JULIA_LOG"
+    ); then
+        echo "WARNING: OMEinsum.jl benchmark failed; continuing without julia results." >&2
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Focused CPU benchmark items (primal linalg, JVP/VJP on trace, backward on eager)
 # ---------------------------------------------------------------------------
 CPU_OPS_LOG="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
@@ -481,6 +565,7 @@ TENFERRO_TRACE_LOG="$CPU_RUN_DIR/tenferro_trace_t${NUM_THREADS}_${BENCHMARK_TIME
 TENFERRO_EAGER_LOG="$CPU_RUN_DIR/tenferro_eager_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 PYTORCH_LOG="$CPU_RUN_DIR/pytorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 JAX_LOG="$CPU_RUN_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
+# JULIA_LOG is already set above (before the Julia run step); reused here.
 MARKDOWN_TABLE="$CPU_RUN_DIR/einsum_table_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
 EINSUM_REPORT="$CPU_RUN_DIR/report.md"
 CPU_REPORT="$CPU_RUN_DIR/cpu_ops_report.md"
@@ -491,6 +576,7 @@ LOGS=()
 [ -f "$TENFERRO_EAGER_LOG" ] && LOGS+=("$TENFERRO_EAGER_LOG")
 [ -f "$PYTORCH_LOG" ]        && LOGS+=("$PYTORCH_LOG")
 [ -f "$JAX_LOG" ]            && LOGS+=("$JAX_LOG")
+[ "$HAVE_JULIA" == "1" ] && [ -f "$JULIA_LOG" ] && [ -s "$JULIA_LOG" ] && LOGS+=("$JULIA_LOG")
 
 if [ ${#LOGS[@]} -gt 0 ]; then
     echo "Formatting einsum results as markdown..."

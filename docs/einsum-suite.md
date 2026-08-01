@@ -91,3 +91,50 @@ uv run python scripts/analyze_einsum_gaps.py \
 `path_intermediate` rows should be treated as path-planning/layout problems
 before adding kernel-specific optimizations.
 
+## Backends
+
+Backend column names follow [architecture terminology](architecture.md).
+
+| backend | runner | measured path |
+|---|---|---|
+| `tenferro-trace` | Rust | tenferro-rs trace-mode einsum, compiled once from the instance's precomputed contraction path, then re-executed for warmups/timed runs |
+| `tenferro-eager` | Rust | tenferro-rs eager-mode einsum over the same precomputed path |
+| `pytorch-cpu` | Python | `opt_einsum.contract(..., optimize=path, backend="torch")` with the precomputed path, `torch.zeros` fixtures |
+| `jax-cpu` | Python | `opt_einsum.contract(..., optimize=path, backend="jax")` with the precomputed path, `jax.numpy.zeros` fixtures, `jax_enable_x64=True` |
+| `omeinsum-jl` | Julia | `OMEinsum.DynamicEinCode` pairwise contractions following the precomputed path, `zeros(Float64, shape...)` fixtures |
+
+Notes:
+
+- Every backend is forced through the instance's `paths.opt_flops` /
+  `paths.opt_size` contraction path (`data/instances/*.json`); none of them
+  is allowed to run its own contraction-path optimizer, so cross-backend
+  comparisons measure kernel/runtime overhead rather than differing path
+  quality.
+- `omeinsum-jl`'s runner (`scripts/benchmark_einsum_omeinsum.jl`) converts
+  the instance's opt_einsum-style relative pair path into absolute operand
+  ids the same way `src/main.rs::path_to_pairs` does, then derives each
+  intermediate contraction's output labels with the standard einsum
+  pairwise rule (a label survives the step iff it is still needed by a
+  later operand or the final output). It reports mode `omeinsum_path` in
+  its log, which `scripts/format_results.py` renders as the "OMEinsum.jl
+  OpenBLAS (ms)" column; a mode `omeinsum_opt` (OMEinsum's own optimizer)
+  is intentionally never emitted and would be excluded by the formatter as
+  an unfair comparison if it were.
+- Every operand across every backend is an all-zeros `float64` fixture of
+  the instance's shape (`create_operand_tensors` in `src/main.rs`,
+  `torch.zeros`/`jnp.zeros` in `scripts/benchmark_python.py`,
+  `zeros(Float64, shape...)` in `scripts/benchmark_einsum_omeinsum.jl`), so
+  timings reflect kernel/dispatch overhead on identical data across
+  backends.
+- `complex128` instances render `SKIP` for `omeinsum-jl`, matching how
+  PyTorch/JAX skip complex dtypes in this suite (none of the tracked
+  `cpu/einsum` suite instances currently use `complex128`).
+- `JULIA_NUM_THREADS` is used both for Julia's own thread pool and to pin
+  `LinearAlgebra.BLAS.set_num_threads`, matching the BLAS thread pinning
+  applied to the other CPU backends via `OMP_NUM_THREADS` /
+  `OPENBLAS_NUM_THREADS`.
+- Julia is column-major like tenferro-rs, so `omeinsum-jl` uses
+  `format_string_colmajor` / `shapes_colmajor` directly; no PyTorch/JAX-style
+  layout reconstruction is needed to preserve the same logical fixture
+  values.
+
