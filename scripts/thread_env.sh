@@ -19,6 +19,7 @@ configure_cpu_thread_env() {
     export NUMEXPR_NUM_THREADS="$threads"
     export BLIS_NUM_THREADS="$threads"
     export XLA_FLAGS="--xla_cpu_multi_thread_eigen=${xla_multi_thread} intra_op_parallelism_threads=${threads}"
+    export JULIA_NUM_THREADS="$threads"
 }
 
 print_cpu_thread_env() {
@@ -34,7 +35,8 @@ print_cpu_thread_env() {
         VECLIB_NUM_THREADS \
         NUMEXPR_NUM_THREADS \
         BLIS_NUM_THREADS \
-        XLA_FLAGS; do
+        XLA_FLAGS \
+        JULIA_NUM_THREADS; do
         printf '  %s=%s\n' "$key" "${!key:-}"
     done
 }

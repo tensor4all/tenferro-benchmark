@@ -144,6 +144,15 @@ collect_run_metadata() {
 configure_cpu_thread_env "${THREAD_COUNTS[0]}"
 collect_run_metadata "$RUN_YAML"
 
+HAVE_JULIA=0
+if command -v julia >/dev/null 2>&1; then
+    HAVE_JULIA=1
+    echo "Instantiating Julia project..."
+    (cd "$PROJECT_DIR" && julia --project="$PROJECT_DIR" -e 'import Pkg; Pkg.instantiate()')
+else
+    echo "WARNING: julia not found on PATH; skipping julia-base / strided-jl columns." >&2
+fi
+
 echo "CPU public API benchmark suite"
 echo "Project dir:  $PROJECT_DIR"
 echo "Thread counts: ${THREAD_COUNTS[*]}"
@@ -235,6 +244,36 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_jax_group cpu/complex "mul,div"
     run_jax_group cpu/complex "exp,log"
     run_jax_group cpu/complex "dot_general,dot_general_with_conj,tensordot,svd,qr,eig,solve,cholesky,norm_fro"
+
+    run_julia_group() {
+        local api_suite="$1"
+        local benchmark_filter="${2:-}"
+        assert_benchmark_host_idle
+        # Fresh julia process per family group: Julia's thread pool is sized
+        # once at process start from JULIA_NUM_THREADS (exported by
+        # configure_cpu_thread_env above), matching the process-isolation
+        # convention used for the Rust/JAX groups and for
+        # scripts/run_permutation.sh's Julia runner.
+        (
+            cd "$PROJECT_DIR"
+            PUBLIC_API_SUITE_FILTER="$api_suite" \
+                PUBLIC_API_BENCHMARK_FILTER="$benchmark_filter" \
+                julia --project="$PROJECT_DIR" "$SCRIPT_DIR/benchmark_cpu_public_api_julia.jl" \
+                    --num-threads "$NUM_THREADS" \
+                    --output "$CSV"
+        )
+    }
+
+    if [[ "$HAVE_JULIA" == "1" ]]; then
+        # Same family/process-isolation granularity as the JAX groups above,
+        # plus one group each for structural_shape and linalg_uncovered.
+        run_julia_group cpu/elementwise_reduction "add,sub,mul,div,neg,abs,sign,maximum,minimum,compare_lt,select,sqrt,rsqrt"
+        run_julia_group cpu/elementwise_reduction "rem,clamp,exp,log,sin,cos,tanh"
+        run_julia_group cpu/elementwise_reduction "pow,expm1,log1p,chain_log1p_exp_mul"
+        run_julia_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1"
+        run_julia_group cpu/structural_shape
+        run_julia_group cpu/linalg_uncovered
+    fi
     CSVS+=("$CSV")
 done
 
@@ -284,7 +323,7 @@ fi
         echo "### Threads: $NUM_THREADS"
         echo ""
         echo "- Run metadata: \`data/results/$BENCHMARK_TARGET_PROFILE/cpu/public_api/$BENCHMARK_TIMESTAMP/run_t${NUM_THREADS}.yaml\`"
-        for key in OMP_NUM_THREADS OMP_THREAD_LIMIT OMP_DYNAMIC RAYON_NUM_THREADS OPENBLAS_NUM_THREADS GOTO_NUM_THREADS MKL_NUM_THREADS VECLIB_MAXIMUM_THREADS VECLIB_NUM_THREADS NUMEXPR_NUM_THREADS BLIS_NUM_THREADS XLA_FLAGS; do
+        for key in OMP_NUM_THREADS OMP_THREAD_LIMIT OMP_DYNAMIC RAYON_NUM_THREADS OPENBLAS_NUM_THREADS GOTO_NUM_THREADS MKL_NUM_THREADS VECLIB_MAXIMUM_THREADS VECLIB_NUM_THREADS NUMEXPR_NUM_THREADS BLIS_NUM_THREADS XLA_FLAGS JULIA_NUM_THREADS; do
             echo "- ${key}: \`${!key:-}\`"
         done
     done
@@ -307,6 +346,10 @@ fi
     echo "- \`dynamic_update_slice\` reports trace mode as \`unsupported\` because tenferro-rs does not currently expose a corresponding \`TracedTensor\` API."
     echo "- \`full_piv_lu\` and \`full_piv_lu_solve\` are excluded because PyTorch has no direct public full-pivot equivalent; substituting \`torch.linalg.solve\` would compare different algorithms."
     echo "- \`svd_full\` remains in the table even when the selected tenferro-rs provider reports it as unsupported."
+    echo "- Julia is column-major, like tenferro-rs, so the \`julia-base\`/\`strided-jl\` columns need no PyTorch/JAX-style layout reconstruction to keep the same logical fixture values."
+    echo "- Julia warmup runs move JIT compilation outside the measured region, the same way PyTorch/JAX warmups do."
+    echo "- \`julia-base\` uses the natural Base/LinearAlgebra spelling and \`strided-jl\` the natural Strided.jl (\`@strided\`) spelling; each is populated only for rows where that spelling naturally applies (reductions and dense linalg have no natural Strided.jl spelling, so \`strided-jl\` is elementwise/chain/transpose only)."
+    echo "- Strided.jl (https://github.com/Jutho/Strided.jl) is prior art for tenferro-rs' strided-rs kernel layer; the \`strided-jl\` column credits that lineage directly in the report."
     echo ""
     echo "## Threads: ${THREAD_COUNTS[*]}"
     echo ""

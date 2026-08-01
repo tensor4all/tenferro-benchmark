@@ -12,6 +12,8 @@ backends:
   - tenferro-trace
   - pytorch-cpu
   - jax-cpu
+  - julia-base
+  - strided-jl
 problems:
   source: generated
   include:

@@ -22,6 +22,8 @@ BACKEND_ORDER = [
     "tenferro-trace",
     "pytorch-cpu",
     "jax-cpu",
+    "julia-base",
+    "strided-jl",
 ]
 
 BACKEND_LABELS = {
@@ -31,6 +33,8 @@ BACKEND_LABELS = {
     "tenferro-trace": "tenferro-rs trace mode (ms)",
     "pytorch-cpu": "PyTorch Python (ms)",
     "jax-cpu": "JAX Python (XLA CPU) (ms)",
+    "julia-base": "Julia (Base/LinearAlgebra) (ms)",
+    "strided-jl": "Julia (Strided.jl) (ms)",
 }
 
 PLAUSIBILITY_RATIO_LIMIT = 10.0

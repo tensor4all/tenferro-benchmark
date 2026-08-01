@@ -201,9 +201,9 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     # Julia's thread pool are both sized once at process start from these
     # environment variables, so re-exporting them here only takes effect
     # because each benchmark invocation is a new process. Do not turn this
-    # loop into a single long-lived process.
+    # loop into a single long-lived process. configure_cpu_thread_env also
+    # exports JULIA_NUM_THREADS.
     configure_cpu_thread_env "$NUM_THREADS"
-    export JULIA_NUM_THREADS="$NUM_THREADS"
     print_cpu_thread_env
 
     RUST_JSONL="$RUN_DIR/rust_output_t${NUM_THREADS}.jsonl"

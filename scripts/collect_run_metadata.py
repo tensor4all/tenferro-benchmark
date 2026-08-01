@@ -21,6 +21,8 @@ from collect_gpu_info import collect_cuda_metadata
 
 from benchmark_layout import safe_suite_id_parts, safe_target_profile
 
+PROJECT_DIR = Path(__file__).resolve().parents[1]
+
 ENV_KEYS = (
     "OMP_NUM_THREADS",
     "OMP_THREAD_LIMIT",
@@ -39,6 +41,7 @@ ENV_KEYS = (
     "NUMEXPR_NUM_THREADS",
     "BLIS_NUM_THREADS",
     "XLA_FLAGS",
+    "JULIA_NUM_THREADS",
     "CUDA_HOME",
     "USE_CUDA",
 )
@@ -477,6 +480,72 @@ def collect_python_backends() -> dict[str, Any]:
     }
 
 
+_JULIA_PROBE = r"""
+using LinearAlgebra
+try
+    strided_version = "unknown"
+    try
+        import Pkg
+        for (_, info) in Pkg.dependencies()
+            if info.name == "Strided" && info.version !== nothing
+                strided_version = string(info.version)
+            end
+        end
+    catch
+    end
+    blas_provider = replace(sprint(show, LinearAlgebra.BLAS.get_config()), "\n" => " | ")
+    println("JULIA_VERSION=", VERSION)
+    println("STRIDED_VERSION=", strided_version)
+    println("BLAS_PROVIDER=", blas_provider)
+    println("THREADS=", Threads.nthreads())
+catch e
+    println("ERROR=", sprint(showerror, e))
+end
+"""
+
+
+def collect_julia_backend() -> dict[str, Any]:
+    julia = shutil.which("julia")
+    if julia is None:
+        return {"available": False, "reason": "julia not found on PATH"}
+    try:
+        result = subprocess.run(
+            [julia, f"--project={PROJECT_DIR}", "-e", _JULIA_PROBE],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return {"available": False, "reason": f"{type(exc).__name__}: {exc}"}
+
+    values: dict[str, str] = {}
+    for line in result.stdout.splitlines():
+        key, sep, value = line.partition("=")
+        if sep:
+            values[key] = value
+
+    if "ERROR" in values:
+        return {"available": False, "reason": values["ERROR"] or "julia probe failed"}
+    if "JULIA_VERSION" not in values:
+        return {"available": False, "reason": "julia probe produced no usable output"}
+
+    threads_text = values.get("THREADS")
+    threads: int | None
+    try:
+        threads = int(threads_text) if threads_text else None
+    except ValueError:
+        threads = None
+
+    return {
+        "available": True,
+        "version": non_empty_or_none(values.get("JULIA_VERSION")),
+        "strided_version": non_empty_or_none(values.get("STRIDED_VERSION")),
+        "blas_provider": non_empty_or_none(values.get("BLAS_PROVIDER")),
+        "threads": threads,
+    }
+
+
 def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
     safe_suite_id_parts(args.suite_id)
     safe_target_profile(args.target_profile)
@@ -502,6 +571,7 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
     if blas is not None:
         metadata["blas"] = blas
     metadata["python_backends"] = collect_python_backends()
+    metadata["julia"] = collect_julia_backend()
     if "cuda" in parse_features(args.features) and args.cuda_device_ordinal is not None:
         cuda = collect_cuda_metadata(args.cuda_device_ordinal)
         if cuda is not None:
