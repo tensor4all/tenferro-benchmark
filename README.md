@@ -85,10 +85,9 @@ Workflow guides per platform:
 (tenferro trace/eager vs PyTorch/JAX) plus the CPU ops microbenchmarks
 (primal linalg, JVP/VJP, eager backward), and regenerates
 `result/<target_profile>/cpu/{einsum,cpu_ops,linalg_jvp_vjp}.md`.
-Each invocation writes one thread-count snapshot and **overwrites** those
-three latest reports, so run thread counts sequentially when you want both
-1T and 4T data in raw runs; the tracked `mac-cpu` reports match a 4-thread
-collection:
+Passing multiple thread counts runs those main suites once per thread count,
+then runs the FFT, public API, and permutation suites once over the same
+thread-count list, regenerating all tracked CPU reports.
 
 ```bash
 uv sync
@@ -97,17 +96,15 @@ BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 1
 BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 4
 ```
 
-To regenerate all four tracked `result/mac-cpu/cpu/*.md` reports in the same
-shape as the published latest (4T einsum/ops, plus permutation at 1T and 4T
-with HPTT), run sequentially:
+To regenerate all tracked `result/mac-cpu/cpu/*.md` reports in one sequential
+orchestration, including FFT, public API, and permutation at 1T and 4T, run:
 
 ```bash
 uv sync
 ./scripts/setup_extern_deps.sh
 # Julia on PATH; for HPTT: brew install cmake (and a C++ toolchain)
-BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 4
 PERMUTATION_EXTRA_FEATURES=hptt \
-BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_permutation.sh 1 4
+BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_all.sh 1 4
 ```
 
 Quick smoke (single small instance, one run, no warmup):
@@ -125,9 +122,9 @@ Useful environment variables: `BENCH_INSTANCE` (restrict to one einsum
 instance), `BENCH_RUNS` / `BENCH_WARMUPS` (iteration counts),
 `TENFERRO_CPU_FEATURES` (BLAS provider: `system-accelerate`,
 `system-openblas`, `system-mkl`; macOS defaults to `system-accelerate`),
-`RUN_PERMUTATION_SUITE=1` (also run the `cpu/permutation` suite after
-everything else, sequentially; HPTT still needs
-`PERMUTATION_EXTRA_FEATURES=hptt`).
+`RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, and `RUN_PERMUTATION_SUITE=0`
+(skip one of the follow-up suites in a multi-thread-count `run_all.sh`
+invocation; HPTT still needs `PERMUTATION_EXTRA_FEATURES=hptt`).
 
 Note: a full or smoke `run_all.sh` invocation **overwrites** the tracked
 latest reports under `result/<target_profile>/`. If you only ran a smoke
@@ -178,8 +175,8 @@ BENCH_WARMUPS=0 \
 This writes `result/<target_profile>/cpu/permutation.md`. Pattern definitions
 live in `data/instances/permutation_patterns.json` and are read by both the
 Rust and Julia runners; result records are validated against
-`schemas/permutation-result.schema.json`. The suite can also be appended to a
-`run_all.sh` invocation with `RUN_PERMUTATION_SUITE=1`.
+`schemas/permutation-result.schema.json`. The suite is also included by
+`./scripts/run_all.sh 1 4` unless `RUN_PERMUTATION_SUITE=0` is set.
 
 ### GPU suites (CUDA devcontainer)
 

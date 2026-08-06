@@ -13,14 +13,15 @@ use std::time::Instant;
 
 use num_complex::Complex64;
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{CpuBackend, CpuBackendKind};
+use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuBackendKind, CpuExecSession};
 use tenferro_einsum::{TensorDotAxes, TensorEinsumExt, TensorTensordotExt, TracedTensorEinsumExt};
 use tenferro_linalg::{EagerTensorLinalgExt, TensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
 use tenferro_tensor::{
     CompareDir, DType, DotGeneralAccumulation, DotGeneralConfig, GatherConfig, PadConfig,
     ScatterConfig, SliceConfig, Tensor, TensorAnalytic, TensorDot, TensorElementwise,
-    TensorIndexing, TensorRead, TensorReduction, TensorStructural, TensorValue, TensorWrite,
+    BackendSessionHost, TensorIndexing, TensorRead, TensorReduction, TensorStructural,
+    TensorValue, TensorWrite,
 };
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
@@ -1219,7 +1220,7 @@ fn well_conditioned_c64(n: usize, seed: u64) -> &'static Tensor {
 }
 
 fn traced(tensor: &Tensor) -> BenchResult<TracedTensor> {
-    Ok(TracedTensor::from_tensor_concrete_shape(tensor.clone())?)
+    Ok(TracedTensor::from_tensor_concrete_shape(tensor.duplicate()?)?)
 }
 
 fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
@@ -1741,26 +1742,42 @@ fn consume_value(value: TensorValue) {
 }
 
 fn reshape_view_f64(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume_value(tensor_value_f64(&[33_554_432], 1).reshape_view([8192, 4096])?);
+    consume_value(
+        tensor_value_f64(&[33_554_432], 1)
+            .duplicate()?
+            .reshape_view([8192, 4096])?,
+    );
     Ok(())
 }
 
 fn transpose_view_f64(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume_value(tensor_value_f64(&[4096, 4096], 1).transpose_view([1, 0])?);
+    consume_value(
+        tensor_value_f64(&[4096, 4096], 1)
+            .duplicate()?
+            .transpose_view([1, 0])?,
+    );
     Ok(())
 }
 
 fn slice_view_f64(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume_value(tensor_value_f64(&[4_194_304], 1).slice_view(&SliceConfig {
-        starts: vec![1024],
-        limits: vec![4_194_304 - 1024],
-        strides: vec![2],
-    })?);
+    consume_value(
+        tensor_value_f64(&[4_194_304], 1)
+            .duplicate()?
+            .slice_view(&SliceConfig {
+                starts: vec![1024],
+                limits: vec![4_194_304 - 1024],
+                strides: vec![2],
+            })?,
+    );
     Ok(())
 }
 
 fn broadcast_view_f64(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume_value(tensor_value_f64(&[8192, 1], 1).broadcast_in_dim_view([8192, 4096], [0, 1])?);
+    consume_value(
+        tensor_value_f64(&[8192, 1], 1)
+            .duplicate()?
+            .broadcast_in_dim_view([8192, 4096], [0, 1])?,
+    );
     Ok(())
 }
 
@@ -1912,58 +1929,80 @@ fn einsum_ij_jk_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
 
 // Linalg.
 fn cholesky_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(spd(1536, 1).cholesky(b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(spd(1536, 1).cholesky(session)?);
+        Ok(())
+    })
 }
 fn eig_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (w, v) = well_conditioned(160, 1).eig(b)?;
-    consume_many([w, v]);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        let (w, v) = well_conditioned(160, 1).eig(session)?;
+        consume_many([w, v]);
+        Ok(())
+    })
 }
 fn eigvals_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(well_conditioned(192, 1).eigvals(b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(well_conditioned(192, 1).eigvals(session)?);
+        Ok(())
+    })
 }
 fn eigvalsh_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(spd(512, 1).eigvalsh(b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(spd(512, 1).eigvalsh(session)?);
+        Ok(())
+    })
 }
 fn triangular_solve_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(lower_triangular(4096, 1).triangular_solve(
-        tensor_f64(&[4096, 64], 2),
-        true,
-        true,
-        false,
-        false,
-        b,
-    )?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(lower_triangular(4096, 1).triangular_solve(
+            tensor_f64(&[4096, 64], 2),
+            true,
+            true,
+            false,
+            false,
+            session,
+        )?);
+        Ok(())
+    })
 }
 fn det_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(well_conditioned(1024, 1).det(b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(well_conditioned(1024, 1).det(session)?);
+        Ok(())
+    })
 }
 fn slogdet_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (s, l) = well_conditioned(1024, 1).slogdet(b)?;
-    consume_many([s, l]);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        let (s, l) = well_conditioned(1024, 1).slogdet(session)?;
+        consume_many([s, l]);
+        Ok(())
+    })
 }
 fn inv_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(well_conditioned(768, 1).inv(b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(well_conditioned(768, 1).inv(session)?);
+        Ok(())
+    })
 }
 fn pinv_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(tensor_f64(&[512, 256], 1).pinv(b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(tensor_f64(&[512, 256], 1).pinv(session)?);
+        Ok(())
+    })
 }
 fn pinv_with_rtol_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(tensor_f64(&[512, 256], 1).pinv_with_rtol(1e-12, b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(tensor_f64(&[512, 256], 1).pinv_with_rtol(1e-12, session)?);
+        Ok(())
+    })
 }
 fn lu_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (p, l, u, pivots) = well_conditioned(1024, 1).lu(b)?;
-    consume_many([p, l, u, pivots]);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        let (p, l, u, pivots) = well_conditioned(1024, 1).lu(session)?;
+        consume_many([p, l, u, pivots]);
+        Ok(())
+    })
 }
 
 thread_local! {
@@ -1985,6 +2024,7 @@ fn eager_cpu_context() -> Arc<EagerRuntime> {
             other => panic!("unsupported TENFERRO_CPU_BACKEND_KIND={other}"),
         },
     )
+    .expect("configured eager CPU runtime should initialize")
 }
 
 fn eager_linalg_error(op: &'static str, error: tenferro_ad::Error) -> tenferro_tensor::Error {
@@ -2001,10 +2041,19 @@ fn lstsq_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
         let mut fixture = slot.borrow_mut();
         if fixture.is_none() {
             let ctx = eager_cpu_context();
-            let a =
-                EagerTensor::from_tensor_in(tensor_f64(&[768, 384], 1).clone(), Arc::clone(&ctx))
-                    .expect("lstsq lhs fixture should initialize");
-            let rhs = EagerTensor::from_tensor_in(tensor_f64(&[768, 16], 2).clone(), ctx)
+            let a = EagerTensor::from_tensor_in(
+                tensor_f64(&[768, 384], 1)
+                    .duplicate()
+                    .expect("lstsq lhs tensor should duplicate"),
+                Arc::clone(&ctx),
+            )
+            .expect("lstsq lhs fixture should initialize");
+            let rhs = EagerTensor::from_tensor_in(
+                tensor_f64(&[768, 16], 2)
+                    .duplicate()
+                    .expect("lstsq rhs tensor should duplicate"),
+                ctx,
+            )
                 .expect("lstsq rhs fixture should initialize");
             *fixture = Some((a, rhs));
         }
@@ -2024,7 +2073,9 @@ fn svd_full_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
         if fixture.is_none() {
             *fixture = Some(
                 EagerTensor::from_tensor_in(
-                    tensor_f64(&[768, 384], 1).clone(),
+                    tensor_f64(&[768, 384], 1)
+                        .duplicate()
+                        .expect("full SVD tensor should duplicate"),
                     eager_cpu_context(),
                 )
                 .expect("full SVD fixture should initialize"),
@@ -2042,8 +2093,10 @@ fn svd_full_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     })
 }
 fn norm_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(tensor_f64(&[2048, 2048], 1).norm(None, Some(&[0, 1]), false, b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(tensor_f64(&[2048, 2048], 1).norm(None, Some(&[0, 1]), false, session)?);
+        Ok(())
+    })
 }
 // Complex.
 fn conj_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
@@ -2106,31 +2159,55 @@ fn tensordot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     Ok(())
 }
 fn svd_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (u, s, vt) = tensor_c64(&[160, 160], 1).svd(b)?;
-    consume_many([u, s, vt]);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        let (u, s, vt) = tensor_c64(&[160, 160], 1).svd(session)?;
+        consume_many([u, s, vt]);
+        Ok(())
+    })
 }
 fn qr_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (q, r) = tensor_c64(&[256, 256], 1).qr(b)?;
-    consume_many([q, r]);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        let (q, r) = tensor_c64(&[256, 256], 1).qr(session)?;
+        consume_many([q, r]);
+        Ok(())
+    })
 }
 fn eig_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let (w, v) = tensor_c64(&[112, 112], 1).eig(b)?;
-    consume_many([w, v]);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        let (w, v) = tensor_c64(&[112, 112], 1).eig(session)?;
+        consume_many([w, v]);
+        Ok(())
+    })
 }
 fn solve_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(well_conditioned_c64(384, 1).solve(tensor_c64(&[384, 8], 2), b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(well_conditioned_c64(384, 1).solve(tensor_c64(&[384, 8], 2), session)?);
+        Ok(())
+    })
 }
 fn cholesky_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(hpd_c64(448, 1).cholesky(b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(hpd_c64(448, 1).cholesky(session)?);
+        Ok(())
+    })
 }
 fn norm_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(tensor_c64(&[2048, 1536], 1).norm(None, Some(&[0, 1]), false, b)?);
-    Ok(())
+    with_cpu_linalg(b, |session| {
+        consume(tensor_c64(&[2048, 1536], 1).norm(None, Some(&[0, 1]), false, session)?);
+        Ok(())
+    })
+}
+
+fn with_cpu_linalg<R>(
+    backend: &mut CpuBackend,
+    f: impl for<'a> FnOnce(&'a mut CpuExecSession<'a>) -> tenferro_tensor::Result<R> + Send,
+) -> tenferro_tensor::Result<R>
+where
+    R: Send,
+{
+    backend.with_backend_session(|session| {
+        with_cpu_exec_session(session, f).expect("CpuBackend must expose a CPU execution session")
+    })
 }
 
 #[cfg(test)]

@@ -9,7 +9,9 @@ set -euo pipefail
 #     contraction path (mode omeinsum_path); see docs/einsum-suite.md
 #   - CPU ops microbenchmarks (primal linalg + JVP/VJP on trace + eager backward)
 #
-# Usage: ./scripts/run_all.sh [NUM_THREADS]
+# Usage:
+#   ./scripts/run_all.sh [NUM_THREADS]
+#   ./scripts/run_all.sh 1 4
 #
 # Compares einsum performance for the instances listed in
 # benchmarks/cpu/einsum.yaml and writes result/<target_profile>/cpu/einsum.md.
@@ -17,8 +19,14 @@ set -euo pipefail
 #   result/<target_profile>/cpu/cpu_ops.md
 #   result/<target_profile>/cpu/linalg_jvp_vjp.md
 #
-# Set RUN_FFT_SUITE=1 to also run scripts/run_cpu_fft.sh (the cpu/fft suite)
-# sequentially after CPU ops.
+# Passing multiple thread counts runs the main einsum / cpu_ops / linalg JVP/VJP
+# path once per thread count, then runs cpu/fft, cpu/public_api, and
+# cpu/permutation once over the same thread-count list. Set RUN_FFT_SUITE=0,
+# RUN_PUBLIC_API_SUITE=0, or RUN_PERMUTATION_SUITE=0 to skip one of those
+# multi-thread-count follow-up suites.
+#
+# Set RUN_FFT_SUITE=1 in a single-thread-count invocation to also run
+# scripts/run_cpu_fft.sh (the cpu/fft suite) sequentially after CPU ops.
 #
 # Set RUN_PUBLIC_API_SUITE=1 to also run scripts/run_cpu_public_api.sh (the
 # cpu/public_api suite) sequentially after CPU FFT if enabled.
@@ -31,6 +39,52 @@ set -euo pipefail
 NUM_THREADS="${1:-1}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
+    THREAD_COUNTS=("$@")
+    for threads in "${THREAD_COUNTS[@]}"; do
+        RUN_ALL_MAIN_ONLY=1 "$0" "$threads"
+    done
+
+    if [[ "${RUN_FFT_SUITE:-1}" == "1" ]]; then
+        echo "Running cpu/fft suite for threads: ${THREAD_COUNTS[*]}..."
+        "$SCRIPT_DIR/run_cpu_fft.sh" "${THREAD_COUNTS[@]}"
+        echo ""
+    fi
+
+    if [[ "${RUN_PUBLIC_API_SUITE:-1}" == "1" ]]; then
+        public_api_profile="${RUN_PUBLIC_API_PROFILE:-${PUBLICATION_GATE_PROFILE:-full}}"
+        echo "Running cpu/public_api suite for threads: ${THREAD_COUNTS[*]} (profile=$public_api_profile)..."
+        PUBLICATION_GATE_PROFILE="$public_api_profile" \
+            "$SCRIPT_DIR/run_cpu_public_api.sh" "${THREAD_COUNTS[@]}"
+        echo ""
+    fi
+
+    if [[ "${RUN_PERMUTATION_SUITE:-1}" == "1" ]]; then
+        echo "Running cpu/permutation suite for threads: ${THREAD_COUNTS[*]}..."
+        "$SCRIPT_DIR/run_permutation.sh" "${THREAD_COUNTS[@]}"
+        echo ""
+    fi
+
+    echo "============================================"
+    echo " Benchmark complete"
+    echo "============================================"
+    if [[ -n "${BENCHMARK_TARGET_PROFILE:-}" ]]; then
+        multi_target_profile="$BENCHMARK_TARGET_PROFILE"
+    elif [[ "$(uname -s)" == "Darwin" ]]; then
+        multi_target_profile="mac-cpu"
+    else
+        multi_target_profile="amd-cpu"
+    fi
+    echo "Latest reports:"
+    echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/einsum.md"
+    echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/cpu_ops.md"
+    echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/linalg_jvp_vjp.md"
+    echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/fft.md"
+    echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/public_api.md"
+    echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/permutation.md"
+    exit 0
+fi
 
 # shellcheck source=scripts/cpu_blas_provider.sh
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
@@ -629,7 +683,7 @@ fi
 
 # Opt-in: cpu/fft suite, run sequentially after CPU ops so FFT timing does not
 # overlap other CPU benchmark processes.
-if [[ "${RUN_FFT_SUITE:-0}" == "1" ]]; then
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_FFT_SUITE:-0}" == "1" ]]; then
     echo "Running cpu/fft suite for 1 and 4 threads (RUN_FFT_SUITE=1)..."
     SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_cpu_fft.sh" 1 4
     echo ""
@@ -637,15 +691,17 @@ fi
 
 # Opt-in: cpu/public_api suite, run sequentially after CPU FFT if enabled.
 # SKIP_EXTERN_SETUP=1 avoids re-running setup_extern_deps.sh, already done above.
-if [[ "${RUN_PUBLIC_API_SUITE:-0}" == "1" ]]; then
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_PUBLIC_API_SUITE:-0}" == "1" ]]; then
     echo "Running cpu/public_api suite for 1 and 4 threads (RUN_PUBLIC_API_SUITE=1)..."
-    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_cpu_public_api.sh" 1 4
+    public_api_profile="${RUN_PUBLIC_API_PROFILE:-${PUBLICATION_GATE_PROFILE:-full}}"
+    SKIP_EXTERN_SETUP=1 PUBLICATION_GATE_PROFILE="$public_api_profile" \
+        "$SCRIPT_DIR/run_cpu_public_api.sh" 1 4
     echo ""
 fi
 
 # Opt-in: cpu/permutation suite, run sequentially after every suite above.
 # SKIP_EXTERN_SETUP=1 avoids re-running setup_extern_deps.sh, already done above.
-if [[ "${RUN_PERMUTATION_SUITE:-0}" == "1" ]]; then
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_PERMUTATION_SUITE:-0}" == "1" ]]; then
     echo "Running cpu/permutation suite (RUN_PERMUTATION_SUITE=1)..."
     SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_permutation.sh" "$NUM_THREADS"
     echo ""

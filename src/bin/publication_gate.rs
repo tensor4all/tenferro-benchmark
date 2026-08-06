@@ -1545,13 +1545,13 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
         let a_value = trace
             .input_with_default(
                 ProgramInputSpec::new(a.dtype(), [n.into(), n.into()]),
-                Arc::new(a),
+                a,
             )
             .map_err(|err| Error::Internal(err.to_string()))?;
         let b_value = trace
             .input_with_default(
                 ProgramInputSpec::new(b.dtype(), [n.into(), n.into()]),
-                Arc::new(b),
+                b,
             )
             .map_err(|err| Error::Internal(err.to_string()))?;
         let output = trace
@@ -1619,6 +1619,7 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
 
 fn cpu_ctx() -> Arc<EagerRuntime> {
     EagerRuntime::with_cpu_backend_and_ad_context(CpuBackend::new(), ad_context())
+        .expect("configured eager CPU runtime should initialize")
 }
 
 fn ad_context() -> &'static AdContext {
