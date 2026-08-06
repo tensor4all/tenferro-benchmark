@@ -676,7 +676,8 @@ fn run_instance_eager(
         return Err("complex128 not supported".into());
     }
 
-    let ctx = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?);
+    let ctx =
+        EagerRuntime::with_cpu_backend(cpu_backend_from_env()?).map_err(|err| err.to_string())?;
     let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
 
     for _ in 0..bench_warmups() {

@@ -9,12 +9,12 @@ use std::time::Instant;
 
 use num_complex::{Complex32, Complex64};
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{CpuBackend, CpuBackendKind};
+use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuBackendKind, CpuExecSession};
 use tenferro_fft::{
     EagerTensorFftExt, FftExecutor, FftNorm, TensorFftExt, TensorReadFftExt, TracedTensorFftExt,
 };
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
-use tenferro_tensor::{Tensor, TensorRead};
+use tenferro_tensor::{BackendSessionHost, Tensor, TensorRead};
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
 
@@ -274,7 +274,7 @@ fn time_case(
 fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
     // Constant construction, graph construction, compilation, runtime setup,
     // and FFT planning warmup are all outside the measured region.
-    let traced = TracedTensor::from_tensor_concrete_shape(input.clone())?;
+    let traced = TracedTensor::from_tensor_concrete_shape(input.duplicate()?)?;
     let output = match op {
         Op::Fft => traced.fft(None, -1, FftNorm::Backward)?,
         Op::Ifft => traced.ifft(None, -1, FftNorm::Backward)?,
@@ -297,8 +297,8 @@ fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
 }
 
 fn time_eager_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
-    let runtime = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?);
-    let input = EagerTensor::from_tensor_in(input.clone(), runtime)?;
+    let runtime = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?)?;
+    let input = EagerTensor::from_tensor_in(input.duplicate()?, runtime)?;
     let run = || -> Result<EagerTensor, tenferro_ad::Error> {
         match op {
             Op::Fft => input.fft(None, -1, FftNorm::Backward),
@@ -337,40 +337,52 @@ fn run_fft(
     backend: &mut CpuBackend,
     executor: &mut FftExecutor,
 ) -> tenferro_tensor::Result<Tensor> {
-    match (mode, op) {
-        (TenferroMode::Immediate, Op::Fft) => input.fft(None, -1, FftNorm::Backward, backend),
-        (TenferroMode::Immediate, Op::Ifft) => input.ifft(None, -1, FftNorm::Backward, backend),
-        (TenferroMode::Immediate, Op::Rfft) => input.rfft(None, -1, FftNorm::Backward, backend),
+    with_cpu_session(backend, |session| match (mode, op) {
+        (TenferroMode::Immediate, Op::Fft) => input.fft(None, -1, FftNorm::Backward, session),
+        (TenferroMode::Immediate, Op::Ifft) => input.ifft(None, -1, FftNorm::Backward, session),
+        (TenferroMode::Immediate, Op::Rfft) => input.rfft(None, -1, FftNorm::Backward, session),
         (TenferroMode::Immediate, Op::Irfft) => {
-            input.irfft(Some(n), -1, FftNorm::Backward, backend)
+            input.irfft(Some(n), -1, FftNorm::Backward, session)
         }
         (TenferroMode::Read, Op::Fft) => {
-            TensorRead::from_tensor(input).fft_read(None, -1, FftNorm::Backward, backend)
+            TensorRead::from_tensor(input).fft_read(None, -1, FftNorm::Backward, session)
         }
         (TenferroMode::Read, Op::Ifft) => {
-            TensorRead::from_tensor(input).ifft_read(None, -1, FftNorm::Backward, backend)
+            TensorRead::from_tensor(input).ifft_read(None, -1, FftNorm::Backward, session)
         }
         (TenferroMode::Read, Op::Rfft) => {
-            TensorRead::from_tensor(input).rfft_read(None, -1, FftNorm::Backward, backend)
+            TensorRead::from_tensor(input).rfft_read(None, -1, FftNorm::Backward, session)
         }
         (TenferroMode::Read, Op::Irfft) => {
-            TensorRead::from_tensor(input).irfft_read(Some(n), -1, FftNorm::Backward, backend)
+            TensorRead::from_tensor(input).irfft_read(Some(n), -1, FftNorm::Backward, session)
         }
         (TenferroMode::ExecutorCached, Op::Fft) => {
-            executor.fft(input, None, -1, FftNorm::Backward, backend)
+            executor.fft(input, None, -1, FftNorm::Backward, session)
         }
         (TenferroMode::ExecutorCached, Op::Ifft) => {
-            executor.ifft(input, None, -1, FftNorm::Backward, backend)
+            executor.ifft(input, None, -1, FftNorm::Backward, session)
         }
         (TenferroMode::ExecutorCached, Op::Rfft) => {
-            executor.rfft(input, None, -1, FftNorm::Backward, backend)
+            executor.rfft(input, None, -1, FftNorm::Backward, session)
         }
         (TenferroMode::ExecutorCached, Op::Irfft) => {
-            executor.irfft(input, Some(n), -1, FftNorm::Backward, backend)
+            executor.irfft(input, Some(n), -1, FftNorm::Backward, session)
         }
         (TenferroMode::Trace, _) => unreachable!("trace FFT uses time_trace_case"),
         (TenferroMode::Eager, _) => unreachable!("eager FFT uses time_eager_case"),
-    }
+    })
+}
+
+fn with_cpu_session<R>(
+    backend: &mut CpuBackend,
+    f: impl for<'a> FnOnce(&'a mut CpuExecSession<'a>) -> R + Send,
+) -> R
+where
+    R: Send,
+{
+    backend.with_backend_session(|session| {
+        with_cpu_exec_session(session, f).expect("CpuBackend must expose a CPU execution session")
+    })
 }
 
 fn consume(tensor: Tensor) {

@@ -197,12 +197,10 @@ One runner per implementation family, all consuming
   sequentially within one run directory/timestamp so the latest report has
   one section per thread count), records `run.yaml` via
   `scripts/collect_run_metadata.py`, and regenerates
-  `result/<target_profile>/cpu/permutation.md`. `scripts/run_all.sh` has an
-  opt-in hook: set `RUN_PERMUTATION_SUITE=1` and it runs
-  `scripts/run_permutation.sh "$NUM_THREADS"` sequentially (with
-  `SKIP_EXTERN_SETUP=1`, since `run_all.sh` already ran extern setup) after
-  every other suite in that invocation completes. Off by default; run
-  `scripts/run_permutation.sh` directly for a standalone cpu/permutation run.
+  `result/<target_profile>/cpu/permutation.md`. `scripts/run_all.sh 1 4`
+  includes this suite after the main CPU reports, unless
+  `RUN_PERMUTATION_SUITE=0` is set. Run `scripts/run_permutation.sh` directly
+  for a standalone cpu/permutation run.
 
 Environment variables follow existing conventions: `BENCHMARK_TARGET_PROFILE`,
 `BENCH_RUNS`, `BENCH_WARMUPS`, and `PATTERN_ID` to run a single pattern while

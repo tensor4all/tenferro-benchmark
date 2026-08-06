@@ -28,9 +28,8 @@ set -euo pipefail
 # the formatter runs once at the end over all of them so the latest report
 # has one table per thread count, per docs/permutation-suite.md.
 #
-# This is a STANDALONE entry point. It is intentionally not wired into
-# scripts/run_all.sh's default path; run it explicitly when you want
-# cpu/permutation results.
+# This is also a standalone entry point. `scripts/run_all.sh 1 4` invokes it
+# after the main CPU reports unless RUN_PERMUTATION_SUITE=0 is set.
 #
 # Compares permutation-kernel performance for the patterns listed in
 # benchmarks/cpu/permutation.yaml / data/instances/permutation_patterns.json
