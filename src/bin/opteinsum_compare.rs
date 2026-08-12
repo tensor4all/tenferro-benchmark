@@ -26,8 +26,7 @@ use strided_view::StridedArray;
 
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{CpuBackend, CpuBackendKind};
-use tenferro_einsum::eager_tensor;
-use tenferro_einsum::{ContractionTree, Subscripts};
+use tenferro_einsum::{EagerEinsumExt, Subscripts};
 use tenferro_tensor::Tensor;
 
 #[derive(Deserialize)]
@@ -278,7 +277,7 @@ fn contract_once_tenferro(
         let refs = [&lhs, &rhs];
         let binary_subs = (&binary).into();
         let res = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            eager_tensor::einsum_subscripts(&refs, &binary_subs)
+            refs.as_slice().einsum_subscripts(&binary_subs)
         }))
         .map_err(|_| "panic in tenferro".to_string())?
         .map_err(|e| format!("{e}"))?;
@@ -289,7 +288,7 @@ fn contract_once_tenferro(
     }
     let out = ops.pop().ok_or("no output")?;
     if materialize {
-        black_box(out.data().shape().len());
+        black_box(out.tensor_read().shape().len());
     } else {
         black_box(&out.tensor_read());
     }
@@ -316,92 +315,22 @@ fn time_tenferro(
         .shapes_colmajor
         .iter()
         .map(|shape| {
-            let tensor = Tensor::F64(tenferro_tensor::TypedTensor::<f64>::zeros(shape.clone()));
+            let tensor = Tensor::F64(
+                tenferro_tensor::TypedTensor::<f64>::zeros(shape.clone())
+                    .expect("benchmark tensor construction"),
+            );
             EagerTensor::from_tensor_in(tensor, Arc::clone(&ctx))
         })
-        .collect();
-
-    for _ in 0..warmups {
-        contract_once_tenferro(&operands, &inputs, &final_output, path, materialize)?;
-    }
-    let mut d = Vec::with_capacity(runs);
-    for _ in 0..runs {
-        let t0 = Instant::now();
-        contract_once_tenferro(&operands, &inputs, &final_output, path, materialize)?;
-        d.push(t0.elapsed());
-    }
-    Ok(median(d))
-}
-
-/// Convert an opt_einsum/cotengra path to `ContractionTree::from_pairs` pairs.
-fn path_to_pairs(n_inputs: usize, path: &[[usize; 2]]) -> Vec<(usize, usize)> {
-    let mut available: Vec<usize> = (0..n_inputs).collect();
-    let mut pairs = Vec::with_capacity(path.len());
-    for (step, &pair) in path.iter().enumerate() {
-        let (i, j) = if pair[0] < pair[1] {
-            (pair[0], pair[1])
-        } else {
-            (pair[1], pair[0])
-        };
-        pairs.push((available[i], available[j]));
-        available.remove(j);
-        available.remove(i);
-        available.push(n_inputs + step);
-    }
-    pairs
-}
-
-/// Time the prototype whole-program eager executor on the SAME `opt_flops` path:
-/// ONE call to `einsum_whole_program_untracked`, so the whole contraction runs
-/// in a single backend session instead of per-step eager ops.
-fn time_tenferro_whole(
-    inst: &Instance,
-    path: &[[usize; 2]],
-    warmups: usize,
-    runs: usize,
-    materialize: bool,
-) -> Result<Duration, String> {
-    if inst.dtype != "float64" {
-        return Err(format!("dtype {} unsupported", inst.dtype));
-    }
-    let notation = remap_notation(&inst.format_string_colmajor);
-    let subs = Subscripts::parse(&notation).map_err(|e| format!("{e}"))?;
-    let shape_refs: Vec<&[usize]> = inst.shapes_colmajor.iter().map(|s| s.as_slice()).collect();
-    let pairs = path_to_pairs(inst.num_tensors, path);
-    let tree = ContractionTree::from_pairs(&subs, &shape_refs, &pairs).map_err(|e| format!("{e}"))?;
-
-    let ctx: Arc<EagerRuntime> = EagerRuntime::with_cpu_backend(cpu_backend()?);
-    let operands: Vec<EagerTensor> = inst
-        .shapes_colmajor
-        .iter()
-        .map(|shape| {
-            let tensor = Tensor::F64(tenferro_tensor::TypedTensor::<f64>::zeros(shape.clone()));
-            EagerTensor::from_tensor_in(tensor, Arc::clone(&ctx))
-        })
-        .collect();
-
-    let call = || -> Result<(), String> {
-        let refs: Vec<&EagerTensor> = operands.iter().collect();
-        let out = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            eager_tensor::einsum_whole_program_untracked(&refs, &tree)
-        }))
-        .map_err(|_| "panic in tenferro whole-program".to_string())?
+        .collect::<Result<_, _>>()
         .map_err(|e| format!("{e}"))?;
-        if materialize {
-            black_box(out.data().shape().len());
-        } else {
-            black_box(&out.tensor_read());
-        }
-        Ok(())
-    };
 
     for _ in 0..warmups {
-        call()?;
+        contract_once_tenferro(&operands, &inputs, &final_output, path, materialize)?;
     }
     let mut d = Vec::with_capacity(runs);
     for _ in 0..runs {
         let t0 = Instant::now();
-        call()?;
+        contract_once_tenferro(&operands, &inputs, &final_output, path, materialize)?;
         d.push(t0.elapsed());
     }
     Ok(median(d))
@@ -419,8 +348,8 @@ fn main() {
         std::env::var("VECLIB_MAXIMUM_THREADS").unwrap_or_else(|_| "<unset>".into()),
     );
     println!(
-        "{:<40} {:>6} {:>10} {:>11} {:>11} {:>11} {:>11}",
-        "case", "ntens", "opteinsum", "tf-pair(rd)", "tf-pair(dt)", "tf-whole(rd)", "tf-whole(dt)"
+        "{:<40} {:>6} {:>10} {:>11} {:>11}",
+        "case", "ntens", "opteinsum", "tf-pair(rd)", "tf-pair(dt)"
     );
 
     let cases: Vec<String> = match std::env::var("BENCH_CASES") {
@@ -443,8 +372,6 @@ fn main() {
         let opt = time_opteinsum(&inst, &path, warmups, runs);
         let tf_read = time_tenferro(&inst, &path, warmups, runs, false);
         let tf_data = time_tenferro(&inst, &path, warmups, runs, true);
-        let tw_read = time_tenferro_whole(&inst, &path, warmups, runs, false);
-        let tw_data = time_tenferro_whole(&inst, &path, warmups, runs, true);
         eprintln!("[running] {name} done");
 
         let cell = |r: &Result<Duration, String>| match r {
@@ -452,21 +379,17 @@ fn main() {
             Err(_) => "ERR".to_string(),
         };
         println!(
-            "{:<40} {:>6} {:>10} {:>11} {:>11} {:>11} {:>11}",
+            "{:<40} {:>6} {:>10} {:>11} {:>11}",
             inst.name,
             inst.num_tensors,
             cell(&opt),
             cell(&tf_read),
             cell(&tf_data),
-            cell(&tw_read),
-            cell(&tw_data),
         );
         for (label, r) in [
             ("opteinsum", &opt),
             ("tf-pair-read", &tf_read),
             ("tf-pair-data", &tf_data),
-            ("tf-whole-read", &tw_read),
-            ("tf-whole-data", &tw_data),
         ] {
             if let Err(e) = r {
                 eprintln!("  {name} {label} ERR: {e}");

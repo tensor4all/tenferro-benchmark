@@ -8,11 +8,19 @@ set -euo pipefail
 #   - PyTorch/JAX CPU (Python)
 #   - CPU benchmark items where supported by repo-local runners
 #
-# Usage: ./scripts/run_all.sh [NUM_THREADS]
+# Usage: ./scripts/run_all.sh [NUM_THREADS ...]
 #
-# Delegates to run_all_rust.sh and run_all_python.sh, then formats results.
+# Each NUM_THREADS argument runs the full suite once with that thread count;
+# e.g. `./scripts/run_all.sh 1 4` runs the suite with 1 and with 4 threads.
 # ---------------------------------------------------------------------------
 
+NUM_THREADS_ARGS=("$@")
+if [[ ${#NUM_THREADS_ARGS[@]} -gt 1 ]]; then
+    for threads in "${NUM_THREADS_ARGS[@]}"; do
+        "$0" "$threads"
+    done
+    exit 0
+fi
 NUM_THREADS="${1:-1}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"

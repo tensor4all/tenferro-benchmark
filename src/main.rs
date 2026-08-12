@@ -12,8 +12,7 @@ use std::time::{Duration, Instant};
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{CpuBackend, CpuBackendKind};
-use tenferro_einsum::eager_tensor;
-use tenferro_einsum::{ContractionTree, Subscripts};
+use tenferro_einsum::{ContractionTree, EagerEinsumExt, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_runtime::{GraphExecutor, TensorRead, TracedTensor};
 use tenferro_tensor::{Tensor, TypedTensor};
@@ -109,20 +108,27 @@ fn path_to_pairs(n_inputs: usize, path: &[[usize; 2]]) -> Vec<(usize, usize)> {
 // Tensor creation
 // ---------------------------------------------------------------------------
 
-fn create_operand_tensors(shapes: &[Vec<usize>]) -> Vec<Tensor> {
+fn create_operand_tensors(shapes: &[Vec<usize>]) -> Result<Vec<Tensor>, String> {
     shapes
         .iter()
-        .map(|shape| Tensor::F64(TypedTensor::<f64>::zeros(shape.clone())))
+        .map(|shape| {
+            TypedTensor::<f64>::zeros(shape.clone())
+                .map(Tensor::F64)
+                .map_err(|e| e.to_string())
+        })
         .collect()
 }
 
 fn create_eager_operands(
     shapes: &[Vec<usize>],
     ctx: &std::sync::Arc<EagerRuntime>,
-) -> Vec<EagerTensor> {
-    create_operand_tensors(shapes)
+) -> Result<Vec<EagerTensor>, String> {
+    create_operand_tensors(shapes)?
         .into_iter()
-        .map(|tensor| EagerTensor::from_tensor_in(tensor, std::sync::Arc::clone(ctx)))
+        .map(|tensor| {
+            EagerTensor::from_tensor_in(tensor, std::sync::Arc::clone(ctx))
+                .map_err(|e| e.to_string())
+        })
         .collect()
 }
 
@@ -430,7 +436,7 @@ fn consume_eager_output(output: &EagerTensor, consumer: EagerOutputConsumer) {
             black_box(output.shape());
         }
         EagerOutputConsumer::Data => {
-            black_box(output.data());
+            let _ = black_box(output.materialized());
         }
     }
 }
@@ -551,7 +557,7 @@ fn run_instance_trace(
         .register_extension(tenferro_einsum::register_runtime)
         .map_err(|e| format!("{e}"))?;
 
-    let operands = create_operand_tensors(&instance.shapes_colmajor);
+    let operands = create_operand_tensors(&instance.shapes_colmajor)?;
     let bindings = bind_operand_reads(&compiled.inputs, &operands)?;
     let program = &compiled.program;
     let warmups = bench_warmups();
@@ -588,7 +594,7 @@ fn run_instance_trace(
         let mut input_create = Vec::with_capacity(runs);
         for _ in 0..runs {
             let started = Instant::now();
-            let operands = create_operand_tensors(&instance.shapes_colmajor);
+            let operands = create_operand_tensors(&instance.shapes_colmajor)?;
             input_create.push(started.elapsed());
             black_box(&operands);
         }
@@ -691,7 +697,7 @@ fn contract_once_eager(
 
         let started = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            eager_tensor::einsum_subscripts(&input_refs, &binary_subscripts)
+            input_refs.as_slice().einsum_subscripts(&binary_subscripts)
         }));
         let result = unwrap_eval_result(result, "panic during eager execution")?;
         if let Some(profile) = profile.as_deref_mut() {
@@ -729,7 +735,7 @@ fn run_instance_eager(
     }
 
     let ctx = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?);
-    let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
+    let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
     let consumer = EagerOutputConsumer::from_env();
     let warmups = bench_warmups();
     let runs = bench_runs();
@@ -754,7 +760,7 @@ fn run_instance_eager(
         let mut input_create = Vec::with_capacity(runs);
         for _ in 0..runs {
             let started = Instant::now();
-            let operands = create_eager_operands(&instance.shapes_colmajor, &ctx);
+            let operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
             input_create.push(started.elapsed());
             black_box(&operands);
         }

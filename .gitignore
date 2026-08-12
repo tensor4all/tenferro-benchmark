@@ -225,3 +225,6 @@ docs/superpowers
 .worktrees/
 # agentic-tests
 docs/test-reports
+
+# Local codegraph search database
+.codegraph/

@@ -60,7 +60,7 @@ system-accelerate = [
     "tenferro-runtime/cpu-blas",
     "tenferro-runtime/cpu-faer",
     "dep:tenferro-cpu",
-    "tenferro-cpu?/src-accelerate",
+    "tenferro-cpu?/blas-accelerate",
     "tenferro-cpu?/cpu-faer",
 ]
 cuda = [
