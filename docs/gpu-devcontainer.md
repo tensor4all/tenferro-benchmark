@@ -15,7 +15,17 @@ Start the CUDA container:
 devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
 ```
 
-Install optional vendor libraries:
+The image includes CUTLASS v3.7.0 and CUDA-enabled Ginkgo v1.8.0 under
+`/opt`. The default Ginkgo build targets CUDA architecture 86 (RTX 30-series).
+Override the `GINKGO_CUDA_ARCHITECTURES` Docker build argument when building
+for a different architecture.
+
+The container also sets `UV_NO_SYNC=1`: `postCreateCommand` installs the CUDA
+variants of PyTorch and JAX after the locked base environment, and later
+benchmark-time `uv run` calls must not replace them with the default wheels.
+
+For an existing container created from an older image, install the same vendor
+libraries into its configured paths with:
 
 ```bash
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \

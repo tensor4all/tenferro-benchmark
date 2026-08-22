@@ -9,7 +9,13 @@ set -euo pipefail
 build_dir="$(mktemp -d)"
 trap 'rm -rf "$build_dir"' EXIT
 
-curl -fsSL "https://github.com/OpenMathLib/OpenBLAS/releases/download/v${OPENBLAS_VERSION}/OpenBLAS-${OPENBLAS_VERSION}.tar.gz" \
+curl -fsSL \
+    --retry 5 \
+    --retry-delay 2 \
+    --retry-all-errors \
+    --connect-timeout 30 \
+    --max-time 300 \
+    "https://codeload.github.com/OpenMathLib/OpenBLAS/tar.gz/refs/tags/v${OPENBLAS_VERSION}" \
     | tar -xz -C "$build_dir" --strip-components=1
 
 make_flags=(

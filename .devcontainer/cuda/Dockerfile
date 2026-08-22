@@ -10,6 +10,12 @@ ENV LD_LIBRARY_PATH="${OPENBLAS_ROOT}/lib:${CUDA_HOME}/lib64${LD_LIBRARY_PATH:+:
 ARG OPENBLAS_VERSION=0.3.26
 ARG OPENBLAS_MAX_THREADS=64
 ARG OPENBLAS_DYNAMIC_ARCH=1
+ARG CUTLASS_TAG=v3.7.0
+ARG GINKGO_TAG=v1.8.0
+# Docker builds do not have GPU access, so make the target architecture explicit.
+# 86 matches the RTX 30-series benchmark hosts; override this build arg for a
+# different NVIDIA architecture.
+ARG GINKGO_CUDA_ARCHITECTURES=86
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -52,8 +58,20 @@ RUN usermod  -l ${USERNAME} ubuntu \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
 COPY .devcontainer/install_openblas.sh /usr/local/bin/install_openblas.sh
+COPY scripts/setup_gpu_vendors.sh /usr/local/bin/setup_gpu_vendors.sh
 
 RUN bash /usr/local/bin/install_openblas.sh
+
+# Bake the optional comparison backends into the image.  Keeping them under
+# /opt makes them independent of the workspace mount and ready on first start.
+RUN CUTLASS_DIR=/opt/cutlass \
+    CUTLASS_TAG="${CUTLASS_TAG}" \
+    GINKGO_DIR=/opt/ginkgo \
+    GINKGO_SRC=/tmp/ginkgo-src \
+    GINKGO_TAG="${GINKGO_TAG}" \
+    CUDA_ARCH="${GINKGO_CUDA_ARCHITECTURES}" \
+    bash /usr/local/bin/setup_gpu_vendors.sh all \
+    && rm -rf /tmp/ginkgo-src
 
 USER vscode
 
