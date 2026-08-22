@@ -3,30 +3,30 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/sparse`
 - Suite file: `benchmarks/gpu/sparse.yaml`
-- Timestamp: `2026-07-28T03:48:34.224093+00:00`
+- Timestamp: `2026-08-22T02:54:08.638894+00:00`
 - tenferro-rs commit: `80ebcc38ce11fb93385e8b6a1a49b613bc17452f`
 
 ## GPU Information
 
 - Device: `cuda:0`
-- Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
-- Memory: `80 GiB`
-- Driver version: `580.126.09`
+- Name: `NVIDIA GeForce RTX 3060`
+- UUID: `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`
+- Memory: `12 GiB`
+- Driver version: `580.173.02`
 - CUDA version: `13.0`
 - CUDA runtime: `12.9`
 - cuDNN version: `92400`
 
 ## CPU Information
 
-- Model: `AMD EPYC 7713P 64-Core Processor`
-- Vendor: `AuthenticAMD`
-- Logical CPUs: `64`
+- Model: `Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz`
+- Vendor: `GenuineIntel`
+- Logical CPUs: `36`
 - Sockets: `1`
-- Cores per socket: `64`
-- Threads per core: `1`
+- Cores per socket: `18`
+- Threads per core: `2`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-138-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -40,10 +40,10 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | unsupported | unsupported | 14.914 | unsupported | unsupported | unsupported | 14.999 | not configured |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | unsupported | unsupported | 108.386 | unsupported | unsupported | unsupported | 108.378 | 1182.231 |
 
 ## gpu/sparse / spmv
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| sparse_synthetic_4m_64m_spmv_f64 | unsupported | unsupported | 2.323 | unsupported | unsupported | unsupported | 2.321 | not configured |
+| sparse_synthetic_4m_64m_spmv_f64 | unsupported | unsupported | 19.811 | unsupported | unsupported | unsupported | 19.810 | 100.742 |
