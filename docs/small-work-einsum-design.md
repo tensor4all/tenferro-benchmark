@@ -1,7 +1,21 @@
 # Public F64 einsum small-work cases
 
-The suite includes 18 owned-input and 18 borrowed-input `ij,jk->ik` cases at
-dimensions 2, 4 and 16 alongside the existing 24 add workflows. No full family/layout/dtype coverage
+## Compiled-repeat slice
+
+The n2/4/16 F64 column-major `compiled-repeat` cases bind to
+`einsum.einsum.prepared.traced`. Trace two input slots with `TraceContext`, use
+ordinary `TraceContextEinsumExt::einsum`, compile with default `GraphCompiler`,
+and execute through `Runtime::run_compiled`. No preset contraction tree, literal
+input tensors, alternate compiler configuration or new library API is needed.
+Trace/compile/runtime construction and input binding-array construction are
+outside the repeat timer; runtime admission, execution and output lifetime are
+inside. Correctness must run original, swapped, then original inputs on the same
+program against independent matmul references. This covers execution, not the
+still-required separate compilation/setup-cost measurement or C64 variants.
+
+The suite includes 18 owned-input, 18 borrowed-input and three compiled-repeat
+`ij,jk->ik` cases at dimensions 2, 4 and 16 alongside the existing 24 add workflows
+(63 total). No full family/layout/dtype coverage
 or performance acceptance is claimed by this matrix alone.
 
 Each size has concrete-fresh, concrete-shared, eager-no-ad, eager-ad,
@@ -34,9 +48,10 @@ executes a prepared plan; it is not inferred from a plan's shape alone.
 
 Existing calibration, telemetry, process repetition, receipt verification, raw
 archive and publication gates are reused. Correctness-only runs do not establish
-release readiness or a valid baseline/candidate comparison. C64, layouts,
-compiled-repeat and other family coverage remain required under #1758; borrowed
-F64 layout coverage below does not establish complete layout coverage.
+release readiness or a valid baseline/candidate comparison. C64, broader layouts,
+compilation/setup-cost measurements and other family coverage remain required
+under #1758; borrowed F64 layout coverage below does not establish complete layout
+coverage.
 
 ## Borrowed F64 layouts
 

@@ -71,6 +71,23 @@ class DryRunTests(unittest.TestCase):
                 self.assertEqual(result["commands"], [])
                 self.assertEqual(result["change_selection"]["missing_contract_ids"], ["unimplemented"])
 
+    def test_complete_selection_rechecks_source_before_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            args = SimpleNamespace(suite=ROOT / "benchmarks/cpu/small_work.yaml",
+                results_root=root, target_profile="amd-cpu", output=root / "run.json",
+                dry_run=False, correctness_only=True, changed_path=["crates/shared.rs"])
+            with mock.patch.dict(os.environ, {}, clear=True), \
+                 mock.patch.object(runner, "select_changed_cases", side_effect=lambda library, cases, paths: (cases, {"missing_contract_ids": [], "source": {}})), \
+                 mock.patch.object(runner, "verify_canonical_binding", return_value={}), \
+                 mock.patch.object(runner, "verify_canonical_snapshot", side_effect=runner.ContractError("source changed")) as recheck, \
+                 mock.patch.object(runner, "run_sequential") as execute:
+                self.assertEqual(runner._suite_run(args), 1)
+            recheck.assert_called_once()
+            execute.assert_not_called()
+            result = json.loads(args.output.read_text())
+            self.assertIn("source changed", result["errors"][0])
+
     def test_invalid_filter_fails_before_resource_observation(self):
         with tempfile.TemporaryDirectory() as directory:
             args = SimpleNamespace(suite=ROOT / "benchmarks/cpu/small_work.yaml",

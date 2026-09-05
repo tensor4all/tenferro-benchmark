@@ -9,8 +9,12 @@ use std::time::Instant;
 
 use serde::Serialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::CpuBackend;
-use tenferro_runtime::{BackendSession, BackendSessionHost, TensorSessionOpsExt};
+use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
+use tenferro_runtime::program::ProgramInputSpec;
+use tenferro_runtime::{
+    BackendSession, BackendSessionHost, CompiledGraph, DType, GraphCompiler, Runtime,
+    TensorSessionOpsExt, TraceContext,
+};
 use tenferro_tensor::{Tensor, TensorRead, TypedTensorView};
 
 const CALIBRATION_MAX_ITERATIONS: usize = 1 << 30;
@@ -150,7 +154,16 @@ fn einsum_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Erro
     let n = matrix_dimension(size)?;
     let a: Vec<f64> = (0..size).map(|i| (i % 7) as f64 * 0.25 - 0.5).collect();
     let b: Vec<f64> = (0..size).map(|i| (i % 5) as f64 * 0.5 - 0.75).collect();
-    let mut expected = vec![0.0; size];
+    let expected = matmul_reference(n, &a, &b);
+    Ok((
+        Tensor::from_vec_col_major(vec![n, n], a)?,
+        Tensor::from_vec_col_major(vec![n, n], b)?,
+        expected,
+    ))
+}
+
+fn matmul_reference(n: usize, a: &[f64], b: &[f64]) -> Vec<f64> {
+    let mut expected = vec![0.0; n * n];
     for k in 0..n {
         for j in 0..n {
             for i in 0..n {
@@ -158,11 +171,45 @@ fn einsum_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Erro
             }
         }
     }
-    Ok((
-        Tensor::from_vec_col_major(vec![n, n], a)?,
-        Tensor::from_vec_col_major(vec![n, n], b)?,
-        expected,
-    ))
+    expected
+}
+
+fn compiled_einsum(
+    backend: &CpuBackend,
+    n: usize,
+) -> Result<(Runtime, CompiledGraph), Box<dyn Error + Send + Sync>> {
+    use tenferro_einsum::TraceContextEinsumExt;
+    let mut trace = TraceContext::new();
+    let a = trace.input(ProgramInputSpec::new(DType::F64, [n.into(), n.into()]))?;
+    let b = trace.input(ProgramInputSpec::new(DType::F64, [n.into(), n.into()]))?;
+    let output = trace.einsum(&[a, b], "ij,jk->ik")?;
+    let graph = trace.finish(&[output])?;
+    let program = GraphCompiler::new().compile_traced_graph(&graph)?;
+    let mut builder = Runtime::builder();
+    builder.register_engine(runtime_engine_registration(backend)?)?;
+    builder.install_extension_module(tenferro_einsum::extension_module::<CpuBackend>(
+        runtime_engine_id()?,
+    )?)?;
+    Ok((builder.build()?, program))
+}
+
+fn check_compiled_einsum(
+    runtime: &Runtime,
+    program: &CompiledGraph,
+    lhs: &Tensor,
+    rhs: &Tensor,
+) -> Result<f64, Box<dyn Error + Send + Sync>> {
+    let n = matrix_dimension(lhs.shape().iter().product())?;
+    let mut checked = 0.0;
+    for (a, b) in [(lhs, rhs), (rhs, lhs), (lhs, rhs)] {
+        let expected = matmul_reference(n, a.as_slice::<f64>()?, b.as_slice::<f64>()?);
+        let outputs = runtime.run_compiled(program, &[a, b])?;
+        if outputs.len() != 1 {
+            return Err("compiled einsum must return one output".into());
+        }
+        checked = check_tensor_shape(&outputs[0], &expected, &[n, n])?;
+    }
+    Ok(checked)
 }
 
 struct BorrowedEinsumInputs {
@@ -370,6 +417,20 @@ fn case_descriptor(
                 "correctness_check",
             ],
         ),
+        "compiled-repeat" if operation == "einsum" => (
+            "einsum.einsum.prepared.traced",
+            "einsum",
+            "traced",
+            vec!["runtime_admission_execution", "output_lifetime"],
+            vec![
+                "backend_construction",
+                "input_construction",
+                "trace_compile",
+                "runtime_construction",
+                "input_bindings",
+                "correctness_check",
+            ],
+        ),
         "prepared-repeat" if operation == "einsum" => (
             "einsum.einsum.prepared.concrete",
             "einsum",
@@ -388,7 +449,7 @@ fn case_descriptor(
     };
     let (contract_id, family, shape) = if operation == "einsum" {
         (
-            if api_tier.starts_with("prepared-") {
+            if api_tier.starts_with("prepared-") || api_tier == "compiled-repeat" {
                 contract_id.to_string()
             } else {
                 format!("einsum.einsum.ordinary.{surface}")
@@ -666,6 +727,35 @@ mod tests {
     }
 
     #[test]
+    fn compiled_einsum_rebinds_both_inputs_without_stale_results() {
+        for size in [4, 16, 256] {
+            let n = matrix_dimension(size).unwrap();
+            let (lhs, rhs, expected) = einsum_inputs(size).unwrap();
+            let swapped = matmul_reference(
+                n,
+                rhs.as_slice::<f64>().unwrap(),
+                lhs.as_slice::<f64>().unwrap(),
+            );
+            assert_ne!(expected, swapped);
+            let backend = CpuBackend::new();
+            let (runtime, program) = compiled_einsum(&backend, n).unwrap();
+            check_compiled_einsum(&runtime, &program, &lhs, &rhs).unwrap();
+            let descriptor = case_descriptor(
+                "einsum",
+                "f64",
+                "compiled-repeat",
+                "single",
+                size,
+                1,
+                "faer",
+            )
+            .unwrap();
+            assert_eq!(descriptor["contract_id"], "einsum.einsum.prepared.traced");
+            assert_eq!(descriptor["surface"], "traced");
+        }
+    }
+
+    #[test]
     fn borrowed_einsum_layouts_match_reference_in_fresh_and_shared_sessions() {
         for size in [4, 16, 256] {
             let (lhs, rhs, expected) = einsum_inputs(size).unwrap();
@@ -858,10 +948,12 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     descriptor["layout"] = serde_json::json!(layout);
     let mut concrete = None;
     let mut runtime = None;
+    let mut compiled = None;
     match api_tier.as_str() {
         "concrete-fresh" | "concrete-shared" | "borrowed-fresh" | "borrowed-shared"
         | "prepared-setup" | "prepared-repeat" => concrete = Some(backend),
         "eager-no-ad" | "eager-ad" => runtime = Some(EagerRuntime::with_cpu_backend(backend)?),
+        "compiled-repeat" => compiled = Some(compiled_einsum(&backend, matrix_dimension(size)?)?),
         _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
     }
     let (lhs, rhs, expected_values) = if operation == "einsum" {
@@ -869,6 +961,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     } else {
         inputs(size, calls)?
     };
+    let compiled_bindings = [&lhs, &rhs];
     let borrowed_storage = if api_tier.starts_with("borrowed-") {
         Some(BorrowedEinsumInputs::new(&lhs, &rhs, &layout)?)
     } else {
@@ -925,6 +1018,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 &expected_values,
                 lhs.shape(),
             )?
+        }
+        "compiled-repeat" => {
+            let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
+            check_compiled_einsum(runtime, program, &lhs, &rhs)?
         }
         "borrowed-fresh" | "borrowed-shared" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
@@ -1015,6 +1112,21 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 
     let measurement = match api_tier.as_str() {
+        "compiled-repeat" => {
+            let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
+            measure(
+                warmups,
+                samples_count,
+                target_ns,
+                process_index,
+                sample_start,
+                expected_cpus.as_deref(),
+                || {
+                    black_box(runtime.run_compiled(program, &compiled_bindings)?);
+                    Ok(())
+                },
+            )?
+        }
         "prepared-setup" => measure(
             warmups,
             samples_count,

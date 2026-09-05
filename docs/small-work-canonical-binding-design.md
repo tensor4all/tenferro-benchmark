@@ -22,7 +22,7 @@ both revisions are still outstanding under #96.
 
 The remainder records the original migration: its four-case counts, pin and model
 review/implementation assignments are historical, not current coverage or standing
-review gates. The current suite is v2 with 60 executed correctness cases; see
+review gates. The current suite is v2 with 63 executed correctness cases; see
 `small-work-einsum-design.md` and the worklog for current verification.
 
 **Historical review:** DeepSeek V4 Flash, pre-implementation review: **Correct-to-merge**.

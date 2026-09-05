@@ -430,7 +430,6 @@ def _suite_run(args: argparse.Namespace) -> int:
             original = set(os.sched_getaffinity(0))
             os.sched_setaffinity(0, expected)
             verify_affinity(expected, os.sched_getaffinity(0))
-        from small_work import verify_canonical_snapshot
         verify_canonical_snapshot(binding, library, cases)
         command_records = run_sequential(commands, expected_affinity=expected,
                                          timeout_s=args.command_timeout, output_dir=root / "children",

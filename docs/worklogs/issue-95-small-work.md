@@ -1,5 +1,25 @@
 # Issue 95: small-work suite
 
+## Public compiled einsum repetition
+
+Added three F64 compiled-repeat cases at n2/4/16 via existing TraceContext input
+slots, ordinary einsum tracing, default GraphCompiler and Runtime::run_compiled.
+The same compiled graph is checked with original, swapped, then original inputs
+against independent triple-loop references, excluding constant/stale-result
+benchmarks. Trace/compile/runtime setup and the binding array are outside the
+repeat timer; runtime admission, execution and output lifetime are inside.
+Separate compile/setup-cost measurement and C64 compiled coverage remain required.
+
+Verification: 11 Rust tests, strict producer Clippy, and 83 Python tests passed;
+all 63 actual producer cases passed correctness/descriptor matching. The now
+complete concrete.rs canonical selection exposed a leftover local import that
+shadowed verify_canonical_snapshot before execution. Removed it and added a
+regression; five focused tests passed. The real selected path then executed all
+39 einsum cases successfully. Both 63/39 collections validate against the result
+schema. No timing or release-readiness claim is made. The unchanged numerical
+paths retain the all-case evidence; the selector correction was checked through
+its real newly reachable successful execution path.
+
 ## Canonical changed-path selection (#96)
 
 Added repeatable `--changed-path` for ordinary-suite dry-run and collection. It

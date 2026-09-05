@@ -66,7 +66,7 @@ class SmallWorkSchemaTests(unittest.TestCase):
     def test_einsum_matrix_includes_setup_and_prepared_execution(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
         cases = [case for case in validate_suite_contract(suite)
-                 if case.operation == "einsum" and not case.api_tier.startswith("borrowed-")]
+                 if case.operation == "einsum" and not case.api_tier.startswith("borrowed-") and case.api_tier != "compiled-repeat"]
         self.assertEqual(len(cases), 18)
         for n in (2, 4, 16):
             self.assertEqual({case.api_tier for case in cases if case.shape == (n, n)},
@@ -76,6 +76,19 @@ class SmallWorkSchemaTests(unittest.TestCase):
             case["phase"] = wrong_phase
             with self.assertRaises(ValueError):
                 CaseContract.from_mapping(case)
+
+    def test_compiled_matrix_is_traced_execution_with_setup_outside(self):
+        suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
+        cases = [case for case in validate_suite_contract(suite) if case.api_tier == "compiled-repeat"]
+        self.assertEqual({case.shape for case in cases}, {(2, 2), (4, 4), (16, 16)})
+        self.assertEqual(len(cases), 3)
+        for case in cases:
+            self.assertEqual(case.contract_id, "einsum.einsum.prepared.traced")
+            self.assertEqual(case.surface, "traced")
+            self.assertEqual(case.phase, "execution")
+            self.assertIn("trace_compile", case.scope_outside_timer)
+            self.assertIn("input_bindings", case.scope_outside_timer)
+            self.assertNotIn("trace_compile", case.scope_timer)
 
     def test_borrowed_layout_matrix_keeps_distinct_cases(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
