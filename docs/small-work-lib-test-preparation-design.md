@@ -126,7 +126,10 @@ its aggregate reaches twice the protocol target (calibration headroom). Archive 
 independent measured children with warmup samples discarded only as predeclared;
 require every recorded aggregate to meet the target, match case/stage/sample IDs,
 and pass existing process-median CoV statistics. No favorable-case retry or latest
-publication. Allocation and timing remain separate modes. Recheck source receipt
+publication. A high-CoV stage stays in the report as invalid and makes the whole
+run INCONCLUSIVE, but does not omit remaining stages; collection still completes
+the matrix and performs final provenance/resource checks. Structural or child
+execution failures still abort. Allocation and timing remain separate modes. Recheck source receipt
 and resource availability after collection and restore parent affinity on all exits.
 Return timing diagnostics, never claim baseline/candidate performance acceptance.
 

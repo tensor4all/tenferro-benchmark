@@ -135,6 +135,35 @@ class ComponentTests(unittest.TestCase):
             components.check_components(Path("unused"), Path("unused"), 1, 2,
                                          protocol=protocol, expected_affinity={0})
 
+    def test_noisy_stage_is_retained_without_omitting_remaining_matrix(self):
+        protocol = {"warmups": 1, "samples_per_process": 2, "independent_processes": 2,
+                    "calibration": {"target_ns": 100}, "noise_policy": {"process_median_cov_max": .10}}
+        measured = {"case-a": 0, "case-b": 0}
+        def child(commands, **kwargs):
+            env = kwargs["env"]
+            mode, case = env["TENFERRO_PROBE_MODE"], env["TENFERRO_PROBE_CASE"]
+            if mode == "contract":
+                return self.child([{"kind": "contract", "schema": "tenferro.einsum.component-probe.v1",
+                                    "case_id": name, "stage": "parse", "calls_per_workflow": 1}
+                                   for name in measured])
+            if mode == "correctness":
+                return self.child([{"kind": "correctness", "case_id": case, "stage": "parse", "ok": True}])
+            iterations = int(env["TENFERRO_PROBE_ITERATIONS"])
+            if int(env["TENFERRO_PROBE_MIN_AGGREGATE_NS"]) == 100:
+                measured[case] += 1
+            elapsed = iterations * (100 if case == "case-a" and measured[case] == 2 else 10)
+            return self.child([{"kind": "timing", "case_id": case, "stage": "parse", "sample": sample,
+                                "iterations": iterations, "completed_iterations": iterations,
+                                "elapsed_ns": elapsed, "valid": True, "invalid_reason": None}
+                               for sample in range(int(env["TENFERRO_PROBE_SAMPLES"]))])
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(components, "run_sequential", side_effect=child):
+            result = components.check_components(Path("probe"), Path(directory), 5,
+                                                 protocol=protocol, expected_affinity={0})
+        self.assertEqual(result["status"], "INCONCLUSIVE")
+        self.assertEqual([record["valid"] for record in result["timings"]], [False, True])
+        self.assertEqual(measured, {"case-a": 2, "case-b": 2})
+        self.assertEqual(len(result["errors"]), 1)
+
     def test_allocation_diagnostics_are_separate_and_require_complete_counts(self):
         for variant in ("valid", "zero_counts", "wrong_stage", "incomplete", "negative", "bool", "invalid", "duplicate", "child_failed"):
             with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:

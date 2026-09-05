@@ -96,6 +96,7 @@ def check_components(binary: Path, archive: Path, timeout: float,
             warmups, sample_count = protocol["warmups"], protocol["samples_per_process"]
             process_count = protocol["independent_processes"]
             for contract in contracts:
+                result["status"] = "FAILED"
                 case, stage = contract["case_id"], contract["stage"]
                 def checked_timing(iterations: int, count: int, minimum: int) -> list[dict[str, Any]]:
                     records = invoke("timed", case, stage, iterations=iterations, samples=count, minimum_ns=minimum)
@@ -130,12 +131,14 @@ def check_components(binary: Path, archive: Path, timeout: float,
                 statistics = timing_statistics(normalized, contract["calls_per_workflow"],
                                                min_processes=process_count,
                                                min_samples_per_process=sample_count)
+                valid = statistics["process_median_cov"] <= protocol["noise_policy"]["process_median_cov_max"]
                 result["timings"].append({"case_id": case, "stage": stage, "samples": normalized,
-                                          "statistics": statistics})
-                if statistics["process_median_cov"] > protocol["noise_policy"]["process_median_cov_max"]:
+                                          "statistics": statistics, "valid": valid,
+                                          "invalid_reason": None if valid else "process_median_variability"})
+                if not valid:
                     result["status"] = "INCONCLUSIVE"
-                    raise ValueError(f"process-median variability exceeds protocol for {case}/{stage}")
-            result["status"] = "TIMING_DIAGNOSTIC"
+                    result["errors"].append(f"process-median variability exceeds protocol for {case}/{stage}")
+            result["status"] = "INCONCLUSIVE" if result["errors"] else "TIMING_DIAGNOSTIC"
         if allocation_iterations is not None:
             result["status"] = "FAILED"
             result["allocations"] = []

@@ -567,7 +567,7 @@ def _component_run(args: argparse.Namespace) -> int:
         result.update(check_components(args.case_binary, root / "children", args.command_timeout,
                                        args.allocation_iterations, protocol=protocol,
                                        expected_affinity=set(selection["cpus"]) if selection else None))
-        if timing and result["status"] == "TIMING_DIAGNOSTIC":
+        if timing and result["status"] in {"TIMING_DIAGNOSTIC", "INCONCLUSIVE"}:
             final_errors = receipt_errors(receipt)
             if final_errors:
                 raise ValueError("source/artifact changed during timing: " + "; ".join(final_errors))
