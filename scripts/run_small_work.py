@@ -253,6 +253,17 @@ def _archive_receipt(root: Path, receipt: Mapping[str, Any]) -> dict[str, str]:
     return {"file": str(path), "sha256": hashlib.sha256(text.encode()).hexdigest()}
 
 
+def _observe_suite_resources(args: argparse.Namespace, protocol: Mapping[str, Any]) -> dict[str, Any]:
+    policy = protocol["resource_policy"]
+    try:
+        return _select_live_resources(policy["requested_threads"], policy["busy_threshold"],
+                                      args.observation_window, args.cpuset)
+    except Exception as exc:
+        return {"status": "inconclusive", "cpus": [], "effective_threads": 0,
+                "requested_threads": policy["requested_threads"],
+                "reasons": [f"live resource observation failed: {type(exc).__name__}"]}
+
+
 def _suite_run(args: argparse.Namespace) -> int:
     suite_path = args.suite
     timestamp = _timestamp()
@@ -269,7 +280,22 @@ def _suite_run(args: argparse.Namespace) -> int:
                   "synthetic_fixture": False, "commands": [], "records": [],
                   "errors": [f"suite validation failed: {type(exc).__name__}: {exc}"]}
         _archive_result(root, output, result)
+        if getattr(args, "dry_run", False):
+            print(json.dumps(result, indent=2))
         return 1
+    if getattr(args, "dry_run", False):
+        selection = _observe_suite_resources(args, protocol)
+        result = {"schema_version": 2, "suite_id": suite["suite_id"], "mode": "dry-run",
+                  "status": "DRY_RUN" if selection["status"] == "valid" else "INCONCLUSIVE",
+                  "timestamp": timestamp, "suite_file": str(suite_path),
+                  "selection_source": "manual suite and SMALL_WORK_CASE_FILTER",
+                  "case_filter": case_filter,
+                  "cases": [{"id": case.case_id, "contract_id": case.contract_id} for case in cases],
+                  "protocol": protocol, "resource": selection, "commands": [],
+                  "not_checked": ["canonical_binding", "build_provenance", "correctness", "allocation", "timing"]}
+        _archive_result(root, output, result)
+        print(json.dumps(result, indent=2))
+        return 0
     library = args.tenferro_dir or Path(__file__).resolve().parents[1] / "extern" / "tenferro-rs"
     try:
         binding = verify_canonical_binding(library, cases)
@@ -293,14 +319,7 @@ def _suite_run(args: argparse.Namespace) -> int:
                      "requested_threads": requested,
                      "reasons": ["correctness-only mode does not require idle CPUs"]}
     else:
-        try:
-            selection = _select_live_resources(
-                requested, protocol["resource_policy"]["busy_threshold"],
-                args.observation_window, args.cpuset)
-        except Exception as exc:
-            selection = {"status": "inconclusive", "cpus": [], "effective_threads": 0,
-                         "requested_threads": requested,
-                         "reasons": [f"live resource observation failed: {type(exc).__name__}"]}
+        selection = _observe_suite_resources(args, protocol)
     receipt_path = getattr(args, "preparation_receipt", None)
     provenance: dict[str, Any] = {"status": "unverified", "reasons": ["no Cargo preparation receipt"]}
     provenance_errors: list[str] = list(provenance["reasons"])
@@ -668,13 +687,15 @@ def _legacy_run(args: argparse.Namespace) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--suite", type=Path)
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Preview suite cases and live resources without building or executing benchmarks")
     parser.add_argument("--case-binary", type=Path)
     parser.add_argument("--artifact-kind", choices=("bin", "lib-test"), default="bin")
     parser.add_argument("--build-project", type=Path)
     parser.add_argument("--cargo-package")
     parser.add_argument("--cargo-target-name")
     parser.add_argument("--component-probe", action="store_true",
-                        help="Export and correctness-check crate-owned einsum components; no timing")
+                        help="Run crate-owned einsum component correctness, allocation or timing diagnostics")
     parser.add_argument("--allocation-iterations", type=int,
                         help="After component correctness checks, collect separate caller allocation diagnostics")
     parser.add_argument("--prepare", action="store_true",
@@ -701,6 +722,9 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--command", action="append", default=[])
     args = parser.parse_args()
+    if args.dry_run and (not args.suite or args.prepare or args.component_probe or
+                         args.synthetic_fixture or args.correctness_only or args.command):
+        parser.error("--dry-run requires --suite and cannot be combined with execution modes")
     if args.allocation_iterations is not None and (not args.component_probe or args.allocation_iterations < 1):
         parser.error("--allocation-iterations requires --component-probe and a positive count")
     if args.component_probe:
@@ -714,7 +738,8 @@ def main() -> int:
             raise SystemExit("--output is required for fixture mode")
         return _fixture_run(args)
     if args.suite:
-        args.output = args.output or Path("small_work_run.json")
+        if not args.dry_run:
+            args.output = args.output or Path("small_work_run.json")
         return _suite_run(args)
     if args.output is None:
         raise SystemExit("--output is required")

@@ -1,5 +1,21 @@
 # Issue 95: small-work suite
 
+## Ordinary-suite dry-run (#96)
+
+The existing CLI now supports `--suite ... --dry-run`, reusing suite validation,
+case filtering and live resource selection without building, validating a binary,
+changing affinity or running correctness/allocation/timing commands. It reports
+unchecked readiness requirements explicitly and preserves INCONCLUSIVE resources.
+Selection remains manual; automatic shared-path mapping and a maintained paired
+revision command are still outstanding.
+
+The small-work Python suite ran 76 tests with one skip; after adding the invalid
+filter test, all three focused dry-run tests passed. A real Linux preview listed
+42 case IDs, valid resources and zero commands; those IDs are not executed tests
+or measurements. No latest report was published. Issue #96 explicitly prohibits
+requiring sudo: a governor change is not a prerequisite, and no host setting was
+changed. During-run passive contention/frequency observation is still missing.
+
 ## Component timing integration and newly available resources
 
 Latest correction: the verified devcontainer release at library `e120bbf` consumes

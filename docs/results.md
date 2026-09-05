@@ -125,6 +125,28 @@ resources are INCONCLUSIVE. Successful collection is TIMING_DIAGNOSTIC, not an
 accepted baseline/candidate comparison; no latest table is published. Release
 readiness and an actual accepted comparison remain separate requirements.
 
+### Small-work dry-run
+
+Preview the ordinary suite's selected cases and current resource eligibility without
+building or executing a benchmark binary:
+
+```bash
+uv run python scripts/run_small_work.py --suite benchmarks/cpu/small_work.yaml \
+  --dry-run --observation-window 2 --output /tmp/small-work-preview.json
+```
+
+This uses the same `SMALL_WORK_CASE_FILTER`, suite `resource_policy`, and optional
+`--cpuset` as collection. Selection is currently manual, not an automatic
+common-path dependency map. The JSON lists case/contract IDs and resource reasons;
+unavailable or unsupported resources remain INCONCLUSIVE. No affinity settings
+are changed, no latest report is published, and no sudo is required. JSON is printed
+and archived under `--results-root`; `--output` optionally writes another copy.
+A preview does not validate canonical binding, artifact provenance, correctness,
+allocation or timing and is never a readiness result. Do not combine `--dry-run`
+with preparation, component, correctness-only, fixture or command execution modes.
+
+### Measured collection
+
 Measured collection requires a valid live idle-core resource selection and a
 Cargo-owned preparation receipt. Prepare the binary explicitly before timing:
 
