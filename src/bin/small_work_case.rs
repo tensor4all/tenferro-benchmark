@@ -359,7 +359,10 @@ fn case_descriptor(
     let supported_dtype = dtype == "f64"
         || (dtype == "c64"
             && operation == "einsum"
-            && matches!(api_tier, "concrete-fresh" | "concrete-shared"));
+            && matches!(
+                api_tier,
+                "concrete-fresh" | "concrete-shared" | "prepared-setup" | "prepared-repeat"
+            ));
     if !matches!(operation, "add" | "einsum") || !supported_dtype || !matches!(size, 4 | 16 | 256) {
         return Err(format!(
             "unsupported small-work selector: operation={operation}, dtype={dtype}"
@@ -822,13 +825,69 @@ mod tests {
             assert!(check_tensor_reference(&invalid, &expected).is_err());
             assert!(check_tensor_reference(&expected, &invalid).is_err());
         }
-        for tier in [
-            "eager-ad",
-            "borrowed-fresh",
-            "prepared-repeat",
-            "compiled-repeat",
-        ] {
+        for tier in ["eager-ad", "borrowed-fresh", "compiled-repeat"] {
             assert!(case_descriptor("einsum", "c64", tier, "single", 4, 1, "faer").is_err());
+        }
+    }
+
+    #[test]
+    fn complex_prepared_einsum_executes_and_revalidates_rebound_inputs() {
+        for size in [4, 16, 256] {
+            let (lhs, rhs, expected) = complex_einsum_inputs(size).unwrap();
+            let plan =
+                tenferro_einsum::ConcreteEinsumPlan::prepare([&lhs, &rhs], "ij,jk->ik").unwrap();
+            let swapped = Tensor::from_vec_col_major(
+                lhs.shape().to_vec(),
+                matmul_reference(
+                    matrix_dimension(size).unwrap(),
+                    rhs.as_slice::<Complex64>().unwrap(),
+                    lhs.as_slice::<Complex64>().unwrap(),
+                ),
+            )
+            .unwrap();
+            assert_ne!(
+                expected.as_slice::<Complex64>().unwrap(),
+                swapped.as_slice::<Complex64>().unwrap()
+            );
+            let mut backend = CpuBackend::new();
+            backend
+                .with_backend_session(|session| {
+                    for (a, b, reference) in [
+                        (&lhs, &rhs, &expected),
+                        (&rhs, &lhs, &swapped),
+                        (&lhs, &rhs, &expected),
+                    ] {
+                        check_tensor_reference(&plan.execute([a, b], session)?, reference)?;
+                    }
+                    let wrong_dtype =
+                        Tensor::from_vec_col_major(lhs.shape().to_vec(), vec![1.0_f64; size])?;
+                    assert!(plan.execute([&lhs, &wrong_dtype], session).is_err());
+                    let wrong_shape = Tensor::from_vec_col_major(
+                        vec![size],
+                        vec![Complex64::new(1.0, 0.0); size],
+                    )?;
+                    assert!(plan.execute([&lhs, &wrong_shape], session).is_err());
+                    Ok::<_, Box<dyn Error + Send + Sync>>(())
+                })
+                .unwrap();
+            let setup =
+                case_descriptor("einsum", "c64", "prepared-setup", "single", size, 1, "faer")
+                    .unwrap();
+            assert_eq!(setup["contract_id"], "einsum.einsum.prepare.concrete");
+            assert_eq!(setup["phase"], "setup");
+            assert_eq!(setup["provider"], "not-applicable");
+            let repeat = case_descriptor(
+                "einsum",
+                "c64",
+                "prepared-repeat",
+                "single",
+                size,
+                1,
+                "faer",
+            )
+            .unwrap();
+            assert_eq!(repeat["contract_id"], "einsum.einsum.prepared.concrete");
+            assert_eq!(repeat["phase"], "execution");
         }
     }
 

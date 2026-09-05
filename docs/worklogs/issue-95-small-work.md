@@ -1,5 +1,20 @@
 # Issue 95: small-work suite
 
+## C64 prepared setup and execution
+
+Added six n2/4/16 C64 prepared-setup/repeat cases using the existing producer
+branches and ConcreteEinsumPlan API. Setup correctness executes the plan, while
+repeat keeps preparation outside its timer. Tests check original/swapped/original
+complex inputs on one plan and reject wrong dtype/rank. No new execution adapter,
+canonical alias, or library API was needed.
+
+Verification: 13 Rust tests, strict producer Clippy, 86 Python tests, and actual
+correctness/descriptor checks for all 75 suite cases passed. Every record validates
+against the result schema, including setup's `not-applicable` provider. The first
+suite assembly copied duplicate YAML anchors and was rejected before execution;
+the six new cases were regenerated without aliases, preserving the old 69 cases.
+These remain correctness-only checks, not setup timing or performance acceptance.
+
 ## Public C64 concrete einsum
 
 Added six C64 fresh/shared concrete cases at n2/4/16. Nonuniform real and imaginary

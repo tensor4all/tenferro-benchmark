@@ -1,14 +1,18 @@
 # Public F64/C64 einsum small-work cases
 
-## C64 concrete slice
+## C64 concrete and prepared slices
 
-Six column-major C64 cases use the existing concrete fresh/shared einsum paths at
-n2/4/16. Inputs have nonzero, nonuniform imaginary components. The independent
+Twelve column-major C64 cases use the existing concrete fresh/shared and
+prepared-setup/repeat paths at n2/4/16. Inputs have nonzero, nonuniform imaginary components. The independent
 triple-loop oracle uses complex multiplication without conjugation; correctness
 checks dtype, shape, finiteness and both components of every element. The n2
 reference has a known-value assertion. Reference values are stored in a Tensor
 outside timing so the same checker can preserve F64 and C64 dtype identity.
-Other C64 tiers remain unsupported by this producer, not aliases of F64 cases.
+Setup retains phase `setup` and provider `not-applicable`; its correctness check
+executes the resulting plan. Repeat retains phase `execution` and keeps preparation
+outside timing. Tests reuse a C64 plan with original/swapped/original inputs and
+reject mismatched dtype or rank. Other C64 tiers remain unsupported by this
+producer, not aliases of F64 cases.
 
 ## Compiled-repeat slice
 
@@ -25,7 +29,7 @@ still-required separate compilation/setup-cost measurement or C64 variants.
 
 The suite includes 18 owned-input, 18 borrowed-input and three compiled-repeat
 `ij,jk->ik` cases at dimensions 2, 4 and 16 alongside the existing 24 add workflows
-plus six C64 concrete cases (69 total). No full family/layout/dtype coverage
+plus twelve C64 concrete/prepared cases (75 total). No full family/layout/dtype coverage
 or performance acceptance is claimed by this matrix alone.
 
 Each size has concrete-fresh, concrete-shared, eager-no-ad, eager-ad,
