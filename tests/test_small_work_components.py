@@ -108,20 +108,20 @@ class ComponentTests(unittest.TestCase):
                         if variant == "truncated":
                             records.pop()
                         elif variant == "under_duration":
-                            records[-1]["elapsed_ns"] = 99
+                            records[-1].update(elapsed_ns=99, valid=False, invalid_reason="under_duration")
                         elif variant == "wrong_stage":
                             records[0]["stage"] = "input_metadata"
                         elif variant == "high_cov" and len(measured) == 2:
                             for record in records:
                                 record["elapsed_ns"] *= 10
-                    return self.child(records, "failed" if variant == "failed_child" and is_measurement else "completed")
+                    return self.child(records, "failed" if variant in ("failed_child", "under_duration") and is_measurement else "completed")
                 with mock.patch.object(components, "run_sequential", side_effect=child):
                     result = components.check_components(Path("probe"), Path(directory), 5,
                                                          protocol=protocol, expected_affinity={0})
-                expected_status = "TIMING_DIAGNOSTIC" if variant == "valid" else ("INCONCLUSIVE" if variant == "high_cov" else "FAILED")
+                expected_status = "TIMING_DIAGNOSTIC" if variant == "valid" else ("INCONCLUSIVE" if variant in ("high_cov", "under_duration") else "FAILED")
                 self.assertEqual(result["status"], expected_status)
                 if variant == "valid":
-                    self.assertEqual(measured, [(16, 3), (16, 3)])
+                    self.assertEqual(measured, [(32, 3), (32, 3)])
                     timing = result["timings"][0]
                     self.assertEqual(len(timing["samples"]), 4)
                     self.assertEqual(timing["statistics"]["normalized_ns_per_call"], 10)

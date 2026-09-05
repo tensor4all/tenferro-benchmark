@@ -390,6 +390,23 @@ class RealCargoPreparationTests(unittest.TestCase):
             self.assertNotEqual(unproved.returncode, 0)
             self.assertIn("previous receipt", unproved.stdout)
 
+    def test_cached_lib_test_survives_runner_only_commit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            benchmark, library = self._workspace(Path(directory))
+            options = dict(benchmark=benchmark, library=library, binary=None, package="tiny-lib", target_name="tiny_lib",
+                           artifact_kind="lib-test", profile="release", build_project=library)
+            first = prepare_cargo(**options, receipt=Path(directory) / "first.json")
+            self.assertEqual(first["status"], "verified", first["errors"])
+            self._git(benchmark, {"runner.py": "# changed runner, unchanged Rust build inputs\n"})
+            second = prepare_cargo(**options, receipt=Path(directory) / "second.json", previous_receipt=first)
+            self.assertEqual(second["status"], "verified", second["errors"])
+            self.assertTrue(second["build"]["fresh_reused"])
+            self.assertEqual(verify_preparation_receipt(**{key: value for key, value in options.items() if key != "profile"},
+                                                       receipt=second, require_timing=True), [])
+            self._git(library, {"crates/tiny-lib/src/lib.rs": "#[test]\nfn changed() {}\n"})
+            self.assertIn("preparation inputs are stale or changed", verify_preparation_receipt(
+                **{key: value for key, value in options.items() if key != "profile"}, receipt=second, require_timing=True))
+
     def test_lib_test_receipt_cannot_be_verified_as_bin(self):
         with tempfile.TemporaryDirectory() as directory:
             benchmark, library = self._workspace(Path(directory))

@@ -1,12 +1,24 @@
 # Explicit Cargo lib-test preparation receipts
 
-Flash pre-implementation design review: **Correct-to-merge**, no blocking findings.
-The implementation must bind build-project/package/target/kind in input identity
+Build receipts bind build-project/package/target/kind in input identity
 and previous-receipt checks, enforce kind-specific test flags and workspace
 membership, preserve exact selected-manifest checks, and discover config/toolchain
 from the actual build cwd. These are requirements, not optional follow-ups.
 This is the first, bounded prerequisite for private-probe integration, not the
 component runner, component manifest, or measurement acceptance.
+
+## Cached library artifacts after runner changes
+
+A real Cargo regression test reproduced unnecessary cache rejection after a
+Python-only benchmark commit, despite unchanged library sources and executable.
+For previous-receipt reuse of a lib-test built at the library root, compare actual
+artifact inputs: omit only the benchmark Git HEAD/tree hash/count from that
+cross-build comparison. Keep benchmark path/cleanliness, both projects' Cargo and
+config hashes, complete dependency identities, library Git identity, toolchain,
+selectors, profile/features, and executable hash. An existing verified receipt is
+still required for a cached artifact. Full benchmark identity is still recorded
+and checked before/after the current preparation and before/after timing; this is
+not permission to change runner source during a run or reuse a changed library.
 
 ## Existing seams
 
@@ -110,7 +122,7 @@ public-operation case registry. Require a verified release lib-test receipt and
 valid existing idle-core selection before launching the probe. Export the component
 contracts and pass correctness first. For each exported stage, calibrate a separate
 child with a one-nanosecond minimum, doubling iterations up to a fixed bound until
-its aggregate reaches the protocol target. Archive calibration separately. Run
+its aggregate reaches twice the protocol target (calibration headroom). Archive calibration separately. Run
 independent measured children with warmup samples discarded only as predeclared;
 require every recorded aggregate to meet the target, match case/stage/sample IDs,
 and pass existing process-median CoV statistics. No favorable-case retry or latest

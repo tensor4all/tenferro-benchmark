@@ -2,6 +2,16 @@
 
 ## Component timing integration and newly available resources
 
+Latest correction: the verified devcontainer release at library `e120bbf` consumes
+full parser output through `black_box`; its 181 tests passed. The first 1T pilot
+stopped after 11 stages because a C64 parse sample lasted 998947ns, below the
+unchanged 1000000ns minimum. No partial timing is accepted. Calibration now seeks
+twice the minimum for every stage; under-duration aborts are INCONCLUSIVE. A real
+Cargo regression test also exposed needless cached lib-test rejection after a
+runner-only commit; the cross-receipt comparison now distinguishes Rust artifact
+inputs from runner Git identity, while retaining current-run identity and all
+library/config/dependency/binary checks. All 73 small-work Python tests pass.
+
 - Connected component timing to the existing suite protocol, release receipt,
   idle-core selector, child affinity check, calibration, independent-process
   statistics, and raw archives. Allocation and timing are mutually exclusive.

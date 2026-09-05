@@ -382,13 +382,20 @@ def collect_identity(benchmark: Path, library: Path, *, binary: Path | None = No
     }
 
 
-def _input_identity(identity: Mapping[str, Any]) -> dict[str, Any]:
+def _input_identity(identity: Mapping[str, Any], *, artifact_inputs_only: bool = False) -> dict[str, Any]:
     states = {}
     for label in ("benchmark", "library"):
         state = identity.get(label, {})
         states[label] = {key: state.get(key) for key in
                          ("path", "head", "dirty", "untracked", "status_sha256",
                           "tracked_file_count", "tracked_files_sha256", "error")}
+    selectors = identity.get("selectors", {})
+    if (artifact_inputs_only and isinstance(selectors, Mapping) and selectors.get("artifact_kind") == "lib-test" and
+            selectors.get("build_project") == states["library"]["path"]):
+        # The Python runner is not an input to a library-owned Rust lib-test.
+        # Keep its path/cleanliness and all Cargo/config/dependency identities.
+        for key in ("head", "tracked_file_count", "tracked_files_sha256"):
+            states["benchmark"].pop(key)
     return {"states": states, "files": identity.get("files"),
             "dependencies": identity.get("dependencies"), "toolchain": identity.get("toolchain"),
             "environment": identity.get("environment"),
@@ -473,7 +480,7 @@ def _previous_receipt_matches(previous: Mapping[str, Any] | None, before: Mappin
     if (not isinstance(old_after, Mapping) or not isinstance(old_build, Mapping) or
             old_after.get("errors") != []):
         return False
-    if _input_identity(old_after) != _input_identity(before):
+    if _input_identity(old_after, artifact_inputs_only=True) != _input_identity(before, artifact_inputs_only=True):
         return False
     old_binary = old_after.get("binary")
     if not isinstance(old_binary, Mapping) or old_binary.get("sha256") != _sha256(binary):
@@ -774,7 +781,7 @@ def verify_preparation_receipt(receipt: Mapping[str, Any], *, benchmark: Path, l
         current_binary = current.get("binary")
         if (build.get("fresh_reused") is not True or
                 not isinstance(previous_after, Mapping) or
-                _input_identity(previous_after) != _input_identity(after) or
+                _input_identity(previous_after, artifact_inputs_only=True) != _input_identity(after, artifact_inputs_only=True) or
                 not isinstance(old_binary, Mapping) or not isinstance(current_binary, Mapping) or
                 old_binary.get("sha256") != current_binary.get("sha256")):
             errors.append("fresh cached artifact lacks a matching verified previous receipt")

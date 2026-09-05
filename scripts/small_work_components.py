@@ -55,9 +55,12 @@ def check_components(binary: Path, archive: Path, timeout: float,
         child.update(mode=mode, case=case, stage=stage, iterations=iterations,
                      requested_samples=samples, minimum_ns=minimum_ns)
         result["commands"].append(child)
+        records = probe_records(child["stdout"])
         if child["status"] != "completed":
+            if mode == "timed" and any(record.get("invalid_reason") == "under_duration" for record in records):
+                result["status"] = "INCONCLUSIVE"
             raise ValueError(f"component {mode}/{case} child failed: {child.get('error', child.get('returncode'))}")
-        return probe_records(child["stdout"])
+        return records
 
     try:
         contracts = invoke("contract", "all")
@@ -111,7 +114,8 @@ def check_components(binary: Path, archive: Path, timeout: float,
                             raise ValueError(f"timing identity, count or duration mismatch for {case}/{stage}")
                     return records
                 iterations = 1
-                while checked_timing(iterations, 1, 1)[0]["elapsed_ns"] < target:
+                # Leave headroom without weakening the measured-duration threshold.
+                while checked_timing(iterations, 1, 1)[0]["elapsed_ns"] < 2 * target:
                     if iterations >= 1 << 30:
                         raise ValueError(f"calibration limit reached for {case}/{stage}")
                     iterations *= 2
