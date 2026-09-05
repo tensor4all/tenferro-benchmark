@@ -1,39 +1,184 @@
 # Issue 95: small-work suite
 
-## Context
+## Component timing integration and newly available resources
 
-Parent: tensor4all/tenferro-rs#1758. The existing public_api suite's operation
-coverage and thin aliases do not establish equal public-boundary cost. Preserve
-that suite and add explicit concrete/eager/prepared/compiled timing contracts.
-Design: [small-work-design](../small-work-design.md).
-Benchmark baseline: `ce729ecfa040b4c825850e0bcf0907142bdac58f`.
-Library baseline: `0457a2ed0aeea21b14f4297f7f4731e09b3a0507`.
+- Connected component timing to the existing suite protocol, release receipt,
+  idle-core selector, child affinity check, calibration, independent-process
+  statistics, and raw archives. Allocation and timing are mutually exclusive.
+  Source/receipt and resource eligibility are rechecked after collection; parent
+  affinity restoration is covered on success and failure.
+- Python small-work tests: 72 run, one skipped, no failures. This verifies the
+  runner, not a measured baseline/candidate performance claim.
+- After the user stopped background workloads, fresh two-second observations
+  selected valid 1-thread `[0]` and 4-thread `[0,1,2,3]` configurations. The earlier
+  resource-unavailable observations remain historical evidence, not current state.
+- Integrated library `1fa2cbb9` release lib-test built successfully in 6m15s.
+  The first command failed because the new worktree lacked its ignored lockfile;
+  manifests were identical to the old probe worktree, whose lockfile was copied
+  before retrying with `--locked`. No profile or timing threshold was relaxed.
+- Optimized lib-test: 181 passed, one ignored. Real component smoke: 30 correctness
+  records and 30 allocation diagnostics. The smoke deliberately has unverified
+  preparation provenance and is NOT performance acceptance.
+- Full matrix completion, clean measurement-source preparation, paired baseline/
+  candidate acceptance, shared-owner optimization, final gates and both PR merges
+  remain outstanding. No final PR has been opened.
 
-## Pre-implementation gate
+## Direct-work resumption
 
-DeepSeek V4 Flash, read-only design review round 1: **Correct-to-merge**, no
-Critical/Important findings, four Minor pins incorporated before implementation:
-worktree-local extern pin, strict run-schema/metadata integration, distinct API tier
-keys and new-runner-specific timing guards. Reviewed design, public runner,
-publication gate, suite/coverage manifests, result/run schemas, extern setup and
-layout/timing tests. Implementation is assigned to Luna and has not started.
+Publication decision: one final PR per repository (two total), no intermediate
+PRs. The closed tenferro #1769 changes and private probe commit are now combined
+locally at tenferro candidate `1fa2cbb9`; no new PR was opened. Old mandatory
+cross-model reviews in the historical notes below are superseded.
 
-## Evidence and constraints
+The last CLI/cache-helper delta passed the existing uv suite (64 tests, one
+telemetry skip). Source inspection then reproduced correctness-only runs accepting
+wrong-operation payloads or failed children when their payload claimed correctness.
+The aggregate now also requires no contract/execution errors. Regression tests fail
+before the fix; the runner's 34 tests and the existing debug producer's 24 actual
+cases passed after it. Debug correctness evidence is not timing acceptance.
 
-The unpushed prototype object `30f446761d08bd085da356b21f6a509651776b10` was not
-available in this host's tenferro git database. Do not imply the prototype was read
-or reproduced; owning-library component probes need explicit integration evidence.
+Added a small adapter in the existing CLI for the crate-owned lib-test probe:
+export contracts, invoke correctness once per case, strictly match stage records,
+and retain tagged output and child status. It reuses sequential execution and
+optional preparation verification, does not copy a registry, and rejects timing
+requests. Existing debug probe execution yielded 30 contracts and 30 successful
+stage records in nine processes. Its provenance is explicitly unverified; no
+fresh release build or accepted performance measurement is claimed.
 
-A preliminary three-second `/proc/stat` observation found every allowed CPU busy
-(minimum 83.85% across CPUs 0–63). This is not a frozen benchmark protocol or a
-measurement result. No timings were collected; wait for valid idle resources and
-retain run-level INCONCLUSIVE diagnostics if unavailable at collection time.
-Docker is available; a devcontainer CLI was not found on PATH. Existing containers
-must not be modified or stopped without identifying a task-owned environment.
+Checks: full small-work suite 67 tests/one skip before the final receipt-type
+check; the affected three component tests passed after it. Suite schema validation
+(`--kind small-work-suite`), result-layout shell check and diff whitespace passed.
+Using the generic suite schema was an incorrect command, not a schema defect.
+Evidence: `/tmp/1758-correctness-status-tests.log`,
+`/tmp/1758-correctness-status-real.json`, `/tmp/1758-component-tests.log`,
+`/tmp/1758-component-smoke.json`, `/tmp/1758-result-layout.log`.
 
-## Remaining
+Three fresh one-second resource observations, using the existing 20% busy
+threshold and all-SMT-siblings policy, all returned INCONCLUSIVE: no physical
+core had idle telemetry for every sibling. Evidence:
+`/tmp/1758-resume-resource-observation.json`. Do not relax this threshold or retry
+unchanged timed/release work on the contended host. Timing adapter, release readiness, remaining coverage, valid comparisons and
+final gates/merges remain unfinished.
 
-Implement approved design, test validators/runner/report and migrated dependency
-consumers, integrate #1759 case contracts and owning-library probes, obtain actual
-valid raw evidence, run Flash full-diff review and relevant local gates, publish PR
-and verify CI/merge. This worklog does not claim #95 or #1758 complete.
+The component adapter now also supports separate allocation diagnostics via
+`--allocation-iterations`: correctness first, then one child per exported
+case/stage. Four focused tests passed, including partial counts, invalid/negative
+counters, duplicate/wrong records and failed children. The existing debug probe
+produced 30 correctness and 30 allocation records successfully with two iterations.
+`/tmp/1758-component-allocation.json` and its copy under
+`.artifacts/issue-1758/direct-resume/` retain the result. Its status is
+ALLOCATION_DIAGNOSTIC with unverified provenance, not performance acceptance;
+caller-only allocation calls/requested traffic exclude setup and workers/native
+allocations. No timed run or new PR was started.
+
+## Public einsum correctness expansion
+
+Added the 18-case F64 square-matrix matrix described in
+[small-work-einsum-design](../small-work-einsum-design.md), preserving the 24 add
+cases. Ordinary concrete/eager calls, plan setup and prepared execution have
+separate scopes and canonical IDs. Independent dyadic reference values and full
+analytic eager gradients passed at dimensions 2/4/16. Setup does not claim a
+backend provider or session admission; repeat retains public revalidation.
+
+Fresh checks: nine Rust unit tests, debug producer rebuild, all 42 real cases,
+selected 18 einsum cases, selected raw metadata/result schema validation,
+strict producer Clippy and rustfmt passed. Python suite: 70 passed. Schema tests
+now generate their own synthetic metadata rather than loading historical files
+from `/tmp`; this removes a checkout-reproducibility defect without treating
+synthetic data as benchmark evidence. Logs: `/tmp/1758-einsum42-rust.log`,
+`/tmp/1758-einsum42-python.log`, `/tmp/1758-einsum42-clippy.log`,
+`/tmp/1758-einsum42-correctness.json`, `/tmp/1758-einsum18-filter.json`.
+The first schema-validator import attempt omitted its script path; invoking its
+supported CLI validated the actual records successfully. No timings or new PRs.
+
+## Recovery and current acceptance status
+
+A worker reported overwriting earlier uncommitted worklog prose. The surviving
+checkpoint below was preserved before recovery. This section reconstructs verified
+milestones from the parent evidence ledger/logs; it is not a verbatim restoration.
+No complete suite, performance readiness, final full-diff approval or PR is claimed.
+
+- Initial design: `../small-work-design.md`, Flash Correct-to-merge before Luna
+  implementation. Starting benchmark commit6005fe6 records the initial design;
+  subsequent infrastructure remains uncommitted work under that task.
+- Provenance refinement: `../small-work-provenance-design.md`, Flash approval
+  before implementation. Parent real-Cargo contract fixtures verified preparation,
+  debug timing rejection, cache reuse with prior proof and substituted-cache
+  rejection. Parent discovered and then verified fixes for mutable foreign path
+  dependencies and ancestor Cargo configuration. These fixtures executed no
+  benchmark binary and produced no performance samples.
+- Source inspection and explicit binary rebuild resolved stale diagnostic APIs
+  and task-vanishing handling. Parent four-case correctness-only execution passed;
+  active AD timing is forward recording only, with backward checked outside it.
+- Canonical binding: `../small-work-canonical-binding-design.md`, Flash design
+  Correct-to-merge before code. Library contract refinement PR1767 merged as
+  aa68a0d7703b8f38700f9f3234e8f06ed757fb05, with eight required checks verified.
+  The181 route declarations are not181 implemented benchmarks.
+- Earlier45-test success did NOT establish binding safety: existing campaign tests
+  mocked binding. Parent found missing negative tests, placeholder canonical IDs,
+  incomplete identity/freshness checks, failure archival/status defects and missing
+  frozen metadata. Rework is being verified against these findings.
+- Generic run.yaml metadata retains envelope version1, with small_work contract2;
+  dedicated small-work campaign/result/child formats use2. The earlier checkpoint's
+  blanket metadata-version2 statement below is historical and superseded.
+
+Evidence is retained in the workspace `.artifacts/issue-1758/progress.md`, including
+PR/CI snapshots and parent logs `/tmp/95-gen10-{positive,foreign,cache}.log` and
+`/tmp/95-gen10-correctness.json`. Source/lock/protocol freeze, balanced workflows,
+remaining families/dtypes/layouts, private probe integration, actual low-load
+performance evidence, final review and publication remain required. No historical
+raw records are rewritten or promoted by this recovery.
+
+## Earlier binding v2 implementation checkpoint (worker-reported)
+
+Migrated small-work test fixtures to contract version 2 with canonical contract IDs,
+family, and surface descriptors; repeated canonical references are allowed while case IDs
+remain unique. Child payload fixtures now include schema_version and canonical fields.
+The runner and frozen metadata emit schema version/contract version 2. Canonical snapshots
+also freeze the tenferro checkout revision alongside export/inventory hashes, so stale
+checkout mutation fails closed before publication.
+
+Verification commands (all passed):
+- `uv run python -m unittest discover -s tests -p 'test_small_work*.py'` (45 tests, 1 telemetry skip)
+- `cargo check --locked --no-default-features --features cpu-faer --bin small_work_case`
+- `cargo test --locked --no-default-features --features cpu-faer --bin small_work_case`
+- `cargo build --locked --no-default-features --features cpu-faer --bin small_work_case`
+- `uv run python scripts/run_small_work.py --suite benchmarks/cpu/small_work.yaml --case-binary target/debug/small_work_case --correctness-only --output /tmp/small-work-correctness.json --target-profile amd-cpu --results-root /tmp/small-results --result-root /tmp/small-result --command-timeout 30`
+  Result: `CORRECTNESS_ONLY`, 4 records, no errors.
+
+## Binding runner rework B checkpoint
+
+Implemented timestamp-root archiving for every suite-run exit (including explicit
+`--output` copies), fail-closed correctness binding failures with `not_run` records,
+and restored schema version 1 for common/fixture/legacy envelopes. The validated
+canonical binding remains contract version 2 in frozen metadata.
+
+Verification commands (all passed):
+- `uv run python -m unittest discover -s tests -p 'test_small_work*.py'` (50 tests, 1 telemetry skip)
+- `cargo build --locked --no-default-features --features cpu-faer --bin small_work_case`
+- `uv run python -m py_compile scripts/run_small_work.py`
+- `bash tests/test_suite_result_layout.sh`
+- Real correctness campaign command above (`CORRECTNESS_ONLY`, 4 records, no errors); archive `run.json` was created under the timestamp root.
+
+## Binding provenance receipt integration checkpoint
+
+Frozen `run.yaml` tenferro identity now comes from the verified canonical binding checkout; claimed `--tenferro-commit` mismatches fail before child launch. Parsed Cargo receipts are archived verbatim under each timestamp root with SHA-256/file references in `run.json` and `run.yaml`; receipt build features drive metadata rather than caller flags.
+
+Verification: `uv run python -m unittest discover -s tests -p 'test_small_work*.py'` (50 passed), `cargo build --locked --no-default-features --features cpu-faer --bin small_work_case`, and real four-case correctness-only campaign (4 records, no errors).
+
+## Balanced add/dependent workflow implementation
+
+Implemented the approved bounded matrix: 24 F64 contiguous cases across four API tiers, sizes 4/16/256, and single/dependent10 workflows. Concrete execution now constructs one backend per process, with fresh admission per ADD and shared admission outside all timing; all tiers use the generic dependent-chain helper. Eager runtime uses the captured `CpuBackend::kind()` provider and active AD checks gradients 1/1 or 1/10 outside timing. Scenario IDs are opaque and selectors are explicit child arguments. `SMALL_WORK_CASE_FILTER` resolves exact IDs before binding/launch and freezes selection metadata; the documented filter runs the eight size-4 cases.
+
+Verification commands (all passed):
+- `uv run python -m unittest discover -s tests -p 'test_small_work*.py'` (58 passed, 1 telemetry skip)
+- `cargo check --locked --no-default-features --features cpu-faer --bin small_work_case`
+- `cargo test --locked --no-default-features --features cpu-faer --bin small_work_case` (3 passed)
+- `cargo fmt --all -- --check`
+- `bash tests/test_suite_result_layout.sh`
+- `bash tests/test_cpu_thread_metadata.sh`
+- Real rebuilt binary correctness-only matrix: 24/24 passed; exact filtered n4 command: 8/8 passed.
+
+## Lib-test preparation final review fixes
+
+`--preparation-receipt` is also the prior proof supplied to `--prepare` for a cached lib-test artifact; without it, cached preparation fails closed. The tiny real-Cargo CLI regression covers first prepare, proven cached reuse, and unproved-cache rejection without running the test executable. Shared package/target/source selection is kept in one helper for preparation and receipt verification.

@@ -18,6 +18,8 @@ SUITE_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-suite.schema.json"
 RUN_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-run.schema.json"
 RESULT_SCHEMA = PROJECT_DIR / "schemas" / "benchmark-result.schema.json"
 PERMUTATION_RESULT_SCHEMA = PROJECT_DIR / "schemas" / "permutation-result.schema.json"
+SMALL_WORK_SUITE_SCHEMA = PROJECT_DIR / "schemas" / "small-work-suite.schema.json"
+SMALL_WORK_RESULT_SCHEMA = PROJECT_DIR / "schemas" / "small-work-result.schema.json"
 
 
 class ValidationLoadError(Exception):
@@ -118,7 +120,21 @@ def validate_run(path: Path) -> bool:
     return validate_object(path, run, validator)
 
 
-def validate_results(path: Path, schema_path: Path = RESULT_SCHEMA) -> bool:
+def validate_small_work_suite(path: Path) -> bool:
+    try:
+        validator = validator_for(SMALL_WORK_SUITE_SCHEMA)
+        suite = load_yaml(path)
+        if not validate_object(path, suite, validator):
+            return False
+        from small_work import validate_suite_contract
+        validate_suite_contract(suite)
+        return True
+    except (ValidationLoadError, ValueError) as exc:
+        print(f"{path}: {exc}", file=sys.stderr)
+        return False
+
+
+def validate_results(path: Path, schema_path: Path = RESULT_SCHEMA, *, small_work: bool = False) -> bool:
     try:
         validator = validator_for(schema_path)
     except ValidationLoadError as exc:
@@ -146,6 +162,13 @@ def validate_results(path: Path, schema_path: Path = RESULT_SCHEMA) -> bool:
             record_path = Path(f"{path}:{line_no}")
             if not validate_object(record_path, record, validator):
                 ok = False
+            elif small_work:
+                try:
+                    from small_work import validate_record
+                    validate_record(record)
+                except (ValueError, TypeError) as exc:
+                    print(f"{record_path}: {exc}", file=sys.stderr)
+                    ok = False
     if records == 0:
         print(f"{path}: no JSON records found", file=sys.stderr)
         ok = False
@@ -157,7 +180,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("paths", nargs="+", type=Path)
     parser.add_argument(
         "--kind",
-        choices=["suite", "run", "result", "permutation-result"],
+        choices=["suite", "run", "result", "permutation-result", "small-work-suite", "small-work-result"],
         default="suite",
         help=(
             "Validate suite YAML, run YAML, benchmark-result.schema.json JSONL "
@@ -178,6 +201,10 @@ def main() -> int:
             ok = validate_run(path) and ok
         elif args.kind == "permutation-result":
             ok = validate_results(path, PERMUTATION_RESULT_SCHEMA) and ok
+        elif args.kind == "small-work-suite":
+            ok = validate_small_work_suite(path) and ok
+        elif args.kind == "small-work-result":
+            ok = validate_results(path, SMALL_WORK_RESULT_SCHEMA, small_work=True) and ok
         else:
             ok = validate_results(path) and ok
     return 0 if ok else 1

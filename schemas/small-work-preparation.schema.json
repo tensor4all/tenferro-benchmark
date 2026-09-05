@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tensor4all.example/schemas/small-work-preparation.schema.json",
+  "title": "CPU small-work Cargo preparation receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "before", "after", "build", "errors"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "status": {"enum": ["verified", "unverified"]},
+    "before": {"$ref": "#/$defs/identity"},
+    "after": {"$ref": "#/$defs/identity"},
+    "build": {
+      "type": "object",
+      "required": ["argv", "cwd", "target_name", "artifact_kind", "build_project", "package", "requested_profile"],
+      "properties": {
+        "argv": {"type": "array", "items": {"type": "string"}},
+        "cwd": {"type": "string", "minLength": 1},
+        "target_name": {"type": "string", "minLength": 1},
+        "artifact_kind": {"enum": ["bin", "lib-test"]},
+        "build_project": {"type": "string", "minLength": 1},
+        "package": {"type": ["string", "null"]},
+        "requested_profile": {"enum": ["debug", "release"]}
+      },
+      "additionalProperties": true
+    },
+    "errors": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "required": ["benchmark", "library", "files", "dependencies", "toolchain", "errors", "selectors"],
+      "properties": {
+        "files": {"type": "object", "properties": {
+          "benchmark": {"$ref": "#/$defs/file_hashes"},
+          "library": {"$ref": "#/$defs/file_hashes"}
+        }, "additionalProperties": true},
+        "dependencies": {"type": "object", "properties": {
+          "packages": {"type": "array"},
+          "workspace_members": {"type": "array", "items": {"type": "string"}},
+          "sha256": {"type": ["string", "null"]}
+        }, "additionalProperties": true},
+        "overrides": {"type": "object"},
+        "selectors": {"$ref": "#/$defs/selectors"}
+      },
+      "additionalProperties": true
+    },
+    "selectors": {
+      "type": "object",
+      "required": ["build_project", "artifact_kind"],
+      "properties": {
+        "build_project": {"type": "string", "minLength": 1},
+        "package": {"type": ["string", "null"]},
+        "target_name": {"type": ["string", "null"]},
+        "artifact_kind": {"enum": ["bin", "lib-test"]}
+      },
+      "additionalProperties": false
+    },
+    "file_hashes": {
+      "type": "object",
+      "properties": {
+        "configs": {"type": "object", "additionalProperties": {"type": ["string", "null"]}},
+        "toolchain": {"type": "object", "additionalProperties": {"type": ["string", "null"]}}
+      },
+      "additionalProperties": true
+    }
+  }
+}

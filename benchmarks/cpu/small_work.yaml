@@ -1,0 +1,1050 @@
+schema_version: 2
+suite_id: cpu/small_work
+title: CPU small-work public boundary contracts
+description: F64 contiguous add workflows and public einsum ordinary, preparation, and prepared-execution cases.
+contract_version: 2
+protocol:
+  warmups: 1
+  runs: 3
+  independent_processes: 2
+  samples_per_process: 3
+  calibration:
+    enabled: true
+    target_ns: 1000000
+  noise_policy:
+    process_median_cov_max: 0.10
+  resource_policy:
+    busy_threshold: 0.2
+    requested_threads: 1
+cases:
+  - id: add_f64_concrete_fresh
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [4]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [session_entry_exit, add, output_lifetime]
+      excludes: [backend_construction, input_construction, correctness_check]
+    scope:
+      timer: [session_entry_exit, add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, correctness_check]
+  - id: add_f64_concrete-fresh_size4_dependent10
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [4]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [session_entry_exit, add, output_lifetime]
+      excludes: [backend_construction, input_construction, correctness_check]
+    scope:
+      timer: [session_entry_exit, add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, correctness_check]
+  - id: add_f64_concrete-fresh_size16_single
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [16]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [session_entry_exit, add, output_lifetime]
+      excludes: [backend_construction, input_construction, correctness_check]
+    scope:
+      timer: [session_entry_exit, add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, correctness_check]
+  - id: add_f64_concrete-fresh_size16_dependent10
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [16]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [session_entry_exit, add, output_lifetime]
+      excludes: [backend_construction, input_construction, correctness_check]
+    scope:
+      timer: [session_entry_exit, add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, correctness_check]
+  - id: add_f64_concrete-fresh_size256_single
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [256]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [session_entry_exit, add, output_lifetime]
+      excludes: [backend_construction, input_construction, correctness_check]
+    scope:
+      timer: [session_entry_exit, add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, correctness_check]
+  - id: add_f64_concrete-fresh_size256_dependent10
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [256]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [session_entry_exit, add, output_lifetime]
+      excludes: [backend_construction, input_construction, correctness_check]
+    scope:
+      timer: [session_entry_exit, add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, correctness_check]
+  - id: add_f64_concrete-shared_size4_single
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [4]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [add, output_lifetime]
+      excludes: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+    scope:
+      timer: [add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+  - id: add_f64_concrete-shared_size4_dependent10
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [4]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [add, output_lifetime]
+      excludes: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+    scope:
+      timer: [add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+  - id: add_f64_concrete_shared
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [16]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [add, output_lifetime]
+      excludes: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+    scope:
+      timer: [add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+  - id: add_f64_concrete-shared_size16_dependent10
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [16]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [add, output_lifetime]
+      excludes: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+    scope:
+      timer: [add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+  - id: add_f64_concrete-shared_size256_single
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [256]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [add, output_lifetime]
+      excludes: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+    scope:
+      timer: [add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+  - id: add_f64_concrete-shared_size256_dependent10
+    contract_id: core.add.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: add
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [256]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [add, output_lifetime]
+      excludes: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+    scope:
+      timer: [add, output_lifetime]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, shared_admission_exit, correctness_check]
+  - id: add_f64_eager-no-ad_size4_single
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [4]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [add, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, correctness_check]
+    scope:
+      timer: [add, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, correctness_check]
+  - id: add_f64_eager-no-ad_size4_dependent10
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [4]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [add, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, correctness_check]
+    scope:
+      timer: [add, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, correctness_check]
+  - id: add_f64_eager_no_ad
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [16]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [add, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, correctness_check]
+    scope:
+      timer: [add, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, correctness_check]
+  - id: add_f64_eager-no-ad_size16_dependent10
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [16]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [add, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, correctness_check]
+    scope:
+      timer: [add, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, correctness_check]
+  - id: add_f64_eager-no-ad_size256_single
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [256]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [add, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, correctness_check]
+    scope:
+      timer: [add, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, correctness_check]
+  - id: add_f64_eager-no-ad_size256_dependent10
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [256]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [add, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, correctness_check]
+    scope:
+      timer: [add, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, correctness_check]
+  - id: add_f64_eager_active_ad
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [4]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [add_forward_recording, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+    scope:
+      timer: [add_forward_recording, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+  - id: add_f64_eager-ad_size4_dependent10
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [4]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [add_forward_recording, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+    scope:
+      timer: [add_forward_recording, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+  - id: add_f64_eager-ad_size16_single
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [16]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [add_forward_recording, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+    scope:
+      timer: [add_forward_recording, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+  - id: add_f64_eager-ad_size16_dependent10
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [16]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [add_forward_recording, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+    scope:
+      timer: [add_forward_recording, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+  - id: add_f64_eager-ad_size256_single
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [256]
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: [add_forward_recording, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+    scope:
+      timer: [add_forward_recording, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+  - id: add_f64_eager-ad_size256_dependent10
+    contract_id: core.add.ordinary.eager
+    family: core
+    surface: eager
+    operation: add
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape: [256]
+    calls_per_workflow: 10
+    workflow: dependent10
+    setup:
+      includes: [add_forward_recording, output_materialization]
+      excludes: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+    scope:
+      timer: [add_forward_recording, output_materialization]
+      outside_timer: [backend_construction, input_construction, session_entry_exit, backward, correctness_check]
+
+  - id: einsum_f64_concrete-fresh_n2_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_concrete-fresh_n4_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_concrete-fresh_n16_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_concrete-shared_n2_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_f64_concrete-shared_n4_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_f64_concrete-shared_n16_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_f64_eager-no-ad_n2_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+  - id: einsum_f64_eager-no-ad_n4_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+  - id: einsum_f64_eager-no-ad_n16_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+  - id: einsum_f64_eager-ad_n2_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum_forward_recording
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+    scope:
+      timer:
+      - einsum_forward_recording
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+  - id: einsum_f64_eager-ad_n4_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum_forward_recording
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+    scope:
+      timer:
+      - einsum_forward_recording
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+  - id: einsum_f64_eager-ad_n16_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum_forward_recording
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+    scope:
+      timer:
+      - einsum_forward_recording
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+
+  - id: einsum_f64_prepared-setup_n2_single
+    contract_id: einsum.einsum.prepare.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: setup
+    api_tier: prepared-setup
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: &id001
+      - prepare
+      - plan_lifetime
+      excludes: &id002
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer: *id001
+      outside_timer: *id002
+  - id: einsum_f64_prepared-repeat_n2_single
+    contract_id: einsum.einsum.prepared.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: prepared-repeat
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: &id003
+      - prepared_execute
+      - output_lifetime
+      excludes: &id004
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer: *id003
+      outside_timer: *id004
+  - id: einsum_f64_prepared-setup_n4_single
+    contract_id: einsum.einsum.prepare.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: setup
+    api_tier: prepared-setup
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: &id005
+      - prepare
+      - plan_lifetime
+      excludes: &id006
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer: *id005
+      outside_timer: *id006
+  - id: einsum_f64_prepared-repeat_n4_single
+    contract_id: einsum.einsum.prepared.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: prepared-repeat
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: &id007
+      - prepared_execute
+      - output_lifetime
+      excludes: &id008
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer: *id007
+      outside_timer: *id008
+  - id: einsum_f64_prepared-setup_n16_single
+    contract_id: einsum.einsum.prepare.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: setup
+    api_tier: prepared-setup
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: &id009
+      - prepare
+      - plan_lifetime
+      excludes: &id010
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer: *id009
+      outside_timer: *id010
+  - id: einsum_f64_prepared-repeat_n16_single
+    contract_id: einsum.einsum.prepared.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: prepared-repeat
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes: &id011
+      - prepared_execute
+      - output_lifetime
+      excludes: &id012
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer: *id011
+      outside_timer: *id012

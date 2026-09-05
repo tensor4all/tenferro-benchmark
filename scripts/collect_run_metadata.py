@@ -552,6 +552,18 @@ def collect_julia_backend() -> dict[str, Any]:
     }
 
 
+def load_small_work_metadata(path: Path | None) -> dict[str, Any] | None:
+    if path is None:
+        return None
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MetadataError(f"failed to read --small-work metadata: {exc}") from exc
+    if not isinstance(value, dict) or value.get("contract_version") != 1 or not isinstance(value.get("resource"), dict):
+        raise MetadataError("--small-work metadata requires contract_version=1 and resource object")
+    return value
+
+
 def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
     safe_suite_id_parts(args.suite_id)
     safe_target_profile(args.target_profile)
@@ -578,6 +590,9 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
         metadata["blas"] = blas
     metadata["python_backends"] = collect_python_backends()
     metadata["julia"] = collect_julia_backend()
+    small_work = load_small_work_metadata(args.small_work)
+    if small_work is not None:
+        metadata["small_work"] = small_work
     if "cuda" in parse_features(args.features) and args.cuda_device_ordinal is not None:
         cuda = collect_cuda_metadata(args.cuda_device_ordinal)
         if cuda is not None:
@@ -597,6 +612,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--features", action="append", default=[])
     parser.add_argument("--blas", choices=["openblas", "accelerate", "mkl", "none"])
     parser.add_argument("--cuda-device-ordinal", type=int)
+    parser.add_argument("--small-work", type=Path, help="JSON contract/resource metadata for cpu/small_work")
     parser.add_argument("--output", required=True, type=Path)
     return parser.parse_args()
 

@@ -189,6 +189,8 @@ else:
     raise AssertionError("../bad did not raise ValueError")
 
 paths = paths_for_suite_run(root, "gpu/einsum", "19990101_000000", "nvidia-gpu")
+small_work_paths = paths_for_suite_run(root, "cpu/small_work", "19990101_000000", "amd-cpu")
+assert small_work_paths.latest_report == root / "result/amd-cpu/cpu/small_work.md"
 expected = {
     "run_dir": Path("data/results/nvidia-gpu/gpu/einsum/19990101_000000"),
     "run_yaml": Path("data/results/nvidia-gpu/gpu/einsum/19990101_000000/run.yaml"),
@@ -239,11 +241,17 @@ assert_collected_run_metadata() {
 assert_benchmark_layout_api
 
 assert_valid suite benchmarks/cpu/einsum.yaml "bundled CPU einsum suite"
+if ! uv run python scripts/validate_benchmark_suite.py --kind small-work-suite benchmarks/cpu/small_work.yaml >"$TMP/out" 2>&1; then
+  echo "bundled CPU small-work suite did not pass validation" >&2
+  cat "$TMP/out" >&2
+  exit 1
+fi
 assert_valid suite benchmarks/gpu/dense.yaml "bundled GPU dense suite"
 assert_valid suite benchmarks/gpu/einsum.yaml "bundled GPU einsum suite"
 assert_valid suite benchmarks/gpu/sparse.yaml "bundled GPU sparse suite"
 
 assert_suite_id benchmarks/cpu/einsum.yaml cpu/einsum
+assert_suite_id benchmarks/cpu/small_work.yaml cpu/small_work
 assert_suite_id benchmarks/gpu/dense.yaml gpu/dense
 assert_suite_id benchmarks/gpu/einsum.yaml gpu/einsum
 assert_suite_id benchmarks/gpu/sparse.yaml gpu/sparse

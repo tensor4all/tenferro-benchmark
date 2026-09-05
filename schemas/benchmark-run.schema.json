@@ -30,7 +30,8 @@
     "python_backends": { "$ref": "#/$defs/python_backends" },
     "julia": { "$ref": "#/$defs/julia_backend" },
     "cuda": { "$ref": "#/$defs/cuda" },
-    "metal": { "$ref": "#/$defs/metal" }
+    "metal": { "$ref": "#/$defs/metal" },
+    "small_work": { "$ref": "#/$defs/small_work" }
   },
   "$defs": {
     "tenferro_rs": {
@@ -184,6 +185,93 @@
         "runtime": { "type": "string", "minLength": 1 },
         "os_version": { "type": ["string", "null"] },
         "metal_version": { "type": ["string", "null"] }
+      }
+    },
+    "small_work": {
+      "type": "object",
+      "required": ["contract_version", "resource", "canonical_binding"],
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": { "const": 2 },
+        "resource": { "$ref": "#/$defs/small_work_resource" },
+        "selection": { "$ref": "#/$defs/small_work_selection" },
+        "protocol": { "type": "object", "additionalProperties": true },
+        "canonical_binding": { "$ref": "#/$defs/small_work_canonical_binding" },
+        "provenance": { "$ref": "#/$defs/small_work_provenance" }
+      }
+    },
+    "small_work_canonical_binding": {
+      "type": "object",
+      "required": ["export", "inventory", "checkout", "checkout_path", "checkout_head", "checkout_dirty", "checkout_untracked", "checkout_error", "checkout_revision", "export_sha256", "inventory_sha256", "contract_ids", "checker"],
+      "additionalProperties": false,
+      "properties": {
+        "export": { "type": "string", "minLength": 1 },
+        "inventory": { "type": "string", "minLength": 1 },
+        "checkout": { "$ref": "#/$defs/small_work_checkout" },
+        "checkout_path": { "type": "string", "minLength": 1 },
+        "checkout_head": { "type": "string", "pattern": "^[0-9a-fA-F]{7,40}$" },
+        "checkout_dirty": { "type": "boolean" },
+        "checkout_untracked": { "type": "boolean" },
+        "checkout_error": { "type": ["string", "null"] },
+        "checkout_revision": { "type": "string", "pattern": "^[0-9a-fA-F]{7,40}$" },
+        "export_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+        "inventory_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+        "contract_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "checker": { "type": "object", "required": ["returncode", "stdout", "stderr"], "additionalProperties": false, "properties": { "returncode": { "type": "integer" }, "stdout": { "type": "string" }, "stderr": { "type": "string" } } }
+      }
+    },
+    "small_work_checkout": {
+      "type": "object",
+      "required": ["path", "head", "dirty", "untracked", "status_sha256", "tracked_file_count", "tracked_files_sha256", "error"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "head": { "type": "string", "pattern": "^[0-9a-fA-F]{7,40}$" },
+        "dirty": { "type": "boolean" }, "untracked": { "type": "boolean" },
+        "status_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+        "tracked_file_count": { "type": "integer", "minimum": 0 },
+        "tracked_files_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+        "error": { "type": ["string", "null"] }
+      }
+    },
+    "small_work_provenance": {
+      "type": "object",
+      "required": ["status", "reasons"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["verified", "unverified"] },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "receipt": { "$ref": "#/$defs/small_work_receipt" }
+      }
+    },
+    "small_work_receipt": {
+      "type": "object", "required": ["file", "sha256"], "additionalProperties": false,
+      "properties": { "file": { "type": "string", "minLength": 1 }, "sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" } }
+    },
+    "small_work_selection": {
+      "type": "object",
+      "required": ["case_ids", "filter"],
+      "additionalProperties": false,
+      "properties": {
+        "case_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "filter": { "type": ["string", "null"] }
+      }
+    },
+    "small_work_resource": {
+      "type": "object",
+      "required": ["status", "requested_threads", "effective_threads", "cpus", "reasons"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["valid", "inconclusive"] },
+        "requested_threads": { "type": "integer", "minimum": 1 },
+        "effective_threads": { "type": "integer", "minimum": 0 },
+        "cpus": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "busy_threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "cpuset": { "type": "string", "minLength": 1 },
+        "quota_cpus": { "type": ["number", "null"], "minimum": 0 },
+        "affinity_verified": { "type": "boolean" },
+        "smt_policy": { "type": "string", "minLength": 1 }
       }
     },
     "cuda": {

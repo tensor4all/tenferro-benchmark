@@ -12,6 +12,11 @@ assert_thread_env_metadata() {
   local mkl_root="$TMP/mkl"
   local output="$TMP/run.yaml"
   local mkl_output="$TMP/run-mkl.yaml"
+  local small_work_metadata="$TMP/small-work.json"
+  local small_work_output="$TMP/run-small-work.yaml"
+  cat > "$small_work_metadata" <<'EOF'
+{"contract_version": 1, "resource": {"status": "inconclusive", "requested_threads": 1, "effective_threads": 0, "cpus": [], "reasons": ["fixture busy"]}}
+EOF
 
   mkdir -p "$openblas_root/lib"
   touch "$openblas_root/lib/libopenblas.dylib"
@@ -61,7 +66,19 @@ EOF
       --blas mkl \
       --output "$mkl_output"
 
-  uv run python - "$output" "$mkl_output" "$mkl_root" <<'PY'
+  uv run python scripts/collect_run_metadata.py \
+      --target-profile amd-cpu \
+      --suite-id cpu/small_work \
+      --suite-file benchmarks/cpu/small_work.yaml \
+      --timestamp "2026-06-04T12:34:56+09:00" \
+      --tenferro-dir extern/tenferro-rs \
+      --tenferro-commit abcdef1 \
+      --features cpu-faer \
+      --blas none \
+      --small-work "$small_work_metadata" \
+      --output "$small_work_output"
+
+  uv run python - "$output" "$mkl_output" "$mkl_root" "$small_work_output" <<'PY'
 import sys
 from pathlib import Path
 
@@ -101,6 +118,9 @@ if jax.get("available"):
     if "lapack_provider" not in jax:
         raise SystemExit(f"expected JAX LAPACK provider metadata: {jax}")
 mkl = mkl_run.get("blas") or {}
+small_work = yaml.safe_load(Path(sys.argv[4]).read_text())
+if small_work["small_work"]["resource"]["status"] != "inconclusive":
+    raise SystemExit(f"expected retained small-work INCONCLUSIVE resource: {small_work}")
 if mkl.get("implementation") != "mkl":
     raise SystemExit(f"expected MKL BLAS metadata: {mkl}")
 if mkl.get("version") != "2026.0.0":
