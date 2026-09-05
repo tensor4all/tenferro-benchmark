@@ -59,6 +59,8 @@
       "enum": [
         "concrete-fresh",
         "concrete-shared",
+        "borrowed-fresh",
+        "borrowed-shared",
         "eager-no-ad",
         "eager-ad",
         "prepared-setup",

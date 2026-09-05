@@ -1,5 +1,22 @@
 # Issue 95: small-work suite
 
+## Borrowed public einsum layouts
+
+Added 18 actual F64 borrowed-view cases (fresh/shared sessions, n2/4/16,
+column-major control/row-major/padded-strided) to the existing producer. Owned
+Tensor remains column-major; no relabeling, materialization before the public
+read call, new library API or replacement registry is used. Padding is NaN and
+Rust tests assert the physical view strides/offset and all output values.
+
+Verification: 10 Rust producer tests, strict producer Clippy, and 78 Python tests
+(one skipped). The actual producer passed correctness and descriptor matching for
+all 60 cases. After the stride-construction correction, all 18 affected borrowed
+cases passed again; the old 42 cases are unaffected. Both output collections
+validate against the result schema. These runs are debug correctness checks,
+not release readiness, timing evidence, or full family/dtype/compiled coverage.
+The filter accepts exact IDs, not globs; the rejected glob attempt did not run
+any benchmark and was replaced with the explicit 18-ID selection.
+
 ## Ordinary-suite dry-run (#96)
 
 The existing CLI now supports `--suite ... --dry-run`, reusing suite validation,

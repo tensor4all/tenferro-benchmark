@@ -394,6 +394,7 @@ def _suite_run(args: argparse.Namespace) -> int:
                     commands.append([str(binary), "--case", case.case_id,
                                      "--operation", case.operation, "--dtype", case.dtype,
                                      "--api-tier", case.api_tier, "--workflow", case.workflow,
+                                     "--layout", case.layout,
                                      "--mode", "correctness-only" if args.correctness_only else "measure",
                                      "--size", str(max(1, int(math.prod(case.shape)))),
                                      "--warmups", str(protocol["warmups"]), "--samples", str(samples_per_process),

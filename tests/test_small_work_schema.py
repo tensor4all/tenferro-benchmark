@@ -65,7 +65,8 @@ class SmallWorkSchemaTests(unittest.TestCase):
 
     def test_einsum_matrix_includes_setup_and_prepared_execution(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
-        cases = [case for case in validate_suite_contract(suite) if case.operation == "einsum"]
+        cases = [case for case in validate_suite_contract(suite)
+                 if case.operation == "einsum" and not case.api_tier.startswith("borrowed-")]
         self.assertEqual(len(cases), 18)
         for n in (2, 4, 16):
             self.assertEqual({case.api_tier for case in cases if case.shape == (n, n)},
@@ -75,6 +76,22 @@ class SmallWorkSchemaTests(unittest.TestCase):
             case["phase"] = wrong_phase
             with self.assertRaises(ValueError):
                 CaseContract.from_mapping(case)
+
+    def test_borrowed_layout_matrix_keeps_distinct_cases(self):
+        suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
+        cases = [case for case in validate_suite_contract(suite) if case.api_tier.startswith("borrowed-")]
+        self.assertEqual(len(cases), 18)
+        self.assertEqual(len({case.case_id for case in cases}), 18)
+        for n in (2, 4, 16):
+            for tier in ("borrowed-fresh", "borrowed-shared"):
+                selected = [case for case in cases if case.shape == (n, n) and case.api_tier == tier]
+                self.assertEqual({case.layout for case in selected},
+                                 {"col_major_contiguous", "row_major_contiguous", "strided"})
+                for case in selected:
+                    self.assertEqual(case.contract_id, "einsum.einsum.ordinary.concrete")
+                    self.assertEqual(case.workflow, "single")
+                    self.assertEqual(case.dtype, "f64")
+                    self.assertEqual(case.calls_per_workflow, 1)
 
     def test_frozen_metadata_and_records_validate(self):
         self.validate(self.run_schema, self.metadata())

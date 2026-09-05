@@ -18,7 +18,7 @@ import subprocess
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
 API_TIERS = frozenset({
-    "concrete-fresh", "concrete-shared", "eager-no-ad", "eager-ad",
+    "concrete-fresh", "concrete-shared", "borrowed-fresh", "borrowed-shared", "eager-no-ad", "eager-ad",
     "prepared-setup", "prepared-repeat", "compiled-repeat",
 })
 PHASES = frozenset({"setup", "execution", "validation"})

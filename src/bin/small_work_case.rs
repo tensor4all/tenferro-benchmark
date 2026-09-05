@@ -11,7 +11,7 @@ use serde::Serialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::CpuBackend;
 use tenferro_runtime::{BackendSession, BackendSessionHost, TensorSessionOpsExt};
-use tenferro_tensor::{Tensor, TensorRead};
+use tenferro_tensor::{Tensor, TensorRead, TypedTensorView};
 
 const CALIBRATION_MAX_ITERATIONS: usize = 1 << 30;
 const CALIBRATION_DEADLINE_NS: u128 = 10_000_000_000;
@@ -165,6 +165,67 @@ fn einsum_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Erro
     ))
 }
 
+struct BorrowedEinsumInputs {
+    storage: [Vec<f64>; 2],
+    n: usize,
+    strides: [isize; 2],
+    offset: usize,
+}
+
+impl BorrowedEinsumInputs {
+    fn new(lhs: &Tensor, rhs: &Tensor, layout: &str) -> Result<Self, Box<dyn Error + Send + Sync>> {
+        let n = matrix_dimension(lhs.shape().iter().product())?;
+        let (strides, offset) = match layout {
+            "col_major_contiguous" => ([1, n as isize], 0),
+            "row_major_contiguous" => ([n as isize, 1], 0),
+            "strided" => ([2, (2 * n + 1) as isize], 1),
+            _ => return Err(format!("unsupported borrowed layout: {layout}").into()),
+        };
+        let length = offset + (n - 1) * (strides[0] + strides[1]) as usize + 1;
+        let mut storage = [vec![f64::NAN; length], vec![f64::NAN; length]];
+        for (destination, input) in storage.iter_mut().zip([lhs, rhs]) {
+            let values = input.as_slice::<f64>()?;
+            for j in 0..n {
+                for i in 0..n {
+                    destination[offset + i * strides[0] as usize + j * strides[1] as usize] =
+                        values[i + n * j];
+                }
+            }
+        }
+        Ok(Self {
+            storage,
+            n,
+            strides,
+            offset,
+        })
+    }
+
+    fn views(&self) -> Result<[TypedTensorView<'_, f64>; 2], Box<dyn Error + Send + Sync>> {
+        Ok([
+            TypedTensorView::from_slice(
+                vec![self.n, self.n],
+                self.strides,
+                self.offset as isize,
+                &self.storage[0],
+            )?,
+            TypedTensorView::from_slice(
+                vec![self.n, self.n],
+                self.strides,
+                self.offset as isize,
+                &self.storage[1],
+            )?,
+        ])
+    }
+}
+
+fn borrowed_einsum(
+    inputs: &[TypedTensorView<'_, f64>; 2],
+    session: &mut dyn BackendSession,
+) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
+    use tenferro_einsum::TypedTensorReadEinsumExt;
+    Ok(inputs.einsum_read("ij,jk->ik", session)?.into())
+}
+
 fn concrete_operation(
     operation: &str,
     session: &mut dyn BackendSession,
@@ -245,8 +306,11 @@ fn case_descriptor(
     if operation == "einsum" && workflow != "single" {
         return Err("einsum currently requires the single workflow".into());
     }
+    if api_tier.starts_with("borrowed-") && operation != "einsum" {
+        return Err("borrowed tiers require einsum".into());
+    }
     let (contract_id, family, surface, timer, outside_timer) = match api_tier {
-        "concrete-fresh" => (
+        "concrete-fresh" | "borrowed-fresh" => (
             "core.add.ordinary.concrete",
             "core",
             "concrete",
@@ -257,7 +321,7 @@ fn case_descriptor(
                 "correctness_check",
             ],
         ),
-        "concrete-shared" => (
+        "concrete-shared" | "borrowed-shared" => (
             "core.add.ordinary.concrete",
             "core",
             "concrete",
@@ -602,6 +666,45 @@ mod tests {
     }
 
     #[test]
+    fn borrowed_einsum_layouts_match_reference_in_fresh_and_shared_sessions() {
+        for size in [4, 16, 256] {
+            let (lhs, rhs, expected) = einsum_inputs(size).unwrap();
+            let n = matrix_dimension(size).unwrap();
+            for (layout, strides, offset) in [
+                ("col_major_contiguous", [1, n as isize], 0),
+                ("row_major_contiguous", [n as isize, 1], 0),
+                ("strided", [2, (2 * n + 1) as isize], 1),
+            ] {
+                let fixture = BorrowedEinsumInputs::new(&lhs, &rhs, layout).unwrap();
+                let views = fixture.views().unwrap();
+                for view in &views {
+                    assert_eq!(view.strides(), strides);
+                    assert_eq!(view.offset(), offset);
+                }
+                if layout == "strided" {
+                    assert!(fixture.storage[0][0].is_nan());
+                }
+                let mut backend = CpuBackend::new();
+                let fresh = backend
+                    .with_backend_session(|session| borrowed_einsum(&views, session))
+                    .unwrap();
+                check_tensor_shape(&fresh, &expected, &[n, n]).unwrap();
+                backend
+                    .with_backend_session(|session| {
+                        for _ in 0..2 {
+                            let output = borrowed_einsum(&views, session)?;
+                            check_tensor_shape(&output, &expected, &[n, n])?;
+                        }
+                        Ok::<_, Box<dyn Error + Send + Sync>>(())
+                    })
+                    .unwrap();
+            }
+            assert!(BorrowedEinsumInputs::new(&lhs, &rhs, "unknown").is_err());
+        }
+        assert!(case_descriptor("add", "f64", "borrowed-fresh", "single", 4, 1, "faer").is_err());
+    }
+
+    #[test]
     fn einsum_selector_rejects_unsupported_work_and_keeps_matrix_shape() {
         let descriptor =
             case_descriptor("einsum", "f64", "concrete-fresh", "single", 4, 1, "faer").unwrap();
@@ -740,19 +843,24 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         );
     }
 
+    let layout = arg("--layout", "col_major_contiguous");
+    if !api_tier.starts_with("borrowed-") && layout != "col_major_contiguous" {
+        return Err("owned-input tiers require col_major_contiguous layout".into());
+    }
+
     // Construct exactly one CPU backend per process, and capture its actual provider
     // before moving it into an eager runtime where applicable.
     let backend = CpuBackend::new();
     let provider = format!("{:?}", backend.kind()).to_ascii_lowercase();
-    let descriptor = case_descriptor(
+    let mut descriptor = case_descriptor(
         &operation, &dtype, &api_tier, &workflow, size, calls, &provider,
     )?;
+    descriptor["layout"] = serde_json::json!(layout);
     let mut concrete = None;
     let mut runtime = None;
     match api_tier.as_str() {
-        "concrete-fresh" | "concrete-shared" | "prepared-setup" | "prepared-repeat" => {
-            concrete = Some(backend)
-        }
+        "concrete-fresh" | "concrete-shared" | "borrowed-fresh" | "borrowed-shared"
+        | "prepared-setup" | "prepared-repeat" => concrete = Some(backend),
         "eager-no-ad" | "eager-ad" => runtime = Some(EagerRuntime::with_cpu_backend(backend)?),
         _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
     }
@@ -761,6 +869,15 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     } else {
         inputs(size, calls)?
     };
+    let borrowed_storage = if api_tier.starts_with("borrowed-") {
+        Some(BorrowedEinsumInputs::new(&lhs, &rhs, &layout)?)
+    } else {
+        None
+    };
+    let borrowed = borrowed_storage
+        .as_ref()
+        .map(BorrowedEinsumInputs::views)
+        .transpose()?;
     let prepared = if api_tier.starts_with("prepared-") {
         Some(tenferro_einsum::ConcreteEinsumPlan::prepare(
             [&lhs, &rhs],
@@ -808,6 +925,16 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 &expected_values,
                 lhs.shape(),
             )?
+        }
+        "borrowed-fresh" | "borrowed-shared" => {
+            let backend = concrete.as_mut().ok_or("concrete backend missing")?;
+            backend.with_backend_session(|session| {
+                check_tensor_shape(
+                    &borrowed_einsum(borrowed.as_ref().ok_or("borrowed inputs missing")?, session)?,
+                    &expected_values,
+                    lhs.shape(),
+                )
+            })?
         }
         "prepared-setup" | "prepared-repeat" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
@@ -903,7 +1030,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 Ok(())
             },
         )?,
-        "concrete-shared" | "prepared-repeat" => {
+        "concrete-shared" | "borrowed-shared" | "prepared-repeat" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
             backend.with_backend_session(|session| {
                 measure(
@@ -914,7 +1041,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                     sample_start,
                     expected_cpus.as_deref(),
                     || {
-                        if let Some(plan) = prepared.as_ref() {
+                        if let Some(views) = borrowed.as_ref() {
+                            black_box(borrowed_einsum(views, session)?);
+                            Ok(())
+                        } else if let Some(plan) = prepared.as_ref() {
                             black_box(plan.execute([&lhs, &rhs], session)?);
                             Ok(())
                         } else {
@@ -924,7 +1054,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 )
             })?
         }
-        "concrete-fresh" => {
+        "concrete-fresh" | "borrowed-fresh" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
             measure(
                 warmups,
@@ -933,7 +1063,17 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 process_index,
                 sample_start,
                 expected_cpus.as_deref(),
-                || execute_fresh(&operation, backend, &lhs, &rhs, calls),
+                || {
+                    if let Some(views) = borrowed.as_ref() {
+                        black_box(
+                            backend
+                                .with_backend_session(|session| borrowed_einsum(views, session))?,
+                        );
+                        Ok(())
+                    } else {
+                        execute_fresh(&operation, backend, &lhs, &rhs, calls)
+                    }
+                },
             )?
         }
         "eager-no-ad" | "eager-ad" => {
