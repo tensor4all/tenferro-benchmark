@@ -14,7 +14,6 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_small_work  # noqa: E402
-import small_work as small_work_module  # noqa: E402
 from small_work import (  # noqa: E402
     CaseContract,
     ContractError,
@@ -38,6 +37,9 @@ class SmallWorkTests(unittest.TestCase):
     def setUp(self) -> None:
         self._binding_patch = mock.patch.object(run_small_work, "verify_canonical_binding", return_value={})
         self._binding_patch.start()
+        snapshot_patch = mock.patch.object(run_small_work, "verify_canonical_snapshot")
+        snapshot_patch.start()
+        self.addCleanup(snapshot_patch.stop)
         self.case = CaseContract.from_mapping({
             "id": "add", "contract_id": "core.add.ordinary.concrete", "family": "core", "surface": "concrete",
             "operation": "add", "phase": "execution",
@@ -433,7 +435,7 @@ class SmallWorkTests(unittest.TestCase):
                  mock.patch.object(run_small_work, "_select_live_resources", return_value={"status": "valid", "cpus": [0], "effective_threads": 1, "reasons": []}), \
                  mock.patch.object(run_small_work, "run_sequential", return_value=commands), \
                  mock.patch.object(run_small_work, "verify_preparation_receipt", return_value=[]), \
-                 mock.patch.object(small_work_module, "verify_canonical_snapshot"), \
+                 mock.patch.object(run_small_work, "verify_canonical_snapshot"), \
                  mock.patch.object(run_small_work.os, "sched_getaffinity", return_value={0}), \
                  mock.patch.object(run_small_work.os, "sched_setaffinity"):
                 self.assertEqual(run_small_work._suite_run(args), 0)
@@ -466,7 +468,7 @@ class SmallWorkTests(unittest.TestCase):
                  mock.patch.object(run_small_work, "_select_live_resources", return_value={"status": "valid", "cpus": [0], "effective_threads": 1, "reasons": []}), \
                  mock.patch.object(run_small_work, "run_sequential", return_value=commands), \
                  mock.patch.object(run_small_work, "verify_preparation_receipt", return_value=[]), \
-                 mock.patch.object(small_work_module, "verify_canonical_snapshot"), \
+                 mock.patch.object(run_small_work, "verify_canonical_snapshot"), \
                  mock.patch.object(run_small_work.os, "sched_getaffinity", return_value={0}), \
                  mock.patch.object(run_small_work.os, "sched_setaffinity"):
                 self.assertEqual(run_small_work._suite_run(args), 0)
@@ -474,7 +476,7 @@ class SmallWorkTests(unittest.TestCase):
             self.assertNotEqual(latest.read_text(encoding="utf-8"), "previous\n")
 
     def test_campaign_failures_keep_previous_latest(self) -> None:
-        variants = ("missing", "duplicate", "truncated", "reordered", "mismatched", "high_cov", "under_duration")
+        variants = ("valid", "missing", "duplicate", "truncated", "reordered", "mismatched", "high_cov", "under_duration")
         for variant in variants:
             with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory); suite = self._one_case_suite(root); output = root / "run.json"
@@ -500,14 +502,25 @@ class SmallWorkTests(unittest.TestCase):
                                 {"index": 1, "command": [], "status": "completed", "returncode": 0, "payload": second}]
                 latest = root / "result/amd-cpu/cpu/small_work.md"; latest.parent.mkdir(parents=True)
                 latest.write_text("previous\n", encoding="utf-8")
+                args = self._suite_args(root, suite, output)
+                args.case_binary = root / "fixture-child"
+                args.preparation_receipt = root / "receipt.json"
+                args.preparation_receipt.write_text("{}", encoding="utf-8")
                 with mock.patch.object(run_small_work, "_select_live_resources", return_value={"status": "valid", "cpus": [0], "effective_threads": 1, "reasons": []}), \
-                     mock.patch.object(run_small_work, "run_sequential", return_value=commands), \
+                     mock.patch.object(run_small_work, "verify_preparation_receipt", return_value=[]), \
+                     mock.patch.object(run_small_work, "run_sequential", return_value=commands) as run_children, \
                      mock.patch.object(run_small_work.os, "sched_getaffinity", return_value={0}), \
                      mock.patch.object(run_small_work.os, "sched_setaffinity"):
-                    code = run_small_work._suite_run(self._suite_args(root, suite, output))
-                self.assertNotEqual(json.loads(output.read_text())["status"], "READY")
-                self.assertEqual(latest.read_text(encoding="utf-8"), "previous\n")
-                self.assertNotEqual(code, 0)
+                    code = run_small_work._suite_run(args)
+                run_children.assert_called_once()
+                if variant == "valid":
+                    self.assertEqual(json.loads(output.read_text())["status"], "READY")
+                    self.assertNotEqual(latest.read_text(encoding="utf-8"), "previous\n")
+                    self.assertEqual(code, 0)
+                else:
+                    self.assertNotEqual(json.loads(output.read_text())["status"], "READY")
+                    self.assertEqual(latest.read_text(encoding="utf-8"), "previous\n")
+                    self.assertNotEqual(code, 0)
 
     def test_correctness_only_child_failure_is_nonzero_and_persisted(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -536,7 +549,7 @@ class SmallWorkTests(unittest.TestCase):
                 args = self._suite_args(root, suite, output, correctness_only=True)
                 args.case_binary = root / "fixture-child"
                 with mock.patch.object(run_small_work, "run_sequential", return_value=[command]), \
-                     mock.patch.object(small_work_module, "verify_canonical_snapshot"):
+                     mock.patch.object(run_small_work, "verify_canonical_snapshot"):
                     code = run_small_work._suite_run(args)
                 result = json.loads(output.read_text())
                 if variant == "valid":

@@ -66,7 +66,7 @@ class SmallWorkSchemaTests(unittest.TestCase):
     def test_einsum_matrix_includes_setup_and_prepared_execution(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
         cases = [case for case in validate_suite_contract(suite)
-                 if case.operation == "einsum" and not case.api_tier.startswith("borrowed-") and case.api_tier != "compiled-repeat"]
+                 if case.operation == "einsum" and case.dtype == "f64" and not case.api_tier.startswith("borrowed-") and case.api_tier != "compiled-repeat"]
         self.assertEqual(len(cases), 18)
         for n in (2, 4, 16):
             self.assertEqual({case.api_tier for case in cases if case.shape == (n, n)},
@@ -76,6 +76,18 @@ class SmallWorkSchemaTests(unittest.TestCase):
             case["phase"] = wrong_phase
             with self.assertRaises(ValueError):
                 CaseContract.from_mapping(case)
+
+    def test_complex_matrix_preserves_concrete_identity(self):
+        suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
+        cases = [case for case in validate_suite_contract(suite) if case.dtype == "c64"]
+        self.assertEqual(len(cases), 6)
+        for n in (2, 4, 16):
+            selected = [case for case in cases if case.shape == (n, n)]
+            self.assertEqual({case.api_tier for case in selected}, {"concrete-fresh", "concrete-shared"})
+            for case in selected:
+                self.assertEqual(case.contract_id, "einsum.einsum.ordinary.concrete")
+                self.assertEqual(case.layout, "col_major_contiguous")
+                self.assertEqual(case.workflow, "single")
 
     def test_compiled_matrix_is_traced_execution_with_setup_outside(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())

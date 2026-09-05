@@ -1,4 +1,14 @@
-# Public F64 einsum small-work cases
+# Public F64/C64 einsum small-work cases
+
+## C64 concrete slice
+
+Six column-major C64 cases use the existing concrete fresh/shared einsum paths at
+n2/4/16. Inputs have nonzero, nonuniform imaginary components. The independent
+triple-loop oracle uses complex multiplication without conjugation; correctness
+checks dtype, shape, finiteness and both components of every element. The n2
+reference has a known-value assertion. Reference values are stored in a Tensor
+outside timing so the same checker can preserve F64 and C64 dtype identity.
+Other C64 tiers remain unsupported by this producer, not aliases of F64 cases.
 
 ## Compiled-repeat slice
 
@@ -15,7 +25,7 @@ still-required separate compilation/setup-cost measurement or C64 variants.
 
 The suite includes 18 owned-input, 18 borrowed-input and three compiled-repeat
 `ij,jk->ik` cases at dimensions 2, 4 and 16 alongside the existing 24 add workflows
-(63 total). No full family/layout/dtype coverage
+plus six C64 concrete cases (69 total). No full family/layout/dtype coverage
 or performance acceptance is claimed by this matrix alone.
 
 Each size has concrete-fresh, concrete-shared, eager-no-ad, eager-ad,
@@ -48,7 +58,7 @@ executes a prepared plan; it is not inferred from a plan's shape alone.
 
 Existing calibration, telemetry, process repetition, receipt verification, raw
 archive and publication gates are reused. Correctness-only runs do not establish
-release readiness or a valid baseline/candidate comparison. C64, broader layouts,
+release readiness or a valid baseline/candidate comparison. Additional C64 tiers, broader layouts,
 compilation/setup-cost measurements and other family coverage remain required
 under #1758; borrowed F64 layout coverage below does not establish complete layout
 coverage.

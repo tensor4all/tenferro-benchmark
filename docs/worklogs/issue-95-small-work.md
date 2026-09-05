@@ -1,5 +1,24 @@
 # Issue 95: small-work suite
 
+## Public C64 concrete einsum
+
+Added six C64 fresh/shared concrete cases at n2/4/16. Nonuniform real and imaginary
+input components exercise ordinary complex multiplication, not conjugation or a
+real surrogate. The independent triple-loop oracle now serves F64 and C64 with
+standard scalar arithmetic; a known n2 complex answer anchors it. Correctness
+checks both components, exact dtype/shape and finiteness. Reference Tensor
+construction stays outside timing; the numerical public execution path is reused.
+C64 eager/AD/borrowed/prepared/compiled tiers remain explicit remaining coverage.
+
+All 69 actual cases passed correctness/descriptor checks and result-schema
+validation. Rust: 12 tests; strict producer Clippy passed. Python: 85 tests, one
+skip. The full Python run found stale mock targets after the prior snapshot-import
+fix; tests now patch the reference actually used by the runner. Campaign failure
+tests also use executable-shaped fixtures with a verified mock receipt, assert
+child collection is reached, and include a valid control so unrelated earlier
+failures cannot make the negative cases pass. No production gate was relaxed.
+No timing, release readiness or baseline/candidate acceptance is claimed.
+
 ## Public compiled einsum repetition
 
 Added three F64 compiled-repeat cases at n2/4/16 via existing TraceContext input

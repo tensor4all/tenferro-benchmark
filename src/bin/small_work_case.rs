@@ -7,6 +7,7 @@ use std::error::Error;
 use std::hint::black_box;
 use std::time::Instant;
 
+use num_complex::Complex64;
 use serde::Serialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
@@ -162,8 +163,11 @@ fn einsum_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Erro
     ))
 }
 
-fn matmul_reference(n: usize, a: &[f64], b: &[f64]) -> Vec<f64> {
-    let mut expected = vec![0.0; n * n];
+fn matmul_reference<T>(n: usize, a: &[T], b: &[T]) -> Vec<T>
+where
+    T: Copy + Default + std::ops::AddAssign + std::ops::Mul<Output = T>,
+{
+    let mut expected = vec![T::default(); n * n];
     for k in 0..n {
         for j in 0..n {
             for i in 0..n {
@@ -172,6 +176,24 @@ fn matmul_reference(n: usize, a: &[f64], b: &[f64]) -> Vec<f64> {
         }
     }
     expected
+}
+
+fn complex_einsum_inputs(
+    size: usize,
+) -> Result<(Tensor, Tensor, Tensor), Box<dyn Error + Send + Sync>> {
+    let n = matrix_dimension(size)?;
+    let a: Vec<Complex64> = (0..size)
+        .map(|i| Complex64::new((i % 7) as f64 * 0.25 - 0.5, (i % 3) as f64 * 0.125 - 0.125))
+        .collect();
+    let b: Vec<Complex64> = (0..size)
+        .map(|i| Complex64::new((i % 5) as f64 * 0.5 - 0.75, (i % 4) as f64 * 0.25 + 0.125))
+        .collect();
+    let expected = matmul_reference(n, &a, &b);
+    Ok((
+        Tensor::from_vec_col_major(vec![n, n], a)?,
+        Tensor::from_vec_col_major(vec![n, n], b)?,
+        Tensor::from_vec_col_major(vec![n, n], expected)?,
+    ))
 }
 
 fn compiled_einsum(
@@ -334,7 +356,11 @@ fn case_descriptor(
     calls: usize,
     provider: &str,
 ) -> Result<serde_json::Value, Box<dyn Error + Send + Sync>> {
-    if !matches!(operation, "add" | "einsum") || dtype != "f64" || !matches!(size, 4 | 16 | 256) {
+    let supported_dtype = dtype == "f64"
+        || (dtype == "c64"
+            && operation == "einsum"
+            && matches!(api_tier, "concrete-fresh" | "concrete-shared"));
+    if !matches!(operation, "add" | "einsum") || !supported_dtype || !matches!(size, 4 | 16 | 256) {
         return Err(format!(
             "unsupported small-work selector: operation={operation}, dtype={dtype}"
         )
@@ -493,6 +519,33 @@ fn check_tensor_shape(
         return Err("output values do not match expected elementwise result".into());
     }
     Ok(values.iter().copied().sum())
+}
+
+fn check_tensor_reference(
+    output: &Tensor,
+    expected: &Tensor,
+) -> Result<f64, Box<dyn Error + Send + Sync>> {
+    if expected.dtype() == DType::F64 {
+        return check_tensor_shape(output, expected.as_slice::<f64>()?, expected.shape());
+    }
+    if output.shape() != expected.shape() {
+        return Err("output shape does not match expected shape".into());
+    }
+    let actual = output.as_slice::<Complex64>()?;
+    let reference = expected.as_slice::<Complex64>()?;
+    if actual.len() != reference.len()
+        || actual.iter().zip(reference).any(|(a, b)| {
+            !a.re.is_finite()
+                || !a.im.is_finite()
+                || !b.re.is_finite()
+                || !b.im.is_finite()
+                || (a.re - b.re).abs() > 1e-12
+                || (a.im - b.im).abs() > 1e-12
+        })
+    {
+        return Err("complex output components do not match independent reference".into());
+    }
+    Ok(actual.iter().map(|z| z.re + z.im).sum())
 }
 
 fn check_tensor(output: &Tensor, expected: &[f64]) -> Result<f64, Box<dyn Error + Send + Sync>> {
@@ -727,6 +780,59 @@ mod tests {
     }
 
     #[test]
+    fn complex_einsum_matches_both_components_in_fresh_and_shared_sessions() {
+        for size in [4, 16, 256] {
+            let (lhs, rhs, expected) = complex_einsum_inputs(size).unwrap();
+            if size == 4 {
+                assert_eq!(
+                    expected.as_slice::<Complex64>().unwrap(),
+                    &[
+                        Complex64::new(0.34375, 0.0),
+                        Complex64::new(0.171875, 0.09375),
+                        Complex64::new(-0.15625, -0.25),
+                        Complex64::new(0.234375, -0.03125),
+                    ]
+                );
+            }
+            let mut backend = CpuBackend::new();
+            let fresh = concrete_fresh("einsum", &mut backend, &lhs, &rhs).unwrap();
+            check_tensor_reference(&fresh, &expected).unwrap();
+            backend
+                .with_backend_session(|session| {
+                    let output = concrete_operation("einsum", session, &lhs, &rhs)?;
+                    check_tensor_reference(&output, &expected)
+                })
+                .unwrap();
+            let values = expected.as_slice::<Complex64>().unwrap();
+            let conjugated = Tensor::from_vec_col_major(
+                expected.shape().to_vec(),
+                values.iter().map(|z| z.conj()).collect(),
+            )
+            .unwrap();
+            assert!(check_tensor_reference(&conjugated, &expected).is_err());
+            let real_only = Tensor::from_vec_col_major(
+                expected.shape().to_vec(),
+                values.iter().map(|z| z.re).collect(),
+            )
+            .unwrap();
+            assert!(check_tensor_reference(&real_only, &expected).is_err());
+            let mut nonfinite = values.to_vec();
+            nonfinite[0].im = f64::NAN;
+            let invalid = Tensor::from_vec_col_major(expected.shape().to_vec(), nonfinite).unwrap();
+            assert!(check_tensor_reference(&invalid, &expected).is_err());
+            assert!(check_tensor_reference(&expected, &invalid).is_err());
+        }
+        for tier in [
+            "eager-ad",
+            "borrowed-fresh",
+            "prepared-repeat",
+            "compiled-repeat",
+        ] {
+            assert!(case_descriptor("einsum", "c64", tier, "single", 4, 1, "faer").is_err());
+        }
+    }
+
+    #[test]
     fn compiled_einsum_rebinds_both_inputs_without_stale_results() {
         for size in [4, 16, 256] {
             let n = matrix_dimension(size).unwrap();
@@ -956,10 +1062,16 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "compiled-repeat" => compiled = Some(compiled_einsum(&backend, matrix_dimension(size)?)?),
         _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
     }
-    let (lhs, rhs, expected_values) = if operation == "einsum" {
-        einsum_inputs(size)?
+    let (lhs, rhs, expected_values) = if dtype == "c64" {
+        complex_einsum_inputs(size)?
     } else {
-        inputs(size, calls)?
+        let (lhs, rhs, values) = if operation == "einsum" {
+            einsum_inputs(size)?
+        } else {
+            inputs(size, calls)?
+        };
+        let expected = Tensor::from_vec_col_major(lhs.shape().to_vec(), values)?;
+        (lhs, rhs, expected)
     };
     let compiled_bindings = [&lhs, &rhs];
     let borrowed_storage = if api_tier.starts_with("borrowed-") {
@@ -1011,12 +1123,11 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let after_correctness = match api_tier.as_str() {
         "concrete-fresh" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
-            check_tensor_shape(
+            check_tensor_reference(
                 &add_chain(&lhs, &rhs, calls, |a, b| {
                     concrete_fresh(&operation, backend, a, b)
                 })?,
                 &expected_values,
-                lhs.shape(),
             )?
         }
         "compiled-repeat" => {
@@ -1026,54 +1137,63 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "borrowed-fresh" | "borrowed-shared" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
             backend.with_backend_session(|session| {
-                check_tensor_shape(
+                check_tensor_reference(
                     &borrowed_einsum(borrowed.as_ref().ok_or("borrowed inputs missing")?, session)?,
                     &expected_values,
-                    lhs.shape(),
                 )
             })?
         }
         "prepared-setup" | "prepared-repeat" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
             backend.with_backend_session(|session| {
-                check_tensor_shape(
+                check_tensor_reference(
                     &prepared
                         .as_ref()
                         .ok_or("prepared plan missing")?
                         .execute([&lhs, &rhs], session)?,
                     &expected_values,
-                    lhs.shape(),
                 )
             })?
         }
         "concrete-shared" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
             backend.with_backend_session(|session| {
-                check_tensor_shape(
+                check_tensor_reference(
                     &add_chain(&lhs, &rhs, calls, |a, b| {
                         concrete_operation(&operation, session, a, b)
                     })?,
                     &expected_values,
-                    lhs.shape(),
                 )
             })?
         }
         "eager-no-ad" => {
             let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
-            check_tensor_shape(
+            check_tensor_reference(
                 &add_chain(left, right, calls, |a, b| eager_operation(&operation, a, b))?
                     .to_tensor()?,
                 &expected_values,
-                lhs.shape(),
             )?
         }
         "eager-ad" => {
             let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
             let value = add_chain(left, right, calls, |a, b| eager_operation(&operation, a, b))?;
             if operation == "einsum" {
-                check_einsum_ad(&value, left, right, &lhs, &rhs, &expected_values)?
+                check_einsum_ad(
+                    &value,
+                    left,
+                    right,
+                    &lhs,
+                    &rhs,
+                    expected_values.as_slice::<f64>()?,
+                )?
             } else {
-                check_active_ad(&value, left, right, &expected_values, calls as f64)?
+                check_active_ad(
+                    &value,
+                    left,
+                    right,
+                    expected_values.as_slice::<f64>()?,
+                    calls as f64,
+                )?
             }
         }
         _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
