@@ -71,6 +71,40 @@ class SmallWorkBindingTests(unittest.TestCase):
         self.assertEqual(raised.exception.details['stdout'], 'out')
         self.assertEqual(raised.exception.details['stderr'], 'err')
 
+    def test_changed_selection_keeps_all_variants_and_reports_missing_contracts(self):
+        self.export['cases'].append({'id': 'core.missing'})
+        (self.root / small_work.CANONICAL_EXPORT).write_text(json.dumps(self.export))
+        cases = [small_work.CaseContract.from_mapping(case(str(i), 'core.add')) for i in range(4)]
+        response = {'stdout': json.dumps({'selected_case_ids': ['core.add', 'core.missing']})}
+        with patch.object(small_work, 'run_inventory_checker', return_value=response) as checker, \
+             patch.object(small_work_provenance, '_git_state', return_value=self.state):
+            selected, report = small_work.select_changed_cases(self.root, cases, ['crates/shared.rs'])
+        self.assertEqual(selected, cases)
+        self.assertEqual(report['selected_case_ids'], ['0', '1', '2', '3'])
+        self.assertEqual(report['missing_contract_ids'], ['core.missing'])
+        checker.assert_called_once_with(self.root, changed_paths=['crates/shared.rs'])
+        self.assertEqual(report['source']['checkout_head'], 'a' * 40)
+
+    def test_changed_selection_rejects_bad_paths_and_responses(self):
+        cases = [small_work.CaseContract.from_mapping(case('x', 'core.add'))]
+        for paths in ([], ['/absolute.rs'], ['../outside.rs'], [''], [' /absolute.rs '], [' ../outside.rs ']):
+            with self.assertRaises(small_work.ContractError):
+                small_work.select_changed_cases(self.root, cases, paths)
+        for value in ('not JSON', '{}', '{"selected_case_ids": "core.add"}',
+                      '{"selected_case_ids": ["not-in-catalog"]}'):
+            with patch.object(small_work, 'run_inventory_checker', return_value={'stdout': value}), \
+                 patch.object(small_work_provenance, '_git_state', return_value=self.state):
+                with self.assertRaises(small_work.ContractError):
+                    small_work.select_changed_cases(self.root, cases, ['crates/shared.rs'])
+
+    def test_changed_selection_rechecks_source(self):
+        cases = [small_work.CaseContract.from_mapping(case('x', 'core.add'))]
+        changed = dict(self.state, head='b' * 40)
+        with patch.object(small_work, 'run_inventory_checker', return_value={'stdout': '{"selected_case_ids": ["core.add"]}'}), \
+             patch.object(small_work_provenance, '_git_state', side_effect=[self.state, changed]):
+            with self.assertRaises(small_work.ContractError):
+                small_work.select_changed_cases(self.root, cases, ['crates/shared.rs'])
+
     def test_snapshot_rejects_checkout_change(self):
         valid = small_work.CaseContract.from_mapping(case('x', 'core.add'))
         with patch.object(small_work_provenance, '_git_state', return_value=self.state):

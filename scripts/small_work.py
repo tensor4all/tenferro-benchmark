@@ -55,12 +55,15 @@ def load_canonical_catalog(library: Path) -> dict[str, dict[str, Any]]:
     return catalog
 
 
-def run_inventory_checker(library: Path, timeout_s: float = 30.0) -> dict[str, Any]:
+def run_inventory_checker(library: Path, timeout_s: float = 30.0, *, changed_paths: Sequence[str] = ()) -> dict[str, Any]:
     checker = library / "scripts/check-public-boundary-inventory.py"
     if not checker.is_file():
         raise ContractError("canonical inventory checker is missing")
     try:
-        completed = subprocess.run(["python3", "scripts/check-public-boundary-inventory.py"], cwd=library, capture_output=True,
+        command = ["python3", "scripts/check-public-boundary-inventory.py"]
+        for path in changed_paths:
+            command.extend(["--changed-path", path])
+        completed = subprocess.run(command, cwd=library, capture_output=True,
                                    text=True, timeout=timeout_s, check=False)
     except subprocess.TimeoutExpired as exc:
         raise ContractError("canonical inventory checker timed out", details={"stdout": exc.stdout, "stderr": exc.stderr}) from exc
@@ -136,6 +139,29 @@ def verify_canonical_binding(library: Path, cases: Sequence["CaseContract"], *, 
     verify_canonical_snapshot(before, library, cases)
     before["checker"] = checker
     return before
+
+
+def select_changed_cases(library: Path, cases: Sequence["CaseContract"], changed_paths: Sequence[str]) -> tuple[list["CaseContract"], dict[str, Any]]:
+    changed_paths = [path.strip() for path in changed_paths]
+    if not changed_paths or any(not path or Path(path).is_absolute() or ".." in Path(path).parts for path in changed_paths):
+        raise ContractError("changed paths must be nonempty library-relative paths without '..'")
+    before = canonical_snapshot(library, cases)
+    checker = run_inventory_checker(library, changed_paths=changed_paths)
+    try:
+        ids = json.loads(checker["stdout"])["selected_case_ids"]
+    except (ValueError, KeyError, TypeError) as exc:
+        raise ContractError("canonical selector returned an invalid response") from exc
+    if not isinstance(ids, list) or any(not isinstance(ident, str) for ident in ids):
+        raise ContractError("canonical selector IDs must be a list of strings")
+    required = set(ids)
+    if required - load_canonical_catalog(library).keys():
+        raise ContractError("canonical selector returned unknown contract IDs")
+    selected = [case for case in cases if case.contract_id in required]
+    verify_canonical_snapshot(before, library, cases)
+    return selected, {"changed_paths": list(changed_paths), "required_contract_ids": sorted(required),
+                      "selected_case_ids": [case.case_id for case in selected],
+                      "missing_contract_ids": sorted(required - {case.contract_id for case in selected}),
+                      "source": before, "checker": checker}
 
 
 class ContractError(ValueError):

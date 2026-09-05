@@ -1,5 +1,25 @@
 # Issue 95: small-work suite
 
+## Canonical changed-path selection (#96)
+
+Added repeatable `--changed-path` for ordinary-suite dry-run and collection. It
+calls the existing library inventory selector, retains every suite variant of
+selected canonical IDs, and archives the source identity and missing IDs. It
+does not implement another mapping registry. Missing/empty selections are
+INCONCLUSIVE and normal collection launches no partial benchmark matrix. An
+explicit case filter cannot silently narrow changed-path coverage. This is not
+yet a paired-revision command or proof of the complete required variant matrix.
+
+Verification: the full small-work Python suite passed 81 tests; following path
+normalization and a source-race regression, eight binding and four dry-run tests
+passed. Real `concrete.rs` selection identifies 36 available einsum cases and the
+missing `einsum.einsum.prepared.traced` contract. Dry-run reports this; a normal
+correctness-only request refuses execution with zero commands. The unmapped
+`planning/tree.rs` path conservatively selects all 184 library contracts, exposing
+178 missing suite contracts instead of silently selecting the available subset.
+No measurements or host configuration changes were made. Current numerical and
+layout evidence is unchanged because no producer/Rust code changed in this slice.
+
 ## Borrowed public einsum layouts
 
 Added 18 actual F64 borrowed-view cases (fresh/shared sessions, n2/4/16,

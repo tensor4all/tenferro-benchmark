@@ -136,8 +136,24 @@ uv run python scripts/run_small_work.py --suite benchmarks/cpu/small_work.yaml \
 ```
 
 This uses the same `SMALL_WORK_CASE_FILTER`, suite `resource_policy`, and optional
-`--cpuset` as collection. Selection is currently manual, not an automatic
-common-path dependency map. The JSON lists case/contract IDs and resource reasons;
+`--cpuset` as collection. Alternatively, repeat `--changed-path` with library-relative
+paths to reuse the selected library's canonical dependency selector:
+
+```bash
+uv run python scripts/run_small_work.py --suite benchmarks/cpu/small_work.yaml \
+  --dry-run --changed-path crates/tenferro-einsum/src/concrete.rs
+```
+
+This runs the existing inventory checker, not a benchmark, against a clean
+`--tenferro-dir` (default `extern/tenferro-rs`). It selects **all** suite variants
+of every selected canonical ID and archives `change_selection.json` with the
+source identity and missing contract IDs. Do not combine changed paths with
+`SMALL_WORK_CASE_FILTER`. Missing contracts or an empty selection are INCONCLUSIVE;
+normal collection refuses to execute a partial matrix. Changed-path runs remain
+selected-case archives and cannot replace latest reports. This is a per-checkout
+selector, not yet a baseline/candidate comparison command.
+
+The JSON lists case/contract IDs and resource reasons;
 unavailable or unsupported resources remain INCONCLUSIVE. No affinity settings
 are changed, no latest report is published, and no sudo is required. JSON is printed
 and archived under `--results-root`; `--output` optionally writes another copy.

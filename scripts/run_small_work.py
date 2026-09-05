@@ -30,6 +30,8 @@ from small_work import (
     timing_statistics,
     validate_suite_contract,
     resolve_case_filter,
+    select_changed_cases,
+    verify_canonical_snapshot,
     verify_canonical_binding,
     verify_affinity,
 )
@@ -270,11 +272,19 @@ def _suite_run(args: argparse.Namespace) -> int:
     root = args.results_root / args.target_profile / "cpu" / "small_work" / timestamp
     root.mkdir(parents=True, exist_ok=True)
     output = args.output
+    library = getattr(args, "tenferro_dir", None) or Path(__file__).resolve().parents[1] / "extern" / "tenferro-rs"
+    change_selection = None
     try:
         suite = yaml.safe_load(suite_path.read_text(encoding="utf-8"))
         all_cases = validate_suite_contract(suite)
         protocol = suite["protocol"]
         cases, case_filter = resolve_case_filter(all_cases, os.environ.get("SMALL_WORK_CASE_FILTER"))
+        if getattr(args, "changed_path", []):
+            if case_filter is not None:
+                raise ContractError("--changed-path cannot be combined with SMALL_WORK_CASE_FILTER")
+            cases, change_selection = select_changed_cases(library, all_cases, args.changed_path)
+            case_filter = ",".join(case.case_id for case in cases)
+            _atomic_write(root / "change_selection.json", json.dumps(change_selection, indent=2) + "\n")
     except Exception as exc:
         result = {"schema_version": 2, "suite_id": "cpu/small_work", "status": "FAILED",
                   "synthetic_fixture": False, "commands": [], "records": [],
@@ -283,12 +293,20 @@ def _suite_run(args: argparse.Namespace) -> int:
         if getattr(args, "dry_run", False):
             print(json.dumps(result, indent=2))
         return 1
+    selection_incomplete = change_selection is not None and (bool(change_selection["missing_contract_ids"]) or not cases)
+    if selection_incomplete and not getattr(args, "dry_run", False):
+        result = {"schema_version": 2, "suite_id": suite["suite_id"], "status": "INCONCLUSIVE",
+                  "commands": [], "records": [], "change_selection": change_selection,
+                  "errors": ["changed-path selection has missing suite contracts or no executable cases"]}
+        _archive_result(root, output, result)
+        return 1
     if getattr(args, "dry_run", False):
         selection = _observe_suite_resources(args, protocol)
         result = {"schema_version": 2, "suite_id": suite["suite_id"], "mode": "dry-run",
-                  "status": "DRY_RUN" if selection["status"] == "valid" else "INCONCLUSIVE",
+                  "status": "DRY_RUN" if selection["status"] == "valid" and not selection_incomplete else "INCONCLUSIVE",
                   "timestamp": timestamp, "suite_file": str(suite_path),
-                  "selection_source": "manual suite and SMALL_WORK_CASE_FILTER",
+                  "selection_source": "canonical changed-path selector" if change_selection is not None else "manual suite and SMALL_WORK_CASE_FILTER",
+                  "change_selection": change_selection,
                   "case_filter": case_filter,
                   "cases": [{"id": case.case_id, "contract_id": case.contract_id} for case in cases],
                   "protocol": protocol, "resource": selection, "commands": [],
@@ -296,9 +314,10 @@ def _suite_run(args: argparse.Namespace) -> int:
         _archive_result(root, output, result)
         print(json.dumps(result, indent=2))
         return 0
-    library = args.tenferro_dir or Path(__file__).resolve().parents[1] / "extern" / "tenferro-rs"
     try:
-        binding = verify_canonical_binding(library, cases)
+        binding = verify_canonical_binding(library, cases, check_inventory=change_selection is None)
+        if change_selection is not None:
+            verify_canonical_snapshot(change_selection["source"], library, all_cases)
     except (OSError, ValueError, ContractError) as exc:
         details = getattr(exc, "details", {})
         records = [make_record(case, [], correctness_status="not_run",
@@ -502,7 +521,6 @@ def _suite_run(args: argparse.Namespace) -> int:
                 result["errors"].append(f"affinity restoration failed: {type(exc).__name__}")
     if publish and result["status"] == "READY" and report_text is not None:
         try:
-            from small_work import verify_canonical_snapshot
             verify_canonical_snapshot(binding, library, cases)
         except (OSError, ValueError, ContractError) as exc:
             publish = False
@@ -690,6 +708,8 @@ def main() -> int:
     parser.add_argument("--suite", type=Path)
     parser.add_argument("--dry-run", action="store_true",
                         help="Preview suite cases and live resources without building or executing benchmarks")
+    parser.add_argument("--changed-path", action="append", default=[],
+                        help="Library-relative changed path; select every suite variant via the canonical selector")
     parser.add_argument("--case-binary", type=Path)
     parser.add_argument("--artifact-kind", choices=("bin", "lib-test"), default="bin")
     parser.add_argument("--build-project", type=Path)
@@ -723,6 +743,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--command", action="append", default=[])
     args = parser.parse_args()
+    if args.changed_path and (not args.suite or args.prepare or args.component_probe or args.synthetic_fixture or args.command):
+        parser.error("--changed-path requires ordinary --suite mode")
     if args.dry_run and (not args.suite or args.prepare or args.component_probe or
                          args.synthetic_fixture or args.correctness_only or args.command):
         parser.error("--dry-run requires --suite and cannot be combined with execution modes")

@@ -1,6 +1,31 @@
 # Canonical binding for `cpu/small_work`
 
-**Design gate:** DeepSeek V4 Flash, pre-implementation review: **Correct-to-merge**.
+## Current changed-path selection
+
+`--changed-path` delegates to the library's existing inventory checker's selector;
+no mapping table is copied into the benchmark repository. It expands each selected
+canonical ID into every matching suite case, retaining layout/dtype/tier variants.
+The source identity is checked around selection and again before collection.
+Normal binding validation reuses the successful inventory check only while that
+identity remains unchanged. Source/checker errors never fall back to manual cases.
+
+Dry-run exposes missing contract IDs. Normal collection refuses missing or empty
+selections before any benchmark child, rather than silently timing the available
+subset. Manual exact-ID filtering and changed-path selection are mutually
+exclusive. The generated exact-ID filter and `change_selection.json` preserve the
+selection in the run archive and prevent replacing a full-suite latest report.
+This checks declared contract availability, not completeness of all required
+family/dtype/layout variants. Paired revision orchestration and selection across
+both revisions are still outstanding under #96.
+
+## Historical four-case migration design
+
+The remainder records the original migration: its four-case counts, pin and model
+review/implementation assignments are historical, not current coverage or standing
+review gates. The current suite is v2 with 60 executed correctness cases; see
+`small-work-einsum-design.md` and the worklog for current verification.
+
+**Historical review:** DeepSeek V4 Flash, pre-implementation review: **Correct-to-merge**.
 The review was recorded before implementation; the four minor clarifications below
 are incorporated. Luna is the selected implementer. This document is the bounded
 binding slice for #95, not a redesign of provenance.

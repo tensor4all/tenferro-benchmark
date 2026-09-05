@@ -48,6 +48,29 @@ class DryRunTests(unittest.TestCase):
                 if variant == "unsupported":
                     self.assertIn("AttributeError", result["resource"]["reasons"][0])
 
+    def test_missing_changed_contracts_never_execute_partial_matrix(self):
+        for dry_run in (False, True):
+            with self.subTest(dry_run=dry_run), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                args = SimpleNamespace(suite=ROOT / "benchmarks/cpu/small_work.yaml",
+                    results_root=root / "data", target_profile="amd-cpu", output=root / "preview.json",
+                    dry_run=dry_run, changed_path=["crates/shared.rs"])
+                def select(library, cases, paths):
+                    return cases, {"missing_contract_ids": ["unimplemented"], "changed_paths": paths}
+                with mock.patch.dict(os.environ, {}, clear=True), \
+                     mock.patch.object(runner, "select_changed_cases", side_effect=select), \
+                     mock.patch.object(runner, "_observe_suite_resources", return_value={"status": "valid"}), \
+                     mock.patch.object(runner, "verify_canonical_binding") as binding, \
+                     mock.patch.object(runner, "run_sequential") as execute, \
+                     contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(runner._suite_run(args), 0 if dry_run else 1)
+                binding.assert_not_called()
+                execute.assert_not_called()
+                result = json.loads(args.output.read_text())
+                self.assertEqual(result["status"], "INCONCLUSIVE")
+                self.assertEqual(result["commands"], [])
+                self.assertEqual(result["change_selection"]["missing_contract_ids"], ["unimplemented"])
+
     def test_invalid_filter_fails_before_resource_observation(self):
         with tempfile.TemporaryDirectory() as directory:
             args = SimpleNamespace(suite=ROOT / "benchmarks/cpu/small_work.yaml",
