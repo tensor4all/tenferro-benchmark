@@ -196,18 +196,25 @@ fn complex_einsum_inputs(
     ))
 }
 
-fn compiled_einsum(
-    backend: &CpuBackend,
+fn trace_compile_einsum(
     n: usize,
     dtype: DType,
-) -> Result<(Runtime, CompiledGraph), Box<dyn Error + Send + Sync>> {
+) -> Result<CompiledGraph, Box<dyn Error + Send + Sync>> {
     use tenferro_einsum::TraceContextEinsumExt;
     let mut trace = TraceContext::new();
     let a = trace.input(ProgramInputSpec::new(dtype, [n.into(), n.into()]))?;
     let b = trace.input(ProgramInputSpec::new(dtype, [n.into(), n.into()]))?;
     let output = trace.einsum(&[a, b], "ij,jk->ik")?;
     let graph = trace.finish(&[output])?;
-    let program = GraphCompiler::new().compile_traced_graph(&graph)?;
+    Ok(GraphCompiler::new().compile_traced_graph(&graph)?)
+}
+
+fn compiled_einsum(
+    backend: &CpuBackend,
+    n: usize,
+    dtype: DType,
+) -> Result<(Runtime, CompiledGraph), Box<dyn Error + Send + Sync>> {
+    let program = trace_compile_einsum(n, dtype)?;
     let mut builder = Runtime::builder();
     builder.register_engine(runtime_engine_registration(backend)?)?;
     builder.install_extension_module(tenferro_einsum::extension_module::<CpuBackend>(
@@ -379,6 +386,7 @@ fn case_descriptor(
                     | "eager-no-ad"
                     | "eager-ad"
                     | "compiled-repeat"
+                    | "compiled-setup"
             ));
     if !matches!(operation, "add" | "einsum") || !supported_dtype || !matches!(size, 4 | 16 | 256) {
         return Err(format!(
@@ -463,6 +471,19 @@ fn case_descriptor(
                 "correctness_check",
             ],
         ),
+        "compiled-setup" if operation == "einsum" => (
+            "einsum.einsum.prepare.traced",
+            "einsum",
+            "traced",
+            vec!["trace_compile", "program_lifetime"],
+            vec![
+                "backend_construction",
+                "input_construction",
+                "runtime_construction",
+                "input_bindings",
+                "correctness_check",
+            ],
+        ),
         "compiled-repeat" if operation == "einsum" => (
             "einsum.einsum.prepared.traced",
             "einsum",
@@ -495,7 +516,7 @@ fn case_descriptor(
     };
     let (contract_id, family, shape) = if operation == "einsum" {
         (
-            if api_tier.starts_with("prepared-") || api_tier == "compiled-repeat" {
+            if api_tier.starts_with("prepared-") || api_tier.starts_with("compiled-") {
                 contract_id.to_string()
             } else {
                 format!("einsum.einsum.ordinary.{surface}")
@@ -512,8 +533,8 @@ fn case_descriptor(
         .collect();
     Ok(serde_json::json!({
         "contract_id": contract_id, "family": family, "surface": surface,
-        "operation": operation, "phase": if api_tier == "prepared-setup" { "setup" } else { "execution" }, "api_tier": api_tier,
-        "backend": "tenferro-rs", "provider": if api_tier == "prepared-setup" { "not-applicable" } else { provider }, "dtype": dtype,
+        "operation": operation, "phase": if api_tier.ends_with("-setup") { "setup" } else { "execution" }, "api_tier": api_tier,
+        "backend": "tenferro-rs", "provider": if api_tier.ends_with("-setup") { "not-applicable" } else { provider }, "dtype": dtype,
         "layout": "col_major_contiguous", "shape": shape, "workflow": workflow,
         "calls_per_workflow": calls,
         "setup": {"includes": timer, "excludes": outside_timer},
@@ -1251,7 +1272,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut runtime = None;
     match api_tier.as_str() {
         "concrete-fresh" | "concrete-shared" | "borrowed-fresh" | "borrowed-shared"
-        | "prepared-setup" | "prepared-repeat" | "compiled-repeat" => concrete = Some(backend),
+        | "prepared-setup" | "prepared-repeat" | "compiled-repeat" | "compiled-setup" => {
+            concrete = Some(backend)
+        }
         "eager-no-ad" | "eager-ad" => runtime = Some(EagerRuntime::with_cpu_backend(backend)?),
         _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
     }
@@ -1266,7 +1289,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         let expected = Tensor::from_vec_col_major(lhs.shape().to_vec(), values)?;
         (lhs, rhs, expected)
     };
-    let compiled = if api_tier == "compiled-repeat" {
+    let compiled = if api_tier.starts_with("compiled-") {
         Some(compiled_einsum(
             concrete.as_ref().ok_or("concrete backend missing")?,
             matrix_dimension(size)?,
@@ -1338,7 +1361,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 &expected_values,
             )?
         }
-        "compiled-repeat" => {
+        "compiled-repeat" | "compiled-setup" => {
             let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
             check_compiled_einsum(runtime, program, &lhs, &rhs)?
         }
@@ -1442,6 +1465,22 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 
     let measurement = match api_tier.as_str() {
+        "compiled-setup" => {
+            let n = matrix_dimension(size)?;
+            let dtype = lhs.dtype();
+            measure(
+                warmups,
+                samples_count,
+                target_ns,
+                process_index,
+                sample_start,
+                expected_cpus.as_deref(),
+                || {
+                    black_box(trace_compile_einsum(n, dtype)?);
+                    Ok(())
+                },
+            )?
+        }
         "compiled-repeat" => {
             let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
             measure(

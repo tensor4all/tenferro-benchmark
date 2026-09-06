@@ -66,12 +66,12 @@ class SmallWorkSchemaTests(unittest.TestCase):
     def test_einsum_matrix_includes_setup_and_prepared_execution(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
         cases = [case for case in validate_suite_contract(suite)
-                 if case.operation == "einsum" and case.dtype == "f64" and not case.api_tier.startswith("borrowed-") and case.api_tier != "compiled-repeat"]
+                 if case.operation == "einsum" and case.dtype == "f64" and not case.api_tier.startswith("borrowed-") and not case.api_tier.startswith("compiled-")]
         self.assertEqual(len(cases), 18)
         for n in (2, 4, 16):
             self.assertEqual({case.api_tier for case in cases if case.shape == (n, n)},
                              {"concrete-fresh", "concrete-shared", "eager-no-ad", "eager-ad", "prepared-setup", "prepared-repeat"})
-        for tier, wrong_phase in (("prepared-setup", "execution"), ("prepared-repeat", "setup"), ("compiled-repeat", "setup")):
+        for tier, wrong_phase in (("prepared-setup", "execution"), ("prepared-repeat", "setup"), ("compiled-repeat", "setup"), ("compiled-setup", "execution")):
             case = dict(next(case for case in suite["cases"] if case["api_tier"] == tier))
             case["phase"] = wrong_phase
             with self.assertRaises(ValueError):
@@ -103,6 +103,20 @@ class SmallWorkSchemaTests(unittest.TestCase):
                 self.assertEqual(case.phase, "setup" if setup else "execution")
                 self.assertEqual(case.contract_id, "einsum.einsum.prepare.concrete" if setup else "einsum.einsum.prepared.concrete")
                 self.assertEqual(case.scope_timer, ("prepare", "plan_lifetime") if setup else ("prepared_execute", "output_lifetime"))
+
+    def test_compiled_setup_excludes_runtime_and_execution(self):
+        suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
+        cases = [case for case in validate_suite_contract(suite) if case.api_tier == "compiled-setup"]
+        self.assertEqual(len(cases), 6)
+        for dtype in ("f64", "c64"):
+            self.assertEqual({case.shape for case in cases if case.dtype == dtype}, {(2, 2), (4, 4), (16, 16)})
+        for case in cases:
+            self.assertEqual(case.contract_id, "einsum.einsum.prepare.traced")
+            self.assertEqual(case.phase, "setup")
+            self.assertEqual(case.surface, "traced")
+            self.assertEqual(case.scope_timer, ("trace_compile", "program_lifetime"))
+            self.assertIn("runtime_construction", case.scope_outside_timer)
+            self.assertIn("input_bindings", case.scope_outside_timer)
 
     def test_compiled_matrix_is_traced_execution_with_setup_outside(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())

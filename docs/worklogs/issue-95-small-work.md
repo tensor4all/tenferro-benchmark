@@ -1,5 +1,27 @@
 # Issue 95: small-work suite
 
+## Traced setup producer integration
+
+Split trace_compile_einsum from Runtime construction and added six F64/C64
+n2/4/16 compiled-setup cases. Setup includes parameter specs, trace/finish,
+compilation and program lifetime, but excludes runtime/engine construction,
+payloads, binding and execution. It is not compiler-only time. Correctness
+executes the same produced program with rebound inputs. Repeat scopes are retained.
+
+The clean managed extern checkout was moved from 181cbad to explicit library
+38fbc7a1dc89ba5fe6c167e24556e800d20d891c, which provides the new canonical contract
+and the existing planner candidate. A short-hash local fetch was rejected; the
+named local branch fetch succeeded and the exact detached HEAD was confirmed.
+Frozen measurement clones and unrelated user work remain untouched.
+
+Verification: Rust15, Python96, strict Clippy, actual all90 correctness/descriptor
+and result-schema checks passed against this library source. Previous84 suite
+case definitions are preserved. The old owned-F64 test initially included the
+new compiled setup cases; its selector now excludes both compiled tiers, covered
+separately, and the full suite passed after correction. These are not timings,
+release readiness or performance acceptance. Remote publication, C64 borrowed,
+other families, paired orchestration and remaining #96 requirements still remain.
+
 ## C64 AD recording and numerical gradients
 
 Added n2/4/16 C64 eager-ad cases using the existing public recording path.

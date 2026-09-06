@@ -2440,3 +2440,213 @@ cases:
       - session_entry_exit
       - backward
       - correctness_check
+  - id: einsum_f64_compiled-setup_n2_single
+    contract_id: einsum.einsum.prepare.traced
+    family: einsum
+    surface: traced
+    operation: einsum
+    phase: setup
+    api_tier: compiled-setup
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - trace_compile
+      - program_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+    scope:
+      timer:
+      - trace_compile
+      - program_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+  - id: einsum_f64_compiled-setup_n4_single
+    contract_id: einsum.einsum.prepare.traced
+    family: einsum
+    surface: traced
+    operation: einsum
+    phase: setup
+    api_tier: compiled-setup
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - trace_compile
+      - program_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+    scope:
+      timer:
+      - trace_compile
+      - program_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+  - id: einsum_f64_compiled-setup_n16_single
+    contract_id: einsum.einsum.prepare.traced
+    family: einsum
+    surface: traced
+    operation: einsum
+    phase: setup
+    api_tier: compiled-setup
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - trace_compile
+      - program_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+    scope:
+      timer:
+      - trace_compile
+      - program_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+  - id: einsum_c64_compiled-setup_n2_single
+    contract_id: einsum.einsum.prepare.traced
+    family: einsum
+    surface: traced
+    operation: einsum
+    phase: setup
+    api_tier: compiled-setup
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - trace_compile
+      - program_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+    scope:
+      timer:
+      - trace_compile
+      - program_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+  - id: einsum_c64_compiled-setup_n4_single
+    contract_id: einsum.einsum.prepare.traced
+    family: einsum
+    surface: traced
+    operation: einsum
+    phase: setup
+    api_tier: compiled-setup
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - trace_compile
+      - program_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+    scope:
+      timer:
+      - trace_compile
+      - program_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+  - id: einsum_c64_compiled-setup_n16_single
+    contract_id: einsum.einsum.prepare.traced
+    family: einsum
+    surface: traced
+    operation: einsum
+    phase: setup
+    api_tier: compiled-setup
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - trace_compile
+      - program_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+    scope:
+      timer:
+      - trace_compile
+      - program_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - runtime_construction
+      - input_bindings
+      - correctness_check

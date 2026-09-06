@@ -169,7 +169,8 @@
             "eager-ad",
             "prepared-setup",
             "prepared-repeat",
-            "compiled-repeat"
+            "compiled-repeat",
+            "compiled-setup"
           ]
         },
         "backend": {

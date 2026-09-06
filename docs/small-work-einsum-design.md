@@ -30,16 +30,22 @@ column-sum of A. Both gradient components, dtype and shape are checked; grad slo
 are cleared. At n2 an independent central-difference check perturbs every real and
 imaginary input component on both operands, catching conjugation/sign mistakes.
 
-## Separate compiled setup remains unbound
+## Separate traced setup
 
-The current canonical export binds `einsum.einsum.prepared.traced` to execution;
-it has no `einsum.einsum.prepare.traced` setup contract. Relabeling a compiled-repeat
-case as setup is rejected, not treated as compilation coverage. Before adding a
-setup producer, extend the library-owned inventory/export with an explicit setup
-contract and define whether it includes tracing, compilation and runtime building.
-The current `compiled_einsum` helper performs all three, so timing that helper must
-not be called compiler-only cost. Keep the new contract in the existing inventory,
-not a benchmark-side alias or a second registry.
+Library revision `38fbc7a1dc89ba5fe6c167e24556e800d20d891c` adds the canonical
+`einsum.einsum.prepare.traced` setup contract. Six F64/C64 n2/4/16
+`compiled-setup` cases use `trace_compile_einsum`: parameter specs, tracing,
+finish, compilation and program lifetime are timed. Runtime/engine construction,
+payload construction, input binding and execution stay outside. This is combined
+trace-and-compile setup, **not compiler-only cost**. Provider is `not-applicable`.
+Correctness executes the produced program with original/swapped/original inputs.
+
+The repeat helper calls the same preparation helper and builds its Runtime
+separately; repeat execution boundaries are unchanged. A compiled-repeat case
+mislabeled as setup is rejected. Older library exports without the new contract
+are not compatible with these setup cases; do not add a benchmark-side alias.
+The implementation checkout uses the explicit library revision above. Remote
+publication and valid setup timing evidence remain separate outstanding work.
 
 ## Compiled-repeat slice
 
@@ -52,11 +58,11 @@ Trace/compile/runtime construction and input binding-array construction are
 outside the repeat timer; runtime admission, execution and output lifetime are
 inside. Correctness must run original, swapped, then original inputs on the same
 program against independent matmul references. This covers execution, not the
-still-required separate compilation/setup-cost measurement.
+separate traced-setup timing acceptance, which remains unmeasured.
 
 The suite includes 18 owned-input, 18 borrowed-input and three compiled-repeat
 `ij,jk->ik` cases at dimensions 2, 4 and 16 alongside the existing 24 add workflows
-plus twenty-one C64 concrete/prepared/runtime cases (84 total). No full family/layout/dtype coverage
+plus three F64 traced-setup and twenty-four C64 concrete/prepared/runtime cases (90 total). No full family/layout/dtype coverage
 or performance acceptance is claimed by this matrix alone.
 
 Each size has concrete-fresh, concrete-shared, eager-no-ad, eager-ad,

@@ -20,7 +20,7 @@ from typing import Any, Callable, Iterable, Mapping, Sequence
 
 API_TIERS = frozenset({
     "concrete-fresh", "concrete-shared", "borrowed-fresh", "borrowed-shared", "eager-no-ad", "eager-ad",
-    "prepared-setup", "prepared-repeat", "compiled-repeat",
+    "prepared-setup", "prepared-repeat", "compiled-repeat", "compiled-setup",
 })
 PHASES = frozenset({"setup", "execution", "validation"})
 CORRECTNESS = frozenset({"passed", "failed", "not_run"})
@@ -213,8 +213,8 @@ class CaseContract:
             raise ContractError(f"{case_id}: unsupported phase {phase!r}")
         if tier not in API_TIERS:
             raise ContractError(f"{case_id}: unsupported api_tier {tier!r}")
-        if tier == "prepared-setup" and phase != "setup":
-            raise ContractError(f"{case_id}: prepared-setup requires setup phase")
+        if tier in {"prepared-setup", "compiled-setup"} and phase != "setup":
+            raise ContractError(f"{case_id}: {tier} requires setup phase")
         if tier in {"prepared-repeat", "compiled-repeat"} and phase != "execution":
             raise ContractError(f"{case_id}: {tier} requires execution phase")
         shape = value["shape"]
