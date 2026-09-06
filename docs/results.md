@@ -99,13 +99,17 @@ noise. No threshold is relaxed or repetition removed. As with unavailable
 resources, `INCONCLUSIVE` exits zero; automation must inspect the status, not just
 the exit code. `READY` is single-campaign readiness, not paired performance acceptance.
 
-### Passive component machine observations
+### Passive machine observations
 
-Component **timing diagnostics** opt into the existing serial child runner's
-read-only observer. It samples selected CPUs' sysfs `scaling_cur_freq` (kHz) and
+Component **timing diagnostics** and public-suite **timing runs** use the same
+serial child runner's read-only observer. It samples selected CPUs' sysfs `scaling_cur_freq` (kHz) and
 available thermal/hwmon temperature inputs (millidegrees Celsius) while waiting
 for each timed child. No sudo, settings changes, helper service or extra thread
-is used. Ordinary suite runs, correctness and allocation diagnostics do not opt in.
+is used. Correctness-only runs, dry-runs and allocation diagnostics do not opt in.
+The observations are archived with each command, not added to the normalized
+operation samples. New observed campaigns must not be pooled with earlier
+unobserved campaigns. This is sensor evidence only: during-run competing-load
+validation and paired placement/orchestration remain separate requirements.
 
 `commands[].machine_observations` records a 100ms wait-poll interval, monotonic read
 start/end timestamps, source paths, null/error readings and at most 1024 samples.

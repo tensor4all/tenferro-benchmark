@@ -435,7 +435,8 @@ def _suite_run(args: argparse.Namespace) -> int:
         verify_canonical_snapshot(binding, library, cases)
         command_records = run_sequential(commands, expected_affinity=expected,
                                          timeout_s=args.command_timeout, output_dir=root / "children",
-                                         require_json=bool(binary), return_records=True)
+                                         require_json=bool(binary), return_records=True,
+                                         observe_machine=not args.correctness_only)
         result["commands"] = command_records
         records = []
         cov_max = float(protocol["noise_policy"]["process_median_cov_max"])

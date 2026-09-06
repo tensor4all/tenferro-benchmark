@@ -463,7 +463,9 @@ class SmallWorkTests(unittest.TestCase):
             latest = root / "result/amd-cpu/cpu/small_work.md"; latest.parent.mkdir(parents=True)
             latest.write_text("previous\n", encoding="utf-8")
             case = run_small_work.CaseContract.from_mapping(yaml.safe_load(suite.read_text())["cases"][0])
+            trace = {"coverage": "boundary_only", "samples": []}
             commands = [{"index": i, "command": [], "status": "completed", "returncode": 0,
+                         "machine_observations": trace,
                          "payload": self._payload(i, case=case)} for i in range(2)]
             args = self._suite_args(root, suite, output)
             args.case_binary = root / "fixture-child"
@@ -471,13 +473,17 @@ class SmallWorkTests(unittest.TestCase):
             args.preparation_receipt.write_text("{}", encoding="utf-8")
             with mock.patch.dict(os.environ, {}, clear=True), \
                  mock.patch.object(run_small_work, "_select_live_resources", return_value={"status": "valid", "cpus": [0], "effective_threads": 1, "reasons": []}), \
-                 mock.patch.object(run_small_work, "run_sequential", return_value=commands), \
+                 mock.patch.object(run_small_work, "run_sequential", return_value=commands) as run_children, \
                  mock.patch.object(run_small_work, "verify_preparation_receipt", return_value=[]), \
                  mock.patch.object(run_small_work, "verify_canonical_snapshot"), \
                  mock.patch.object(run_small_work.os, "sched_getaffinity", return_value={0}), \
                  mock.patch.object(run_small_work.os, "sched_setaffinity"):
                 self.assertEqual(run_small_work._suite_run(args), 0)
-            self.assertEqual(json.loads(output.read_text())["status"], "READY")
+            run_children.assert_called_once()
+            self.assertTrue(run_children.call_args.kwargs["observe_machine"])
+            result = json.loads(output.read_text())
+            self.assertEqual(result["status"], "READY")
+            self.assertEqual([row["machine_observations"] for row in result["commands"]], [trace, trace])
             self.assertNotEqual(latest.read_text(encoding="utf-8"), "previous\n")
 
     def test_campaign_failures_keep_previous_latest(self) -> None:
@@ -571,9 +577,11 @@ class SmallWorkTests(unittest.TestCase):
                     command.update(status="failed", returncode=1, error="child failed")
                 args = self._suite_args(root, suite, output, correctness_only=True)
                 args.case_binary = root / "fixture-child"
-                with mock.patch.object(run_small_work, "run_sequential", return_value=[command]), \
+                with mock.patch.object(run_small_work, "run_sequential", return_value=[command]) as run_children, \
                      mock.patch.object(run_small_work, "verify_canonical_snapshot"):
                     code = run_small_work._suite_run(args)
+                run_children.assert_called_once()
+                self.assertFalse(run_children.call_args.kwargs["observe_machine"])
                 result = json.loads(output.read_text())
                 if variant == "valid":
                     self.assertEqual(code, 0)

@@ -1,5 +1,20 @@
 # Issue 95: small-work suite
 
+## Public timing uses the shared passive observer
+
+Public-suite timing now enables run_sequential's existing bounded, read-only
+sensor observer, already used by component timing. commands[].machine_observations
+is retained in run.json; operation samples/statistics remain unchanged.
+Correctness-only and dry-runs do not observe. No new polling implementation,
+thread, service, privileged requirement or host setting is introduced.
+
+Python99 ran:98 passed,1 existing live-resource smoke skipped. Tests verify public
+timing opt-in and archive forwarding, correctness-only opt-out, existing sensor
+parsing/limits/failure cleanup and dry-run no-launch behavior. These are contract
+checks, not a new release campaign or isolation proof. The124-case numerical
+producer is unchanged. Do not pool future observed runs with old unobserved runs;
+#96 paired orchestration, selection union and competing-load validation remain.
+
 ## Public campaign noise is not structural failure
 
 Before adding #96 paired orchestration, corrected the existing public runner's
