@@ -39,10 +39,10 @@ import os, sys, subprocess, yaml
 from pathlib import Path
 path = Path(sys.argv[1])
 metadata = yaml.safe_load(path.read_text())
-metadata['benchmark'] = {'commit': os.environ['BENCHMARK_COMMIT'], 'build_profile': 'release',
-    'rustc': subprocess.check_output(['rustc', '--version'], text=True).strip(),
-    'case_selection': os.environ.get('BENCH_INSTANCE', 'all 154'),
-    'cpu_backend_kind': os.environ['TENFERRO_CPU_BACKEND_KIND']}
+metadata['environment'].setdefault('env', {}).update({
+    'BENCHMARK_COMMIT': os.environ['BENCHMARK_COMMIT'], 'BENCHMARK_BUILD_PROFILE': 'release',
+    'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
+    'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE', 'all 154')})
 path.write_text(yaml.safe_dump(metadata, sort_keys=False))
 PY
     "$PYTHON" "$SCRIPT_DIR/benchmark_small_work.py" --binary "$BINARY" \

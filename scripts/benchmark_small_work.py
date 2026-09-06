@@ -81,9 +81,12 @@ def report(run_dir, target):
     cpu_info = run_dir / "cpu_info.md"
     if cpu_info.exists():
         lines += [cpu_info.read_text().rstrip(), ""]
+    notes = run_dir / "measurement_notes.md"
+    if notes.exists():
+        lines += [notes.read_text().rstrip(), ""]
     for path in sorted(run_dir.glob("run_t*.yaml")):
         metadata = yaml.safe_load(path.read_text())
-        conditions = {k: metadata[k] for k in ("timestamp", "benchmark", "tenferro_rs", "blas", "environment") if k in metadata}
+        conditions = {k: metadata[k] for k in ("timestamp", "tenferro_rs", "blas", "environment") if k in metadata}
         lines += [f"## {path.stem}", "", f"Full metadata: `{path.relative_to(ROOT)}`", "",
                   "```yaml", yaml.safe_dump(conditions, sort_keys=False).rstrip(), "```", ""]
     passed = sum(r["correctness_status"] == "passed" for r in rows)
