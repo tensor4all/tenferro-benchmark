@@ -1,5 +1,21 @@
 # Issue 95: small-work suite
 
+## Preserve failures when affinity restoration also fails
+
+The public runner's finally block unconditionally replaced FAILED with
+INCONCLUSIVE on affinity restoration errors, incorrectly changing exit1 to exit0.
+It now retains FAILED while still disabling publication and archiving the
+restoration error. Otherwise-valid or noisy campaigns remain INCONCLUSIVE.
+
+The previous restoration test had no mapped commands, so it exercised an already
+failed campaign rather than its intended successful control. The repaired test
+uses the normal binary command mapping and covers valid/noisy, numerical failure,
+missing samples and runner exceptions, each with set/verification restoration
+failures. Six subcases reproduced the bug before the two-line guard; all ten now
+pass, preserving latest reports and archived child evidence. Python102 ran with
+101 passes and1 existing live-resource skip. No producer or protocol changes;
+prior Rust/numerical evidence is unaffected, and no timing was collected.
+
 ## Worker confinement and effective default budget
 
 Real4T correctness reproduced a false rejection: a backend-owned worker pinned

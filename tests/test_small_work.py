@@ -445,21 +445,50 @@ class SmallWorkTests(unittest.TestCase):
         self.assertEqual(selected["status"], "inconclusive")
 
     def test_latest_is_unchanged_when_affinity_restoration_fails(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory); suite = self._one_case_suite(root); output = root / "run.json"
-            latest = root / "result/amd-cpu/cpu/small_work.md"; latest.parent.mkdir(parents=True)
-            latest.write_text("previous\n", encoding="utf-8")
-            commands = [{"index": i, "command": [], "status": "completed",
-                         "returncode": 0, "payload": self._payload(i, case=run_small_work.CaseContract.from_mapping(yaml.safe_load(suite.read_text())["cases"][0]))} for i in range(2)]
-            affinity_reads = iter([{0}, {0}, OSError("restore")])
-            with mock.patch.object(run_small_work, "_select_live_resources", return_value={"status": "valid", "cpus": [0], "effective_threads": 1, "reasons": []}), \
-                 mock.patch.object(run_small_work, "run_sequential", return_value=commands), \
-                 mock.patch.object(run_small_work.os, "sched_getaffinity", side_effect=lambda _pid: (lambda value: (_ for _ in ()).throw(value) if isinstance(value, Exception) else value)(next(affinity_reads))), \
-                 mock.patch.object(run_small_work.os, "sched_setaffinity"):
-                code = run_small_work._suite_run(self._suite_args(root, suite, output))
-            self.assertEqual(code, 0)
-            self.assertEqual(latest.read_text(encoding="utf-8"), "previous\n")
-            self.assertEqual(json.loads(output.read_text())['status'], "INCONCLUSIVE")
+        for variant in ("valid", "noisy", "correctness_failure", "missing_sample", "runner_exception"):
+            for restore_failure in ("set", "verify"):
+                with self.subTest(variant=variant, restore_failure=restore_failure), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory); suite = self._one_case_suite(root); output = root / "run.json"
+                    latest = root / "result/amd-cpu/cpu/small_work.md"; latest.parent.mkdir(parents=True)
+                    latest.write_text("previous\n", encoding="utf-8")
+                    case = CaseContract.from_mapping(yaml.safe_load(suite.read_text())["cases"][0])
+                    commands = [{"status": "completed", "returncode": 0,
+                                 "payload": self._payload(i, case=case)} for i in range(2)]
+                    if variant == "correctness_failure":
+                        commands[1]["payload"]["correctness_status"] = "failed"
+                    elif variant == "missing_sample":
+                        commands[1]["payload"]["samples"].pop()
+                    elif variant == "noisy":
+                        for sample in commands[1]["payload"]["samples"]:
+                            sample["elapsed_ns"] *= 10
+                    args = self._suite_args(root, suite, output)
+                    args.case_binary = root / "fixture-child"
+                    args.preparation_receipt = root / "receipt.json"
+                    args.preparation_receipt.write_text("{}")
+                    reads = [{0}, {0}, OSError("restore") if restore_failure == "verify" else {0}]
+                    writes = [None, OSError("restore") if restore_failure == "set" else None]
+                    with mock.patch.object(run_small_work, "_select_live_resources", return_value={"status": "valid", "cpus": [0], "effective_threads": 1, "reasons": []}), \
+                         mock.patch.object(run_small_work, "verify_preparation_receipt", return_value=[]), \
+                         mock.patch.object(run_small_work, "run_sequential", return_value=commands,
+                                           side_effect=RuntimeError("child runner failed") if variant == "runner_exception" else None) as run_children, \
+                         mock.patch.object(run_small_work.os, "sched_getaffinity", side_effect=reads), \
+                         mock.patch.object(run_small_work.os, "sched_setaffinity", side_effect=writes):
+                        code = run_small_work._suite_run(args)
+                    run_children.assert_called_once()
+                    result = json.loads(output.read_text())
+                    failed = variant not in ("valid", "noisy")
+                    self.assertEqual(result["status"], "FAILED" if failed else "INCONCLUSIVE")
+                    self.assertEqual(code, int(failed))
+                    self.assertIn("affinity restoration failed: OSError", result["errors"])
+                    self.assertEqual(latest.read_text(), "previous\n")
+                    if variant != "runner_exception":
+                        self.assertEqual(result["commands"], commands)
+                        record = result["records"][0]
+                        self.assertEqual(bool(record["errors"]), failed)
+                        if not failed:
+                            self.assertEqual(len(record["timing"]["raw_elapsed_ns"]), 4)
+                    archive = next((root / "data/amd-cpu/cpu/small_work").iterdir())
+                    self.assertEqual(json.loads((archive / "run.json").read_text()), result)
 
     def test_filtered_ready_run_archives_selected_report_without_replacing_latest(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

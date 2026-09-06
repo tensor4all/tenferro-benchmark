@@ -545,7 +545,8 @@ def _suite_run(args: argparse.Namespace) -> int:
                 os.sched_setaffinity(0, original)
                 verify_affinity(original, os.sched_getaffinity(0))
             except Exception as exc:
-                result["status"] = "INCONCLUSIVE"
+                if result["status"] != "FAILED":
+                    result["status"] = "INCONCLUSIVE"
                 publish = False
                 result["errors"].append(f"affinity restoration failed: {type(exc).__name__}")
     if publish and result["status"] == "READY" and report_text is not None:
