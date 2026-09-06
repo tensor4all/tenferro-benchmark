@@ -1,5 +1,27 @@
 # Issue 95: small-work suite
 
+## Passive machine observations for component diagnostics
+
+Component timing now opts into bounded read-only machine observation in the
+existing serial runner. Available selected-CPU frequencies and thermal/hwmon
+readings are archived with monotonic read bounds, missing-value errors, explicit
+boundary-only coverage for short children, and a 1024-sample cap. Polling does not
+reset the original child timeout; unexpected observer failures terminate/reap the
+owned child and preserve output. No new thread, service or host setting is used.
+Ordinary public timing remains unchanged; during-run competing-load validation
+and full #96 acceptance are not implemented by this slice.
+
+Verification: all 94 Python tests passed, followed by seven focused observation
+tests after strengthening complete-output assertions. Tests cover read units,
+missing/invalid sensors, timeout non-reset, bounded history, short-child coverage,
+real stdout/stderr preservation and owned-child cleanup on observer failure.
+A real read-only sleeper smoke captured interior observations, 64 readable CPU
+frequency values and 11 thermal/hwmon paths. Those all-CPU snapshots took about
+105ms each, so the effective cadence is coarser than the 100ms wait interval.
+It was not a numerical benchmark or performance evidence. Sensor-read overhead
+and lack of per-sample synchronization
+are documented. Frozen measurement clones and all timing thresholds are unchanged.
+
 ## C64 eager and compiled execution
 
 Added six n2/4/16 C64 eager-no-ad/compiled-repeat cases. Compiled input specs use

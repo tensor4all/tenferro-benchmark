@@ -91,6 +91,32 @@ latest `result/<target_profile>/cpu/small_work.md`. A valid filtered timing run
 is still reported as `READY`; omit the filter to publish the latest full-suite
 report.
 
+### Passive component machine observations
+
+Component **timing diagnostics** opt into the existing serial child runner's
+read-only observer. It samples selected CPUs' sysfs `scaling_cur_freq` (kHz) and
+available thermal/hwmon temperature inputs (millidegrees Celsius) while waiting
+for each timed child. No sudo, settings changes, helper service or extra thread
+is used. Ordinary suite runs, correctness and allocation diagnostics do not opt in.
+
+`commands[].machine_observations` records a 100ms wait-poll interval, monotonic read
+start/end timestamps, source paths, null/error readings and at most 1024 samples.
+Sensor-read time is additional: this is not a guaranteed 100ms sampling cadence.
+Short children explicitly report `boundary_only`; `interior` means observations
+while awaiting command completion, **not** synchronization with individual timed
+samples. If the cap is reached, `truncated` is set and the final observation is
+retained. Missing sensors are not invented; hwmon/thermal paths are not asserted
+to identify a particular CPU. Kernel-reported frequency is not an instantaneous
+instruction-level clock measurement.
+
+Polling keeps one original command deadline, preserves complete child output,
+and uses existing process-group cleanup on timeout or observer failure. Sensor
+reads can add overhead or contend with the child; no zero-overhead claim is made.
+Observed campaigns must freeze the same harness on both revisions and cannot be
+pooled with older unobserved campaigns. This is diagnostic context only: during-run
+**competing-load validation**, public-suite integration and #96 performance
+acceptance remain unfinished. Neither thresholds nor publication gates are relaxed.
+
 ### Crate-owned component correctness smoke
 
 Use the lib-test executable discovered by Cargo preparation (not an ordinary

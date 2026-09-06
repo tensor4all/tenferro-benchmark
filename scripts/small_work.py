@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import statistics
 import subprocess
+import time
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
 API_TIERS = frozenset({
@@ -677,6 +678,60 @@ def _archive_child(output_dir: Path | None, index: int, stdout: str | bytes, std
     (output_dir / f"child_{index:03d}.stderr").write_text(text(stderr), encoding="utf-8")
 
 
+def read_machine_observation(cpus: Iterable[int], *, sysfs: Path = Path("/sys")) -> dict[str, Any]:
+    """Read optional kernel sensor values; missing readings are never inferred."""
+    started = time.monotonic_ns()
+    errors: dict[str, str] = {}
+
+    def number(path: Path) -> int | None:
+        try:
+            return int(path.read_text().strip())
+        except (OSError, ValueError) as exc:
+            errors[str(path)] = type(exc).__name__
+            return None
+
+    frequency = {str(cpu): number(sysfs / f"devices/system/cpu/cpu{cpu}/cpufreq/scaling_cur_freq")
+                 for cpu in sorted(cpus)}
+    sensors = sorted(set(sysfs.glob("class/thermal/thermal_zone*/temp")) |
+                     set(sysfs.glob("class/hwmon/hwmon*/temp*_input")))
+    temperatures = {str(path): number(path) for path in sensors}
+    return {"started_monotonic_ns": started, "monotonic_ns": time.monotonic_ns(),
+            "frequency_khz": frequency,
+            "sensor_temperature_millicelsius": temperatures, "read_errors": errors}
+
+
+def _communicate_observed(process: subprocess.Popen[str], cpus: set[int],
+                          timeout_s: float | None, record: dict[str, Any]) -> tuple[str, str]:
+    """Bounded diagnostic polling under one deadline, not a per-poll timeout."""
+    interval, limit = 0.1, 1024
+    deadline = None if timeout_s is None else time.monotonic() + timeout_s
+    trace: dict[str, Any] = {"interval_s": interval, "sample_limit": limit,
+                             "truncated": False, "coverage": "boundary_only", "samples": []}
+    record["machine_observations"] = trace
+
+    def capture(phase: str) -> None:
+        trace["samples"].append({"phase": phase, **read_machine_observation(cpus)})
+
+    capture("start")
+    while True:
+        remaining = None if deadline is None else max(0.0, deadline - time.monotonic())
+        wait = remaining
+        if not trace["truncated"]:
+            wait = interval if remaining is None else min(interval, remaining)
+        try:
+            output = process.communicate(timeout=wait)
+            capture("end")
+            return output
+        except subprocess.TimeoutExpired:
+            if deadline is not None and time.monotonic() >= deadline:
+                raise
+            if len(trace["samples"]) < limit - 1:
+                capture("waiting")
+                trace["coverage"] = "interior"
+            else:
+                trace["truncated"] = True
+
+
 def run_sequential(commands: Sequence[Sequence[str]], *, cwd: Path | None = None,
                    env: Mapping[str, str] | None = None,
                    runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
@@ -684,11 +739,14 @@ def run_sequential(commands: Sequence[Sequence[str]], *, cwd: Path | None = None
                    timeout_s: float | None = None,
                    output_dir: Path | None = None,
                    require_json: bool = False,
+                   observe_machine: bool = False,
                    return_records: bool = False) -> list[Any]:
     """Run children serially, preserving output, failures, and not-run entries."""
     records: list[dict[str, Any]] = []
     statuses: list[int] = []
     expected = set(expected_affinity) if expected_affinity is not None else None
+    if observe_machine and not expected:
+        raise ContractError("machine observation requires a selected CPU set")
     for index, command in enumerate(commands):
         record: dict[str, Any] = {"index": index, "command": list(command)}
         try:
@@ -721,7 +779,8 @@ def run_sequential(commands: Sequence[Sequence[str]], *, cwd: Path | None = None
                     records.append(record)
                     break
                 try:
-                    stdout, stderr = process.communicate(timeout=timeout_s)
+                    stdout, stderr = (_communicate_observed(process, expected, timeout_s, record)
+                                      if observe_machine else process.communicate(timeout=timeout_s))
                     code = process.returncode
                 except subprocess.TimeoutExpired as exc:
                     _terminate_process_group(process)
@@ -731,6 +790,16 @@ def run_sequential(commands: Sequence[Sequence[str]], *, cwd: Path | None = None
                     record.update({"status": "failed", "returncode": -9, "error": "timeout",
                                    "stdout": stdout, "stderr": stderr})
                     statuses.append(-9)
+                    records.append(record)
+                    break
+                except Exception as exc:
+                    _terminate_process_group(process)
+                    stdout, stderr = process.communicate()
+                    _archive_child(output_dir, index, stdout, stderr)
+                    record.update({"status": "error", "returncode": -1,
+                                   "error": "child communication/observation failed",
+                                   "detail": type(exc).__name__, "stdout": stdout, "stderr": stderr})
+                    statuses.append(-1)
                     records.append(record)
                     break
                 record["affinity_verified"] = True

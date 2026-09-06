@@ -91,6 +91,7 @@ class ComponentTests(unittest.TestCase):
                     self.assertEqual(kwargs["expected_affinity"], {0})
                     env = kwargs["env"]
                     mode = env["TENFERRO_PROBE_MODE"]
+                    self.assertEqual(kwargs["observe_machine"], mode == "timed")
                     if mode == "contract":
                         return self.child([{"kind": "contract", "schema": "tenferro.einsum.component-probe.v1",
                                             "case_id": "case-a", "stage": "parse", "calls_per_workflow": 1}])

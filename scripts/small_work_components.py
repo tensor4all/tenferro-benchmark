@@ -51,6 +51,7 @@ def check_components(binary: Path, archive: Path, timeout: float,
         child = run_sequential([command], env=env,
                                timeout_s=timeout, expected_affinity=expected_affinity,
                                output_dir=archive / str(len(result["commands"])),
+                               observe_machine=(protocol is not None and mode == "timed"),
                                return_records=True)[0]
         child.update(mode=mode, case=case, stage=stage, iterations=iterations,
                      requested_samples=samples, minimum_ns=minimum_ns)
