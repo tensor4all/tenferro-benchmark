@@ -183,7 +183,7 @@ def _payload_contract_errors(case: CaseContract, payload: Mapping[str, Any], pro
         errors.append("child process identity does not match command")
     if payload.get("correctness_status") != "passed":
         errors.append("child correctness did not pass")
-    if payload.get("errors") != [] and not correctness_only:
+    if payload.get("errors") != []:
         errors.append("child reported errors")
     samples = payload["samples"]
     if not isinstance(samples, list):

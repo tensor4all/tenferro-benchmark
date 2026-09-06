@@ -608,7 +608,7 @@ class SmallWorkTests(unittest.TestCase):
             self.assertEqual(json.loads(output.read_text())['status'], "FAILED")
 
     def test_correctness_only_rejects_invalid_success_payload(self) -> None:
-        for variant in ("valid", "wrong_operation", "child_failure"):
+        for variant in ("valid", "wrong_operation", "child_failure", "reported_error", "malformed_errors"):
             with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 suite = self._one_case_suite(root)
@@ -621,6 +621,10 @@ class SmallWorkTests(unittest.TestCase):
                     payload["operation"] = "mul"
                 elif variant == "child_failure":
                     command.update(status="failed", returncode=1, error="child failed")
+                elif variant == "reported_error":
+                    payload["errors"] = ["verification failed after producing output"]
+                elif variant == "malformed_errors":
+                    payload["errors"] = None
                 args = self._suite_args(root, suite, output, correctness_only=True)
                 args.case_binary = root / "fixture-child"
                 with mock.patch.object(run_small_work, "run_sequential", return_value=[command]) as run_children, \

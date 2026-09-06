@@ -1,5 +1,18 @@
 # Issue 95: small-work suite
 
+## Correctness-only rejects child error reports
+
+Removed the correctness-only exception from the existing child-receipt error
+check. A child reporting passed correctness with nonempty or malformed errors
+must not pass readiness. Both cases reproduced false success before the one-line
+fix; the valid empty-errors control still succeeds. Raw child reports remain
+archived and failed records block CORRECTNESS_ONLY status.
+
+Focused1 (five variants), Python100 (99 passed,1 existing live-resource smoke
+skip), and all124 actual correctness/result-schema records passed the corrected
+gate. The existing producer binary was reused because its Rust source has not
+changed since gather; no build, timing or performance acceptance is claimed.
+
 ## Public timing rechecks the selected resources
 
 The public runner now reuses its live-resource observer after timing, with the
