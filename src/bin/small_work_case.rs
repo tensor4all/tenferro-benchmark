@@ -199,11 +199,12 @@ fn complex_einsum_inputs(
 fn compiled_einsum(
     backend: &CpuBackend,
     n: usize,
+    dtype: DType,
 ) -> Result<(Runtime, CompiledGraph), Box<dyn Error + Send + Sync>> {
     use tenferro_einsum::TraceContextEinsumExt;
     let mut trace = TraceContext::new();
-    let a = trace.input(ProgramInputSpec::new(DType::F64, [n.into(), n.into()]))?;
-    let b = trace.input(ProgramInputSpec::new(DType::F64, [n.into(), n.into()]))?;
+    let a = trace.input(ProgramInputSpec::new(dtype, [n.into(), n.into()]))?;
+    let b = trace.input(ProgramInputSpec::new(dtype, [n.into(), n.into()]))?;
     let output = trace.einsum(&[a, b], "ij,jk->ik")?;
     let graph = trace.finish(&[output])?;
     let program = GraphCompiler::new().compile_traced_graph(&graph)?;
@@ -224,12 +225,22 @@ fn check_compiled_einsum(
     let n = matrix_dimension(lhs.shape().iter().product())?;
     let mut checked = 0.0;
     for (a, b) in [(lhs, rhs), (rhs, lhs), (lhs, rhs)] {
-        let expected = matmul_reference(n, a.as_slice::<f64>()?, b.as_slice::<f64>()?);
+        let expected = if a.dtype() == DType::F64 {
+            Tensor::from_vec_col_major(
+                vec![n, n],
+                matmul_reference(n, a.as_slice::<f64>()?, b.as_slice::<f64>()?),
+            )?
+        } else {
+            Tensor::from_vec_col_major(
+                vec![n, n],
+                matmul_reference(n, a.as_slice::<Complex64>()?, b.as_slice::<Complex64>()?),
+            )?
+        };
         let outputs = runtime.run_compiled(program, &[a, b])?;
         if outputs.len() != 1 {
             return Err("compiled einsum must return one output".into());
         }
-        checked = check_tensor_shape(&outputs[0], &expected, &[n, n])?;
+        checked = check_tensor_reference(&outputs[0], &expected)?;
     }
     Ok(checked)
 }
@@ -361,7 +372,12 @@ fn case_descriptor(
             && operation == "einsum"
             && matches!(
                 api_tier,
-                "concrete-fresh" | "concrete-shared" | "prepared-setup" | "prepared-repeat"
+                "concrete-fresh"
+                    | "concrete-shared"
+                    | "prepared-setup"
+                    | "prepared-repeat"
+                    | "eager-no-ad"
+                    | "compiled-repeat"
             ));
     if !matches!(operation, "add" | "einsum") || !supported_dtype || !matches!(size, 4 | 16 | 256) {
         return Err(format!(
@@ -825,7 +841,7 @@ mod tests {
             assert!(check_tensor_reference(&invalid, &expected).is_err());
             assert!(check_tensor_reference(&expected, &invalid).is_err());
         }
-        for tier in ["eager-ad", "borrowed-fresh", "compiled-repeat"] {
+        for tier in ["eager-ad", "borrowed-fresh"] {
             assert!(case_descriptor("einsum", "c64", tier, "single", 4, 1, "faer").is_err());
         }
     }
@@ -892,6 +908,40 @@ mod tests {
     }
 
     #[test]
+    fn complex_eager_and_compiled_einsum_keep_complex_inputs() {
+        for size in [4, 16, 256] {
+            let (lhs, rhs, expected) = complex_einsum_inputs(size).unwrap();
+            let backend = CpuBackend::new();
+            let (runtime, program) =
+                compiled_einsum(&backend, matrix_dimension(size).unwrap(), lhs.dtype()).unwrap();
+            check_compiled_einsum(&runtime, &program, &lhs, &rhs).unwrap();
+            let real_input =
+                Tensor::from_vec_col_major(lhs.shape().to_vec(), vec![1.0_f64; size]).unwrap();
+            assert!(runtime
+                .run_compiled(&program, &[&lhs, &real_input])
+                .is_err());
+            let context = EagerRuntime::with_cpu_backend(backend).unwrap();
+            let a = EagerTensor::from_tensor_in(lhs, context.clone()).unwrap();
+            let b = EagerTensor::from_tensor_in(rhs, context).unwrap();
+            let output = eager_operation("einsum", &a, &b)
+                .unwrap()
+                .to_tensor()
+                .unwrap();
+            check_tensor_reference(&output, &expected).unwrap();
+            for (tier, surface, contract) in [
+                ("eager-no-ad", "eager", "einsum.einsum.ordinary.eager"),
+                ("compiled-repeat", "traced", "einsum.einsum.prepared.traced"),
+            ] {
+                let descriptor =
+                    case_descriptor("einsum", "c64", tier, "single", size, 1, "faer").unwrap();
+                assert_eq!(descriptor["surface"], surface);
+                assert_eq!(descriptor["contract_id"], contract);
+                assert_eq!(descriptor["dtype"], "c64");
+            }
+        }
+    }
+
+    #[test]
     fn compiled_einsum_rebinds_both_inputs_without_stale_results() {
         for size in [4, 16, 256] {
             let n = matrix_dimension(size).unwrap();
@@ -903,7 +953,7 @@ mod tests {
             );
             assert_ne!(expected, swapped);
             let backend = CpuBackend::new();
-            let (runtime, program) = compiled_einsum(&backend, n).unwrap();
+            let (runtime, program) = compiled_einsum(&backend, n, lhs.dtype()).unwrap();
             check_compiled_einsum(&runtime, &program, &lhs, &rhs).unwrap();
             let descriptor = case_descriptor(
                 "einsum",
@@ -1113,12 +1163,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     descriptor["layout"] = serde_json::json!(layout);
     let mut concrete = None;
     let mut runtime = None;
-    let mut compiled = None;
     match api_tier.as_str() {
         "concrete-fresh" | "concrete-shared" | "borrowed-fresh" | "borrowed-shared"
-        | "prepared-setup" | "prepared-repeat" => concrete = Some(backend),
+        | "prepared-setup" | "prepared-repeat" | "compiled-repeat" => concrete = Some(backend),
         "eager-no-ad" | "eager-ad" => runtime = Some(EagerRuntime::with_cpu_backend(backend)?),
-        "compiled-repeat" => compiled = Some(compiled_einsum(&backend, matrix_dimension(size)?)?),
         _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
     }
     let (lhs, rhs, expected_values) = if dtype == "c64" {
@@ -1131,6 +1179,15 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         };
         let expected = Tensor::from_vec_col_major(lhs.shape().to_vec(), values)?;
         (lhs, rhs, expected)
+    };
+    let compiled = if api_tier == "compiled-repeat" {
+        Some(compiled_einsum(
+            concrete.as_ref().ok_or("concrete backend missing")?,
+            matrix_dimension(size)?,
+            lhs.dtype(),
+        )?)
+    } else {
+        None
     };
     let compiled_bindings = [&lhs, &rhs];
     let borrowed_storage = if api_tier.starts_with("borrowed-") {
@@ -1151,10 +1208,16 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         None
     };
     let eager_pair = if let Some(ctx) = runtime.as_ref() {
-        let (left, right, _) = if operation == "einsum" {
-            einsum_inputs(size)?
+        let (left, right) = if dtype == "c64" {
+            let (left, right, _) = complex_einsum_inputs(size)?;
+            (left, right)
         } else {
-            inputs(size, calls)?
+            let (left, right, _) = if operation == "einsum" {
+                einsum_inputs(size)?
+            } else {
+                inputs(size, calls)?
+            };
+            (left, right)
         };
         let tracked = api_tier == "eager-ad";
         let left = if tracked {

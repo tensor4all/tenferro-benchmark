@@ -1,7 +1,7 @@
 schema_version: 2
 suite_id: cpu/small_work
 title: CPU small-work public boundary contracts
-description: F64 add/einsum and C64 concrete/prepared einsum, including F64 borrowed layouts and compiled repetition.
+description: F64 add/einsum and C64 concrete/prepared/runtime einsum, including F64 borrowed layouts.
 contract_version: 2
 protocol:
   warmups: 1
@@ -2124,4 +2124,214 @@ cases:
       - plan_preparation
       - session_entry_exit
       - shared_admission_exit
+      - correctness_check
+  - id: einsum_c64_eager-no-ad_n2_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+  - id: einsum_c64_compiled-repeat_n2_single
+    contract_id: einsum.einsum.prepared.traced
+    family: einsum
+    surface: traced
+    operation: einsum
+    phase: execution
+    api_tier: compiled-repeat
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - runtime_admission_execution
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - trace_compile
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+    scope:
+      timer:
+      - runtime_admission_execution
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - trace_compile
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+  - id: einsum_c64_eager-no-ad_n4_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+  - id: einsum_c64_compiled-repeat_n4_single
+    contract_id: einsum.einsum.prepared.traced
+    family: einsum
+    surface: traced
+    operation: einsum
+    phase: execution
+    api_tier: compiled-repeat
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - runtime_admission_execution
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - trace_compile
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+    scope:
+      timer:
+      - runtime_admission_execution
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - trace_compile
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+  - id: einsum_c64_eager-no-ad_n16_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-no-ad
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - correctness_check
+  - id: einsum_c64_compiled-repeat_n16_single
+    contract_id: einsum.einsum.prepared.traced
+    family: einsum
+    surface: traced
+    operation: einsum
+    phase: execution
+    api_tier: compiled-repeat
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - runtime_admission_execution
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - trace_compile
+      - runtime_construction
+      - input_bindings
+      - correctness_check
+    scope:
+      timer:
+      - runtime_admission_execution
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - trace_compile
+      - runtime_construction
+      - input_bindings
       - correctness_check

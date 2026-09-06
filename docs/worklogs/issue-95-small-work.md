@@ -1,5 +1,19 @@
 # Issue 95: small-work suite
 
+## C64 eager and compiled execution
+
+Added six n2/4/16 C64 eager-no-ad/compiled-repeat cases. Compiled input specs use
+the actual input dtype, without literals or dtype conversion. The same program
+is checked on original/swapped/original complex inputs and rejects a real input
+in a complex slot. Eager inputs are constructed as complex tensors rather than
+silently taking the old F64 fixture branch. Public execution APIs are unchanged.
+
+Verification: 14 Rust tests, 87 Python tests, strict producer Clippy and actual
+correctness/descriptor checks for all 81 cases passed. Every record validates
+against the result schema. C64 AD/borrowed, other families, separate compile/setup
+cost measurement and accepted performance comparisons remain outstanding. No
+host settings or timing thresholds were changed; these are correctness checks.
+
 ## C64 prepared setup and execution
 
 Added six n2/4/16 C64 prepared-setup/repeat cases using the existing producer
