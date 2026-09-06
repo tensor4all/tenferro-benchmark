@@ -1,0 +1,73 @@
+schema_version: 1
+target_profile: amd-cpu
+suite_id: cpu/small_work
+suite_file: benchmarks/cpu/small_work.yaml
+timestamp: '2026-09-06T06:02:49Z'
+tenferro_rs:
+  path: /workspaces/benchmark-95-suite/extern/tenferro-rs
+  commit: 181cbadf050a3908ca6dfee821ce3c213e2c66f9
+  dirty: false
+  features:
+  - system-mkl
+environment:
+  hostname: 082181a7ebbf
+  os: Linux-6.8.0-101-generic-x86_64-with-glibc2.39
+  arch: x86_64
+  cpu: x86_64
+  env:
+    OMP_NUM_THREADS: '4'
+    OMP_THREAD_LIMIT: '4'
+    OMP_DYNAMIC: 'FALSE'
+    RAYON_NUM_THREADS: '4'
+    TENFERRO_CPU_BACKEND_KIND: blas
+    BENCHMARK_TARGET_PROFILE: amd-cpu
+    OPENBLAS_ROOT: /opt/openblas
+    MKLROOT: /opt/intel/oneapi/mkl/latest
+    OPENBLAS_NUM_THREADS: '4'
+    GOTO_NUM_THREADS: '4'
+    MKL_NUM_THREADS: '4'
+    VECLIB_MAXIMUM_THREADS: '4'
+    VECLIB_NUM_THREADS: '4'
+    NUMEXPR_NUM_THREADS: '4'
+    BLIS_NUM_THREADS: '4'
+    XLA_FLAGS: --xla_cpu_multi_thread_eigen=true intra_op_parallelism_threads=4
+    JULIA_NUM_THREADS: '4'
+    USE_CUDA: '0'
+    BENCHMARK_COMMIT: d5faef953daaa4c1a1fcd956fa811fe538fdeff8
+    BENCHMARK_BUILD_PROFILE: release
+    RUSTC_VERSION: rustc 1.98.1 (48a229cea 2026-09-01)
+    BENCH_INSTANCE: all 154
+blas:
+  implementation: mkl
+  version: 2026.0.1
+  root: /opt/intel/oneapi/mkl/latest
+  library: /opt/intel/oneapi/mkl/latest/lib/libmkl_rt.so
+python_backends:
+  pytorch:
+    available: true
+    version: 2.12.0+cu130
+    file: /workspaces/benchmark-95-suite/.venv/lib/python3.12/site-packages/torch/__init__.py
+    provider: mkl
+    blas_info: mkl
+    lapack_info: mkl
+    library: /workspaces/benchmark-95-suite/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so
+    linked_libraries:
+    - /workspaces/benchmark-95-suite/.venv/lib/python3.12/site-packages/torch/lib/libgomp.so.1
+  jax:
+    available: true
+    version: 0.10.1
+    jaxlib_version: 0.10.1
+    backend: cpu
+    file: /workspaces/benchmark-95-suite/.venv/lib/python3.12/site-packages/jaxlib/__init__.py
+    provider: xla_cpu
+    dot_backend: xla_cpu
+    lapack_provider: none_detected
+    library: /workspaces/benchmark-95-suite/.venv/lib/python3.12/site-packages/jaxlib/_ifrt_proxy.so
+    linked_libraries: []
+julia:
+  available: true
+  version: 1.12.7
+  strided_version: 2.6.1
+  omeinsum_version: 0.9.4
+  blas_provider: LBTConfig([ILP64] libopenblas64_.so)
+  threads: 4

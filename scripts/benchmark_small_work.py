@@ -74,6 +74,7 @@ def summary(row):
 
 
 def report(run_dir, target):
+    run_dir = run_dir.resolve()
     rows = [json.loads(line) for path in sorted(run_dir.glob("samples_t*.jsonl"))
             for line in path.read_text().splitlines()]
     lines = ["# CPU Small-Work Benchmark Results", "", "- Suite: `cpu/small_work`",

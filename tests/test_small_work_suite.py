@@ -39,7 +39,7 @@ class SmallWorkSuiteTest(unittest.TestCase):
             run = Path(tmp) / 'data/results/amd-cpu/cpu/small_work/test'
             run.mkdir(parents=True)
             (run/'samples_t1.jsonl').write_text('\n'.join(map(json.dumps, [row, failed])))
-            suite.report(run, 'amd-cpu')
+            suite.report(Path(os.path.relpath(run)), 'amd-cpu')
             report = (run/'report.md').read_text()
             self.assertIn('100.00 | 50.00 | 50.0% | 10.00 | NOISY', report)
             self.assertIn('FAILED', report)
