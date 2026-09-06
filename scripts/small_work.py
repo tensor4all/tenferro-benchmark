@@ -215,8 +215,8 @@ class CaseContract:
             raise ContractError(f"{case_id}: unsupported api_tier {tier!r}")
         if tier == "prepared-setup" and phase != "setup":
             raise ContractError(f"{case_id}: prepared-setup requires setup phase")
-        if tier == "prepared-repeat" and phase != "execution":
-            raise ContractError(f"{case_id}: prepared-repeat requires execution phase")
+        if tier in {"prepared-repeat", "compiled-repeat"} and phase != "execution":
+            raise ContractError(f"{case_id}: {tier} requires execution phase")
         shape = value["shape"]
         if (not isinstance(shape, list) or not shape or
                 any(type(dim) is not int or dim < 1 for dim in shape)):

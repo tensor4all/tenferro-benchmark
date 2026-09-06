@@ -30,6 +30,17 @@ column-sum of A. Both gradient components, dtype and shape are checked; grad slo
 are cleared. At n2 an independent central-difference check perturbs every real and
 imaginary input component on both operands, catching conjugation/sign mistakes.
 
+## Separate compiled setup remains unbound
+
+The current canonical export binds `einsum.einsum.prepared.traced` to execution;
+it has no `einsum.einsum.prepare.traced` setup contract. Relabeling a compiled-repeat
+case as setup is rejected, not treated as compilation coverage. Before adding a
+setup producer, extend the library-owned inventory/export with an explicit setup
+contract and define whether it includes tracing, compilation and runtime building.
+The current `compiled_einsum` helper performs all three, so timing that helper must
+not be called compiler-only cost. Keep the new contract in the existing inventory,
+not a benchmark-side alias or a second registry.
+
 ## Compiled-repeat slice
 
 The n2/4/16 F64/C64 column-major `compiled-repeat` cases bind to

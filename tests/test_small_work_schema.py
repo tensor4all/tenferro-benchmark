@@ -71,7 +71,7 @@ class SmallWorkSchemaTests(unittest.TestCase):
         for n in (2, 4, 16):
             self.assertEqual({case.api_tier for case in cases if case.shape == (n, n)},
                              {"concrete-fresh", "concrete-shared", "eager-no-ad", "eager-ad", "prepared-setup", "prepared-repeat"})
-        for tier, wrong_phase in (("prepared-setup", "execution"), ("prepared-repeat", "setup")):
+        for tier, wrong_phase in (("prepared-setup", "execution"), ("prepared-repeat", "setup"), ("compiled-repeat", "setup")):
             case = dict(next(case for case in suite["cases"] if case["api_tier"] == tier))
             case["phase"] = wrong_phase
             with self.assertRaises(ValueError):
