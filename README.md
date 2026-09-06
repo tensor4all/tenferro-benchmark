@@ -21,6 +21,7 @@ live in git history only.
 | `linux-cpu` | `cpu/cpu_ops` | [result/linux-cpu/cpu/cpu_ops.md](result/linux-cpu/cpu/cpu_ops.md) |
 | `linux-cpu` | `cpu/linalg_jvp_vjp` | [result/linux-cpu/cpu/linalg_jvp_vjp.md](result/linux-cpu/cpu/linalg_jvp_vjp.md) |
 | `linux-cpu` | `cpu/permutation` | [result/linux-cpu/cpu/permutation.md](result/linux-cpu/cpu/permutation.md) |
+| `amd-cpu` (Linux devcontainer) | `cpu/small_work` | [result/amd-cpu/cpu/small_work.md](result/amd-cpu/cpu/small_work.md) |
 | `linux-cpu` | linalg JVP/JVP repro | [result/linux-cpu/cpu/linalg_jvp_jvp.md](result/linux-cpu/cpu/linalg_jvp_jvp.md) |
 | `nvidia-gpu` (CUDA devcontainer) | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
@@ -140,6 +141,45 @@ devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash -lc '
   BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_all.sh 1'
 ```
+
+### Small-work public API suite (`cpu/small_work`)
+
+Reuses the 154 cases from `feat/95-small-work` (`38b9a83`): F64
+add/einsum/solve/gather/reduce_sum and C64 einsum. Fresh/shared-session,
+eager no-AD/AD, prepared/compiled, and borrowed-layout routes remain separate.
+No cross-library equivalents or automatic performance gates are added.
+
+```bash
+devcontainer up --workspace-folder .
+devcontainer exec --workspace-folder . bash -lc '
+  TENFERRO_CPU_FEATURES=system-mkl TENFERRO_CPU_BACKEND_KIND=blas \
+  BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_small_work.sh 1 4'
+
+# Selected case (also overwrites the latest report; run the full suite last):
+devcontainer exec --workspace-folder . bash -lc '
+  TENFERRO_CPU_FEATURES=system-mkl TENFERRO_CPU_BACKEND_KIND=blas \
+  BENCH_INSTANCE=add_f64_concrete_fresh ./scripts/run_small_work.sh 1'
+```
+
+Follow the existing checkout-freshness policy in [AGENTS.md](AGENTS.md).
+For a worktree whose Git directory is not mounted in the container, pass
+`--remote-env BENCHMARK_COMMIT="$(git rev-parse HEAD)"` to `devcontainer exec`.
+The CLI can also be invoked as `npx --yes @devcontainers/cli`.
+
+`BENCH_INSTANCE` accepts comma-separated case IDs; list them using
+`python scripts/suite_instances.py --suite-file benchmarks/cpu/small_work.yaml --format lines`.
+The suite is included in multi-thread-count `run_all.sh` calls (disable with
+`RUN_SMALL_WORK_SUITE=0`), or opt in with `RUN_SMALL_WORK_SUITE=1` for a
+single-thread-count call. Standalone collection avoids rerunning other suites.
+
+Numerical values, solve residuals, and applicable AD gradients are checked
+outside timing. The report records batch-normalized median/IQR in ns, CoV,
+chain totals versus per-operation normalization, and timing boundaries.
+Preparation is excluded from prepared execution rows and measured separately.
+Noisy rows remain visible. Failed cases have no latency and the runner exits
+nonzero. Raw samples and metadata are retained under
+`data/results/<target_profile>/cpu/small_work/<timestamp>/`; the generated
+latest report is `result/<target_profile>/cpu/small_work.md`.
 
 ### CPU permutation suite (`cpu/permutation`)
 
