@@ -1,5 +1,19 @@
 # Issue 95: small-work suite
 
+## Real stride-zero broadcast inputs
+
+Added six F64 n2/4/16 borrowed fresh/shared broadcast cases. TypedTensorView has
+shape[n,n], strides[1,0] and only n physical elements per operand. Correctness
+uses independently expanded dense matrices and the host product oracle. Positive
+B column sums avoid a degenerate all-zero n4 product. No owned tensor is relabeled
+as broadcast, and input/view construction remains outside timing.
+
+Rust17, Python97, strict Clippy and all102 actual correctness/descriptor/schema
+checks passed; old96 cases are unchanged. Tests verify physical length, strides
+and values in fresh/shared sessions. This is no performance claim; C64 borrowed,
+other families and rank/input-count/changing-metadata/default-thread scenarios,
+#96 workflow and final merge obligations remain incomplete.
+
 ## Representative linalg solve
 
 Added six F64 n2/4/16 concrete fresh/shared solve cases with the existing

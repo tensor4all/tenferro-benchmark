@@ -163,6 +163,26 @@ fn einsum_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Erro
     ))
 }
 
+fn broadcast_einsum_inputs(
+    size: usize,
+) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Error + Send + Sync>> {
+    let n = matrix_dimension(size)?;
+    let (lhs, rhs, _) = einsum_inputs(size)?;
+    let a = lhs.as_slice::<f64>()?[..n].repeat(n);
+    // Positive B column sums avoid an all-zero product for the n4 fixture.
+    let b = rhs.as_slice::<f64>()?[..n]
+        .iter()
+        .map(|x| x + 1.0)
+        .collect::<Vec<_>>()
+        .repeat(n);
+    let expected = matmul_reference(n, &a, &b);
+    Ok((
+        Tensor::from_vec_col_major(vec![n, n], a)?,
+        Tensor::from_vec_col_major(vec![n, n], b)?,
+        expected,
+    ))
+}
+
 fn matmul_reference<T>(n: usize, a: &[T], b: &[T]) -> Vec<T>
 where
     T: Copy + Default + std::ops::AddAssign + std::ops::Mul<Output = T>,
@@ -307,6 +327,7 @@ impl BorrowedEinsumInputs {
         let (strides, offset) = match layout {
             "col_major_contiguous" => ([1, n as isize], 0),
             "row_major_contiguous" => ([n as isize, 1], 0),
+            "broadcast" => ([1, 0], 0),
             "strided" => ([2, (2 * n + 1) as isize], 1),
             _ => return Err(format!("unsupported borrowed layout: {layout}").into()),
         };
@@ -1193,6 +1214,37 @@ mod tests {
     }
 
     #[test]
+    fn borrowed_broadcast_uses_stride_zero_and_compact_physical_storage() {
+        for size in [4, 16, 256] {
+            let n = matrix_dimension(size).unwrap();
+            let (lhs, rhs, expected) = broadcast_einsum_inputs(size).unwrap();
+            assert!(expected.iter().any(|x| x.abs() > 0.1));
+            let fixture = BorrowedEinsumInputs::new(&lhs, &rhs, "broadcast").unwrap();
+            assert_eq!(fixture.storage[0].len(), n);
+            assert_eq!(fixture.storage[1].len(), n);
+            let views = fixture.views().unwrap();
+            for view in &views {
+                assert_eq!(view.shape(), &[n, n]);
+                assert_eq!(view.strides(), &[1, 0]);
+            }
+            let mut backend = CpuBackend::new();
+            backend
+                .with_backend_session(|session| {
+                    check_tensor_shape(&borrowed_einsum(&views, session)?, &expected, &[n, n])?;
+                    Ok::<_, Box<dyn Error + Send + Sync>>(())
+                })
+                .unwrap();
+            backend
+                .with_backend_session(|session| {
+                    check_tensor_shape(&borrowed_einsum(&views, session)?, &expected, &[n, n])?;
+                    check_tensor_shape(&borrowed_einsum(&views, session)?, &expected, &[n, n])?;
+                    Ok::<_, Box<dyn Error + Send + Sync>>(())
+                })
+                .unwrap();
+        }
+    }
+
+    #[test]
     fn borrowed_einsum_layouts_match_reference_in_fresh_and_shared_sessions() {
         for size in [4, 16, 256] {
             let (lhs, rhs, expected) = einsum_inputs(size).unwrap();
@@ -1396,7 +1448,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let (lhs, rhs, expected_values) = if dtype == "c64" {
         complex_einsum_inputs(size)?
     } else {
-        let (lhs, rhs, values) = if operation == "einsum" {
+        let (lhs, rhs, values) = if operation == "einsum" && layout == "broadcast" {
+            broadcast_einsum_inputs(size)?
+        } else if operation == "einsum" {
             einsum_inputs(size)?
         } else if operation == "solve" {
             solve_inputs(size)?

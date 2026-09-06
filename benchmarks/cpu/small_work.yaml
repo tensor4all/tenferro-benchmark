@@ -2854,3 +2854,207 @@ cases:
       - session_entry_exit
       - shared_admission_exit
       - correctness_check
+  - id: einsum_f64_borrowed-fresh_n2_broadcast_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: borrowed-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: broadcast
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_borrowed-shared_n2_broadcast_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: borrowed-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: broadcast
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_f64_borrowed-fresh_n4_broadcast_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: borrowed-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: broadcast
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_borrowed-shared_n4_broadcast_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: borrowed-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: broadcast
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_f64_borrowed-fresh_n16_broadcast_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: borrowed-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: broadcast
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_borrowed-shared_n16_broadcast_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: borrowed-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: broadcast
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
