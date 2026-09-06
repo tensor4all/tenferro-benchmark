@@ -1754,6 +1754,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     // before moving it into an eager runtime where applicable.
     let backend = CpuBackend::new();
     let effective_thread_budget = backend.num_threads();
+    let backend_execution_mode = format!("{:?}", backend.execution_info().execution_mode());
     let rayon_num_threads = std::env::var("RAYON_NUM_THREADS").ok();
     let provider = format!("{:?}", backend.kind()).to_ascii_lowercase();
     let mut descriptor = case_descriptor(
@@ -1959,6 +1960,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "affinity": expected_mask, "declared_thread_budget": declared_threads,
         "effective_thread_budget": effective_thread_budget,
         "backend_constructor": "CpuBackend::new", "rayon_num_threads": rayon_num_threads,
+        "backend_execution_mode": backend_execution_mode,
         "thread_affinity_observations": {"after_correctness": correctness_observed, "after_warmup": [], "after_timing": []},
         "observed_thread_count": correctness_observed.len(), "samples": Vec::<Sample>::new(),
         "timing_validity": if mode == "correctness-only" { "inconclusive" } else { "invalid" },

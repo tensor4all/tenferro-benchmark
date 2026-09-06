@@ -23,6 +23,21 @@ requires effective budget equality. Correctness-only can report a different
 actual budget when no eligible placement exists, without pretending it is a1T
 performance result. OS task count is not the backend budget.
 
+Also record `backend_execution_mode` from
+`backend.execution_info().execution_mode()` before moving the backend. This is
+observed diagnostic information, not a new acceptance gate: constructor spelling
+alone does not prove the resolved mode, since default construction can fall back.
+Do not require `Managed` indiscriminately: BLAS may report
+`ProviderDefaultExclusive`.
+
+For the future explicit budget-one control, `CpuBackend::with_threads(1)` is NOT
+an unpinned alias on Linux: it uses the managed construction path. The existing
+`CpuBackend::from_context(Arc::new(CpuContext::with_threads(1)?))` uses a context
+with no pinned CPUs and no Rayon pool at budget one. Its backend mode is
+`Compatibility` for native/Faer, or `ProviderDefaultExclusive` for BLAS. Outer
+harness affinity remains a separate constraint. This control is not yet wired
+into the runner; do not relabel default records as that control.
+
 Do not change library constructors, placement/admission, default thread policy,
 worker pools or provider behavior. Existing1T/default correctness remains valid;
 new4T correctness proves the corrected observation path, not performance gains.

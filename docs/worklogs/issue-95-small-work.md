@@ -1,5 +1,19 @@
 # Issue 95: small-work suite
 
+## Actual execution-mode diagnostic
+
+Child receipts now include backend_execution_mode from the existing
+execution_info getter, outside all timers. Constructor spelling alone does not
+identify fallback or provider-owned execution. This is diagnostic metadata, not
+a new readiness gate or an implemented unpinned control. The thread-evidence
+design records why with_threads(1) is not an unpinned alias on Linux.
+
+Clippy/build/rustfmt passed. One real filtered correctness CLI in the existing
+container, outer CPU0 and Rayon override unset, reported CpuBackend::new,
+Managed, effective budget1 and successful numerical validation. No numerical,
+Python gate or protocol behavior changed; previous154 numerical and103 Python
+checks remain scoped evidence. No timing was collected.
+
 ## Owned F64 reduction coverage
 
 Added six core.reduce_sum.ordinary.concrete cases:4/16/256 input elements,
