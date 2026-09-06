@@ -1,5 +1,21 @@
 # Issue 95: small-work suite
 
+## Representative linalg solve
+
+Added six F64 n2/4/16 concrete fresh/shared solve cases with the existing
+TensorLinalgExt API and linalg.solve.ordinary.concrete contract. No eager alias
+or new dependency was introduced. A is dense off-diagonal, nonsymmetric and
+strictly diagonally dominant; B is built from a known nonuniform X by the
+independent host matrix-product oracle. Correctness checks full X and A X=B.
+Tests check both session paths, unchanged A/B, dominance, and a wrong RHS that
+passes the solution-reference check but fails the residual check.
+
+Rust16, Python97, strict Clippy and actual all96 correctness/descriptor/result
+schema checks passed against library38fbc7a1. All previous90 case definitions
+are unchanged. Linalg is now represented, but this is not full family/layout/AD
+coverage or performance acceptance. Reduction, indexing, metadata/view and other
+missing scenarios, #96 completion and final PR merges remain outstanding.
+
 ## Traced setup producer integration
 
 Split trace_compile_einsum from Runtime construction and added six F64/C64

@@ -196,6 +196,48 @@ fn complex_einsum_inputs(
     ))
 }
 
+fn solve_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Error + Send + Sync>> {
+    let n = matrix_dimension(size)?;
+    let mut a = vec![0.0; size];
+    let mut x = vec![0.0; size];
+    for j in 0..n {
+        for i in 0..n {
+            a[i + n * j] = if i == j {
+                n as f64 + 2.0 + i as f64 / 8.0
+            } else {
+                (1 + (3 * i + 5 * j) % 7) as f64 / 32.0
+            };
+            x[i + n * j] =
+                ((3 * i + 5 * j) % 13) as f64 / 16.0 - 6.0 / 16.0 + (i as f64 - j as f64) / 64.0;
+        }
+    }
+    let b = matmul_reference(n, &a, &x);
+    Ok((
+        Tensor::from_vec_col_major(vec![n, n], a)?,
+        Tensor::from_vec_col_major(vec![n, n], b)?,
+        x,
+    ))
+}
+
+fn check_solve_result(
+    output: &Tensor,
+    a: &Tensor,
+    b: &Tensor,
+    expected: &Tensor,
+) -> Result<f64, Box<dyn Error + Send + Sync>> {
+    let value = check_tensor_reference(output, expected)?;
+    let product = Tensor::from_vec_col_major(
+        a.shape().to_vec(),
+        matmul_reference(
+            a.shape()[0],
+            a.as_slice::<f64>()?,
+            output.as_slice::<f64>()?,
+        ),
+    )?;
+    check_tensor_reference(&product, b)?;
+    Ok(value)
+}
+
 fn trace_compile_einsum(
     n: usize,
     dtype: DType,
@@ -320,9 +362,11 @@ fn concrete_operation(
     rhs: &Tensor,
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
     use tenferro_einsum::TensorEinsumExt;
+    use tenferro_linalg::TensorLinalgExt;
     Ok(match operation {
         "add" => lhs.add(rhs, session)?,
         "einsum" => [lhs, rhs].einsum("ij,jk->ik", session)?,
+        "solve" => lhs.solve(rhs, session)?,
         _ => return Err(format!("unsupported operation: {operation}").into()),
     })
 }
@@ -388,7 +432,10 @@ fn case_descriptor(
                     | "compiled-repeat"
                     | "compiled-setup"
             ));
-    if !matches!(operation, "add" | "einsum") || !supported_dtype || !matches!(size, 4 | 16 | 256) {
+    if !matches!(operation, "add" | "einsum" | "solve")
+        || !supported_dtype
+        || !matches!(size, 4 | 16 | 256)
+    {
         return Err(format!(
             "unsupported small-work selector: operation={operation}, dtype={dtype}"
         )
@@ -404,8 +451,11 @@ fn case_descriptor(
             format!("workflow {workflow} requires calls_per_workflow={expected_calls}").into(),
         );
     }
-    if operation == "einsum" && workflow != "single" {
-        return Err("einsum currently requires the single workflow".into());
+    if matches!(operation, "einsum" | "solve") && workflow != "single" {
+        return Err(format!("{operation} currently requires the single workflow").into());
+    }
+    if operation == "solve" && !matches!(api_tier, "concrete-fresh" | "concrete-shared") {
+        return Err("solve currently requires a concrete fresh/shared tier".into());
     }
     if api_tier.starts_with("borrowed-") && operation != "einsum" {
         return Err("borrowed tiers require einsum".into());
@@ -522,6 +572,12 @@ fn case_descriptor(
                 format!("einsum.einsum.ordinary.{surface}")
             },
             "einsum",
+            vec![matrix_dimension(size)?, matrix_dimension(size)?],
+        )
+    } else if operation == "solve" {
+        (
+            "linalg.solve.ordinary.concrete".to_string(),
+            "linalg",
             vec![matrix_dimension(size)?, matrix_dimension(size)?],
         )
     } else {
@@ -963,6 +1019,65 @@ mod tests {
     }
 
     #[test]
+    fn concrete_solve_matches_known_solution_and_residual_without_mutation() {
+        for size in [4, 16, 256] {
+            let n = matrix_dimension(size).unwrap();
+            let (a, b, x) = solve_inputs(size).unwrap();
+            let expected = Tensor::from_vec_col_major(vec![n, n], x).unwrap();
+            let before_a = a.as_slice::<f64>().unwrap().to_vec();
+            let before_b = b.as_slice::<f64>().unwrap().to_vec();
+            assert_ne!(before_a[1], before_a[n]);
+            for i in 0..n {
+                let off_diagonal: f64 = (0..n)
+                    .filter(|&j| j != i)
+                    .map(|j| before_a[i + n * j].abs())
+                    .sum();
+                assert!(before_a[i + n * i] > off_diagonal);
+                assert!((0..n)
+                    .filter(|&j| j != i)
+                    .all(|j| before_a[i + n * j] != 0.0));
+            }
+            let mut backend = CpuBackend::new();
+            let result = concrete_fresh("solve", &mut backend, &a, &b).unwrap();
+            check_solve_result(&result, &a, &b, &expected).unwrap();
+            assert_eq!(a.as_slice::<f64>().unwrap(), &before_a);
+            assert_eq!(b.as_slice::<f64>().unwrap(), &before_b);
+            backend
+                .with_backend_session(|session| {
+                    let result = concrete_operation("solve", session, &a, &b)?;
+                    check_solve_result(&result, &a, &b, &expected)?;
+                    Ok::<_, Box<dyn Error + Send + Sync>>(())
+                })
+                .unwrap();
+            assert_eq!(a.as_slice::<f64>().unwrap(), &before_a);
+            assert_eq!(b.as_slice::<f64>().unwrap(), &before_b);
+            let mut wrong_b = before_b.clone();
+            wrong_b[0] += 1.0;
+            let wrong_b = Tensor::from_vec_col_major(vec![n, n], wrong_b).unwrap();
+            assert!(check_solve_result(&expected, &a, &wrong_b, &expected).is_err());
+            for tier in ["concrete-fresh", "concrete-shared"] {
+                let descriptor =
+                    case_descriptor("solve", "f64", tier, "single", size, 1, "faer").unwrap();
+                assert_eq!(descriptor["contract_id"], "linalg.solve.ordinary.concrete");
+                assert_eq!(descriptor["family"], "linalg");
+                assert_eq!(descriptor["shape"], serde_json::json!([n, n]));
+            }
+        }
+        assert!(case_descriptor("solve", "c64", "concrete-fresh", "single", 4, 1, "faer").is_err());
+        assert!(case_descriptor("solve", "f64", "eager-no-ad", "single", 4, 1, "faer").is_err());
+        assert!(case_descriptor(
+            "solve",
+            "f64",
+            "concrete-fresh",
+            "dependent10",
+            4,
+            10,
+            "faer"
+        )
+        .is_err());
+    }
+
+    #[test]
     fn complex_einsum_ad_matches_hermitian_and_directional_oracles() {
         for size in [4, 16, 256] {
             let (a, b, expected) = complex_einsum_inputs(size).unwrap();
@@ -1283,6 +1398,8 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     } else {
         let (lhs, rhs, values) = if operation == "einsum" {
             einsum_inputs(size)?
+        } else if operation == "solve" {
+            solve_inputs(size)?
         } else {
             inputs(size, calls)?
         };
@@ -1351,15 +1468,19 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             Vec::new()
         }
     };
+    let check_concrete = |output: &Tensor| {
+        if operation == "solve" {
+            check_solve_result(output, &lhs, &rhs, &expected_values)
+        } else {
+            check_tensor_reference(output, &expected_values)
+        }
+    };
     let after_correctness = match api_tier.as_str() {
         "concrete-fresh" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
-            check_tensor_reference(
-                &add_chain(&lhs, &rhs, calls, |a, b| {
-                    concrete_fresh(&operation, backend, a, b)
-                })?,
-                &expected_values,
-            )?
+            check_concrete(&add_chain(&lhs, &rhs, calls, |a, b| {
+                concrete_fresh(&operation, backend, a, b)
+            })?)?
         }
         "compiled-repeat" | "compiled-setup" => {
             let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
@@ -1389,12 +1510,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "concrete-shared" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
             backend.with_backend_session(|session| {
-                check_tensor_reference(
-                    &add_chain(&lhs, &rhs, calls, |a, b| {
-                        concrete_operation(&operation, session, a, b)
-                    })?,
-                    &expected_values,
-                )
+                check_concrete(&add_chain(&lhs, &rhs, calls, |a, b| {
+                    concrete_operation(&operation, session, a, b)
+                })?)
             })?
         }
         "eager-no-ad" => {

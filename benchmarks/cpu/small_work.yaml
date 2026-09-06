@@ -1,7 +1,7 @@
 schema_version: 2
 suite_id: cpu/small_work
 title: CPU small-work public boundary contracts
-description: F64 add/einsum and C64 concrete/prepared/runtime einsum, including F64 borrowed layouts.
+description: F64 add/einsum/solve and C64 concrete/prepared/runtime einsum, including F64 borrowed layouts.
 contract_version: 2
 protocol:
   warmups: 1
@@ -2649,4 +2649,208 @@ cases:
       - input_construction
       - runtime_construction
       - input_bindings
+      - correctness_check
+  - id: solve_f64_concrete-fresh_n2_single
+    contract_id: linalg.solve.ordinary.concrete
+    family: linalg
+    surface: concrete
+    operation: solve
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - solve
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - solve
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: solve_f64_concrete-shared_n2_single
+    contract_id: linalg.solve.ordinary.concrete
+    family: linalg
+    surface: concrete
+    operation: solve
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - solve
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - solve
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: solve_f64_concrete-fresh_n4_single
+    contract_id: linalg.solve.ordinary.concrete
+    family: linalg
+    surface: concrete
+    operation: solve
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - solve
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - solve
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: solve_f64_concrete-shared_n4_single
+    contract_id: linalg.solve.ordinary.concrete
+    family: linalg
+    surface: concrete
+    operation: solve
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - solve
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - solve
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: solve_f64_concrete-fresh_n16_single
+    contract_id: linalg.solve.ordinary.concrete
+    family: linalg
+    surface: concrete
+    operation: solve
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - solve
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - solve
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: solve_f64_concrete-shared_n16_single
+    contract_id: linalg.solve.ordinary.concrete
+    family: linalg
+    surface: concrete
+    operation: solve
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - solve
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - solve
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
       - correctness_check

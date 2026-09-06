@@ -90,6 +90,21 @@ class SmallWorkSchemaTests(unittest.TestCase):
                 self.assertEqual(case.layout, "col_major_contiguous")
                 self.assertEqual(case.workflow, "single")
 
+    def test_solve_matrix_preserves_linalg_and_session_boundaries(self):
+        suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
+        cases = [case for case in validate_suite_contract(suite) if case.operation == "solve"]
+        self.assertEqual(len(cases), 6)
+        for n in (2, 4, 16):
+            self.assertEqual({case.api_tier for case in cases if case.shape == (n, n)}, {"concrete-fresh", "concrete-shared"})
+        for case in cases:
+            self.assertEqual(case.contract_id, "linalg.solve.ordinary.concrete")
+            self.assertEqual(case.family, "linalg")
+            self.assertEqual(case.surface, "concrete")
+            self.assertEqual(case.dtype, "f64")
+            self.assertEqual(case.calls_per_workflow, 1)
+            self.assertIn("solve", case.scope_timer)
+            self.assertEqual("session_entry_exit" in case.scope_timer, case.api_tier == "concrete-fresh")
+
     def test_complex_prepared_matrix_keeps_setup_separate(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
         cases = [case for case in validate_suite_contract(suite)
