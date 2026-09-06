@@ -146,8 +146,10 @@ fn matrix_dimension(size: usize) -> Result<usize, Box<dyn Error + Send + Sync>> 
     match size {
         4 => Ok(2),
         16 => Ok(4),
+        64 => Ok(8),
         256 => Ok(16),
-        _ => Err("einsum requires square matrices of dimension 2, 4 or 16".into()),
+        1024 => Ok(32),
+        _ => Err("matrix dimension must be 2, 4, 8, 16 or 32".into()),
     }
 }
 
@@ -455,7 +457,7 @@ fn case_descriptor(
             ));
     if !matches!(operation, "add" | "einsum" | "solve")
         || !supported_dtype
-        || !matches!(size, 4 | 16 | 256)
+        || !(matches!(size, 4 | 16 | 256) || (operation == "einsum" && matches!(size, 64 | 1024)))
     {
         return Err(format!(
             "unsupported small-work selector: operation={operation}, dtype={dtype}"
@@ -1036,6 +1038,44 @@ mod tests {
             .unwrap();
             assert_eq!(repeat["contract_id"], "einsum.einsum.prepared.concrete");
             assert_eq!(repeat["phase"], "execution");
+        }
+    }
+
+    #[test]
+    fn requested_binary_sizes_cover_real_complex_prepare_and_ordinary() {
+        for (size, n) in [(64, 8), (1024, 32)] {
+            for dtype in ["f64", "c64"] {
+                let (a, b, expected) = if dtype == "f64" {
+                    let (a, b, values) = einsum_inputs(size).unwrap();
+                    (
+                        a,
+                        b,
+                        Tensor::from_vec_col_major(vec![n, n], values).unwrap(),
+                    )
+                } else {
+                    complex_einsum_inputs(size).unwrap()
+                };
+                let mut backend = CpuBackend::new();
+                let output = concrete_fresh("einsum", &mut backend, &a, &b).unwrap();
+                check_tensor_reference(&output, &expected).unwrap();
+                let plan =
+                    tenferro_einsum::ConcreteEinsumPlan::prepare([&a, &b], "ij,jk->ik").unwrap();
+                backend
+                    .with_backend_session(|session| {
+                        check_tensor_reference(
+                            &concrete_operation("einsum", session, &a, &b)?,
+                            &expected,
+                        )?;
+                        check_tensor_reference(&plan.execute([&a, &b], session)?, &expected)?;
+                        Ok::<_, Box<dyn Error + Send + Sync>>(())
+                    })
+                    .unwrap();
+                for tier in ["concrete-fresh", "concrete-shared", "prepared-setup"] {
+                    let descriptor =
+                        case_descriptor("einsum", dtype, tier, "single", size, 1, "faer").unwrap();
+                    assert_eq!(descriptor["shape"], serde_json::json!([n, n]));
+                }
+            }
         }
     }
 

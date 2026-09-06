@@ -2,8 +2,8 @@
 
 ## C64 concrete and prepared slices
 
-Twelve column-major C64 cases use the existing concrete fresh/shared and
-prepared-setup/repeat paths at n2/4/16. Inputs have nonzero, nonuniform imaginary components. The independent
+Twenty column-major C64 cases use the existing concrete fresh/shared and
+prepared-setup/repeat paths at n2/4/8/16/32. Inputs have nonzero, nonuniform imaginary components. The independent
 triple-loop oracle uses complex multiplication without conjugation; correctness
 checks dtype, shape, finiteness and both components of every element. The n2
 reference has a known-value assertion. Reference values are stored in a Tensor
@@ -29,6 +29,15 @@ derivative of Re(sum(A B)): dA is the conjugated row-sum of B and dB the conjuga
 column-sum of A. Both gradient components, dtype and shape are checked; grad slots
 are cleared. At n2 an independent central-difference check perturbs every real and
 imaginary input component on both operands, catching conjugation/sign mistakes.
+
+## Required binary dimensions
+
+#1761 specifies n2/8/32, not just the original n2/4/16 matrix. The suite retains
+all original cases and adds F64/C64 n8/n32 ordinary concrete fresh/shared,
+prepared-setup and prepared-repeat cases. Prepared repetition is an explicit
+non-regression control. Independent real/complex numerical checks cover these
+sizes; their release timings remain unmeasured. This does not establish the
+separately required rank, orientation, N-ary, larger-work or optimizer-seam evidence.
 
 ## Separate traced setup
 
@@ -60,10 +69,10 @@ inside. Correctness must run original, swapped, then original inputs on the same
 program against independent matmul references. This covers execution, not the
 separate traced-setup timing acceptance, which remains unmeasured.
 
-The suite includes 18 owned-input, 24 borrowed-input and three compiled-repeat
+The suite includes 26 owned-input, 24 borrowed-input and three compiled-repeat
 `ij,jk->ik` cases at dimensions 2, 4 and 16 alongside the existing 24 add workflows
-plus three F64 traced-setup and twenty-four C64 concrete/prepared/runtime cases (96 add/einsum cases). Six F64 [solve cases](small-work-solve-design.md)
-bring the suite total to 102. No full family/layout/dtype coverage
+plus three F64 traced-setup and thirty-two C64 concrete/prepared/runtime cases (112 add/einsum cases). Six F64 [solve cases](small-work-solve-design.md)
+bring the suite total to 118. No full family/layout/dtype coverage
 or performance acceptance is claimed by this matrix alone.
 
 Each size has concrete-fresh, concrete-shared, eager-no-ad, eager-ad,

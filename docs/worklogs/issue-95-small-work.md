@@ -1,5 +1,20 @@
 # Issue 95: small-work suite
 
+## #1761 required dimensions audit
+
+Re-read current #1760–1763 issue bodies. #1761 explicitly requests n2/8/32;
+the previous n2/4/16 suite alone did not meet that matrix. Added16 F64/C64 n8/n32
+concrete fresh/shared and prepared setup/repeat cases. Repetition is retained as
+a non-regression control, and none of the old102 cases or noisy trials is replaced.
+Other operation selectors retain their previous supported sizes.
+
+Rust18, Python98, strict Clippy and actual all118 correctness/descriptor/schema
+checks passed. New real/complex tests exercise direct sessions and prepared
+execution against the independent product oracle. Performance at these sizes
+is still unmeasured. The audit also confirmed that the optimizer behavioral seam,
+orientation/rank/N-ary/larger-work controls, #1762 normal/default-setting work and
+#1763 consumer guidance/reference publication remain separate obligations.
+
 ## Real stride-zero broadcast inputs
 
 Added six F64 n2/4/16 borrowed fresh/shared broadcast cases. TypedTensorView has

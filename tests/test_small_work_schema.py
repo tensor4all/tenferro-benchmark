@@ -67,7 +67,7 @@ class SmallWorkSchemaTests(unittest.TestCase):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
         cases = [case for case in validate_suite_contract(suite)
                  if case.operation == "einsum" and case.dtype == "f64" and not case.api_tier.startswith("borrowed-") and not case.api_tier.startswith("compiled-")]
-        self.assertEqual(len(cases), 18)
+        self.assertEqual(len(cases), 26)
         for n in (2, 4, 16):
             self.assertEqual({case.api_tier for case in cases if case.shape == (n, n)},
                              {"concrete-fresh", "concrete-shared", "eager-no-ad", "eager-ad", "prepared-setup", "prepared-repeat"})
@@ -81,14 +81,22 @@ class SmallWorkSchemaTests(unittest.TestCase):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
         cases = [case for case in validate_suite_contract(suite)
                  if case.dtype == "c64" and case.api_tier in {"concrete-fresh", "concrete-shared"}]
-        self.assertEqual(len(cases), 6)
-        for n in (2, 4, 16):
+        self.assertEqual(len(cases), 10)
+        for n in (2, 4, 8, 16, 32):
             selected = [case for case in cases if case.shape == (n, n)]
             self.assertEqual({case.api_tier for case in selected}, {"concrete-fresh", "concrete-shared"})
             for case in selected:
                 self.assertEqual(case.contract_id, "einsum.einsum.ordinary.concrete")
                 self.assertEqual(case.layout, "col_major_contiguous")
                 self.assertEqual(case.workflow, "single")
+
+    def test_1761_required_sizes_include_preparation_and_execution_controls(self):
+        suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
+        cases = validate_suite_contract(suite)
+        for dtype in ("f64", "c64"):
+            for n in (2, 8, 32):
+                selected = [case for case in cases if case.operation == "einsum" and case.dtype == dtype and case.shape == (n, n)]
+                self.assertTrue({"concrete-fresh", "concrete-shared", "prepared-setup", "prepared-repeat"} <= {case.api_tier for case in selected})
 
     def test_solve_matrix_preserves_linalg_and_session_boundaries(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
@@ -109,8 +117,8 @@ class SmallWorkSchemaTests(unittest.TestCase):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
         cases = [case for case in validate_suite_contract(suite)
                  if case.dtype == "c64" and case.api_tier.startswith("prepared-")]
-        self.assertEqual(len(cases), 6)
-        for n in (2, 4, 16):
+        self.assertEqual(len(cases), 10)
+        for n in (2, 4, 8, 16, 32):
             selected = [case for case in cases if case.shape == (n, n)]
             self.assertEqual({case.api_tier for case in selected}, {"prepared-setup", "prepared-repeat"})
             for case in selected:

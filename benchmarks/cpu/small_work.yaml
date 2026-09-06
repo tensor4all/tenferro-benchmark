@@ -3058,3 +3058,547 @@ cases:
       - session_entry_exit
       - shared_admission_exit
       - correctness_check
+  - id: einsum_f64_concrete-fresh_n8_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 8
+    - 8
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_concrete-shared_n8_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 8
+    - 8
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_f64_prepared-setup_n8_single
+    contract_id: einsum.einsum.prepare.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: setup
+    api_tier: prepared-setup
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 8
+    - 8
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - prepare
+      - plan_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - prepare
+      - plan_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_prepared-repeat_n8_single
+    contract_id: einsum.einsum.prepared.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: prepared-repeat
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 8
+    - 8
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - prepared_execute
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - prepared_execute
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_f64_concrete-fresh_n32_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 32
+    - 32
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_concrete-shared_n32_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 32
+    - 32
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_f64_prepared-setup_n32_single
+    contract_id: einsum.einsum.prepare.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: setup
+    api_tier: prepared-setup
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 32
+    - 32
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - prepare
+      - plan_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - prepare
+      - plan_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_f64_prepared-repeat_n32_single
+    contract_id: einsum.einsum.prepared.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: prepared-repeat
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 32
+    - 32
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - prepared_execute
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - prepared_execute
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_c64_concrete-fresh_n8_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 8
+    - 8
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_c64_concrete-shared_n8_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 8
+    - 8
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_c64_prepared-setup_n8_single
+    contract_id: einsum.einsum.prepare.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: setup
+    api_tier: prepared-setup
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 8
+    - 8
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - prepare
+      - plan_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - prepare
+      - plan_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_c64_prepared-repeat_n8_single
+    contract_id: einsum.einsum.prepared.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: prepared-repeat
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 8
+    - 8
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - prepared_execute
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - prepared_execute
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_c64_concrete-fresh_n32_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 32
+    - 32
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_c64_concrete-shared_n32_single
+    contract_id: einsum.einsum.ordinary.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 32
+    - 32
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: einsum_c64_prepared-setup_n32_single
+    contract_id: einsum.einsum.prepare.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: setup
+    api_tier: prepared-setup
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 32
+    - 32
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - prepare
+      - plan_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - prepare
+      - plan_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: einsum_c64_prepared-repeat_n32_single
+    contract_id: einsum.einsum.prepared.concrete
+    family: einsum
+    surface: concrete
+    operation: einsum
+    phase: execution
+    api_tier: prepared-repeat
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 32
+    - 32
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - prepared_execute
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - prepared_execute
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - plan_preparation
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
