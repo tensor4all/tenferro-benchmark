@@ -1,5 +1,20 @@
 # Issue 95: small-work suite
 
+## C64 AD recording and numerical gradients
+
+Added n2/4/16 C64 eager-ad cases using the existing public recording path.
+Backward remains outside timing. Correctness checks complex gradients against
+conjugated analytic sums under the documented Hermitian convention and clears
+grad slots. A separate n2 central-difference test perturbs every real/imaginary
+component of both operands against the independent matrix-product oracle.
+
+Verification: 15 Rust tests, 95 Python tests, strict Clippy and all 84 actual
+correctness/descriptor/schema records passed; previous 81 cases are unchanged.
+An initial compile error identified that grad() returns an EagerTensor, corrected
+by explicit to_tensor() outside timing. No library AD rule was changed. C64
+borrowed layouts, other families, compile costs, accepted performance and final
+PR merges remain outstanding. This is not a backward performance measurement.
+
 ## Passive machine observations for component diagnostics
 
 Component timing now opts into bounded read-only machine observation in the

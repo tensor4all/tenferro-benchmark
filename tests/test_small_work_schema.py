@@ -118,6 +118,17 @@ class SmallWorkSchemaTests(unittest.TestCase):
             self.assertIn("input_bindings", case.scope_outside_timer)
             self.assertNotIn("trace_compile", case.scope_timer)
 
+    def test_complex_ad_matrix_times_recording_not_backward(self):
+        suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
+        cases = [case for case in validate_suite_contract(suite)
+                 if case.dtype == "c64" and case.api_tier == "eager-ad"]
+        self.assertEqual(len(cases), 3)
+        self.assertEqual({case.shape for case in cases}, {(2, 2), (4, 4), (16, 16)})
+        for case in cases:
+            self.assertEqual(case.contract_id, "einsum.einsum.ordinary.eager")
+            self.assertEqual(case.scope_timer, ("einsum_forward_recording", "output_materialization"))
+            self.assertIn("backward", case.scope_outside_timer)
+
     def test_complex_eager_matrix_does_not_claim_ad(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
         cases = [case for case in validate_suite_contract(suite)

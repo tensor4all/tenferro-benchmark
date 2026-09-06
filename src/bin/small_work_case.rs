@@ -377,6 +377,7 @@ fn case_descriptor(
                     | "prepared-setup"
                     | "prepared-repeat"
                     | "eager-no-ad"
+                    | "eager-ad"
                     | "compiled-repeat"
             ));
     if !matches!(operation, "add" | "einsum") || !supported_dtype || !matches!(size, 4 | 16 | 256) {
@@ -606,6 +607,39 @@ fn check_einsum_ad(
         {
             return Err("active AD gradient does not match analytic einsum gradient".into());
         }
+        input.clear_grad()?;
+    }
+    Ok(value)
+}
+
+fn check_complex_einsum_ad(
+    output: &EagerTensor,
+    lhs: &EagerTensor,
+    rhs: &EagerTensor,
+    a: &Tensor,
+    b: &Tensor,
+    expected: &Tensor,
+) -> Result<f64, Box<dyn Error + Send + Sync>> {
+    let value = check_tensor_reference(&output.to_tensor()?, expected)?;
+    output.reduce_sum(Some(&[0, 1]))?.backward()?;
+    let av = a.as_slice::<Complex64>()?;
+    let bv = b.as_slice::<Complex64>()?;
+    let n = a.shape()[0];
+    // Unit complex seed represents Re(sum(A B)) under the Hermitian convention.
+    let mut da = vec![Complex64::new(0.0, 0.0); n * n];
+    let mut db = da.clone();
+    for j in 0..n {
+        for i in 0..n {
+            da[i + n * j] = (0..n).map(|k| bv[j + n * k].conj()).sum();
+            db[j + n * i] = (0..n).map(|k| av[k + n * j].conj()).sum();
+        }
+    }
+    for (input, values) in [(lhs, da), (rhs, db)] {
+        let gradient = input
+            .grad()?
+            .ok_or("active complex einsum AD gradient is missing")?;
+        let expected = Tensor::from_vec_col_major(vec![n, n], values)?;
+        check_tensor_reference(&gradient.to_tensor()?, &expected)?;
         input.clear_grad()?;
     }
     Ok(value)
@@ -841,7 +875,7 @@ mod tests {
             assert!(check_tensor_reference(&invalid, &expected).is_err());
             assert!(check_tensor_reference(&expected, &invalid).is_err());
         }
-        for tier in ["eager-ad", "borrowed-fresh"] {
+        for tier in ["borrowed-fresh", "borrowed-shared"] {
             assert!(case_descriptor("einsum", "c64", tier, "single", 4, 1, "faer").is_err());
         }
     }
@@ -904,6 +938,58 @@ mod tests {
             .unwrap();
             assert_eq!(repeat["contract_id"], "einsum.einsum.prepared.concrete");
             assert_eq!(repeat["phase"], "execution");
+        }
+    }
+
+    #[test]
+    fn complex_einsum_ad_matches_hermitian_and_directional_oracles() {
+        for size in [4, 16, 256] {
+            let (a, b, expected) = complex_einsum_inputs(size).unwrap();
+            let ctx = EagerRuntime::with_cpu_backend(CpuBackend::new()).unwrap();
+            let (left, right, _) = complex_einsum_inputs(size).unwrap();
+            let lhs = EagerTensor::requires_grad_in(left, ctx.clone()).unwrap();
+            let rhs = EagerTensor::requires_grad_in(right, ctx).unwrap();
+            let output = eager_operation("einsum", &lhs, &rhs).unwrap();
+            check_complex_einsum_ad(&output, &lhs, &rhs, &a, &b, &expected).unwrap();
+            assert!(lhs.grad().unwrap().is_none());
+            assert!(rhs.grad().unwrap().is_none());
+            if size == 4 {
+                output
+                    .reduce_sum(Some(&[0, 1]))
+                    .unwrap()
+                    .backward()
+                    .unwrap();
+                let av = a.as_slice::<Complex64>().unwrap().to_vec();
+                let bv = b.as_slice::<Complex64>().unwrap().to_vec();
+                let loss = |a: &[Complex64], b: &[Complex64]| {
+                    matmul_reference(2, a, b).iter().map(|z| z.re).sum::<f64>()
+                };
+                let epsilon = 1e-6;
+                for (operand, input) in [(0, &lhs), (1, &rhs)] {
+                    let gradient = input.grad().unwrap().unwrap();
+                    for (index, g) in gradient.as_slice::<Complex64>().unwrap().iter().enumerate() {
+                        for (direction, component) in [
+                            (Complex64::new(1.0, 0.0), g.re),
+                            (Complex64::new(0.0, 1.0), g.im),
+                        ] {
+                            let evaluate = |sign: f64| {
+                                let (mut a, mut b) = (av.clone(), bv.clone());
+                                if operand == 0 {
+                                    a[index] += direction * (sign * epsilon);
+                                } else {
+                                    b[index] += direction * (sign * epsilon);
+                                }
+                                loss(&a, &b)
+                            };
+                            let derivative = (evaluate(1.0) - evaluate(-1.0)) / (2.0 * epsilon);
+                            assert!((derivative - component).abs() < 1e-8);
+                        }
+                    }
+                }
+            }
+            let descriptor =
+                case_descriptor("einsum", "c64", "eager-ad", "single", size, 1, "faer").unwrap();
+            assert_eq!(descriptor["contract_id"], "einsum.einsum.ordinary.eager");
         }
     }
 
@@ -1299,7 +1385,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "eager-ad" => {
             let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
             let value = add_chain(left, right, calls, |a, b| eager_operation(&operation, a, b))?;
-            if operation == "einsum" {
+            if operation == "einsum" && dtype == "c64" {
+                check_complex_einsum_ad(&value, left, right, &lhs, &rhs, &expected_values)?
+            } else if operation == "einsum" {
                 check_einsum_ad(
                     &value,
                     left,

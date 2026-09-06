@@ -12,7 +12,7 @@ Setup retains phase `setup` and provider `not-applicable`; its correctness check
 executes the resulting plan. Repeat retains phase `execution` and keeps preparation
 outside timing. Tests reuse a C64 plan with original/swapped/original inputs and
 reject mismatched dtype or rank. C64 eager-no-ad and compiled-repeat are covered
-below; C64 AD and borrowed inputs remain unsupported by this producer.
+below; C64 borrowed inputs remain unsupported by this producer.
 
 ## C64 runtime slice
 
@@ -20,7 +20,15 @@ C64 eager-no-ad and compiled-repeat use the same existing runtime APIs as F64.
 Eager inputs retain complex storage; compiled input specs take the actual tensor
 dtype instead of a hardcoded F64 dtype. The same compiled program is checked with
 original/swapped/original complex inputs. Trace/compile/runtime construction stays
-outside repetition, and this does not establish C64 AD or borrowed support.
+outside repetition. Borrowed C64 inputs remain a separate gap.
+
+The three C64 `eager-ad` cases time forward recording and output materialization,
+not backward. Correctness executes backward from sum(output) with the unit complex
+seed. Under the public Hermitian real-inner-product convention this checks the
+derivative of Re(sum(A B)): dA is the conjugated row-sum of B and dB the conjugated
+column-sum of A. Both gradient components, dtype and shape are checked; grad slots
+are cleared. At n2 an independent central-difference check perturbs every real and
+imaginary input component on both operands, catching conjugation/sign mistakes.
 
 ## Compiled-repeat slice
 
@@ -37,7 +45,7 @@ still-required separate compilation/setup-cost measurement.
 
 The suite includes 18 owned-input, 18 borrowed-input and three compiled-repeat
 `ij,jk->ik` cases at dimensions 2, 4 and 16 alongside the existing 24 add workflows
-plus eighteen C64 concrete/prepared/runtime cases (81 total). No full family/layout/dtype coverage
+plus twenty-one C64 concrete/prepared/runtime cases (84 total). No full family/layout/dtype coverage
 or performance acceptance is claimed by this matrix alone.
 
 Each size has concrete-fresh, concrete-shared, eager-no-ad, eager-ad,

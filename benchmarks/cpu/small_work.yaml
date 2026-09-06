@@ -2335,3 +2335,108 @@ cases:
       - runtime_construction
       - input_bindings
       - correctness_check
+  - id: einsum_c64_eager-ad_n2_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 2
+    - 2
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum_forward_recording
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+    scope:
+      timer:
+      - einsum_forward_recording
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+  - id: einsum_c64_eager-ad_n4_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum_forward_recording
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+    scope:
+      timer:
+      - einsum_forward_recording
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+  - id: einsum_c64_eager-ad_n16_single
+    contract_id: einsum.einsum.ordinary.eager
+    family: einsum
+    surface: eager
+    operation: einsum
+    phase: execution
+    api_tier: eager-ad
+    backend: tenferro-rs
+    dtype: c64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - einsum_forward_recording
+      - output_materialization
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
+    scope:
+      timer:
+      - einsum_forward_recording
+      - output_materialization
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - backward
+      - correctness_check
