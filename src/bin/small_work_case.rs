@@ -80,6 +80,10 @@ fn parse_cpu_list(value: &str) -> Vec<usize> {
     cpus
 }
 
+fn worker_is_confined(expected: &[usize], actual: &[usize]) -> bool {
+    !actual.is_empty() && actual.iter().all(|cpu| expected.contains(cpu))
+}
+
 fn thread_affinities(
     expected: Option<&[usize]>,
 ) -> Result<Vec<TaskAffinity>, Box<dyn Error + Send + Sync>> {
@@ -108,9 +112,9 @@ fn thread_affinities(
             .map(parse_cpu_list)
             .ok_or_else(|| format!("Cpus_allowed_list missing for live task {tid}"))?;
         if let Some(expected) = expected {
-            if cpus != expected {
+            if !worker_is_confined(expected, &cpus) {
                 return Err(format!(
-                    "live task affinity differs from selected CPUs (task {tid}, expected {:?}, observed {:?})",
+                    "live task affinity escapes selected CPUs or is empty (task {tid}, selected {:?}, observed {:?})",
                     expected, cpus
                 ).into());
             }
@@ -1381,6 +1385,16 @@ mod tests {
     }
 
     #[test]
+    fn worker_pinning_may_narrow_but_not_escape_the_outer_mask() {
+        assert!(worker_is_confined(&[0, 1], &[0]));
+        assert!(worker_is_confined(&[0, 1], &[1]));
+        assert!(worker_is_confined(&[0, 1], &[0, 1]));
+        assert!(!worker_is_confined(&[0, 1], &[]));
+        assert!(!worker_is_confined(&[0, 1], &[2]));
+        assert!(!worker_is_confined(&[0, 1], &[0, 2]));
+    }
+
+    #[test]
     fn complex_borrowed_layouts_preserve_components_and_physical_storage() {
         for size in [4, 16, 256] {
             let n = matrix_dimension(size).unwrap();
@@ -1675,6 +1689,8 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     // Construct exactly one CPU backend per process, and capture its actual provider
     // before moving it into an eager runtime where applicable.
     let backend = CpuBackend::new();
+    let effective_thread_budget = backend.num_threads();
+    let rayon_num_threads = std::env::var("RAYON_NUM_THREADS").ok();
     let provider = format!("{:?}", backend.kind()).to_ascii_lowercase();
     let mut descriptor = case_descriptor(
         &operation, &dtype, &api_tier, &workflow, size, calls, &provider,
@@ -1871,6 +1887,8 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "schema_version": 2, "suite_id": "cpu/small_work", "case_id": case_id,
         "provider": provider, "calls_per_workflow": calls, "correctness_status": correctness_status,
         "affinity": expected_mask, "declared_thread_budget": declared_threads,
+        "effective_thread_budget": effective_thread_budget,
+        "backend_constructor": "CpuBackend::new", "rayon_num_threads": rayon_num_threads,
         "thread_affinity_observations": {"after_correctness": correctness_observed, "after_warmup": [], "after_timing": []},
         "observed_thread_count": correctness_observed.len(), "samples": Vec::<Sample>::new(),
         "timing_validity": if mode == "correctness-only" { "inconclusive" } else { "invalid" },

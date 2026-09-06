@@ -1,5 +1,36 @@
 # Issue 95: small-work suite
 
+## Worker confinement and effective default budget
+
+Real4T correctness reproduced a false rejection: a backend-owned worker pinned
+to[0] was compared for equality with outer[0,1,2,3]. Rust/Python now require workers
+to be nonempty subsets, retaining exact outer-mask equality and rejecting escape.
+Correctness-only checks only its realized post-correctness snapshot; timing still
+requires all three stages, chosen by the caller rather than payload status.
+
+The producer was already using CpuBackend::new, not with_threads. It now records
+actual num_threads, the constructor and RAYON_NUM_THREADS input. Timing requires
+observed budget equality with the runner's request; correctness can record a
+different actual default budget without claiming a thread-specific performance
+result. No library constructor/domain/admission behavior changed.
+
+Rust21, strict Clippy, Python102 (101 passed,1 existing live-resource smoke skip)
+passed. One old synthetic CLI payload needed the newly required budget fields.
+Real Linux checks through run_sequential confirmed default1T/4T, narrowed workers,
+and an explicit Rayon2 environment reporting actual2. Full CLI148-case correctness
+and result schemas passed with an outer4CPU validation process, all actual budgets4
+and workers confined. No warmup/timing observations were fabricated.
+
+The first full CLI attempt stopped before numerical work: the managed extern's
+Git alternates pointed outside the container mount. git repack -a copied its
+borrowed objects locally; the old alternates file was saved, connectivity checked,
+and HEAD38fbc7a1/clean status verified unchanged. Frozen clones, shared services and
+source files were not modified. A retry passed148 numerical cases at actual64:
+correctness-only intentionally does not select cores. An explicitly taskset-confined
+validation process then established the actual4T result. All attempts are retained.
+These debug correctness checks are not release performance evidence. Explicit
+unpinned controls, paired/during-run validation and #1762 gains remain incomplete.
+
 ## C64 borrowed layout coverage
 
 Added24 C64 borrowed fresh/shared cases across n2/4/16 and column-major,

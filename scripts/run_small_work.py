@@ -152,14 +152,15 @@ def _write_frozen_metadata(path: Path, *, args: argparse.Namespace,
 
 def _payload_contract_errors(case: CaseContract, payload: Mapping[str, Any], process_index: int,
                              samples_per_process: int, target_ns: int,
-                             process_count: int, correctness_only: bool) -> list[str]:
+                             process_count: int, correctness_only: bool, requested_threads: int) -> list[str]:
     """Validate one child receipt against the declared case, never its echoes."""
     errors: list[str] = []
     required = ("schema_version", "case_id", "contract_id", "family", "surface", "operation", "phase", "api_tier", "backend", "provider",
                 "dtype", "layout", "shape", "workflow", "calls_per_workflow", "setup",
                 "scope", "descriptor_source", "process_index", "correctness_status", "timing_validity",
                 "timing_reasons", "errors", "samples", "affinity",
-                "thread_affinity_observations", "declared_thread_budget", "observed_thread_count")
+                "thread_affinity_observations", "declared_thread_budget", "observed_thread_count",
+                "effective_thread_budget", "backend_constructor", "rayon_num_threads")
     errors.extend(f"missing child field {key}" for key in required if key not in payload)
     if errors:
         return errors
@@ -181,6 +182,17 @@ def _payload_contract_errors(case: CaseContract, payload: Mapping[str, Any], pro
         errors.append("child provider identity is missing")
     if payload.get("process_index") != process_index:
         errors.append("child process identity does not match command")
+    if type(payload["declared_thread_budget"]) is not int or payload["declared_thread_budget"] != requested_threads:
+        errors.append("child declared thread budget does not match request")
+    effective = payload["effective_thread_budget"]
+    if type(effective) is not int or effective < 1:
+        errors.append("child effective thread budget is unavailable")
+    elif not correctness_only and effective != requested_threads:
+        errors.append("child effective thread budget does not match timing request")
+    if payload["backend_constructor"] != "CpuBackend::new":
+        errors.append("child backend constructor does not match workflow")
+    if payload["rayon_num_threads"] is not None and type(payload["rayon_num_threads"]) is not str:
+        errors.append("child Rayon environment evidence is malformed")
     if payload.get("correctness_status") != "passed":
         errors.append("child correctness did not pass")
     if payload.get("errors") != []:
@@ -437,7 +449,8 @@ def _suite_run(args: argparse.Namespace) -> int:
         command_records = run_sequential(commands, expected_affinity=expected,
                                          timeout_s=args.command_timeout, output_dir=root / "children",
                                          require_json=bool(binary), return_records=True,
-                                         observe_machine=not args.correctness_only)
+                                         observe_machine=not args.correctness_only,
+                                         correctness_only=args.correctness_only)
         result["commands"] = command_records
         records = []
         cov_max = float(protocol["noise_policy"]["process_median_cov_max"])
@@ -457,7 +470,7 @@ def _suite_run(args: argparse.Namespace) -> int:
                     payloads.append(payload)
                     errors.extend(_payload_contract_errors(case, payload, expected_process,
                                                            samples_per_process, target_ns,
-                                                           process_count, args.correctness_only))
+                                                           process_count, args.correctness_only, requested))
                 else:
                     errors.append("child produced no result payload")
             if not payloads:

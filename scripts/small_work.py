@@ -668,6 +668,13 @@ def verify_affinity(expected: Iterable[int], actual: Iterable[int]) -> None:
         raise ContractError("effective affinity differs from selected CPUs")
 
 
+def verify_worker_affinity(expected: Iterable[int], actual: Iterable[int]) -> None:
+    cpus = list(actual)
+    if (not cpus or any(type(cpu) is not int or cpu < 0 for cpu in cpus) or
+            not set(cpus).issubset(expected)):
+        raise ContractError("worker affinity escapes selected CPUs or is empty/malformed")
+
+
 def _archive_child(output_dir: Path | None, index: int, stdout: str | bytes, stderr: str | bytes) -> None:
     if output_dir is None:
         return
@@ -740,6 +747,7 @@ def run_sequential(commands: Sequence[Sequence[str]], *, cwd: Path | None = None
                    output_dir: Path | None = None,
                    require_json: bool = False,
                    observe_machine: bool = False,
+                   correctness_only: bool = False,
                    return_records: bool = False) -> list[Any]:
     """Run children serially, preserving output, failures, and not-run entries."""
     records: list[dict[str, Any]] = []
@@ -821,10 +829,11 @@ def run_sequential(commands: Sequence[Sequence[str]], *, cwd: Path | None = None
                         if (not isinstance(observations, Mapping) or
                                 not isinstance(budget, int) or isinstance(budget, bool) or budget < 1):
                             raise ValueError("child thread-budget/task evidence is missing")
-                        final_tasks = observations.get("after_timing")
+                        stages = ("after_correctness",) if correctness_only else ("after_correctness", "after_warmup", "after_timing")
+                        final_tasks = observations.get(stages[-1])
                         if not isinstance(final_tasks, list) or not final_tasks:
-                            raise ValueError("child post-timing task affinity evidence is missing")
-                        for stage in ("after_correctness", "after_warmup", "after_timing"):
+                            raise ValueError(f"child {stages[-1]} task affinity evidence is missing")
+                        for stage in stages:
                             tasks = observations.get(stage)
                             if not isinstance(tasks, list) or not tasks:
                                 raise ValueError(f"child {stage} task affinity evidence is missing")
@@ -832,7 +841,7 @@ def run_sequential(commands: Sequence[Sequence[str]], *, cwd: Path | None = None
                                 if (not isinstance(task, Mapping) or
                                         not isinstance(task.get("cpus"), list)):
                                     raise ValueError("child task affinity observation is malformed")
-                                verify_affinity(expected, task["cpus"])
+                                verify_worker_affinity(expected, task["cpus"])
                         if type(observed_count) is not int or observed_count != len(final_tasks):
                             raise ValueError("child observed task count is inconsistent")
                     record["payload"] = payload

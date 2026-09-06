@@ -108,6 +108,21 @@ cannot detect contention that starts and ends during measurement. It does not
 replace the still-required during-run competing-load validation. Correctness-only
 and dry-run paths do not perform this post-timing check.
 
+The producer uses the actual default `CpuBackend::new()` constructor. Child
+receipts record `effective_thread_budget` from the backend, `backend_constructor`
+and the `rayon_num_threads` environment input; OS task count is separate.
+Timing requires the observed budget to match the runner's requested budget.
+Correctness-only does not choose idle cores or promise a particular budget; use
+an explicitly confined validation process if a particular default-budget context
+is needed, and inspect the observed value.
+
+The outer process mask must exactly match selection. Backend workers may narrow
+their masks within that set, but empty or escaping masks fail. Correctness-only
+requires its actual post-correctness snapshot; timing requires all three snapshots.
+This preserves backend-owned pinning instead of confusing it with outer affinity.
+See [thread evidence](small-work-thread-evidence-design.md); this does not prove
+exclusive resources or all-time confinement.
+
 ### Passive machine observations
 
 Component **timing diagnostics** and public-suite **timing runs** use the same

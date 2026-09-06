@@ -226,13 +226,50 @@ class SmallWorkTests(unittest.TestCase):
 
     def test_campaign_requires_every_child_and_exact_sample_identities(self) -> None:
         payloads = [self._payload(0), self._payload(1)]
-        self.assertEqual(run_small_work._payload_contract_errors(self.case, payloads[0], 0, 2, 1, 2, False), [])
+        self.assertEqual(run_small_work._payload_contract_errors(self.case, payloads[0], 0, 2, 1, 2, False, 1), [])
         missing = dict(payloads[1]); missing["samples"] = missing["samples"][:1]
-        self.assertTrue(run_small_work._payload_contract_errors(self.case, missing, 1, 2, 1, 2, False))
+        self.assertTrue(run_small_work._payload_contract_errors(self.case, missing, 1, 2, 1, 2, False, 1))
         duplicate = dict(payloads[1]); duplicate["samples"] = [dict(payloads[1]["samples"][0]), dict(payloads[1]["samples"][0])]
-        self.assertTrue(run_small_work._payload_contract_errors(self.case, duplicate, 1, 2, 1, 2, False))
+        self.assertTrue(run_small_work._payload_contract_errors(self.case, duplicate, 1, 2, 1, 2, False, 1))
         reordered = dict(payloads[1]); reordered["samples"] = list(reversed(payloads[1]["samples"]))
-        self.assertTrue(run_small_work._payload_contract_errors(self.case, reordered, 1, 2, 1, 2, False))
+        self.assertTrue(run_small_work._payload_contract_errors(self.case, reordered, 1, 2, 1, 2, False, 1))
+
+    def test_pinned_correctness_requires_only_realized_affinity_stages(self) -> None:
+        import small_work
+        for correctness_only, mask, expected_status in ((True, [0], "completed"),
+                (False, [0], "error"), (True, [2], "error"), (True, [], "error")):
+            with self.subTest(correctness_only=correctness_only, mask=mask):
+                payload = self._payload(0)
+                payload.update(affinity=[0, 1], samples=[], timing_validity="inconclusive",
+                               thread_affinity_observations={"after_correctness": [{"cpus": mask}],
+                                   "after_warmup": [], "after_timing": []})
+                process = mock.Mock(pid=123, returncode=0)
+                process.communicate.return_value = (json.dumps(payload), "")
+                with mock.patch.object(small_work.subprocess, "Popen", return_value=process), \
+                     mock.patch.object(small_work.os, "sched_getaffinity", return_value={0, 1}):
+                    records = run_sequential([["fixture"]], expected_affinity={0, 1}, require_json=True,
+                                             correctness_only=correctness_only, return_records=True)
+                self.assertEqual(records[0]["status"], expected_status)
+
+    def test_worker_confinement_and_effective_budget_are_distinct(self) -> None:
+        from small_work import verify_affinity, verify_worker_affinity
+        for mask in ([0], [1], [0, 1]):
+            verify_worker_affinity([0, 1], mask)
+        for mask in ([], [2], [0, 2], [True], [-1]):
+            with self.subTest(mask=mask), self.assertRaises(ContractError):
+                verify_worker_affinity([0, 1], mask)
+        with self.assertRaises(ContractError):
+            verify_affinity([0, 1], [0])  # leader still requires the full mask
+        for field, value in (("effective_thread_budget", 2), ("effective_thread_budget", True),
+                             ("effective_thread_budget", None), ("declared_thread_budget", 2),
+                             ("backend_constructor", "CpuBackend::with_threads")):
+            payload = self._payload(0)
+            payload[field] = value
+            with self.subTest(field=field, value=value):
+                self.assertTrue(run_small_work._payload_contract_errors(self.case, payload, 0, 2, 1, 2, False, 1))
+        payload = self._payload(0)
+        payload.update(effective_thread_budget=4, samples=[], timing_validity="inconclusive")
+        self.assertEqual(run_small_work._payload_contract_errors(self.case, payload, 0, 1, 1, 1, True, 1), [])
 
     def test_campaign_distinguishes_noise_from_invalid_duration(self) -> None:
         samples = [{"process_index": p, "sample_index": i, "elapsed_ns": (100 if p == 0 else 1000), "iterations": 1}
@@ -385,6 +422,7 @@ class SmallWorkTests(unittest.TestCase):
                 "thread_affinity_observations": {"after_correctness": [{"cpus": [0]}],
                     "after_warmup": [{"cpus": [0]}], "after_timing": [{"cpus": [0]}]},
                 "declared_thread_budget": 1, "observed_thread_count": 1,
+                "effective_thread_budget": 1, "backend_constructor": "CpuBackend::new", "rayon_num_threads": None,
                 "calibration": {"target_ns": 1, "elapsed_ns": 101}}
 
     def test_suite_gate_honors_cpuset_and_cgroup_reasons(self) -> None:
@@ -681,7 +719,7 @@ class SmallWorkTests(unittest.TestCase):
                 "#!/usr/bin/env python3\n"
                 "import json,sys\n"
                 "case=sys.argv[sys.argv.index('--case')+1]\n"
-                "print(json.dumps({'schema_version':2,'case_id':case,'contract_id':'core.add.ordinary.concrete','family':'core','surface':'concrete','operation':'add','phase':'execution','api_tier':'concrete-fresh','backend':'tenferro-rs','dtype':'f64','layout':'col_major_contiguous','shape':[4],'workflow':'single','calls_per_workflow':1,'setup':{'includes':['session_entry_exit','add','output_lifetime'],'excludes':['backend_construction','input_construction','correctness_check']},'scope':{'timer':['session_entry_exit','add','output_lifetime'],'outside_timer':['backend_construction','input_construction','correctness_check']},'descriptor_source':'rust_case_selection','process_index':0,'correctness_status':'passed','timing_validity':'inconclusive','provider':'fixture','samples':[],'affinity':[],'thread_affinity_observations':{},'declared_thread_budget':1,'observed_thread_count':0,'timing_reasons':['correctness-only'],'errors':[]}))\n",
+                "print(json.dumps({'schema_version':2,'case_id':case,'contract_id':'core.add.ordinary.concrete','family':'core','surface':'concrete','operation':'add','phase':'execution','api_tier':'concrete-fresh','backend':'tenferro-rs','dtype':'f64','layout':'col_major_contiguous','shape':[4],'workflow':'single','calls_per_workflow':1,'setup':{'includes':['session_entry_exit','add','output_lifetime'],'excludes':['backend_construction','input_construction','correctness_check']},'scope':{'timer':['session_entry_exit','add','output_lifetime'],'outside_timer':['backend_construction','input_construction','correctness_check']},'descriptor_source':'rust_case_selection','process_index':0,'correctness_status':'passed','timing_validity':'inconclusive','provider':'fixture','samples':[],'affinity':[],'thread_affinity_observations':{},'declared_thread_budget':1,'observed_thread_count':0,'effective_thread_budget':1,'backend_constructor':'CpuBackend::new','rayon_num_threads':None,'timing_reasons':['correctness-only'],'errors':[]}))\n",
                 encoding="utf-8")
             child.chmod(0o755)
             output = root / "run.json"
