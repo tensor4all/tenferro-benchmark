@@ -218,6 +218,19 @@ fn complex_einsum_inputs(
     ))
 }
 
+fn gather_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Error + Send + Sync>> {
+    let data: Vec<f64> = (0..size).map(|i| i as f64 / 8.0 - 3.0).collect();
+    let indices: Vec<i64> = (0..size)
+        .map(|i| ((3 * i + i / 2 + 1) % size) as i64)
+        .collect();
+    let expected = indices.iter().map(|&index| data[index as usize]).collect();
+    Ok((
+        Tensor::from_vec_col_major(vec![size], data)?,
+        Tensor::from_vec_col_major(vec![size], indices)?,
+        expected,
+    ))
+}
+
 fn solve_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Error + Send + Sync>> {
     let n = matrix_dimension(size)?;
     let mut a = vec![0.0; size];
@@ -390,6 +403,17 @@ fn concrete_operation(
         "add" => lhs.add(rhs, session)?,
         "einsum" => [lhs, rhs].einsum("ij,jk->ik", session)?,
         "solve" => lhs.solve(rhs, session)?,
+        "gather" => session.gather(
+            lhs,
+            rhs,
+            &tenferro_tensor::GatherConfig {
+                offset_dims: vec![],
+                collapsed_slice_dims: vec![0],
+                start_index_map: vec![0],
+                index_vector_dim: 1,
+                slice_sizes: vec![1],
+            },
+        )?,
         _ => return Err(format!("unsupported operation: {operation}").into()),
     })
 }
@@ -455,7 +479,7 @@ fn case_descriptor(
                     | "compiled-repeat"
                     | "compiled-setup"
             ));
-    if !matches!(operation, "add" | "einsum" | "solve")
+    if !matches!(operation, "add" | "einsum" | "solve" | "gather")
         || !supported_dtype
         || !(matches!(size, 4 | 16 | 256) || (operation == "einsum" && matches!(size, 64 | 1024)))
     {
@@ -474,11 +498,13 @@ fn case_descriptor(
             format!("workflow {workflow} requires calls_per_workflow={expected_calls}").into(),
         );
     }
-    if matches!(operation, "einsum" | "solve") && workflow != "single" {
+    if matches!(operation, "einsum" | "solve" | "gather") && workflow != "single" {
         return Err(format!("{operation} currently requires the single workflow").into());
     }
-    if operation == "solve" && !matches!(api_tier, "concrete-fresh" | "concrete-shared") {
-        return Err("solve currently requires a concrete fresh/shared tier".into());
+    if matches!(operation, "solve" | "gather")
+        && !matches!(api_tier, "concrete-fresh" | "concrete-shared")
+    {
+        return Err(format!("{operation} currently requires a concrete fresh/shared tier").into());
     }
     if api_tier.starts_with("borrowed-") && operation != "einsum" {
         return Err("borrowed tiers require einsum".into());
@@ -603,13 +629,22 @@ fn case_descriptor(
             "linalg",
             vec![matrix_dimension(size)?, matrix_dimension(size)?],
         )
+    } else if operation == "gather" {
+        (
+            "core.gather.ordinary.concrete".to_string(),
+            "core",
+            vec![size],
+        )
     } else {
         (contract_id.to_string(), family, vec![size])
     };
-    let timer: Vec<String> = timer
+    let mut timer: Vec<String> = timer
         .iter()
         .map(|label| label.replace("add", operation))
         .collect();
+    if operation == "gather" {
+        timer.insert(0, "index_config_construction".to_string());
+    }
     Ok(serde_json::json!({
         "contract_id": contract_id, "family": family, "surface": surface,
         "operation": operation, "phase": if api_tier.ends_with("-setup") { "setup" } else { "execution" }, "api_tier": api_tier,
@@ -1039,6 +1074,44 @@ mod tests {
             assert_eq!(repeat["contract_id"], "einsum.einsum.prepared.concrete");
             assert_eq!(repeat["phase"], "execution");
         }
+    }
+
+    #[test]
+    fn gather_preserves_repeated_index_order_and_inputs() {
+        for size in [4, 16, 256] {
+            let (data, indices, expected) = gather_inputs(size).unwrap();
+            let before_data = data.as_slice::<f64>().unwrap().to_vec();
+            let before_indices = indices.as_slice::<i64>().unwrap().to_vec();
+            assert_eq!(indices.dtype(), DType::I64);
+            assert!(before_indices.windows(2).any(|pair| pair[0] > pair[1]));
+            assert!(
+                before_indices
+                    .iter()
+                    .collect::<std::collections::HashSet<_>>()
+                    .len()
+                    < size
+            );
+            let mut backend = CpuBackend::new();
+            let output = concrete_fresh("gather", &mut backend, &data, &indices).unwrap();
+            check_tensor_shape(&output, &expected, &[size]).unwrap();
+            backend
+                .with_backend_session(|session| {
+                    let output = concrete_operation("gather", session, &data, &indices)?;
+                    check_tensor_shape(&output, &expected, &[size])?;
+                    assert!(concrete_operation("gather", session, &data, &data).is_err());
+                    Ok::<_, Box<dyn Error + Send + Sync>>(())
+                })
+                .unwrap();
+            assert_eq!(data.as_slice::<f64>().unwrap(), &before_data);
+            assert_eq!(indices.as_slice::<i64>().unwrap(), &before_indices);
+            for tier in ["concrete-fresh", "concrete-shared"] {
+                let descriptor =
+                    case_descriptor("gather", "f64", tier, "single", size, 1, "faer").unwrap();
+                assert_eq!(descriptor["contract_id"], "core.gather.ordinary.concrete");
+                assert_eq!(descriptor["shape"], serde_json::json!([size]));
+            }
+        }
+        assert!(case_descriptor("gather", "f64", "eager-no-ad", "single", 4, 1, "faer").is_err());
     }
 
     #[test]
@@ -1494,6 +1567,8 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             einsum_inputs(size)?
         } else if operation == "solve" {
             solve_inputs(size)?
+        } else if operation == "gather" {
+            gather_inputs(size)?
         } else {
             inputs(size, calls)?
         };

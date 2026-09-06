@@ -98,6 +98,20 @@ class SmallWorkSchemaTests(unittest.TestCase):
                 selected = [case for case in cases if case.operation == "einsum" and case.dtype == dtype and case.shape == (n, n)]
                 self.assertTrue({"concrete-fresh", "concrete-shared", "prepared-setup", "prepared-repeat"} <= {case.api_tier for case in selected})
 
+    def test_gather_declares_index_configuration_and_concrete_route(self):
+        suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
+        cases = [case for case in validate_suite_contract(suite) if case.operation == "gather"]
+        self.assertEqual(len(cases), 6)
+        for size in (4, 16, 256):
+            self.assertEqual({case.api_tier for case in cases if case.shape == (size,)}, {"concrete-fresh", "concrete-shared"})
+        for case in cases:
+            self.assertEqual(case.contract_id, "core.gather.ordinary.concrete")
+            self.assertEqual(case.surface, "concrete")
+            self.assertEqual(case.calls_per_workflow, 1)
+            self.assertIn("index_config_construction", case.scope_timer)
+            self.assertIn("gather", case.scope_timer)
+            self.assertIn("input_construction", case.scope_outside_timer)
+
     def test_solve_matrix_preserves_linalg_and_session_boundaries(self):
         suite = yaml.safe_load((ROOT / "benchmarks/cpu/small_work.yaml").read_text())
         cases = [case for case in validate_suite_contract(suite) if case.operation == "solve"]

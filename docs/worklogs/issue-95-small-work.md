@@ -1,5 +1,21 @@
 # Issue 95: small-work suite
 
+## Representative indexing gather
+
+Added six concrete fresh/shared gather cases for4/16/256 F64 data elements with
+I64 index tensors. Public TensorIndexing::gather on BackendSession is the actual
+API, not Tensor::gather or an eager alias. Non-monotonic repeated indices retain
+output order, checked by a host indexed lookup. Tests preserve both inputs and
+reject floating indices. Per-call GatherConfig construction follows public_api's
+existing workflow and is explicitly timed as index_config_construction; this
+caller cost is not attributed to library-only validation.
+
+Rust19, strict Clippy/rustfmt and all124 actual correctness/descriptor/schema
+checks passed; previous118 definitions are unchanged. Python ran99 tests, with
+one live-resource smoke skipped (98 passed). No timings or acceptance claimed.
+Reduction and standalone metadata/view coverage, other missing scenarios, #96
+workflow, required #1760–1763 evidence and final merges remain incomplete.
+
 ## #1761 required dimensions audit
 
 Re-read current #1760–1763 issue bodies. #1761 explicitly requests n2/8/32;

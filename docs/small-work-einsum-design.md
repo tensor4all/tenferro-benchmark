@@ -72,7 +72,7 @@ separate traced-setup timing acceptance, which remains unmeasured.
 The suite includes 26 owned-input, 24 borrowed-input and three compiled-repeat
 `ij,jk->ik` cases at dimensions 2, 4 and 16 alongside the existing 24 add workflows
 plus three F64 traced-setup and thirty-two C64 concrete/prepared/runtime cases (112 add/einsum cases). Six F64 [solve cases](small-work-solve-design.md)
-bring the suite total to 118. No full family/layout/dtype coverage
+and six [gather cases](small-work-gather-design.md) bring the suite total to 124. No full family/layout/dtype coverage
 or performance acceptance is claimed by this matrix alone.
 
 Each size has concrete-fresh, concrete-shared, eager-no-ad, eager-ad,
