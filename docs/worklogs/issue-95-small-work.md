@@ -1,5 +1,27 @@
 # Issue 95: small-work suite
 
+## C64 borrowed layout coverage
+
+Added24 C64 borrowed fresh/shared cases across n2/4/16 and column-major,
+row-major, padded strided and broadcast layouts. The existing fixture owner now
+holds dtype-erased physical storage and creates typed F64/C64 views outside
+timing; both variants still invoke TypedTensorReadEinsumExt. Complex broadcast
+has n physical elements per operand, not an owned-input alias. Both padding
+components are NaN. Tests inspect strides/offsets/shape, check both output
+components against independent matmul, and compare physical storage bit-for-bit
+after fresh and repeated shared calls (including NaN padding).
+
+Rust20, strict Clippy/rustfmt, Python100 (99 passed,1 existing live-resource smoke
+skip), and all148 actual correctness/descriptor/result-schema records passed.
+Old124 definitions remain unchanged. The first Rust run exposed an obsolete
+negative assertion that C64 borrowed was unsupported; the added capability now
+has positive numerical coverage and the negative check retains unsupported C32.
+
+No timing was collected. Future comparisons must use the same updated fixture
+wrapper on both arms; old timings are not pooled or relabeled. Reduction,
+standalone metadata, other scenarios, paired/mid-run validation and issue-specific
+performance/documentation outcomes plus final merges remain incomplete.
+
 ## Correctness-only rejects child error reports
 
 Removed the correctness-only exception from the existing child-receipt error

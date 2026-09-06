@@ -218,6 +218,21 @@ fn complex_einsum_inputs(
     ))
 }
 
+fn complex_broadcast_einsum_inputs(
+    size: usize,
+) -> Result<(Tensor, Tensor, Tensor), Box<dyn Error + Send + Sync>> {
+    let n = matrix_dimension(size)?;
+    let (lhs, rhs, _) = complex_einsum_inputs(size)?;
+    let a = lhs.as_slice::<Complex64>()?[..n].repeat(n);
+    let b = rhs.as_slice::<Complex64>()?[..n].repeat(n);
+    let expected = matmul_reference(n, &a, &b);
+    Ok((
+        Tensor::from_vec_col_major(vec![n, n], a)?,
+        Tensor::from_vec_col_major(vec![n, n], b)?,
+        Tensor::from_vec_col_major(vec![n, n], expected)?,
+    ))
+}
+
 fn gather_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Error + Send + Sync>> {
     let data: Vec<f64> = (0..size).map(|i| i as f64 / 8.0 - 3.0).collect();
     let indices: Vec<i64> = (0..size)
@@ -329,8 +344,13 @@ fn check_compiled_einsum(
     Ok(checked)
 }
 
+enum BorrowedEinsumViews<'a> {
+    F64([TypedTensorView<'a, f64>; 2]),
+    C64([TypedTensorView<'a, Complex64>; 2]),
+}
+
 struct BorrowedEinsumInputs {
-    storage: [Vec<f64>; 2],
+    storage: [Tensor; 2],
     n: usize,
     strides: [isize; 2],
     offset: usize,
@@ -346,17 +366,36 @@ impl BorrowedEinsumInputs {
             "strided" => ([2, (2 * n + 1) as isize], 1),
             _ => return Err(format!("unsupported borrowed layout: {layout}").into()),
         };
-        let length = offset + (n - 1) * (strides[0] + strides[1]) as usize + 1;
-        let mut storage = [vec![f64::NAN; length], vec![f64::NAN; length]];
-        for (destination, input) in storage.iter_mut().zip([lhs, rhs]) {
-            let values = input.as_slice::<f64>()?;
+        fn store<T: tenferro_tensor::TensorScalar>(
+            input: &Tensor,
+            n: usize,
+            strides: [isize; 2],
+            offset: usize,
+            padding: T,
+        ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
+            let length = offset + (n - 1) * (strides[0] + strides[1]) as usize + 1;
+            let mut destination = vec![padding; length];
+            let values = input.as_slice::<T>()?;
             for j in 0..n {
                 for i in 0..n {
                     destination[offset + i * strides[0] as usize + j * strides[1] as usize] =
                         values[i + n * j];
                 }
             }
+            Ok(Tensor::from_vec_col_major(vec![length], destination)?)
         }
+        let copy = |input: &Tensor| match input.dtype() {
+            DType::F64 => store(input, n, strides, offset, f64::NAN),
+            DType::C64 => store(
+                input,
+                n,
+                strides,
+                offset,
+                Complex64::new(f64::NAN, f64::NAN),
+            ),
+            _ => Err("unsupported borrowed dtype".into()),
+        };
+        let storage = [copy(lhs)?, copy(rhs)?];
         Ok(Self {
             storage,
             n,
@@ -365,30 +404,43 @@ impl BorrowedEinsumInputs {
         })
     }
 
-    fn views(&self) -> Result<[TypedTensorView<'_, f64>; 2], Box<dyn Error + Send + Sync>> {
+    fn views(&self) -> Result<BorrowedEinsumViews<'_>, Box<dyn Error + Send + Sync>> {
+        match self.storage[0].dtype() {
+            DType::F64 => Ok(BorrowedEinsumViews::F64(self.typed_views()?)),
+            DType::C64 => Ok(BorrowedEinsumViews::C64(self.typed_views()?)),
+            _ => Err("unsupported borrowed dtype".into()),
+        }
+    }
+
+    fn typed_views<T: tenferro_tensor::TensorScalar>(
+        &self,
+    ) -> Result<[TypedTensorView<'_, T>; 2], Box<dyn Error + Send + Sync>> {
         Ok([
             TypedTensorView::from_slice(
                 vec![self.n, self.n],
                 self.strides,
                 self.offset as isize,
-                &self.storage[0],
+                self.storage[0].as_slice::<T>()?,
             )?,
             TypedTensorView::from_slice(
                 vec![self.n, self.n],
                 self.strides,
                 self.offset as isize,
-                &self.storage[1],
+                self.storage[1].as_slice::<T>()?,
             )?,
         ])
     }
 }
 
 fn borrowed_einsum(
-    inputs: &[TypedTensorView<'_, f64>; 2],
+    inputs: &BorrowedEinsumViews<'_>,
     session: &mut dyn BackendSession,
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
     use tenferro_einsum::TypedTensorReadEinsumExt;
-    Ok(inputs.einsum_read("ij,jk->ik", session)?.into())
+    Ok(match inputs {
+        BorrowedEinsumViews::F64(views) => views.einsum_read("ij,jk->ik", session)?.into(),
+        BorrowedEinsumViews::C64(views) => views.einsum_read("ij,jk->ik", session)?.into(),
+    })
 }
 
 fn concrete_operation(
@@ -478,6 +530,8 @@ fn case_descriptor(
                     | "eager-ad"
                     | "compiled-repeat"
                     | "compiled-setup"
+                    | "borrowed-fresh"
+                    | "borrowed-shared"
             ));
     if !matches!(operation, "add" | "einsum" | "solve" | "gather")
         || !supported_dtype
@@ -1011,7 +1065,7 @@ mod tests {
             assert!(check_tensor_reference(&expected, &invalid).is_err());
         }
         for tier in ["borrowed-fresh", "borrowed-shared"] {
-            assert!(case_descriptor("einsum", "c64", tier, "single", 4, 1, "faer").is_err());
+            assert!(case_descriptor("einsum", "c32", tier, "single", 4, 1, "faer").is_err());
         }
     }
 
@@ -1327,16 +1381,91 @@ mod tests {
     }
 
     #[test]
+    fn complex_borrowed_layouts_preserve_components_and_physical_storage() {
+        for size in [4, 16, 256] {
+            let n = matrix_dimension(size).unwrap();
+            for (layout, strides, offset) in [
+                ("col_major_contiguous", [1, n as isize], 0),
+                ("row_major_contiguous", [n as isize, 1], 0),
+                ("strided", [2, (2 * n + 1) as isize], 1),
+                ("broadcast", [1, 0], 0),
+            ] {
+                let (lhs, rhs, expected) = if layout == "broadcast" {
+                    complex_broadcast_einsum_inputs(size).unwrap()
+                } else {
+                    complex_einsum_inputs(size).unwrap()
+                };
+                let values = expected.as_slice::<Complex64>().unwrap();
+                assert!(values.iter().any(|x| x.re.abs() > 0.1));
+                assert!(values.iter().any(|x| x.im.abs() > 0.1));
+                let fixture = BorrowedEinsumInputs::new(&lhs, &rhs, layout).unwrap();
+                let bits = |tensor: &Tensor| {
+                    tensor
+                        .as_slice::<Complex64>()
+                        .unwrap()
+                        .iter()
+                        .map(|x| (x.re.to_bits(), x.im.to_bits()))
+                        .collect::<Vec<_>>()
+                };
+                let before = [bits(&fixture.storage[0]), bits(&fixture.storage[1])];
+                let views = fixture.views().unwrap();
+                let BorrowedEinsumViews::C64(typed_views) = &views else {
+                    panic!("expected C64 views")
+                };
+                for view in typed_views {
+                    assert_eq!(view.shape(), &[n, n]);
+                    assert_eq!(view.strides(), strides);
+                    assert_eq!(view.offset(), offset);
+                }
+                for storage in &fixture.storage {
+                    let data = storage.as_slice::<Complex64>().unwrap();
+                    if layout == "broadcast" {
+                        assert_eq!(data.len(), n);
+                    }
+                    if layout == "strided" {
+                        assert!(data[0].re.is_nan() && data[0].im.is_nan());
+                    }
+                }
+                let mut backend = CpuBackend::new();
+                let fresh = backend
+                    .with_backend_session(|session| borrowed_einsum(&views, session))
+                    .unwrap();
+                check_tensor_reference(&fresh, &expected).unwrap();
+                backend
+                    .with_backend_session(|session| {
+                        for _ in 0..2 {
+                            check_tensor_reference(&borrowed_einsum(&views, session)?, &expected)?;
+                        }
+                        Ok::<_, Box<dyn Error + Send + Sync>>(())
+                    })
+                    .unwrap();
+                assert_eq!(
+                    [bits(&fixture.storage[0]), bits(&fixture.storage[1])],
+                    before
+                );
+                for tier in ["borrowed-fresh", "borrowed-shared"] {
+                    assert!(
+                        case_descriptor("einsum", "c64", tier, "single", size, 1, "faer").is_ok()
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
     fn borrowed_broadcast_uses_stride_zero_and_compact_physical_storage() {
         for size in [4, 16, 256] {
             let n = matrix_dimension(size).unwrap();
             let (lhs, rhs, expected) = broadcast_einsum_inputs(size).unwrap();
             assert!(expected.iter().any(|x| x.abs() > 0.1));
             let fixture = BorrowedEinsumInputs::new(&lhs, &rhs, "broadcast").unwrap();
-            assert_eq!(fixture.storage[0].len(), n);
-            assert_eq!(fixture.storage[1].len(), n);
+            assert_eq!(fixture.storage[0].as_slice::<f64>().unwrap().len(), n);
+            assert_eq!(fixture.storage[1].as_slice::<f64>().unwrap().len(), n);
             let views = fixture.views().unwrap();
-            for view in &views {
+            let BorrowedEinsumViews::F64(typed_views) = &views else {
+                panic!("expected F64 views")
+            };
+            for view in typed_views {
                 assert_eq!(view.shape(), &[n, n]);
                 assert_eq!(view.strides(), &[1, 0]);
             }
@@ -1369,12 +1498,15 @@ mod tests {
             ] {
                 let fixture = BorrowedEinsumInputs::new(&lhs, &rhs, layout).unwrap();
                 let views = fixture.views().unwrap();
-                for view in &views {
+                let BorrowedEinsumViews::F64(typed_views) = &views else {
+                    panic!("expected F64 views")
+                };
+                for view in typed_views {
                     assert_eq!(view.strides(), strides);
                     assert_eq!(view.offset(), offset);
                 }
                 if layout == "strided" {
-                    assert!(fixture.storage[0][0].is_nan());
+                    assert!(fixture.storage[0].as_slice::<f64>().unwrap()[0].is_nan());
                 }
                 let mut backend = CpuBackend::new();
                 let fresh = backend
@@ -1559,7 +1691,11 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
     }
     let (lhs, rhs, expected_values) = if dtype == "c64" {
-        complex_einsum_inputs(size)?
+        if layout == "broadcast" {
+            complex_broadcast_einsum_inputs(size)?
+        } else {
+            complex_einsum_inputs(size)?
+        }
     } else {
         let (lhs, rhs, values) = if operation == "einsum" && layout == "broadcast" {
             broadcast_einsum_inputs(size)?

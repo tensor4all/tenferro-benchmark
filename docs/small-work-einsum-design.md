@@ -1,5 +1,17 @@
 # Public F64/C64 einsum small-work cases
 
+## C64 borrowed extension
+
+Extend the existing borrowed fixture owner to hold dtype-erased physical storage
+and select F64/C64 typed views before timing. Both variants still call
+TypedTensorReadEinsumExt, not a materialized or dtype-erased public API substitute.
+Column/row-major, padded strided and stride-zero broadcast layouts at n2/4/16
+use fresh/shared sessions. NaN padding poisons both complex components; broadcast
+storage has only n elements per operand. All values are checked against the
+independent complex matmul oracle, outside timing. Existing F64 cases keep their
+API, logical values and layout. The fixture wrapper changes, so future timings
+must use identical updated harnesses for both arms, not pool old measurements.
+
 ## C64 concrete and prepared slices
 
 Twenty column-major C64 cases use the existing concrete fresh/shared and
@@ -12,7 +24,7 @@ Setup retains phase `setup` and provider `not-applicable`; its correctness check
 executes the resulting plan. Repeat retains phase `execution` and keeps preparation
 outside timing. Tests reuse a C64 plan with original/swapped/original inputs and
 reject mismatched dtype or rank. C64 eager-no-ad and compiled-repeat are covered
-below; C64 borrowed inputs remain unsupported by this producer.
+below; C64 borrowed coverage is described above.
 
 ## C64 runtime slice
 
@@ -69,14 +81,16 @@ inside. Correctness must run original, swapped, then original inputs on the same
 program against independent matmul references. This covers execution, not the
 separate traced-setup timing acceptance, which remains unmeasured.
 
-The suite includes 26 owned-input, 24 borrowed-input and three compiled-repeat
-`ij,jk->ik` cases at dimensions 2, 4 and 16 alongside the existing 24 add workflows
-plus three F64 traced-setup and thirty-two C64 concrete/prepared/runtime cases (112 add/einsum cases). Six F64 [solve cases](small-work-solve-design.md)
-and six [gather cases](small-work-gather-design.md) bring the suite total to 124. No full family/layout/dtype coverage
-or performance acceptance is claimed by this matrix alone.
+F64 has26 owned-input cases across n2/4/8/16/32,24 borrowed cases and six
+compiled setup/repeat cases at n2/4/16. C64 has32 concrete/prepared/runtime cases
+and24 borrowed cases. With24 add workflows this is136 add/einsum cases. Six F64
+[solve cases](small-work-solve-design.md) and six
+[gather cases](small-work-gather-design.md) bring the total to148. No full
+family/layout/dtype coverage or performance acceptance is claimed.
 
-Each size has concrete-fresh, concrete-shared, eager-no-ad, eager-ad,
-prepared-setup and prepared-repeat cases. Ordinary calls use the existing
+Dimensions2/4/16 have concrete-fresh/shared, eager-no-ad, eager-ad,
+prepared-setup/repeat and compiled-setup/repeat cases; n8/32 currently cover only
+concrete and prepared tiers. Ordinary calls use the existing
 `TensorEinsumExt` / `EagerEinsumExt`; preparation uses
 `ConcreteEinsumPlan::prepare`, repeated execution uses `plan.execute`.
 For this binary matmul shape, eager dispatch can use its direct dot-general
