@@ -486,6 +486,52 @@ class SmallWorkTests(unittest.TestCase):
             self.assertEqual([row["machine_observations"] for row in result["commands"]], [trace, trace])
             self.assertNotEqual(latest.read_text(encoding="utf-8"), "previous\n")
 
+    def test_post_timing_resources_use_fixed_mask_and_do_not_publish(self) -> None:
+        for variant in ("busy", "missing_telemetry", "correctness_failure"):
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory); suite = self._one_case_suite(root); output = root / "run.json"
+                case = CaseContract.from_mapping(yaml.safe_load(suite.read_text())["cases"][0])
+                commands = [{"status": "completed", "returncode": 0,
+                             "payload": self._payload(i, case=case)} for i in range(2)]
+                if variant == "correctness_failure":
+                    commands[1]["payload"]["correctness_status"] = "failed"
+                before = {"status": "valid", "cpus": [0], "effective_threads": 1, "reasons": []}
+                after = (OSError("telemetry disappeared") if variant == "missing_telemetry" else
+                         {"status": "inconclusive", "cpus": [], "effective_threads": 0, "reasons": ["busy SMT sibling"]})
+                args = self._suite_args(root, suite, output)
+                args.case_binary = root / "fixture-child"
+                args.preparation_receipt = root / "receipt.json"
+                args.preparation_receipt.write_text("{}")
+                latest = root / "result/amd-cpu/cpu/small_work.md"
+                latest.parent.mkdir(parents=True); latest.write_text("previous\n")
+                with mock.patch.object(run_small_work, "_select_live_resources", side_effect=[before, after]) as select, \
+                     mock.patch.object(run_small_work, "verify_preparation_receipt", return_value=[]), \
+                     mock.patch.object(run_small_work, "verify_canonical_snapshot"), \
+                     mock.patch.object(run_small_work, "run_sequential", return_value=commands), \
+                     mock.patch.object(run_small_work.os, "sched_getaffinity", return_value={0}), \
+                     mock.patch.object(run_small_work.os, "sched_setaffinity"):
+                    code = run_small_work._suite_run(args)
+                self.assertEqual(select.call_count, 2)
+                self.assertIsNone(select.call_args_list[0].args[3])
+                self.assertEqual(select.call_args_list[1].args[3], "0")
+                result = json.loads(output.read_text())
+                self.assertEqual(result["resource_after"]["status"], "inconclusive")
+                self.assertEqual(result["commands"], commands)
+                self.assertEqual(latest.read_text(), "previous\n")
+                record = result["records"][0]
+                if variant == "correctness_failure":
+                    self.assertEqual(result["status"], "FAILED")
+                    self.assertNotEqual(code, 0)
+                else:
+                    self.assertEqual(result["status"], "INCONCLUSIVE")
+                    self.assertEqual(code, 0)
+                    self.assertEqual(len(record["samples"]), 4)
+                    self.assertIsNotNone(record["timing"])
+                    self.assertEqual(record["timing_validity"]["status"], "inconclusive")
+                    validate_record(record, case)
+                    archive = next((root / "data/amd-cpu/cpu/small_work").iterdir())
+                    self.assertIn("| inconclusive | — | — |", (archive / "report.md").read_text())
+
     def test_campaign_failures_keep_previous_latest(self) -> None:
         variants = ("valid", "missing", "duplicate", "truncated", "reordered", "mismatched", "high_cov", "noise_and_correctness", "noise_and_missing", "under_duration")
         for variant in variants:
@@ -583,6 +629,7 @@ class SmallWorkTests(unittest.TestCase):
                 run_children.assert_called_once()
                 self.assertFalse(run_children.call_args.kwargs["observe_machine"])
                 result = json.loads(output.read_text())
+                self.assertNotIn("resource_after", result)
                 if variant == "valid":
                     self.assertEqual(code, 0)
                     self.assertEqual(result["status"], "CORRECTNESS_ONLY")

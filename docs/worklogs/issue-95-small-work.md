@@ -1,5 +1,27 @@
 # Issue 95: small-work suite
 
+## Public timing rechecks the selected resources
+
+The public runner now reuses its live-resource observer after timing, with the
+selected mask explicitly fixed. Lost eligibility or missing telemetry preserves
+samples/statistics as INCONCLUSIVE, suppresses table values and leaves latest
+untouched. Existing invalid/correctness failures remain FAILED. Correctness-only
+and dry-run paths do not perform this post-timing observation. No mid-run
+contention detection or exclusive reservation is claimed.
+
+Focused tests cover fixed-mask forwarding, busy SMT evidence, missing telemetry,
+raw preservation and mixed correctness failure. Full Python100:99 passed,1
+existing live-resource smoke skipped. Producer/Rust source unchanged; prior124
+numerical records remain applicable, not timing evidence.
+
+A separate read-only check in the existing CPU devcontainer observed eligible
+1T[0] and4T[0,1,2,3] at threshold0.1 over2s per observation. Container image remains
+sha256:d9a2ab89ec3b49d93e4150fa20e3910a06e4bfcc29bff12d0b587ae8f7108719.
+The first command used the root checkout's script path and failed import; using
+the mounted implementation worktree succeeded. No build, measurement, pinning,
+shared-service or governor change occurred. Eligibility at that instant does not
+resolve prior frozen comparison noise or missing #96 paired/mid-run validation.
+
 ## Public timing uses the shared passive observer
 
 Public-suite timing now enables run_sequential's existing bounded, read-only

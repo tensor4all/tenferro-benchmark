@@ -257,11 +257,12 @@ def _archive_receipt(root: Path, receipt: Mapping[str, Any]) -> dict[str, str]:
     return {"file": str(path), "sha256": hashlib.sha256(text.encode()).hexdigest()}
 
 
-def _observe_suite_resources(args: argparse.Namespace, protocol: Mapping[str, Any]) -> dict[str, Any]:
+def _observe_suite_resources(args: argparse.Namespace, protocol: Mapping[str, Any], *,
+                             cpuset: str | None = None) -> dict[str, Any]:
     policy = protocol["resource_policy"]
     try:
         return _select_live_resources(policy["requested_threads"], policy["busy_threshold"],
-                                      args.observation_window, args.cpuset)
+                                      args.observation_window, args.cpuset if cpuset is None else cpuset)
     except Exception as exc:
         return {"status": "inconclusive", "cpus": [], "effective_threads": 0,
                 "requested_threads": policy["requested_threads"],
@@ -496,6 +497,16 @@ def _suite_run(args: argparse.Namespace) -> int:
                                      timing_reasons=reasons + [str(exc)], provider=provider,
                                      errors=errors + [f"invalid campaign receipt: {type(exc).__name__}"])
             records.append(record)
+        if not args.correctness_only:
+            after = _observe_suite_resources(args, protocol, cpuset=",".join(map(str, sorted(expected))))
+            result["resource_after"] = after
+            if after["status"] != "valid":
+                reason = "resources no longer eligible after public timing"
+                result["errors"].append(reason)
+                for record in records:
+                    if record["timing_validity"]["status"] != "invalid":
+                        record["timing_validity"]["status"] = "inconclusive"
+                        record["timing_validity"]["reasons"].append(reason)
         result["records"] = records
         (root / "results.jsonl").write_text(
             "\n".join(json.dumps(record, sort_keys=True) for record in records) + "\n", encoding="utf-8")

@@ -99,6 +99,15 @@ noise. No threshold is relaxed or repetition removed. As with unavailable
 resources, `INCONCLUSIVE` exits zero; automation must inspect the status, not just
 the exit code. `READY` is single-campaign readiness, not paired performance acceptance.
 
+Public timing also re-observes resources after all children finish, using the
+**same selected CPU mask**, never searching for replacement cores. The
+`resource_after` receipt is archived. Lost eligibility or unavailable telemetry
+makes otherwise usable rows inconclusive while retaining raw data and preserving
+latest; correctness/structural failures remain failures. This before/after check
+cannot detect contention that starts and ends during measurement. It does not
+replace the still-required during-run competing-load validation. Correctness-only
+and dry-run paths do not perform this post-timing check.
+
 ### Passive machine observations
 
 Component **timing diagnostics** and public-suite **timing runs** use the same
