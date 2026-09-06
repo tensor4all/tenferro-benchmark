@@ -236,7 +236,8 @@ def _payload_contract_errors(case: CaseContract, payload: Mapping[str, Any], pro
 
 
 def _validate_campaign_timing(timing: Mapping[str, Any], *, target_ns: int,
-                              cov_max: float) -> None:
+                              cov_max: float) -> list[str]:
+    """Reject malformed evidence; return noise reasons without discarding samples."""
     raw = timing.get("raw_elapsed_ns")
     if not isinstance(raw, list) or not raw or any(type(value) is not int or value < target_ns for value in raw):
         raise ContractError("campaign contains an under-duration sample")
@@ -244,7 +245,8 @@ def _validate_campaign_timing(timing: Mapping[str, Any], *, target_ns: int,
     if type(cov) not in (int, float) or isinstance(cov, bool) or not math.isfinite(float(cov)):
         raise ContractError("campaign process-median CoV is unavailable")
     if float(cov) > cov_max:
-        raise ContractError(f"campaign process-median CoV exceeds noise policy ({cov} > {cov_max})")
+        return [f"campaign process-median CoV exceeds noise policy ({cov} > {cov_max})"]
+    return []
 
 
 def _archive_receipt(root: Path, receipt: Mapping[str, Any]) -> dict[str, str]:
@@ -483,7 +485,9 @@ def _suite_run(args: argparse.Namespace) -> int:
                                      timing_status=timing_status, timing_reasons=reasons,
                                      provider=provider, errors=errors)
                 if not args.correctness_only and not errors:
-                    _validate_campaign_timing(record["timing"], target_ns=target_ns, cov_max=cov_max)
+                    noise = _validate_campaign_timing(record["timing"], target_ns=target_ns, cov_max=cov_max)
+                    if noise:
+                        record["timing_validity"] = {"status": "inconclusive", "reasons": reasons + noise}
             except (TypeError, ValueError, ContractError) as exc:
                 record = make_record(case, [] if not args.correctness_only else samples_for_record,
                                      correctness_status=correctness,
@@ -503,9 +507,10 @@ def _suite_run(args: argparse.Namespace) -> int:
             if case_filter is not None:
                 report_text = "# Selected-case archive\n\n" + report_text
             (root / "report.md").write_text(report_text, encoding="utf-8")
-            publish = all(record["correctness"]["status"] == "passed" and
-                          record["timing_validity"]["status"] == "valid" for record in records)
-            result["status"] = "READY" if publish else "FAILED"
+            failed = any(record["correctness"]["status"] != "passed" or record["errors"] or
+                         record["timing_validity"]["status"] == "invalid" for record in records)
+            publish = not failed and all(record["timing_validity"]["status"] == "valid" for record in records)
+            result["status"] = "FAILED" if failed else ("READY" if publish else "INCONCLUSIVE")
     except Exception as exc:
         result["status"] = "FAILED"
         result["errors"].append(f"suite execution failed: {type(exc).__name__}")

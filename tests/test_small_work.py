@@ -234,13 +234,18 @@ class SmallWorkTests(unittest.TestCase):
         reordered = dict(payloads[1]); reordered["samples"] = list(reversed(payloads[1]["samples"]))
         self.assertTrue(run_small_work._payload_contract_errors(self.case, reordered, 1, 2, 1, 2, False))
 
-    def test_campaign_rejects_high_cov_and_under_duration(self) -> None:
+    def test_campaign_distinguishes_noise_from_invalid_duration(self) -> None:
         samples = [{"process_index": p, "sample_index": i, "elapsed_ns": (100 if p == 0 else 1000), "iterations": 1}
                     for p in (0, 1) for i in range(2)]
         stats = timing_statistics(samples, 1)
         self.assertGreater(stats["process_median_cov"], 0.1)
-        with self.assertRaises(ContractError):
-            run_small_work._validate_campaign_timing(stats, target_ns=100, cov_max=0.1)
+        reasons = run_small_work._validate_campaign_timing(stats, target_ns=100, cov_max=0.1)
+        self.assertEqual(len(reasons), 1)
+        self.assertIn("CoV exceeds noise policy", reasons[0])
+        self.assertEqual(run_small_work._validate_campaign_timing(stats, target_ns=100, cov_max=stats["process_median_cov"]), [])
+        for cov in (None, True, float("nan"), float("inf")):
+            with self.subTest(cov=cov), self.assertRaisesRegex(ContractError, "CoV is unavailable"):
+                run_small_work._validate_campaign_timing({**stats, "process_median_cov": cov}, target_ns=100, cov_max=0.1)
         with self.assertRaises(ContractError):
             run_small_work._validate_campaign_timing({**stats, "raw_elapsed_ns": [100, 100, 99, 100]}, target_ns=100, cov_max=1.0)
 
@@ -476,7 +481,7 @@ class SmallWorkTests(unittest.TestCase):
             self.assertNotEqual(latest.read_text(encoding="utf-8"), "previous\n")
 
     def test_campaign_failures_keep_previous_latest(self) -> None:
-        variants = ("valid", "missing", "duplicate", "truncated", "reordered", "mismatched", "high_cov", "under_duration")
+        variants = ("valid", "missing", "duplicate", "truncated", "reordered", "mismatched", "high_cov", "noise_and_correctness", "noise_and_missing", "under_duration")
         for variant in variants:
             with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory); suite = self._one_case_suite(root); output = root / "run.json"
@@ -493,9 +498,13 @@ class SmallWorkTests(unittest.TestCase):
                         second["samples"] = list(reversed(second["samples"]))
                     elif variant == "mismatched":
                         second["operation"] = "mul"
-                    elif variant == "high_cov":
+                    elif variant in ("high_cov", "noise_and_correctness", "noise_and_missing"):
                         for sample in second["samples"]:
                             sample["elapsed_ns"] = 1000
+                        if variant == "noise_and_correctness":
+                            second["correctness_status"] = "failed"
+                        elif variant == "noise_and_missing":
+                            second["samples"].pop()
                     elif variant == "under_duration":
                         second["samples"][0]["elapsed_ns"] = 0
                     commands = [{"index": 0, "command": [], "status": "completed", "returncode": 0, "payload": first},
@@ -517,8 +526,22 @@ class SmallWorkTests(unittest.TestCase):
                     self.assertEqual(json.loads(output.read_text())["status"], "READY")
                     self.assertNotEqual(latest.read_text(encoding="utf-8"), "previous\n")
                     self.assertEqual(code, 0)
+                elif variant == "high_cov":
+                    result = json.loads(output.read_text())
+                    self.assertEqual(result["status"], "INCONCLUSIVE")
+                    self.assertEqual(code, 0)
+                    self.assertEqual(latest.read_text(encoding="utf-8"), "previous\n")
+                    record = result["records"][0]
+                    self.assertEqual(record["samples"], first["samples"] + second["samples"])
+                    self.assertEqual(record["timing_validity"]["status"], "inconclusive")
+                    self.assertGreater(record["timing"]["process_median_cov"], 0.1)
+                    self.assertEqual(record["errors"], [])
+                    validate_record(record, case)
+                    archive = next((root / "data/amd-cpu/cpu/small_work").iterdir())
+                    self.assertEqual(json.loads((archive / "results.jsonl").read_text()), record)
+                    self.assertIn("| inconclusive | — | — |", (archive / "report.md").read_text())
                 else:
-                    self.assertNotEqual(json.loads(output.read_text())["status"], "READY")
+                    self.assertEqual(json.loads(output.read_text())["status"], "FAILED")
                     self.assertEqual(latest.read_text(encoding="utf-8"), "previous\n")
                     self.assertNotEqual(code, 0)
 

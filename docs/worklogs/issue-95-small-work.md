@@ -1,5 +1,23 @@
 # Issue 95: small-work suite
 
+## Public campaign noise is not structural failure
+
+Before adding #96 paired orchestration, corrected the existing public runner's
+CoV handling. Complete but noisy campaigns retain their samples/statistics and
+return INCONCLUSIVE without replacing latest; the formatter hides unusable
+values. Structural, child or correctness errors remain FAILED, including mixed
+noise/failure cases. The frozen thresholds and statistics implementation are
+unchanged. Exit0 for INCONCLUSIVE follows the existing resource policy and is
+not acceptance.
+
+Regression tests reproduced the previous FAILED classification and exception.
+Focused tests now cover raw/results.jsonl retention, suppressed report values,
+unchanged latest, valid publication, malformed/missing/non-finite metadata and
+mixed failures. Python99 ran with98 passed and one existing live-resource smoke
+skipped. No Rust source or producer changed; prior124 numerical cases remain
+applicable to the unchanged producer, not new performance evidence. No paired
+CLI, selection union or during-run contention claim is made by this correction.
+
 ## Representative indexing gather
 
 Added six concrete fresh/shared gather cases for4/16/256 F64 data elements with

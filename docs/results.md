@@ -91,6 +91,14 @@ latest `result/<target_profile>/cpu/small_work.md`. A valid filtered timing run
 is still reported as `READY`; omit the filter to publish the latest full-suite
 report.
 
+A complete public campaign that exceeds the frozen process-median CoV limit is
+`INCONCLUSIVE`: all samples/statistics remain in the archive, but the report hides
+unusable timing values and latest is unchanged. Missing/malformed samples,
+under-duration samples and correctness failures remain `FAILED`, even alongside
+noise. No threshold is relaxed or repetition removed. As with unavailable
+resources, `INCONCLUSIVE` exits zero; automation must inspect the status, not just
+the exit code. `READY` is single-campaign readiness, not paired performance acceptance.
+
 ### Passive component machine observations
 
 Component **timing diagnostics** opt into the existing serial child runner's
