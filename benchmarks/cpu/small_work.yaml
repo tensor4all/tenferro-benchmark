@@ -1,7 +1,7 @@
 schema_version: 2
 suite_id: cpu/small_work
 title: CPU small-work public boundary contracts
-description: F64 add/einsum/solve/gather and C64 einsum, including F64/C64 borrowed layouts.
+description: F64 add/einsum/solve/gather/reduce_sum and C64 einsum, including F64/C64 borrowed layouts.
 contract_version: 2
 protocol:
   warmups: 1
@@ -4621,6 +4621,205 @@ cases:
     scope:
       timer:
       - einsum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+
+  - id: reduce_sum_f64_concrete-fresh_size4_single
+    contract_id: core.reduce_sum.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: reduce_sum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - reduce_sum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - reduce_sum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: reduce_sum_f64_concrete-shared_size4_single
+    contract_id: core.reduce_sum.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: reduce_sum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 4
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - reduce_sum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - reduce_sum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: reduce_sum_f64_concrete-fresh_size16_single
+    contract_id: core.reduce_sum.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: reduce_sum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - reduce_sum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - reduce_sum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: reduce_sum_f64_concrete-shared_size16_single
+    contract_id: core.reduce_sum.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: reduce_sum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 16
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - reduce_sum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - reduce_sum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+  - id: reduce_sum_f64_concrete-fresh_size256_single
+    contract_id: core.reduce_sum.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: reduce_sum
+    phase: execution
+    api_tier: concrete-fresh
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 256
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - session_entry_exit
+      - reduce_sum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - correctness_check
+    scope:
+      timer:
+      - session_entry_exit
+      - reduce_sum
+      - output_lifetime
+      outside_timer:
+      - backend_construction
+      - input_construction
+      - correctness_check
+  - id: reduce_sum_f64_concrete-shared_size256_single
+    contract_id: core.reduce_sum.ordinary.concrete
+    family: core
+    surface: concrete
+    operation: reduce_sum
+    phase: execution
+    api_tier: concrete-shared
+    backend: tenferro-rs
+    dtype: f64
+    layout: col_major_contiguous
+    shape:
+    - 256
+    calls_per_workflow: 1
+    workflow: single
+    setup:
+      includes:
+      - reduce_sum
+      - output_lifetime
+      excludes:
+      - backend_construction
+      - input_construction
+      - session_entry_exit
+      - shared_admission_exit
+      - correctness_check
+    scope:
+      timer:
+      - reduce_sum
       - output_lifetime
       outside_timer:
       - backend_construction

@@ -1,5 +1,33 @@
 # Issue 95: small-work suite
 
+## Owned F64 reduction coverage
+
+Added six core.reduce_sum.ordinary.concrete cases:4/16/256 input elements,
+fresh/shared sessions, axis0 reduction to a rank-zero scalar. The actual public
+BackendSession.reduce_sum route is timed, not an einsum composition. Shape in
+the case contract describes the input. Axes are the fixed slice[0]; input and
+independent host-sum oracle construction remain outside the timer. Fresh includes
+session entry/exit; shared excludes it, preserving existing scope conventions.
+
+Unary input needs no extra Tensor: the driver now owns an optional second
+operand and passes a borrowed input reference through the unused rhs parameter.
+Binary cases still own exactly their original inputs. No Tensor clone, dummy
+input, public API or library behavior was added. Non-concrete/C64/dependent10
+reduction selectors remain unsupported rather than being relabeled.
+
+Rust22, strict Clippy/rustfmt and Python103 (102 passed,1 existing live-resource
+skip) passed. Clippy's initially reported14 needless borrows after the rhs became
+a reference were removed; affected Rust checks reran. Scalar dtype/shape/value,
+repeated shared calls, input nonmutation and invalid-axis rejection are tested.
+Full CLI154 actual correctness/descriptor/schema records passed inside the CPU
+devcontainer at observed default budget4 (outer validation process confined to
+CPUs0–3, Rayon override unset); all prior148 case definitions were preserved.
+Correctness-only does not use the suite's requested thread count as a promise.
+
+This adds owned rank1 F64 reduction only, not strided/multi-axis/C64/prepared/AD
+coverage or measured overhead improvements. New release receipts and matched
+performance evidence remain required; no timing was collected here.
+
 ## Preserve failures when affinity restoration also fails
 
 The public runner's finally block unconditionally replaced FAILED with

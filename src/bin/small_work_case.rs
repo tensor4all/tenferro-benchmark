@@ -237,6 +237,15 @@ fn complex_broadcast_einsum_inputs(
     ))
 }
 
+fn reduce_sum_input(size: usize) -> Result<(Tensor, Tensor), Box<dyn Error + Send + Sync>> {
+    let values: Vec<f64> = (0..size).map(|i| (i % 7) as f64 * 0.25 - 0.5).collect();
+    let expected: f64 = values.iter().sum();
+    Ok((
+        Tensor::from_vec_col_major(vec![size], values)?,
+        Tensor::from_vec_col_major(vec![], vec![expected])?,
+    ))
+}
+
 fn gather_inputs(size: usize) -> Result<(Tensor, Tensor, Vec<f64>), Box<dyn Error + Send + Sync>> {
     let data: Vec<f64> = (0..size).map(|i| i as f64 / 8.0 - 3.0).collect();
     let indices: Vec<i64> = (0..size)
@@ -459,6 +468,7 @@ fn concrete_operation(
         "add" => lhs.add(rhs, session)?,
         "einsum" => [lhs, rhs].einsum("ij,jk->ik", session)?,
         "solve" => lhs.solve(rhs, session)?,
+        "reduce_sum" => session.reduce_sum(lhs, &[0])?,
         "gather" => session.gather(
             lhs,
             rhs,
@@ -537,8 +547,10 @@ fn case_descriptor(
                     | "borrowed-fresh"
                     | "borrowed-shared"
             ));
-    if !matches!(operation, "add" | "einsum" | "solve" | "gather")
-        || !supported_dtype
+    if !matches!(
+        operation,
+        "add" | "einsum" | "solve" | "gather" | "reduce_sum"
+    ) || !supported_dtype
         || !(matches!(size, 4 | 16 | 256) || (operation == "einsum" && matches!(size, 64 | 1024)))
     {
         return Err(format!(
@@ -556,10 +568,10 @@ fn case_descriptor(
             format!("workflow {workflow} requires calls_per_workflow={expected_calls}").into(),
         );
     }
-    if matches!(operation, "einsum" | "solve" | "gather") && workflow != "single" {
+    if matches!(operation, "einsum" | "solve" | "gather" | "reduce_sum") && workflow != "single" {
         return Err(format!("{operation} currently requires the single workflow").into());
     }
-    if matches!(operation, "solve" | "gather")
+    if matches!(operation, "solve" | "gather" | "reduce_sum")
         && !matches!(api_tier, "concrete-fresh" | "concrete-shared")
     {
         return Err(format!("{operation} currently requires a concrete fresh/shared tier").into());
@@ -686,6 +698,12 @@ fn case_descriptor(
             "linalg.solve.ordinary.concrete".to_string(),
             "linalg",
             vec![matrix_dimension(size)?, matrix_dimension(size)?],
+        )
+    } else if operation == "reduce_sum" {
+        (
+            "core.reduce_sum.ordinary.concrete".to_string(),
+            "core",
+            vec![size],
         )
     } else if operation == "gather" {
         (
@@ -1132,6 +1150,52 @@ mod tests {
             assert_eq!(repeat["contract_id"], "einsum.einsum.prepared.concrete");
             assert_eq!(repeat["phase"], "execution");
         }
+    }
+
+    #[test]
+    fn reduce_sum_checks_scalar_result_and_preserves_input() {
+        for size in [4, 16, 256] {
+            let (input, expected) = reduce_sum_input(size).unwrap();
+            let original = input.as_slice::<f64>().unwrap().to_vec();
+            assert_eq!(expected.shape(), &[] as &[usize]);
+            let mut backend = CpuBackend::new();
+            let output = concrete_fresh("reduce_sum", &mut backend, &input, &input).unwrap();
+            check_tensor_reference(&output, &expected).unwrap();
+            assert_eq!(input.as_slice::<f64>().unwrap(), original);
+            backend
+                .with_backend_session(|session| {
+                    for _ in 0..2 {
+                        let output = concrete_operation("reduce_sum", session, &input, &input)?;
+                        check_tensor_reference(&output, &expected)?;
+                        assert_eq!(input.as_slice::<f64>()?, original);
+                    }
+                    assert!(session.reduce_sum(&input, &[1]).is_err());
+                    Ok::<_, Box<dyn Error + Send + Sync>>(())
+                })
+                .unwrap();
+            for tier in ["concrete-fresh", "concrete-shared"] {
+                let descriptor =
+                    case_descriptor("reduce_sum", "f64", tier, "single", size, 1, "faer").unwrap();
+                assert_eq!(
+                    descriptor["contract_id"],
+                    "core.reduce_sum.ordinary.concrete"
+                );
+                assert_eq!(descriptor["shape"], serde_json::json!([size]));
+            }
+        }
+        assert!(
+            case_descriptor("reduce_sum", "f64", "eager-no-ad", "single", 4, 1, "faer").is_err()
+        );
+        assert!(case_descriptor(
+            "reduce_sum",
+            "c64",
+            "concrete-fresh",
+            "single",
+            4,
+            1,
+            "faer"
+        )
+        .is_err());
     }
 
     #[test]
@@ -1706,12 +1770,16 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "eager-no-ad" | "eager-ad" => runtime = Some(EagerRuntime::with_cpu_backend(backend)?),
         _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
     }
-    let (lhs, rhs, expected_values) = if dtype == "c64" {
-        if layout == "broadcast" {
+    let (lhs, rhs_storage, expected_values) = if operation == "reduce_sum" {
+        let (input, expected) = reduce_sum_input(size)?;
+        (input, None, expected)
+    } else if dtype == "c64" {
+        let (lhs, rhs, expected) = if layout == "broadcast" {
             complex_broadcast_einsum_inputs(size)?
         } else {
             complex_einsum_inputs(size)?
-        }
+        };
+        (lhs, Some(rhs), expected)
     } else {
         let (lhs, rhs, values) = if operation == "einsum" && layout == "broadcast" {
             broadcast_einsum_inputs(size)?
@@ -1725,8 +1793,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             inputs(size, calls)?
         };
         let expected = Tensor::from_vec_col_major(lhs.shape().to_vec(), values)?;
-        (lhs, rhs, expected)
+        (lhs, Some(rhs), expected)
     };
+    // Unary dispatch ignores rhs: no second tensor allocation or ownership clone.
+    let rhs = rhs_storage.as_ref().unwrap_or(&lhs);
     let compiled = if api_tier.starts_with("compiled-") {
         Some(compiled_einsum(
             concrete.as_ref().ok_or("concrete backend missing")?,
@@ -1736,9 +1806,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     } else {
         None
     };
-    let compiled_bindings = [&lhs, &rhs];
+    let compiled_bindings = [&lhs, rhs];
     let borrowed_storage = if api_tier.starts_with("borrowed-") {
-        Some(BorrowedEinsumInputs::new(&lhs, &rhs, &layout)?)
+        Some(BorrowedEinsumInputs::new(&lhs, rhs, &layout)?)
     } else {
         None
     };
@@ -1748,7 +1818,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         .transpose()?;
     let prepared = if api_tier.starts_with("prepared-") {
         Some(tenferro_einsum::ConcreteEinsumPlan::prepare(
-            [&lhs, &rhs],
+            [&lhs, rhs],
             "ij,jk->ik",
         )?)
     } else {
@@ -1791,7 +1861,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     };
     let check_concrete = |output: &Tensor| {
         if operation == "solve" {
-            check_solve_result(output, &lhs, &rhs, &expected_values)
+            check_solve_result(output, &lhs, rhs, &expected_values)
         } else {
             check_tensor_reference(output, &expected_values)
         }
@@ -1799,13 +1869,13 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let after_correctness = match api_tier.as_str() {
         "concrete-fresh" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
-            check_concrete(&add_chain(&lhs, &rhs, calls, |a, b| {
+            check_concrete(&add_chain(&lhs, rhs, calls, |a, b| {
                 concrete_fresh(&operation, backend, a, b)
             })?)?
         }
         "compiled-repeat" | "compiled-setup" => {
             let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
-            check_compiled_einsum(runtime, program, &lhs, &rhs)?
+            check_compiled_einsum(runtime, program, &lhs, rhs)?
         }
         "borrowed-fresh" | "borrowed-shared" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
@@ -1823,7 +1893,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                     &prepared
                         .as_ref()
                         .ok_or("prepared plan missing")?
-                        .execute([&lhs, &rhs], session)?,
+                        .execute([&lhs, rhs], session)?,
                     &expected_values,
                 )
             })?
@@ -1831,7 +1901,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "concrete-shared" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
             backend.with_backend_session(|session| {
-                check_concrete(&add_chain(&lhs, &rhs, calls, |a, b| {
+                check_concrete(&add_chain(&lhs, rhs, calls, |a, b| {
                     concrete_operation(&operation, session, a, b)
                 })?)
             })?
@@ -1848,14 +1918,14 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
             let value = add_chain(left, right, calls, |a, b| eager_operation(&operation, a, b))?;
             if operation == "einsum" && dtype == "c64" {
-                check_complex_einsum_ad(&value, left, right, &lhs, &rhs, &expected_values)?
+                check_complex_einsum_ad(&value, left, right, &lhs, rhs, &expected_values)?
             } else if operation == "einsum" {
                 check_einsum_ad(
                     &value,
                     left,
                     right,
                     &lhs,
-                    &rhs,
+                    rhs,
                     expected_values.as_slice::<f64>()?,
                 )?
             } else {
@@ -1946,7 +2016,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             expected_cpus.as_deref(),
             || {
                 black_box(tenferro_einsum::ConcreteEinsumPlan::prepare(
-                    [&lhs, &rhs],
+                    [&lhs, rhs],
                     "ij,jk->ik",
                 )?);
                 Ok(())
@@ -1967,10 +2037,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                             black_box(borrowed_einsum(views, session)?);
                             Ok(())
                         } else if let Some(plan) = prepared.as_ref() {
-                            black_box(plan.execute([&lhs, &rhs], session)?);
+                            black_box(plan.execute([&lhs, rhs], session)?);
                             Ok(())
                         } else {
-                            execute_shared(&operation, session, &lhs, &rhs, calls)
+                            execute_shared(&operation, session, &lhs, rhs, calls)
                         }
                     },
                 )
@@ -1993,7 +2063,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                         );
                         Ok(())
                     } else {
-                        execute_fresh(&operation, backend, &lhs, &rhs, calls)
+                        execute_fresh(&operation, backend, &lhs, rhs, calls)
                     }
                 },
             )?
