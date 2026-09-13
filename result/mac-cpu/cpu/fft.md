@@ -3,33 +3,33 @@
 - Suite: `cpu/fft`
 - Target profile: `mac-cpu`
 - Suite file: `benchmarks/cpu/fft.yaml`
-- Run metadata: `data/results/mac-cpu/cpu/fft/20260822_091026/run.yaml`
-- Timestamp: `20260822_091026`
+- Run metadata: `data/results/mac-cpu/cpu/fft/20260913_124630/run.yaml`
+- Timestamp: `20260913_124630`
 
 Latest run: `./scripts/run_cpu_fft.sh 1 4`.
 
-This file is generated from sequential CPU FFT runs under `data/results/mac-cpu/cpu/fft/20260822_091026`.
+This file is generated from sequential CPU FFT runs under `data/results/mac-cpu/cpu/fft/20260913_124630`.
 
-- tenferro-rs commit: `a21a4c602fc6700b9bc0c3f1b14ebd19b9d7ec45`
+- tenferro-rs commit: `a48866b1a0bb52e6f9712c485925105b14ea30b9`
 
 ## CPU Information
 
-- Model: `Apple M4`
+- Model: `Apple M5 Max`
 - Vendor: `Apple`
-- Logical CPUs: `10`
-- Physical CPUs: `10`
+- Logical CPUs: `18`
+- Physical CPUs: `18`
 - Sockets: `1`
-- Cores per socket: `10`
+- Cores per socket: `18`
 - Threads per core: `1`
 - NUMA nodes: `1`
-- Performance levels: `Performance: 4 physical / 4 logical (L1i 192 KiB, L1d 128 KiB, L2 16 MiB, 4 CPUs/L2); Efficiency: 6 physical / 6 logical (L1i 128 KiB, L1d 64 KiB, L2 4 MiB, 6 CPUs/L2)`
-- Python platform: `macOS-26.5.2-arm64-arm-64bit`
+- Performance levels: `Super: 6 physical / 6 logical (L1i 192 KiB, L1d 128 KiB, L2 16 MiB, 6 CPUs/L2); Performance: 12 physical / 12 logical (L1i 128 KiB, L1d 64 KiB, L2 8 MiB, 6 CPUs/L2)`
+- Python platform: `macOS-26.5.1-arm64-arm-64bit-Mach-O`
 
 ## Thread Environments
 
 ### Threads: 1
 
-- Run metadata: `data/results/mac-cpu/cpu/fft/20260822_091026/run_t1.yaml`
+- Run metadata: `data/results/mac-cpu/cpu/fft/20260913_124630/run_t1.yaml`
 - OMP_NUM_THREADS: `1`
 - OMP_THREAD_LIMIT: `1`
 - OMP_DYNAMIC: `FALSE`
@@ -45,7 +45,7 @@ This file is generated from sequential CPU FFT runs under `data/results/mac-cpu/
 
 ### Threads: 4
 
-- Run metadata: `data/results/mac-cpu/cpu/fft/20260822_091026/run_t4.yaml`
+- Run metadata: `data/results/mac-cpu/cpu/fft/20260913_124630/run_t4.yaml`
 - OMP_NUM_THREADS: `4`
 - OMP_THREAD_LIMIT: `4`
 - OMP_DYNAMIC: `FALSE`
@@ -74,9 +74,9 @@ This file is generated from sequential CPU FFT runs under `data/results/mac-cpu/
 
 ## Threads: 1 4
 
-- CSV: `data/results/mac-cpu/cpu/fft/20260822_091026/cpu_fft_t1_20260822_091026.csv`
-- CSV: `data/results/mac-cpu/cpu/fft/20260822_091026/cpu_fft_t4_20260822_091026.csv`
-- Source table: `data/results/mac-cpu/cpu/fft/20260822_091026/cpu_fft_20260822_091026.md`
+- CSV: `data/results/mac-cpu/cpu/fft/20260913_124630/cpu_fft_t1_20260913_124630.csv`
+- CSV: `data/results/mac-cpu/cpu/fft/20260913_124630/cpu_fft_t4_20260913_124630.csv`
+- Source table: `data/results/mac-cpu/cpu/fft/20260913_124630/cpu_fft_20260913_124630.md`
 
 ## CPU FFT Benchmark Items
 
@@ -86,22 +86,22 @@ Timing scope: input tensors are created outside the timed region; each timed cal
 
 | suite | benchmark | dtype | threads | shape | tenferro-rs one-shot diagnostic (ms) | tenferro-rs TensorRead API (ms) | tenferro-rs cached primary (ms) | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | PyTorch torch.fft (ms) |
 |---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|
-| cpu/fft | `fft` | c32 | 1 | `1d_n1048576` | 8.569 ± 0.780 | 8.547 ± 0.079 | 4.232 ± 0.403 | 4.487 ± 0.103 | 4.531 ± 0.136 | 9.914 ± 0.128 |
-| cpu/fft | `fft` | c32 | 4 | `1d_n1048576` | 8.291 ± 0.212 | 8.423 ± 0.094 | 4.370 ± 0.424 | 4.491 ± 0.056 | 4.541 ± 0.135 | 9.902 ± 0.164 |
-| cpu/fft | `fft` | c64 | 1 | `1d_n1048576` | 12.788 ± 0.157 | 13.219 ± 0.089 | 7.857 ± 0.752 | 7.919 ± 0.229 | 7.983 ± 0.131 | 12.663 ± 0.353 |
-| cpu/fft | `fft` | c64 | 4 | `1d_n1048576` | 12.768 ± 0.196 | 13.453 ± 0.892 | 7.510 ± 0.379 | 8.354 ± 0.177 | 8.245 ± 0.580 | 12.413 ± 0.836 |
-| cpu/fft | `ifft` | c32 | 1 | `1d_n1048576` | 8.565 ± 0.127 | 8.804 ± 0.164 | 4.253 ± 0.218 | 4.634 ± 0.049 | 4.630 ± 0.060 | 9.982 ± 0.138 |
-| cpu/fft | `ifft` | c32 | 4 | `1d_n1048576` | 8.610 ± 0.188 | 8.953 ± 0.514 | 4.472 ± 0.331 | 4.610 ± 0.082 | 4.675 ± 0.068 | 10.176 ± 0.154 |
-| cpu/fft | `ifft` | c64 | 1 | `1d_n1048576` | 13.340 ± 0.278 | 13.695 ± 0.154 | 7.970 ± 0.118 | 8.445 ± 0.124 | 8.642 ± 0.598 | 11.428 ± 0.262 |
-| cpu/fft | `ifft` | c64 | 4 | `1d_n1048576` | 13.415 ± 0.263 | 13.668 ± 0.314 | 8.438 ± 0.738 | 8.611 ± 0.604 | 8.385 ± 0.495 | 11.451 ± 0.296 |
-| cpu/fft | `irfft` | c32 | 1 | `1d_n1048576` | 8.336 ± 0.229 | 8.699 ± 0.166 | 4.231 ± 0.214 | 4.295 ± 0.073 | 4.384 ± 0.075 | 3.678 ± 0.023 |
-| cpu/fft | `irfft` | c32 | 4 | `1d_n1048576` | 8.543 ± 0.205 | 8.745 ± 0.238 | 4.358 ± 0.432 | 4.337 ± 0.041 | 4.402 ± 0.102 | 3.778 ± 0.042 |
-| cpu/fft | `irfft` | c64 | 1 | `1d_n1048576` | 12.822 ± 0.452 | 13.119 ± 0.228 | 7.586 ± 0.206 | 7.744 ± 0.324 | 7.614 ± 0.151 | 4.945 ± 0.085 |
-| cpu/fft | `irfft` | c64 | 4 | `1d_n1048576` | 13.044 ± 0.812 | 13.076 ± 0.385 | 7.508 ± 0.590 | 7.843 ± 0.275 | 7.732 ± 0.211 | 5.040 ± 0.158 |
-| cpu/fft | `rfft` | f32 | 1 | `1d_n1048576` | 8.242 ± 0.188 | 8.366 ± 0.098 | 4.244 ± 0.190 | 4.193 ± 0.443 | 4.241 ± 0.063 | 3.940 ± 0.095 |
-| cpu/fft | `rfft` | f32 | 4 | `1d_n1048576` | 8.388 ± 0.155 | 8.442 ± 0.096 | 4.266 ± 0.051 | 4.111 ± 0.098 | 4.271 ± 0.253 | 3.943 ± 0.158 |
-| cpu/fft | `rfft` | f64 | 1 | `1d_n1048576` | 12.664 ± 0.384 | 12.809 ± 0.139 | 7.245 ± 0.179 | 7.573 ± 0.209 | 7.487 ± 0.170 | 4.959 ± 0.063 |
-| cpu/fft | `rfft` | f64 | 4 | `1d_n1048576` | 12.674 ± 0.523 | 12.998 ± 0.346 | 7.467 ± 0.995 | 7.615 ± 0.543 | 7.630 ± 0.275 | 4.869 ± 0.093 |
+| cpu/fft | `fft` | c32 | 1 | `1d_n1048576` | 8.195 ± 0.532 | 8.060 ± 0.189 | 4.349 ± 0.206 | 4.356 ± 0.062 | 4.437 ± 0.135 | 10.625 ± 0.270 |
+| cpu/fft | `fft` | c32 | 4 | `1d_n1048576` | 8.219 ± 0.722 | 8.124 ± 0.261 | 4.394 ± 0.186 | 4.435 ± 0.094 | 4.385 ± 0.035 | 10.559 ± 0.250 |
+| cpu/fft | `fft` | c64 | 1 | `1d_n1048576` | 11.821 ± 0.554 | 11.884 ± 0.316 | 6.849 ± 0.203 | 6.936 ± 0.299 | 7.569 ± 0.166 | 12.061 ± 0.363 |
+| cpu/fft | `fft` | c64 | 4 | `1d_n1048576` | 12.038 ± 0.310 | 11.997 ± 0.299 | 7.501 ± 0.151 | 7.507 ± 0.192 | 7.530 ± 0.117 | 12.074 ± 0.209 |
+| cpu/fft | `ifft` | c32 | 1 | `1d_n1048576` | 8.238 ± 0.245 | 8.223 ± 0.525 | 4.450 ± 0.065 | 4.060 ± 0.067 | 4.530 ± 0.100 | 11.912 ± 2.204 |
+| cpu/fft | `ifft` | c32 | 4 | `1d_n1048576` | 8.334 ± 0.239 | 8.299 ± 0.286 | 4.488 ± 0.154 | 4.562 ± 0.215 | 4.482 ± 0.110 | 12.377 ± 2.063 |
+| cpu/fft | `ifft` | c64 | 1 | `1d_n1048576` | 11.993 ± 0.694 | 12.148 ± 0.587 | 7.450 ± 0.130 | 7.453 ± 0.164 | 7.032 ± 0.263 | 11.618 ± 0.377 |
+| cpu/fft | `ifft` | c64 | 4 | `1d_n1048576` | 12.159 ± 0.473 | 12.213 ± 0.645 | 7.752 ± 0.169 | 7.754 ± 0.198 | 6.875 ± 0.295 | 11.507 ± 0.091 |
+| cpu/fft | `irfft` | c32 | 1 | `1d_n1048576` | 8.240 ± 0.420 | 8.275 ± 0.391 | 4.339 ± 0.104 | 4.418 ± 0.119 | 3.953 ± 0.161 | 3.631 ± 0.043 |
+| cpu/fft | `irfft` | c32 | 4 | `1d_n1048576` | 8.316 ± 0.431 | 8.357 ± 0.259 | 4.416 ± 0.175 | 4.485 ± 0.113 | 4.065 ± 0.113 | 3.610 ± 0.085 |
+| cpu/fft | `irfft` | c64 | 1 | `1d_n1048576` | 12.044 ± 0.700 | 11.980 ± 0.419 | 7.624 ± 0.165 | 7.641 ± 0.143 | 7.812 ± 0.214 | 4.731 ± 0.124 |
+| cpu/fft | `irfft` | c64 | 4 | `1d_n1048576` | 12.057 ± 0.769 | 12.271 ± 0.221 | 7.678 ± 0.293 | 7.716 ± 0.243 | 7.816 ± 0.346 | 4.648 ± 0.160 |
+| cpu/fft | `rfft` | f32 | 1 | `1d_n1048576` | 8.008 ± 0.157 | 8.266 ± 0.155 | 3.753 ± 0.189 | 4.257 ± 0.292 | 4.263 ± 0.197 | 3.499 ± 0.082 |
+| cpu/fft | `rfft` | f32 | 4 | `1d_n1048576` | 8.148 ± 0.259 | 8.204 ± 0.315 | 3.659 ± 0.157 | 3.707 ± 0.138 | 3.903 ± 0.133 | 3.494 ± 0.074 |
+| cpu/fft | `rfft` | f64 | 1 | `1d_n1048576` | 11.668 ± 1.046 | 11.670 ± 0.426 | 6.526 ± 0.169 | 6.661 ± 0.311 | 7.389 ± 0.237 | 4.465 ± 0.076 |
+| cpu/fft | `rfft` | f64 | 4 | `1d_n1048576` | 11.798 ± 0.749 | 11.784 ± 0.452 | 7.389 ± 0.143 | 6.530 ± 0.277 | 7.301 ± 0.306 | 4.411 ± 0.067 |
 
 Notes:
 
