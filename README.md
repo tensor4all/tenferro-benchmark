@@ -1,7 +1,9 @@
 # tenferro-benchmark
 
 Timing corrections are documented in [timing policy revision 2](docs/timing-policy.md).
-Existing reports require affected-participant reruns before operation-performance comparisons.
+The [M5 Max CPU refresh](docs/m5-cpu-refresh-20260913.md) reran all CPU suites
+with revision 2 at 1 and 4 threads. Other targets retain earlier measurements
+and require affected-participant reruns before operation-performance comparisons.
 
 Benchmark suite for [tenferro-rs](https://github.com/tensor4all/tenferro-rs),
 comparing tenferro against PyTorch, JAX, Julia, HPTT, cuTENSOR, and other
@@ -19,6 +21,9 @@ live in git history only.
 | `mac-cpu` (Apple Silicon, native) | `cpu/einsum` | [result/mac-cpu/cpu/einsum.md](result/mac-cpu/cpu/einsum.md) |
 | `mac-cpu` | `cpu/cpu_ops` | [result/mac-cpu/cpu/cpu_ops.md](result/mac-cpu/cpu/cpu_ops.md) |
 | `mac-cpu` | `cpu/linalg_jvp_vjp` | [result/mac-cpu/cpu/linalg_jvp_vjp.md](result/mac-cpu/cpu/linalg_jvp_vjp.md) |
+| `mac-cpu` | `cpu/fft` | [result/mac-cpu/cpu/fft.md](result/mac-cpu/cpu/fft.md) |
+| `mac-cpu` | `cpu/public_api` | [result/mac-cpu/cpu/public_api.md](result/mac-cpu/cpu/public_api.md) |
+| `mac-cpu` | `cpu/small_work` | [result/mac-cpu/cpu/small_work.md](result/mac-cpu/cpu/small_work.md) |
 | `mac-cpu` | `cpu/permutation` | [result/mac-cpu/cpu/permutation.md](result/mac-cpu/cpu/permutation.md) |
 | `linux-cpu` (Linux devcontainer; collected as `amd-cpu`) | `cpu/einsum` | [result/linux-cpu/cpu/einsum.md](result/linux-cpu/cpu/einsum.md) |
 | `linux-cpu` | `cpu/cpu_ops` | [result/linux-cpu/cpu/cpu_ops.md](result/linux-cpu/cpu/cpu_ops.md) |

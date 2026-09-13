@@ -1,0 +1,75 @@
+schema_version: 1
+target_profile: mac-cpu
+suite_id: cpu/permutation
+suite_file: benchmarks/cpu/permutation.yaml
+timestamp: '2026-09-13T05:31:37.455464+00:00'
+tenferro_rs:
+  path: /Users/hiroshi/projects/tensor4all/tenferro-benchmark-m5-refresh/extern/tenferro-rs
+  commit: a793c2e95693f053722fbff8d0db25722336c21f
+  dirty: false
+  features:
+  - system-accelerate
+  - strided-rs
+environment:
+  hostname: MacBook-Pro-7.local
+  os: macOS-26.5.1-arm64-arm-64bit-Mach-O
+  arch: arm64
+  cpu: arm
+  env:
+    OMP_NUM_THREADS: '4'
+    OMP_THREAD_LIMIT: '4'
+    OMP_DYNAMIC: 'FALSE'
+    RAYON_NUM_THREADS: '4'
+    BENCHMARK_TARGET_PROFILE: mac-cpu
+    OPENBLAS_NUM_THREADS: '4'
+    GOTO_NUM_THREADS: '4'
+    MKL_NUM_THREADS: '4'
+    VECLIB_MAXIMUM_THREADS: '4'
+    VECLIB_NUM_THREADS: '4'
+    NUMEXPR_NUM_THREADS: '4'
+    BLIS_NUM_THREADS: '4'
+    XLA_FLAGS: --xla_cpu_multi_thread_eigen=true intra_op_parallelism_threads=4
+    JULIA_NUM_THREADS: '4'
+timing_policy:
+  version: 2
+  scope: operation execution and completion synchronization
+  setup: inputs, transfers, runtime/session/handles, plans and compilation outside
+    timer
+  cleanup: returned outputs retained until after timer stops
+  minimum_untimed_priming_runs: 1
+  setup_diagnostics: false
+blas:
+  implementation: accelerate
+  version: unknown
+  library: /System/Library/Frameworks/Accelerate.framework
+python_backends:
+  pytorch:
+    available: true
+    version: 2.12.0
+    file: /Users/hiroshi/projects/tensor4all/tenferro-benchmark-m5-refresh/.venv/lib/python3.14/site-packages/torch/__init__.py
+    provider: accelerate
+    blas_info: accelerate
+    lapack_info: accelerate
+    library: /Users/hiroshi/projects/tensor4all/tenferro-benchmark-m5-refresh/.venv/lib/python3.14/site-packages/torch/lib/libtorch_cpu.dylib
+    linked_libraries:
+    - /System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate
+    - '@rpath/libomp.dylib'
+  jax:
+    available: true
+    version: 0.10.1
+    jaxlib_version: 0.10.1
+    backend: cpu
+    file: /Users/hiroshi/projects/tensor4all/tenferro-benchmark-m5-refresh/.venv/lib/python3.14/site-packages/jaxlib/__init__.py
+    provider: xla_cpu
+    dot_backend: xla_cpu
+    lapack_provider: internal_lapack
+    library: /Users/hiroshi/projects/tensor4all/tenferro-benchmark-m5-refresh/.venv/lib/python3.14/site-packages/jaxlib/_ifrt_proxy.so
+    linked_libraries:
+    - bazel-out/darwin_arm64-opt/bin/jaxlib/cpu/_lapack.so
+julia:
+  available: true
+  version: 1.12.5
+  strided_version: 2.6.1
+  omeinsum_version: 0.9.4
+  blas_provider: LBTConfig([ILP64] libopenblas64_.dylib)
+  threads: 4

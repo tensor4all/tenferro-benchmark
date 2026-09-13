@@ -1,0 +1,49 @@
+suite,benchmark,dtype,threads,shape,backend,median_ms,iqr_ms,status,notes
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-immediate,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-read,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-executor-cached,4.222375,0.161875,ok,"FftExecutor reused across warmups and measured runs"
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-eager,4.250916,0.097292,ok,"EagerTensorFftExt with one reused eager runtime and input"
+cpu/fft,fft,c32,4,1d_n1048576,tenferro-fft-trace,4.238041,0.137917,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs"
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-immediate,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-read,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-executor-cached,7.240875,0.310459,ok,"FftExecutor reused across warmups and measured runs"
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-eager,7.221917,0.350458,ok,"EagerTensorFftExt with one reused eager runtime and input"
+cpu/fft,fft,c64,4,1d_n1048576,tenferro-fft-trace,6.348375,0.227875,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs"
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-immediate,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-read,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-executor-cached,4.284208,0.133874,ok,"FftExecutor reused across warmups and measured runs"
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-eager,4.335417,0.141208,ok,"EagerTensorFftExt with one reused eager runtime and input"
+cpu/fft,ifft,c32,4,1d_n1048576,tenferro-fft-trace,4.404791,0.097624,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs"
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-immediate,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-read,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-executor-cached,6.475459,0.279916,ok,"FftExecutor reused across warmups and measured runs"
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-eager,6.480875,0.259791,ok,"EagerTensorFftExt with one reused eager runtime and input"
+cpu/fft,ifft,c64,4,1d_n1048576,tenferro-fft-trace,7.420833,0.334625,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs"
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-immediate,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-read,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-executor-cached,4.001583,0.179167,ok,"FftExecutor reused across warmups and measured runs"
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-eager,4.036541,0.110624,ok,"EagerTensorFftExt with one reused eager runtime and input"
+cpu/fft,rfft,f32,4,1d_n1048576,tenferro-fft-trace,3.632000,0.090167,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs"
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-immediate,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-read,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-executor-cached,7.063625,0.306292,ok,"FftExecutor reused across warmups and measured runs"
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-eager,6.321209,0.175750,ok,"EagerTensorFftExt with one reused eager runtime and input"
+cpu/fft,rfft,f64,4,1d_n1048576,tenferro-fft-trace,6.922792,0.384500,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs"
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-immediate,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-read,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-executor-cached,4.267041,0.158499,ok,"FftExecutor reused across warmups and measured runs"
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-eager,3.857625,0.061334,ok,"EagerTensorFftExt with one reused eager runtime and input"
+cpu/fft,irfft,c32,4,1d_n1048576,tenferro-fft-trace,4.362042,0.070999,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs"
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-immediate,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-read,,,skipped,one-shot API includes planning; use cached executor for operation timing
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-executor-cached,6.569708,0.124624,ok,"FftExecutor reused across warmups and measured runs"
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-eager,6.554208,0.128791,ok,"EagerTensorFftExt with one reused eager runtime and input"
+cpu/fft,irfft,c64,4,1d_n1048576,tenferro-fft-trace,7.332166,0.229250,ok,"TracedTensorFftExt graph compiled once; compiled program reused across runs"
+cpu/fft,fft,c32,4,1d_n1048576,pytorch-cpu,10.252833,0.186542,ok,torch.fft warmup before measured runs; input allocation outside timed region
+cpu/fft,fft,c64,4,1d_n1048576,pytorch-cpu,11.691375,0.217125,ok,torch.fft warmup before measured runs; input allocation outside timed region
+cpu/fft,ifft,c32,4,1d_n1048576,pytorch-cpu,10.398500,0.236708,ok,torch.fft warmup before measured runs; input allocation outside timed region
+cpu/fft,ifft,c64,4,1d_n1048576,pytorch-cpu,11.020625,0.318375,ok,torch.fft warmup before measured runs; input allocation outside timed region
+cpu/fft,rfft,f32,4,1d_n1048576,pytorch-cpu,3.455833,0.054709,ok,torch.fft warmup before measured runs; input allocation outside timed region
+cpu/fft,rfft,f64,4,1d_n1048576,pytorch-cpu,4.347292,0.081875,ok,torch.fft warmup before measured runs; input allocation outside timed region
+cpu/fft,irfft,c32,4,1d_n1048576,pytorch-cpu,3.516667,0.043918,ok,torch.fft warmup before measured runs; input allocation outside timed region
+cpu/fft,irfft,c64,4,1d_n1048576,pytorch-cpu,4.559667,0.203125,ok,torch.fft warmup before measured runs; input allocation outside timed region
