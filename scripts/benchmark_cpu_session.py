@@ -51,19 +51,19 @@ def report(run_dir, target):
              'and initialization are outside timing. Outputs remain alive until timer stop. '
              'Every output is checked after timing (solve uses the residual).', '',
              'tenferro enters exactly one backend session around all warmups and samples. '
-             'Accelerate and faer use the same public operations and session scope; 4-thread faer uses tenferro’s '
+             'Accelerate and faer use the same public operations and session scope. The BLAS ProviderDefaultExclusive path does not enter the executor around the session body: individual operations still enter it, and that internal cost remains timed. Faer reuses the entered executor context. The execution mode and worker count are recorded in each Rust row. 4-thread faer uses tenferro’s '
              'Rayon execution domain (inner kernel parallelism, not an outer parallel loop over matrices). '
              'PyTorch uses a Python loop over the same inputs, with its thread pools initialized before timing. '
              'Its Python dispatch cost is included. These are allocation-returning operations, not batched tensor APIs.', '',
              'EagerTensor and compiled trace are not labeled shared-session: their current public interfaces '
              'do not accept this borrowed session and create internal sessions during execution. '
              'The old single-call measurements remain diagnostic evidence only.', '',
-             '| Operation | Matrix | Operations | Threads | Provider | Route | Median total ms | IQR total ms | Median ns/op | Check |',
-             '|---|---|---:|---:|---|---|---:|---:|---:|---|']
+             '| Operation | Matrix | Operations | Threads | Provider | Route | Execution mode | Median total ms | IQR total ms | Median ns/op | Check |',
+             '|---|---|---:|---:|---|---|---|---:|---:|---:|---|']
     for r in sorted(rows,key=lambda r:(r['operation'],r['n'],r['threads'],r['provider'])):
         values = r['samples_ns']; med = statistics.median(values)
         q = statistics.quantiles(values,n=4,method='inclusive')
-        lines.append(f"| {r['operation']} | {r['n']}×{r['n']} | {r['operations_per_sample']} | {r['threads']} | {r['provider']} | {r['route']} | {med/1e6:.6f} | {(q[2]-q[0])/1e6:.6f} | {med/r['operations_per_sample']:.2f} | {r['correctness']} |")
+        lines.append(f"| {r['operation']} | {r['n']}×{r['n']} | {r['operations_per_sample']} | {r['threads']} | {r['provider']} | {r['route']} | {r.get('execution_mode', 'not applicable')} | {med/1e6:.6f} | {(q[2]-q[0])/1e6:.6f} | {med/r['operations_per_sample']:.2f} | {r['correctness']} |")
     text = '\n'.join(lines)+'\n'
     (run_dir/'report.md').write_text(text)
     latest = Path('result')/target/'cpu/session_matrix.md'

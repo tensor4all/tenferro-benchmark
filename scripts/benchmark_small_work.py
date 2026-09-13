@@ -130,6 +130,7 @@ def report(run_dir, target):
             lines.append(f"| {row['case_id']} | {median} | {iqr} | {status} |")
     lines += ["", "## Per-route timing boundaries", "",
               "Shared-session routes enter/exit the session once around warmup/calibration/all samples, outside timing. "
+              "BLAS ProviderDefaultExclusive still enters the executor inside each operation; sharing the backend session does not remove that provider-imposed internal dispatch. Faer reuses the entered executor context. "
               "Fresh routes enter/exit for each operation. Prepared-repeat excludes plan preparation; compiled-repeat excludes tracing/compilation and runtime construction.", ""]
     scopes = {}
     for row in rows:

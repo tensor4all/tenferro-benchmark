@@ -11,7 +11,14 @@ thread settings held fixed reproduces it; changing only the BLAS settings does
 not. `CpuBackend::run_backend_session_cached` constructs/enters a session;
 `CpuOperationEntry::enter` and `CpuContext::install` run work through the domain.
 Many independent calls made on the caller thread repeat that boundary. A shared
-session supplies an already-entered context and amortizes it across operations.
+faer session supplies an already-entered context and amortizes it across
+operations. BLAS is different: `ProviderDefaultExclusive` is explicitly
+excluded from `enter_managed_session` in `run_backend_session_cached`. Its
+CpuExecSession has no retained entered context, so individual operations still
+enter the executor. The 1024-operation session benchmark reproduces this
+remaining Accelerate 4-thread penalty. Other explicit placements are rejected
+for BLAS as unmanaged provider affinity, so selecting a different ordinary
+placement does not solve it.
 This is not evidence that splitting a 2×2 multiplication across four cores is
 useful. PyTorch's installed mm path reaches CPUBlas/BLAS without an explicit
 2×2-specific threading threshold in that path; the tiny-call activity probe

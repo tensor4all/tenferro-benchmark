@@ -108,16 +108,19 @@ function median_iqr(times::Vector{Float64})
     return med, iqr
 end
 
-function bench(f, runs::Int, warmups::Int)
+function bench(f, runs::Int, warmups::Int, count::Int = 1)
     for _ in 1:max(warmups, 1)
         f()
     end
     times = Vector{Float64}(undef, runs)
+    outputs = Vector{Any}(undef, count)
     for i in 1:runs
-        output = nothing
+        fill!(outputs, nothing)
         t0 = time_ns()
-        output = f()
-        GC.@preserve output times[i] = (time_ns() - t0) / 1e6
+        for j in 1:count
+            outputs[j] = f()
+        end
+        GC.@preserve outputs times[i] = (time_ns() - t0) / 1e6 / count
     end
     return median_iqr(times)
 end
@@ -141,7 +144,11 @@ end
 
 function emit_case(io::IO, suite, benchmark, dtype, threads, shape, backend, notes, runs, warmups, f)
     try
-        median_ms, iqr_ms = bench(f, runs, warmups)
+        count = suite == "cpu/view_metadata" ? 16 : 1
+        median_ms, iqr_ms = bench(f, runs, warmups, count)
+        if count > 1
+            notes *= "; operations_per_sample=$(count); median_batch_ms=$(median_ms * count); session=not_required"
+        end
         write_row(io, suite, benchmark, dtype, threads, shape, backend, median_ms, iqr_ms, "ok", notes)
     catch e
         write_row(io, suite, benchmark, dtype, threads, shape, backend, nothing, nothing, "failed", sprint(showerror, e))

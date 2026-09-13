@@ -309,6 +309,7 @@ def physical_bound_findings(
 def format_table(paths: list[Path]) -> str:
     by_key: dict[tuple[str, str, str, str, str], dict[str, str]] = defaultdict(dict)
     timings: dict[tuple[str, str, str, str, str], dict[str, float]] = defaultdict(dict)
+    batch_timings = {}
     for path in paths:
         with path.open(newline="") as f:
             for row in csv.DictReader(f):
@@ -319,6 +320,11 @@ def format_table(paths: list[Path]) -> str:
                     status = row_value(row, "status")
                     if median_ms and status == "ok" and float(median_ms) > 0:
                         timings[key][backend] = float(median_ms)
+                        match = re.search(r"operations_per_sample=(\d+)", row.get("notes", ""))
+                        if match and int(match[1]) > 1:
+                            count = int(match[1])
+                            total = re.search(r"median_batch_ms=([0-9.eE+-]+)", row.get("notes", ""))
+                            batch_timings[(key, backend)] = (count, float(total[1]) if total else float(median_ms) * count)
 
     lines = [
         "## CPU Benchmark Items",
@@ -348,6 +354,14 @@ def format_table(paths: list[Path]) -> str:
             *(values.get(backend, "-") for backend in BACKEND_ORDER),
         ]
         lines.append("| " + " | ".join(row) + " |")
+
+    if batch_timings:
+        lines.extend(["", "## Short-operation batches", "",
+                      "Total batch duration and normalized ns/op are shown without rounding sub-microsecond calls to zero. Metadata views require no execution session.", "",
+                      "| Operation | Threads | Backend | Operations/batch | Median batch ms | Median ns/op |",
+                      "|---|---:|---|---:|---:|---:|"])
+        for (key, backend), (count, total) in sorted(batch_timings.items()):
+            lines.append(f"| {key[1]} | {key[3]} | {BACKEND_LABELS.get(backend, backend)} | {count} | {total:.6f} | {total * 1e6 / count:.2f} |")
 
     spread_findings = plausibility_findings(timings)
     lines.extend(

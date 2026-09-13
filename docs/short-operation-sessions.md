@@ -1,7 +1,7 @@
 # Short operations and session reuse
 
 The standard small-work measurement is now many operations in one clock
-interval, inside one already-entered session. Inputs, session construction and
+interval, inside one already-created backend session. Inputs, session construction and
 entry, plans, warmup, output-container allocation and cleanup are outside the
 clock. Intrinsic output allocation remains inside. All final outputs survive
 until timer stop. A normalized ns/op is the batch duration divided by its
@@ -45,6 +45,12 @@ change; this benchmark change does not bypass the guard.
 CPU and GPU trace runners now prepare execution plans with `prepare_compiled`
 before warmup and call `run_prepared` inside timing. Graph compilation alone
 did not exclude the metadata/ingress preparation performed by `run_compiled`.
+
+A shared BackendSession is distinct from one executor entry. On this revision,
+BLAS resolves to `ProviderDefaultExclusive`; its session callback does not
+retain an entered executor context, so each operation still performs an
+internal executor entry. Faer does retain that context. The benchmark records
+this remaining provider cost rather than bypassing tenferro's exclusivity guard.
 
 JAX thread configuration now additionally exports `PJRT_NPROC` before importing
 JAX. The earlier Eigen/XLA flag alone did not constrain the CPU client's thread

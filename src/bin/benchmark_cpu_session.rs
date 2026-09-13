@@ -52,6 +52,9 @@ fn main() -> Result<()> {
         _ => return Err("invalid provider".into()),
     };
     let mut backend = CpuBackend::with_kind(kind)?;
+    let execution_info = backend.execution_info();
+    let execution_mode = format!("{:?}", execution_info.execution_mode());
+    let worker_count = execution_info.worker_count();
     let fixtures = (0..count)
         .map(|k| fixture(n, k))
         .collect::<Result<Vec<_>>>()?;
@@ -109,7 +112,7 @@ fn main() -> Result<()> {
     })?;
     println!(
         "{}",
-        serde_json::json!({"operation":op,"n":n,"operations_per_sample":count,"provider":provider,"route":"shared-session","session_count":1,"warmups":3,"samples_ns":elapsed_ns,"correctness":"passed"})
+        serde_json::json!({"operation":op,"n":n,"operations_per_sample":count,"provider":provider,"route":"shared-session","session_count":1,"execution_mode":execution_mode,"worker_count":worker_count,"warmups":3,"samples_ns":elapsed_ns,"correctness":"passed"})
     );
     Ok(())
 }
