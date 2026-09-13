@@ -287,7 +287,7 @@ function benchmark_instance(instance, strategy::String)
     try
         # Warmup (also triggers Julia JIT compilation of the contraction
         # kernels for this instance/strategy).
-        for _ in 1:bench_warmups()
+        for _ in 1:max(bench_warmups(), 1)
             r = run_plan(steps, n_inputs, operands)
             r === nothing && error("run_plan returned nothing")
         end
@@ -295,6 +295,7 @@ function benchmark_instance(instance, strategy::String)
         times = Float64[]
         sizehint!(times, bench_runs())
         for _ in 1:bench_runs()
+            r = nothing
             t0 = time_ns()
             r = run_plan(steps, n_inputs, operands)
             elapsed_ms = (time_ns() - t0) / 1.0e6

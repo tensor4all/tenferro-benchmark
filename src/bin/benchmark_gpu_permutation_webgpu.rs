@@ -11,7 +11,7 @@ use std::io::Write;
 use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
-use tenferro_gpu::{webgpu_available, WebGpuBackend};
+use tenferro_gpu::webgpu::{webgpu_available, WebGpuBackend};
 use tenferro_tensor::{
     Tensor, TensorDeviceTransfer, TensorStructural, TensorViewCanonicalization, TypedTensor,
 };
@@ -121,20 +121,22 @@ fn quantile(sorted: &[f64], q: f64) -> f64 {
     sorted[index]
 }
 
-fn measure(
+fn measure<O>(
     warmup: usize,
     iters: usize,
     bytes: usize,
-    mut operation: impl FnMut(),
+    mut operation: impl FnMut() -> O,
 ) -> (f64, f64, f64, f64) {
-    for _ in 0..warmup {
+    for _ in 0..warmup.max(1) {
         operation();
     }
     let mut samples = Vec::with_capacity(iters);
     for _ in 0..iters {
         let start = Instant::now();
-        operation();
+        let output = operation();
         samples.push(start.elapsed().as_secs_f64() * 1e3);
+        black_box(&output);
+        drop(output);
     }
     samples.sort_by(f64::total_cmp);
     let median = quantile(&samples, 0.5);
@@ -246,10 +248,14 @@ fn run_transpose(
 ) -> Record {
     let name = "tenferro-webgpu-transpose-baseline";
     let host = Tensor::from_vec_col_major(pattern.shape.clone(), data.to_vec()).unwrap();
-    let input = backend.upload_host_tensor(&host).unwrap();
+    let input = backend
+        .upload_host_tensor(tenferro_tensor::TensorRead::from_tensor(&host))
+        .unwrap();
     let output = backend.transpose(&input, &pattern.perm).unwrap();
     backend.synchronize().unwrap();
-    let host_output = backend.download_to_host(&output).unwrap();
+    let host_output = backend
+        .download_to_host(tenferro_tensor::TensorRead::from_tensor(&output))
+        .unwrap();
     if let Err(note) = verify(host_output.as_slice::<f32>().unwrap(), expected) {
         return record(
             pattern,
@@ -266,7 +272,7 @@ fn run_transpose(
     let timing = measure(warmup, iters, bytes, || {
         let output = backend.transpose(&input, &pattern.perm).unwrap();
         backend.synchronize().unwrap();
-        black_box(output);
+        output
     });
     record(
         pattern,
@@ -295,7 +301,9 @@ fn run_to_contiguous(
 ) -> Record {
     let name = "tenferro-webgpu-to-contiguous";
     let host = Tensor::from_vec_col_major(vec![data.len()], data.to_vec()).unwrap();
-    let input = backend.upload_host_tensor(&host).unwrap();
+    let input = backend
+        .upload_host_tensor(tenferro_tensor::TensorRead::from_tensor(&host))
+        .unwrap();
     let Tensor::F32(typed) = &input else {
         unreachable!("f32 upload must preserve dtype")
     };
@@ -305,7 +313,11 @@ fn run_to_contiguous(
     let view = source.transpose_view(&pattern.perm).unwrap();
     let output: TypedTensor<f32> = backend.to_contiguous(&view).unwrap();
     backend.synchronize().unwrap();
-    let host_output = backend.download_to_host(&Tensor::F32(output)).unwrap();
+    let host_output = backend
+        .download_to_host(tenferro_tensor::TensorRead::from_tensor(&Tensor::F32(
+            output,
+        )))
+        .unwrap();
     if let Err(note) = verify(host_output.as_slice::<f32>().unwrap(), expected) {
         return record(
             pattern,
@@ -322,7 +334,7 @@ fn run_to_contiguous(
     let timing = measure(warmup, iters, bytes, || {
         let output = backend.to_contiguous(&view).unwrap();
         backend.synchronize().unwrap();
-        black_box(output);
+        output
     });
     record(
         pattern,
@@ -368,7 +380,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter(|pattern| filter.as_ref().is_none_or(|filter| filter == &pattern.id))
     {
         let total = pattern.shape.iter().product();
-        let data: Vec<f32> = (0..total).map(|index| index as f32).collect();
+        let data: Vec<f32> = (0..total).map(|index| (index % 65521) as f32).collect();
         let expected = reference(pattern, &data);
         for participant in &pattern.participants_gpu {
             let record = match participant.as_str() {

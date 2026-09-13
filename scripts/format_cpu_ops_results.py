@@ -18,6 +18,7 @@ def clean_markdown_eof(markdown: str) -> str:
 
 
 BACKEND_ORDER = [
+    "tenferro-direct",
     "tenferro-eager",
     "tenferro-trace",
     "pytorch-cpu",
@@ -27,9 +28,8 @@ BACKEND_ORDER = [
 ]
 
 BACKEND_LABELS = {
-    "tenferro-eager": os.environ.get(
-        "CPU_FORMAT_TENFERRO_EAGER_LABEL", "tenferro-rs eager mode (ms)"
-    ),
+    "tenferro-direct": "tenferro-rs direct API (ms)",
+    "tenferro-eager": "tenferro-rs eager mode (ms)",
     "tenferro-trace": "tenferro-rs trace mode (ms)",
     "pytorch-cpu": "PyTorch Python (ms)",
     "jax-cpu": "JAX Python (XLA CPU) (ms)",

@@ -65,30 +65,6 @@ static std::string json_int(long long v) {
 } while(0)
 
 // ---------------------------------------------------------------------------
-// Timing helper using CUDA events
-// ---------------------------------------------------------------------------
-
-struct CudaTimer {
-    cudaEvent_t start, stop;
-    CudaTimer() {
-        CUDA_CHECK(cudaEventCreate(&start));
-        CUDA_CHECK(cudaEventCreate(&stop));
-    }
-    ~CudaTimer() {
-        cudaEventDestroy(start);
-        cudaEventDestroy(stop);
-    }
-    void record_start() { CUDA_CHECK(cudaEventRecord(start)); }
-    void record_stop()  { CUDA_CHECK(cudaEventRecord(stop)); }
-    float elapsed_ms() {
-        float ms = 0;
-        CUDA_CHECK(cudaEventSynchronize(stop));
-        CUDA_CHECK(cudaEventElapsedTime(&ms, start, stop));
-        return ms;
-    }
-};
-
-// ---------------------------------------------------------------------------
 // Statistics
 // ---------------------------------------------------------------------------
 
@@ -197,10 +173,10 @@ static std::string ok_record_json(
            << "\"device\":" << json_str("cuda") << ","
            << "\"device_ordinal\":" << json_int(device_ordinal) << ","
            << "\"execution_path\":" << json_str("phase2-measured-cutlass") << ","
-           << "\"synchronization\":" << json_str("cudaEventSynchronize") << ","
+           << "\"synchronization\":" << json_str("cudaDeviceSynchronize; host wall clock") << ","
            << "\"layout\":" << json_str(layout_str) << ","
            << "\"dtype\":" << json_str(dtype_str) << ","
-           << "\"notes\":" << json_str("CUTLASS f64 GEMM via cutlass::gemm::device::Gemm<double,...,Sm80>") << ","
+           << "\"notes\":" << json_str("all-zero input diagnostic; destination reuse; setup untimed; CUTLASS f64 GEMM via cutlass::gemm::device::Gemm<double,...,Sm80>") << ","
            << "\"unsupported_reason\":" << json_null()
        << "}"
        << "}";
@@ -299,32 +275,41 @@ static std::string bench_cutlass_gemm(
     cutlass::Status status = gemm_op.can_implement(args);
     if (status != cutlass::Status::kSuccess) {
         cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
-        return stub_record_json(suite_id, problem_id, "matmul", "cutlass",
+        return stub_record_json(suite_id, problem_id, "matmul", "cutlass-destination-reuse",
                                 device_ordinal, "not_configured",
                                 "CUTLASS Sm80 f64 GEMM cannot implement this problem size",
                                 layout_str, dtype_str);
     }
 
-    // Warmup
-    for (int i = 0; i < n_warmup; ++i) {
-        status = gemm_op(args);
-        CUDA_CHECK(cudaDeviceSynchronize());
+    status = gemm_op.initialize(args);
+    if (status != cutlass::Status::kSuccess) {
+        cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
+        return stub_record_json(suite_id, problem_id, "matmul", "cutlass-destination-reuse",
+                                device_ordinal, "runtime_failed", "CUTLASS initialization failed",
+                                layout_str, dtype_str);
     }
-
-    // Timed runs using CUDA events
-    CudaTimer timer;
+    // Destination reuse is intentional and must be reported separately from
+    // allocating framework GEMM. Initialization and input transfers are untimed.
+    for (int i = 0; i < std::max(n_warmup, 1); ++i) {
+        status = gemm_op.run();
+        CUDA_CHECK(cudaDeviceSynchronize());
+        if (status != cutlass::Status::kSuccess) throw std::runtime_error("CUTLASS warmup failed");
+    }
     std::vector<double> times_ms;
+    times_ms.reserve(n_runs);
     for (int i = 0; i < n_runs; ++i) {
-        timer.record_start();
-        gemm_op(args);
-        timer.record_stop();
-        times_ms.push_back((double)timer.elapsed_ms());
+        auto start = std::chrono::steady_clock::now();
+        status = gemm_op.run();
+        CUDA_CHECK(cudaDeviceSynchronize());
+        auto stop = std::chrono::steady_clock::now();
+        if (status != cutlass::Status::kSuccess) throw std::runtime_error("CUTLASS execution failed");
+        times_ms.push_back(std::chrono::duration<double, std::milli>(stop - start).count());
     }
 
     cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
 
     TimingStats stats = compute_stats(times_ms);
-    return ok_record_json(suite_id, problem_id, "matmul", "cutlass",
+    return ok_record_json(suite_id, problem_id, "matmul", "cutlass-destination-reuse",
                           device_ordinal, n_warmup, n_runs, stats,
                           "skipped", layout_str, dtype_str);
 }

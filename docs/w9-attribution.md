@@ -13,7 +13,7 @@ the existing steady-state timing region.
 - target public rows: `compare_lt`, `eigvals`, `inv`, and
   `broadcast_in_dim`
 
-The benchmark CSV backend called `tenferro-eager` is the direct
+In the historical CSV discussed here, `tenferro-eager` was the direct
 `Tensor + CpuBackend` API. It does not construct an `EagerTensor`. Reports
 rename the column to `tenferro-rs direct API`, but attribution must not treat
 this path as eager-AD conversion overhead.
@@ -190,3 +190,5 @@ when stage timing, source-path audit, or an available profile explains a
 reproducible material share of the row. If symbols are inlined beyond useful
 attribution, rebuild the same SHA with debuginfo and DWARF call graphs; do not
 add timers to library hot loops as the first step.
+
+Current runners label direct operations `tenferro-direct`. See [timing policy revision 2](timing-policy.md) before interpreting the historical timings above.

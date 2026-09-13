@@ -79,7 +79,14 @@ def format_table(paths: list[Path]) -> str:
         + "|".join("---:" for _ in BACKEND_ORDER)
         + "|",
     ]
+    table_header = lines[-2:]
+    lines = lines[:-2]
+    current_suite = None
     for key in sorted(by_key):
+        if key[0] != current_suite:
+            current_suite = key[0]
+            title = "Explicit setup diagnostics" if current_suite == "cpu/fft_setup" else "Operation execution"
+            lines.extend([f"### {title}", "", *table_header])
         suite, benchmark, dtype, threads, shape = key
         values = by_key[key]
         lines.append(

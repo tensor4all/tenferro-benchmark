@@ -203,6 +203,16 @@ fn emit_case(
     n: usize,
     mode: TenferroMode,
 ) -> BenchResult<()> {
+    let setup_diagnostic = matches!(mode, TenferroMode::Immediate | TenferroMode::Read);
+    if setup_diagnostic && env::var("BENCH_INCLUDE_SETUP_DIAGNOSTICS").as_deref() != Ok("1") {
+        writeln!(writer, "cpu/fft,{},{},{},1d_n{n},{},,,skipped,one-shot API includes planning; use cached executor for operation timing", op.as_str(), dtype.as_str(), args.num_threads, mode.backend_name())?;
+        return Ok(());
+    }
+    let suite = if setup_diagnostic {
+        "cpu/fft_setup"
+    } else {
+        "cpu/fft"
+    };
     let input = input_tensor(op, dtype, n)?;
     let benchmark = op.as_str();
     let shape = format!("1d_n{n}");
@@ -227,7 +237,7 @@ fn emit_case(
         Ok((median_ms, iqr_ms)) => {
             writeln!(
                 writer,
-                "cpu/fft,{benchmark},{},{},{shape},{backend},{median_ms:.6},{iqr_ms:.6},ok,\"{notes}\"",
+                "{suite},{benchmark},{},{},{shape},{backend},{median_ms:.6},{iqr_ms:.6},ok,\"{notes}\"",
                 dtype.as_str(),
                 args.num_threads,
             )?;
@@ -236,7 +246,7 @@ fn emit_case(
         Err(err) => {
             writeln!(
                 writer,
-                "cpu/fft,{benchmark},{},{},{shape},{backend},,,failed,\"{}\"",
+                "{suite},{benchmark},{},{},{shape},{backend},,,failed,\"{}\"",
                 dtype.as_str(),
                 args.num_threads,
                 csv_escape(&err.to_string()),
@@ -257,18 +267,20 @@ fn time_case(
     let mut backend = cpu_backend_from_env()?;
     let mut executor = FftExecutor::default();
 
-    for _ in 0..args.warmups {
-        consume(run_fft(mode, op, input, n, &mut backend, &mut executor)?);
-    }
+    Ok(with_cpu_session(&mut backend, |session| {
+        for _ in 0..args.warmups.max(1) {
+            consume(run_fft(mode, op, input, n, session, &mut executor)?);
+        }
 
-    let mut times = Vec::with_capacity(args.runs);
-    for _ in 0..args.runs {
-        let start = Instant::now();
-        let out = run_fft(mode, op, input, n, &mut backend, &mut executor)?;
-        consume(out);
-        times.push(start.elapsed().as_secs_f64() * 1000.0);
-    }
-    Ok(median_iqr(&times))
+        let mut times = Vec::with_capacity(args.runs);
+        for _ in 0..args.runs {
+            let start = Instant::now();
+            let out = run_fft(mode, op, input, n, session, &mut executor)?;
+            times.push(start.elapsed().as_secs_f64() * 1000.0);
+            consume(out);
+        }
+        Ok::<_, tenferro_tensor::Error>(median_iqr(&times))
+    })?)
 }
 
 fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
@@ -284,14 +296,15 @@ fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
     let program = GraphCompiler::new().compile(&output)?;
     let runtime = cpu_trace_runtime()?;
 
-    for _ in 0..args.warmups {
+    for _ in 0..args.warmups.max(1) {
         consume(runtime.run_compiled(&program, &[])?.remove(0));
     }
     let mut times = Vec::with_capacity(args.runs);
     for _ in 0..args.runs {
         let start = Instant::now();
-        consume(runtime.run_compiled(&program, &[])?.remove(0));
+        let outputs = runtime.run_compiled(&program, &[])?;
         times.push(start.elapsed().as_secs_f64() * 1000.0);
+        black_box(outputs);
     }
     Ok(median_iqr(&times))
 }
@@ -308,14 +321,15 @@ fn time_eager_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
         }
     };
 
-    for _ in 0..args.warmups {
+    for _ in 0..args.warmups.max(1) {
         consume_eager(run()?);
     }
     let mut times = Vec::with_capacity(args.runs);
     for _ in 0..args.runs {
         let start = Instant::now();
-        consume_eager(run()?);
+        let output = run()?;
         times.push(start.elapsed().as_secs_f64() * 1000.0);
+        consume_eager(output);
     }
     Ok(median_iqr(&times))
 }
@@ -334,10 +348,10 @@ fn run_fft(
     op: Op,
     input: &Tensor,
     n: usize,
-    backend: &mut CpuBackend,
+    session: &mut CpuExecSession<'_>,
     executor: &mut FftExecutor,
 ) -> tenferro_tensor::Result<Tensor> {
-    with_cpu_session(backend, |session| match (mode, op) {
+    match (mode, op) {
         (TenferroMode::Immediate, Op::Fft) => input.fft(None, -1, FftNorm::Backward, session),
         (TenferroMode::Immediate, Op::Ifft) => input.ifft(None, -1, FftNorm::Backward, session),
         (TenferroMode::Immediate, Op::Rfft) => input.rfft(None, -1, FftNorm::Backward, session),
@@ -370,7 +384,7 @@ fn run_fft(
         }
         (TenferroMode::Trace, _) => unreachable!("trace FFT uses time_trace_case"),
         (TenferroMode::Eager, _) => unreachable!("eager FFT uses time_eager_case"),
-    })
+    }
 }
 
 fn with_cpu_session<R>(

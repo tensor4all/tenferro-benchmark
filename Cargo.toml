@@ -141,6 +141,7 @@ system-mkl = [
     "tenferro-cpu?/cpu-faer",
 ]
 cuda = [
+    "tenferro-fft/cuda",
     "tenferro-ad/cuda",
     "tenferro-einsum/cuda",
     "tenferro-einsum/autodiff",

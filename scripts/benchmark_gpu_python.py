@@ -164,7 +164,7 @@ def _run_pytorch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         fn = _torch_fn(op, gpu_data)
 
         # Warmup
-        for _ in range(n_warmup):
+        for _ in range(max(n_warmup, 1)):
             fn()
             torch.cuda.synchronize(device)
 
@@ -172,6 +172,7 @@ def _run_pytorch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         times_ms: list[float] = []
         for _ in range(n_runs):
             torch.cuda.synchronize(device)
+            result = None
             t0 = time.perf_counter()
             result = fn()
             torch.cuda.synchronize(device)
@@ -275,6 +276,7 @@ def _run_tensor_network_pytorch(suite_id, problem, backend, device_ordinal, *, t
         network, gpu_tensors = _build_tensor_network_inputs_torch(
             source, bond_dim, fill_value, device
         )
+        contract = tnc.prepare_tree(network["tree"], gpu_tensors, "torch")
     except Exception as exc:
         return _stub(
             suite_id,
@@ -288,16 +290,17 @@ def _run_tensor_network_pytorch(suite_id, problem, backend, device_ordinal, *, t
         )
 
     try:
-        for _ in range(n_warmup):
-            _contract_tensor_network_torch(network, gpu_tensors, device)
+        for _ in range(max(n_warmup, 1)):
+            contract(gpu_tensors)
             torch.cuda.synchronize(device)
 
         times_ms: list[float] = []
         result = None
         for _ in range(n_runs):
             torch.cuda.synchronize(device)
+            result = None
             t0 = time.perf_counter()
-            result = _contract_tensor_network_torch(network, gpu_tensors, device)
+            result = contract(gpu_tensors)
             torch.cuda.synchronize(device)
             times_ms.append((time.perf_counter() - t0) * 1000.0)
     except torch.cuda.OutOfMemoryError as exc:
@@ -441,8 +444,7 @@ def _run_tensor_network_jax(suite_id, problem, backend, device_ordinal, *, ts, b
             )
             for ix in network["inputs"]
         ]
-        backend_impl = tnc.IntegerLabelEinsumBackend(jnp.einsum)
-        contract = lambda tensors: tnc.contract_tree(network["tree"], tensors, backend_impl)
+        contract = jax.jit(tnc.prepare_tree(network["tree"], gpu_tensors, "jax"))
     except Exception as exc:
         return _stub(
             suite_id,
@@ -456,13 +458,14 @@ def _run_tensor_network_jax(suite_id, problem, backend, device_ordinal, *, ts, b
         )
 
     try:
-        for _ in range(n_warmup):
+        for _ in range(max(n_warmup, 1)):
             jax.block_until_ready(contract(gpu_tensors))
 
         times_ms: list[float] = []
         result = None
         for _ in range(n_runs):
             jax.block_until_ready(jnp.zeros(1, device=dev))
+            result = None
             t0 = time.perf_counter()
             result = jax.block_until_ready(contract(gpu_tensors))
             times_ms.append((time.perf_counter() - t0) * 1000.0)
@@ -587,13 +590,14 @@ def _run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         fn_jit, args = _jax_fn(op, gpu_data)
 
         # Warmup (triggers JIT compilation)
-        for _ in range(n_warmup):
+        for _ in range(max(n_warmup, 1)):
             jax.block_until_ready(fn_jit(*args))
 
         # Timed runs (JIT already compiled)
         times_ms: list[float] = []
         for _ in range(n_runs):
             jax.block_until_ready(jnp.zeros(1, device=dev))
+            result = None
             t0 = time.perf_counter()
             result = jax.block_until_ready(fn_jit(*args))
             times_ms.append((time.perf_counter() - t0) * 1000.0)
@@ -770,30 +774,26 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                      status="runtime_failed", reason=f"data generation: {exc}", path=path, **kw)
 
     # Build CUTLASS-specific callable
+    # Normalize inputs once, before any measured dispatch.
+    if op == "matmul":
+        a = gpu_data["A"].T if gpu_data.get("transpose_a", False) else gpu_data["A"]
+        b = gpu_data["B"].T if gpu_data.get("transpose_b", False) else gpu_data["B"]
+        pairs = [(a.contiguous(), b.contiguous())]
+    elif op == "batched_matmul":
+        pairs = [(a.contiguous(), b.contiguous()) for a, b in zip(gpu_data["A"], gpu_data["B"])]
+    elif op == "einsum" and len(gpu_data["tensors"]) == 2:
+        pairs = [tuple(t.contiguous() for t in gpu_data["tensors"])]
+    else:
+        return _stub(suite_id, problem, backend, device_ordinal,
+                     status="unsupported", reason="no equivalent CUTLASS operation", path=path, **kw)
+
     def cutlass_fn():
-        if op == "matmul":
-            ta = gpu_data.get("transpose_a", False)
-            tb = gpu_data.get("transpose_b", False)
-            A = gpu_data["A"].T.contiguous() if ta else gpu_data["A"]
-            B = gpu_data["B"].T.contiguous() if tb else gpu_data["B"]
-            return [ext.cutlass_gemm_f64(A.contiguous(), B.contiguous())]
-        elif op == "batched_matmul":
-            # Sequential GEMMs over the leading batch dim (A: (b,m,k), B: (b,k,n)).
-            A, B = gpu_data["A"], gpu_data["B"]
-            batch = A.shape[0]
-            results = [ext.cutlass_gemm_f64(A[i].contiguous(), B[i].contiguous())
-                       for i in range(batch)]
-            return [torch.stack(results, dim=0)]
-        elif op == "einsum":
-            tensors = gpu_data["tensors"]
-            if len(tensors) == 2:
-                return [ext.cutlass_gemm_f64(tensors[0].contiguous(), tensors[1].contiguous())]
-            return [torch.einsum(gpu_data["expr"], *tensors)]
-        return []
+        results = [ext.cutlass_gemm_f64(a, b) for a, b in pairs]
+        return [torch.stack(results, dim=0)] if op == "batched_matmul" else results
 
     try:
         # Warmup
-        for _ in range(n_warmup):
+        for _ in range(max(n_warmup, 1)):
             cutlass_fn()
             torch.cuda.synchronize(device)
 
@@ -802,6 +802,7 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         result = None
         for _ in range(n_runs):
             torch.cuda.synchronize(device)
+            result = None
             t0 = time.perf_counter()
             result = cutlass_fn()
             torch.cuda.synchronize(device)
@@ -882,53 +883,49 @@ def _load_ginkgo_ext():
 
 // CSR SpMM/SpMV: y = A @ x, where A is CSR (rows x cols), x is dense (cols x rhs).
 // All inputs are CUDA tensors. Returns y as a (rows x rhs) CUDA tensor.
-torch::Tensor ginkgo_csr_spmm(
-    torch::Tensor row_ptrs,  // int32, length rows+1
-    torch::Tensor col_idxs,  // int32, length nnz
-    torch::Tensor values,    // float64, length nnz
-    torch::Tensor x,         // float64, (cols x rhs), column-major flattened
-    int64_t rows, int64_t cols)
-{
+class GinkgoSpmm {
     using ValueType = double;
     using IndexType = int;
     using Csr = gko::matrix::Csr<ValueType, IndexType>;
     using Dense = gko::matrix::Dense<ValueType>;
-
-    TORCH_CHECK(row_ptrs.is_cuda() && col_idxs.is_cuda() && values.is_cuda() && x.is_cuda(),
-                "ginkgo_csr_spmm: all inputs must be CUDA tensors");
-    int device_id = x.get_device();
-    auto nnz = values.numel();
-    int64_t rhs = x.numel() / cols;
-
-    auto exec = gko::CudaExecutor::create(device_id, gko::ReferenceExecutor::create());
-
-    // Wrap existing device memory as Ginkgo array views (no copy).
-    auto val_view = gko::make_array_view(exec, nnz, values.data_ptr<ValueType>());
-    auto col_view = gko::make_array_view(exec, nnz, col_idxs.data_ptr<IndexType>());
-    auto row_view = gko::make_array_view(exec, rows + 1, row_ptrs.data_ptr<IndexType>());
-
-    auto A = Csr::create(exec, gko::dim<2>{(gko::size_type)rows, (gko::size_type)cols},
-                         std::move(val_view), std::move(col_view), std::move(row_view));
-
-    // x is stored row-major (rhs columns). Ginkgo Dense is row-major by default.
-    auto x_view = gko::make_array_view(exec, cols * rhs, x.data_ptr<ValueType>());
-    auto x_dense = Dense::create(exec, gko::dim<2>{(gko::size_type)cols, (gko::size_type)rhs},
-                                 std::move(x_view), rhs);
-
-    auto y = torch::zeros({rows, rhs}, x.options());
-    auto y_view = gko::make_array_view(exec, rows * rhs, y.data_ptr<ValueType>());
-    auto y_dense = Dense::create(exec, gko::dim<2>{(gko::size_type)rows, (gko::size_type)rhs},
-                                 std::move(y_view), rhs);
-
-    A->apply(x_dense, y_dense);
-    exec->synchronize();
-
-    return y;
-}
+    torch::Tensor row_ptrs_, col_idxs_, values_, x_;
+    std::shared_ptr<gko::CudaExecutor> exec_;
+    std::unique_ptr<Csr> matrix_;
+    std::unique_ptr<Dense> input_;
+    int64_t rows_, rhs_;
+public:
+    GinkgoSpmm(torch::Tensor row_ptrs, torch::Tensor col_idxs,
+               torch::Tensor values, torch::Tensor x, int64_t rows, int64_t cols)
+        : row_ptrs_(row_ptrs), col_idxs_(col_idxs), values_(values), x_(x),
+          rows_(rows), rhs_(x.numel() / cols) {
+        TORCH_CHECK(row_ptrs.is_cuda() && col_idxs.is_cuda() && values.is_cuda() && x.is_cuda(),
+                    "GinkgoSpmm requires CUDA inputs");
+        exec_ = gko::CudaExecutor::create(x.get_device(), gko::ReferenceExecutor::create());
+        matrix_ = Csr::create(exec_, gko::dim<2>{(gko::size_type)rows, (gko::size_type)cols},
+            gko::make_array_view(exec_, values.numel(), values.data_ptr<ValueType>()),
+            gko::make_array_view(exec_, col_idxs.numel(), col_idxs.data_ptr<IndexType>()),
+            gko::make_array_view(exec_, rows + 1, row_ptrs.data_ptr<IndexType>()));
+        input_ = Dense::create(exec_, gko::dim<2>{(gko::size_type)cols, (gko::size_type)rhs_},
+            gko::make_array_view(exec_, x.numel(), x.data_ptr<ValueType>()), rhs_);
+        exec_->synchronize();
+    }
+    torch::Tensor run() {
+        // Only the operation's fresh output is allocated in the measured call.
+        auto y = torch::empty({rows_, rhs_}, x_.options());
+        auto output = Dense::create(exec_, gko::dim<2>{(gko::size_type)rows_, (gko::size_type)rhs_},
+            gko::make_array_view(exec_, y.numel(), y.data_ptr<ValueType>()), rhs_);
+        matrix_->apply(input_.get(), output.get());
+        exec_->synchronize();
+        return y;
+    }
+};
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-    m.def("ginkgo_csr_spmm", &ginkgo_csr_spmm, "Ginkgo CSR SpMM (CUDA)");
+    pybind11::class_<GinkgoSpmm>(m, "GinkgoSpmm")
+        .def(pybind11::init<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, int64_t, int64_t>())
+        .def("run", &GinkgoSpmm::run);
 }
+
 """
     try:
         ext = load_inline(
@@ -999,11 +996,11 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         else:
             x = torch.as_tensor(x_np, dtype=torch.float64, device=device).contiguous()
 
-        def ginkgo_fn():
-            return ext.ginkgo_csr_spmm(crow, ccol, cval, x, rows, cols)
+        prepared = ext.GinkgoSpmm(crow, ccol, cval, x, rows, cols)
+        ginkgo_fn = prepared.run
 
         # Warmup
-        for _ in range(n_warmup):
+        for _ in range(max(n_warmup, 1)):
             ginkgo_fn()
             torch.cuda.synchronize(device)
 
@@ -1012,6 +1009,7 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         result = None
         for _ in range(n_runs):
             torch.cuda.synchronize(device)
+            result = None
             t0 = time.perf_counter()
             result = ginkgo_fn()
             torch.cuda.synchronize(device)
@@ -1353,7 +1351,10 @@ def _torch_fn(op: str, d: dict):
     if op == "batched_matmul":
         return lambda: torch.bmm(d["A"], d["B"])
     if op == "einsum":
-        return lambda: torch.einsum(d["expr"], *d["tensors"])
+        import opt_einsum as oe
+        tensors = d["tensors"]
+        expression = oe.contract_expression(d["expr"], *(t.shape for t in tensors), optimize="auto")
+        return lambda: expression(*tensors, backend="torch")
     if op == "qr":
         return lambda: torch.linalg.qr(d["A"], mode="reduced" if not d.get("full_matrices") else "complete")
     if op == "solve":
@@ -1368,7 +1369,8 @@ def _torch_fn(op: str, d: dict):
         return lambda: torch.linalg.eigh(d["A"])
     if op == "spmv":
         # CSR @ vector via real sparse kernel (cuSPARSE on CUDA).
-        return lambda: torch.sparse.mm(d["sp"], d["x"].unsqueeze(1)).squeeze(1)
+        x = d["x"].unsqueeze(1)
+        return lambda: torch.sparse.mm(d["sp"], x).squeeze(1)
     if op == "spmm":
         # CSR @ dense matrix via real sparse kernel (cuSPARSE on CUDA).
         return lambda: torch.sparse.mm(d["sp"], d["x"])

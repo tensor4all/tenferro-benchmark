@@ -386,22 +386,20 @@ fn concrete_operation(
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
     use tenferro_einsum::TensorEinsumExt;
     use tenferro_linalg::TensorLinalgExt;
+    static GATHER: std::sync::OnceLock<tenferro_tensor::GatherConfig> = std::sync::OnceLock::new();
+    let gather = GATHER.get_or_init(|| tenferro_tensor::GatherConfig {
+        offset_dims: vec![],
+        collapsed_slice_dims: vec![0],
+        start_index_map: vec![0],
+        index_vector_dim: 1,
+        slice_sizes: vec![1],
+    });
     Ok(match operation {
         "add" => lhs.add(rhs, session)?,
         "einsum" => [lhs, rhs].einsum("ij,jk->ik", session)?,
         "solve" => lhs.solve(rhs, session)?,
         "reduce_sum" => session.reduce_sum(lhs, &[0])?,
-        "gather" => session.gather(
-            lhs,
-            rhs,
-            &tenferro_tensor::GatherConfig {
-                offset_dims: vec![],
-                collapsed_slice_dims: vec![0],
-                start_index_map: vec![0],
-                index_vector_dim: 1,
-                slice_sizes: vec![1],
-            },
-        )?,
+        "gather" => session.gather(lhs, rhs, gather)?,
         _ => return Err(format!("unsupported operation: {operation}").into()),
     })
 }
@@ -436,10 +434,12 @@ fn eager_operation(
     lhs: &EagerTensor,
     rhs: &EagerTensor,
 ) -> Result<EagerTensor, Box<dyn Error + Send + Sync>> {
-    use tenferro_einsum::EagerEinsumExt;
+    use tenferro_einsum::{EagerEinsumExt, EinsumSubscripts};
+    static SUBS: std::sync::OnceLock<EinsumSubscripts> = std::sync::OnceLock::new();
+    let subs = SUBS.get_or_init(|| EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2]));
     Ok(match operation {
         "add" => lhs.add(rhs)?,
-        "einsum" => [lhs, rhs].einsum("ij,jk->ik")?,
+        "einsum" => [lhs, rhs].einsum_subscripts(subs)?,
         _ => return Err(format!("unsupported operation: {operation}").into()),
     })
 }
@@ -506,7 +506,7 @@ fn case_descriptor(
             "core.add.ordinary.concrete",
             "core",
             "concrete",
-            vec!["session_entry_exit", "add", "output_lifetime"],
+            vec!["session_entry_exit", "add", "output_allocation"],
             vec![
                 "backend_construction",
                 "input_construction",
@@ -517,7 +517,7 @@ fn case_descriptor(
             "core.add.ordinary.concrete",
             "core",
             "concrete",
-            vec!["add", "output_lifetime"],
+            vec!["add", "output_allocation"],
             vec![
                 "backend_construction",
                 "input_construction",
@@ -530,7 +530,7 @@ fn case_descriptor(
             "core.add.ordinary.eager",
             "core",
             "eager",
-            vec!["add", "eager_dispatch", "output_lifetime"],
+            vec!["add", "eager_dispatch", "output_allocation"],
             vec![
                 "backend_construction",
                 "input_construction",
@@ -542,7 +542,11 @@ fn case_descriptor(
             "core.add.ordinary.eager",
             "core",
             "eager",
-            vec!["add_forward_recording", "eager_dispatch", "output_lifetime"],
+            vec![
+                "add_forward_recording",
+                "eager_dispatch",
+                "output_allocation",
+            ],
             vec![
                 "backend_construction",
                 "input_construction",
@@ -555,7 +559,7 @@ fn case_descriptor(
             "einsum.einsum.prepare.concrete",
             "einsum",
             "concrete",
-            vec!["prepare", "plan_lifetime"],
+            vec!["prepare", "plan_allocation"],
             vec![
                 "backend_construction",
                 "input_construction",
@@ -566,7 +570,7 @@ fn case_descriptor(
             "einsum.einsum.prepare.traced",
             "einsum",
             "traced",
-            vec!["trace_compile", "program_lifetime"],
+            vec!["trace_compile", "program_allocation"],
             vec![
                 "backend_construction",
                 "input_construction",
@@ -579,7 +583,7 @@ fn case_descriptor(
             "einsum.einsum.prepared.traced",
             "einsum",
             "traced",
-            vec!["runtime_admission_execution", "output_lifetime"],
+            vec!["runtime_admission_execution", "output_allocation"],
             vec![
                 "backend_construction",
                 "input_construction",
@@ -593,7 +597,7 @@ fn case_descriptor(
             "einsum.einsum.prepared.concrete",
             "einsum",
             "concrete",
-            vec!["prepared_execute", "output_lifetime"],
+            vec!["prepared_execute", "output_allocation"],
             vec![
                 "backend_construction",
                 "input_construction",
@@ -636,13 +640,13 @@ fn case_descriptor(
     } else {
         (contract_id.to_string(), family, vec![size])
     };
-    let mut timer: Vec<String> = timer
+    let mut outside_timer = outside_timer;
+    outside_timer.push("output_destruction");
+    let timer: Vec<String> = timer
         .iter()
         .map(|label| label.replace("add", operation))
         .collect();
-    if operation == "gather" {
-        timer.insert(0, "index_config_construction".to_string());
-    }
+    outside_timer.push("operation_config_construction");
     Ok(serde_json::json!({
         "contract_id": contract_id, "family": family, "surface": surface,
         "operation": operation, "phase": if api_tier.ends_with("-setup") { "setup" } else { "execution" }, "api_tier": api_tier,
@@ -784,11 +788,10 @@ fn execute_fresh(
     lhs: &Tensor,
     rhs: &Tensor,
     calls: usize,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    black_box(add_chain(lhs, rhs, calls, |a, b| {
+) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
+    add_chain(lhs, rhs, calls, |a, b| {
         concrete_fresh(operation, backend, a, b)
-    })?);
-    Ok(())
+    })
 }
 
 fn execute_shared(
@@ -797,11 +800,10 @@ fn execute_shared(
     lhs: &Tensor,
     rhs: &Tensor,
     calls: usize,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    black_box(add_chain(lhs, rhs, calls, |a, b| {
+) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
+    add_chain(lhs, rhs, calls, |a, b| {
         concrete_operation(operation, session, a, b)
-    })?);
-    Ok(())
+    })
 }
 
 fn calibrate<F>(
@@ -838,7 +840,7 @@ struct Measurement {
     samples: Vec<Sample>,
 }
 
-fn measure<F>(
+fn measure<F, O>(
     warmups: usize,
     samples_count: usize,
     target_ns: u128,
@@ -847,25 +849,27 @@ fn measure<F>(
     mut execute: F,
 ) -> Result<Measurement, Box<dyn Error + Send + Sync>>
 where
-    F: FnMut() -> Result<(), Box<dyn Error + Send + Sync>>,
+    F: FnMut() -> Result<O, Box<dyn Error + Send + Sync>>,
 {
-    for _ in 0..warmups {
+    for _ in 0..warmups.max(1) {
         execute()?;
     }
-    let (iterations, calibrated_ns) = calibrate(target_ns, |iterations| {
-        let start = Instant::now();
+    // Sum execution intervals: output destruction occurs between intervals.
+    // This deliberately includes clock overhead, recorded in the report.
+    let mut batch = |iterations| -> Result<u128, Box<dyn Error + Send + Sync>> {
+        let mut elapsed = 0;
         for _ in 0..iterations {
-            execute()?;
+            let start = Instant::now();
+            let output = execute()?;
+            elapsed += start.elapsed().as_nanos();
+            black_box(output);
         }
-        Ok(start.elapsed().as_nanos())
-    })?;
+        Ok(elapsed)
+    };
+    let (iterations, calibrated_ns) = calibrate(target_ns, &mut batch)?;
     let mut samples = Vec::with_capacity(samples_count);
     for sample_index in 0..samples_count {
-        let start = Instant::now();
-        for _ in 0..iterations {
-            execute()?;
-        }
-        let elapsed_ns = start.elapsed().as_nanos();
+        let elapsed_ns = batch(iterations)?;
         if elapsed_ns == 0 {
             return Err(
                 "timed sample elapsed zero nanoseconds; raw duration not fabricated".into(),
@@ -890,11 +894,8 @@ fn execute_eager(
     lhs: &EagerTensor,
     rhs: &EagerTensor,
     calls: usize,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    black_box(add_chain(lhs, rhs, calls, |a, b| {
-        eager_operation(operation, a, b)
-    })?);
-    Ok(())
+) -> Result<EagerTensor, Box<dyn Error + Send + Sync>> {
+    add_chain(lhs, rhs, calls, |a, b| eager_operation(operation, a, b))
 }
 
 fn check_eager(
@@ -1836,6 +1837,19 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         return Ok(());
     }
 
+    let setup_diagnostic = api_tier.ends_with("-setup")
+        || api_tier.ends_with("-fresh")
+        || (operation == "einsum"
+            && matches!(api_tier.as_str(), "concrete-shared" | "borrowed-shared"));
+    if setup_diagnostic && std::env::var("BENCH_INCLUDE_SETUP_DIAGNOSTICS").as_deref() != Ok("1") {
+        return Err("setup-inclusive route requires BENCH_INCLUDE_SETUP_DIAGNOSTICS=1; use shared/prepared operation routes".into());
+    }
+    output["measurement_kind"] = serde_json::json!(if setup_diagnostic {
+        "setup_diagnostic"
+    } else {
+        "operation"
+    });
+
     let measurement = match api_tier.as_str() {
         "compiled-setup" => {
             let n = matrix_dimension(size)?;
@@ -1846,10 +1860,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 target_ns,
                 process_index,
                 sample_start,
-                || {
-                    black_box(trace_compile_einsum(n, dtype)?);
-                    Ok(())
-                },
+                || trace_compile_einsum(n, dtype),
             )?
         }
         "compiled-repeat" => {
@@ -1860,10 +1871,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 target_ns,
                 process_index,
                 sample_start,
-                || {
-                    black_box(runtime.run_compiled(program, &compiled_bindings)?);
-                    Ok(())
-                },
+                || Ok(runtime.run_compiled(program, &compiled_bindings)?),
             )?
         }
         "prepared-setup" => measure(
@@ -1873,11 +1881,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             process_index,
             sample_start,
             || {
-                black_box(tenferro_einsum::ConcreteEinsumPlan::prepare(
+                Ok(tenferro_einsum::ConcreteEinsumPlan::prepare(
                     [&lhs, rhs],
                     "ij,jk->ik",
-                )?);
-                Ok(())
+                )?)
             },
         )?,
         "concrete-shared" | "borrowed-shared" | "prepared-repeat" => {
@@ -1891,11 +1898,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                     sample_start,
                     || {
                         if let Some(views) = borrowed.as_ref() {
-                            black_box(borrowed_einsum(views, session)?);
-                            Ok(())
+                            borrowed_einsum(views, session)
                         } else if let Some(plan) = prepared.as_ref() {
-                            black_box(plan.execute([&lhs, rhs], session)?);
-                            Ok(())
+                            Ok(plan.execute([&lhs, rhs], session)?)
                         } else {
                             execute_shared(&operation, session, &lhs, rhs, calls)
                         }
@@ -1913,11 +1918,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 sample_start,
                 || {
                     if let Some(views) = borrowed.as_ref() {
-                        black_box(
-                            backend
-                                .with_backend_session(|session| borrowed_einsum(views, session))?,
-                        );
-                        Ok(())
+                        backend.with_backend_session(|session| borrowed_einsum(views, session))
                     } else {
                         execute_fresh(&operation, backend, &lhs, rhs, calls)
                     }

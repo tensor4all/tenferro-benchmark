@@ -109,14 +109,15 @@ function median_iqr(times::Vector{Float64})
 end
 
 function bench(f, runs::Int, warmups::Int)
-    for _ in 1:warmups
+    for _ in 1:max(warmups, 1)
         f()
     end
     times = Vector{Float64}(undef, runs)
     for i in 1:runs
+        output = nothing
         t0 = time_ns()
-        f()
-        times[i] = (time_ns() - t0) / 1e6
+        output = f()
+        GC.@preserve output times[i] = (time_ns() - t0) / 1e6
     end
     return median_iqr(times)
 end

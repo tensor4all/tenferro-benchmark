@@ -284,13 +284,10 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
 done
 
 if command -v uv >/dev/null 2>&1; then
-    CPU_FORMAT_TENFERRO_EAGER_LABEL="tenferro-rs direct API (ms)" \
-        uv run python "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" | tee "$TABLE" \
-        || CPU_FORMAT_TENFERRO_EAGER_LABEL="tenferro-rs direct API (ms)" \
-            python3 "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" | tee "$TABLE"
+    uv run python "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" | tee "$TABLE" \
+        || python3 "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" | tee "$TABLE"
 else
-    CPU_FORMAT_TENFERRO_EAGER_LABEL="tenferro-rs direct API (ms)" \
-        python3 "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" | tee "$TABLE"
+    python3 "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" | tee "$TABLE"
 fi
 
 {

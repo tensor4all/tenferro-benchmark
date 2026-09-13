@@ -11,9 +11,8 @@ use std::time::Instant;
 
 use serde_json::{json, Value};
 use tenferro_ad::AdContext;
-use tenferro_gpu::{
-    cuda_runtime_engine_id, cuda_runtime_engine_registration, gpu_available, upload_tensor,
-    CudaBackend, CudaRuntime,
+use tenferro_gpu::cuda::{
+    cuda_runtime_engine_registration, gpu_available, upload_tensor, CudaBackend, CudaRuntime,
 };
 use tenferro_linalg::TracedTensorLinalgExt;
 use tenferro_runtime::{GraphCompiler, Runtime, Tensor, TracedTensor};
@@ -27,11 +26,7 @@ fn main() {
     let sep = args.iter().position(|a| a == "--").expect("missing --");
     let suite_paths: Vec<&str> = args[sep + 1..].iter().map(String::as_str).collect();
 
-    if !gpu_available() {
-        eprintln!("benchmark_gpu_linalg_ad: no CUDA GPU found, skipping");
-        std::fs::write(out_path, "").expect("failed to write empty output");
-        return;
-    }
+    let cuda_available = gpu_available();
 
     let timestamp = utc_timestamp();
     let benchmark_commit = git_commit(".");
@@ -50,14 +45,27 @@ fn main() {
             if !problem_filter.is_empty() && pid != problem_filter {
                 continue;
             }
-            let rec = dispatch(
-                &suite_id,
-                problem,
-                device_ordinal,
-                &timestamp,
-                benchmark_commit.as_deref(),
-                tenferro_commit.as_deref(),
-            );
+            let rec = if !cuda_available {
+                stub(
+                    &suite_id,
+                    problem,
+                    device_ordinal,
+                    "not_configured",
+                    "no CUDA GPU available",
+                    &timestamp,
+                    benchmark_commit.as_deref(),
+                    tenferro_commit.as_deref(),
+                )
+            } else {
+                dispatch(
+                    &suite_id,
+                    problem,
+                    device_ordinal,
+                    &timestamp,
+                    benchmark_commit.as_deref(),
+                    tenferro_commit.as_deref(),
+                )
+            };
             lines.push(serde_json::to_string(&rec).unwrap());
         }
     }
@@ -95,10 +103,14 @@ fn dispatch(
     let n_runs = yaml_usize(&problem["run"]["runs"], 7);
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
-        let transfer_bk =
-            CudaBackend::new(device_ordinal).map_err(|e| format!("transfer backend: {e}"))?;
-        let compute_bk =
-            CudaBackend::new(device_ordinal).map_err(|e| format!("compute backend: {e}"))?;
+        let transfer_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
+            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
+        ))
+        .map_err(|e| format!("transfer backend: {e}"))?;
+        let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
+            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
+        ))
+        .map_err(|e| format!("compute backend: {e}"))?;
         let ad = problem["linalg_ad"]
             .as_mapping()
             .ok_or("missing linalg_ad block")?;
@@ -120,7 +132,7 @@ fn dispatch(
 
         let runtime = cuda_runtime_with_extensions(&compute_bk)?;
 
-        for _ in 0..n_warmup {
+        for _ in 0..n_warmup.max(1) {
             let out = runtime
                 .run_compiled(&program, &[])
                 .map_err(|e| format!("warmup: {e}"))?;
@@ -236,12 +248,12 @@ fn build_ad_outputs(
             let tangent_seed = tangent_seed(loss.matrix_seed());
             let tangent = upload_traced(rt, &[n, n], data_for_shape(&[n, n], tangent_seed))?;
             let out = jvp(&output, &wrt, &tangent).map_err(|e| format!("jvp: {e}"))?;
-            Ok(vec![out])
+            Ok(vec![output, out])
         }
         "vjp" => {
             let cotangent = upload_traced(rt, &[], vec![1.0])?;
             let out = vjp(&output, &wrt, &cotangent).map_err(|e| format!("vjp: {e}"))?;
-            Ok(vec![out])
+            Ok(vec![output, out])
         }
         other => Err(format!("unsupported phase: {other}")),
     }
@@ -362,11 +374,16 @@ fn vjp(
 }
 
 fn cuda_runtime_with_extensions(backend: &CudaBackend) -> Result<Runtime, String> {
-    let engine_id = cuda_runtime_engine_id().map_err(|e| format!("CUDA engine id: {e}"))?;
+    let engine_id = tenferro_runtime::EngineId::new("benchmark.cuda")
+        .map_err(|e| format!("CUDA engine id: {e}"))?;
     let mut builder = Runtime::builder();
     builder
         .register_engine(
-            cuda_runtime_engine_registration(backend).map_err(|e| format!("CUDA engine: {e}"))?,
+            cuda_runtime_engine_registration(
+                backend,
+                tenferro_runtime::EngineId::new("benchmark.cuda").map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| format!("CUDA engine: {e}"))?,
         )
         .map_err(|e| format!("register CUDA engine: {e}"))?;
     builder

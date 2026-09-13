@@ -1,5 +1,8 @@
 # tenferro-benchmark
 
+Timing corrections are documented in [timing policy revision 2](docs/timing-policy.md).
+Existing reports require affected-participant reruns before operation-performance comparisons.
+
 Benchmark suite for [tenferro-rs](https://github.com/tensor4all/tenferro-rs),
 comparing tenferro against PyTorch, JAX, Julia, HPTT, cuTENSOR, and other
 reference backends on CPU and GPU workloads.

@@ -58,15 +58,16 @@ struct Timing
 end
 
 function bench(f, warmup::Int, iters::Int, bytes::Int)
-    for _ in 1:warmup
+    for _ in 1:max(warmup, 1)
         f()
     end
     samples = Float64[]
     sizehint!(samples, iters)
     for _ in 1:iters
+        output = nothing
         t0 = time_ns()
-        f()
-        push!(samples, (time_ns() - t0) / 1e9)
+        output = f()
+        GC.@preserve output push!(samples, (time_ns() - t0) / 1e9)
     end
     med = median_duration(samples)
     sorted = sort(samples)

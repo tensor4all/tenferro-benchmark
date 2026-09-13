@@ -16,6 +16,10 @@ errors: list[str] = []
 for path in sorted((root / "data/instances").glob("*.json")):
     with path.open() as fh:
         instance = json.load(fh)
+    if isinstance(instance, list):
+        # Aggregate case manifests (small_work, permutation patterns) are not
+        # individual einsum instances.
+        continue
     intent = instance.get("intent")
     if intent is not None and (not isinstance(intent, str) or not intent.strip()):
         errors.append(f"{path}: optional intent must be a non-empty string")

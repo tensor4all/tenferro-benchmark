@@ -31,6 +31,7 @@ BACKEND_LABELS = {
     "pytorch-cuda": "PyTorch CUDA",
     "cublaslt": "cuBLASLt",
     "cutlass": "CUTLASS",
+    "cutlass-destination-reuse": "CUTLASS destination reuse",
     "cusolver": "cuSOLVER",
     "cusparse": "cuSPARSE",
     "ginkgo": "Ginkgo",
@@ -115,7 +116,8 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
     backends = backend_order(records)
     by_suite_op: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     for record in records:
-        by_suite_op[(record["suite_id"], record["op"])].append(record)
+        policy = "destination reuse" if record["backend"].endswith("-destination-reuse") else "allocating output"
+        by_suite_op[(record["suite_id"], record["op"], policy)].append(record)
 
     lines = ["# GPU Benchmark Results", ""]
     lines.extend(run_metadata_lines(run_metadata))
@@ -135,8 +137,9 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
     lines.append("Non-`ok` cells show the structured backend status.")
     lines.append("")
 
-    for (suite_id, op), group in sorted(by_suite_op.items()):
-        lines.append(f"## {markdown_cell(suite_id)} / {markdown_cell(op)}")
+    for (suite_id, op, policy), group in sorted(by_suite_op.items()):
+        backends = backend_order(group)
+        lines.append(f"## {markdown_cell(suite_id)} / {markdown_cell(op)} / {policy}")
         lines.append("")
         if op == "svd":
             lines.append("> **SVD note:** SVD rows use synchronized timed regions and matched Rust/Python input generators. tenferro-rs CUDA uses its backend default driver policy, currently gesvdj for matrices with both dimensions at most 1024 and gesvd otherwise. The cuSOLVER column pins torch.linalg.svd driver=gesvd as a QR-based cuSOLVER comparison; PyTorch's default row may use a different SVD driver and row-major framework layout.")

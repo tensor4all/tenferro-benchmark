@@ -572,6 +572,14 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
             "features": parse_features(args.features),
         },
         "environment": collect_environment(),
+        "timing_policy": {
+            "version": 2,
+            "scope": "operation execution and completion synchronization",
+            "setup": "inputs, transfers, runtime/session/handles, plans and compilation outside timer",
+            "cleanup": "returned outputs retained until after timer stops",
+            "minimum_untimed_priming_runs": 1,
+            "setup_diagnostics": os.environ.get("BENCH_INCLUDE_SETUP_DIAGNOSTICS") == "1",
+        },
     }
     blas = collect_blas(args.blas)
     if blas is not None:

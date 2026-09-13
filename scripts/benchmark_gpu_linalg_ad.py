@@ -173,7 +173,7 @@ def run_torch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                 def fn(a):
                     return loss_fn(a)
 
-            runner = lambda: jvp(fn, (x,), (t,))[1]
+            runner = lambda: jvp(fn, (x,), (t,))
         else:
             from torch.func import vjp
 
@@ -196,8 +196,8 @@ def run_torch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             cotangent = torch.tensor(1.0, dtype=torch.float64, device=device)
 
             def runner():
-                _, vjp_fn = vjp(fn, x)
-                return vjp_fn(cotangent)[0]
+                primal, vjp_fn = vjp(fn, x)
+                return primal, vjp_fn(cotangent)
 
         med, iqr = bench(runner, sync, n_runs, n_warmup)
         return ok_record(
@@ -303,7 +303,8 @@ def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                 fn = lambda a: loss_fn(a, b)
             else:
                 fn = loss_fn
-            runner = lambda: jax.jvp(fn, (x,), (t,))[1]
+            compiled = jax.jit(lambda a, tangent: jax.jvp(fn, (a,), (tangent,)))
+            runner = lambda: compiled(x, t)
         else:
             if loss_name == "grad_sum_solve":
                 b = jnp.asarray(
@@ -315,7 +316,11 @@ def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             else:
                 fn = loss_fn
             cotangent = jnp.asarray(1.0, dtype=jnp.float64, device=dev)
-            runner = lambda: jax.vjp(fn, x)[1](cotangent)
+            def value_and_vjp(a, seed):
+                primal, pullback = jax.vjp(fn, a)
+                return primal, pullback(seed)
+            compiled = jax.jit(value_and_vjp)
+            runner = lambda: compiled(x, cotangent)
 
         med, iqr = bench(runner, sync, n_runs, n_warmup)
         return ok_record(

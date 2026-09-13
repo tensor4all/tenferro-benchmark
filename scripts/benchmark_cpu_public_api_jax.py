@@ -68,13 +68,14 @@ def bench(fn: Callable[[], object], runs: int, warmups: int) -> tuple[float, flo
 
     # The first warmup performs XLA compilation. All warmups, including that
     # compilation, are outside the measured region.
-    for _ in range(warmups):
+    for _ in range(max(warmups, 1)):
         jax.block_until_ready(fn())
     times: list[float] = []
     for _ in range(runs):
         start = time.perf_counter()
-        jax.block_until_ready(fn())
+        output = jax.block_until_ready(fn())
         times.append((time.perf_counter() - start) * 1000.0)
+        del output
     return median_iqr(times)
 
 

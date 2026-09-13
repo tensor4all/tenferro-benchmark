@@ -380,15 +380,17 @@ struct Timing {
     gbps: f64,
 }
 
-fn bench_n(warmup: usize, iters: usize, bytes: usize, mut f: impl FnMut()) -> Timing {
-    for _ in 0..warmup {
+fn bench_n<O>(warmup: usize, iters: usize, bytes: usize, mut f: impl FnMut() -> O) -> Timing {
+    for _ in 0..warmup.max(1) {
         f();
     }
     let mut samples = Vec::with_capacity(iters);
     for _ in 0..iters {
         let t0 = Instant::now();
-        f();
+        let output = f();
         samples.push(t0.elapsed());
+        black_box(&output);
+        drop(output);
     }
     let med = median(&mut samples);
     let ms = med.as_secs_f64() * 1e3;
@@ -627,7 +629,8 @@ fn run_participant(
                         total,
                     )
                 };
-                black_box(dst.as_ptr());
+                black_box(&dst);
+                dst
             });
             finish!(base("ok", "passed", true), Some(timing));
         }
@@ -659,6 +662,7 @@ fn run_participant(
             let timing = bench_n(warmup, iters, bytes, || {
                 let compact = backend.to_contiguous(&transposed).unwrap();
                 black_box(compact.as_slice().unwrap().as_ptr());
+                compact
             });
             finish!(base("ok", "passed", true), Some(timing));
         }
@@ -727,49 +731,13 @@ fn run_hptt_participant(
         return;
     }
 
-    let mut dst = vec![0.0f64; total];
-    hptt::transpose_f64(
-        &pattern.perm,
-        1.0,
-        &prepared.src_data,
-        &pattern.shape,
-        0.0,
-        &mut dst,
-        1,
-        hptt::MemoryOrder::ColumnMajor,
-    )
-    .expect("hptt correctness run must succeed");
-    if let Err(msg) = verify_output(&dst, &prepared.reference) {
-        let record = base("verification_failed", "failed").with_note(msg);
-        print_human_row(pattern, "hptt", None, record.notes.as_deref());
-        sink.emit(&record);
-        return;
-    }
-
-    let timing = bench_n(warmup, iters, bytes, || {
-        let mut dst = vec![0.0f64; total];
-        hptt::transpose_f64(
-            &pattern.perm,
-            1.0,
-            &prepared.src_data,
-            &pattern.shape,
-            0.0,
-            &mut dst,
-            threads,
-            hptt::MemoryOrder::ColumnMajor,
-        )
-        .unwrap();
-        black_box(dst.as_ptr());
-    });
-    print_human_row(pattern, "hptt", Some(&timing), None);
-    let mut record = base("ok", "passed");
-    record.warmup = Some(timing.warmup);
-    record.iters = Some(timing.iters);
-    record.median_ms = Some(timing.median_ms);
-    record.p25_ms = Some(timing.p25_ms);
-    record.p75_ms = Some(timing.p75_ms);
-    record.gbps = Some(timing.gbps);
+    let _ = (warmup, iters);
+    let record = base("skipped", "skipped").with_note(
+        "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing".into()
+    );
+    print_human_row(pattern, "hptt", None, record.notes.as_deref());
     sink.emit(&record);
+
 }
 
 #[cfg(not(feature = "hptt"))]
@@ -910,7 +878,8 @@ fn run_strided_rs_participant(
         let timing = bench_n(warmup, iters, bytes, || {
             let mut dst = strided_view::StridedArray::<f64>::col_major(&prepared.out_shape);
             f(&mut dst.view_mut(), &src_perm).unwrap();
-            black_box(dst.data().as_ptr());
+            black_box(&dst);
+            dst
         });
         if best
             .as_ref()

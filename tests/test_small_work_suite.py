@@ -16,8 +16,12 @@ class SmallWorkSuiteTest(unittest.TestCase):
     def test_saved_cases_and_selection(self):
         with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):
             cases, config = suite.selected_cases()
-        self.assertEqual(len(cases), 154)
-        self.assertEqual(len({c['id'] for c in cases}), 154)
+        self.assertGreater(len(cases), 0)
+        self.assertLess(len(cases), 154)
+        self.assertFalse(any(c["api_tier"].endswith(("-fresh", "-setup")) for c in cases))
+        with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_INCLUDE_SETUP_DIAGNOSTICS": "1"}):
+            self.assertEqual(len(suite.selected_cases()[0]), 154)
+        self.assertEqual(len({c['id'] for c in cases}), len(cases))
         self.assertEqual(config['runs'], 15)
         with patch.dict(os.environ, {"BENCH_INSTANCE": cases[0]['id']}):
             self.assertEqual(suite.selected_cases()[0], cases[:1])
@@ -35,7 +39,7 @@ class SmallWorkSuiteTest(unittest.TestCase):
         failed = dict(row, case_id='failed-case', correctness_status='failed', samples=[], error='numerical mismatch')
         self.assertEqual(suite.summary(failed), ('—', '—', '—', 'FAILED'))
         self.assertEqual(suite.summary(dict(row, samples=[]))[-1], 'MISSING')
-        with tempfile.TemporaryDirectory() as tmp, patch.object(suite, 'ROOT', Path(tmp)):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(suite, 'ROOT', Path(tmp).resolve()):
             run = Path(tmp) / 'data/results/amd-cpu/cpu/small_work/test'
             run.mkdir(parents=True)
             (run/'samples_t1.jsonl').write_text('\n'.join(map(json.dumps, [row, failed])))
@@ -52,7 +56,7 @@ class SmallWorkSuiteTest(unittest.TestCase):
             binary.write_text('#!/bin/sh\necho numerical-failure >&2\nexit 1\n')
             binary.chmod(0o755)
             output = Path(tmp)/'samples.jsonl'
-            with patch.dict(os.environ, {'BENCH_INSTANCE': 'add_f64_concrete_fresh'}):
+            with patch.dict(os.environ, {'BENCH_INSTANCE': 'add_f64_concrete_shared'}):
                 self.assertTrue(suite.collect(binary, output, 1))
             row = json.loads(output.read_text())
             self.assertEqual(row['samples'], [])

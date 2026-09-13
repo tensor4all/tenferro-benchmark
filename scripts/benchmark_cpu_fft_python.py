@@ -81,15 +81,17 @@ def median_iqr(times: list[float]) -> tuple[float, float]:
 
 
 def bench(fn: Callable[[], object], runs: int, warmups: int) -> tuple[float, float]:
-    for _ in range(warmups):
+    for _ in range(max(warmups, 1)):
         value = fn()
         consume(value)
     times = []
     for _ in range(runs):
+        value = None
         start = time.perf_counter()
         value = fn()
-        consume(value)
         times.append((time.perf_counter() - start) * 1000.0)
+        consume(value)
+        del value
     return median_iqr(times)
 
 

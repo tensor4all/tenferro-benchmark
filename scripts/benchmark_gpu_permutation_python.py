@@ -129,13 +129,14 @@ def timing_counts_env(total: int) -> tuple[int, int]:
 
 
 def bench_n(warmup: int, iters: int, bytes_rw: int, fn) -> dict[str, float]:
-    for _ in range(warmup):
+    for _ in range(max(warmup, 1)):
         fn()
     samples_s: list[float] = []
     for _ in range(iters):
         t0 = time.perf_counter()
-        fn()
+        output = fn()
         samples_s.append(time.perf_counter() - t0)
+        del output
     samples_s.sort()
     n = len(samples_s)
     if n % 2 == 1:

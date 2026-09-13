@@ -72,21 +72,23 @@ def base_record(pattern: dict, backend: str) -> dict:
         "bytes_rw": elems * 8,
         "device": DEVICE_NAME,
         "per_call_allocation": backend != "memcpy-metal-d2d",
+        "allocates_output": backend != "memcpy-metal-d2d",
         "warmup": int(os.environ.get("BENCH_WARMUPS", "3")),
         "iters": max(1, int(os.environ.get("BENCH_RUNS", "7"))),
     }
 
 
 def timed(record: dict, operation, synchronize) -> tuple[float, float, float, float]:
-    for _ in range(record["warmup"]):
+    for _ in range(max(record["warmup"], 1)):
         operation()
         synchronize()
     samples = []
     for _ in range(record["iters"]):
         start = time.perf_counter()
-        operation()
+        output = operation()
         synchronize()
         samples.append((time.perf_counter() - start) * 1e3)
+        del output
     samples.sort()
     median = statistics.median(samples)
     return (
@@ -156,12 +158,10 @@ def run_pytorch(pattern: dict, backend: str) -> dict:
     if not np.array_equal(destination.cpu().numpy(), expected_array(pattern, host)):
         return unavailable_record(pattern, backend, "PyTorch MPS correctness mismatch", "verification_failed")
 
-    holder = [destination]
-
-    def operation() -> None:
+    def operation():
         destination = allocate_destination()
         destination.copy_(permuted)
-        holder[0] = destination
+        return destination
 
     values = timed(record, operation, torch.mps.synchronize)
     return ok_record(record, values, "fresh compact column-major destination per timed call")
@@ -175,8 +175,8 @@ def run_jax(pattern: dict) -> dict:
     except ImportError as error:
         return unavailable_record(pattern, backend, f"JAX import failed: {error}")
     devices = jax.devices()
-    platform = any("metal" in device.platform.lower() for device in devices)
-    if not platform:
+    metal_devices = [device for device in devices if "metal" in device.platform.lower()]
+    if not metal_devices:
         return unavailable_record(
             pattern,
             backend,
@@ -185,18 +185,20 @@ def run_jax(pattern: dict) -> dict:
     record = base_record(pattern, backend)
     total = record["elems"]
     flat = (np.arange(total, dtype=np.uint32) % 65521).astype(np.float32)
-    source = jax.device_put(np.array(logical_source(pattern, flat), copy=True, order="C"), devices[0])
+    source = jax.device_put(np.array(logical_source(pattern, flat), copy=True, order="C"), metal_devices[0])
     operation = jax.jit(lambda value: jnp.transpose(value, axes=pattern["perm"]))
     actual = operation(source)
     actual.block_until_ready()
     if not np.array_equal(np.asarray(actual), expected_array(pattern, flat)):
         return unavailable_record(pattern, backend, "JAX Metal correctness mismatch", "verification_failed")
-    holder = [actual]
+    del actual
 
-    def invoke() -> None:
-        holder[0] = operation(source)
+    def invoke():
+        output = operation(source)
+        output.block_until_ready()
+        return output
 
-    values = timed(record, invoke, lambda: holder[0].block_until_ready())
+    values = timed(record, invoke, lambda: None)
     return ok_record(record, values, "JIT compilation excluded; logical transpose output")
 
 

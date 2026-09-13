@@ -141,12 +141,13 @@ def bold_fastest(cells: dict[str, tuple[str, float | None]]) -> dict[str, str]:
     return out
 
 
-def format_table(records: list[dict[str, Any]]) -> list[str]:
+def format_policy_table(records: list[dict[str, Any]]) -> list[str]:
     backend_order = (
         METAL_BACKEND_ORDER
         if any(record.get("target_profile") == "mac-gpu" for record in records)
         else BACKEND_ORDER
     )
+    backend_order = [b for b in backend_order if any(r.get("backend") == b for r in records)]
     by_pattern: dict[tuple[str, str, str], dict[str, dict[str, Any]]] = defaultdict(dict)
     for record in records:
         key = (record["pattern_id"], record.get("label", ""), record.get("dtype", "f64"))
@@ -171,6 +172,18 @@ def format_table(records: list[dict[str, Any]]) -> list[str]:
         lines.append("| " + " | ".join(row) + " |")
 
     lines.append("")
+    return lines
+
+
+def format_table(records: list[dict[str, Any]]) -> list[str]:
+    # Missing allocation metadata is unknown, never inferred as reuse.
+    lines = []
+    for policy, title in [(True, "Allocating output"), (False, "Reusing output"), (None, "Unknown output policy (legacy records)")]:
+        group = [r for r in records if r.get("allocates_output", r.get("per_call_allocation")) is policy]
+        if not group:
+            continue
+        lines.extend([f"## {title}", ""])
+        lines.extend(format_policy_table(group))
     return lines
 
 
@@ -238,7 +251,7 @@ def format_markdown(
         "`TensorViewCanonicalization::to_contiguous` "
         "(accepts arbitrary source strides). For framework comparisons, "
         "`tenferro-cuda-to-contiguous` is the primary like-for-like column for PyTorch's "
-        "view/permute-then-materialize path. "
+        "view/permute-then-materialize semantics; allocation and reuse timings are shown separately. "
         "`tenferro-cuda-transpose` is the direct structural-permutation comparison for "
         "primitive/kernel-oriented backends such as cuTENSOR. Both public tenferro columns allocate "
         "a fresh device tensor on every call. `tenferro-cuda-destination-reuse` calls the public "

@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend, CpuBackendKind};
-use tenferro_einsum::{ContractionTree, EagerEinsumExt, Subscripts};
+use tenferro_einsum::{ContractionTree, EagerEinsumExt, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_runtime::{Runtime, Tensor};
 use tenferro_tensor::TypedTensor;
@@ -518,7 +518,7 @@ fn run_instance_trace(
 
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
-    for _ in 0..bench_warmups() {
+    for _ in 0..bench_warmups().max(1) {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
             runtime.run_compiled(program, &bindings)
         }));
@@ -597,37 +597,41 @@ fn run_instance_trace(
 #[derive(Default)]
 struct EagerRunBreakdown {
     total: Duration,
-    parse_subscripts: Duration,
     operand_handles: Duration,
     binary_setup: Duration,
     einsum_call: Duration,
     output_take: Duration,
 }
 
-fn contract_once_eager(
+fn prepare_eager_path(
     instance: &BenchmarkInstance,
+    path_meta: &PathMeta,
+) -> Result<Vec<EinsumSubscripts>, String> {
+    let parsed = Subscripts::parse(&instance.format_string_colmajor).map_err(|e| e.to_string())?;
+    let mut labels = parsed.inputs;
+    let mut steps = Vec::with_capacity(path_meta.path.len());
+    for &[lhs, rhs] in &path_meta.path {
+        steps.push((&binary_subscripts(&labels, &parsed.output, lhs, rhs)?).into());
+        labels = contract_label_subscripts(&labels, &parsed.output, lhs, rhs)?;
+    }
+    Ok(steps)
+}
+
+fn contract_once_eager(
+    prepared: &[EinsumSubscripts],
     path_meta: &PathMeta,
     source_operands: &[EagerTensor],
     mut profile: Option<&mut EagerRunBreakdown>,
 ) -> Result<EagerTensor, String> {
     let total_started = Instant::now();
     let started = Instant::now();
-    let parsed = Subscripts::parse(&instance.format_string_colmajor).map_err(|e| format!("{e}"))?;
-    if let Some(profile) = profile.as_deref_mut() {
-        profile.parse_subscripts += started.elapsed();
-    }
-
-    let started = Instant::now();
-    let mut subscripts = parsed.inputs;
-    let final_output = parsed.output;
     let mut operands = source_operands.to_vec();
     if let Some(profile) = profile.as_deref_mut() {
         profile.operand_handles += started.elapsed();
     }
 
-    for &[lhs_index, rhs_index] in &path_meta.path {
+    for (&[lhs_index, rhs_index], binary_subscripts) in path_meta.path.iter().zip(prepared) {
         let started = Instant::now();
-        let binary = binary_subscripts(&subscripts, &final_output, lhs_index, rhs_index)?;
         let first_remove = lhs_index.max(rhs_index);
         let second_remove = lhs_index.min(rhs_index);
         let rhs = operands.remove(first_remove);
@@ -638,21 +642,19 @@ fn contract_once_eager(
             vec![rhs, lhs]
         };
         let input_refs: Vec<&EagerTensor> = ordered.iter().collect();
-        let binary_subscripts = (&binary).into();
         if let Some(profile) = profile.as_deref_mut() {
             profile.binary_setup += started.elapsed();
         }
 
         let started = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            input_refs.as_slice().einsum_subscripts(&binary_subscripts)
+            input_refs.as_slice().einsum_subscripts(binary_subscripts)
         }));
         let result = unwrap_eval_result(result, "panic during eager execution")?;
         if let Some(profile) = profile.as_deref_mut() {
             profile.einsum_call += started.elapsed();
         }
         operands.push(result);
-        subscripts = contract_label_subscripts(&subscripts, &final_output, lhs_index, rhs_index)?;
     }
 
     if operands.len() != 1 {
@@ -679,16 +681,17 @@ fn run_instance_eager(
     let ctx =
         EagerRuntime::with_cpu_backend(cpu_backend_from_env()?).map_err(|err| err.to_string())?;
     let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
+    let prepared = prepare_eager_path(instance, path_meta)?;
 
-    for _ in 0..bench_warmups() {
-        let eval = contract_once_eager(instance, path_meta, &source_operands, None)?;
+    for _ in 0..bench_warmups().max(1) {
+        let eval = contract_once_eager(&prepared, path_meta, &source_operands, None)?;
         black_box(&eval);
     }
 
     let mut durations = Vec::with_capacity(bench_runs());
     for _ in 0..bench_runs() {
         let t0 = Instant::now();
-        let eval = contract_once_eager(instance, path_meta, &source_operands, None)?;
+        let eval = contract_once_eager(&prepared, path_meta, &source_operands, None)?;
         let elapsed = t0.elapsed();
         black_box(&eval);
         durations.push(elapsed);
@@ -713,7 +716,6 @@ fn run_instance_eager(
         );
 
         let mut total = Vec::with_capacity(bench_runs());
-        let mut parse_subscripts = Vec::with_capacity(bench_runs());
         let mut operand_handles = Vec::with_capacity(bench_runs());
         let mut binary_setup = Vec::with_capacity(bench_runs());
         let mut einsum_call = Vec::with_capacity(bench_runs());
@@ -721,10 +723,9 @@ fn run_instance_eager(
         for _ in 0..bench_runs() {
             let mut breakdown = EagerRunBreakdown::default();
             let eval =
-                contract_once_eager(instance, path_meta, &source_operands, Some(&mut breakdown))?;
+                contract_once_eager(&prepared, path_meta, &source_operands, Some(&mut breakdown))?;
             black_box(&eval);
             total.push(breakdown.total);
-            parse_subscripts.push(breakdown.parse_subscripts);
             operand_handles.push(breakdown.operand_handles);
             binary_setup.push(breakdown.binary_setup);
             einsum_call.push(breakdown.einsum_call);
@@ -736,13 +737,6 @@ fn run_instance_eager(
             strategy_name,
             "eager.total",
             total,
-        );
-        print_breakdown(
-            "tenferro-eager",
-            instance,
-            strategy_name,
-            "eager.parse_subscripts",
-            parse_subscripts,
         );
         print_breakdown(
             "tenferro-eager",

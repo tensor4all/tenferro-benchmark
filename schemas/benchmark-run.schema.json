@@ -14,6 +14,39 @@
   ],
   "additionalProperties": false,
   "properties": {
+    "timing_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "scope",
+        "setup",
+        "cleanup",
+        "minimum_untimed_priming_runs",
+        "setup_diagnostics"
+      ],
+      "properties": {
+        "version": {
+          "const": 2
+        },
+        "scope": {
+          "type": "string"
+        },
+        "setup": {
+          "type": "string"
+        },
+        "cleanup": {
+          "type": "string"
+        },
+        "minimum_untimed_priming_runs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "setup_diagnostics": {
+          "type": "boolean"
+        }
+      }
+    },
     "schema_version": { "const": 1 },
     "target_profile": {
       "enum": ["mac-cpu", "mac-gpu", "amd-cpu", "nvidia-gpu"]

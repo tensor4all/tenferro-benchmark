@@ -15,7 +15,9 @@ DEFAULT_BOND_DIM = 2
 
 
 class EinsumBackend(Protocol):
-    def einsum(self, ixs: Sequence[Sequence[int]], iy: Sequence[int], tensors: Sequence[Any]) -> Any: ...
+    def einsum(
+        self, ixs: Sequence[Sequence[int]], iy: Sequence[int], tensors: Sequence[Any]
+    ) -> Any: ...
 
 
 T = TypeVar("T")
@@ -36,11 +38,15 @@ def load_tensor_network(path: Path) -> dict[str, Any]:
     return data
 
 
-def labels_to_einsum(ixs: Sequence[Sequence[int]], iy: Sequence[int]) -> tuple[list[list[int]], list[int]]:
+def labels_to_einsum(
+    ixs: Sequence[Sequence[int]], iy: Sequence[int]
+) -> tuple[list[list[int]], list[int]]:
     return [list(ix) for ix in ixs], list(iy)
 
 
-def contract_tree(tree: dict[str, Any], inputs: Sequence[T], backend: EinsumBackend) -> T:
+def contract_tree(
+    tree: dict[str, Any], inputs: Sequence[T], backend: EinsumBackend
+) -> T:
     """Contract using the JSON tree and pre-built input tensors."""
 
     def contract_recur(node: dict[str, Any]) -> T:
@@ -55,7 +61,43 @@ def contract_tree(tree: dict[str, Any], inputs: Sequence[T], backend: EinsumBack
     return contract_recur(tree)
 
 
-def build_input_shapes(inputs: Sequence[Sequence[int]], bond_dim: int = DEFAULT_BOND_DIM) -> list[tuple[int, ...]]:
+def prepare_tree(tree: dict[str, Any], inputs: Sequence[Any], backend_name: str):
+    """Prepare each contraction and label mapping before operation timing."""
+    import opt_einsum as oe
+
+    def prepare(node):
+        if node.get("isleaf"):
+            index = int(node["tensorindex"]) - 1
+            return (lambda values: values[index]), tuple(inputs[index].shape)
+        children = [prepare(child) for child in node["args"]]
+        ixs, iy = node["eins"]["ixs"], node["eins"]["iy"]
+        labels = sorted({label for ix in ixs for label in ix} | set(iy))
+        names = {label: oe.get_symbol(i) for i, label in enumerate(labels)}
+        expression = (
+            ",".join("".join(names[i] for i in ix) for ix in ixs)
+            + "->"
+            + "".join(names[i] for i in iy)
+        )
+        shapes = [shape for _, shape in children]
+        contract = oe.contract_expression(expression, *shapes, optimize="greedy")
+        sizes = {
+            label: size
+            for ix, shape in zip(ixs, shapes)
+            for label, size in zip(ix, shape)
+        }
+
+        def execute(values):
+            operands = [run(values) for run, _ in children]
+            return contract(*operands, backend=backend_name)
+
+        return execute, tuple(sizes[i] for i in iy)
+
+    return prepare(tree)[0]
+
+
+def build_input_shapes(
+    inputs: Sequence[Sequence[int]], bond_dim: int = DEFAULT_BOND_DIM
+) -> list[tuple[int, ...]]:
     return [tuple(bond_dim for _ in ix) for ix in inputs]
 
 
@@ -69,11 +111,15 @@ class IntegerLabelEinsumBackend:
     def __init__(self, einsum_fn):
         self._einsum_fn = einsum_fn
 
-    def einsum(self, ixs: Sequence[Sequence[int]], iy: Sequence[int], tensors: Sequence[Any]) -> Any:
+    def einsum(
+        self, ixs: Sequence[Sequence[int]], iy: Sequence[int], tensors: Sequence[Any]
+    ) -> Any:
         unique = sorted(set(sum((list(ix) for ix in ixs), []) + list(iy)))
         letters = list(range(65, 90)) + list(range(97, 122))
         if len(unique) > len(letters):
-            raise ValueError(f"too many unique labels ({len(unique)}) for ASCII einsum mapping")
+            raise ValueError(
+                f"too many unique labels ({len(unique)}) for ASCII einsum mapping"
+            )
         labelmap = {label: chr(letters[i]) for i, label in enumerate(unique)}
         expr_inputs = ["".join(labelmap[label] for label in ix) for ix in ixs]
         expr_output = "".join(labelmap[label] for label in iy)

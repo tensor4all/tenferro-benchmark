@@ -38,7 +38,6 @@
 //!   (see `cutensor_ffi::DEFAULT_CUTENSOR_PATHS` for the fallback).
 
 use std::env;
-use std::ffi::c_void;
 use std::fmt;
 use std::fs::File;
 use std::hint::black_box;
@@ -47,8 +46,7 @@ use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 
-use tenferro_gpu::cuda_interop::raw_cuda_stream;
-use tenferro_gpu::{device_ptr, download_tensor, gpu_available, upload_tensor, CudaBackend};
+use tenferro_gpu::cuda::{download_tensor, gpu_available, upload_tensor, CudaBackend};
 use tenferro_tensor::{
     Tensor, TensorRead, TensorStructural, TensorViewCanonicalization, TensorViewMut, TensorWrite,
     TypedTensor,
@@ -284,15 +282,17 @@ struct Timing {
     gbps: f64,
 }
 
-fn bench_n(warmup: usize, iters: usize, bytes: usize, mut f: impl FnMut()) -> Timing {
-    for _ in 0..warmup {
+fn bench_n<O>(warmup: usize, iters: usize, bytes: usize, mut f: impl FnMut() -> O) -> Timing {
+    for _ in 0..warmup.max(1) {
         f();
     }
     let mut samples = Vec::with_capacity(iters);
     for _ in 0..iters {
         let t0 = Instant::now();
-        f();
+        let output = f();
         samples.push(t0.elapsed());
+        black_box(&output);
+        drop(output);
     }
     let med = median(&mut samples);
     let ms = med.as_secs_f64() * 1e3;
@@ -561,13 +561,8 @@ mod cutensor_ffi {
     type FnCreatePlanPreference =
         unsafe extern "C" fn(HandleRaw, *mut PlanPrefRaw, Algo, JitMode) -> Status;
     type FnDestroyPlanPreference = unsafe extern "C" fn(PlanPrefRaw) -> Status;
-    type FnEstimateWorkspaceSize = unsafe extern "C" fn(
-        HandleRaw,
-        OpDescRaw,
-        PlanPrefRaw,
-        WorkspacePref,
-        *mut u64,
-    ) -> Status;
+    type FnEstimateWorkspaceSize =
+        unsafe extern "C" fn(HandleRaw, OpDescRaw, PlanPrefRaw, WorkspacePref, *mut u64) -> Status;
     type FnCreatePlan =
         unsafe extern "C" fn(HandleRaw, *mut PlanRaw, OpDescRaw, PlanPrefRaw, u64) -> Status;
     type FnDestroyPlan = unsafe extern "C" fn(PlanRaw) -> Status;
@@ -610,7 +605,9 @@ mod cutensor_ffi {
     }
 
     unsafe fn load_data_symbol<T: Copy>(lib: &Library, name: &[u8]) -> Result<T, String> {
-        let symbol_name = String::from_utf8_lossy(name).trim_end_matches('\0').to_owned();
+        let symbol_name = String::from_utf8_lossy(name)
+            .trim_end_matches('\0')
+            .to_owned();
         let symbol = lib
             .get::<*const T>(name)
             .map_err(|err| format!("failed to load cuTENSOR data symbol {symbol_name}: {err}"))?;
@@ -625,9 +622,15 @@ mod cutensor_ffi {
 
     fn library_search_paths() -> Vec<String> {
         if let Ok(val) = std::env::var("TENFERRO_CUTENSOR_PATH") {
-            val.split(':').filter(|s| !s.is_empty()).map(String::from).collect()
+            val.split(':')
+                .filter(|s| !s.is_empty())
+                .map(String::from)
+                .collect()
         } else {
-            DEFAULT_CUTENSOR_PATHS.iter().map(|s| s.to_string()).collect()
+            DEFAULT_CUTENSOR_PATHS
+                .iter()
+                .map(|s| s.to_string())
+                .collect()
         }
     }
 
@@ -636,7 +639,9 @@ mod cutensor_ffi {
         if ptr.is_null() {
             return format!("status code {status}");
         }
-        unsafe { CStr::from_ptr(ptr) }.to_string_lossy().into_owned()
+        unsafe { CStr::from_ptr(ptr) }
+            .to_string_lossy()
+            .into_owned()
     }
 
     fn check(vtable: &Vtable, status: Status, call: &'static str) -> Result<(), String> {
@@ -789,7 +794,13 @@ mod cutensor_ffi {
 
             let mut plan_raw = std::ptr::null_mut();
             let status = unsafe {
-                (self.vtable.create_plan)(self.handle, &mut plan_raw, op.raw, pref.raw, workspace_size)
+                (self.vtable.create_plan)(
+                    self.handle,
+                    &mut plan_raw,
+                    op.raw,
+                    pref.raw,
+                    workspace_size,
+                )
             };
             check(&self.vtable, status, "cutensorCreatePlan")?;
             Ok(Plan {
@@ -906,14 +917,6 @@ mod cutensor_ffi {
 
 use cutensor_ffi::CutensorLib;
 
-fn cuda_ptr_mut(addr: u64) -> *mut c_void {
-    addr as usize as *mut c_void
-}
-
-fn cuda_ptr_const(addr: u64) -> *const c_void {
-    addr as usize as *const c_void
-}
-
 // ---------------------------------------------------------------------------
 // Participants
 // ---------------------------------------------------------------------------
@@ -933,11 +936,19 @@ fn run_tenferro_cuda_transpose(
     let name: &'static str = "tenferro-cuda-transpose";
     if !matches!(pattern.src_layout, LayoutPattern::ColMajor) {
         finish_skip(
-            base_record(pattern, name, total, bytes, device_name, "skipped", "skipped", true)
-                .with_note(
-                    "tenferro-cuda-transpose (eager op) requires a compact col-major source"
-                        .into(),
-                ),
+            base_record(
+                pattern,
+                name,
+                total,
+                bytes,
+                device_name,
+                "skipped",
+                "skipped",
+                true,
+            )
+            .with_note(
+                "tenferro-cuda-transpose (eager op) requires a compact col-major source".into(),
+            ),
             sink,
         );
         return;
@@ -976,7 +987,7 @@ fn run_tenferro_cuda_transpose(
     let timing = bench_n(warmup, iters, bytes, || {
         let out = backend.transpose(&gpu_in, &pattern.perm).unwrap();
         backend.runtime().synchronize().unwrap();
-        black_box(&out);
+        out
     });
     finish_ok(
         base_record(pattern, name, total, bytes, device_name, "ok", "passed", true).with_note(
@@ -1027,8 +1038,8 @@ fn run_tenferro_cuda_to_contiguous(
         .to_contiguous(&view)
         .expect("tenferro-cuda-to-contiguous must succeed on a validated pattern");
     backend.runtime().synchronize().expect("device sync");
-    let downloaded = download_tensor(backend.runtime(), &Tensor::F64(compact))
-        .expect("download must succeed");
+    let downloaded =
+        download_tensor(backend.runtime(), &Tensor::F64(compact)).expect("download must succeed");
     let actual = downloaded
         .as_slice::<f64>()
         .expect("tenferro-cuda-to-contiguous output must be f64");
@@ -1053,10 +1064,20 @@ fn run_tenferro_cuda_to_contiguous(
     let timing = bench_n(warmup, iters, bytes, || {
         let compact = backend.to_contiguous(&view).unwrap();
         backend.runtime().synchronize().unwrap();
-        black_box(&compact);
+        compact
     });
     finish_ok(
-        base_record(pattern, name, total, bytes, device_name, "ok", "passed", true).with_note(
+        base_record(
+            pattern,
+            name,
+            total,
+            bytes,
+            device_name,
+            "ok",
+            "passed",
+            true,
+        )
+        .with_note(
             "allocates a fresh device tensor per call (view -> contiguous materialize); \
              destination is not reused"
                 .into(),
@@ -1191,10 +1212,19 @@ fn run_cutensor(
     let total = prepared.reference.len();
     let name: &'static str = "cutensor";
 
-    let Some(lib) = cutensor else {
+    if cutensor.is_none() {
         finish_skip(
-            base_record(pattern, name, total, bytes, device_name, "skipped", "skipped", false)
-                .with_note("cuTENSOR library unavailable (see TENFERRO_CUTENSOR_PATH)".into()),
+            base_record(
+                pattern,
+                name,
+                total,
+                bytes,
+                device_name,
+                "skipped",
+                "skipped",
+                false,
+            )
+            .with_note("cuTENSOR library unavailable (see TENFERRO_CUTENSOR_PATH)".into()),
             sink,
         );
         return;
@@ -1208,23 +1238,6 @@ fn run_cutensor(
     let strides_b: Vec<i64> = prepared.dst_strides.iter().map(|&s| s as i64).collect();
     let modes_b: Vec<i32> = pattern.perm.iter().map(|&p| p as i32).collect();
 
-    let plan = match lib.build_permutation_plan(
-        &extents_a, &strides_a, &modes_a, &extents_b, &strides_b, &modes_b,
-    ) {
-        Ok(plan) => plan,
-        Err(err) => {
-            finish_skip(
-                base_record(pattern, name, total, bytes, device_name, "skipped", "skipped", false)
-                    .with_note(format!(
-                        "cuTENSOR rejected this pattern (rank {rank}), recording skip instead of \
-                         crashing: {err}"
-                    )),
-                sink,
-            );
-            return;
-        }
-    };
-
     let flat_src_host = Tensor::from_vec_col_major(vec![total], prepared.src_data.clone())
         .expect("building flat source tensor must succeed");
     let flat_src = upload_tensor(backend.runtime(), &flat_src_host).expect("upload must succeed");
@@ -1232,68 +1245,129 @@ fn run_cutensor(
         .expect("building flat destination tensor must succeed");
     let flat_dst = upload_tensor(backend.runtime(), &flat_dst_host).expect("upload must succeed");
 
-    let src_ptr = cuda_ptr_const(device_ptr(backend.runtime(), &flat_src).expect("device_ptr"));
-    let dst_ptr = cuda_ptr_mut(device_ptr(backend.runtime(), &flat_dst).expect("device_ptr"));
-    let stream = raw_cuda_stream(backend.runtime(), "benchmark_gpu_permutation::cutensor")
-        .expect("raw_cuda_stream") as usize as cutensor_ffi::CudaStream;
+    let Tensor::F64(flat_src) = flat_src else {
+        unreachable!("f64 source")
+    };
+    let Tensor::F64(mut flat_dst) = flat_dst else {
+        unreachable!("f64 destination")
+    };
+    use tenferro_runtime::BackendSessionHost;
+    let mut session_backend = backend.clone();
+    session_backend
+        .with_backend_session(|session| {
+            tenferro_gpu::cuda::with_cuda_exec_session(session, |session| {
+                session.with_raw("benchmark.cutensor", |raw| {
+                    let lib = CutensorLib::load().expect("cuTENSOR previously available");
+                    let plan = match lib.build_permutation_plan(
+                        &extents_a, &strides_a, &modes_a, &extents_b, &strides_b, &modes_b,
+                    ) {
+                        Ok(plan) => plan,
+                        Err(err) => {
+                            finish_skip(
+                                base_record(
+                                    pattern,
+                                    name,
+                                    total,
+                                    bytes,
+                                    device_name,
+                                    "skipped",
+                                    "skipped",
+                                    false,
+                                )
+                                .with_note(format!(
+                    "cuTENSOR rejected this pattern (rank {rank}), recording skip instead of \
+                         crashing: {err}"
+                )),
+                                sink,
+                            );
+                            return Ok(());
+                        }
+                    };
 
-    // A successful plan build does not guarantee execution succeeds; the
-    // pattern JSON's notes_gpu promise a skip record instead of a crash, so
-    // an execution failure here (before any timing) emits `runtime_failed`
-    // and returns rather than panicking the whole suite. The `.unwrap()`
-    // inside the timed closure below may stay: a failure after a verified
-    // successful execution of the identical call is exceptional.
-    if let Err(err) = lib.permute(&plan, 1.0, src_ptr, dst_ptr, stream) {
-        finish_skip(
-            base_record(
-                pattern,
-                name,
-                total,
-                bytes,
-                device_name,
-                "runtime_failed",
-                "skipped",
-                false,
-            )
-            .with_note(format!(
+                    let src_ref = raw.tensor(&flat_src)?;
+                    let dst_ref = raw.tensor_mut(&mut flat_dst)?;
+                    // SAFETY: disjoint source/destination allocations and the raw session
+                    // survive all vendor calls; each call completes before scope exit.
+                    let src_ptr = unsafe { src_ref.raw_ptr() }.cast_const();
+                    let dst_ptr = unsafe { dst_ref.raw_ptr() };
+                    let stream =
+                        unsafe { raw.stream().raw_handle() } as usize as cutensor_ffi::CudaStream;
+                    // A successful plan build does not guarantee execution succeeds; the
+                    // pattern JSON's notes_gpu promise a skip record instead of a crash, so
+                    // an execution failure here (before any timing) emits `runtime_failed`
+                    // and returns rather than panicking the whole suite. The `.unwrap()`
+                    // inside the timed closure below may stay: a failure after a verified
+                    // successful execution of the identical call is exceptional.
+                    if let Err(err) = lib.permute(&plan, 1.0, src_ptr, dst_ptr, stream) {
+                        finish_skip(
+                            base_record(
+                                pattern,
+                                name,
+                                total,
+                                bytes,
+                                device_name,
+                                "runtime_failed",
+                                "skipped",
+                                false,
+                            )
+                            .with_note(format!(
                 "cutensorPermute failed at execution despite a successful plan build \
                  (rank {rank}), recording skip instead of crashing: {err}"
             )),
-            sink,
-        );
-        return;
-    }
-    backend.runtime().synchronize().expect("device sync");
-    let downloaded = download_tensor(backend.runtime(), &flat_dst).expect("download must succeed");
-    let actual = downloaded.as_slice::<f64>().expect("cutensor output must be f64");
-    if let Err(msg) = verify_output(actual, &prepared.reference) {
-        finish_skip(
-            base_record(
-                pattern,
-                name,
-                total,
-                bytes,
-                device_name,
-                "verification_failed",
-                "failed",
-                false,
-            )
-            .with_note(msg),
-            sink,
-        );
-        return;
-    }
+                            sink,
+                        );
+                        return Ok(());
+                    }
+                    raw.synchronize()?;
+                    drop(dst_ref);
+                    let downloaded = raw.download_tensor(&flat_dst, "cutensor verification")?;
+                    let actual = downloaded.as_slice().expect("cutensor output must be f64");
+                    if let Err(msg) = verify_output(actual, &prepared.reference) {
+                        finish_skip(
+                            base_record(
+                                pattern,
+                                name,
+                                total,
+                                bytes,
+                                device_name,
+                                "verification_failed",
+                                "failed",
+                                false,
+                            )
+                            .with_note(msg),
+                            sink,
+                        );
+                        return Ok(());
+                    }
 
-    let timing = bench_n(warmup, iters, bytes, || {
-        lib.permute(&plan, 1.0, src_ptr, dst_ptr, stream).unwrap();
-        backend.runtime().synchronize().unwrap();
-        black_box(dst_ptr);
-    });
-    finish_ok(
-        base_record(pattern, name, total, bytes, device_name, "ok", "passed", false),
-        timing,
-        sink,
-    );
+                    let dst_ref = raw.tensor_mut(&mut flat_dst)?;
+                    // SAFETY: the mutable device span remains live through synchronization.
+                    let dst_ptr = unsafe { dst_ref.raw_ptr() };
+                    let timing = bench_n(warmup, iters, bytes, || {
+                        lib.permute(&plan, 1.0, src_ptr, dst_ptr, stream).unwrap();
+                        raw.synchronize().unwrap();
+                        black_box(dst_ptr);
+                    });
+                    finish_ok(
+                        base_record(
+                            pattern,
+                            name,
+                            total,
+                            bytes,
+                            device_name,
+                            "ok",
+                            "passed",
+                            false,
+                        ),
+                        timing,
+                        sink,
+                    );
+                    Ok(())
+                })
+            })
+            .expect("CUDA execution session")
+        })
+        .expect("cuTENSOR raw session");
 }
 
 // ---------------------------------------------------------------------------
@@ -1327,10 +1401,24 @@ fn run_pattern(
     for participant in &pattern.participants_gpu {
         match participant.as_str() {
             "tenferro-cuda-transpose" => run_tenferro_cuda_transpose(
-                pattern, &prepared, warmup, iters, bytes, device_name, backend, sink,
+                pattern,
+                &prepared,
+                warmup,
+                iters,
+                bytes,
+                device_name,
+                backend,
+                sink,
             ),
             "tenferro-cuda-to-contiguous" => run_tenferro_cuda_to_contiguous(
-                pattern, &prepared, warmup, iters, bytes, device_name, backend, sink,
+                pattern,
+                &prepared,
+                warmup,
+                iters,
+                bytes,
+                device_name,
+                backend,
+                sink,
             ),
             "tenferro-cuda-destination-reuse" => run_tenferro_cuda_destination_reuse(
                 pattern,
@@ -1412,8 +1500,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Device: cuda:{device_ordinal} ({device_name})");
     println!();
 
-    let mut backend = CudaBackend::new(device_ordinal)
-        .map_err(|e| PatternError(format!("failed to create CUDA backend: {e}")))?;
+    let mut backend = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
+        u32::try_from(device_ordinal).expect("device ordinal fits u32"),
+    ))
+    .map_err(|e| PatternError(format!("failed to create CUDA backend: {e}")))?;
 
     let cutensor = match CutensorLib::load() {
         Ok(lib) => Some(lib),
@@ -1437,7 +1527,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut sink = RecordSink::new()?;
     println!("--- Correctness verification and benchmarks ---");
     for pattern in patterns {
-        run_pattern(pattern, &device_name, &mut backend, cutensor.as_ref(), &mut sink);
+        run_pattern(
+            pattern,
+            &device_name,
+            &mut backend,
+            cutensor.as_ref(),
+            &mut sink,
+        );
     }
     if sink.any_failed {
         return Err(Box::new(PatternError(

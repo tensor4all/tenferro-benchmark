@@ -9,11 +9,10 @@ use std::time::{Duration, Instant};
 
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{CpuBackend, CpuBackendKind};
-use tenferro_einsum::{
-    eager_tensor, ContractionTree, EinsumOptimize, EinsumSubscripts, Subscripts,
-};
-use tenferro_runtime::{CompilerOptions, GraphCompiler, GraphExecutor, OptimizerConfig, TensorRead, TracedTensor};
-use tenferro_tensor::{DotGeneralConfig, Tensor, TensorBuffer, TensorDot};
+use tenferro_einsum::{ContractionTree, EagerEinsumExt, EinsumSubscripts, Subscripts};
+use tenferro_einsum_benchmark::{compile_einsum, CompiledEinsum};
+use tenferro_runtime::{Runtime, TensorRead};
+use tenferro_tensor::{DotGeneralConfig, Tensor, TensorDot};
 
 const DEFAULT_N: usize = 1024;
 const DEFAULT_WARMUPS: usize = 3;
@@ -77,7 +76,7 @@ fn deterministic_matrix_data(n: usize, salt: usize) -> Vec<f64> {
 }
 
 fn tensor_from_data(n: usize, data: Vec<f64>) -> Tensor {
-    Tensor::from_vec_col_major(vec![n, n], data)
+    Tensor::from_vec_col_major(vec![n, n], data).expect("valid matrix")
 }
 
 fn duration_stats(mut durations: Vec<Duration>) -> (Duration, Duration) {
@@ -88,21 +87,22 @@ fn duration_stats(mut durations: Vec<Duration>) -> (Duration, Duration) {
     (median, q3.saturating_sub(q1))
 }
 
-fn measure(
+fn measure<O>(
     name: &str,
     warmups: usize,
     runs: usize,
-    mut f: impl FnMut() -> Result<(), String>,
+    mut f: impl FnMut() -> Result<O, String>,
 ) -> Result<(), String> {
-    for _ in 0..warmups {
+    for _ in 0..warmups.max(1) {
         f()?;
     }
 
     let mut durations = Vec::with_capacity(runs);
     for _ in 0..runs {
         let started = Instant::now();
-        f()?;
+        let output = f()?;
         durations.push(started.elapsed());
+        black_box(output);
     }
     let (median, iqr) = duration_stats(durations);
     println!(
@@ -144,39 +144,12 @@ fn raw_accelerate_dgemm(_n: usize, _a: &[f64], _b: &[f64], _c: &mut [f64]) -> Re
     Err("raw Accelerate is only available on macOS".to_string())
 }
 
-fn compile_trace_program(
-    n: usize,
-    dot_decomposer: bool,
-) -> Result<(tenferro_runtime::GraphProgram, Vec<TracedTensor>), String> {
-    let mut compiler = GraphCompiler::with_compiler_options(CompilerOptions {
-        optimizer: OptimizerConfig {
-            dot_decomposer,
-            ..OptimizerConfig::default()
-        },
-    });
-    let lhs = TracedTensor::input_concrete_shape(tenferro_runtime::DType::F64, &[n, n]);
-    let rhs = TracedTensor::input_concrete_shape(tenferro_runtime::DType::F64, &[n, n]);
-    let subscripts = EinsumSubscripts::new(&[&[0, 1], &[2, 0]], &[2, 1]);
-    let subs = Subscripts::from(&subscripts);
-    let tree = ContractionTree::from_pairs(&subs, &[&[n, n][..], &[n, n][..]], &[(0, 1)])
-        .map_err(|err| err.to_string())?;
-    let out = tenferro_einsum::einsum_subscripts_with(
-        &mut compiler,
-        &[&lhs, &rhs],
-        &subscripts,
-        EinsumOptimize::Tree(tree),
-    )
-    .map_err(|err| err.to_string())?;
-    let program = compiler
-        .compile_with_input_specs(
-            &out,
-            &[
-                (&lhs, tenferro_runtime::DType::F64, &[n, n][..]),
-                (&rhs, tenferro_runtime::DType::F64, &[n, n][..]),
-            ],
-        )
-        .map_err(|err| err.to_string())?;
-    Ok((program, vec![lhs, rhs]))
+fn compile_trace_program(n: usize) -> Result<CompiledEinsum, String> {
+    let subs = Subscripts::parse("ji,kj->ki").map_err(|e| e.to_string())?;
+    let shapes = vec![vec![n, n], vec![n, n]];
+    let tree = ContractionTree::from_pairs(&subs, &[&shapes[0], &shapes[1]], &[(0, 1)])
+        .map_err(|e| e.to_string())?;
+    compile_einsum(&subs, &shapes, &tree)
 }
 
 fn main() -> Result<(), String> {
@@ -219,8 +192,7 @@ fn main() -> Result<(), String> {
 
     measure("output_zero_alloc", warmups, runs, || {
         let c = vec![0.0_f64; n * n];
-        black_box(c);
-        Ok(())
+        Ok(c)
     })?;
 
     let mut direct_backend = CpuBackend::with_kind(CpuBackendKind::Blas)
@@ -229,9 +201,7 @@ fn main() -> Result<(), String> {
         let out = direct_backend
             .dot_general(&lhs, &rhs, &config)
             .map_err(|err| err.to_string())?;
-        black_box(&out);
-        direct_backend.reclaim_buffer(out);
-        Ok(())
+        Ok(out)
     })?;
 
     let mut read_backend = CpuBackend::with_kind(CpuBackendKind::Blas)
@@ -244,46 +214,53 @@ fn main() -> Result<(), String> {
                 &config,
             )
             .map_err(|err| err.to_string())?;
-        black_box(&out);
-        read_backend.reclaim_buffer(out);
-        Ok(())
+        Ok(out)
     })?;
 
-    let (program, traced_inputs) = compile_trace_program(n, dot_decomposer)?;
-    let bindings = vec![
-        (&traced_inputs[0], TensorRead::from_tensor(&lhs)),
-        (&traced_inputs[1], TensorRead::from_tensor(&rhs)),
-    ];
-    let mut executor = GraphExecutor::new(
-        CpuBackend::with_kind(CpuBackendKind::Blas)
-            .map_err(|err| format!("failed to create BLAS backend: {err}"))?,
-    );
-    executor
-        .register_extension(tenferro_einsum::register_runtime)
-        .map_err(|err| err.to_string())?;
-    measure("tenferro_trace_input_reads", warmups, runs, || {
-        let outputs = executor
-            .run_many_with_input_reads(&program, &bindings)
-            .map_err(|err| err.to_string())?;
-        black_box(&outputs);
-        executor.reclaim_outputs(outputs);
-        Ok(())
+    let compiled = compile_trace_program(n)?;
+    let backend = CpuBackend::with_kind(CpuBackendKind::Blas).map_err(|e| e.to_string())?;
+    let mut builder = Runtime::builder();
+    builder
+        .register_engine(
+            tenferro_cpu::runtime_engine_registration(&backend).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
+    builder
+        .install_extension_module(
+            tenferro_einsum::extension_module::<CpuBackend>(
+                tenferro_cpu::runtime_engine_id().map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
+    let runtime = builder.build().map_err(|e| e.to_string())?;
+    let bindings = [&lhs, &rhs];
+    measure("tenferro_trace", warmups, runs, || {
+        runtime
+            .run_compiled(&compiled.program, &bindings)
+            .map_err(|e| e.to_string())
     })?;
 
     let eager_ctx = EagerRuntime::with_cpu_backend(
         CpuBackend::with_kind(CpuBackendKind::Blas)
             .map_err(|err| format!("failed to create BLAS backend: {err}"))?,
-    );
-    let eager_lhs = EagerTensor::from_tensor_in(lhs.clone(), eager_ctx.clone());
-    let eager_rhs = EagerTensor::from_tensor_in(rhs.clone(), eager_ctx);
+    )
+    .map_err(|e| e.to_string())?;
+    let eager_lhs = EagerTensor::from_tensor_in(
+        lhs.duplicate().map_err(|e| e.to_string())?,
+        eager_ctx.clone(),
+    )
+    .map_err(|e| e.to_string())?;
+    let eager_rhs =
+        EagerTensor::from_tensor_in(rhs.duplicate().map_err(|e| e.to_string())?, eager_ctx)
+            .map_err(|e| e.to_string())?;
+    let subscripts = EinsumSubscripts::new(&[&[0, 1], &[2, 0]], &[2, 1]);
+    let inputs = [&eager_lhs, &eager_rhs];
     measure("tenferro_eager_einsum", warmups, runs, || {
-        let out = eager_tensor::einsum_subscripts(
-            &[&eager_lhs, &eager_rhs],
-            &EinsumSubscripts::new(&[&[0, 1], &[2, 0]], &[2, 1]),
-        )
-        .map_err(|err| err.to_string())?;
-        black_box(&out);
-        Ok(())
+        inputs
+            .as_slice()
+            .einsum_subscripts(&subscripts)
+            .map_err(|e| e.to_string())
     })?;
 
     Ok(())

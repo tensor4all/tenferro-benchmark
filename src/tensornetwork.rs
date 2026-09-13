@@ -111,6 +111,63 @@ pub fn build_cpu_eager_inputs(
         .collect()
 }
 
+/// Parsed contraction tree. Construct once before timing eager execution.
+pub enum PreparedEagerTree {
+    Input(usize),
+    Contract {
+        children: Vec<PreparedEagerTree>,
+        subscripts: tenferro_einsum::EinsumSubscripts,
+    },
+}
+
+impl PreparedEagerTree {
+    pub fn new(node: &TreeNode) -> Result<Self, String> {
+        if node.isleaf {
+            return Ok(Self::Input(
+                node.tensorindex
+                    .ok_or("leaf missing tensorindex")?
+                    .checked_sub(1)
+                    .ok_or("tensorindex must be >= 1")?,
+            ));
+        }
+        let eins = node.eins.as_ref().ok_or("internal node missing eins")?;
+        let expression = integer_labels_to_expr(&eins.ixs, &eins.iy);
+        let parsed = tenferro_einsum::Subscripts::parse(&expression).map_err(|e| e.to_string())?;
+        Ok(Self::Contract {
+            children: node
+                .args
+                .as_ref()
+                .ok_or("internal node missing args")?
+                .iter()
+                .map(Self::new)
+                .collect::<Result<_, _>>()?,
+            subscripts: (&parsed).into(),
+        })
+    }
+
+    pub fn execute(&self, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
+        match self {
+            Self::Input(index) => inputs
+                .get(*index)
+                .cloned()
+                .ok_or_else(|| format!("tensorindex {index} out of range")),
+            Self::Contract {
+                children,
+                subscripts,
+            } => {
+                let operands = children
+                    .iter()
+                    .map(|child| child.execute(inputs))
+                    .collect::<Result<Vec<_>, _>>()?;
+                let refs = operands.iter().collect::<Vec<_>>();
+                refs.as_slice()
+                    .einsum_subscripts(subscripts)
+                    .map_err(|e| e.to_string())
+            }
+        }
+    }
+}
+
 pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
     if node.isleaf {
         let index = node

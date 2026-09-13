@@ -772,12 +772,17 @@ fn emit_case(
             Ok((median_ms, iqr_ms)) => {
                 writeln!(
                     writer,
-                    "{},{},{},{},\"{}\",tenferro-eager,{median_ms:.6},{iqr_ms:.6},ok,\"{}\"",
+                    "{},{},{},{},\"{}\",{},{median_ms:.6},{iqr_ms:.6},ok,\"{}\"",
                     case.suite,
                     case.benchmark,
                     case.dtype,
                     args.num_threads,
                     csv_escape(case.shape),
+                    if matches!(case.benchmark, "lstsq" | "svd_full") {
+                        "tenferro-eager"
+                    } else {
+                        "tenferro-direct"
+                    },
                     csv_escape(case.notes),
                 )?;
             }
@@ -785,12 +790,17 @@ fn emit_case(
                 let status = error_status(&err.to_string());
                 writeln!(
                     writer,
-                    "{},{},{},{},\"{}\",tenferro-eager,,,{status},\"{}\"",
+                    "{},{},{},{},\"{}\",{},,,{status},\"{}\"",
                     case.suite,
                     case.benchmark,
                     case.dtype,
                     args.num_threads,
                     csv_escape(case.shape),
+                    if matches!(case.benchmark, "lstsq" | "svd_full") {
+                        "tenferro-eager"
+                    } else {
+                        "tenferro-direct"
+                    },
                     csv_escape(&err.to_string()),
                 )?;
             }
@@ -904,6 +914,31 @@ fn emit_trace_case(
     Ok(())
 }
 
+type SessionOperation = for<'a, 'b> fn(&'a mut CpuExecSession<'b>) -> tenferro_tensor::Result<()>;
+fn session_operation(case: &Case) -> Option<SessionOperation> {
+    match (case.benchmark, case.dtype) {
+        ("norm_fro", "c64") => Some(norm_c64_in_session),
+        ("cholesky", "c64") => Some(cholesky_c64_in_session),
+        ("solve", "c64") => Some(solve_c64_in_session),
+        ("eig", "c64") => Some(eig_c64_in_session),
+        ("qr", "c64") => Some(qr_c64_in_session),
+        ("svd", "c64") => Some(svd_c64_in_session),
+        ("norm_fro", "f64") => Some(norm_f64_in_session),
+        ("lu", "f64") => Some(lu_f64_in_session),
+        ("pinv_with_rtol", "f64") => Some(pinv_with_rtol_f64_in_session),
+        ("pinv", "f64") => Some(pinv_f64_in_session),
+        ("inv", "f64") => Some(inv_f64_in_session),
+        ("slogdet", "f64") => Some(slogdet_f64_in_session),
+        ("det", "f64") => Some(det_f64_in_session),
+        ("triangular_solve", "f64") => Some(triangular_solve_f64_in_session),
+        ("eigvalsh", "f64") => Some(eigvalsh_f64_in_session),
+        ("eigvals", "f64") => Some(eigvals_f64_in_session),
+        ("eig", "f64") => Some(eig_f64_in_session),
+        ("cholesky", "f64") => Some(cholesky_f64_in_session),
+        _ => None,
+    }
+}
+
 fn time_case(
     args: &Args,
     backend: &mut CpuBackend,
@@ -913,21 +948,51 @@ fn time_case(
     if case.suite == "cpu/view_metadata" {
         return time_view_case(args, case, attribution);
     }
-    for _ in 0..args.warmups {
-        (case.run)(backend)?;
-    }
-    let mut times = Vec::with_capacity(args.runs);
-    for _ in 0..args.runs {
-        let start = Instant::now();
-        (case.run)(backend)?;
-        times.push(start.elapsed().as_secs_f64() * 1000.0);
-    }
+    let times = if let Some(operation) = session_operation(case) {
+        backend.with_backend_session(|session| {
+            with_cpu_exec_session(session, |session| sample_case(args, || operation(session)))
+                .expect("CpuBackend must expose a CPU execution session")
+        })?
+    } else {
+        sample_case(args, || (case.run)(backend))?
+    };
     if let Some(attribution) = attribution {
         for (sample, &elapsed_ms) in times.iter().enumerate() {
             attribution.record(case, "direct", "steady_execute", sample, elapsed_ms)?;
         }
     }
     Ok(median_iqr(&times))
+}
+
+// Callback outputs are retained in preallocated per-thread slots until the
+// timer stops. Session callbacks run on the session's thread as well.
+thread_local! {
+    static OUTPUTS: RefCell<Vec<Tensor>> = RefCell::new(Vec::with_capacity(16));
+    static EAGER_OUTPUTS: RefCell<Vec<EagerTensor>> = RefCell::new(Vec::with_capacity(8));
+}
+fn clear_outputs() {
+    OUTPUTS.with(|outputs| outputs.borrow_mut().clear());
+    EAGER_OUTPUTS.with(|outputs| outputs.borrow_mut().clear());
+}
+fn sample_case(
+    args: &Args,
+    mut run: impl FnMut() -> tenferro_tensor::Result<()>,
+) -> tenferro_tensor::Result<Vec<f64>> {
+    for _ in 0..args.warmups.max(1) {
+        let result = run();
+        clear_outputs();
+        result?;
+    }
+    let mut times = Vec::with_capacity(args.runs);
+    for _ in 0..args.runs {
+        let start = Instant::now();
+        let result = run();
+        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+        clear_outputs();
+        result?;
+        times.push(elapsed);
+    }
+    Ok(times)
 }
 
 // TensorValue views consume their owner. Prepare a fresh owner before the
@@ -945,24 +1010,26 @@ fn time_view_case(
         "broadcast_in_dim_view" => &[8192, 1],
         _ => return Err("unknown metadata-only view benchmark".into()),
     };
+    let slice = SliceConfig {
+        starts: vec![1024],
+        limits: vec![4_194_304 - 1024],
+        strides: vec![2],
+    };
+    let warmups = args.warmups.max(1);
     let mut times = Vec::with_capacity(args.runs);
-    for sample in 0..args.warmups + args.runs {
+    for sample in 0..warmups + args.runs {
         let input = tensor_value_f64(shape, 1).duplicate()?;
         let start = Instant::now();
         let output = match case.benchmark {
             "reshape_view" => input.reshape_view([8192, 4096])?,
             "transpose_view" => input.transpose_view([1, 0])?,
-            "slice_view" => input.slice_view(&SliceConfig {
-                starts: vec![1024],
-                limits: vec![4_194_304 - 1024],
-                strides: vec![2],
-            })?,
+            "slice_view" => input.slice_view(&slice)?,
             "broadcast_in_dim_view" => input.broadcast_in_dim_view([8192, 4096], [0, 1])?,
             _ => unreachable!(),
         };
-        black_box(&output);
         let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-        if sample >= args.warmups {
+        black_box(&output);
+        if sample >= warmups {
             times.push(elapsed);
         }
         drop(output);
@@ -995,18 +1062,20 @@ fn time_trace_case(
     let runtime_build_ms = start.elapsed().as_secs_f64() * 1000.0;
 
     let mut first_execute_ms = None;
-    for warmup in 0..args.warmups {
+    for warmup in 0..args.warmups.max(1) {
         let start = Instant::now();
-        consume_many(runtime.run_compiled(&program, &[])?);
+        let outputs = runtime.run_compiled(&program, &[])?;
         if warmup == 0 {
             first_execute_ms = Some(start.elapsed().as_secs_f64() * 1000.0);
         }
+        black_box(outputs);
     }
     let mut times = Vec::with_capacity(args.runs);
     for _ in 0..args.runs {
         let start = Instant::now();
-        consume_many(runtime.run_compiled(&program, &[])?);
+        let outputs = runtime.run_compiled(&program, &[])?;
         times.push(start.elapsed().as_secs_f64() * 1000.0);
+        black_box(outputs);
     }
     if let Some(attribution) = attribution {
         attribution.record(case, "trace", "graph_build", 0, graph_build_ms)?;
@@ -1069,8 +1138,8 @@ fn error_status(message: &str) -> &'static str {
 }
 
 fn consume(tensor: Tensor) {
-    black_box(tensor.shape().len());
-    black_box(tensor.dtype());
+    black_box(&tensor);
+    OUTPUTS.with(|outputs| outputs.borrow_mut().push(tensor));
 }
 
 fn consume_many(values: impl IntoIterator<Item = Tensor>) {
@@ -1515,6 +1584,13 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
 }
 
 // Elementwise/reduction.
+macro_rules! prepared_config {
+    ($type:ty, $value:expr) => {{
+        static CONFIG: OnceLock<$type> = OnceLock::new();
+        CONFIG.get_or_init(|| $value)
+    }};
+}
+
 fn add_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.add(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
     Ok(())
@@ -1654,13 +1730,16 @@ fn gather_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.gather(
         tensor_f64(&[N], 1),
         tensor_i64_indices(&[N], N),
-        &GatherConfig {
-            offset_dims: vec![],
-            collapsed_slice_dims: vec![0],
-            start_index_map: vec![0],
-            index_vector_dim: 1,
-            slice_sizes: vec![1],
-        },
+        prepared_config!(
+            GatherConfig,
+            GatherConfig {
+                offset_dims: vec![],
+                collapsed_slice_dims: vec![0],
+                start_index_map: vec![0],
+                index_vector_dim: 1,
+                slice_sizes: vec![1],
+            }
+        ),
     )?);
     Ok(())
 }
@@ -1670,12 +1749,15 @@ fn scatter_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
         tensor_f64_constant(&[N], 0.0),
         tensor_i64_indices(&[N, 1], N),
         tensor_f64(&[N], 2),
-        &ScatterConfig {
-            update_window_dims: vec![],
-            inserted_window_dims: vec![0],
-            scatter_dims_to_operand_dims: vec![0],
-            index_vector_dim: 1,
-        },
+        prepared_config!(
+            ScatterConfig,
+            ScatterConfig {
+                update_window_dims: vec![],
+                inserted_window_dims: vec![0],
+                scatter_dims_to_operand_dims: vec![0],
+                index_vector_dim: 1,
+            }
+        ),
     )?);
     Ok(())
 }
@@ -1683,11 +1765,14 @@ fn slice_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     const N: usize = 4_194_304;
     consume(b.slice(
         tensor_f64(&[N], 1),
-        &SliceConfig {
-            starts: vec![1024],
-            limits: vec![N - 1024],
-            strides: vec![2],
-        },
+        prepared_config!(
+            SliceConfig,
+            SliceConfig {
+                starts: vec![1024],
+                limits: vec![N - 1024],
+                strides: vec![2],
+            }
+        ),
     )?);
     Ok(())
 }
@@ -1713,11 +1798,14 @@ fn pad_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     const N: usize = 2_097_152;
     consume(b.pad(
         tensor_f64(&[N], 1),
-        &PadConfig {
-            edge_padding_low: vec![128],
-            edge_padding_high: vec![128],
-            interior_padding: vec![0],
-        },
+        prepared_config!(
+            PadConfig,
+            PadConfig {
+                edge_padding_low: vec![128],
+                edge_padding_high: vec![128],
+                interior_padding: vec![0],
+            }
+        ),
     )?);
     Ok(())
 }
@@ -1812,11 +1900,14 @@ fn slice_view_f64(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume_value(
         tensor_value_f64(&[4_194_304], 1)
             .duplicate()?
-            .slice_view(&SliceConfig {
-                starts: vec![1024],
-                limits: vec![4_194_304 - 1024],
-                strides: vec![2],
-            })?,
+            .slice_view(prepared_config!(
+                SliceConfig,
+                SliceConfig {
+                    starts: vec![1024],
+                    limits: vec![4_194_304 - 1024],
+                    strides: vec![2],
+                }
+            ))?,
     );
     Ok(())
 }
@@ -1978,80 +2069,114 @@ fn einsum_ij_jk_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
 
 // Linalg.
 fn cholesky_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(spd(1536, 1).cholesky(session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, cholesky_f64_in_session)
 }
+
+fn cholesky_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(spd(1536, 1).cholesky(session)?);
+    Ok(())
+}
+
 fn eig_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        let (w, v) = well_conditioned(160, 1).eig(session)?;
-        consume_many([w, v]);
-        Ok(())
-    })
+    with_cpu_linalg(b, eig_f64_in_session)
 }
+
+fn eig_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    let (w, v) = well_conditioned(160, 1).eig(session)?;
+    consume_many([w, v]);
+    Ok(())
+}
+
 fn eigvals_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(well_conditioned(192, 1).eigvals(session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, eigvals_f64_in_session)
 }
+
+fn eigvals_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(well_conditioned(192, 1).eigvals(session)?);
+    Ok(())
+}
+
 fn eigvalsh_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(spd(512, 1).eigvalsh(session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, eigvalsh_f64_in_session)
 }
+
+fn eigvalsh_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(spd(512, 1).eigvalsh(session)?);
+    Ok(())
+}
+
 fn triangular_solve_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(lower_triangular(4096, 1).triangular_solve(
-            tensor_f64(&[4096, 64], 2),
-            true,
-            true,
-            false,
-            false,
-            session,
-        )?);
-        Ok(())
-    })
+    with_cpu_linalg(b, triangular_solve_f64_in_session)
 }
+
+fn triangular_solve_f64_in_session(
+    session: &mut CpuExecSession<'_>,
+) -> tenferro_tensor::Result<()> {
+    consume(lower_triangular(4096, 1).triangular_solve(
+        tensor_f64(&[4096, 64], 2),
+        true,
+        true,
+        false,
+        false,
+        session,
+    )?);
+    Ok(())
+}
+
 fn det_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(well_conditioned(1024, 1).det(session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, det_f64_in_session)
 }
+
+fn det_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(well_conditioned(1024, 1).det(session)?);
+    Ok(())
+}
+
 fn slogdet_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        let (s, l) = well_conditioned(1024, 1).slogdet(session)?;
-        consume_many([s, l]);
-        Ok(())
-    })
+    with_cpu_linalg(b, slogdet_f64_in_session)
 }
+
+fn slogdet_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    let (s, l) = well_conditioned(1024, 1).slogdet(session)?;
+    consume_many([s, l]);
+    Ok(())
+}
+
 fn inv_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(well_conditioned(768, 1).inv(session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, inv_f64_in_session)
 }
+
+fn inv_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(well_conditioned(768, 1).inv(session)?);
+    Ok(())
+}
+
 fn pinv_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(tensor_f64(&[512, 256], 1).pinv(session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, pinv_f64_in_session)
 }
+
+fn pinv_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(tensor_f64(&[512, 256], 1).pinv(session)?);
+    Ok(())
+}
+
 fn pinv_with_rtol_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(tensor_f64(&[512, 256], 1).pinv_with_rtol(1e-12, session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, pinv_with_rtol_f64_in_session)
 }
+
+fn pinv_with_rtol_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(tensor_f64(&[512, 256], 1).pinv_with_rtol(1e-12, session)?);
+    Ok(())
+}
+
 fn lu_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        let (p, l, u, pivots) = well_conditioned(1024, 1).lu(session)?;
-        consume_many([p, l, u, pivots]);
-        Ok(())
-    })
+    with_cpu_linalg(b, lu_f64_in_session)
+}
+
+fn lu_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    let (p, l, u, pivots) = well_conditioned(1024, 1).lu(session)?;
+    consume_many([p, l, u, pivots]);
+    Ok(())
 }
 
 thread_local! {
@@ -2110,8 +2235,7 @@ fn lstsq_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
         let output = a
             .lstsq(rhs)
             .map_err(|error| eager_linalg_error("lstsq", error))?;
-        black_box(output.shape().len());
-        black_box(output.dtype());
+        EAGER_OUTPUTS.with(|outputs| outputs.borrow_mut().push(output));
         Ok(())
     })
 }
@@ -2134,19 +2258,19 @@ fn svd_full_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
         let (u, s, vt) = input
             .svd_full()
             .map_err(|error| eager_linalg_error("svd_full", error))?;
-        for output in [&u, &s, &vt] {
-            black_box(output.shape().len());
-            black_box(output.dtype());
-        }
+        EAGER_OUTPUTS.with(|outputs| outputs.borrow_mut().extend([u, s, vt]));
         Ok(())
     })
 }
 fn norm_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(tensor_f64(&[2048, 2048], 1).norm(None, Some(&[0, 1]), false, session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, norm_f64_in_session)
 }
+
+fn norm_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(tensor_f64(&[2048, 2048], 1).norm(None, Some(&[0, 1]), false, session)?);
+    Ok(())
+}
+
 // Complex.
 fn conj_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.conj(tensor_c64(&[16_777_216], 1))?);
@@ -2175,12 +2299,15 @@ fn dot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.dot_general(
         tensor_c64(&[640, 640], 1),
         tensor_c64(&[640, 640], 2),
-        &DotGeneralConfig {
-            lhs_contracting_dims: vec![1],
-            rhs_contracting_dims: vec![0],
-            lhs_batch_dims: vec![],
-            rhs_batch_dims: vec![],
-        },
+        prepared_config!(
+            DotGeneralConfig,
+            DotGeneralConfig {
+                lhs_contracting_dims: vec![1],
+                rhs_contracting_dims: vec![0],
+                lhs_batch_dims: vec![],
+                rhs_batch_dims: vec![],
+            }
+        ),
     )?);
     Ok(())
 }
@@ -2188,12 +2315,15 @@ fn dot_with_conj_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.dot_general_with_conj(
         tensor_c64(&[640, 640], 1),
         tensor_c64(&[640, 640], 2),
-        &DotGeneralConfig {
-            lhs_contracting_dims: vec![1],
-            rhs_contracting_dims: vec![0],
-            lhs_batch_dims: vec![],
-            rhs_batch_dims: vec![],
-        },
+        prepared_config!(
+            DotGeneralConfig,
+            DotGeneralConfig {
+                lhs_contracting_dims: vec![1],
+                rhs_contracting_dims: vec![0],
+                lhs_batch_dims: vec![],
+                rhs_batch_dims: vec![],
+            }
+        ),
         true,
         false,
     )?);
@@ -2208,43 +2338,60 @@ fn tensordot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     Ok(())
 }
 fn svd_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        let (u, s, vt) = tensor_c64(&[160, 160], 1).svd(session)?;
-        consume_many([u, s, vt]);
-        Ok(())
-    })
+    with_cpu_linalg(b, svd_c64_in_session)
 }
+
+fn svd_c64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    let (u, s, vt) = tensor_c64(&[160, 160], 1).svd(session)?;
+    consume_many([u, s, vt]);
+    Ok(())
+}
+
 fn qr_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        let (q, r) = tensor_c64(&[256, 256], 1).qr(session)?;
-        consume_many([q, r]);
-        Ok(())
-    })
+    with_cpu_linalg(b, qr_c64_in_session)
 }
+
+fn qr_c64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    let (q, r) = tensor_c64(&[256, 256], 1).qr(session)?;
+    consume_many([q, r]);
+    Ok(())
+}
+
 fn eig_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        let (w, v) = tensor_c64(&[112, 112], 1).eig(session)?;
-        consume_many([w, v]);
-        Ok(())
-    })
+    with_cpu_linalg(b, eig_c64_in_session)
 }
+
+fn eig_c64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    let (w, v) = tensor_c64(&[112, 112], 1).eig(session)?;
+    consume_many([w, v]);
+    Ok(())
+}
+
 fn solve_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(well_conditioned_c64(384, 1).solve(tensor_c64(&[384, 8], 2), session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, solve_c64_in_session)
 }
+
+fn solve_c64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(well_conditioned_c64(384, 1).solve(tensor_c64(&[384, 8], 2), session)?);
+    Ok(())
+}
+
 fn cholesky_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(hpd_c64(448, 1).cholesky(session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, cholesky_c64_in_session)
 }
+
+fn cholesky_c64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(hpd_c64(448, 1).cholesky(session)?);
+    Ok(())
+}
+
 fn norm_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_cpu_linalg(b, |session| {
-        consume(tensor_c64(&[2048, 1536], 1).norm(None, Some(&[0, 1]), false, session)?);
-        Ok(())
-    })
+    with_cpu_linalg(b, norm_c64_in_session)
+}
+
+fn norm_c64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Result<()> {
+    consume(tensor_c64(&[2048, 1536], 1).norm(None, Some(&[0, 1]), false, session)?);
+    Ok(())
 }
 
 fn with_cpu_linalg<R>(

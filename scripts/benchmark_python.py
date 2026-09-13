@@ -227,16 +227,18 @@ def benchmark_pytorch(
     operands = [torch.zeros(shape, dtype=torch.float64) for shape in shapes]
 
     try:
+        expression = oe.contract_expression(fmt, *shapes, optimize=path)
         # Warmup
-        for _ in range(bench_warmups()):
-            oe.contract(fmt, *operands, optimize=path, backend="torch")
+        for _ in range(max(bench_warmups(), 1)):
+            expression(*operands, backend="torch")
 
         # Timed runs
         times: list[float] = []
         for _ in range(bench_runs()):
             t0 = time.perf_counter()
-            oe.contract(fmt, *operands, optimize=path, backend="torch")
+            output = expression(*operands, backend="torch")
             times.append((time.perf_counter() - t0) * 1000.0)
+            del output
 
         return compute_stats(times), None
 
@@ -275,20 +277,22 @@ def benchmark_jax(
     operands = [jnp.zeros(shape, dtype=jnp.float64) for shape in shapes]
 
     try:
+        expression = oe.contract_expression(fmt, *shapes, optimize=path)
         # Warmup (first call includes JIT compilation)
-        for _ in range(bench_warmups()):
+        for _ in range(max(bench_warmups(), 1)):
             jax.block_until_ready(
-                oe.contract(fmt, *operands, optimize=path, backend="jax")
+                expression(*operands, backend="jax")
             )
 
         # Timed runs
         times: list[float] = []
         for _ in range(bench_runs()):
             t0 = time.perf_counter()
-            jax.block_until_ready(
-                oe.contract(fmt, *operands, optimize=path, backend="jax")
+            output = jax.block_until_ready(
+                expression(*operands, backend="jax")
             )
             times.append((time.perf_counter() - t0) * 1000.0)
+            del output
 
         return compute_stats(times), None
 
