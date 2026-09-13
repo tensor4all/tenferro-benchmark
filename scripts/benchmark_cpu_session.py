@@ -51,7 +51,7 @@ def report(run_dir, target):
              'and initialization are outside timing. Outputs remain alive until timer stop. '
              'Every output is checked after timing (solve uses the residual).', '',
              'tenferro enters exactly one backend session around all warmups and samples. '
-             'Accelerate and faer use the same public operations and session scope. The BLAS ProviderDefaultExclusive path does not enter the executor around the session body: individual operations still enter it, and that internal cost remains timed. Faer reuses the entered executor context. The execution mode and worker count are recorded in each Rust row. 4-thread faer uses tenferro’s '
+             'Accelerate and faer use the same public operations and session scope. With tenferro-rs PR #1796 or later, managed BLAS and faer sessions both reuse the entered executor context. Earlier BLAS revisions included per-operation entry; consult the recorded tenferro commit. ProviderDefaultExclusive describes admission, not per-operation executor entry. The execution mode and worker count are recorded in each Rust row. 4-thread faer uses tenferro’s '
              'Rayon execution domain (inner kernel parallelism, not an outer parallel loop over matrices). '
              'PyTorch uses a Python loop over the same inputs, with its thread pools initialized before timing. '
              'Its Python dispatch cost is included. These are allocation-returning operations, not batched tensor APIs.', '',

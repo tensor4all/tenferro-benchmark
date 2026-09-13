@@ -1,6 +1,6 @@
 # tenferro-benchmark
 
-The [M5 shared-session refresh](docs/m5-shared-session-refresh-20260913.md) contains the updated CPU results.
+The [M5 CPU refresh from tenferro-rs origin/main](docs/m5-cpu-origin-main-refresh-20260913.md) contains the latest CPU results, including the merged BLAS shared-session fix.
 
 Short operations now use [many operations in one session](docs/short-operation-sessions.md); see the [M5 root-cause investigation](docs/m5-short-operation-root-causes.md).
 

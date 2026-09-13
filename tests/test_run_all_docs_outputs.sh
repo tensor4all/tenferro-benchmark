@@ -7,6 +7,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 mkdir -p "$TMP/scripts" "$TMP/data/results" "$TMP/extern/tenferro-rs" "$TMP/benchmarks/cpu"
 cp "$ROOT/scripts/run_all.sh" "$TMP/scripts/run_all.sh"
+cp "$ROOT/scripts/format_cpu_thread_reports.py" "$TMP/scripts/format_cpu_thread_reports.py"
 cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/scripts/cpu_blas_provider.sh"
 cp "$ROOT/scripts/collect_cpu_info.py" "$TMP/scripts/collect_cpu_info.py"
 cp "$ROOT/scripts/thread_env.sh" "$TMP/scripts/thread_env.sh"
@@ -30,6 +31,7 @@ TENFERRO_COMMIT="$(git -C "$TMP/extern/tenferro-rs" rev-parse HEAD)"
 cat > "$TMP/scripts/collect_run_metadata.py" <<'PY'
 #!/usr/bin/env python3
 import argparse
+import os
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
@@ -62,6 +64,9 @@ Path(args.output).write_text(
             "  hostname: test-host",
             "  os: test-os",
             "  arch: test-arch",
+            "  env:",
+            f"    RAYON_NUM_THREADS: '{os.environ['RAYON_NUM_THREADS']}'",
+            f"    BENCHMARK_COMMIT: {os.environ['BENCHMARK_COMMIT']}",
             "blas:",
             f"  implementation: {args.blas}",
             "  version: unknown",
@@ -85,6 +90,8 @@ SH
 cat > "$TMP/scripts/run_all_rust.sh" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
+# Keep second-resolution raw-run directories distinct in this fast fixture.
+sleep 1
 threads="${1:-1}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 : "${BENCHMARK_TIMESTAMP:?}"
@@ -162,8 +169,8 @@ assert_any_file() {
 
 (
   cd "$TMP"
-  BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 1 >"$TMP/run_all_docs_test.out"
-  BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 4 >>"$TMP/run_all_docs_test.out"
+  BENCHMARK_COMMIT=fixture-benchmark BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 1 >"$TMP/run_all_docs_test.out"
+  BENCHMARK_COMMIT=fixture-benchmark BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 4 >>"$TMP/run_all_docs_test.out"
 )
 
 assert_any_file "$TMP/data/results/amd-cpu/cpu/einsum/*/run.yaml"
@@ -217,3 +224,15 @@ grep -q "XLA_FLAGS" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "Tenferro CPU BLAS Backend" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "tenferro-rs features: \`system-openblas\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "BLAS implementation: \`openblas\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
+
+# Exercise multi-thread aggregation with synthetic runners, never real timing.
+(
+  cd "$TMP"
+  BENCHMARK_COMMIT=fixture-benchmark BENCHMARK_HOST_OS=Linux \
+    RUN_FFT_SUITE=0 RUN_PUBLIC_API_SUITE=0 RUN_SMALL_WORK_SUITE=0 RUN_PERMUTATION_SUITE=0 \
+    PATH="$ROOT/.venv/bin:/usr/bin:/bin" ./scripts/run_all.sh 1 4 >>"$TMP/run_all_docs_test.out"
+)
+for report in einsum cpu_ops; do
+  grep -q '^## Threads: 1$' "$TMP/result/amd-cpu/cpu/$report.md"
+  grep -q '^## Threads: 4$' "$TMP/result/amd-cpu/cpu/$report.md"
+done

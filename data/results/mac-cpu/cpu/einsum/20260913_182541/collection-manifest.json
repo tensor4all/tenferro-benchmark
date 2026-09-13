@@ -1,0 +1,19 @@
+{
+  "tenferro_commit": "28dfc7e383a653e1461d38b73ced3d563b4efdad",
+  "benchmark_commit": "4d4b94aca2e2bdc19b605180e4ce524dc67f1df0",
+  "target": "mac-cpu",
+  "threads": [
+    1,
+    4
+  ],
+  "runs": [
+    "data/results/mac-cpu/cpu/einsum/20260913_182541",
+    "data/results/mac-cpu/cpu/einsum/20260913_183437",
+    "data/results/mac-cpu/cpu/fft/20260913_184036",
+    "data/results/mac-cpu/cpu/permutation/20260913_184602",
+    "data/results/mac-cpu/cpu/public_api/20260913_184115",
+    "data/results/mac-cpu/cpu/session_matrix/20260913_094534",
+    "data/results/mac-cpu/cpu/small_work/20260913_094526"
+  ],
+  "note": "Measurements completed before report-only aggregation and BLAS session prose updates."
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "file": "data/results/mac-cpu/cpu/einsum/20260913_182541/publication_gate_system-accelerate_t1_full_all_20260913_182541.csv",
+    "rows": 318,
+    "status": {
+      "ok": 318
+    }
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/einsum/20260913_182541/cpu_ops_t1_20260913_182541.csv",
+    "rows": 666,
+    "status": {
+      "ok": 666
+    }
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/einsum/20260913_183437/cpu_ops_t4_20260913_183437.csv",
+    "rows": 666,
+    "status": {
+      "ok": 666
+    }
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/einsum/20260913_183437/publication_gate_system-accelerate_t4_full_all_20260913_183437.csv",
+    "rows": 318,
+    "status": {
+      "ok": 318
+    }
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/fft/20260913_184036/cpu_fft_t1_20260913_184036.csv",
+    "rows": 144,
+    "status": {
+      "skipped": 80,
+      "ok": 64
+    }
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/fft/20260913_184036/cpu_fft_t4_20260913_184036.csv",
+    "rows": 144,
+    "status": {
+      "skipped": 80,
+      "ok": 64
+    }
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/permutation/20260913_184602/julia_output_t4.jsonl",
+    "rows": 18,
+    "validation": "passed"
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/permutation/20260913_184602/rust_output_t4.jsonl",
+    "rows": 28,
+    "validation": "passed"
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/permutation/20260913_184602/julia_output_t1.jsonl",
+    "rows": 18,
+    "validation": "passed"
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/permutation/20260913_184602/rust_output_t1.jsonl",
+    "rows": 28,
+    "validation": "passed"
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/public_api/20260913_184115/cpu_public_api_t4_20260913_184115.csv",
+    "rows": 447,
+    "status": {
+      "ok": 429,
+      "unsupported": 18
+    }
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/public_api/20260913_184115/cpu_public_api_t1_20260913_184115.csv",
+    "rows": 447,
+    "status": {
+      "ok": 429,
+      "unsupported": 18
+    }
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/session_matrix/20260913_094534/samples_t4.jsonl",
+    "rows": 30,
+    "validation": "passed"
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/session_matrix/20260913_094534/samples_t1.jsonl",
+    "rows": 30,
+    "validation": "passed"
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/small_work/20260913_094526/samples_t4.jsonl",
+    "rows": 25,
+    "validation": "passed"
+  },
+  {
+    "file": "data/results/mac-cpu/cpu/small_work/20260913_094526/samples_t1.jsonl",
+    "rows": 25,
+    "validation": "passed"
+  }
+]

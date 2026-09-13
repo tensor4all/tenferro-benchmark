@@ -42,12 +42,22 @@ set -euo pipefail
 NUM_THREADS="${1:-1}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+export BENCHMARK_COMMIT="${BENCHMARK_COMMIT:-$(git -C "$PROJECT_DIR" rev-parse HEAD)}"
 
 if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     THREAD_COUNTS=("$@")
+    RUN_ALL_COLLECTED_RUNS_FILE="$(mktemp)"
+    export RUN_ALL_COLLECTED_RUNS_FILE
+    trap 'rm -f "$RUN_ALL_COLLECTED_RUNS_FILE"' EXIT
     for threads in "${THREAD_COUNTS[@]}"; do
         RUN_ALL_MAIN_ONLY=1 "$0" "$threads"
     done
+
+    if command -v uv >/dev/null 2>&1; then
+        uv run --project "$PROJECT_DIR" python "$SCRIPT_DIR/format_cpu_thread_reports.py" --runs-manifest "$RUN_ALL_COLLECTED_RUNS_FILE" --root "$PROJECT_DIR"
+    else
+        python3 "$SCRIPT_DIR/format_cpu_thread_reports.py" --runs-manifest "$RUN_ALL_COLLECTED_RUNS_FILE" --root "$PROJECT_DIR"
+    fi
 
     if [[ "${RUN_FFT_SUITE:-1}" == "1" ]]; then
         echo "Running cpu/fft suite for threads: ${THREAD_COUNTS[*]}..."
@@ -738,4 +748,7 @@ done
 [ -f "$CPU_FFT_LATEST_REPORT" ] && echo "  Latest:   $CPU_FFT_LATEST_REPORT"
 [ -f "$CPU_PUBLIC_API_LATEST_REPORT" ] && echo "  Latest:   $CPU_PUBLIC_API_LATEST_REPORT"
 [ -f "$CPU_PERMUTATION_LATEST_REPORT" ] && echo "  Latest:   $CPU_PERMUTATION_LATEST_REPORT"
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" == "1" && -n "${RUN_ALL_COLLECTED_RUNS_FILE:-}" ]]; then
+    printf '%s\n' "$CPU_RUN_DIR" >> "$RUN_ALL_COLLECTED_RUNS_FILE"
+fi
 true
