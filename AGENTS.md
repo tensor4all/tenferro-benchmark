@@ -19,6 +19,52 @@ headroom, and runtime thread pools, which distorts medians and IQRs.
 Parallel shell/tool execution is fine for non-timing work such as file
 inspection or tests that do not measure benchmark performance.
 
+## Mandatory Timing Boundary: Setup Is Untimed
+
+All standard operation benchmarks must measure steady-state operation execution.
+This rule applies to every backend and execution path (direct, eager, trace,
+Python, Julia, CPU, and GPU). Preserving a legacy setup-inclusive timing scope
+is not an acceptable reason to violate it.
+
+Before starting the timer, complete:
+
+- Input value generation, random-number generation, fixture construction,
+  Tensor/EagerTensor wrapping, input allocation, copies, dtype/layout conversion,
+  and host/device input transfers.
+- Session, execution-session, context, runtime, backend, thread-pool, and library
+  handle creation and initialization. Construct reusable resources once and
+  reuse them across samples; do not create a session inside a timed closure.
+- Graph construction, tracing, compilation, contraction planning, and JIT
+  warmup, when these are preparation for the operation being compared.
+- Per-sample input restoration and gradient-state reset needed to make repeated
+  measurements equivalent. If an operation consumes an input or session,
+  prepare its replacement outside that sample's timer.
+
+Use an explicit setup / timed execution / validation-cleanup split. Setup must
+remain outside timing even when warmups are configured to zero. Perform lazy
+initialization explicitly before sampling; warmup alone is not a substitute for
+correct timing boundaries.
+
+Inside the timer, perform only the declared operation and the synchronization
+needed to wait for its completion. Output allocation that is intrinsic to an
+allocation-returning operation belongs inside timing; output-reuse benchmarks
+must preallocate destinations and compare equivalent reuse APIs. Keep additional
+output copies/materialization used only for inspection, validation, checksums,
+and input/output destruction outside timing. Retain outputs until after the
+clock stops. Metadata-only view operations must never include a data copy.
+
+Apply the same boundary to all compared backends. Match the logical inputs,
+requested outputs, differentiated arguments, and forward/backward scope. Label
+execution paths accurately: direct API, EagerTensor, and compiled trace are
+separate paths and must not share an ambiguous backend label.
+
+Before publishing or interpreting performance ratios, inspect the timed closure
+and its callees for setup work. Record the timing scope and setup policy in run
+metadata or the report. Measurements that include setup must be identified as
+noncompliant and rerun before being used as operation-performance evidence.
+Initialization or end-to-end workflow costs may be measured only as explicitly
+requested, separately named benchmarks; never mix them into operation tables.
+
 ## tenferro-rs Checkout Freshness
 
 Before building or collecting benchmarks, inspect `extern/tenferro-rs`. If the
