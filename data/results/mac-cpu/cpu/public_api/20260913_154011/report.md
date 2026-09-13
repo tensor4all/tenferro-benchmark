@@ -99,10 +99,6 @@ This file is generated from sequential CPU public API runs under `data/results/m
 - CSV: `data/results/mac-cpu/cpu/public_api/20260913_154011/cpu_public_api_t4_20260913_154011.csv`
 - Source table: `data/results/mac-cpu/cpu/public_api/20260913_154011/cpu_public_api_20260913_154011.md`
 
-## Julia view batching correction
-
-The Julia view rows were recollected at 16 calls per interval using benchmark commit 4c63ae9. Correction metadata and raw rows: `data/results/mac-cpu/cpu/public_api/20260913_155000`. All other rows retain the full run above. The source manifest records CSV replacement order; original raw data remain unchanged.
-
 ## CPU Benchmark Items
 
 Median ± IQR (ms). Missing backends are shown as `-`.
@@ -282,35 +278,6 @@ Median ± IQR (ms). Missing backends are shown as `-`.
 | cpu/view_metadata | `transpose_view` | f64 | 1 | `4096x4096` | 0.000 ± 0.000 | - | unsupported | 0.000 ± 0.000 | - | 0.000 ± 0.000 | - |
 | cpu/view_metadata | `transpose_view` | f64 | 4 | `4096x4096` | 0.000 ± 0.000 | - | unsupported | 0.000 ± 0.000 | - | 0.000 ± 0.000 | - |
 
-## Short-operation batches
-
-Total batch duration and normalized ns/op are shown without rounding sub-microsecond calls to zero. Metadata views require no execution session.
-
-| Operation | Threads | Backend | Operations/batch | Median batch ms | Median ns/op |
-|---|---:|---|---:|---:|---:|
-| broadcast_in_dim_view | 1 | PyTorch Python (ms) | 16 | 0.006084 | 380.25 |
-| broadcast_in_dim_view | 1 | tenferro-rs direct API (ms) | 16 | 0.001959 | 122.44 |
-| broadcast_in_dim_view | 4 | PyTorch Python (ms) | 16 | 0.007500 | 468.75 |
-| broadcast_in_dim_view | 4 | tenferro-rs direct API (ms) | 16 | 0.001916 | 119.75 |
-| reshape_view | 1 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000042 | 2.62 |
-| reshape_view | 1 | PyTorch Python (ms) | 16 | 0.005125 | 320.31 |
-| reshape_view | 1 | tenferro-rs direct API (ms) | 16 | 0.003292 | 205.75 |
-| reshape_view | 4 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000042 | 2.62 |
-| reshape_view | 4 | PyTorch Python (ms) | 16 | 0.007166 | 447.88 |
-| reshape_view | 4 | tenferro-rs direct API (ms) | 16 | 0.003250 | 203.12 |
-| slice_view | 1 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000042 | 2.62 |
-| slice_view | 1 | PyTorch Python (ms) | 16 | 0.004750 | 296.88 |
-| slice_view | 1 | tenferro-rs direct API (ms) | 16 | 0.003125 | 195.31 |
-| slice_view | 4 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000042 | 2.62 |
-| slice_view | 4 | PyTorch Python (ms) | 16 | 0.006167 | 385.44 |
-| slice_view | 4 | tenferro-rs direct API (ms) | 16 | 0.003000 | 187.50 |
-| transpose_view | 1 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000042 | 2.62 |
-| transpose_view | 1 | PyTorch Python (ms) | 16 | 0.004667 | 291.69 |
-| transpose_view | 1 | tenferro-rs direct API (ms) | 16 | 0.002666 | 166.62 |
-| transpose_view | 4 | Julia (Base/LinearAlgebra) (ms) | 16 | 0.000042 | 2.62 |
-| transpose_view | 4 | PyTorch Python (ms) | 16 | 0.006292 | 393.25 |
-| transpose_view | 4 | tenferro-rs direct API (ms) | 16 | 0.002500 | 156.25 |
-
 ## Cross-Backend Spread Audit
 
 Rows with a successful cell more than 10x faster than the slowest successful cell are flagged for operation-specific review. This cross-backend spread check is a warning, not a correctness verdict.
@@ -325,12 +292,6 @@ Rows with a successful cell more than 10x faster than the slowest successful cel
 - `cpu/linalg_uncovered/norm_fro` (f64, threads=1, shape=`2048x2048`): `tenferro-trace` is 10.1x faster than the slowest successful cell (`julia-base`, 3.733 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
 - `cpu/structural_shape/broadcast_in_dim` (f64, threads=4, shape=`8192x1 -> 8192x4096`): `pytorch-cpu` is 11.1x faster than the slowest successful cell (`julia-base`, 10.865 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
 - `cpu/structural_shape/transpose` (f64, threads=4, shape=`4096x4096`): `jax-cpu` is 10.8x faster than the slowest successful cell (`julia-base`, 59.178 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/reshape_view` (f64, threads=1, shape=`33554432 -> 8192x4096`): `julia-base` is 106.7x faster than the slowest successful cell (`pytorch-cpu`, 0.000 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/reshape_view` (f64, threads=4, shape=`33554432 -> 8192x4096`): `julia-base` is 149.3x faster than the slowest successful cell (`pytorch-cpu`, 0.000 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/slice_view` (f64, threads=1, shape=`4194304 -> 2096128`): `julia-base` is 99.0x faster than the slowest successful cell (`pytorch-cpu`, 0.000 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/slice_view` (f64, threads=4, shape=`4194304 -> 2096128`): `julia-base` is 128.3x faster than the slowest successful cell (`pytorch-cpu`, 0.000 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/transpose_view` (f64, threads=1, shape=`4096x4096`): `julia-base` is 97.3x faster than the slowest successful cell (`pytorch-cpu`, 0.000 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/transpose_view` (f64, threads=4, shape=`4096x4096`): `julia-base` is 131.0x faster than the slowest successful cell (`pytorch-cpu`, 0.000 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
 
 ## Physical Bound Audit
 

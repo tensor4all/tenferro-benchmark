@@ -1,5 +1,7 @@
 # tenferro-benchmark
 
+The [M5 shared-session refresh](docs/m5-shared-session-refresh-20260913.md) contains the updated CPU results.
+
 Short operations now use [many operations in one session](docs/short-operation-sessions.md); see the [M5 root-cause investigation](docs/m5-short-operation-root-causes.md).
 
 Timing corrections are documented in [timing policy revision 2](docs/timing-policy.md).
@@ -25,6 +27,7 @@ live in git history only.
 | `mac-cpu` | `cpu/linalg_jvp_vjp` | [result/mac-cpu/cpu/linalg_jvp_vjp.md](result/mac-cpu/cpu/linalg_jvp_vjp.md) |
 | `mac-cpu` | `cpu/fft` | [result/mac-cpu/cpu/fft.md](result/mac-cpu/cpu/fft.md) |
 | `mac-cpu` | `cpu/public_api` | [result/mac-cpu/cpu/public_api.md](result/mac-cpu/cpu/public_api.md) |
+| `mac-cpu` | `cpu/session_matrix` | [result/mac-cpu/cpu/session_matrix.md](result/mac-cpu/cpu/session_matrix.md) |
 | `mac-cpu` | `cpu/small_work` | [result/mac-cpu/cpu/small_work.md](result/mac-cpu/cpu/small_work.md) |
 | `mac-cpu` | `cpu/permutation` | [result/mac-cpu/cpu/permutation.md](result/mac-cpu/cpu/permutation.md) |
 | `linux-cpu` (Linux devcontainer; collected as `amd-cpu`) | `cpu/einsum` | [result/linux-cpu/cpu/einsum.md](result/linux-cpu/cpu/einsum.md) |

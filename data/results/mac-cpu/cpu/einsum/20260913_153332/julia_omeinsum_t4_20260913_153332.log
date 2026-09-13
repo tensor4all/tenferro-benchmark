@@ -1,0 +1,55 @@
+omeinsum-jl einsum benchmark suite
+==================================
+Loaded 19 instances from /Users/hiroshi/projects/tensor4all/tenferro-benchmark-m5-refresh/data/instances
+Backend: omeinsum-jl
+JULIA_NUM_THREADS=4
+OMP_NUM_THREADS=4
+OPENBLAS_NUM_THREADS=4
+BLAS.get_num_threads()=4
+Timing: median ± IQR of 15 runs (3 warmup), path precomputed (OMEinsum's own optimizer is not used)
+
+Mode: omeinsum_path / Strategy: opt_flops
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        1.929      0.857
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.641      0.218
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.326      0.040
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.657      0.520
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        0.929      0.164
+bin_matmul_1024                                           2       9.03        20.00       14.641      3.270
+bin_matmul_256                                            2       7.22        16.00        0.300      0.005
+bin_outer_product_4096                                    2       7.22        24.00       70.114     13.169
+gm_queen5_5_3.wcsp                                      160       9.75        26.94     1036.301      8.695
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96        9.666      1.176
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       34.736     16.982
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       13.299     18.225
+nary_matmul_chain_64                                      3       5.24        12.00        0.042      0.002
+str_matrix_chain_multiplication_100                     100       8.48        17.26        5.199      0.410
+str_mps_varying_inner_product_200                       200       8.31        15.48        9.810      3.879
+str_nw_mera_closed_120                                  120      10.66        25.02      318.244     36.025
+str_nw_mera_open_26                                      26      10.49        25.36      266.692     18.365
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00       89.691     19.517
+tensornetwork_permutation_light_415                     415       9.65        24.00       89.806     17.059
+
+Mode: omeinsum_path / Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        1.929      0.857
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.641      0.218
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.326      0.040
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.657      0.520
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        0.929      0.164
+bin_matmul_1024                                           2       9.03        20.00       14.641      3.270
+bin_matmul_256                                            2       7.22        16.00        0.300      0.005
+bin_outer_product_4096                                    2       7.22        24.00       70.114     13.169
+gm_queen5_5_3.wcsp                                      160      10.33        25.36      435.519     36.045
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       15.549     16.887
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       39.831     17.282
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       15.886     18.426
+nary_matmul_chain_64                                      3       5.24        12.00        0.042      0.002
+str_matrix_chain_multiplication_100                     100       8.48        17.26        6.790      0.857
+str_mps_varying_inner_product_200                       200       8.31        15.48        9.424      0.731
+str_nw_mera_closed_120                                  120      10.67        24.91      304.349     13.121
+str_nw_mera_open_26                                      26      10.49        25.36      266.387     21.043
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00       89.691     19.517
+tensornetwork_permutation_light_415                     415       9.65        24.00       89.806     17.059

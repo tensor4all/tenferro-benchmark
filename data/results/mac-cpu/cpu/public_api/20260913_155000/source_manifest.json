@@ -1,0 +1,10 @@
+{
+  "base_run": "data/results/mac-cpu/cpu/public_api/20260913_154011",
+  "replacement": "Only Julia cpu/view_metadata rows replace the corresponding base rows. Other timing/status values are reused unchanged.",
+  "csv_sources_in_override_order": [
+    "data/results/mac-cpu/cpu/public_api/20260913_154011/cpu_public_api_t1_20260913_154011.csv",
+    "data/results/mac-cpu/cpu/public_api/20260913_154011/cpu_public_api_t4_20260913_154011.csv",
+    "data/results/mac-cpu/cpu/public_api/20260913_155000/julia_views_t1.csv",
+    "data/results/mac-cpu/cpu/public_api/20260913_155000/julia_views_t4.csv"
+  ]
+}

@@ -1,0 +1,4 @@
+suite,benchmark,dtype,threads,shape,backend,median_ms,iqr_ms,status,notes
+cpu/view_metadata,reshape_view,f64,4,33554432 -> 8192x4096,julia-base,3.0e-6,0.0,ok,metadata-only view reshape; no output-sized copy; input allocation outside timed region; operations_per_sample=16; median_batch_ms=4.2e-5; session=not_required
+cpu/view_metadata,transpose_view,f64,4,4096x4096,julia-base,3.0e-6,0.0,ok,metadata-only transpose view; no output-sized copy; input allocation outside timed region; operations_per_sample=16; median_batch_ms=4.2e-5; session=not_required
+cpu/view_metadata,slice_view,f64,4,4194304 -> 2096128,julia-base,3.0e-6,8.0e-6,ok,metadata-only strided slice view; no output-sized copy; input allocation outside timed region; operations_per_sample=16; median_batch_ms=4.2e-5; session=not_required
