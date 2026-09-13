@@ -46,11 +46,12 @@ CPU and GPU trace runners now prepare execution plans with `prepare_compiled`
 before warmup and call `run_prepared` inside timing. Graph compilation alone
 did not exclude the metadata/ingress preparation performed by `run_compiled`.
 
-A shared BackendSession is distinct from one executor entry. On this revision,
-BLAS resolves to `ProviderDefaultExclusive`; its session callback does not
-retain an entered executor context, so each operation still performs an
-internal executor entry. Faer does retain that context. The benchmark records
-this remaining provider cost rather than bypassing tenferro's exclusivity guard.
+A shared BackendSession is distinct from one executor entry. Since tenferro-rs
+PR #1796, managed BLAS sessions in `ProviderDefaultExclusive` mode retain the
+entered context across operations, just as faer sessions do. Older results on
+`a793c2e9` include per-operation BLAS executor entry and remain historical
+baselines. The permutation runner also uses one pre-entered session for its
+warmups and samples; every borrowed input descriptor is prepared before timing.
 
 JAX thread configuration now additionally exports `PJRT_NPROC` before importing
 JAX. The earlier Eigen/XLA flag alone did not constrain the CPU client's thread

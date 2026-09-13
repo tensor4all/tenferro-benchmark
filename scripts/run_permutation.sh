@@ -92,6 +92,7 @@ esac
 
 # shellcheck source=scripts/thread_env.sh
 source "$SCRIPT_DIR/thread_env.sh"
+source "$SCRIPT_DIR/benchmark_host_idle.sh"
 
 if [[ "${SKIP_EXTERN_SETUP:-0}" != "1" ]]; then
     # shellcheck source=scripts/setup_extern_deps.sh
@@ -211,6 +212,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     validate_run_yaml "$RUN_T_YAML"
 
     echo "Running Rust permutation benchmarks (threads=$NUM_THREADS)..."
+    assert_benchmark_host_idle
     BENCH_OUTPUT="$RUST_JSONL" "$PROJECT_DIR/target/release/benchmark_permutation"
     validate_permutation_jsonl "$RUST_JSONL"
     INPUTS+=("$RUST_JSONL")
@@ -219,6 +221,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     : > "$JULIA_JSONL"
     if [[ "$HAVE_JULIA" == "1" ]]; then
         echo "Running Julia permutation benchmarks (threads=$NUM_THREADS)..."
+        assert_benchmark_host_idle
         (
             cd "$PROJECT_DIR"
             JULIA_PROJECT="$PROJECT_DIR" BENCH_OUTPUT="$JULIA_JSONL" \

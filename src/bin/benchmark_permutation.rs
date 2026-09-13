@@ -7,7 +7,7 @@
 //! destination and compares:
 //!
 //! - `tenferro-rs`: `TypedTensorView::transpose_view` +
-//!   `CpuBackend::to_contiguous` (accepts arbitrary source strides)
+//!   `BackendSession::to_contiguous_read` (accepts arbitrary source strides)
 //! - `hptt` (feature `hptt`, contiguous src/dst only)
 //! - `strided-rs` (feature `strided-rs`; `strided_perm::copy_into` /
 //!   `copy_into_col_major`, see below)
@@ -54,7 +54,7 @@ use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 
 use tenferro_cpu::CpuBackend;
-use tenferro_tensor::{TensorViewCanonicalization, TypedTensorView};
+use tenferro_tensor::{BackendSessionHost, TensorRead, TensorView, TypedTensorView};
 
 const PATTERN_PATH: &str = "data/instances/permutation_patterns.json";
 const SUITE_ID: &str = "cpu/permutation";
@@ -646,11 +646,13 @@ fn run_participant(
                 .transpose_view(&pattern.perm)
                 .expect("transpose_view must succeed on a validated permutation");
             let mut backend = CpuBackend::new();
-            let compact = backend
-                .to_contiguous(&transposed)
-                .expect("CpuBackend::to_contiguous must succeed");
+            let compact = backend.with_backend_session(|session| {
+                session
+                    .to_contiguous_read(TensorRead::from_view(TensorView::F64(transposed.clone())))
+                    .expect("session materialization must succeed")
+            });
             let actual = compact
-                .as_slice()
+                .as_slice::<f64>()
                 .expect("to_contiguous output must be host-contiguous");
             if let Err(msg) = verify_output(actual, &prepared.reference) {
                 finish!(
@@ -659,10 +661,15 @@ fn run_participant(
                 );
                 return;
             }
-            let timing = bench_n(warmup, iters, bytes, || {
-                let compact = backend.to_contiguous(&transposed).unwrap();
-                black_box(compact.as_slice().unwrap().as_ptr());
-                compact
+            // Prepare every borrowed input descriptor and enter the session before timing.
+            let mut reads = (0..warmup.max(1) + iters)
+                .map(|_| TensorRead::from_view(TensorView::F64(transposed.clone())))
+                .collect::<Vec<_>>()
+                .into_iter();
+            let timing = backend.with_backend_session(|session| {
+                bench_n(warmup, iters, bytes, || {
+                    session.to_contiguous_read(reads.next().unwrap()).unwrap()
+                })
             });
             finish!(base("ok", "passed", true), Some(timing));
         }
@@ -737,7 +744,6 @@ fn run_hptt_participant(
     );
     print_human_row(pattern, "hptt", None, record.notes.as_deref());
     sink.emit(&record);
-
 }
 
 #[cfg(not(feature = "hptt"))]
@@ -1065,9 +1071,13 @@ mod tests {
             .unwrap();
             let transposed = view.transpose_view(&pattern.perm).unwrap();
             let mut backend = CpuBackend::new();
-            let compact = backend.to_contiguous(&transposed).unwrap();
+            let compact = backend.with_backend_session(|session| {
+                session
+                    .to_contiguous_read(TensorRead::from_view(TensorView::F64(transposed)))
+                    .unwrap()
+            });
             assert_eq!(
-                compact.as_slice().unwrap(),
+                compact.as_slice::<f64>().unwrap(),
                 prepared.reference.as_slice(),
                 "{}",
                 pattern.id

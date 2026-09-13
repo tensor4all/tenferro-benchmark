@@ -200,8 +200,9 @@ def format_markdown(
 
     lines.append(
         "`tenferro-rs` measures `TypedTensorView::transpose_view` followed by "
-        "`CpuBackend::to_contiguous`; the metadata-only `transpose_view` is built "
-        "outside the timed region, and `to_contiguous` accepts arbitrary source "
+        "`BackendSession::to_contiguous_read`; one shared session is entered before "
+        "timing, and input view descriptors and metadata-only `transpose_view` are built "
+        "outside the timed region. Materialization accepts arbitrary source "
         "strides. Every backend allocates a fresh destination inside each timed "
         "call, so the table compares allocation-inclusive end-to-end materialization "
         "rather than destination-reuse copy kernels. `hptt` only participates in "

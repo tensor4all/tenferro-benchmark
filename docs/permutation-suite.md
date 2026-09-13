@@ -106,7 +106,7 @@ Backend column names follow [architecture terminology](architecture.md).
 
 | backend | runner | measured path |
 |---|---|---|
-| `tenferro-rs` | Rust | view API `TypedTensorView::transpose_view(perm)` followed by allocation-inclusive `CpuBackend::to_contiguous(&transposed_view)`; the metadata-only view is constructed outside timing |
+| `tenferro-rs` | Rust | view API `TypedTensorView::transpose_view(perm)` followed by allocation-inclusive `BackendSession::to_contiguous_read`; input view descriptors and one shared session are prepared outside timing |
 | `hptt` | Rust (`hptt` crate, feature-gated) | allocate destination + HPTT tensor transpose, contiguous cases only |
 | `strided-rs` (Rust `strided-rs` feature, on by default) | Rust | allocate destination + `strided_perm::copy_into` / `copy_into_col_major`, serial and parallel (`copy_into_par` / `copy_into_col_major_par`); the fastest of the (up to four) variants is reported |
 | `julia-base` | Julia | allocate destination + `permutedims!` for contiguous sources or generic `copyto!` for explicit-stride sources |
