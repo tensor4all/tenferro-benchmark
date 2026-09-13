@@ -203,9 +203,10 @@ fn emit_case(
     n: usize,
     mode: TenferroMode,
 ) -> BenchResult<()> {
-    let setup_diagnostic = matches!(mode, TenferroMode::Immediate | TenferroMode::Read);
+    let setup_diagnostic = matches!(mode, TenferroMode::Immediate | TenferroMode::Read)
+        || (n <= 16_384 && matches!(mode, TenferroMode::Eager | TenferroMode::Trace));
     if setup_diagnostic && env::var("BENCH_INCLUDE_SETUP_DIAGNOSTICS").as_deref() != Ok("1") {
-        writeln!(writer, "cpu/fft,{},{},{},1d_n{n},{},,,skipped,one-shot API includes planning; use cached executor for operation timing", op.as_str(), dtype.as_str(), args.num_threads, mode.backend_name())?;
+        writeln!(writer, "cpu/fft,{},{},{},1d_n{n},{},,,skipped,API includes per-call planning or session entry; use shared cached executor for short operation timing", op.as_str(), dtype.as_str(), args.num_threads, mode.backend_name())?;
         return Ok(());
     }
     let suite = if setup_diagnostic {
@@ -235,6 +236,16 @@ fn emit_case(
         _ => time_case(args, mode, op, &input, n),
     } {
         Ok((median_ms, iqr_ms)) => {
+            let count = if n <= 16_384 && !matches!(mode, TenferroMode::Eager | TenferroMode::Trace)
+            {
+                128
+            } else {
+                1
+            };
+            let notes = format!(
+                "{notes}; operations_per_sample={count}; median_batch_ms={:.6}",
+                median_ms * count as f64
+            );
             writeln!(
                 writer,
                 "{suite},{benchmark},{},{},{shape},{backend},{median_ms:.6},{iqr_ms:.6},ok,\"{notes}\"",
@@ -274,10 +285,14 @@ fn time_case(
 
         let mut times = Vec::with_capacity(args.runs);
         for _ in 0..args.runs {
+            let count = if n <= 16_384 { 128 } else { 1 };
+            let mut outputs = Vec::with_capacity(count);
             let start = Instant::now();
-            let out = run_fft(mode, op, input, n, session, &mut executor)?;
-            times.push(start.elapsed().as_secs_f64() * 1000.0);
-            consume(out);
+            for _ in 0..count {
+                outputs.push(run_fft(mode, op, input, n, session, &mut executor)?);
+            }
+            times.push(start.elapsed().as_secs_f64() * 1000.0 / count as f64);
+            black_box(&outputs);
         }
         Ok::<_, tenferro_tensor::Error>(median_iqr(&times))
     })?)
@@ -295,14 +310,15 @@ fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
     };
     let program = GraphCompiler::new().compile(&output)?;
     let runtime = cpu_trace_runtime()?;
+    let prepared = runtime.prepare_compiled(&program, &[])?;
 
     for _ in 0..args.warmups.max(1) {
-        consume(runtime.run_compiled(&program, &[])?.remove(0));
+        consume(runtime.run_prepared(&prepared, &[])?.remove(0));
     }
     let mut times = Vec::with_capacity(args.runs);
     for _ in 0..args.runs {
         let start = Instant::now();
-        let outputs = runtime.run_compiled(&program, &[])?;
+        let outputs = runtime.run_prepared(&prepared, &[])?;
         times.push(start.elapsed().as_secs_f64() * 1000.0);
         black_box(outputs);
     }

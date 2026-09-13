@@ -1,0 +1,22 @@
+schema_version: 1
+suite_id: cpu/session_matrix
+title: Many small matrices in one CPU session
+description: 1024 independent f64 matmul or solve calls with all inputs and a shared session prepared before timing.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  run: {warmups: 3, runs: 15, timing_scope: steady_state_host_api}
+  verify: {reference: analytic matmul and solve residual, rtol: 1.0e-11, atol: 1.0e-11}
+backends: [tenferro-blas-shared-session, tenferro-faer-shared-session, pytorch-python-loop]
+problems:
+  source: data/instances/session_matrix.json
+  include:
+  - matmul_n2_count1024
+  - matmul_n4_count1024
+  - matmul_n8_count1024
+  - matmul_n16_count1024
+  - matmul_n32_count1024
+  - solve_n2_count1024
+  - solve_n4_count1024
+  - solve_n8_count1024
+  - solve_n16_count1024
+  - solve_n32_count1024

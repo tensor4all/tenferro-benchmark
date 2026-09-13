@@ -1,0 +1,3 @@
+suite,benchmark,dtype,threads,shape,backend,median_ms,iqr_ms,status,notes
+cpu/elementwise_reduction,tanh,f64,4,8388608,jax-cpu,2.230834,0.077417,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,reduce_max_axis0,f64,4,2048x2048,jax-cpu,0.381625,0.068624,ok,axis reduction; inputs and XLA compilation outside timed region

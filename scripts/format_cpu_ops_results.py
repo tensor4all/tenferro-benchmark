@@ -333,6 +333,9 @@ def format_table(paths: list[Path]) -> str:
         + "|",
     ]
 
+    if any(key[0] == "small" for key in by_key):
+        lines[2:2] = ["**Small rows are isolated-call diagnostics, not shared-session throughput. See cpu/session_matrix and cpu/small_work for standard short-operation results.**", ""]
+
     for key in sorted(by_key):
         suite, benchmark, dtype, threads, shape = key
         values = by_key[key]

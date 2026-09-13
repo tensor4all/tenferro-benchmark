@@ -154,6 +154,12 @@ impl SuiteFilter {
     }
 
     fn includes(self, suite: &str) -> bool {
+        if suite == "small"
+            && matches!(self, Self::All)
+            && env::var("BENCH_INCLUDE_SINGLE_CALL_DIAGNOSTICS").as_deref() != Ok("1")
+        {
+            return false;
+        }
         matches!(self, Self::All)
             || matches!(
                 (self, suite),
@@ -1505,15 +1511,16 @@ fn bench_trace_row(
         let mut compiler = GraphCompiler::new();
         let program = compiler.compile_many(&output_refs)?;
         let runtime = cpu_runtime_with_extensions()?;
+        let prepared = runtime.prepare_compiled(&program, &[])?;
 
         for _ in 0..config.warmups.max(1) {
-            let out = runtime.run_compiled(&program, &[])?;
+            let out = runtime.run_prepared(&prepared, &[])?;
             black_box(out.len());
         }
         let mut times = Vec::with_capacity(config.runs);
         for _ in 0..config.runs {
             let start = Instant::now();
-            let out = runtime.run_compiled(&program, &[])?;
+            let out = runtime.run_prepared(&prepared, &[])?;
             black_box(out.len());
             times.push(start.elapsed());
         }
@@ -1615,15 +1622,16 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
             .map_err(|err| Error::Internal(err.to_string()))?;
         let program = GraphCompiler::new().compile_traced_graph(&graph)?;
         let runtime = cpu_runtime_with_extensions()?;
+        let prepared = runtime.prepare_compiled(&program, &[])?;
 
         for _ in 0..config.warmups.max(1) {
-            let out = runtime.run_compiled(&program, &[])?;
+            let out = runtime.run_prepared(&prepared, &[])?;
             black_box(out.len());
         }
         let mut times = Vec::with_capacity(config.runs);
         for _ in 0..config.runs {
             let start = Instant::now();
-            let out = runtime.run_compiled(&program, &[])?;
+            let out = runtime.run_prepared(&prepared, &[])?;
             black_box(out.len());
             times.push(start.elapsed());
         }

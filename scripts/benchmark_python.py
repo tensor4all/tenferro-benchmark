@@ -57,6 +57,7 @@ THREAD_ENV_KEYS = (
     "VECLIB_NUM_THREADS",
     "NUMEXPR_NUM_THREADS",
     "BLIS_NUM_THREADS",
+    "PJRT_NPROC",
     "XLA_FLAGS",
 )
 
@@ -175,6 +176,7 @@ def configure_thread_env(num_threads: int) -> None:
             "VECLIB_NUM_THREADS": value,
             "NUMEXPR_NUM_THREADS": value,
             "BLIS_NUM_THREADS": value,
+            "PJRT_NPROC": value,
             "XLA_FLAGS": (
                 f"--xla_cpu_multi_thread_eigen={xla_multi_thread} "
                 f"intra_op_parallelism_threads={value}"

@@ -1,0 +1,4 @@
+{"kind": "torch_mm", "n": 2, "threads": 4, "median_us": 0.417, "process_cpu_s": 0.011351999999999918, "caller_cpu_s": 0.011354084000000042, "worker_cpu_s": -2.0840000001243197e-06}
+{"kind": "torch_mm", "n": 32, "threads": 4, "median_us": 1.083, "process_cpu_s": 0.025767000000000095, "caller_cpu_s": 0.02577275000000001, "worker_cpu_s": -5.749999999915545e-06}
+{"kind": "torch_mm", "n": 512, "threads": 4, "median_us": 596.7295, "process_cpu_s": 0.060162999999999967, "caller_cpu_s": 0.06016341599999997, "worker_cpu_s": -4.1600000000308057e-07}
+{"kind": "jax_tanh_accuracy", "input_dtype": "float64", "output_dtype": "float64", "max_abs_error": 2.220446049250313e-16}

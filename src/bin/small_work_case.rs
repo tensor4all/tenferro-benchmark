@@ -19,7 +19,7 @@ use tenferro_runtime::{
 };
 use tenferro_tensor::{Tensor, TensorRead, TypedTensorView};
 
-const CALIBRATION_MAX_ITERATIONS: usize = 1 << 30;
+const CALIBRATION_MAX_ITERATIONS: usize = 1 << 16;
 const CALIBRATION_DEADLINE_NS: u128 = 10_000_000_000;
 
 #[derive(Serialize)]
@@ -258,6 +258,7 @@ fn check_compiled_einsum(
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     let n = matrix_dimension(lhs.shape().iter().product())?;
     let mut checked = 0.0;
+    let prepared = runtime.prepare_compiled(program, &[lhs, rhs])?;
     for (a, b) in [(lhs, rhs), (rhs, lhs), (lhs, rhs)] {
         let expected = if a.dtype() == DType::F64 {
             Tensor::from_vec_col_major(
@@ -270,7 +271,7 @@ fn check_compiled_einsum(
                 matmul_reference(n, a.as_slice::<Complex64>()?, b.as_slice::<Complex64>()?),
             )?
         };
-        let outputs = runtime.run_compiled(program, &[a, b])?;
+        let outputs = runtime.run_prepared(&prepared, &[a, b])?;
         if outputs.len() != 1 {
             return Err("compiled einsum must return one output".into());
         }
@@ -814,7 +815,7 @@ where
     F: FnMut(usize) -> Result<u128, Box<dyn Error + Send + Sync>>,
 {
     let calibration_start = Instant::now();
-    let mut iterations = 1usize;
+    let mut iterations = 1024usize;
     loop {
         let elapsed = batch(iterations)?;
         if calibration_start.elapsed().as_nanos() >= CALIBRATION_DEADLINE_NS {
@@ -854,16 +855,16 @@ where
     for _ in 0..warmups.max(1) {
         execute()?;
     }
-    // Sum execution intervals: output destruction occurs between intervals.
-    // This deliberately includes clock overhead, recorded in the report.
+    // One clock interval for many operations; retain every output until stop.
+    // The surrounding shared session is entered before measure() is called.
     let mut batch = |iterations| -> Result<u128, Box<dyn Error + Send + Sync>> {
-        let mut elapsed = 0;
+        let mut outputs = Vec::with_capacity(iterations);
+        let start = Instant::now();
         for _ in 0..iterations {
-            let start = Instant::now();
-            let output = execute()?;
-            elapsed += start.elapsed().as_nanos();
-            black_box(output);
+            outputs.push(execute()?);
         }
+        let elapsed = start.elapsed().as_nanos();
+        black_box(&outputs);
         Ok(elapsed)
     };
     let (iterations, calibrated_ns) = calibrate(target_ns, &mut batch)?;
@@ -1537,8 +1538,8 @@ mod tests {
             Ok(durations[seen.len() - 1])
         })
         .unwrap();
-        assert_eq!(seen, [1, 2, 4, 8]);
-        assert_eq!(result, (8, 120));
+        assert_eq!(seen, [1024, 2048, 4096, 8192]);
+        assert_eq!(result, (8192, 120));
     }
 
     #[test]
@@ -1826,6 +1827,8 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "suite_id": "cpu/small_work", "case_id": case_id,
         "provider": provider, "calls_per_workflow": calls,
         "correctness_status": correctness_status, "samples": Vec::<Sample>::new(),
+        "timing_scope": "many_operations_single_interval",
+        "session_policy": "shared_routes_enter_once_before_all_samples",
     });
     if let serde_json::Value::Object(fields) = descriptor {
         for (key, value) in fields {
@@ -1837,7 +1840,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         return Ok(());
     }
 
-    let setup_diagnostic = api_tier.ends_with("-setup")
+    let setup_diagnostic = matches!(
+        api_tier.as_str(),
+        "eager-no-ad" | "eager-ad" | "compiled-repeat"
+    ) || api_tier.ends_with("-setup")
         || api_tier.ends_with("-fresh")
         || (operation == "einsum"
             && matches!(api_tier.as_str(), "concrete-shared" | "borrowed-shared"));
@@ -1865,13 +1871,14 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
         "compiled-repeat" => {
             let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
+            let prepared = runtime.prepare_compiled(program, &compiled_bindings)?;
             measure(
                 warmups,
                 samples_count,
                 target_ns,
                 process_index,
                 sample_start,
-                || Ok(runtime.run_compiled(program, &compiled_bindings)?),
+                || Ok(runtime.run_prepared(&prepared, &compiled_bindings)?),
             )?
         }
         "prepared-setup" => measure(

@@ -1,0 +1,62 @@
+HloModule jit__lambda, is_scheduled=true, entry_computation_layout={(f64[2048,2048]{1,0})->f64[2048]{0}}, allow_spmd_sharding_propagation_to_parameters={true}, allow_spmd_sharding_propagation_to_output={true}
+
+FileNames
+1 "/tmp/tenferro-rootcause/jax_threads_fixed.py"
+
+FunctionNames
+1 "<module>"
+2 "<lambda>"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=7 end_line=7 column=3 end_column=13}
+2 {file_name_id=1 function_name_id=2 line=6 end_line=6 column=50 end_column=67}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+2 {file_location_id=2 parent_frame_id=2}
+
+
+%region_0.1 (reduce_max.3: f64[], reduce_max.4: f64[]) -> f64[] {
+  %reduce_max.3 = f64[] parameter(0), metadata={op_name="reduce_max"}
+  %reduce_max.4 = f64[] parameter(1), metadata={op_name="reduce_max"}
+  ROOT %reduce_max.5 = f64[] maximum(%reduce_max.3, %reduce_max.4), metadata={op_name="jit(<lambda>)/reduce_max" stack_frame_id=2}
+}
+
+%wrapped_reduce-window_computation (param_0: f64[2048,2048], param_1: f64[]) -> f64[64,2048] {
+  %param_0 = f64[2048,2048]{1,0} parameter(0)
+  %param_1 = f64[] parameter(1)
+  ROOT %reduce-window.2 = f64[64,2048]{1,0} reduce-window(%param_0, %param_1), window={size=32x1 stride=32x1}, to_apply=%region_0.1
+}
+
+%region_0.1.clone (reduce_max.0: f64[], reduce_max.1: f64[]) -> f64[] {
+  %reduce_max.0 = f64[] parameter(0), metadata={op_name="reduce_max"}
+  %reduce_max.1 = f64[] parameter(1), metadata={op_name="reduce_max"}
+  ROOT %reduce_max.2 = f64[] maximum(%reduce_max.0, %reduce_max.1), metadata={op_name="jit(<lambda>)/reduce_max" stack_frame_id=2}
+}
+
+%wrapped_reduce-window_computation.1 (param_0.1: f64[64,2048], param_1.1: f64[]) -> f64[2,2048] {
+  %param_0.1 = f64[64,2048]{1,0} parameter(0)
+  %param_1.1 = f64[] parameter(1)
+  ROOT %reduce-window.3 = f64[2,2048]{1,0} reduce-window(%param_0.1, %param_1.1), window={size=32x1 stride=32x1}, to_apply=%region_0.1.clone
+}
+
+%region_0.1.clone.1 (reduce_max.6: f64[], reduce_max.8: f64[]) -> f64[] {
+  %reduce_max.6 = f64[] parameter(0), metadata={op_name="reduce_max"}
+  %reduce_max.8 = f64[] parameter(1), metadata={op_name="reduce_max"}
+  ROOT %reduce_max.9 = f64[] maximum(%reduce_max.6, %reduce_max.8), metadata={op_name="jit(<lambda>)/reduce_max" stack_frame_id=2}
+}
+
+%wrapped_reduce_computation (param_0.2: f64[2,2048], param_1.2: f64[]) -> f64[2048] {
+  %param_0.2 = f64[2,2048]{1,0} parameter(0)
+  %param_1.2 = f64[] parameter(1)
+  ROOT %reduce_max.10 = f64[2048]{0} reduce(%param_0.2, %param_1.2), dimensions={0}, to_apply=%region_0.1.clone.1, metadata={op_name="jit(<lambda>)/reduce_max" stack_frame_id=2}
+}
+
+ENTRY %main.2 (x.1: f64[2048,2048]) -> f64[2048] {
+  %x.1 = f64[2048,2048]{1,0} parameter(0), metadata={op_name="x"}
+  %constant.1 = f64[] constant(-inf)
+  %wrapped_reduce-window = f64[64,2048]{1,0} fusion(%x.1, %constant.1), kind=kLoop, calls=%wrapped_reduce-window_computation, backend_config={"outer_dimension_partitions":["4"]}
+  %wrapped_reduce-window.1 = f64[2,2048]{1,0} fusion(%wrapped_reduce-window, %constant.1), kind=kLoop, calls=%wrapped_reduce-window_computation.1, backend_config={"outer_dimension_partitions":["2","2"]}
+  ROOT %wrapped_reduce = f64[2048]{0} fusion(%wrapped_reduce-window.1, %constant.1), kind=kLoop, calls=%wrapped_reduce_computation, metadata={op_name="jit(<lambda>)/reduce_max" stack_frame_id=2}
+}
+

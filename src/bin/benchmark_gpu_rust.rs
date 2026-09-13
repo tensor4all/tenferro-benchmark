@@ -479,10 +479,13 @@ fn run_trace_tensor_network(
             .map_err(|e| format!("compile: {e}"))?;
         let runtime = cuda_runtime_with_extensions(&compute_bk, false)?;
         let gpu_inputs: Vec<&Tensor> = trace_inputs.iter().map(|(gpu, _)| gpu).collect();
+        let prepared = runtime
+            .prepare_compiled(&program, &gpu_inputs)
+            .map_err(|e| format!("prepare: {e}"))?;
 
         for _ in 0..n_warmup.max(1) {
             let out = runtime
-                .run_compiled(&program, &gpu_inputs)
+                .run_prepared(&prepared, &gpu_inputs)
                 .map_err(|e| format!("warmup: {e}"))?;
             sync_cubecl_runtime(compute_bk.runtime())?;
             black_box(out.len());
@@ -493,7 +496,7 @@ fn run_trace_tensor_network(
         for _ in 0..n_runs {
             let t0 = Instant::now();
             let out = runtime
-                .run_compiled(&program, &gpu_inputs)
+                .run_prepared(&prepared, &gpu_inputs)
                 .map_err(|e| format!("run: {e}"))?;
             sync_cubecl_runtime(compute_bk.runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
@@ -830,10 +833,13 @@ fn run_semantic_trace_einsum(
         sync_cubecl_runtime(compute_bk.runtime())?;
         let gpu_input_refs: Vec<&Tensor> = gpu_inputs.iter().collect();
         let runtime = cuda_runtime_with_extensions(&compute_bk, false)?;
+        let prepared = runtime
+            .prepare_compiled(&program, &gpu_input_refs)
+            .map_err(|e| format!("prepare: {e}"))?;
 
         for _ in 0..n_warmup.max(1) {
             let out = runtime
-                .run_compiled(&program, &gpu_input_refs)
+                .run_prepared(&prepared, &gpu_input_refs)
                 .map_err(|e| format!("warmup: {e}"))?;
             sync_cubecl_runtime(compute_bk.runtime())?;
             black_box(out.len());
@@ -844,7 +850,7 @@ fn run_semantic_trace_einsum(
         for _ in 0..n_runs {
             let t0 = Instant::now();
             let out = runtime
-                .run_compiled(&program, &gpu_input_refs)
+                .run_prepared(&prepared, &gpu_input_refs)
                 .map_err(|e| format!("run: {e}"))?;
             sync_cubecl_runtime(compute_bk.runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
@@ -1001,11 +1007,14 @@ fn run_trace(
             .map_err(|e| format!("compile: {e}"))?;
 
         let runtime = cuda_runtime_with_extensions(&compute_bk, true)?;
+        let prepared = runtime
+            .prepare_compiled(&program, &[])
+            .map_err(|e| format!("prepare: {e}"))?;
 
         // Warmup (triggers JIT compilation on first run)
         for _ in 0..n_warmup.max(1) {
             let out = runtime
-                .run_compiled(&program, &[])
+                .run_prepared(&prepared, &[])
                 .map_err(|e| format!("warmup: {e}"))?;
             sync_cubecl_runtime(compute_bk.runtime())?;
             black_box(out.len());
@@ -1017,7 +1026,7 @@ fn run_trace(
         for _ in 0..n_runs {
             let t0 = Instant::now();
             let out = runtime
-                .run_compiled(&program, &[])
+                .run_prepared(&prepared, &[])
                 .map_err(|e| format!("run: {e}"))?;
             sync_cubecl_runtime(compute_bk.runtime())?;
             times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);

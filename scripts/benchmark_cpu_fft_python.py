@@ -80,18 +80,20 @@ def median_iqr(times: list[float]) -> tuple[float, float]:
     return statistics.median(values), values[(3 * len(values)) // 4] - values[len(values) // 4]
 
 
-def bench(fn: Callable[[], object], runs: int, warmups: int) -> tuple[float, float]:
+def bench(fn: Callable[[], object], runs: int, warmups: int, count: int = 1) -> tuple[float, float]:
     for _ in range(max(warmups, 1)):
         value = fn()
         consume(value)
     times = []
     for _ in range(runs):
-        value = None
+        outputs = [None] * count
         start = time.perf_counter()
-        value = fn()
-        times.append((time.perf_counter() - start) * 1000.0)
-        consume(value)
-        del value
+        for i in range(count):
+            outputs[i] = fn()
+        times.append((time.perf_counter() - start) * 1000.0 / count)
+        for value in outputs:
+            consume(value)
+        del value, outputs
     return median_iqr(times)
 
 
@@ -118,7 +120,8 @@ def emit_case(writer: csv.DictWriter[str], args, op: str, dtype: str, n: int) ->
         raise ValueError(op)
 
     try:
-        median_ms, iqr_ms = bench(fn, args.runs, args.warmups)
+        count = 128 if n <= 16_384 else 1
+        median_ms, iqr_ms = bench(fn, args.runs, args.warmups, count)
         writer.writerow(
             {
                 "suite": "cpu/fft",
@@ -130,7 +133,7 @@ def emit_case(writer: csv.DictWriter[str], args, op: str, dtype: str, n: int) ->
                 "median_ms": f"{median_ms:.6f}",
                 "iqr_ms": f"{iqr_ms:.6f}",
                 "status": "ok",
-                "notes": "torch.fft warmup before measured runs; input allocation outside timed region",
+                "notes": f"torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample={count}; median_batch_ms={median_ms * count:.6f}",
             }
         )
     except Exception as exc:  # noqa: BLE001

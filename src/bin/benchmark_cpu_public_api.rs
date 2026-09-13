@@ -783,7 +783,11 @@ fn emit_case(
                     } else {
                         "tenferro-direct"
                     },
-                    csv_escape(case.notes),
+                    csv_escape(&if case.suite == "cpu/view_metadata" {
+                        format!("{}; operations_per_sample=16; median_batch_ms={:.6}; session=not_required", case.notes, median_ms * 16.0)
+                    } else {
+                        case.notes.to_string()
+                    }),
                 )?;
             }
             Err(err) => {
@@ -894,7 +898,15 @@ fn emit_trace_case(
                 case.dtype,
                 args.num_threads,
                 csv_escape(case.shape),
-                csv_escape(case.notes),
+                csv_escape(&if case.suite == "cpu/view_metadata" {
+                    format!(
+                        "{}; operations_per_sample=16; median_batch_ms={:.6}; session=not_required",
+                        case.notes,
+                        median_ms * 16.0
+                    )
+                } else {
+                    case.notes.to_string()
+                }),
             )?;
         }
         Err(err) => {
@@ -1017,22 +1029,30 @@ fn time_view_case(
     };
     let warmups = args.warmups.max(1);
     let mut times = Vec::with_capacity(args.runs);
+    // Metadata calls are short. Batch 16 owners (at most 4 GiB of input
+    // storage for the largest case) instead of timing one view conversion.
+    const COUNT: usize = 16;
     for sample in 0..warmups + args.runs {
-        let input = tensor_value_f64(shape, 1).duplicate()?;
+        let mut inputs = (0..COUNT)
+            .map(|_| tensor_value_f64(shape, 1).duplicate().map(Some))
+            .collect::<tenferro_tensor::Result<Vec<_>>>()?;
+        let mut outputs = Vec::with_capacity(COUNT);
         let start = Instant::now();
-        let output = match case.benchmark {
-            "reshape_view" => input.reshape_view([8192, 4096])?,
-            "transpose_view" => input.transpose_view([1, 0])?,
-            "slice_view" => input.slice_view(&slice)?,
-            "broadcast_in_dim_view" => input.broadcast_in_dim_view([8192, 4096], [0, 1])?,
-            _ => unreachable!(),
-        };
-        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-        black_box(&output);
-        if sample >= warmups {
-            times.push(elapsed);
+        for input in &mut inputs {
+            let input = input.take().expect("prepared owner");
+            outputs.push(match case.benchmark {
+                "reshape_view" => input.reshape_view([8192, 4096])?,
+                "transpose_view" => input.transpose_view([1, 0])?,
+                "slice_view" => input.slice_view(&slice)?,
+                "broadcast_in_dim_view" => input.broadcast_in_dim_view([8192, 4096], [0, 1])?,
+                _ => unreachable!(),
+            });
         }
-        drop(output);
+        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+        black_box(&outputs);
+        if sample >= warmups {
+            times.push(elapsed / COUNT as f64);
+        }
     }
     if let Some(attribution) = attribution {
         for (sample, &elapsed_ms) in times.iter().enumerate() {
@@ -1059,12 +1079,13 @@ fn time_trace_case(
     let compile_ms = start.elapsed().as_secs_f64() * 1000.0;
     let start = Instant::now();
     let runtime = cpu_trace_runtime()?;
+    let prepared = runtime.prepare_compiled(&program, &[])?;
     let runtime_build_ms = start.elapsed().as_secs_f64() * 1000.0;
 
     let mut first_execute_ms = None;
     for warmup in 0..args.warmups.max(1) {
         let start = Instant::now();
-        let outputs = runtime.run_compiled(&program, &[])?;
+        let outputs = runtime.run_prepared(&prepared, &[])?;
         if warmup == 0 {
             first_execute_ms = Some(start.elapsed().as_secs_f64() * 1000.0);
         }
@@ -1073,7 +1094,7 @@ fn time_trace_case(
     let mut times = Vec::with_capacity(args.runs);
     for _ in 0..args.runs {
         let start = Instant::now();
-        let outputs = runtime.run_compiled(&program, &[])?;
+        let outputs = runtime.run_prepared(&prepared, &[])?;
         times.push(start.elapsed().as_secs_f64() * 1000.0);
         black_box(outputs);
     }

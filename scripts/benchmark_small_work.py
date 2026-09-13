@@ -30,7 +30,8 @@ def selected_cases():
         ids = [i for i in ids if i in requested]
     if os.environ.get("BENCH_INCLUDE_SETUP_DIAGNOSTICS") != "1":
         ids = [i for i in ids if not (
-            cases[i]["api_tier"].endswith(("-fresh", "-setup"))
+            cases[i]["api_tier"] in {"eager-no-ad", "eager-ad", "compiled-repeat"}
+            or cases[i]["api_tier"].endswith(("-fresh", "-setup"))
             or (cases[i]["operation"] == "einsum" and cases[i]["api_tier"] in {"concrete-shared", "borrowed-shared"})
         )]
     return [cases[i] for i in ids], suite["defaults"]["run"]
@@ -98,25 +99,28 @@ def report(run_dir, target):
     passed = sum(r["correctness_status"] == "passed" for r in rows)
     lines += [f"Numerical checks: **{passed}/{len(rows)} recorded rows passed** (case × thread count).", ""]
     lines += ["## Timing", "",
-              "Sequential release runs; 3 warmups, then calibration to a 1 ms batch and 15 measured batches per case. "
-              "Statistics describe the sum of per-call execution intervals / iterations. Clock overhead is included. "
+              "Sequential release runs; 3 warmups, then calibration from at least 1024 operations toward a 1 ms batch and 15 measured batches per case. "
+              "Each batch uses one wall-clock interval; all outputs are retained until it stops. Statistics divide batch time by iterations. "
               "Median and inclusive IQR are in nanoseconds (ns); CoV is sample standard deviation / mean. "
               "NOISY means CoV > 10%, a descriptive label only. No noisy rows are excluded.", "",
               "Workflow time is the total for one call or the complete dependent chain. "
               "The separate ns/op column divides the chain median by its operation count, not an independently measured call. "
               "Setup rows measure preparation only, not execution.", "",
               "Inputs and backend construction, independent numerical checks and AD backward checks are outside timing. "
-              "Returned outputs/plans are retained until after each execution interval; "
+              "Returned outputs/plans are retained until after each batch interval; "
               "value downloads/checks are outside. Eager AD rows measure forward execution/recording, not backward.", "",
-              "| Case ID | Operation | API route | Dtype | Shape | Layout | Workflow | Threads | Median workflow ns | IQR ns | CoV | ns/op (chain only) | Status |",
-              "|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---|"]
+              "| Case ID | Operation | API route | Dtype | Shape | Layout | Workflow | Threads | Provider | Operations/batch | Median batch ms | Median workflow ns | IQR ns | CoV | ns/op (chain only) | Status |",
+              "|---|---|---|---|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|---|"]
     for row in rows:
         if row.get("measurement_kind") == "setup_diagnostic" or row["api_tier"].endswith(("-fresh", "-setup")):
             continue
         median, iqr, cov, status = summary(row)
         per_op = f"{float(median)/row['calls_per_workflow']:.2f}" if median != "—" and row['calls_per_workflow'] > 1 else "—"
         lines.append("| " + " | ".join(map(str, [row["case_id"], row["operation"], row["api_tier"], row["dtype"],
-            "×".join(map(str, row["shape"])), row["layout"], row["workflow"], row["threads"], median, iqr, cov, per_op, status])) + " |")
+            "×".join(map(str, row["shape"])), row["layout"], row["workflow"], row["threads"], row.get("provider", "unknown"),
+            row["samples"][0]["iterations"] * row["calls_per_workflow"] if row["samples"] else "—",
+            f"{statistics.median(s['elapsed_ns'] for s in row['samples'])/1e6:.6f}" if row["samples"] else "—",
+            median, iqr, cov, per_op, status])) + " |")
     diagnostics = [r for r in rows if r.get("measurement_kind") == "setup_diagnostic"]
     if diagnostics:
         lines += ["", "## Explicit setup diagnostics (not operation comparisons)", "",

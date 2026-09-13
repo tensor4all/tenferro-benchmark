@@ -1,5 +1,8 @@
 # Benchmark timing policy, revision 2
 
+Short-operation sampling is further tightened by [the shared-session contract](short-operation-sessions.md).
+Earlier revision-2 small-call and JAX thread comparisons are subject to the limitations documented there.
+
 Standard CPU and GPU results measure steady-state operation execution. Prepare
 input values, wrapping, layout conversions, transfers, sessions, runtimes,
 thread pools, vendor handles, contraction plans and compiled graphs before the

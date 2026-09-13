@@ -1,0 +1,102 @@
+[
+  {
+    "id": "matmul_n2_count1024",
+    "operation": "matmul",
+    "shape": [
+      2,
+      2
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  },
+  {
+    "id": "matmul_n4_count1024",
+    "operation": "matmul",
+    "shape": [
+      4,
+      4
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  },
+  {
+    "id": "matmul_n8_count1024",
+    "operation": "matmul",
+    "shape": [
+      8,
+      8
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  },
+  {
+    "id": "matmul_n16_count1024",
+    "operation": "matmul",
+    "shape": [
+      16,
+      16
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  },
+  {
+    "id": "matmul_n32_count1024",
+    "operation": "matmul",
+    "shape": [
+      32,
+      32
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  },
+  {
+    "id": "solve_n2_count1024",
+    "operation": "solve",
+    "shape": [
+      2,
+      2
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  },
+  {
+    "id": "solve_n4_count1024",
+    "operation": "solve",
+    "shape": [
+      4,
+      4
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  },
+  {
+    "id": "solve_n8_count1024",
+    "operation": "solve",
+    "shape": [
+      8,
+      8
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  },
+  {
+    "id": "solve_n16_count1024",
+    "operation": "solve",
+    "shape": [
+      16,
+      16
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  },
+  {
+    "id": "solve_n32_count1024",
+    "operation": "solve",
+    "shape": [
+      32,
+      32
+    ],
+    "dtype": "f64",
+    "operations_per_sample": 1024
+  }
+]

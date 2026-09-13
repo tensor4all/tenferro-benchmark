@@ -36,6 +36,7 @@ EOF
   VECLIB_NUM_THREADS=1 \
   NUMEXPR_NUM_THREADS=1 \
   BLIS_NUM_THREADS=1 \
+  PJRT_NPROC=1 \
   XLA_FLAGS="--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1" \
   JULIA_NUM_THREADS=1 \
     uv run python scripts/collect_run_metadata.py \
@@ -84,6 +85,7 @@ expected = {
     "VECLIB_NUM_THREADS": "1",
     "NUMEXPR_NUM_THREADS": "1",
     "BLIS_NUM_THREADS": "1",
+    "PJRT_NPROC": "1",
     "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1",
     "JULIA_NUM_THREADS": "1",
 }

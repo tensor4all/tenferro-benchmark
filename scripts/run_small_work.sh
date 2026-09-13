@@ -7,6 +7,7 @@ cd "$PROJECT_DIR"
 THREAD_COUNTS=("${@:-1}")
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
 source "$SCRIPT_DIR/thread_env.sh"
+source "$SCRIPT_DIR/benchmark_host_idle.sh"
 export TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export TENFERRO_CPU_BACKEND_KIND="${TENFERRO_CPU_BACKEND_KIND:-blas}"
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-amd-cpu}"
@@ -17,7 +18,7 @@ ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
 "$PYTHON" "$SCRIPT_DIR/validate_benchmark_suite.py" benchmarks/cpu/small_work.yaml
-# Build once before all sequential timing collection. No idle/affinity/performance gate.
+# Build once before sequential timing collection.
 cargo build --release --features "$TENFERRO_CPU_FEATURES" --bin small_work_case
 BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/small_work_case"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
@@ -45,6 +46,7 @@ metadata['environment'].setdefault('env', {}).update({
     'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE', 'all 154')})
 path.write_text(yaml.safe_dump(metadata, sort_keys=False))
 PY
+    assert_benchmark_host_idle
     "$PYTHON" "$SCRIPT_DIR/benchmark_small_work.py" --binary "$BINARY" \
         --threads "$threads" --output "$RUN_DIR/samples_t${threads}.jsonl" || failed=1
 done

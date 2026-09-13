@@ -65,6 +65,7 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
 
     if [[ "${RUN_SMALL_WORK_SUITE:-1}" == "1" ]]; then
         "$SCRIPT_DIR/run_small_work.sh" "${THREAD_COUNTS[@]}"
+        "$SCRIPT_DIR/run_cpu_session.sh" "${THREAD_COUNTS[@]}"
     fi
 
     if [[ "${RUN_PERMUTATION_SUITE:-1}" == "1" ]]; then
@@ -708,6 +709,7 @@ fi
 
 if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_SMALL_WORK_SUITE:-0}" == "1" ]]; then
     SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_small_work.sh" "$NUM_THREADS"
+    "$SCRIPT_DIR/run_cpu_session.sh" "$NUM_THREADS"
 fi
 
 # Opt-in: cpu/permutation suite, run sequentially after every suite above.

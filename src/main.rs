@@ -515,12 +515,15 @@ fn run_instance_trace(
     let operands = create_operand_tensors(&instance.shapes_colmajor);
     let bindings = bind_operands(compiled.input_count, &operands)?;
     let program = &compiled.program;
+    let prepared = runtime
+        .prepare_compiled(program, &bindings)
+        .map_err(|e| format!("prepare: {e}"))?;
 
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
     for _ in 0..bench_warmups().max(1) {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            runtime.run_compiled(program, &bindings)
+            runtime.run_prepared(&prepared, &bindings)
         }));
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
         black_box(&eval);
@@ -531,7 +534,7 @@ fn run_instance_trace(
     for _ in 0..bench_runs() {
         let t0 = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            runtime.run_compiled(program, &bindings)
+            runtime.run_prepared(&prepared, &bindings)
         }));
         let elapsed = t0.elapsed();
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
@@ -576,7 +579,7 @@ fn run_instance_trace(
         for _ in 0..bench_runs() {
             let started = Instant::now();
             let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-                runtime.run_compiled(program, &bindings)
+                runtime.run_prepared(&prepared, &bindings)
             }));
             let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
             executor_run.push(started.elapsed());

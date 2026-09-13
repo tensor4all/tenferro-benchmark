@@ -130,16 +130,19 @@ def consume(value: object) -> None:
         pass
 
 
-def bench(fn: Callable[[], object], runs: int, warmups: int) -> tuple[float, float]:
+def bench(fn: Callable[[], object], runs: int, warmups: int, operations_per_sample: int = 1) -> tuple[float, float]:
     for _ in range(max(warmups, 1)):
         consume(fn())
     times: list[float] = []
     for _ in range(runs):
+        outputs = [None] * operations_per_sample
         start = time.perf_counter()
-        output = fn()
-        times.append((time.perf_counter() - start) * 1000.0)
-        consume(output)
-        del output
+        for i in range(operations_per_sample):
+            outputs[i] = fn()
+        times.append((time.perf_counter() - start) * 1000.0 / operations_per_sample)
+        for output in outputs:
+            consume(output)
+        del output, outputs
     return median_iqr(times)
 
 
@@ -443,7 +446,10 @@ def emit_case(
     fn: Callable[[], object] | None,
 ) -> None:
     try:
-        median_ms, iqr_ms = bench(fn, args.runs, args.warmups)
+        count = 16 if suite == "cpu/view_metadata" else 1
+        median_ms, iqr_ms = bench(fn, args.runs, args.warmups, count)
+        if count > 1:
+            notes += f"; operations_per_sample={count}; median_batch_ms={median_ms * count:.6f}; session=not_required"
         writer.writerow(
             {
                 "suite": suite,

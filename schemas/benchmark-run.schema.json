@@ -42,6 +42,8 @@
           "type": "integer",
           "minimum": 1
         },
+        "short_operation_sampling": { "type": "string" },
+        "trace_execution": { "type": "string" },
         "setup_diagnostics": {
           "type": "boolean"
         }

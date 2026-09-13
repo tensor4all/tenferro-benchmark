@@ -1,5 +1,7 @@
 # tenferro-benchmark
 
+Short operations now use [many operations in one session](docs/short-operation-sessions.md); see the [M5 root-cause investigation](docs/m5-short-operation-root-causes.md).
+
 Timing corrections are documented in [timing policy revision 2](docs/timing-policy.md).
 The [M5 Max CPU refresh](docs/m5-cpu-refresh-20260913.md) reran all CPU suites
 with revision 2 at 1 and 4 threads. Other targets retain earlier measurements
@@ -153,8 +155,8 @@ devcontainer exec --workspace-folder . bash -lc '
 ### Small-work public API suite (`cpu/small_work`)
 
 Reuses the 154 cases from `feat/95-small-work` (`38b9a83`): F64
-add/einsum/solve/gather/reduce_sum and C64 einsum. Fresh/shared-session,
-eager no-AD/AD, prepared/compiled, and borrowed-layout routes remain separate.
+add/einsum/solve/gather/reduce_sum and C64 einsum. Shared/prepared operation routes use one clock interval for at least 1024 operations.
+Fresh-session, eager and compiled per-call routes are opt-in diagnostics.
 No cross-library equivalents or automatic performance gates are added.
 
 ```bash

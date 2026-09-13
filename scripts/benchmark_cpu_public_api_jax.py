@@ -377,6 +377,7 @@ def main() -> None:
     parser.add_argument("--num-threads", required=True, type=int)
     args = parser.parse_args()
     args.runs, args.warmups = runs_from_env()
+    os.environ["PJRT_NPROC"] = str(args.num_threads)
 
     import jax
 

@@ -1,0 +1,25 @@
+HloModule jit_tanh, is_scheduled=true, entry_computation_layout={(f64[8388608]{0})->f64[8388608]{0}}, allow_spmd_sharding_propagation_to_parameters={true}, allow_spmd_sharding_propagation_to_output={true}
+
+FileNames
+1 "/tmp/tenferro-rootcause/jax_threads.py"
+
+FunctionNames
+1 "<module>"
+
+FileLocations
+1 {file_name_id=1 function_name_id=1 line=7 end_line=7 column=3 end_column=13}
+
+StackFrames
+1 {file_location_id=1 parent_frame_id=1}
+
+
+%wrapped_tanh_computation (param_0: f64[8388608]) -> f64[8388608] {
+  %param_0 = f64[8388608]{0} parameter(0)
+  ROOT %tanh.0 = f64[8388608]{0} tanh(%param_0), metadata={op_name="jit(tanh)/tanh" stack_frame_id=1}
+}
+
+ENTRY %main.1 (x.1: f64[8388608]) -> f64[8388608] {
+  %x.1 = f64[8388608]{0} parameter(0), metadata={op_name="x"}
+  ROOT %wrapped_tanh = f64[8388608]{0} fusion(%x.1), kind=kLoop, calls=%wrapped_tanh_computation, metadata={op_name="jit(tanh)/tanh" stack_frame_id=1}, backend_config={"outer_dimension_partitions":["5"]}
+}
+

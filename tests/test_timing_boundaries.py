@@ -63,6 +63,40 @@ class TimingBoundaries(unittest.TestCase):
             [state[k] for k in ("setup", "execute", "drop", "sync")], [3, 3, 3, 3]
         )
 
+    def test_short_batches_keep_all_outputs_until_one_timer_stops(self):
+        import benchmark_cpu_fft_python as fft
+        import benchmark_cpu_public_api_python as public
+        for module in (fft, public):
+            with self.subTest(module=module.__name__):
+                state = dict(timed=False, live=0, calls=0, clock=0)
+                class Output:
+                    def __init__(self):
+                        self.measured = state['timed']
+                        if self.measured:
+                            state['live'] += 1
+                            state['calls'] += 1
+                    def __del__(self):
+                        if self.measured:
+                            # A final output must survive through timer stop.
+                            if state['timed']:
+                                state['premature_drop'] = True
+                            state['live'] -= 1
+                def clock():
+                    if state['timed']:
+                        self.assertEqual(state['live'], 4)
+                    else:
+                        self.assertEqual(state['live'], 0)
+                    state['timed'] = not state['timed']
+                    state['clock'] += 1
+                    return state['clock'] * 0.004
+                with patch.object(module.time, 'perf_counter', clock):
+                    median, _ = module.bench(Output, 2, 0, 4)
+                self.assertAlmostEqual(median, 1.0)
+                self.assertEqual(state['calls'], 8)
+                self.assertEqual(state['clock'], 4)
+                self.assertEqual(state['live'], 0)
+                self.assertNotIn('premature_drop', state)
+
     def test_all_cpu_ops_fixture_callbacks_are_prepared(self):
         tree = ast.parse((ROOT / "scripts/benchmark_cpu_ops_python.py").read_text())
         for node in ast.walk(tree):

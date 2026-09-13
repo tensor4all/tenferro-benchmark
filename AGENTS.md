@@ -414,3 +414,19 @@ cmake -S cpp -B build/cpp-plan-test
 cmake --build build/cpp-plan-test --target einsum_plan_test
 ctest --test-dir build/cpp-plan-test --output-on-failure
 ```
+
+## Short-operation sampling
+
+For very short CPU/GPU operations, measure many declared operations in one
+wall-clock interval. Repeating isolated per-call clocks is not a substitute.
+Prepare all inputs, output-retention containers and the reusable session before
+starting the clock; keep outputs alive until it stops. Record operations per
+sample, batch duration and the normalized per-operation duration. Bound batch
+size by retained input/output memory as well as target elapsed time.
+
+Reuse one entered session for the batch wherever the API supports it. Reusing
+an EagerRuntime or Runtime alone does not establish that property. If an API
+internally enters a new session per call and cannot accept the borrowed session,
+keep its short-operation measurement explicitly diagnostic; do not silently
+label it shared-session or use it as the standard small-work comparison.
+Pure metadata operations that do not require a session must say so.
