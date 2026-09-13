@@ -1,0 +1,5 @@
+suite,benchmark,dtype,threads,shape,backend,median_ms,iqr_ms,status,notes
+cpu/view_metadata,reshape_view,f64,1,"33554432 -> 8192x4096",tenferro-eager,0.000541,0.000667,ok,"metadata-only view reshape; no output-sized copy"
+cpu/view_metadata,transpose_view,f64,1,"4096x4096",tenferro-eager,0.000416,0.000583,ok,"metadata-only transpose view; no output-sized copy"
+cpu/view_metadata,slice_view,f64,1,"4194304 -> 2096128",tenferro-eager,0.000250,0.000125,ok,"metadata-only strided slice view; no output-sized copy"
+cpu/view_metadata,broadcast_in_dim_view,f64,1,"8192x1 -> 8192x4096",tenferro-eager,0.000125,0.000042,ok,"metadata-only zero-stride broadcast view; no output-sized copy"

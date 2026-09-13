@@ -213,6 +213,8 @@ fn backend_name() -> &'static str {
         "cuda"
     } else if cfg!(feature = "system-openblas") {
         "system-openblas"
+    } else if cfg!(feature = "system-accelerate") {
+        "system-accelerate"
     } else {
         "cpu-faer"
     }
@@ -301,6 +303,10 @@ fn main() {
 
 fn run_all(config: &BenchConfig) -> Vec<Row> {
     let mut rows = Vec::new();
+    // Initialize the shared runtime before any timed samples, including zero-warmup runs.
+    if config.include_eager {
+        let _ = cpu_ctx();
+    }
     if config.include_eager && config.suite.includes("small") {
         run_small_latency(config, &mut rows);
     }
@@ -1543,16 +1549,10 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
         let b = tensor(&[n, n], data_for_shape(&[n, n], 2));
         let mut trace = TraceContext::new();
         let a_value = trace
-            .input_with_default(
-                ProgramInputSpec::new(a.dtype(), [n.into(), n.into()]),
-                a,
-            )
+            .input_with_default(ProgramInputSpec::new(a.dtype(), [n.into(), n.into()]), a)
             .map_err(|err| Error::Internal(err.to_string()))?;
         let b_value = trace
-            .input_with_default(
-                ProgramInputSpec::new(b.dtype(), [n.into(), n.into()]),
-                b,
-            )
+            .input_with_default(ProgramInputSpec::new(b.dtype(), [n.into(), n.into()]), b)
             .map_err(|err| Error::Internal(err.to_string()))?;
         let output = trace
             .einsum(&[a_value, b_value], "ij,jk->ik")
@@ -1618,8 +1618,11 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
 }
 
 fn cpu_ctx() -> Arc<EagerRuntime> {
-    EagerRuntime::with_cpu_backend_and_ad_context(CpuBackend::new(), ad_context())
-        .expect("configured eager CPU runtime should initialize")
+    static RUNTIME: OnceLock<Arc<EagerRuntime>> = OnceLock::new();
+    Arc::clone(RUNTIME.get_or_init(|| {
+        EagerRuntime::with_cpu_backend_and_ad_context(CpuBackend::new(), ad_context())
+            .expect("configured eager CPU runtime should initialize")
+    }))
 }
 
 fn ad_context() -> &'static AdContext {
@@ -1876,5 +1879,15 @@ fn csv_escape(value: &str) -> String {
         format!("\"{}\"", value.replace('"', "\"\""))
     } else {
         value.to_string()
+    }
+}
+
+#[cfg(test)]
+mod timing_tests {
+    use super::*;
+
+    #[test]
+    fn eager_runtime_is_reused_across_samples() {
+        assert!(Arc::ptr_eq(&cpu_ctx(), &cpu_ctx()));
     }
 }

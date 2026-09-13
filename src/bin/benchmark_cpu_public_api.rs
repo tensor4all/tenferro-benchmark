@@ -18,10 +18,9 @@ use tenferro_einsum::{TensorDotAxes, TensorEinsumExt, TensorTensordotExt, Traced
 use tenferro_linalg::{EagerTensorLinalgExt, TensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
 use tenferro_tensor::{
-    CompareDir, DType, DotGeneralAccumulation, DotGeneralConfig, GatherConfig, PadConfig,
-    ScatterConfig, SliceConfig, Tensor, TensorAnalytic, TensorDot, TensorElementwise,
-    BackendSessionHost, TensorIndexing, TensorRead, TensorReduction, TensorStructural,
-    TensorValue, TensorWrite,
+    BackendSessionHost, CompareDir, DType, DotGeneralAccumulation, DotGeneralConfig, GatherConfig,
+    PadConfig, ScatterConfig, SliceConfig, Tensor, TensorAnalytic, TensorDot, TensorElementwise,
+    TensorIndexing, TensorRead, TensorReduction, TensorStructural, TensorValue, TensorWrite,
 };
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
@@ -911,6 +910,9 @@ fn time_case(
     case: &Case,
     attribution: Option<&mut AttributionSink>,
 ) -> BenchResult<(f64, f64)> {
+    if case.suite == "cpu/view_metadata" {
+        return time_view_case(args, case, attribution);
+    }
     for _ in 0..args.warmups {
         (case.run)(backend)?;
     }
@@ -919,6 +921,51 @@ fn time_case(
         let start = Instant::now();
         (case.run)(backend)?;
         times.push(start.elapsed().as_secs_f64() * 1000.0);
+    }
+    if let Some(attribution) = attribution {
+        for (sample, &elapsed_ms) in times.iter().enumerate() {
+            attribution.record(case, "direct", "steady_execute", sample, elapsed_ms)?;
+        }
+    }
+    Ok(median_iqr(&times))
+}
+
+// TensorValue views consume their owner. Prepare a fresh owner before the
+// clock starts, and retain the output until after it stops (no allocation,
+// data copy, or backing-storage destruction in metadata-only timings).
+fn time_view_case(
+    args: &Args,
+    case: &Case,
+    attribution: Option<&mut AttributionSink>,
+) -> BenchResult<(f64, f64)> {
+    let shape: &[usize] = match case.benchmark {
+        "reshape_view" => &[33_554_432],
+        "transpose_view" => &[4096, 4096],
+        "slice_view" => &[4_194_304],
+        "broadcast_in_dim_view" => &[8192, 1],
+        _ => return Err("unknown metadata-only view benchmark".into()),
+    };
+    let mut times = Vec::with_capacity(args.runs);
+    for sample in 0..args.warmups + args.runs {
+        let input = tensor_value_f64(shape, 1).duplicate()?;
+        let start = Instant::now();
+        let output = match case.benchmark {
+            "reshape_view" => input.reshape_view([8192, 4096])?,
+            "transpose_view" => input.transpose_view([1, 0])?,
+            "slice_view" => input.slice_view(&SliceConfig {
+                starts: vec![1024],
+                limits: vec![4_194_304 - 1024],
+                strides: vec![2],
+            })?,
+            "broadcast_in_dim_view" => input.broadcast_in_dim_view([8192, 4096], [0, 1])?,
+            _ => unreachable!(),
+        };
+        black_box(&output);
+        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+        if sample >= args.warmups {
+            times.push(elapsed);
+        }
+        drop(output);
     }
     if let Some(attribution) = attribution {
         for (sample, &elapsed_ms) in times.iter().enumerate() {
@@ -1220,7 +1267,9 @@ fn well_conditioned_c64(n: usize, seed: u64) -> &'static Tensor {
 }
 
 fn traced(tensor: &Tensor) -> BenchResult<TracedTensor> {
-    Ok(TracedTensor::from_tensor_concrete_shape(tensor.duplicate()?)?)
+    Ok(TracedTensor::from_tensor_concrete_shape(
+        tensor.duplicate()?,
+    )?)
 }
 
 fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
@@ -2054,7 +2103,7 @@ fn lstsq_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
                     .expect("lstsq rhs tensor should duplicate"),
                 ctx,
             )
-                .expect("lstsq rhs fixture should initialize");
+            .expect("lstsq rhs fixture should initialize");
             *fixture = Some((a, rhs));
         }
         let (a, rhs) = fixture.as_ref().expect("lstsq fixture initialized");

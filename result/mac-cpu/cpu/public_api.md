@@ -7,11 +7,11 @@
 - Run metadata: `data/results/mac-cpu/cpu/public_api/20260913_124711/run.yaml`
 - Timestamp: `20260913_124711`
 
-Latest run: `PUBLICATION_GATE_PROFILE=full ./scripts/run_cpu_public_api.sh 1 4`.
+Original baseline run: `PUBLICATION_GATE_PROFILE=full ./scripts/run_cpu_public_api.sh 1 4`.
 
 - Sampling: `full` profile, 15 measured runs, 3 warmups per row
 
-This file is generated from sequential CPU public API runs under `data/results/mac-cpu/cpu/public_api/20260913_124711`.
+Original baseline runs are under `data/results/mac-cpu/cpu/public_api/20260913_124711`.
 
 - tenferro-rs commit: `a48866b1a0bb52e6f9712c485925105b14ea30b9`
 
@@ -98,6 +98,18 @@ This file is generated from sequential CPU public API runs under `data/results/m
 - CSV: `data/results/mac-cpu/cpu/public_api/20260913_124711/cpu_public_api_t1_20260913_124711.csv`
 - CSV: `data/results/mac-cpu/cpu/public_api/20260913_124711/cpu_public_api_t4_20260913_124711.csv`
 - Source table: `data/results/mac-cpu/cpu/public_api/20260913_124711/cpu_public_api_20260913_124711.md`
+
+## Targeted timing correction
+
+- Refresh: `20260913_130307`, Apple M5 Max, 1 and 4 threads; tenferro `a48866b1a0bb52e6f9712c485925105b14ea30b9` (unchanged).
+- Collection commands: `data/results/mac-cpu/cpu/cpu_ops/20260913_130307/collection.sh` and `data/results/mac-cpu/cpu/cpu_ops/20260913_130307/view_recheck.sh`.
+- Sampling: 3 warmups and 15 measured runs; sequential collection with the idle-host guard enabled.
+- Raw corrected rows and per-thread metadata: `data/results/mac-cpu/cpu/cpu_ops/20260913_130307/`.
+- All unselected cells are retained verbatim from the original runs named below; the tables combine those original measurements with this targeted correction.
+
+- Replaced only four tenferro direct `cpu/view_metadata` cells per thread. Input duplication is outside timing; outputs retain their allocation until after the clock stops. These cells measure concrete TensorValue view operations, not EagerTensor dispatch.
+- Baseline for all other cells: `data/results/mac-cpu/cpu/public_api/20260913_124711/`.
+- View-only confirmation was collected after the first run; both raw runs are retained. Sub-microsecond single-call samples have substantial relative timer/scheduling variability; use the reported IQR and avoid precise speedup claims from these cells.
 
 ## CPU Benchmark Items
 
@@ -269,14 +281,14 @@ Median ± IQR (ms). Missing backends are shown as `-`.
 | cpu/structural_shape | `tril` | f64 | 4 | `4096x4096` | 3.442 ± 0.221 | 4.521 ± 0.112 | 1.348 ± 0.042 | 0.898 ± 0.058 | 4.330 ± 0.062 | - |
 | cpu/structural_shape | `triu` | f64 | 1 | `4096x4096` | 3.569 ± 0.133 | 5.958 ± 0.069 | 3.508 ± 0.170 | 0.875 ± 0.098 | 4.204 ± 0.057 | - |
 | cpu/structural_shape | `triu` | f64 | 4 | `4096x4096` | 3.501 ± 0.225 | 4.938 ± 0.100 | 1.196 ± 0.019 | 0.866 ± 0.030 | 4.065 ± 0.056 | - |
-| cpu/view_metadata | `broadcast_in_dim_view` | f64 | 1 | `8192x1 -> 8192x4096` | 0.001 ± 0.000 | unsupported | 0.001 ± 0.000 | - | - | - |
-| cpu/view_metadata | `broadcast_in_dim_view` | f64 | 4 | `8192x1 -> 8192x4096` | 0.001 ± 0.000 | unsupported | 0.001 ± 0.000 | - | - | - |
-| cpu/view_metadata | `reshape_view` | f64 | 1 | `33554432 -> 8192x4096` | 4.041 ± 0.253 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
-| cpu/view_metadata | `reshape_view` | f64 | 4 | `33554432 -> 8192x4096` | 3.976 ± 0.126 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
-| cpu/view_metadata | `slice_view` | f64 | 1 | `4194304 -> 2096128` | 0.493 ± 0.055 | unsupported | 0.000 ± 0.000 | - | 0.000 ± 0.000 | - |
-| cpu/view_metadata | `slice_view` | f64 | 4 | `4194304 -> 2096128` | 0.472 ± 0.027 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
-| cpu/view_metadata | `transpose_view` | f64 | 1 | `4096x4096` | 1.986 ± 0.083 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
-| cpu/view_metadata | `transpose_view` | f64 | 4 | `4096x4096` | 1.963 ± 0.116 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
+| cpu/view_metadata | `broadcast_in_dim_view` | f64 | 1 | `8192x1 -> 8192x4096` | 0.000 ± 0.000 | unsupported | 0.001 ± 0.000 | - | - | - |
+| cpu/view_metadata | `broadcast_in_dim_view` | f64 | 4 | `8192x1 -> 8192x4096` | 0.000 ± 0.000 | unsupported | 0.001 ± 0.000 | - | - | - |
+| cpu/view_metadata | `reshape_view` | f64 | 1 | `33554432 -> 8192x4096` | 0.001 ± 0.001 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
+| cpu/view_metadata | `reshape_view` | f64 | 4 | `33554432 -> 8192x4096` | 0.000 ± 0.001 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
+| cpu/view_metadata | `slice_view` | f64 | 1 | `4194304 -> 2096128` | 0.000 ± 0.000 | unsupported | 0.000 ± 0.000 | - | 0.000 ± 0.000 | - |
+| cpu/view_metadata | `slice_view` | f64 | 4 | `4194304 -> 2096128` | 0.000 ± 0.000 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
+| cpu/view_metadata | `transpose_view` | f64 | 1 | `4096x4096` | 0.000 ± 0.001 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
+| cpu/view_metadata | `transpose_view` | f64 | 4 | `4096x4096` | 0.000 ± 0.000 | unsupported | 0.001 ± 0.000 | - | 0.000 ± 0.000 | - |
 
 ## Cross-Backend Spread Audit
 
@@ -295,12 +307,6 @@ Rows with a successful cell more than 10x faster than the slowest successful cel
 - `cpu/elementwise_reduction/tanh` (f64, threads=4, shape=`8388608`): `jax-cpu` is 12.5x faster than the slowest successful cell (`julia-base`, 23.543 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
 - `cpu/structural_shape/transpose` (f64, threads=1, shape=`4096x4096`): `jax-cpu` is 14.3x faster than the slowest successful cell (`julia-base`, 53.834 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
 - `cpu/structural_shape/transpose` (f64, threads=4, shape=`4096x4096`): `jax-cpu` is 14.5x faster than the slowest successful cell (`julia-base`, 51.902 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/reshape_view` (f64, threads=1, shape=`33554432 -> 8192x4096`): `pytorch-cpu` is 8081.5x faster than the slowest successful cell (`tenferro-eager`, 4.041 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/reshape_view` (f64, threads=4, shape=`33554432 -> 8192x4096`): `pytorch-cpu` is 7336.3x faster than the slowest successful cell (`tenferro-eager`, 3.976 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/slice_view` (f64, threads=1, shape=`4194304 -> 2096128`): `pytorch-cpu` is 1075.5x faster than the slowest successful cell (`tenferro-eager`, 0.493 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/slice_view` (f64, threads=4, shape=`4194304 -> 2096128`): `pytorch-cpu` is 943.1x faster than the slowest successful cell (`tenferro-eager`, 0.472 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/transpose_view` (f64, threads=1, shape=`4096x4096`): `pytorch-cpu` is 3670.2x faster than the slowest successful cell (`tenferro-eager`, 1.986 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
-- `cpu/view_metadata/transpose_view` (f64, threads=4, shape=`4096x4096`): `pytorch-cpu` is 3360.9x faster than the slowest successful cell (`tenferro-eager`, 1.963 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
 
 ## Physical Bound Audit
 

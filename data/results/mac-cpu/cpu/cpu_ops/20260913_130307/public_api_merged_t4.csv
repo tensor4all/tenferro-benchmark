@@ -1,0 +1,448 @@
+suite,benchmark,dtype,threads,shape,backend,median_ms,iqr_ms,status,notes
+cpu/elementwise_reduction,add,f64,4,33554432,tenferro-eager,4.631208,0.554666,ok,binary elementwise
+cpu/elementwise_reduction,add,f64,4,33554432,tenferro-trace,2.782750,0.146084,ok,binary elementwise
+cpu/elementwise_reduction,sub,f64,4,33554432,tenferro-eager,2.591250,0.125709,ok,binary elementwise
+cpu/elementwise_reduction,sub,f64,4,33554432,tenferro-trace,2.752916,0.148084,ok,binary elementwise
+cpu/elementwise_reduction,mul,f64,4,33554432,tenferro-eager,2.814542,0.137084,ok,binary elementwise
+cpu/elementwise_reduction,mul,f64,4,33554432,tenferro-trace,2.892041,0.110708,ok,binary elementwise
+cpu/elementwise_reduction,div,f64,4,33554432,tenferro-eager,2.635834,0.154125,ok,binary elementwise
+cpu/elementwise_reduction,div,f64,4,33554432,tenferro-trace,2.771209,0.155417,ok,binary elementwise
+cpu/elementwise_reduction,neg,f64,4,33554432,tenferro-eager,1.659084,0.126875,ok,unary elementwise
+cpu/elementwise_reduction,neg,f64,4,33554432,tenferro-trace,1.678917,0.089958,ok,unary elementwise
+cpu/elementwise_reduction,abs,f64,4,33554432,tenferro-eager,1.639709,0.091791,ok,unary elementwise
+cpu/elementwise_reduction,abs,f64,4,33554432,tenferro-trace,1.678916,0.083625,ok,unary elementwise
+cpu/elementwise_reduction,sign,f64,4,33554432,tenferro-eager,3.248250,0.098250,ok,unary elementwise
+cpu/elementwise_reduction,sign,f64,4,33554432,tenferro-trace,3.202750,0.139250,ok,unary elementwise
+cpu/elementwise_reduction,maximum,f64,4,33554432,tenferro-eager,2.591583,0.287167,ok,binary elementwise
+cpu/elementwise_reduction,maximum,f64,4,33554432,tenferro-trace,2.693042,0.170125,ok,binary elementwise
+cpu/elementwise_reduction,minimum,f64,4,33554432,tenferro-eager,2.678208,0.114916,ok,binary elementwise
+cpu/elementwise_reduction,minimum,f64,4,33554432,tenferro-trace,2.679958,0.126125,ok,binary elementwise
+cpu/elementwise_reduction,compare_lt,f64,4,33554432,tenferro-eager,2.174875,0.119541,ok,ordered compare
+cpu/elementwise_reduction,compare_lt,f64,4,33554432,tenferro-trace,2.203125,0.094208,ok,ordered compare
+cpu/elementwise_reduction,select,f64,4,33554432,tenferro-eager,3.504667,0.112459,ok,ternary select
+cpu/elementwise_reduction,select,f64,4,33554432,tenferro-trace,3.473542,0.100292,ok,ternary select
+cpu/elementwise_reduction,sqrt,f64,4,33554432,tenferro-eager,2.023167,0.034792,ok,analytic unary
+cpu/elementwise_reduction,sqrt,f64,4,33554432,tenferro-trace,2.046792,0.042250,ok,analytic unary
+cpu/elementwise_reduction,rsqrt,f64,4,33554432,tenferro-eager,3.070125,0.032916,ok,analytic unary
+cpu/elementwise_reduction,rsqrt,f64,4,33554432,tenferro-trace,3.178875,0.177792,ok,analytic unary
+cpu/elementwise_reduction,rem,f64,4,8388608,tenferro-eager,4.452583,0.474792,ok,binary elementwise
+cpu/elementwise_reduction,rem,f64,4,8388608,tenferro-trace,4.172000,0.220207,ok,binary elementwise
+cpu/elementwise_reduction,clamp,f64,4,8388608,tenferro-eager,1.565667,0.061291,ok,clamp with tensor bounds
+cpu/elementwise_reduction,clamp,f64,4,8388608,tenferro-trace,1.618584,0.142500,ok,clamp with tensor bounds
+cpu/elementwise_reduction,exp,f64,4,8388608,tenferro-eager,4.093041,0.132083,ok,analytic unary
+cpu/elementwise_reduction,exp,f64,4,8388608,tenferro-trace,4.200875,0.270167,ok,analytic unary
+cpu/elementwise_reduction,log,f64,4,8388608,tenferro-eager,4.224542,0.212334,ok,analytic unary
+cpu/elementwise_reduction,log,f64,4,8388608,tenferro-trace,4.279042,0.125125,ok,analytic unary
+cpu/elementwise_reduction,sin,f64,4,8388608,tenferro-eager,4.269125,0.166500,ok,analytic unary
+cpu/elementwise_reduction,sin,f64,4,8388608,tenferro-trace,4.192667,0.070167,ok,analytic unary
+cpu/elementwise_reduction,cos,f64,4,8388608,tenferro-eager,4.309417,0.074583,ok,analytic unary
+cpu/elementwise_reduction,cos,f64,4,8388608,tenferro-trace,4.336958,0.120917,ok,analytic unary
+cpu/elementwise_reduction,tanh,f64,4,8388608,tenferro-eager,5.708042,0.175250,ok,analytic unary
+cpu/elementwise_reduction,tanh,f64,4,8388608,tenferro-trace,5.618334,0.185375,ok,analytic unary
+cpu/elementwise_reduction,pow,f64,4,4194304,tenferro-eager,5.267500,0.803834,ok,binary analytic
+cpu/elementwise_reduction,pow,f64,4,4194304,tenferro-trace,5.027583,0.189208,ok,binary analytic
+cpu/elementwise_reduction,expm1,f64,4,4194304,tenferro-eager,2.174833,0.052875,ok,analytic unary
+cpu/elementwise_reduction,expm1,f64,4,4194304,tenferro-trace,2.261917,0.095125,ok,analytic unary
+cpu/elementwise_reduction,log1p,f64,4,4194304,tenferro-eager,2.848583,0.096126,ok,analytic unary
+cpu/elementwise_reduction,log1p,f64,4,4194304,tenferro-trace,2.809125,0.137250,ok,analytic unary
+cpu/elementwise_reduction,chain_log1p_exp_mul,f64,4,4194304,tenferro-eager,4.932875,0.172959,ok,short elementwise chain
+cpu/elementwise_reduction,chain_log1p_exp_mul,f64,4,4194304,tenferro-trace,5.050209,0.245626,ok,short elementwise chain
+cpu/elementwise_reduction,reduce_sum_all,f64,4,8192x4096,tenferro-eager,4.609917,0.392375,ok,full reduction
+cpu/elementwise_reduction,reduce_sum_all,f64,4,8192x4096,tenferro-trace,4.577375,0.112500,ok,full reduction
+cpu/elementwise_reduction,reduce_prod_all,f64,4,8192x4096,tenferro-eager,6.077458,0.061667,ok,full reduction
+cpu/elementwise_reduction,reduce_prod_all,f64,4,8192x4096,tenferro-trace,6.105084,0.093042,ok,full reduction
+cpu/elementwise_reduction,reduce_max_axis0,f64,4,2048x2048,tenferro-eager,5.869917,0.076458,ok,axis reduction
+cpu/elementwise_reduction,reduce_max_axis0,f64,4,2048x2048,tenferro-trace,5.812333,0.075167,ok,axis reduction
+cpu/elementwise_reduction,reduce_min_axis1,f64,4,4096x4096,tenferro-eager,3.242750,0.066125,ok,axis reduction
+cpu/elementwise_reduction,reduce_min_axis1,f64,4,4096x4096,tenferro-trace,3.213750,0.120959,ok,axis reduction
+cpu/indexing_layout,gather,f64,4,262144,tenferro-eager,0.132458,0.005292,ok,1D StableHLO-style gather
+cpu/indexing_layout,gather,f64,4,262144,tenferro-trace,0.367792,0.062666,ok,1D StableHLO-style gather
+cpu/indexing_layout,scatter,f64,4,262144,tenferro-eager,0.366000,0.191624,ok,1D StableHLO-style scatter
+cpu/indexing_layout,scatter,f64,4,262144,tenferro-trace,0.590916,0.182542,ok,1D StableHLO-style scatter
+cpu/indexing_layout,slice,f64,4,4194304 -> 2096128,tenferro-eager,0.664458,0.266542,ok,static slice
+cpu/indexing_layout,slice,f64,4,4194304 -> 2096128,tenferro-trace,0.996291,0.083583,ok,static slice
+cpu/indexing_layout,dynamic_slice,f64,4,4194304 -> 2097152,tenferro-eager,0.270542,0.024791,ok,runtime-start slice
+cpu/indexing_layout,dynamic_slice,f64,4,4194304 -> 2097152,tenferro-trace,0.629292,0.078583,ok,runtime-start slice
+cpu/indexing_layout,dynamic_update_slice,f64,4,2097152,tenferro-eager,0.398958,0.018374,ok,runtime-start update
+cpu/indexing_layout,dynamic_update_slice,f64,4,2097152,tenferro-trace,,,unsupported,tenferro-rs has no TracedTensor dynamic_update_slice API
+cpu/indexing_layout,pad,f64,4,2097152,tenferro-eager,0.355625,0.013750,ok,edge padding
+cpu/indexing_layout,pad,f64,4,2097152,tenferro-trace,0.520250,0.036250,ok,edge padding
+cpu/indexing_layout,concatenate,f64,4,1048576+1048576,tenferro-eager,0.278125,0.013125,ok,concatenate along axis 0
+cpu/indexing_layout,concatenate,f64,4,1048576+1048576,tenferro-trace,0.446166,0.042125,ok,concatenate along axis 0
+cpu/indexing_layout,reverse,f64,4,2097152,tenferro-eager,0.495875,0.018042,ok,reverse axis 0
+cpu/indexing_layout,reverse,f64,4,2097152,tenferro-trace,0.658250,0.072459,ok,reverse axis 0
+cpu/structural_shape,transpose,f64,4,4096x4096,tenferro-eager,11.998500,1.463167,ok,materialized matrix transpose
+cpu/structural_shape,transpose,f64,4,4096x4096,tenferro-trace,7.299208,0.212791,ok,materialized matrix transpose
+cpu/structural_shape,reshape,f64,4,33554432 -> 8192x4096,tenferro-eager,3.993292,0.129083,ok,materialized reshape output
+cpu/structural_shape,reshape,f64,4,33554432 -> 8192x4096,tenferro-trace,1.631667,0.193584,ok,materialized reshape output
+cpu/structural_shape,broadcast_in_dim,f64,4,8192x1 -> 8192x4096,tenferro-eager,2.122667,0.046958,ok,materialized broadcast
+cpu/structural_shape,broadcast_in_dim,f64,4,8192x1 -> 8192x4096,tenferro-trace,1.148417,0.037250,ok,materialized broadcast
+cpu/structural_shape,cast_f64_f32,f64->f32,4,33554432,tenferro-eager,1.381334,0.108875,ok,dtype cast
+cpu/structural_shape,cast_f64_f32,f64->f32,4,33554432,tenferro-trace,3.172333,0.296750,ok,dtype cast
+cpu/structural_shape,extract_diagonal,f64,4,8388608x2x2 -> 8388608x2,tenferro-eager,2.253041,0.040875,ok,batched matrix diagonal extraction
+cpu/structural_shape,extract_diagonal,f64,4,8388608x2x2 -> 8388608x2,tenferro-trace,4.023375,0.343750,ok,batched matrix diagonal extraction
+cpu/structural_shape,embed_diagonal,f64,4,8192 -> 8192x8192,tenferro-eager,2.089292,0.081916,ok,embed vector as matrix diagonal
+cpu/structural_shape,embed_diagonal,f64,4,8192 -> 8192x8192,tenferro-trace,2.126042,0.143959,ok,embed vector as matrix diagonal
+cpu/structural_shape,tril,f64,4,4096x4096,tenferro-eager,3.441542,0.221043,ok,lower triangle
+cpu/structural_shape,tril,f64,4,4096x4096,tenferro-trace,4.521250,0.112333,ok,lower triangle
+cpu/structural_shape,triu,f64,4,4096x4096,tenferro-eager,3.501375,0.225334,ok,upper triangle
+cpu/structural_shape,triu,f64,4,4096x4096,tenferro-trace,4.938125,0.100125,ok,upper triangle
+cpu/view_metadata,reshape_view,f64,4,33554432 -> 8192x4096,tenferro-eager,0.000167,0.000750,ok,metadata-only view reshape; no output-sized copy
+cpu/view_metadata,reshape_view,f64,4,33554432 -> 8192x4096,tenferro-trace,,,unsupported,TensorValue view metadata APIs are concrete-only; traced tensors use graph operations
+cpu/view_metadata,transpose_view,f64,4,4096x4096,tenferro-eager,0.000209,0.000417,ok,metadata-only transpose view; no output-sized copy
+cpu/view_metadata,transpose_view,f64,4,4096x4096,tenferro-trace,,,unsupported,TensorValue view metadata APIs are concrete-only; traced tensors use graph operations
+cpu/view_metadata,slice_view,f64,4,4194304 -> 2096128,tenferro-eager,0.000250,0.000084,ok,metadata-only strided slice view; no output-sized copy
+cpu/view_metadata,slice_view,f64,4,4194304 -> 2096128,tenferro-trace,,,unsupported,TensorValue view metadata APIs are concrete-only; traced tensors use graph operations
+cpu/view_metadata,broadcast_in_dim_view,f64,4,8192x1 -> 8192x4096,tenferro-eager,0.000125,0.000041,ok,metadata-only zero-stride broadcast view; no output-sized copy
+cpu/view_metadata,broadcast_in_dim_view,f64,4,8192x1 -> 8192x4096,tenferro-trace,,,unsupported,TensorValue view metadata APIs are concrete-only; traced tensors use graph operations
+cpu/output_reuse,add_into,f64,4,33554432,tenferro-eager,5.836334,0.712000,ok,caller-owned output
+cpu/output_reuse,add_into,f64,4,33554432,tenferro-trace,,,unsupported,compiled traced execution owns its output tensors; no caller-output API
+cpu/output_reuse,sub_into,f64,4,33554432,tenferro-eager,5.567000,0.801084,ok,caller-owned output
+cpu/output_reuse,sub_into,f64,4,33554432,tenferro-trace,,,unsupported,compiled traced execution owns its output tensors; no caller-output API
+cpu/output_reuse,mul_into,f64,4,33554432,tenferro-eager,5.601834,0.600792,ok,caller-owned output
+cpu/output_reuse,mul_into,f64,4,33554432,tenferro-trace,,,unsupported,compiled traced execution owns its output tensors; no caller-output API
+cpu/output_reuse,div_into,f64,4,33554432,tenferro-eager,5.034042,0.281875,ok,caller-owned output
+cpu/output_reuse,div_into,f64,4,33554432,tenferro-trace,,,unsupported,compiled traced execution owns its output tensors; no caller-output API
+cpu/output_reuse,neg_into,f64,4,33554432,tenferro-eager,2.997292,0.123708,ok,caller-owned output
+cpu/output_reuse,neg_into,f64,4,33554432,tenferro-trace,,,unsupported,compiled traced execution owns its output tensors; no caller-output API
+cpu/output_reuse,conj_into,c64,4,16777216,tenferro-eager,1.888583,0.092875,ok,physical conjugate into caller-owned output
+cpu/output_reuse,conj_into,c64,4,16777216,tenferro-trace,,,unsupported,compiled traced execution owns its output tensors; no caller-output API
+cpu/output_reuse,copy_read_into,f64,4,33554432,tenferro-eager,1.625167,0.059041,ok,copy into caller-owned output
+cpu/output_reuse,copy_read_into,f64,4,33554432,tenferro-trace,,,unsupported,compiled traced execution owns its output tensors; no caller-output API
+cpu/output_reuse,dot_general_read_into,f64,4,1024x1024,tenferro-eager,4.678917,0.223875,ok,matrix multiply into caller-owned output
+cpu/output_reuse,dot_general_read_into,f64,4,1024x1024,tenferro-trace,,,unsupported,compiled traced execution owns its output tensors; no caller-output API
+cpu/output_reuse,dot_general_read_into_accum,f64,4,1024x1024,tenferro-eager,5.369667,0.410875,ok,out = lhs @ rhs + out
+cpu/output_reuse,dot_general_read_into_accum,f64,4,1024x1024,tenferro-trace,,,unsupported,compiled traced execution owns its output tensors; no caller-output API
+cpu/einsum_concrete,einsum_ij_jk_ik,f64,4,1024x1024,tenferro-eager,5.210000,0.902084,ok,TensorEinsumExt allocation-returning API
+cpu/einsum_concrete,einsum_ij_jk_ik,f64,4,1024x1024,tenferro-trace,,,unsupported,TensorEinsumExt is a concrete Tensor API; traced einsum is measured by cpu/einsum
+cpu/linalg_uncovered,cholesky,f64,4,1536x1536,tenferro-eager,4.650916,0.797291,ok,SPD input
+cpu/linalg_uncovered,cholesky,f64,4,1536x1536,tenferro-trace,4.749959,0.127041,ok,SPD input
+cpu/linalg_uncovered,eig,f64,4,160x160,tenferro-eager,4.474083,0.061625,ok,general input
+cpu/linalg_uncovered,eig,f64,4,160x160,tenferro-trace,4.461833,0.037208,ok,general input
+cpu/linalg_uncovered,eigvals,f64,4,192x192,tenferro-eager,4.643083,0.057625,ok,general input values only
+cpu/linalg_uncovered,eigvals,f64,4,192x192,tenferro-trace,4.703333,0.067083,ok,general input values only
+cpu/linalg_uncovered,eigvalsh,f64,4,512x512,tenferro-eager,14.750500,0.089042,ok,SPD input values only
+cpu/linalg_uncovered,eigvalsh,f64,4,512x512,tenferro-trace,14.847333,0.092750,ok,SPD input values only
+cpu/linalg_uncovered,triangular_solve,f64,4,"4096x4096,rhs=64",tenferro-eager,5.409542,0.159793,ok,lower-triangular solve
+cpu/linalg_uncovered,triangular_solve,f64,4,"4096x4096,rhs=64",tenferro-trace,7.106583,0.236583,ok,lower-triangular solve
+cpu/linalg_uncovered,det,f64,4,1024x1024,tenferro-eager,4.575333,0.221541,ok,well-conditioned input
+cpu/linalg_uncovered,det,f64,4,1024x1024,tenferro-trace,4.476625,0.106500,ok,well-conditioned input
+cpu/linalg_uncovered,slogdet,f64,4,1024x1024,tenferro-eager,4.425041,0.139334,ok,well-conditioned input
+cpu/linalg_uncovered,slogdet,f64,4,1024x1024,tenferro-trace,4.712958,0.183917,ok,well-conditioned input
+cpu/linalg_uncovered,inv,f64,4,768x768,tenferro-eager,7.302833,0.433500,ok,well-conditioned input
+cpu/linalg_uncovered,inv,f64,4,768x768,tenferro-trace,6.939750,0.134833,ok,well-conditioned input
+cpu/linalg_uncovered,pinv,f64,4,512x256,tenferro-eager,6.796750,0.082750,ok,rectangular input
+cpu/linalg_uncovered,pinv,f64,4,512x256,tenferro-trace,6.947708,0.120542,ok,rectangular input
+cpu/linalg_uncovered,pinv_with_rtol,f64,4,512x256,tenferro-eager,6.776000,0.048375,ok,rectangular input; rtol=1e-12
+cpu/linalg_uncovered,pinv_with_rtol,f64,4,512x256,tenferro-trace,6.889208,0.070958,ok,rectangular input; rtol=1e-12
+cpu/linalg_uncovered,lu,f64,4,1024x1024,tenferro-eager,4.197542,0.107750,ok,partial-pivot LU
+cpu/linalg_uncovered,lu,f64,4,1024x1024,tenferro-trace,4.422375,0.082083,ok,partial-pivot LU
+cpu/linalg_uncovered,lstsq,f64,4,"768x384,rhs=16",tenferro-eager,5.878917,0.139791,ok,tall full-column-rank QR least-squares solve
+cpu/linalg_uncovered,lstsq,f64,4,"768x384,rhs=16",tenferro-trace,5.673792,0.053251,ok,tall full-column-rank QR least-squares solve
+cpu/linalg_uncovered,svd_full,f64,4,768x384,tenferro-eager,,,unsupported,svd_full: extension tenferro-linalg.linalg.v1 failed: svd_full: unsupported operation: CPU LAPACK provider does not implement full-matrices SVD; use the faer provider for full SVD
+cpu/linalg_uncovered,svd_full,f64,4,768x384,tenferro-trace,,,unsupported,svd_full: unsupported operation: CPU LAPACK provider does not implement full-matrices SVD; use the faer provider for full SVD
+cpu/linalg_uncovered,norm_fro,f64,4,2048x2048,tenferro-eager,0.575292,0.026334,ok,Frobenius norm
+cpu/linalg_uncovered,norm_fro,f64,4,2048x2048,tenferro-trace,0.602333,0.033416,ok,Frobenius norm
+cpu/complex,conj,c64,4,16777216,tenferro-eager,2.842209,0.139375,ok,complex elementwise
+cpu/complex,conj,c64,4,16777216,tenferro-trace,2.866708,0.087584,ok,complex elementwise
+cpu/complex,mul,c64,4,8388608,tenferro-eager,1.463041,0.106124,ok,complex elementwise
+cpu/complex,mul,c64,4,8388608,tenferro-trace,1.889000,0.067209,ok,complex elementwise
+cpu/complex,div,c64,4,8388608,tenferro-eager,1.587333,0.031667,ok,complex elementwise
+cpu/complex,div,c64,4,8388608,tenferro-trace,1.675250,0.087209,ok,complex elementwise
+cpu/complex,exp,c64,4,4194304,tenferro-eager,5.612625,0.901875,ok,complex analytic
+cpu/complex,exp,c64,4,4194304,tenferro-trace,5.438292,0.069209,ok,complex analytic
+cpu/complex,log,c64,4,4194304,tenferro-eager,6.624875,0.048084,ok,complex analytic
+cpu/complex,log,c64,4,4194304,tenferro-trace,7.278709,0.344625,ok,complex analytic
+cpu/complex,dot_general,c64,4,640x640,tenferro-eager,5.856750,0.583542,ok,complex matrix multiply
+cpu/complex,dot_general,c64,4,640x640,tenferro-trace,6.295625,0.290667,ok,complex matrix multiply
+cpu/complex,dot_general_with_conj,c64,4,640x640,tenferro-eager,5.995041,0.152959,ok,conjugated-lhs complex matrix multiply
+cpu/complex,dot_general_with_conj,c64,4,640x640,tenferro-trace,,,unsupported,no public TracedTensor dot_general_with_conj API; an explicit conj+dot graph is different work
+cpu/complex,tensordot,c64,4,640x640,tenferro-eager,5.836959,0.160208,ok,complex matrix contraction over one axis
+cpu/complex,tensordot,c64,4,640x640,tenferro-trace,6.054792,0.209250,ok,complex matrix contraction over one axis
+cpu/complex,svd,c64,4,160x160,tenferro-eager,4.007792,0.039959,ok,complex SVD
+cpu/complex,svd,c64,4,160x160,tenferro-trace,4.031292,0.039750,ok,complex SVD
+cpu/complex,qr,c64,4,256x256,tenferro-eager,4.789375,0.036125,ok,complex QR
+cpu/complex,qr,c64,4,256x256,tenferro-trace,4.849708,0.040500,ok,complex QR
+cpu/complex,eig,c64,4,112x112,tenferro-eager,5.942500,0.036166,ok,complex eig
+cpu/complex,eig,c64,4,112x112,tenferro-trace,5.981917,0.040167,ok,complex eig
+cpu/complex,solve,c64,4,"384x384,rhs=8",tenferro-eager,3.586167,0.067750,ok,complex solve
+cpu/complex,solve,c64,4,"384x384,rhs=8",tenferro-trace,3.666083,0.221001,ok,complex solve
+cpu/complex,cholesky,c64,4,448x448,tenferro-eager,2.475125,0.116001,ok,Hermitian positive definite
+cpu/complex,cholesky,c64,4,448x448,tenferro-trace,2.534792,0.090917,ok,Hermitian positive definite
+cpu/complex,norm_fro,c64,4,2048x1536,tenferro-eager,2.291375,0.120417,ok,complex Frobenius norm
+cpu/complex,norm_fro,c64,4,2048x1536,tenferro-trace,1.449834,0.057500,ok,complex Frobenius norm
+cpu/elementwise_reduction,add,f64,4,33554432,pytorch-cpu,2.635959,0.153083,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,sub,f64,4,33554432,pytorch-cpu,2.660958,0.108958,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,mul,f64,4,33554432,pytorch-cpu,2.614875,0.103166,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,div,f64,4,33554432,pytorch-cpu,2.643584,0.185501,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,rem,f64,4,8388608,pytorch-cpu,6.391583,0.064584,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,neg,f64,4,33554432,pytorch-cpu,1.605667,0.078833,ok,unary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,abs,f64,4,33554432,pytorch-cpu,1.623666,0.099832,ok,unary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,sign,f64,4,33554432,pytorch-cpu,1.742209,0.042041,ok,unary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,maximum,f64,4,33554432,pytorch-cpu,2.597042,0.139916,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,minimum,f64,4,33554432,pytorch-cpu,2.616125,0.085708,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,compare_lt,f64,4,33554432,pytorch-cpu,2.905667,0.037082,ok,ordered compare; input allocation outside timed region
+cpu/elementwise_reduction,select,f64,4,33554432,pytorch-cpu,3.634750,0.050667,ok,ternary select; input allocation outside timed region
+cpu/elementwise_reduction,clamp,f64,4,8388608,pytorch-cpu,0.886875,0.039208,ok,clamp with tensor bounds; input allocation outside timed region
+cpu/elementwise_reduction,exp,f64,4,8388608,pytorch-cpu,4.412750,0.023584,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,log,f64,4,8388608,pytorch-cpu,5.698708,0.429583,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,sin,f64,4,8388608,pytorch-cpu,3.898250,0.135417,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,cos,f64,4,8388608,pytorch-cpu,4.674291,0.260958,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,tanh,f64,4,8388608,pytorch-cpu,9.538833,0.244791,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,sqrt,f64,4,33554432,pytorch-cpu,2.045750,0.047417,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,rsqrt,f64,4,33554432,pytorch-cpu,3.150292,0.108082,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,pow,f64,4,4194304,pytorch-cpu,11.566500,1.699583,ok,binary analytic with tensor exponent; input allocation outside timed region
+cpu/elementwise_reduction,expm1,f64,4,4194304,pytorch-cpu,4.009125,0.196084,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,log1p,f64,4,4194304,pytorch-cpu,2.950750,0.094375,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,chain_log1p_exp_mul,f64,4,4194304,pytorch-cpu,5.371375,0.264583,ok,short elementwise chain; input allocation outside timed region
+cpu/elementwise_reduction,reduce_sum_all,f64,4,8192x4096,pytorch-cpu,0.999292,0.072666,ok,full reduction; input allocation outside timed region
+cpu/elementwise_reduction,reduce_prod_all,f64,4,8192x4096,pytorch-cpu,1.006584,0.045250,ok,full reduction; input allocation outside timed region
+cpu/elementwise_reduction,reduce_max_axis0,f64,4,2048x2048,pytorch-cpu,4.875000,0.256541,ok,axis reduction; input allocation outside timed region
+cpu/elementwise_reduction,reduce_min_axis1,f64,4,4096x4096,pytorch-cpu,1.055959,0.042251,ok,axis reduction; input allocation outside timed region
+cpu/indexing_layout,gather,f64,4,262144,pytorch-cpu,0.163541,0.050126,ok,1D gather; input allocation outside timed region
+cpu/indexing_layout,scatter,f64,4,262144,pytorch-cpu,0.333250,0.025292,ok,1D scatter; input allocation outside timed region
+cpu/indexing_layout,slice,f64,4,4194304 -> 2096128,pytorch-cpu,0.152500,0.029917,ok,static slice materialized to owned output; input allocation outside timed region
+cpu/indexing_layout,dynamic_slice,f64,4,4194304 -> 2097152,pytorch-cpu,0.087542,0.010792,ok,runtime-start slice materialized to owned output; input allocation outside timed region
+cpu/indexing_layout,dynamic_update_slice,f64,4,2097152,pytorch-cpu,0.170250,0.031667,ok,runtime-start update; input allocation outside timed region
+cpu/indexing_layout,pad,f64,4,2097152,pytorch-cpu,0.175333,0.007167,ok,edge padding; input allocation outside timed region
+cpu/indexing_layout,concatenate,f64,4,1048576+1048576,pytorch-cpu,0.128209,0.011709,ok,concatenate along axis 0; input allocation outside timed region
+cpu/indexing_layout,reverse,f64,4,2097152,pytorch-cpu,0.120459,0.032709,ok,reverse axis 0; input allocation outside timed region
+cpu/structural_shape,transpose,f64,4,4096x4096,pytorch-cpu,19.007334,0.142541,ok,materialized matrix transpose; input allocation outside timed region
+cpu/structural_shape,reshape,f64,4,33554432 -> 8192x4096,pytorch-cpu,1.588459,0.096958,ok,materialized reshape; clone makes PyTorch perform the same output-sized write; input allocation outside timed region
+cpu/structural_shape,broadcast_in_dim,f64,4,8192x1 -> 8192x4096,pytorch-cpu,1.075458,0.165000,ok,materialized broadcast; input allocation outside timed region
+cpu/structural_shape,cast_f64_f32,f64->f32,4,33554432,pytorch-cpu,1.321584,0.079750,ok,dtype cast; input allocation outside timed region
+cpu/structural_shape,extract_diagonal,f64,4,8388608x2x2 -> 8388608x2,pytorch-cpu,1.829792,0.056667,ok,batched matrix diagonal extraction; input allocation outside timed region
+cpu/structural_shape,embed_diagonal,f64,4,8192 -> 8192x8192,pytorch-cpu,1.989084,0.268125,ok,embed vector as matrix diagonal; input allocation outside timed region
+cpu/structural_shape,tril,f64,4,4096x4096,pytorch-cpu,1.348125,0.042084,ok,lower triangle; input allocation outside timed region
+cpu/structural_shape,triu,f64,4,4096x4096,pytorch-cpu,1.195750,0.019041,ok,upper triangle; input allocation outside timed region
+cpu/view_metadata,reshape_view,f64,4,33554432 -> 8192x4096,pytorch-cpu,0.000542,0.000042,ok,metadata-only view reshape; no output-sized copy; input allocation outside timed region
+cpu/view_metadata,transpose_view,f64,4,4096x4096,pytorch-cpu,0.000584,0.000042,ok,metadata-only transpose view; no output-sized copy; input allocation outside timed region
+cpu/view_metadata,slice_view,f64,4,4194304 -> 2096128,pytorch-cpu,0.000500,0.000041,ok,metadata-only strided slice view; no output-sized copy; input allocation outside timed region
+cpu/view_metadata,broadcast_in_dim_view,f64,4,8192x1 -> 8192x4096,pytorch-cpu,0.000541,0.000042,ok,metadata-only zero-stride broadcast view; no output-sized copy; input allocation outside timed region
+cpu/output_reuse,add_into,f64,4,33554432,pytorch-cpu,2.591125,0.078041,ok,torch.add out= caller-owned output; input allocation outside timed region
+cpu/output_reuse,sub_into,f64,4,33554432,pytorch-cpu,2.589959,0.137625,ok,torch.sub out= caller-owned output; input allocation outside timed region
+cpu/output_reuse,mul_into,f64,4,33554432,pytorch-cpu,2.599167,0.133417,ok,torch.mul out= caller-owned output; input allocation outside timed region
+cpu/output_reuse,div_into,f64,4,33554432,pytorch-cpu,2.645542,0.154000,ok,torch.div out= caller-owned output; input allocation outside timed region
+cpu/output_reuse,neg_into,f64,4,33554432,pytorch-cpu,1.594250,0.082001,ok,torch.neg out= caller-owned output; input allocation outside timed region
+cpu/output_reuse,conj_into,c64,4,16777216,pytorch-cpu,1.644792,0.117000,ok,torch.conj_physical out= caller-owned output; input allocation outside timed region
+cpu/output_reuse,copy_read_into,f64,4,33554432,pytorch-cpu,1.610416,0.083083,ok,Tensor.copy_ caller-owned output; input allocation outside timed region
+cpu/output_reuse,dot_general_read_into,f64,4,1024x1024,pytorch-cpu,4.799083,0.206625,ok,torch.mm out= caller-owned output; input allocation outside timed region
+cpu/output_reuse,dot_general_read_into_accum,f64,4,1024x1024,pytorch-cpu,5.352917,0.203125,ok,torch.addmm out = lhs @ rhs + out; input allocation outside timed region
+cpu/einsum_concrete,einsum_ij_jk_ik,f64,4,1024x1024,pytorch-cpu,4.909625,0.362083,ok,torch.einsum allocation-returning API; input allocation outside timed region
+cpu/linalg_uncovered,cholesky,f64,4,1536x1536,pytorch-cpu,8.034750,0.180292,ok,SPD input; input allocation outside timed region
+cpu/linalg_uncovered,eig,f64,4,160x160,pytorch-cpu,4.499167,0.096791,ok,general input; input allocation outside timed region
+cpu/linalg_uncovered,eigvals,f64,4,192x192,pytorch-cpu,4.737000,0.224251,ok,general input values only; input allocation outside timed region
+cpu/linalg_uncovered,eigvalsh,f64,4,512x512,pytorch-cpu,15.244000,0.123292,ok,SPD input values only; input allocation outside timed region
+cpu/linalg_uncovered,triangular_solve,f64,4,"4096x4096,rhs=64",pytorch-cpu,3.867584,0.075585,ok,lower-triangular solve; input allocation outside timed region
+cpu/linalg_uncovered,det,f64,4,1024x1024,pytorch-cpu,4.139458,0.229584,ok,well-conditioned input; input allocation outside timed region
+cpu/linalg_uncovered,slogdet,f64,4,1024x1024,pytorch-cpu,4.212667,0.217334,ok,well-conditioned input; input allocation outside timed region
+cpu/linalg_uncovered,inv,f64,4,768x768,pytorch-cpu,5.466666,0.132082,ok,well-conditioned input; input allocation outside timed region
+cpu/linalg_uncovered,pinv,f64,4,512x256,pytorch-cpu,6.670083,0.083624,ok,rectangular input; input allocation outside timed region
+cpu/linalg_uncovered,pinv_with_rtol,f64,4,512x256,pytorch-cpu,6.548500,0.063500,ok,rectangular input; rtol=1e-12; input allocation outside timed region
+cpu/linalg_uncovered,lu,f64,4,1024x1024,pytorch-cpu,5.687750,0.295916,ok,partial-pivot LU; input allocation outside timed region
+cpu/linalg_uncovered,lstsq,f64,4,"768x384,rhs=16",pytorch-cpu,3.196458,0.033584,ok,tall full-column-rank QR least-squares solve; GEL driver; solution output; input allocation outside timed region
+cpu/linalg_uncovered,svd_full,f64,4,768x384,pytorch-cpu,19.213375,0.156625,ok,full-matrices SVD; input allocation outside timed region
+cpu/linalg_uncovered,norm_fro,f64,4,2048x2048,pytorch-cpu,1.281333,0.017417,ok,Frobenius norm; input allocation outside timed region
+cpu/complex,conj,c64,4,16777216,pytorch-cpu,1.595125,0.091625,ok,physical complex conjugate output; input allocation outside timed region
+cpu/complex,mul,c64,4,8388608,pytorch-cpu,1.468709,0.057626,ok,complex elementwise; input allocation outside timed region
+cpu/complex,div,c64,4,8388608,pytorch-cpu,2.836667,0.036292,ok,complex elementwise; input allocation outside timed region
+cpu/complex,exp,c64,4,4194304,pytorch-cpu,5.948042,0.045042,ok,complex analytic; input allocation outside timed region
+cpu/complex,log,c64,4,4194304,pytorch-cpu,7.048791,0.214542,ok,complex analytic; input allocation outside timed region
+cpu/complex,dot_general,c64,4,640x640,pytorch-cpu,5.713958,0.200041,ok,complex matrix multiply; input allocation outside timed region
+cpu/complex,dot_general_with_conj,c64,4,640x640,pytorch-cpu,5.842750,0.163792,ok,conjugated-lhs matrix multiply using PyTorch's lazy conjugate view; input allocation outside timed region
+cpu/complex,tensordot,c64,4,640x640,pytorch-cpu,5.704583,0.091333,ok,complex matrix contraction over one axis; input allocation outside timed region
+cpu/complex,svd,c64,4,160x160,pytorch-cpu,3.964208,0.053458,ok,complex SVD; input allocation outside timed region
+cpu/complex,qr,c64,4,256x256,pytorch-cpu,4.870833,0.052083,ok,complex QR; input allocation outside timed region
+cpu/complex,eig,c64,4,112x112,pytorch-cpu,5.919333,0.038166,ok,complex eig; input allocation outside timed region
+cpu/complex,solve,c64,4,"384x384,rhs=8",pytorch-cpu,3.330333,0.084750,ok,complex solve; input allocation outside timed region
+cpu/complex,cholesky,c64,4,448x448,pytorch-cpu,2.511083,0.068916,ok,Hermitian positive definite; input allocation outside timed region
+cpu/complex,norm_fro,c64,4,2048x1536,pytorch-cpu,0.945042,0.009209,ok,complex Frobenius norm; input allocation outside timed region
+cpu/elementwise_reduction,add,f64,4,33554432,jax-cpu,3.477542,0.056417,ok,binary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,sub,f64,4,33554432,jax-cpu,3.461542,0.082459,ok,binary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,mul,f64,4,33554432,jax-cpu,3.438959,0.089083,ok,binary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,div,f64,4,33554432,jax-cpu,3.482834,0.058626,ok,binary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,neg,f64,4,33554432,jax-cpu,2.041833,0.049208,ok,unary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,abs,f64,4,33554432,jax-cpu,2.070916,0.201083,ok,unary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,sign,f64,4,33554432,jax-cpu,2.716792,0.023875,ok,unary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,maximum,f64,4,33554432,jax-cpu,3.558500,0.136417,ok,binary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,minimum,f64,4,33554432,jax-cpu,3.471833,0.086708,ok,binary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,compare_lt,f64,4,33554432,jax-cpu,2.357291,0.080708,ok,ordered compare; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,select,f64,4,33554432,jax-cpu,3.730208,0.488083,ok,ternary select; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,sqrt,f64,4,33554432,jax-cpu,2.051375,0.111792,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,rsqrt,f64,4,33554432,jax-cpu,4.956291,0.061250,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,rem,f64,4,8388608,jax-cpu,3.840208,0.215208,ok,binary elementwise; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,clamp,f64,4,8388608,jax-cpu,1.861209,0.041291,ok,clamp with tensor bounds; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,exp,f64,4,8388608,jax-cpu,2.354709,0.310667,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,log,f64,4,8388608,jax-cpu,3.221125,0.387334,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,sin,f64,4,8388608,jax-cpu,2.715500,0.396208,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,cos,f64,4,8388608,jax-cpu,2.761000,0.174665,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,tanh,f64,4,8388608,jax-cpu,1.882042,0.094333,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,pow,f64,4,4194304,jax-cpu,4.082417,0.339334,ok,binary analytic with tensor exponent; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,expm1,f64,4,4194304,jax-cpu,2.430750,0.328250,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,log1p,f64,4,4194304,jax-cpu,2.458708,0.514416,ok,analytic unary; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,chain_log1p_exp_mul,f64,4,4194304,jax-cpu,4.061750,0.335082,ok,short elementwise chain; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,reduce_sum_all,f64,4,8192x4096,jax-cpu,3.776375,0.055585,ok,full reduction; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,reduce_prod_all,f64,4,8192x4096,jax-cpu,4.380125,0.132543,ok,full reduction; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,reduce_max_axis0,f64,4,2048x2048,jax-cpu,0.403500,0.022417,ok,axis reduction; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,reduce_min_axis1,f64,4,4096x4096,jax-cpu,0.633833,0.026749,ok,axis reduction; inputs and XLA compilation outside timed region
+cpu/indexing_layout,gather,f64,4,262144,jax-cpu,0.081959,0.004417,ok,1D gather; inputs and XLA compilation outside timed region
+cpu/indexing_layout,scatter,f64,4,262144,jax-cpu,0.226000,0.014667,ok,1D scatter; inputs and XLA compilation outside timed region
+cpu/indexing_layout,slice,f64,4,4194304 -> 2096128,jax-cpu,0.280083,0.010791,ok,static slice materialized output; inputs and XLA compilation outside timed region
+cpu/indexing_layout,dynamic_slice,f64,4,4194304 -> 2097152,jax-cpu,0.118625,0.011500,ok,runtime-start slice; inputs and XLA compilation outside timed region
+cpu/indexing_layout,dynamic_update_slice,f64,4,2097152,jax-cpu,0.274291,0.013750,ok,runtime-start update; inputs and XLA compilation outside timed region
+cpu/indexing_layout,pad,f64,4,2097152,jax-cpu,0.124750,0.018042,ok,edge padding; inputs and XLA compilation outside timed region
+cpu/indexing_layout,concatenate,f64,4,1048576+1048576,jax-cpu,0.234250,0.003833,ok,concatenate along axis 0; inputs and XLA compilation outside timed region
+cpu/indexing_layout,reverse,f64,4,2097152,jax-cpu,0.119291,0.010709,ok,reverse axis 0; inputs and XLA compilation outside timed region
+cpu/structural_shape,transpose,f64,4,4096x4096,jax-cpu,3.579333,0.313208,ok,materialized matrix transpose; inputs and XLA compilation outside timed region
+cpu/structural_shape,reshape,f64,4,33554432 -> 8192x4096,jax-cpu,1.618750,0.171292,ok,materialized reshape; JAX arrays have value semantics and no public strided-view contract; inputs and XLA compilation outside timed region
+cpu/structural_shape,broadcast_in_dim,f64,4,8192x1 -> 8192x4096,jax-cpu,1.101958,0.034375,ok,materialized broadcast; inputs and XLA compilation outside timed region
+cpu/structural_shape,cast_f64_f32,f64->f32,4,33554432,jax-cpu,1.541417,0.095750,ok,dtype cast; inputs and XLA compilation outside timed region
+cpu/structural_shape,extract_diagonal,f64,4,8388608x2x2 -> 8388608x2,jax-cpu,1.494042,0.104000,ok,batched matrix diagonal extraction; inputs and XLA compilation outside timed region
+cpu/structural_shape,embed_diagonal,f64,4,8192 -> 8192x8192,jax-cpu,2.504416,0.062332,ok,embed vector as matrix diagonal; inputs and XLA compilation outside timed region
+cpu/structural_shape,tril,f64,4,4096x4096,jax-cpu,0.897709,0.058458,ok,lower triangle; inputs and XLA compilation outside timed region
+cpu/structural_shape,triu,f64,4,4096x4096,jax-cpu,0.866125,0.029666,ok,upper triangle; inputs and XLA compilation outside timed region
+cpu/einsum_concrete,einsum_ij_jk_ik,f64,4,1024x1024,jax-cpu,2.742208,0.076833,ok,jnp.einsum allocation-returning API; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,cholesky,f64,4,1536x1536,jax-cpu,4.984250,0.204375,ok,SPD input; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,eig,f64,4,160x160,jax-cpu,5.430667,0.117667,ok,general input; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,eigvals,f64,4,192x192,jax-cpu,4.458042,0.069125,ok,general input values only; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,eigvalsh,f64,4,512x512,jax-cpu,12.570416,0.037959,ok,SPD input values only; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,triangular_solve,f64,4,"4096x4096,rhs=64",jax-cpu,9.933958,0.272125,ok,lower-triangular solve; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,det,f64,4,1024x1024,jax-cpu,3.867667,0.216917,ok,well-conditioned input; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,slogdet,f64,4,1024x1024,jax-cpu,3.857083,0.221876,ok,well-conditioned input; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,inv,f64,4,768x768,jax-cpu,5.266166,0.175458,ok,well-conditioned input; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,pinv,f64,4,512x256,jax-cpu,6.527084,0.114667,ok,rectangular input; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,pinv_with_rtol,f64,4,512x256,jax-cpu,6.466500,0.108459,ok,rectangular input; rtol=1e-12; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,lu,f64,4,1024x1024,jax-cpu,4.539791,0.212375,ok,partial-pivot LU; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,lstsq,f64,4,"768x384,rhs=16",jax-cpu,13.304875,0.073500,ok,tall full-column-rank least-squares solve; solution output; JAX chooses its native solver; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,svd_full,f64,4,768x384,jax-cpu,18.948875,0.157042,ok,full-matrices SVD; inputs and XLA compilation outside timed region
+cpu/linalg_uncovered,norm_fro,f64,4,2048x2048,jax-cpu,0.725083,0.085751,ok,Frobenius norm; inputs and XLA compilation outside timed region
+cpu/complex,conj,c64,4,16777216,jax-cpu,1.823209,0.112917,ok,physical complex conjugate output; inputs and XLA compilation outside timed region
+cpu/complex,mul,c64,4,8388608,jax-cpu,1.515125,0.088458,ok,complex elementwise; inputs and XLA compilation outside timed region
+cpu/complex,div,c64,4,8388608,jax-cpu,6.252250,0.061459,ok,complex elementwise; inputs and XLA compilation outside timed region
+cpu/complex,exp,c64,4,4194304,jax-cpu,5.517292,0.202292,ok,complex analytic; inputs and XLA compilation outside timed region
+cpu/complex,log,c64,4,4194304,jax-cpu,4.329458,0.240625,ok,complex analytic; inputs and XLA compilation outside timed region
+cpu/complex,dot_general,c64,4,640x640,jax-cpu,2.996625,0.202583,ok,complex matrix multiply; inputs and XLA compilation outside timed region
+cpu/complex,dot_general_with_conj,c64,4,640x640,jax-cpu,3.050584,0.247958,ok,conjugated-lhs complex matrix multiply; inputs and XLA compilation outside timed region
+cpu/complex,tensordot,c64,4,640x640,jax-cpu,3.071875,0.225792,ok,complex matrix contraction over one axis; inputs and XLA compilation outside timed region
+cpu/complex,svd,c64,4,160x160,jax-cpu,2.755375,0.034000,ok,complex SVD; inputs and XLA compilation outside timed region
+cpu/complex,qr,c64,4,256x256,jax-cpu,3.644791,0.030792,ok,complex QR; inputs and XLA compilation outside timed region
+cpu/complex,eig,c64,4,112x112,jax-cpu,10.070333,0.054959,ok,complex eig; inputs and XLA compilation outside timed region
+cpu/complex,solve,c64,4,"384x384,rhs=8",jax-cpu,1.326625,0.038292,ok,complex solve; inputs and XLA compilation outside timed region
+cpu/complex,cholesky,c64,4,448x448,jax-cpu,0.756167,0.027000,ok,Hermitian positive definite; inputs and XLA compilation outside timed region
+cpu/complex,norm_fro,c64,4,2048x1536,jax-cpu,0.693958,0.026750,ok,complex Frobenius norm; inputs and XLA compilation outside timed region
+cpu/elementwise_reduction,add,f64,4,33554432,julia-base,6.824083,0.237499,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,add,f64,4,33554432,strided-jl,6.62925,10.960791,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,sub,f64,4,33554432,julia-base,6.780459,0.258124,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,sub,f64,4,33554432,strided-jl,3.350417,2.492208,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,mul,f64,4,33554432,julia-base,6.728417,0.032167,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,mul,f64,4,33554432,strided-jl,3.319083,9.370459,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,div,f64,4,33554432,julia-base,6.889,0.284041,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,div,f64,4,33554432,strided-jl,3.187417,2.384292,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,neg,f64,4,33554432,julia-base,4.602834,0.075083,ok,unary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,neg,f64,4,33554432,strided-jl,2.8035,2.862376,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,abs,f64,4,33554432,julia-base,4.532959,0.2025,ok,unary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,abs,f64,4,33554432,strided-jl,2.823375,2.282625,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,sign,f64,4,33554432,julia-base,4.544916,0.127333,ok,unary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,sign,f64,4,33554432,strided-jl,3.409125,2.453709,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,maximum,f64,4,33554432,julia-base,6.717208,0.228375,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,maximum,f64,4,33554432,strided-jl,3.190584,2.327125,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,minimum,f64,4,33554432,julia-base,6.706625,0.234083,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,minimum,f64,4,33554432,strided-jl,3.139375,2.269958,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,compare_lt,f64,4,33554432,julia-base,5.854417,0.068251,ok,ordered compare; input allocation outside timed region
+cpu/elementwise_reduction,select,f64,4,33554432,julia-base,7.960542,0.118542,ok,ternary select; input allocation outside timed region
+cpu/elementwise_reduction,sqrt,f64,4,33554432,julia-base,15.769583,0.098625,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,sqrt,f64,4,33554432,strided-jl,4.122625,2.38475,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,rsqrt,f64,4,33554432,julia-base,23.672542,0.181917,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,rsqrt,f64,4,33554432,strided-jl,6.553958,2.492541,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,rem,f64,4,8388608,julia-base,13.321875,0.943916,ok,binary elementwise; input allocation outside timed region
+cpu/elementwise_reduction,rem,f64,4,8388608,strided-jl,3.637625,0.528209,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,clamp,f64,4,8388608,julia-base,2.240084,0.218958,ok,clamp with tensor bounds; input allocation outside timed region
+cpu/elementwise_reduction,clamp,f64,4,8388608,strided-jl,1.560542,2.861916,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,exp,f64,4,8388608,julia-base,16.779,0.178626,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,exp,f64,4,8388608,strided-jl,5.960541,1.029166,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,log,f64,4,8388608,julia-base,22.653958,0.131709,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,log,f64,4,8388608,strided-jl,5.948917,0.460125,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,sin,f64,4,8388608,julia-base,17.374375,0.211625,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,sin,f64,4,8388608,strided-jl,4.435416,0.411333,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,cos,f64,4,8388608,julia-base,20.521542,0.158375,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,cos,f64,4,8388608,strided-jl,5.511417,0.541084,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,tanh,f64,4,8388608,julia-base,23.542708,0.118624,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,tanh,f64,4,8388608,strided-jl,6.188416,0.441834,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,pow,f64,4,4194304,julia-base,31.674375,1.33925,ok,binary analytic with tensor exponent; input allocation outside timed region
+cpu/elementwise_reduction,pow,f64,4,4194304,strided-jl,8.324417,0.666,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,expm1,f64,4,4194304,julia-base,12.738875,0.18525,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,expm1,f64,4,4194304,strided-jl,3.3245,0.42575,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,log1p,f64,4,4194304,julia-base,12.294125,0.192375,ok,analytic unary; input allocation outside timed region
+cpu/elementwise_reduction,log1p,f64,4,4194304,strided-jl,3.263916,0.438166,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,chain_log1p_exp_mul,f64,4,4194304,julia-base,21.168958,0.09925,ok,short elementwise chain; input allocation outside timed region
+cpu/elementwise_reduction,chain_log1p_exp_mul,f64,4,4194304,strided-jl,5.783792,0.4005,ok,@strided fused broadcast; input allocation outside timed region
+cpu/elementwise_reduction,reduce_sum_all,f64,4,8192x4096,julia-base,3.0875,0.128667,ok,full reduction; input allocation outside timed region
+cpu/elementwise_reduction,reduce_prod_all,f64,4,8192x4096,julia-base,3.094416,0.049083,ok,full reduction; input allocation outside timed region
+cpu/elementwise_reduction,reduce_max_axis0,f64,4,2048x2048,julia-base,0.376292,0.014542,ok,axis reduction; input allocation outside timed region
+cpu/elementwise_reduction,reduce_min_axis1,f64,4,4096x4096,julia-base,1.90925,0.039875,ok,axis reduction; input allocation outside timed region
+cpu/structural_shape,transpose,f64,4,4096x4096,julia-base,51.902042,2.227666,ok,materialized matrix transpose; input allocation outside timed region
+cpu/structural_shape,transpose,f64,4,4096x4096,strided-jl,22.04075,7.802084,ok,@strided permutedims; input allocation outside timed region
+cpu/structural_shape,reshape,f64,4,33554432 -> 8192x4096,julia-base,4.044792,0.055583,ok,materialized reshape; copy makes Julia perform the same output-sized write; input allocation outside timed region
+cpu/structural_shape,broadcast_in_dim,f64,4,8192x1 -> 8192x4096,julia-base,8.728084,0.259125,ok,materialized broadcast; input allocation outside timed region
+cpu/structural_shape,cast_f64_f32,f64->f32,4,33554432,julia-base,3.685542,0.069959,ok,dtype cast; input allocation outside timed region
+cpu/structural_shape,embed_diagonal,f64,4,8192 -> 8192x8192,julia-base,2.121875,0.089542,ok,embed vector as matrix diagonal; input allocation outside timed region
+cpu/structural_shape,tril,f64,4,4096x4096,julia-base,4.329542,0.061999,ok,lower triangle; input allocation outside timed region
+cpu/structural_shape,triu,f64,4,4096x4096,julia-base,4.06475,0.05575,ok,upper triangle; input allocation outside timed region
+cpu/linalg_uncovered,cholesky,f64,4,1536x1536,julia-base,10.534292,11.878083,ok,SPD input; factor materialized; input allocation outside timed region
+cpu/linalg_uncovered,eig,f64,4,160x160,julia-base,4.217875,0.128292,ok,general input; input allocation outside timed region
+cpu/linalg_uncovered,eigvals,f64,4,192x192,julia-base,4.62275,0.146707,ok,general input values only; input allocation outside timed region
+cpu/linalg_uncovered,eigvalsh,f64,4,512x512,julia-base,6.668625,0.231541,ok,SPD input values only; input allocation outside timed region
+cpu/linalg_uncovered,triangular_solve,f64,4,"4096x4096,rhs=64",julia-base,7.517167,0.255166,ok,lower-triangular solve; input allocation outside timed region
+cpu/linalg_uncovered,det,f64,4,1024x1024,julia-base,5.134375,0.490043,ok,well-conditioned input; input allocation outside timed region
+cpu/linalg_uncovered,slogdet,f64,4,1024x1024,julia-base,5.207333,0.459958,ok,well-conditioned input; input allocation outside timed region
+cpu/linalg_uncovered,inv,f64,4,768x768,julia-base,6.627959,0.552834,ok,well-conditioned input; input allocation outside timed region
+cpu/linalg_uncovered,pinv,f64,4,512x256,julia-base,9.828416,2.649667,ok,rectangular input; input allocation outside timed region
+cpu/linalg_uncovered,pinv_with_rtol,f64,4,512x256,julia-base,9.634459,0.309083,ok,rectangular input; rtol=1e-12; input allocation outside timed region
+cpu/linalg_uncovered,lu,f64,4,1024x1024,julia-base,7.539958,2.538166,ok,partial-pivot LU; P/L/U materialized; input allocation outside timed region
+cpu/linalg_uncovered,lstsq,f64,4,"768x384,rhs=16",julia-base,3.167625,0.213042,ok,tall full-column-rank QR least-squares solve; unpivoted QR to match the GELS driver; input allocation outside timed region
+cpu/linalg_uncovered,svd_full,f64,4,768x384,julia-base,29.973167,0.476292,ok,full-matrices SVD; input allocation outside timed region
+cpu/linalg_uncovered,norm_fro,f64,4,2048x2048,julia-base,3.949625,0.086958,ok,Frobenius norm; input allocation outside timed region
+cpu/indexing_layout,gather,f64,4,262144,julia-base,0.309625,0.035083,ok,1D gather; input allocation outside timed region
+cpu/indexing_layout,scatter,f64,4,262144,julia-base,0.252,0.093124,ok,1D scatter; input allocation outside timed region
+cpu/indexing_layout,slice,f64,4,4194304 -> 2096128,julia-base,0.576417,0.038167,ok,static slice materialized to owned output; input allocation outside timed region
+cpu/indexing_layout,dynamic_slice,f64,4,4194304 -> 2097152,julia-base,0.287708,0.010625,ok,runtime-start slice materialized to owned output; input allocation outside timed region
+cpu/indexing_layout,dynamic_update_slice,f64,4,2097152,julia-base,0.39825,0.008583,ok,runtime-start update; input allocation outside timed region
+cpu/indexing_layout,concatenate,f64,4,1048576+1048576,julia-base,0.287959,0.006083,ok,concatenate along axis 0; input allocation outside timed region
+cpu/indexing_layout,reverse,f64,4,2097152,julia-base,0.6145,0.017834,ok,reverse axis 0; input allocation outside timed region
+cpu/view_metadata,reshape_view,f64,4,33554432 -> 8192x4096,julia-base,0.0,4.2e-5,ok,metadata-only view reshape; no output-sized copy; input allocation outside timed region
+cpu/view_metadata,transpose_view,f64,4,4096x4096,julia-base,0.0,4.1e-5,ok,metadata-only transpose view; no output-sized copy; input allocation outside timed region
+cpu/view_metadata,slice_view,f64,4,4194304 -> 2096128,julia-base,0.0,4.1e-5,ok,metadata-only strided slice view; no output-sized copy; input allocation outside timed region
+cpu/output_reuse,add_into,f64,4,33554432,julia-base,6.673291,0.064251,ok,broadcast add into caller-owned output; input allocation outside timed region
+cpu/output_reuse,add_into,f64,4,33554432,strided-jl,2.940458,0.385333,ok,@strided fused broadcast into caller-owned output; input allocation outside timed region
+cpu/output_reuse,sub_into,f64,4,33554432,julia-base,6.561875,0.060375,ok,broadcast sub into caller-owned output; input allocation outside timed region
+cpu/output_reuse,sub_into,f64,4,33554432,strided-jl,3.103209,0.173292,ok,@strided fused broadcast into caller-owned output; input allocation outside timed region
+cpu/output_reuse,mul_into,f64,4,33554432,julia-base,6.567,0.049,ok,broadcast mul into caller-owned output; input allocation outside timed region
+cpu/output_reuse,mul_into,f64,4,33554432,strided-jl,3.098125,0.314041,ok,@strided fused broadcast into caller-owned output; input allocation outside timed region
+cpu/output_reuse,div_into,f64,4,33554432,julia-base,6.739792,0.098625,ok,broadcast div into caller-owned output; input allocation outside timed region
+cpu/output_reuse,div_into,f64,4,33554432,strided-jl,3.016084,0.133666,ok,@strided fused broadcast into caller-owned output; input allocation outside timed region
+cpu/output_reuse,neg_into,f64,4,33554432,julia-base,4.38925,0.054459,ok,broadcast neg into caller-owned output; input allocation outside timed region
+cpu/output_reuse,neg_into,f64,4,33554432,strided-jl,2.624584,0.637833,ok,@strided fused broadcast into caller-owned output; input allocation outside timed region
+cpu/output_reuse,conj_into,c64,4,16777216,julia-base,4.486875,0.060959,ok,broadcast conj into caller-owned output; input allocation outside timed region
+cpu/output_reuse,conj_into,c64,4,16777216,strided-jl,1.740084,0.3265,ok,@strided fused broadcast into caller-owned output; input allocation outside timed region
+cpu/output_reuse,copy_read_into,f64,4,33554432,julia-base,3.872625,0.1285,ok,copyto! caller-owned output; input allocation outside timed region
+cpu/output_reuse,dot_general_read_into,f64,4,1024x1024,julia-base,9.7295,0.222125,ok,mul! caller-owned output; input allocation outside timed region
+cpu/output_reuse,dot_general_read_into_accum,f64,4,1024x1024,julia-base,9.724458,0.295667,ok,mul! accumulate caller-owned output; input allocation outside timed region
+cpu/complex,conj,c64,4,16777216,julia-base,4.622084,0.177958,ok,physical complex conjugate output; input allocation outside timed region
+cpu/complex,conj,c64,4,16777216,strided-jl,11.342792,9.584125,ok,@strided fused broadcast; input allocation outside timed region
+cpu/complex,mul,c64,4,8388608,julia-base,3.728917,0.136667,ok,complex elementwise; input allocation outside timed region
+cpu/complex,mul,c64,4,8388608,strided-jl,4.33325,9.415292,ok,@strided fused broadcast; input allocation outside timed region
+cpu/complex,div,c64,4,8388608,julia-base,19.255792,0.551,ok,complex elementwise; input allocation outside timed region
+cpu/complex,div,c64,4,8388608,strided-jl,7.057708,2.752499,ok,@strided fused broadcast; input allocation outside timed region
+cpu/complex,exp,c64,4,4194304,julia-base,25.306125,3.006792,ok,complex analytic; input allocation outside timed region
+cpu/complex,exp,c64,4,4194304,strided-jl,7.122291,2.763875,ok,@strided fused broadcast; input allocation outside timed region
+cpu/complex,log,c64,4,4194304,julia-base,35.532208,0.151292,ok,complex analytic; input allocation outside timed region
+cpu/complex,log,c64,4,4194304,strided-jl,9.8085,1.988959,ok,@strided fused broadcast; input allocation outside timed region
+cpu/complex,dot_general,c64,4,640x640,julia-base,11.077083,0.424959,ok,complex matrix multiply; input allocation outside timed region
+cpu/complex,dot_general_with_conj,c64,4,640x640,julia-base,11.030125,0.258167,ok,conjugated-lhs matrix multiply; Julia materializes the conjugate before the contraction; input allocation outside timed region
+cpu/complex,tensordot,c64,4,640x640,julia-base,10.845333,0.328501,ok,complex matrix contraction over one axis; input allocation outside timed region
+cpu/complex,svd,c64,4,160x160,julia-base,2.935875,0.245249,ok,complex SVD; input allocation outside timed region
+cpu/complex,qr,c64,4,256x256,julia-base,3.016792,0.318333,ok,complex QR; Q/R materialized; input allocation outside timed region
+cpu/complex,eig,c64,4,112x112,julia-base,5.008,0.117083,ok,complex eig; input allocation outside timed region
+cpu/complex,solve,c64,4,"384x384,rhs=8",julia-base,1.526708,0.111542,ok,complex solve; input allocation outside timed region
+cpu/complex,cholesky,c64,4,448x448,julia-base,1.366334,0.328293,ok,Hermitian positive definite; factor materialized; input allocation outside timed region
+cpu/complex,norm_fro,c64,4,2048x1536,julia-base,5.955917,0.094291,ok,complex Frobenius norm; input allocation outside timed region
