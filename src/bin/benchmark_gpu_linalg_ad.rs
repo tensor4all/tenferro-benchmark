@@ -103,14 +103,15 @@ fn dispatch(
     let n_runs = yaml_usize(&problem["run"]["runs"], 7);
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
-        let transfer_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("transfer backend: {e}"))?;
+        // A clone shares the backend's runtime and allocation domain.
+        // Independently constructed backends target the same CUDA device but own
+        // distinct allocation domains, so tensors uploaded through the transfer
+        // backend are rejected by the compute engine and by the traced runtime.
         let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
         .map_err(|e| format!("compute backend: {e}"))?;
+        let transfer_bk = compute_bk.clone();
         let ad = problem["linalg_ad"]
             .as_mapping()
             .ok_or("missing linalg_ad block")?;

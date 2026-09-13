@@ -322,14 +322,15 @@ fn run_eager_tensor_network(
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
         let spec = TensorNetworkSpec::from_problem(problem, std::path::Path::new("."))?;
         let network = load_tensor_network(&spec.source)?;
-        let transfer_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("transfer backend: {e}"))?;
+        // A clone shares the backend's runtime and allocation domain.
+        // Independently constructed backends target the same CUDA device but own
+        // distinct allocation domains, so tensors uploaded through the transfer
+        // backend are rejected by the compute engine and by the traced runtime.
         let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
         .map_err(|e| format!("compute backend: {e}"))?;
+        let transfer_bk = compute_bk.clone();
         let ctx = EagerRuntime::with_cuda_backend(compute_bk).map_err(|e| e.to_string())?;
         let gpu_inputs =
             build_gpu_eager_inputs(&network, &spec, ctx.clone(), transfer_bk.runtime())?;
@@ -446,14 +447,15 @@ fn run_trace_tensor_network(
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
         let spec = TensorNetworkSpec::from_problem(problem, std::path::Path::new("."))?;
         let network = load_tensor_network(&spec.source)?;
-        let transfer_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("transfer backend: {e}"))?;
+        // A clone shares the backend's runtime and allocation domain.
+        // Independently constructed backends target the same CUDA device but own
+        // distinct allocation domains, so tensors uploaded through the transfer
+        // backend are rejected by the compute engine and by the traced runtime.
         let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
         .map_err(|e| format!("compute backend: {e}"))?;
+        let transfer_bk = compute_bk.clone();
         let trace_inputs = build_trace_inputs(&network, &spec, transfer_bk.runtime())?;
         let mut trace = TraceContext::new();
         let values = network
@@ -630,14 +632,15 @@ fn run_eager(
         // Use two backends for the same device ordinal.
         // CubeCL returns the same underlying device client for the same ordinal,
         // so both backends share the same CUDA stream.
-        let transfer_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("transfer backend: {e}"))?;
+        // A clone shares the backend's runtime and allocation domain.
+        // Independently constructed backends target the same CUDA device but own
+        // distinct allocation domains, so tensors uploaded through the transfer
+        // backend are rejected by the compute engine and by the traced runtime.
         let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
         .map_err(|e| format!("compute backend: {e}"))?;
+        let transfer_bk = compute_bk.clone();
         let ctx = EagerRuntime::with_cuda_backend(compute_bk).map_err(|e| e.to_string())?;
 
         let seed = problem["data"]["seed"].as_u64().unwrap_or(0);
@@ -987,14 +990,15 @@ fn run_trace(
 
         // Two backends sharing the same CubeCL device client.
         // Build the trace graph with GPU-uploaded tensors as embedded constants.
-        let transfer_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("transfer backend: {e}"))?;
+        // A clone shares the backend's runtime and allocation domain.
+        // Independently constructed backends target the same CUDA device but own
+        // distinct allocation domains, so tensors uploaded through the transfer
+        // backend are rejected by the compute engine and by the traced runtime.
         let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
         .map_err(|e| format!("compute backend: {e}"))?;
+        let transfer_bk = compute_bk.clone();
 
         let (outputs, cpu_inputs) =
             build_trace_graph_gpu(op, problem, seed, gen, transfer_bk.runtime())
