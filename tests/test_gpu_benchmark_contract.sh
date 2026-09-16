@@ -238,6 +238,7 @@ test -s "$MARKDOWN"
 test -s "$REPORT"
 
 uv run python scripts/validate_benchmark_suite.py --kind run "$RUN_YAML"
+grep -q 'single-call intervals; short GPU cases are diagnostics' "$RUN_YAML"
 uv run python scripts/validate_benchmark_suite.py --kind result "$JSONL"
 if rg -q '"environment"' "$JSONL"; then
   echo "result records unexpectedly contained run-level environment" >&2

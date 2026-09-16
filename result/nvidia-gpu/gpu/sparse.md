@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/sparse`
 - Suite file: `benchmarks/gpu/sparse.yaml`
-- Timestamp: `2026-09-13T08:27:38.908443+00:00`
-- tenferro-rs commit: `28dfc7e383a653e1461d38b73ced3d563b4efdad`
+- Timestamp: `2026-09-16T02:12:05.821243+00:00`
+- tenferro-rs commit: `bca2d54a5884586b1aeae8006caa9b8c0ba44a26`
 
 ## GPU Information
 
@@ -40,10 +40,10 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | unsupported | unsupported | 14.905 | unsupported | unsupported | unsupported | 14.978 | 220.887 |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | unsupported | unsupported | 15.003 | unsupported | unsupported | unsupported | 14.984 | 220.887 |
 
 ## gpu/sparse / spmv / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| sparse_synthetic_4m_64m_spmv_f64 | unsupported | unsupported | 2.331 | unsupported | unsupported | unsupported | 2.329 | 2.593 |
+| sparse_synthetic_4m_64m_spmv_f64 | unsupported | unsupported | 2.335 | unsupported | unsupported | unsupported | 2.333 | 2.589 |

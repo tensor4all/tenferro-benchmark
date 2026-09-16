@@ -629,9 +629,6 @@ fn run_eager(
     let exec_path = "phase2-measured-tenferro-cuda-eager";
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
-        // Use two backends for the same device ordinal.
-        // CubeCL returns the same underlying device client for the same ordinal,
-        // so both backends share the same CUDA stream.
         // A clone shares the backend's runtime and allocation domain.
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
