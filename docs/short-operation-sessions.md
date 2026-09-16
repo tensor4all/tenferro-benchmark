@@ -32,15 +32,46 @@ execution session. PyTorch uses the same operation count. Small cached FFTs
 their existing operation scope. CSV notes record operation count and median
 batch duration, while the existing latency columns remain normalized per call.
 
-The single-matrix `cpu_ops` small suite is diagnostic: default `all` excludes it;
-`PUBLICATION_GATE_SUITE=small` or `BENCH_INCLUDE_SINGLE_CALL_DIAGNOSTICS=1`
-explicitly enables it. Old small-work eager/compiled routes, and short FFT
-routes that enter internal sessions, require
-`BENCH_INCLUDE_SETUP_DIAGNOSTICS=1`. Their ordinary APIs cannot be called from
-inside the borrowed shared CPU session: the backend intentionally rejects
-re-entry. They are not relabeled as shared-session measurements. Supporting
-EagerTensor/compiled trace in that same scope requires a tenferro API/runtime
-change; this benchmark change does not bypass the guard.
+## CPU eager, AD and prepared trace
+
+Since tenferro-rs PR #1802 (merge `d8759f4320a337d2399f4a87dfec55af51d2ebf1`),
+`publication_gate` uses `CpuBackend::with_execution_scope` outside all timing.
+Its eager runtime and prepared trace runtimes share clones of that exact backend
+witness. This is **not** a borrowed BackendSession and does not bypass the
+operation re-entry guard. The `cpu_ops` small suite is now included by default;
+its former isolated-call results remain diagnostics, not new scope measurements.
+
+Rust, PyTorch and JAX calibrate a batch from one operation toward 5 ms. Batch
+size is also capped by a 64 MiB logical-retention reservation: sixteen f64
+tensors at the product of the dimensions in the declared shape, plus 8 KiB of
+handles/AD metadata per invocation. This deliberately overestimates rectangular
+and multiple-RHS shapes; it is an estimate, **not** a bound on backend scratch,
+allocator caches or process RSS. A single operation is allowed if its estimate
+already exceeds the budget. A memory-limited batch may remain below 5 ms; its
+actual duration is preserved. Each batch prepares all fixtures and retention
+containers before timing, and destroys inputs/outputs afterward. Fresh eager
+and PyTorch AD leaves prevent gradient accumulation; prepared trace uses its
+immutable default inputs. Allocation-returning APIs remain allocation-returning
+(no preallocated output/reuse claim). Intrinsic eager tape/backward work remains
+part of the declared forward-plus-backward operation.
+
+`run_cpu_ops.sh` writes `cpu_ops_samples_t<N>_<timestamp>.jsonl` beside the CSV.
+It contains raw batch durations, counts, normalized ns/op, memory estimates and
+runtime/provider observations. CSV `sampling_policy` distinguishes new batches
+from historical isolated-call data. Python fixtures now match Rust's logical
+column-major values while retaining native contiguous Python storage, including
+an untimed [n,n,batch] to [batch,n,n] axis mapping. Old fixture values differed;
+old/new timings are not a controlled execution-scope speedup experiment.
+These shared Python fixture helpers also affect future GPU AD runs; existing
+GPU data and reports are unchanged.
+Independent scalar-reference tests cover batched matmul primal and both input
+gradients at 2x2 batch16, 4x4 batch3 and 16x16 batch1. Other successful timing rows
+are execution evidence, not blanket numerical verification.
+
+The separate `cpu/small_work` eager/compiled and short FFT diagnostic routes
+still require `BENCH_INCLUDE_SETUP_DIAGNOSTICS=1`. This change does not silently
+relabel those unadapted runners; ordinary eager APIs still cannot be entered
+inside a borrowed BackendSession.
 
 CPU and GPU trace runners now prepare execution plans with `prepare_compiled`
 before warmup and call `run_prepared` inside timing. Graph compilation alone
@@ -53,11 +84,16 @@ entered context across operations, just as faer sessions do. Older results on
 baselines. The permutation runner also uses one pre-entered session for its
 warmups and samples; every borrowed input descriptor is prepared before timing.
 
-JAX thread configuration now additionally exports `PJRT_NPROC` before importing
-JAX. The earlier Eigen/XLA flag alone did not constrain the CPU client's thread
-pool on this machine. Earlier JAX rows cannot substantiate 1-thread/4-thread
-comparisons; rerun each affected suite with this correction. This does not
-invalidate the independent PyTorch or Julia measurements in those runs.
+JAX thread configuration exports `PJRT_NPROC` and Eigen/XLA settings before
+importing JAX, but environment requests alone do not prove a worker count.
+The CPU ops runner records observed Linux `tf_XLAEigen` workers and affinity;
+Rust records its worker/thread budget and queries oneMKL's maximum threads
+inside the entered scope, and PyTorch records both thread APIs. The issue-1801
+Linux study uses verified idle, explicitly selected physical cores (one at 1T,
+four at 4T), as requested for that study. This differs from the repository's
+usual unpinned protocol. Affinity is not a substitute for explicit provider
+thread configuration. Earlier unverified JAX rows cannot substantiate 1T/4T
+comparisons. A configured maximum does not mean every kernel uses every worker.
 
 The sampling rule is fixed in [AGENTS.md](../AGENTS.md). Earlier timing-policy-2
 raw data are preserved, not relabeled with the new measurement scope. See the

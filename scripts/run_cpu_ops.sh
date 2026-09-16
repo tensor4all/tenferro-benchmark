@@ -34,6 +34,7 @@ mkdir -p "$RESULTS_DIR"
 RAW_LOG="$RESULTS_DIR/publication_gate_${PUBLICATION_GATE_FEATURES}_t${NUM_THREADS}_${PUBLICATION_GATE_PROFILE:-quick}_${PUBLICATION_GATE_SUITE:-all}_${TIMESTAMP}.csv"
 CPU_OPS_LOG="$RESULTS_DIR/cpu_ops_t${NUM_THREADS}_${TIMESTAMP}.csv"
 LINALG_AD_MD="$RESULTS_DIR/linalg_jvp_vjp_t${NUM_THREADS}_${TIMESTAMP}.md"
+export CPU_OPS_RAW_SAMPLES="$RESULTS_DIR/cpu_ops_samples_t${NUM_THREADS}_${TIMESTAMP}.jsonl"
 
 ensure_blas_env_for_features "$PUBLICATION_GATE_FEATURES"
 
@@ -59,6 +60,7 @@ with open(out_path, "w", newline="") as f:
             "backend",
             "median_ms",
             "iqr_ms",
+            "sampling_policy",
             "status",
         ],
         lineterminator="\n",
@@ -83,6 +85,7 @@ with open(out_path, "w", newline="") as f:
                 "median_ms": row["median_ms"],
                 "iqr_ms": row["iqr_ms"],
                 "status": row["status"],
+                "sampling_policy": "bounded_batch_shared_cpu",
             }
         )
 PY

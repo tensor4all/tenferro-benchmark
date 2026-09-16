@@ -45,16 +45,17 @@ class TimingBoundaries(unittest.TestCase):
             return Output()
 
         def sync(value):
-            if isinstance(value, Output):
-                self.assertTrue(state["timed"])
-                state["sync"] += 1
+            for item in value:
+                if isinstance(item, Output):
+                    self.assertTrue(state["timed"])
+                    state["sync"] += 1
 
         def clock():
             state["timed"] = not state["timed"]
             state["clock"] += 1
-            return state["clock"] * 0.001
+            return state["clock"] * 1_000_000
 
-        with patch.object(ops.time, "perf_counter", clock):
+        with patch.object(ops.time, "perf_counter_ns", clock):
             median, _ = ops.bench(
                 ops.PreparedCase(setup, execute), sync, runs=2, warmups=0
             )
@@ -62,6 +63,50 @@ class TimingBoundaries(unittest.TestCase):
         self.assertEqual(
             [state[k] for k in ("setup", "execute", "drop", "sync")], [3, 3, 3, 3]
         )
+
+    def test_cpu_ops_calibration_retains_outputs_and_obeys_memory_cap(self):
+        state = dict(timed=False, live=0, clock=0, setup=0, calls=0)
+        test = self
+
+        class Value:
+            def __init__(self):
+                test.assertTrue(state["timed"])
+                state["live"] += 1
+            def __del__(self):
+                test.assertFalse(state["timed"])
+                state["live"] -= 1
+
+        def setup():
+            self.assertFalse(state["timed"])
+            state["setup"] += 1
+            return ()
+
+        def execute(_):
+            self.assertGreater(state["setup"], state["calls"])
+            state["calls"] += 1
+            return Value()
+
+        def clock():
+            if state["timed"]:
+                self.assertGreater(state["live"], 0)
+            else:
+                self.assertEqual(state["live"], 0)
+            state["timed"] = not state["timed"]
+            state["clock"] += 1
+            return state["clock"] * 1_000_000
+
+        raw = {}
+        with patch.object(ops.time, "perf_counter_ns", clock), patch.object(
+            ops, "RETENTION_BUDGET_BYTES", ops.retention_estimate("2x2xbatch16") * 4
+        ):
+            median, _ = ops.bench(ops.PreparedCase(setup, execute), lambda _: None,
+                                  runs=2, warmups=0, shape="2x2xbatch16", raw=raw)
+        self.assertEqual(raw["operations_per_sample"], 4)
+        self.assertEqual(raw["batch_elapsed_ns"], [1_000_000, 1_000_000])
+        self.assertEqual(raw["per_operation_ns"], [250_000, 250_000])
+        self.assertEqual(median, 0.25)
+        self.assertEqual(state["live"], 0)
+        self.assertEqual(state["setup"], state["calls"])
 
     def test_short_batches_keep_all_outputs_until_one_timer_stops(self):
         import benchmark_cpu_fft_python as fft
@@ -123,6 +168,24 @@ class TimingBoundaries(unittest.TestCase):
                             "jax.grad(",
                         ):
                             self.assertNotIn(fixture, operation)
+
+    def test_cpu_report_does_not_relabel_historical_small_timings(self):
+        import csv
+        import tempfile
+
+        for policy in ("", "bounded_batch_shared_cpu"):
+            with self.subTest(policy=policy), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "cpu_ops.csv"
+                row = dict(suite="small", benchmark="matmul", dtype="f64", threads="1",
+                           shape="2x2", backend="tenferro-eager", median_ms="0.001",
+                           iqr_ms="0.0001", status="ok", sampling_policy=policy)
+                with path.open("w", newline="") as stream:
+                    writer = csv.DictWriter(stream, fieldnames=list(row))
+                    writer.writeheader()
+                    writer.writerow(row)
+                report = cpu_formatter.format_table([path])
+                self.assertEqual("isolated-call diagnostics" in report, not bool(policy))
+                self.assertEqual("normalized per operation" in report, bool(policy))
 
     def test_direct_and_eager_are_distinct_even_with_legacy_override(self):
         self.assertIn("tenferro-direct", cpu_formatter.BACKEND_ORDER)

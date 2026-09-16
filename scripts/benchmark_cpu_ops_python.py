@@ -5,11 +5,16 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
+import math
 import os
+import re
 import statistics
 import sys
 import time
+from collections import Counter
 from collections.abc import Callable
+from pathlib import Path
 
 THREAD_ENV_KEYS = (
     "OMP_NUM_THREADS",
@@ -63,8 +68,6 @@ def configure_thread_env(num_threads: int) -> None:
 
 def suite_enabled(suite: str) -> bool:
     selected = os.environ.get("PUBLICATION_GATE_SUITE", "all").lower()
-    if suite == "small" and selected == "all" and os.environ.get("BENCH_INCLUDE_SINGLE_CALL_DIAGNOSTICS") != "1":
-        return False
     return selected in {"all", suite}
 
 
@@ -93,7 +96,15 @@ def data(shape: tuple[int, ...], seed: int):
     for i in range(size):
         x = (i * 6364136223846793005 + seed * 1442695040888963407) & ((1 << 64) - 1)
         values.append(((x % 1024) - 512) / 512.0)
-    return np.array(values, dtype=np.float64).reshape(shape)
+    # Match Rust's column-major logical values, then use native Python layout.
+    return np.array(values, dtype=np.float64).reshape(shape, order="F").copy(order="C")
+
+
+def batched_data(shape: tuple[int, ...], seed: int):
+    import numpy as np
+
+    batch, *matrix_shape = shape
+    return np.moveaxis(data((*matrix_shape, batch), seed), -1, 0).copy(order="C")
 
 
 def well_conditioned(n: int, seed: int):
@@ -141,23 +152,66 @@ class PreparedCase:
         self.execute = execute
 
 
-def bench(fn, sync, runs: int, warmups: int) -> tuple[float, float]:
+SAMPLE_TARGET_NS = 5_000_000
+RETENTION_BUDGET_BYTES = 64 * 1024 * 1024
+
+
+def retention_estimate(shape: str) -> int:
+    # Same conservative logical-buffer reservation as publication_gate.rs;
+    # backend scratch/cache RSS is not included in this batching budget.
+    return math.prod(map(int, re.findall(r"\d+", shape))) * 16 * 8 + 8192
+
+
+def record_raw(record: dict) -> None:
+    path = os.environ.get("CPU_OPS_RAW_SAMPLES")
+    if path:
+        with open(path, "a") as stream:
+            stream.write(json.dumps(record) + "\n")
+
+
+def bench(fn, sync, runs: int, warmups: int, *, shape=None, raw=None) -> tuple[float, float]:
     case = (
         fn if isinstance(fn, PreparedCase) else PreparedCase(lambda: (), lambda _: fn())
     )
-    times = []
-    # Mandatory untimed priming excludes lazy kernels/JIT even with warmups=0.
-    for sample in range(max(warmups, 1) + runs):
-        inputs = case.setup()
+
+    def batch(operations):
+        inputs = [case.setup() for _ in range(operations)]
         sync(inputs)
-        start = time.perf_counter()
-        output = case.execute(inputs)
-        sync(output)
-        elapsed = (time.perf_counter() - start) * 1000.0
-        if sample >= max(warmups, 1):
-            times.append(elapsed)
-        del output, inputs
-    return median_iqr(times)
+        outputs = [None] * operations
+        start = time.perf_counter_ns()
+        for i in range(operations):
+            outputs[i] = case.execute(inputs[i])
+        sync(outputs)
+        elapsed = time.perf_counter_ns() - start
+        del outputs, inputs
+        return elapsed
+
+    for _ in range(max(warmups, 1)):
+        batch(1)
+    operations = 1
+    calibration_ns = None
+    estimated_bytes = retention_estimate(shape) if shape is not None else None
+    # Non-CPU callers retain the existing single-call sampling contract.
+    if shape is not None:
+        cap = max(1, min(65_536, RETENTION_BUDGET_BYTES // estimated_bytes))
+        while True:
+            calibration_ns = batch(operations)
+            if calibration_ns >= SAMPLE_TARGET_NS or operations == cap:
+                break
+            operations = min(operations * 2, cap)
+    samples = [batch(operations) for _ in range(runs)]
+    if raw is not None:
+        raw.update(
+            operations_per_sample=operations,
+            batch_elapsed_ns=samples,
+            per_operation_ns=[elapsed / operations for elapsed in samples],
+            target_ns=SAMPLE_TARGET_NS,
+            calibration_ns=calibration_ns,
+            estimated_retained_bytes_per_operation=estimated_bytes,
+            retention_budget_bytes=RETENTION_BUDGET_BYTES,
+            output_policy="allocation_returning_retained_until_stop",
+        )
+    return median_iqr([elapsed / operations / 1_000_000 for elapsed in samples])
 
 
 TANGENT_SEED_OFFSET = 1000
@@ -391,7 +445,10 @@ def emit_row(
         return
 
     try:
-        median_ms, iqr_ms = bench(fn, sync, args.runs, args.warmups)
+        raw = dict(record_type="samples", suite=suite, benchmark=name, shape=shape,
+                   backend=args.backend, threads=args.num_threads)
+        median_ms, iqr_ms = bench(fn, sync, args.runs, args.warmups, shape=shape, raw=raw)
+        record_raw(raw)
         status = "ok"
         median = f"{median_ms:.6f}"
         iqr = f"{iqr_ms:.6f}"
@@ -410,6 +467,7 @@ def emit_row(
             "median_ms": median,
             "iqr_ms": iqr,
             "status": status,
+            "sampling_policy": "bounded_batch",
         }
     )
 
@@ -419,13 +477,15 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
 
     torch.set_num_threads(args.num_threads)
     torch.set_num_interop_threads(args.num_threads)
+    record_raw(dict(record_type="runtime", backend=args.backend,
+                    threads=torch.get_num_threads(), interop_threads=torch.get_num_interop_threads(),
+                    provider_config=torch.__config__.show(), parallel_info=torch.__config__.parallel_info(), affinity=sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None))
 
     def tensor(x, requires_grad: bool = False):
         return torch.tensor(x, dtype=torch.float64, requires_grad=requires_grad)
 
     def sync(value):
-        if isinstance(value, torch.Tensor):
-            _ = value.numel()
+        pass  # CPU PyTorch operations complete synchronously.
 
     profile = os.environ.get("PUBLICATION_GATE_PROFILE", "quick").lower()
     if suite_enabled("small"):
@@ -733,8 +793,8 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
                     label,
                     PreparedCase(
                         lambda n=n, batch=batch: (
-                            tensor(data((batch, n, n), 41)),
-                            tensor(data((batch, n, n), 42)),
+                            tensor(batched_data((batch, n, n), 41)),
+                            tensor(batched_data((batch, n, n), 42)),
                         ),
                         lambda inputs: torch.einsum(
                             "bik,bkj->bij", inputs[0], inputs[1]
@@ -791,7 +851,7 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
                     PreparedCase(
                         lambda n=n, batch=batch: (
                             tensor(batched_spd(n, batch, 46)),
-                            tensor(data((batch, n, 1), 47)),
+                            tensor(batched_data((batch, n, 1), 47)),
                         ),
                         lambda inputs: torch.linalg.solve(inputs[0], inputs[1]),
                     ),
@@ -805,8 +865,8 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
                     label,
                     PreparedCase(
                         lambda n=n, batch=batch: (
-                            tensor(data((batch, n, n), 48), True),
-                            tensor(data((batch, n, n), 49), True),
+                            tensor(batched_data((batch, n, n), 48), True),
+                            tensor(batched_data((batch, n, n), 49), True),
                         ),
                         lambda inputs: grad_torch_batched_matmul(inputs[0], inputs[1]),
                     ),
@@ -821,7 +881,7 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
                     PreparedCase(
                         lambda n=n, batch=batch: (
                             tensor(batched_spd(n, batch, 50), True),
-                            tensor(data((batch, n, 1), 51), True),
+                            tensor(batched_data((batch, n, 1), 51), True),
                         ),
                         lambda inputs: grad_torch_solve(inputs[0], inputs[1]),
                     ),
@@ -868,6 +928,20 @@ def run_jax(args, writer: csv.DictWriter) -> None:
     import jax.numpy as jnp
 
     jax.config.update("jax_enable_x64", True)
+    devices = [str(device) for device in jax.devices()]
+    task_directory = Path("/proc/self/task")
+    thread_names = Counter()
+    for path in task_directory.glob("*/comm"):
+        try:
+            thread_names[path.read_text().strip()] += 1
+        except FileNotFoundError:
+            pass  # A nonpersistent helper thread can exit during enumeration.
+    record_raw(dict(record_type="runtime", backend=args.backend, version=jax.__version__,
+                    devices=devices, requested_threads=args.num_threads,
+                    xla_flags=os.environ.get("XLA_FLAGS"),
+                    observed_thread_names=dict(thread_names),
+                    eigen_worker_count=thread_names.get("tf_XLAEigen") if task_directory.exists() else None,
+                    affinity=sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None))
 
     def array(x):
         return jnp.asarray(x, dtype=jnp.float64)
@@ -1180,8 +1254,8 @@ def run_jax(args, writer: csv.DictWriter) -> None:
                     label,
                     PreparedCase(
                         lambda n=n, batch=batch: (
-                            array(data((batch, n, n), 41)),
-                            array(data((batch, n, n), 42)),
+                            array(batched_data((batch, n, n), 41)),
+                            array(batched_data((batch, n, n), 42)),
                         ),
                         lambda inputs: jnp.einsum("bik,bkj->bij", inputs[0], inputs[1]),
                     ),
@@ -1236,7 +1310,7 @@ def run_jax(args, writer: csv.DictWriter) -> None:
                     PreparedCase(
                         lambda n=n, batch=batch: (
                             array(batched_spd(n, batch, 46)),
-                            array(data((batch, n, 1), 47)),
+                            array(batched_data((batch, n, 1), 47)),
                         ),
                         lambda inputs: jnp.linalg.solve(inputs[0], inputs[1]),
                     ),
@@ -1250,8 +1324,8 @@ def run_jax(args, writer: csv.DictWriter) -> None:
                     label,
                     PreparedCase(
                         lambda n=n, batch=batch: (
-                            array(data((batch, n, n), 49)),
-                            array(data((batch, n, n), 48)),
+                            array(batched_data((batch, n, n), 49)),
+                            array(batched_data((batch, n, n), 48)),
                         ),
                         lambda inputs: batched_matmul_value_and_grad(
                             inputs[1], inputs[0]
@@ -1267,7 +1341,7 @@ def run_jax(args, writer: csv.DictWriter) -> None:
                     f"{label},rhs=1",
                     PreparedCase(
                         lambda n=n, batch=batch: (
-                            array(data((batch, n, 1), 51)),
+                            array(batched_data((batch, n, 1), 51)),
                             array(batched_spd(n, batch, 50)),
                         ),
                         lambda inputs: solve_value_and_grad(inputs[1], inputs[0]),
@@ -1296,10 +1370,18 @@ def main() -> None:
         "backend",
         "median_ms",
         "iqr_ms",
+        "sampling_policy",
         "status",
     ]
+    existing = Path(args.output).exists() and Path(args.output).stat().st_size > 0
+    if existing:
+        with open(args.output, newline="") as stream:
+            if next(csv.reader(stream), []) != fieldnames:
+                parser.error("output CSV schema differs; use a fresh run/output path")
     with open(args.output, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
+        if not existing:
+            writer.writeheader()
         if args.backend == "pytorch-cpu":
             run_pytorch(args, writer)
         else:
