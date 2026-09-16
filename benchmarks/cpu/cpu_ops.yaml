@@ -1,0 +1,23 @@
+schema_version: 1
+suite_id: cpu/cpu_ops
+title: CPU Eager and Prepared Operation Comparisons
+description: >-
+  Generated small, large and batched f64 matrix operations, eager backward,
+  and prepared linalg JVP/VJP. Rust uses one shared CPU execution scope.
+  Scalar-reference tests cover batched matmul primal and both gradients;
+  successful timing rows alone do not certify numerical parity for every operation.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  layout: {tenferro: col_major, framework: row_major_contiguous}
+  run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api}
+backends:
+  - tenferro-eager
+  - tenferro-trace
+  - pytorch-cpu
+  - jax-cpu
+problems:
+  source: generated
+  include:
+    - small_matrix_ops
+    - large_matrix_ops
+    - batched_small_matrix_ops

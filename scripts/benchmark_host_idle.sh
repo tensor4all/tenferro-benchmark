@@ -12,7 +12,7 @@ assert_benchmark_host_idle() {
     busy="$({
         ps -axo pid=,command= 2>/dev/null || true
     } | grep -E \
-        '[r]ustc |cargo-nextest nextest|cargo (nextest|test|bench)( |$)|premerge_gate\.sh|metamorphic_equivalence\.sh|target/(release|debug)/benchmark_|python[^ ]* .*benchmark_.*\.py' \
+        '[r]ustc |[c]lippy-driver |cargo-clippy |cargo-nextest nextest|cargo (nextest|test|bench|clippy)( |$)|premerge_gate\.sh|metamorphic_equivalence\.sh|target/(release|debug)/benchmark_|python[^ ]* .*benchmark_.*\.py' \
         | grep -v ' grep -E ' \
         | head -20 \
         | cut -c1-240 \

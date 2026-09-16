@@ -3,14 +3,14 @@
 - Suite: `cpu/fft`
 - Target profile: `mac-cpu`
 - Suite file: `benchmarks/cpu/fft.yaml`
-- Run metadata: `data/results/mac-cpu/cpu/fft/20260916_105338/run.yaml`
-- Timestamp: `20260916_105338`
+- Run metadata: `data/results/mac-cpu/cpu/fft/20260916_165724/run.yaml`
+- Timestamp: `20260916_165724`
 
 Latest run: `./scripts/run_cpu_fft.sh 1 4`.
 
-This file is generated from sequential CPU FFT runs under `data/results/mac-cpu/cpu/fft/20260916_105338`.
+This file is generated from sequential CPU FFT runs under `data/results/mac-cpu/cpu/fft/20260916_165724`.
 
-- tenferro-rs commit: `bca2d54a5884586b1aeae8006caa9b8c0ba44a26`
+- tenferro-rs commit: `d8759f4320a337d2399f4a87dfec55af51d2ebf1`
 
 ## CPU Information
 
@@ -29,7 +29,7 @@ This file is generated from sequential CPU FFT runs under `data/results/mac-cpu/
 
 ### Threads: 1
 
-- Run metadata: `data/results/mac-cpu/cpu/fft/20260916_105338/run_t1.yaml`
+- Run metadata: `data/results/mac-cpu/cpu/fft/20260916_165724/run_t1.yaml`
 - OMP_NUM_THREADS: `1`
 - OMP_THREAD_LIMIT: `1`
 - OMP_DYNAMIC: `FALSE`
@@ -45,7 +45,7 @@ This file is generated from sequential CPU FFT runs under `data/results/mac-cpu/
 
 ### Threads: 4
 
-- Run metadata: `data/results/mac-cpu/cpu/fft/20260916_105338/run_t4.yaml`
+- Run metadata: `data/results/mac-cpu/cpu/fft/20260916_165724/run_t4.yaml`
 - OMP_NUM_THREADS: `4`
 - OMP_THREAD_LIMIT: `4`
 - OMP_DYNAMIC: `FALSE`
@@ -74,9 +74,9 @@ This file is generated from sequential CPU FFT runs under `data/results/mac-cpu/
 
 ## Threads: 1 4
 
-- CSV: `data/results/mac-cpu/cpu/fft/20260916_105338/cpu_fft_t1_20260916_105338.csv`
-- CSV: `data/results/mac-cpu/cpu/fft/20260916_105338/cpu_fft_t4_20260916_105338.csv`
-- Source table: `data/results/mac-cpu/cpu/fft/20260916_105338/cpu_fft_20260916_105338.md`
+- CSV: `data/results/mac-cpu/cpu/fft/20260916_165724/cpu_fft_t1_20260916_165724.csv`
+- CSV: `data/results/mac-cpu/cpu/fft/20260916_165724/cpu_fft_t4_20260916_165724.csv`
+- Source table: `data/results/mac-cpu/cpu/fft/20260916_165724/cpu_fft_20260916_165724.md`
 
 ## CPU FFT Benchmark Items
 
@@ -88,186 +88,186 @@ Timing scope: input tensors are created outside the timed region; each timed cal
 
 | suite | benchmark | dtype | threads | shape | tenferro-rs one-shot diagnostic (ms) | tenferro-rs TensorRead API (ms) | tenferro-rs cached primary (ms) | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | PyTorch torch.fft (ms) |
 |---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|
-| cpu/fft | `fft` | c32 | 1 | `1d_n1024` | skipped | skipped | 0.006 ± 0.001 | skipped | skipped | 0.004 ± 0.001 |
-| cpu/fft | `fft` | c32 | 1 | `1d_n1048576` | skipped | skipped | 4.024 ± 0.021 | 4.071 ± 0.025 | 4.114 ± 0.056 | 10.519 ± 0.105 |
-| cpu/fft | `fft` | c32 | 1 | `1d_n16384` | skipped | skipped | 0.047 ± 0.007 | skipped | skipped | 0.082 ± 0.001 |
+| cpu/fft | `fft` | c32 | 1 | `1d_n1024` | skipped | skipped | 0.005 ± 0.002 | skipped | skipped | 0.004 ± 0.000 |
+| cpu/fft | `fft` | c32 | 1 | `1d_n1048576` | skipped | skipped | 4.299 ± 0.175 | 3.955 ± 0.117 | 4.210 ± 0.126 | 10.317 ± 0.173 |
+| cpu/fft | `fft` | c32 | 1 | `1d_n16384` | skipped | skipped | 0.041 ± 0.001 | skipped | skipped | 0.087 ± 0.004 |
 | cpu/fft | `fft` | c32 | 4 | `1d_n1024` | skipped | skipped | 0.005 ± 0.002 | skipped | skipped | 0.004 ± 0.000 |
-| cpu/fft | `fft` | c32 | 4 | `1d_n1048576` | skipped | skipped | 4.214 ± 0.050 | 4.282 ± 0.022 | 4.273 ± 0.050 | 10.024 ± 0.291 |
-| cpu/fft | `fft` | c32 | 4 | `1d_n16384` | skipped | skipped | 0.046 ± 0.006 | skipped | skipped | 0.082 ± 0.001 |
-| cpu/fft | `fft` | c64 | 1 | `1d_n1024` | skipped | skipped | 0.007 ± 0.001 | skipped | skipped | 0.004 ± 0.000 |
-| cpu/fft | `fft` | c64 | 1 | `1d_n1048576` | skipped | skipped | 7.067 ± 0.401 | 6.577 ± 0.112 | 5.846 ± 0.067 | 11.765 ± 0.290 |
-| cpu/fft | `fft` | c64 | 1 | `1d_n16384` | skipped | skipped | 0.070 ± 0.002 | skipped | skipped | 0.104 ± 0.001 |
-| cpu/fft | `fft` | c64 | 4 | `1d_n1024` | skipped | skipped | 0.007 ± 0.002 | skipped | skipped | 0.004 ± 0.000 |
-| cpu/fft | `fft` | c64 | 4 | `1d_n1048576` | skipped | skipped | 6.607 ± 0.280 | 6.632 ± 0.084 | 5.863 ± 0.106 | 11.644 ± 0.321 |
-| cpu/fft | `fft` | c64 | 4 | `1d_n16384` | skipped | skipped | 0.071 ± 0.001 | skipped | skipped | 0.105 ± 0.002 |
+| cpu/fft | `fft` | c32 | 4 | `1d_n1048576` | skipped | skipped | 4.182 ± 0.117 | 4.209 ± 0.075 | 4.173 ± 0.087 | 10.295 ± 0.164 |
+| cpu/fft | `fft` | c32 | 4 | `1d_n16384` | skipped | skipped | 0.042 ± 0.001 | skipped | skipped | 0.084 ± 0.001 |
+| cpu/fft | `fft` | c64 | 1 | `1d_n1024` | skipped | skipped | 0.006 ± 0.001 | skipped | skipped | 0.004 ± 0.000 |
+| cpu/fft | `fft` | c64 | 1 | `1d_n1048576` | skipped | skipped | 7.728 ± 0.309 | 7.205 ± 0.197 | 6.133 ± 0.237 | 11.941 ± 0.295 |
+| cpu/fft | `fft` | c64 | 1 | `1d_n16384` | skipped | skipped | 0.070 ± 0.001 | skipped | skipped | 0.107 ± 0.003 |
+| cpu/fft | `fft` | c64 | 4 | `1d_n1024` | skipped | skipped | 0.006 ± 0.001 | skipped | skipped | 0.004 ± 0.000 |
+| cpu/fft | `fft` | c64 | 4 | `1d_n1048576` | skipped | skipped | 6.895 ± 0.210 | 6.914 ± 0.190 | 6.086 ± 0.133 | 12.049 ± 0.251 |
+| cpu/fft | `fft` | c64 | 4 | `1d_n16384` | skipped | skipped | 0.072 ± 0.002 | skipped | skipped | 0.106 ± 0.001 |
 | cpu/fft | `ifft` | c32 | 1 | `1d_n1024` | skipped | skipped | 0.004 ± 0.001 | skipped | skipped | 0.004 ± 0.000 |
-| cpu/fft | `ifft` | c32 | 1 | `1d_n1048576` | skipped | skipped | 4.174 ± 0.036 | 4.050 ± 0.095 | 4.288 ± 0.036 | 10.125 ± 0.052 |
-| cpu/fft | `ifft` | c32 | 1 | `1d_n16384` | skipped | skipped | 0.042 ± 0.001 | skipped | skipped | 0.084 ± 0.001 |
+| cpu/fft | `ifft` | c32 | 1 | `1d_n1048576` | skipped | skipped | 4.255 ± 0.069 | 4.438 ± 0.125 | 4.107 ± 0.097 | 10.768 ± 1.149 |
+| cpu/fft | `ifft` | c32 | 1 | `1d_n16384` | skipped | skipped | 0.042 ± 0.000 | skipped | skipped | 0.084 ± 0.001 |
 | cpu/fft | `ifft` | c32 | 4 | `1d_n1024` | skipped | skipped | 0.004 ± 0.001 | skipped | skipped | 0.004 ± 0.000 |
-| cpu/fft | `ifft` | c32 | 4 | `1d_n1048576` | skipped | skipped | 4.199 ± 0.073 | 3.773 ± 0.095 | 3.950 ± 0.023 | 10.169 ± 0.346 |
-| cpu/fft | `ifft` | c32 | 4 | `1d_n16384` | skipped | skipped | 0.043 ± 0.001 | skipped | skipped | 0.083 ± 0.001 |
-| cpu/fft | `ifft` | c64 | 1 | `1d_n1024` | skipped | skipped | 0.004 ± 0.001 | skipped | skipped | 0.004 ± 0.000 |
-| cpu/fft | `ifft` | c64 | 1 | `1d_n1048576` | skipped | skipped | 6.056 ± 0.066 | 6.225 ± 0.356 | 7.065 ± 0.136 | 10.850 ± 0.691 |
-| cpu/fft | `ifft` | c64 | 1 | `1d_n16384` | skipped | skipped | 0.072 ± 0.001 | skipped | skipped | 0.103 ± 0.001 |
-| cpu/fft | `ifft` | c64 | 4 | `1d_n1024` | skipped | skipped | 0.006 ± 0.001 | skipped | skipped | 0.004 ± 0.000 |
-| cpu/fft | `ifft` | c64 | 4 | `1d_n1048576` | skipped | skipped | 6.194 ± 0.138 | 6.126 ± 0.083 | 6.259 ± 0.148 | 10.830 ± 0.101 |
-| cpu/fft | `ifft` | c64 | 4 | `1d_n16384` | skipped | skipped | 0.074 ± 0.001 | skipped | skipped | 0.102 ± 0.002 |
-| cpu/fft | `irfft` | c32 | 1 | `1d_n1024` | skipped | skipped | 0.004 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
-| cpu/fft | `irfft` | c32 | 1 | `1d_n1048576` | skipped | skipped | 4.471 ± 0.055 | 4.375 ± 0.180 | 4.252 ± 0.076 | 3.497 ± 0.015 |
-| cpu/fft | `irfft` | c32 | 1 | `1d_n16384` | skipped | skipped | 0.042 ± 0.001 | skipped | skipped | 0.037 ± 0.000 |
-| cpu/fft | `irfft` | c32 | 4 | `1d_n1024` | skipped | skipped | 0.004 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
-| cpu/fft | `irfft` | c32 | 4 | `1d_n1048576` | skipped | skipped | 4.184 ± 0.085 | 3.688 ± 0.072 | 3.633 ± 0.073 | 3.493 ± 0.074 |
-| cpu/fft | `irfft` | c32 | 4 | `1d_n16384` | skipped | skipped | 0.042 ± 0.001 | skipped | skipped | 0.036 ± 0.000 |
-| cpu/fft | `irfft` | c64 | 1 | `1d_n1024` | skipped | skipped | 0.005 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
-| cpu/fft | `irfft` | c64 | 1 | `1d_n1048576` | skipped | skipped | 6.306 ± 0.359 | 6.309 ± 0.166 | 6.028 ± 0.185 | 4.486 ± 0.091 |
-| cpu/fft | `irfft` | c64 | 1 | `1d_n16384` | skipped | skipped | 0.072 ± 0.001 | skipped | skipped | 0.050 ± 0.002 |
-| cpu/fft | `irfft` | c64 | 4 | `1d_n1024` | skipped | skipped | 0.005 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
-| cpu/fft | `irfft` | c64 | 4 | `1d_n1048576` | skipped | skipped | 6.070 ± 0.303 | 6.009 ± 0.429 | 5.888 ± 0.155 | 4.476 ± 0.071 |
-| cpu/fft | `irfft` | c64 | 4 | `1d_n16384` | skipped | skipped | 0.075 ± 0.001 | skipped | skipped | 0.049 ± 0.001 |
+| cpu/fft | `ifft` | c32 | 4 | `1d_n1048576` | skipped | skipped | 3.769 ± 0.122 | 4.375 ± 0.111 | 4.374 ± 0.115 | 10.229 ± 0.215 |
+| cpu/fft | `ifft` | c32 | 4 | `1d_n16384` | skipped | skipped | 0.043 ± 0.001 | skipped | skipped | 0.087 ± 0.002 |
+| cpu/fft | `ifft` | c64 | 1 | `1d_n1024` | skipped | skipped | 0.005 ± 0.000 | skipped | skipped | 0.004 ± 0.000 |
+| cpu/fft | `ifft` | c64 | 1 | `1d_n1048576` | skipped | skipped | 6.395 ± 0.170 | 6.504 ± 0.257 | 7.075 ± 0.285 | 11.249 ± 0.333 |
+| cpu/fft | `ifft` | c64 | 1 | `1d_n16384` | skipped | skipped | 0.074 ± 0.001 | skipped | skipped | 0.103 ± 0.001 |
+| cpu/fft | `ifft` | c64 | 4 | `1d_n1024` | skipped | skipped | 0.005 ± 0.000 | skipped | skipped | 0.004 ± 0.000 |
+| cpu/fft | `ifft` | c64 | 4 | `1d_n1048576` | skipped | skipped | 6.425 ± 0.195 | 6.543 ± 0.172 | 7.307 ± 0.190 | 11.244 ± 0.438 |
+| cpu/fft | `ifft` | c64 | 4 | `1d_n16384` | skipped | skipped | 0.075 ± 0.001 | skipped | skipped | 0.106 ± 0.002 |
+| cpu/fft | `irfft` | c32 | 1 | `1d_n1024` | skipped | skipped | 0.003 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
+| cpu/fft | `irfft` | c32 | 1 | `1d_n1048576` | skipped | skipped | 4.006 ± 1.497 | 5.638 ± 0.434 | 5.761 ± 0.923 | 3.533 ± 0.045 |
+| cpu/fft | `irfft` | c32 | 1 | `1d_n16384` | skipped | skipped | 0.043 ± 0.001 | skipped | skipped | 0.037 ± 0.000 |
+| cpu/fft | `irfft` | c32 | 4 | `1d_n1024` | skipped | skipped | 0.003 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
+| cpu/fft | `irfft` | c32 | 4 | `1d_n1048576` | skipped | skipped | 4.264 ± 0.078 | 3.946 ± 0.129 | 3.869 ± 0.234 | 3.484 ± 0.044 |
+| cpu/fft | `irfft` | c32 | 4 | `1d_n16384` | skipped | skipped | 0.043 ± 0.001 | skipped | skipped | 0.037 ± 0.001 |
+| cpu/fft | `irfft` | c64 | 1 | `1d_n1024` | skipped | skipped | 0.004 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
+| cpu/fft | `irfft` | c64 | 1 | `1d_n1048576` | skipped | skipped | 10.208 ± 1.673 | 6.834 ± 0.313 | 7.467 ± 0.259 | 6.333 ± 0.795 |
+| cpu/fft | `irfft` | c64 | 1 | `1d_n16384` | skipped | skipped | 0.075 ± 0.001 | skipped | skipped | 0.049 ± 0.001 |
+| cpu/fft | `irfft` | c64 | 4 | `1d_n1024` | skipped | skipped | 0.004 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
+| cpu/fft | `irfft` | c64 | 4 | `1d_n1048576` | skipped | skipped | 6.329 ± 0.222 | 6.342 ± 0.120 | 6.348 ± 0.085 | 4.523 ± 0.114 |
+| cpu/fft | `irfft` | c64 | 4 | `1d_n16384` | skipped | skipped | 0.075 ± 0.000 | skipped | skipped | 0.050 ± 0.000 |
 | cpu/fft | `rfft` | f32 | 1 | `1d_n1024` | skipped | skipped | 0.003 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
-| cpu/fft | `rfft` | f32 | 1 | `1d_n1048576` | skipped | skipped | 4.077 ± 0.099 | 4.001 ± 0.147 | 4.029 ± 0.110 | 3.483 ± 0.029 |
-| cpu/fft | `rfft` | f32 | 1 | `1d_n16384` | skipped | skipped | 0.039 ± 0.001 | skipped | skipped | 0.037 ± 0.001 |
-| cpu/fft | `rfft` | f32 | 4 | `1d_n1024` | skipped | skipped | 0.004 ± 0.001 | skipped | skipped | 0.003 ± 0.000 |
-| cpu/fft | `rfft` | f32 | 4 | `1d_n1048576` | skipped | skipped | 3.923 ± 0.065 | 3.429 ± 0.144 | 3.468 ± 0.033 | 3.427 ± 0.052 |
-| cpu/fft | `rfft` | f32 | 4 | `1d_n16384` | skipped | skipped | 0.038 ± 0.001 | skipped | skipped | 0.037 ± 0.000 |
-| cpu/fft | `rfft` | f64 | 1 | `1d_n1024` | skipped | skipped | 0.005 ± 0.001 | skipped | skipped | 0.003 ± 0.000 |
-| cpu/fft | `rfft` | f64 | 1 | `1d_n1048576` | skipped | skipped | 5.693 ± 0.273 | 6.048 ± 0.327 | 6.242 ± 0.261 | 4.305 ± 0.053 |
-| cpu/fft | `rfft` | f64 | 1 | `1d_n16384` | skipped | skipped | 0.069 ± 0.002 | skipped | skipped | 0.049 ± 0.000 |
-| cpu/fft | `rfft` | f64 | 4 | `1d_n1024` | skipped | skipped | 0.005 ± 0.001 | skipped | skipped | 0.003 ± 0.000 |
-| cpu/fft | `rfft` | f64 | 4 | `1d_n1048576` | skipped | skipped | 6.055 ± 0.246 | 5.694 ± 0.294 | 6.455 ± 0.216 | 4.341 ± 0.058 |
-| cpu/fft | `rfft` | f64 | 4 | `1d_n16384` | skipped | skipped | 0.067 ± 0.001 | skipped | skipped | 0.049 ± 0.001 |
+| cpu/fft | `rfft` | f32 | 1 | `1d_n1048576` | skipped | skipped | 4.305 ± 0.311 | 4.095 ± 0.109 | 3.603 ± 0.094 | 3.424 ± 0.064 |
+| cpu/fft | `rfft` | f32 | 1 | `1d_n16384` | skipped | skipped | 0.039 ± 0.001 | skipped | skipped | 0.038 ± 0.000 |
+| cpu/fft | `rfft` | f32 | 4 | `1d_n1024` | skipped | skipped | 0.003 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
+| cpu/fft | `rfft` | f32 | 4 | `1d_n1048576` | skipped | skipped | 3.992 ± 0.142 | 3.493 ± 0.087 | 3.569 ± 0.122 | 3.566 ± 0.133 |
+| cpu/fft | `rfft` | f32 | 4 | `1d_n16384` | skipped | skipped | 0.040 ± 0.001 | skipped | skipped | 0.038 ± 0.001 |
+| cpu/fft | `rfft` | f64 | 1 | `1d_n1024` | skipped | skipped | 0.004 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
+| cpu/fft | `rfft` | f64 | 1 | `1d_n1048576` | skipped | skipped | 6.821 ± 0.187 | 6.081 ± 0.123 | 7.098 ± 0.153 | 4.615 ± 0.322 |
+| cpu/fft | `rfft` | f64 | 1 | `1d_n16384` | skipped | skipped | 0.069 ± 0.001 | skipped | skipped | 0.049 ± 0.000 |
+| cpu/fft | `rfft` | f64 | 4 | `1d_n1024` | skipped | skipped | 0.004 ± 0.000 | skipped | skipped | 0.003 ± 0.000 |
+| cpu/fft | `rfft` | f64 | 4 | `1d_n1048576` | skipped | skipped | 6.888 ± 0.259 | 6.060 ± 0.135 | 6.286 ± 0.163 | 4.476 ± 0.087 |
+| cpu/fft | `rfft` | f64 | 4 | `1d_n16384` | skipped | skipped | 0.069 ± 0.001 | skipped | skipped | 0.049 ± 0.001 |
 
 Notes:
 
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.320750
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.321292
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.325041
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.335000
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.336875
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.338375
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.338666
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.353333
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.464250
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.481375
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.484292
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.485875
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.494625
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.495458
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.496709
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.510500
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=10.475500
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=10.550166
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=10.673666
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=10.705875
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=13.073500
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=13.166584
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=13.334708
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=13.395250
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=4.654125
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=4.684500
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=4.741667
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=4.782958
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=6.211208
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=6.232208
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=6.274500
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=6.341709
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.024000
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.125125
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.169042
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.518792
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.830083
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.849500
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=11.643667
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=11.765500
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=3.426875
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=3.482542
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=3.492792
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=3.497125
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=4.304709
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=4.341167
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.322083
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.330000
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.330584
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.335792
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.343959
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.346583
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.351333
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.364459
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.477250
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.482208
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.483125
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.494458
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.499541
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.505959
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.511417
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=0.531375
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=10.691667
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=10.806084
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=11.081125
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=11.097500
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=13.223041
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=13.579417
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=13.597792
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=13.669375
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=4.690667
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=4.713750
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=4.850208
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=4.893125
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=6.248708
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=6.254833
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=6.313916
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=128; median_batch_ms=6.339000
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.229250
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.294791
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.316584
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=10.767834
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=11.244458
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=11.249375
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=11.940667
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=12.048958
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=3.423750
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=3.483625
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=3.532917
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=3.566084
 - pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=4.476375
-- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=4.485875
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=4.523000
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=4.614958
+- pytorch-cpu: torch.fft warmup before measured runs; input allocation outside timed region; operations_per_sample=1; median_batch_ms=6.333167
 - tenferro-fft-eager: API includes per-call planning or session entry; use shared cached executor for short operation timing
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=3.428875
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=3.688083
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=3.772958
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.001125
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.050125
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.071334
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.281792
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.375500
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=5.694000
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.009250
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.048416
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.126083
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.224917
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.308917
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.576541
-- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.631791
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.403292
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.448125
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.472167
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.479333
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.483583
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.508584
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.531250
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.596625
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.598916
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.649084
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.649625
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.666208
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.706250
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.784333
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.836666
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.859083
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=4.917333
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=4.929791
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.337708
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.381125
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.428833
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.488042
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.849500
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.954958
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=8.567833
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=8.792833
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=8.939875
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.094625
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.264083
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.266125
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.520083
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.574708
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=3.922917
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.023750
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.076625
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.174083
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.184291
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.199375
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.213583
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.471084
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=5.692625
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.054625
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.056000
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.070084
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.194166
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.306333
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.607458
-- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=7.067000
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=3.493208
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=3.946458
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=3.954875
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.095042
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.209125
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.374833
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=4.437708
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=5.637917
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.059750
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.080917
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.342333
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.503833
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.542959
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.833584
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=6.913709
+- tenferro-fft-eager: EagerTensorFftExt with one reused eager runtime and input; operations_per_sample=1; median_batch_ms=7.205500
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.409083
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.426458
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.428375
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.436209
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.529250
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.534583
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.539375
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.548667
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.551375
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.556042
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.643458
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.652625
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.653166
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.658083
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.747709
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=0.763291
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=4.958416
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.088625
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.249625
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.341333
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.404625
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.521708
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.560667
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=5.567084
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=8.850500
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=8.865500
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.019250
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.174042
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.464125
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.568625
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.610625
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=128; median_batch_ms=9.618417
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=10.208125
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=3.769167
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=3.992375
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.006125
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.182084
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.254833
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.264416
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.299125
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=4.304625
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.328500
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.395167
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.425125
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.821167
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.888083
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=6.894750
+- tenferro-fft-executor-cached: FftExecutor reused across warmups and measured runs; operations_per_sample=1; median_batch_ms=7.727917
 - tenferro-fft-immediate: API includes per-call planning or session entry; use shared cached executor for short operation timing
 - tenferro-fft-read: API includes per-call planning or session entry; use shared cached executor for short operation timing
 - tenferro-fft-trace: API includes per-call planning or session entry; use shared cached executor for short operation timing
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=3.468250
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=3.633209
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=3.950458
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.029208
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.114333
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.251584
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.272709
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.288458
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=5.845833
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=5.862958
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=5.887958
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=6.027958
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=6.241875
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=6.258875
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=6.455167
-- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=7.065125
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=3.568959
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=3.603167
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=3.869000
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.106708
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.172833
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.210334
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=4.373625
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=5.760666
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=6.086334
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=6.133208
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=6.285667
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=6.348500
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=7.074750
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=7.097833
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=7.307084
+- tenferro-fft-trace: TracedTensorFftExt graph compiled once; compiled program reused across runs; operations_per_sample=1; median_batch_ms=7.467292

@@ -5,6 +5,7 @@
 
 use std::env;
 use std::hint::black_box;
+use std::io::Write;
 use std::panic;
 use std::sync::{Arc, OnceLock};
 use std::time::{Duration, Instant};
@@ -154,12 +155,6 @@ impl SuiteFilter {
     }
 
     fn includes(self, suite: &str) -> bool {
-        if suite == "small"
-            && matches!(self, Self::All)
-            && env::var("BENCH_INCLUDE_SINGLE_CALL_DIAGNOSTICS").as_deref() != Ok("1")
-        {
-            return false;
-        }
         matches!(self, Self::All)
             || matches!(
                 (self, suite),
@@ -213,6 +208,8 @@ fn backend_name() -> &'static str {
         "system-openblas"
     } else if cfg!(feature = "system-accelerate") {
         "system-accelerate"
+    } else if cfg!(feature = "system-mkl") {
+        "system-mkl"
     } else {
         "cpu-faer"
     }
@@ -277,7 +274,13 @@ fn main() {
     let config = BenchConfig::from_env();
     println!("suite,op,phase,dtype,backend,profile,shape,warmups,runs,median_ms,iqr_ms,status");
 
-    for row in run_all(&config) {
+    let rows = cpu_backend()
+        .with_execution_scope(|| {
+            record_cpu_runtime().expect("record effective CPU execution settings");
+            run_all(&config)
+        })
+        .expect("enter shared CPU execution scope before benchmarking");
+    for row in rows {
         println!(
             "{},{},{},{},{},{},{},{},{},{},{},{}",
             row.suite,
@@ -1419,6 +1422,163 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
     }
 }
 
+const SAMPLE_TARGET_NS: u128 = 5_000_000;
+const RETENTION_BUDGET_BYTES: usize = 64 * 1024 * 1024;
+
+// Conservative logical-buffer reservation for this f64 matrix suite: sixteen
+// tensors plus 8 KiB of handles/AD metadata per invocation. Multiplying all
+// dimensions in the declared shape intentionally overestimates rectangular
+// and multiple-RHS cases. This is not an RSS bound on backend scratch/cache.
+fn retention_estimate(shape: &str) -> usize {
+    shape
+        .split(|c: char| !c.is_ascii_digit())
+        .filter(|part| !part.is_empty())
+        .fold(1usize, |size, part| {
+            size.saturating_mul(part.parse().unwrap())
+        })
+        .saturating_mul(16 * 8)
+        .saturating_add(8192)
+}
+
+struct Measurement {
+    operations: usize,
+    estimated_bytes: usize,
+    calibration_ns: u128,
+    times: Vec<Duration>,
+}
+
+fn measure<I, O>(
+    config: &BenchConfig,
+    shape: &str,
+    mut setup: impl FnMut() -> Result<I, Error>,
+    mut execute: impl FnMut(&mut I) -> Result<O, Error>,
+) -> Result<Measurement, Error> {
+    let estimated_bytes = retention_estimate(shape);
+    // A single operation remains permitted when its reservation exceeds the
+    // batching budget; never multiply such a fixture's retained memory.
+    let cap = (RETENTION_BUDGET_BYTES / estimated_bytes).clamp(1, 65_536);
+    let mut batch = |operations| {
+        let mut inputs = (0..operations)
+            .map(|_| setup())
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut outputs = Vec::with_capacity(operations);
+        let start = Instant::now();
+        for input in &mut inputs {
+            outputs.push(execute(input)?);
+        }
+        let elapsed = start.elapsed();
+        black_box(&outputs);
+        // Both vectors (including gradients and output tensors) drop after stop.
+        Ok::<_, Error>(elapsed)
+    };
+    for _ in 0..config.warmups.max(1) {
+        batch(1)?;
+    }
+    let mut operations = 1;
+    let calibration_ns = loop {
+        let elapsed = batch(operations)?.as_nanos();
+        if elapsed >= SAMPLE_TARGET_NS || operations == cap {
+            break elapsed;
+        }
+        operations = (operations * 2).min(cap);
+    };
+    let times = (0..config.runs)
+        .map(|_| batch(operations))
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(Measurement {
+        operations,
+        estimated_bytes,
+        calibration_ns,
+        times,
+    })
+}
+
+fn record_raw(record: serde_json::Value) -> Result<(), Error> {
+    if let Ok(path) = env::var("CPU_OPS_RAW_SAMPLES") {
+        let mut file = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&path)
+            .map_err(|error| Error::Internal(format!("open raw samples {path}: {error}")))?;
+        writeln!(file, "{record}")
+            .map_err(|error| Error::Internal(format!("write raw samples {path}: {error}")))?;
+    }
+    Ok(())
+}
+
+fn summarize_measurement(
+    measured: Measurement,
+    suite: &str,
+    op: &str,
+    phase: &str,
+    shape: &str,
+    backend: &str,
+) -> Result<(f64, f64), Error> {
+    record_raw(serde_json::json!({
+        "record_type": "samples", "suite": suite,
+        "benchmark": benchmark_name(op, phase), "shape": shape,
+        "backend": backend, "threads": cpu_backend().num_threads(),
+        "operations_per_sample": measured.operations,
+        "batch_elapsed_ns": measured.times.iter().map(Duration::as_nanos).collect::<Vec<_>>(),
+        "per_operation_ns": measured.times.iter().map(|t| t.as_nanos() as f64 / measured.operations as f64).collect::<Vec<_>>(),
+        "target_ns": SAMPLE_TARGET_NS, "calibration_ns": measured.calibration_ns,
+        "estimated_retained_bytes_per_operation": measured.estimated_bytes,
+        "retention_budget_bytes": RETENTION_BUDGET_BYTES,
+        "execution_scope": "shared_cpu", "output_policy": "allocation_returning_retained_until_stop",
+    }))?;
+    let (median, iqr) = median_iqr_ms(measured.times);
+    Ok((
+        median / measured.operations as f64,
+        iqr / measured.operations as f64,
+    ))
+}
+
+fn cpu_backend() -> &'static CpuBackend {
+    static BACKEND: OnceLock<CpuBackend> = OnceLock::new();
+    BACKEND.get_or_init(|| {
+        let threads = env::var("RAYON_NUM_THREADS")
+            .unwrap_or_else(|_| "1".into())
+            .parse()
+            .expect("RAYON_NUM_THREADS must be a positive integer");
+        CpuBackend::with_threads(threads).expect("configure explicit CPU thread count")
+    })
+}
+
+fn record_cpu_runtime() -> Result<(), Error> {
+    #[cfg(feature = "system-mkl")]
+    let provider_threads = {
+        extern "C" {
+            fn MKL_Get_Max_Threads() -> i32;
+        }
+        // SAFETY: system-mkl links the oneMKL C ABI; this argument-free query
+        // only reads the calling thread's effective provider configuration.
+        let threads = unsafe { MKL_Get_Max_Threads() };
+        assert_eq!(
+            threads as usize,
+            cpu_backend().num_threads(),
+            "MKL and CPU thread budgets differ"
+        );
+        Some(threads)
+    };
+    #[cfg(not(feature = "system-mkl"))]
+    let provider_threads: Option<i32> = None;
+    let affinity = std::fs::read_to_string("/proc/thread-self/status")
+        .ok()
+        .and_then(|status| {
+            status
+                .lines()
+                .find(|line| line.starts_with("Cpus_allowed_list:"))
+                .map(str::to_owned)
+        });
+    let info = cpu_backend().execution_info();
+    record_raw(serde_json::json!({
+        "record_type": "runtime", "backend": "tenferro", "provider": backend_name(),
+        "thread_budget": info.thread_budget(), "worker_count": info.worker_count(),
+        "provider_max_threads": provider_threads, "scope_worker_affinity": affinity,
+        "execution_info": format!("{info:?}"),
+    }))
+}
+
 fn bench_row<I, O>(
     config: &BenchConfig,
     suite: &'static str,
@@ -1434,39 +1594,22 @@ fn bench_row<I, O>(
     }
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-        // Always prime lazy operation state, even with zero optional warmups.
-        for _ in 0..config.warmups.max(1) {
-            let mut inputs = setup()?;
-            black_box(execute(&mut inputs)?);
-        }
-        let mut times = Vec::with_capacity(config.runs);
-        for _ in 0..config.runs {
-            let mut inputs = setup()?;
-            let start = Instant::now();
-            let outputs = execute(&mut inputs)?;
-            times.push(start.elapsed());
-            black_box(&outputs);
-            drop(outputs);
-            drop(inputs);
-        }
-        Ok::<_, Error>(times)
+        let measured = measure(config, shape, &mut setup, &mut execute)?;
+        summarize_measurement(measured, suite, op, phase, shape, "tenferro-eager")
     }));
 
     match result {
-        Ok(Ok(times)) => {
-            let (median, iqr) = median_iqr_ms(times);
-            Row {
-                suite,
-                op,
-                phase,
-                dtype,
-                shape: shape.to_string(),
-                backend: config.backend,
-                median_ms: Some(median),
-                iqr_ms: Some(iqr),
-                status: "ok".to_string(),
-            }
-        }
+        Ok(Ok((median, iqr))) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape: shape.to_string(),
+            backend: config.backend,
+            median_ms: Some(median),
+            iqr_ms: Some(iqr),
+            status: "ok".to_string(),
+        },
         Ok(Err(err)) => Row {
             suite,
             op,
@@ -1512,36 +1655,27 @@ fn bench_trace_row(
         let program = compiler.compile_many(&output_refs)?;
         let runtime = cpu_runtime_with_extensions()?;
         let prepared = runtime.prepare_compiled(&program, &[])?;
-
-        for _ in 0..config.warmups.max(1) {
-            let out = runtime.run_prepared(&prepared, &[])?;
-            black_box(out.len());
-        }
-        let mut times = Vec::with_capacity(config.runs);
-        for _ in 0..config.runs {
-            let start = Instant::now();
-            let out = runtime.run_prepared(&prepared, &[])?;
-            black_box(out.len());
-            times.push(start.elapsed());
-        }
-        Ok::<_, Error>(times)
+        let measured = measure(
+            config,
+            shape,
+            || Ok(()),
+            |_| runtime.run_prepared(&prepared, &[]),
+        )?;
+        summarize_measurement(measured, suite, op, phase, shape, "tenferro-trace")
     }));
 
     match result {
-        Ok(Ok(times)) => {
-            let (median, iqr) = median_iqr_ms(times);
-            Row {
-                suite,
-                op,
-                phase,
-                dtype,
-                shape: shape.to_string(),
-                backend: "tenferro-trace",
-                median_ms: Some(median),
-                iqr_ms: Some(iqr),
-                status: "ok".to_string(),
-            }
-        }
+        Ok(Ok((median, iqr))) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape: shape.to_string(),
+            backend: "tenferro-trace",
+            median_ms: Some(median),
+            iqr_ms: Some(iqr),
+            status: "ok".to_string(),
+        },
         Ok(Err(err)) => Row {
             suite,
             op,
@@ -1568,13 +1702,12 @@ fn bench_trace_row(
 }
 
 fn cpu_runtime_with_extensions() -> Result<Runtime, Error> {
-    let backend = CpuBackend::new();
+    let backend = cpu_backend();
     let engine_id = runtime_engine_id().map_err(|err| Error::Internal(err.to_string()))?;
     let mut builder = Runtime::builder();
     builder
         .register_engine(
-            runtime_engine_registration(&backend)
-                .map_err(|err| Error::Internal(err.to_string()))?,
+            runtime_engine_registration(backend).map_err(|err| Error::Internal(err.to_string()))?,
         )
         .map_err(|err| Error::Internal(err.to_string()))?;
     builder
@@ -1623,36 +1756,27 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
         let program = GraphCompiler::new().compile_traced_graph(&graph)?;
         let runtime = cpu_runtime_with_extensions()?;
         let prepared = runtime.prepare_compiled(&program, &[])?;
-
-        for _ in 0..config.warmups.max(1) {
-            let out = runtime.run_prepared(&prepared, &[])?;
-            black_box(out.len());
-        }
-        let mut times = Vec::with_capacity(config.runs);
-        for _ in 0..config.runs {
-            let start = Instant::now();
-            let out = runtime.run_prepared(&prepared, &[])?;
-            black_box(out.len());
-            times.push(start.elapsed());
-        }
-        Ok::<_, Error>(times)
+        let measured = measure(
+            config,
+            &shape,
+            || Ok(()),
+            |_| runtime.run_prepared(&prepared, &[]),
+        )?;
+        summarize_measurement(measured, suite, op, phase, &shape, "tenferro-trace")
     }));
 
     match result {
-        Ok(Ok(times)) => {
-            let (median, iqr) = median_iqr_ms(times);
-            Row {
-                suite,
-                op,
-                phase,
-                dtype,
-                shape,
-                backend: "tenferro-trace",
-                median_ms: Some(median),
-                iqr_ms: Some(iqr),
-                status: "ok".to_string(),
-            }
-        }
+        Ok(Ok((median, iqr))) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape,
+            backend: "tenferro-trace",
+            median_ms: Some(median),
+            iqr_ms: Some(iqr),
+            status: "ok".to_string(),
+        },
         Ok(Err(err)) => Row {
             suite,
             op,
@@ -1681,7 +1805,7 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
 fn cpu_ctx() -> Arc<EagerRuntime> {
     static RUNTIME: OnceLock<Arc<EagerRuntime>> = OnceLock::new();
     Arc::clone(RUNTIME.get_or_init(|| {
-        EagerRuntime::with_cpu_backend_and_ad_context(CpuBackend::new(), ad_context())
+        EagerRuntime::with_cpu_backend_and_ad_context(cpu_backend().clone(), ad_context())
             .expect("configured eager CPU runtime should initialize")
     }))
 }
@@ -1952,5 +2076,79 @@ mod timing_tests {
     #[test]
     fn eager_runtime_is_reused_across_samples() {
         assert!(Arc::ptr_eq(&cpu_ctx(), &cpu_ctx()));
+    }
+
+    #[test]
+    fn batch_reservation_counts_matrix_and_batch_dimensions() {
+        assert_eq!(
+            retention_estimate("2x2xbatch16 (native batch layout)"),
+            16_384
+        );
+        assert_eq!(retention_estimate("4x4"), 10_240);
+        assert!(SuiteFilter::All.includes("small"));
+    }
+
+    #[test]
+    fn shared_benchmark_primal_and_both_gradients_match_scalar_references() {
+        let ctx = cpu_ctx();
+        let runtime = cpu_runtime_with_extensions().unwrap();
+        cpu_backend()
+            .with_execution_scope(|| {
+                for (n, batch) in [(2, 16), (4, 3), (16, 1)] {
+                    let shape = [n, n, batch];
+                    let a = data_for_shape(&shape, 48);
+                    let b = data_for_shape(&shape, 49);
+                    let mut expected = vec![0.0; a.len()];
+                    let mut da = vec![0.0; a.len()];
+                    let mut db = vec![0.0; b.len()];
+                    for z in 0..batch {
+                        for j in 0..n {
+                            for i in 0..n {
+                                for k in 0..n {
+                                    let ai = i + n * (k + n * z);
+                                    let bi = k + n * (j + n * z);
+                                    expected[i + n * (j + n * z)] += a[ai] * b[bi];
+                                    da[ai] += b[bi];
+                                    db[bi] += a[ai];
+                                }
+                            }
+                        }
+                    }
+                    let check = |values: &[f64], expected: &[f64]| {
+                        assert_eq!(values.len(), expected.len());
+                        for (value, expected) in values.iter().zip(expected) {
+                            assert!((value - expected).abs() < 1e-11);
+                        }
+                    };
+                    let x = eager_requires_grad_in(tensor(&shape, a.clone()), ctx.clone());
+                    let y = eager_requires_grad_in(tensor(&shape, b.clone()), ctx.clone());
+                    let output = x.dot_general(&y, batched_matmul_config()).unwrap();
+                    assert_eq!(output.shape(), shape);
+                    check(
+                        output.to_tensor().unwrap().as_slice::<f64>().unwrap(),
+                        &expected,
+                    );
+                    output.reduce_sum(None).unwrap().backward().unwrap();
+                    check(x.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &da);
+                    check(y.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &db);
+
+                    let x = traced_tensor(&shape, a);
+                    let y = traced_tensor(&shape, b);
+                    let output = x.dot_general(&y, batched_matmul_config()).unwrap();
+                    let loss = output.reduce_sum(None).unwrap();
+                    let gx = grad(&loss, &x).unwrap();
+                    let gy = grad(&loss, &y).unwrap();
+                    let program = GraphCompiler::new()
+                        .compile_many(&[&output, &gx, &gy])
+                        .unwrap();
+                    let prepared = runtime.prepare_compiled(&program, &[]).unwrap();
+                    let outputs = runtime.run_prepared(&prepared, &[]).unwrap();
+                    assert_eq!(outputs.len(), 3);
+                    for (actual, expected) in outputs.iter().zip([&expected, &da, &db]) {
+                        check(actual.as_slice::<f64>().unwrap(), expected);
+                    }
+                }
+            })
+            .unwrap();
     }
 }
