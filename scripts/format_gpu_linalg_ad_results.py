@@ -156,6 +156,12 @@ def format_markdown(
         "Timed runs include the host API call and backend-native device synchronization "
         "without downloading AD outputs in the timed region."
     )
+    lines.append(
+        "Small cases (n=2, 4, 8) are single-call diagnostics, not batched shared-session "
+        "small-work comparisons. Public API session entry remains included; these rows "
+        "must not be interpreted as isolated kernel or shared-session overhead. "
+        "This suite checks successful execution only; AD outputs are not numerically compared."
+    )
     lines.append("")
 
     lines.extend(

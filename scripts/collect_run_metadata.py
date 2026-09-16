@@ -578,10 +578,18 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
         "timing_policy": {
             "version": 2,
             "scope": "operation execution and completion synchronization",
-            "setup": "inputs, transfers, runtime/session/handles, plans and compilation outside timer",
+            "setup": (
+                "inputs, transfers, runtimes/handles, plans and compilation outside timer; public API session entry may remain inside"
+                if args.suite_id.startswith("gpu/")
+                else "inputs, transfers, runtime/session/handles, plans and compilation outside timer"
+            ),
             "cleanup": "returned outputs retained until after timer stops",
             "minimum_untimed_priming_runs": 1,
-            "short_operation_sampling": "many operations per interval; shared session where supported; see docs/short-operation-sessions.md",
+            "short_operation_sampling": (
+                "single-call intervals; short GPU cases are diagnostics, not batched shared-session measurements"
+                if args.suite_id.startswith("gpu/")
+                else "many operations per interval; shared session where supported; see docs/short-operation-sessions.md"
+            ),
             "trace_execution": "prepare_compiled outside timing; run_prepared inside",
             "setup_diagnostics": os.environ.get("BENCH_INCLUDE_SETUP_DIAGNOSTICS") == "1",
         },
