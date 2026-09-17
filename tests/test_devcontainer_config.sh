@@ -73,6 +73,25 @@ if grep -q "libopenblas-dev" "$ROOT/.devcontainer/cuda/Dockerfile"; then
     exit 1
 fi
 
+python3 - "$ROOT/.devcontainer/openblas/devcontainer.json" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+config = json.loads(path.read_text())
+assert config["build"] == {"dockerfile": "Dockerfile", "context": "../.."}
+assert "prepare_cpu_benchmark_python_venv" in config["postCreateCommand"]
+assert "verify-openblas-pytorch --threads 1" in config["postCreateCommand"]
+dockerfile = (path.parent / "Dockerfile").read_text()
+assert "BENCHMARK_TORCH_WHEEL=" in dockerfile
+assert "UV_NO_SYNC=1" in dockerfile
+assert "system-openblas" in dockerfile
+assert "USE_MKL=0" in dockerfile
+assert "OPENBLAS_TARGET=CORE2" in dockerfile
+assert "COPY --from=pytorch-builder" in dockerfile
+PY
+
 grep -q 'devcontainer up --workspace-folder .' "$ROOT/README.md"
 grep -q "devcontainer exec --workspace-folder ." "$ROOT/README.md"
 grep -q 'BENCH_INSTANCE=bin_matmul_256' "$ROOT/README.md"

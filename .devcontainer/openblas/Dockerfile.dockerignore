@@ -1,0 +1,5 @@
+**
+!.devcontainer/
+!.devcontainer/install_openblas.sh
+!.devcontainer/openblas/
+!.devcontainer/openblas/verify_provider.py

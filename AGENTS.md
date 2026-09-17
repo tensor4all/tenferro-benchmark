@@ -120,7 +120,8 @@ CPU comparisons use:
 - JAX Python
 
 C++ Torch/LibTorch is intentionally removed. Do not reintroduce LibTorch
-runners, `Torch_DIR`, or OpenBLAS-linked PyTorch source-build setup.
+runners or `Torch_DIR`. The opt-in `.devcontainer/openblas/` image source-builds
+PyTorch Python to match tenferro's OpenBLAS provider; it is not a LibTorch runner.
 
 On Linux CPU devcontainer runs, PyTorch uses the installed wheel's MKL-backed
 provider. For fair CPU comparisons, run tenferro-rs with `system-mkl` inside the
@@ -211,9 +212,12 @@ variables, as required by the benchmark-result policy.
 ## Linux CPU Devcontainer Workflow
 
 Use the devcontainer/Docker path for Linux CPU measurements. **Always run Linux
-CPU benchmark collection inside the devcontainer, and prefer tenferro-rs
-`system-mkl` there** so tenferro-rs and PyTorch share the same MKL-backed BLAS
-stack.
+CPU benchmark collection inside the devcontainer.** The default image uses
+`system-mkl` to match the PyTorch wheel. For provider-matched OpenBLAS comparisons,
+use `.devcontainer/openblas/devcontainer.json` and `system-openblas` instead;
+see `docs/linux-cpu-devcontainer.md`. Keep its `BENCHMARK_TORCH_WHEEL` setting
+when recreating `.venv`, and verify the runtime provider before collecting.
+Do not present differences from historical MKL runs as implementation speedups.
 
 Before building or collecting benchmarks, check that the existing devcontainer
 was created from the current `.devcontainer/Dockerfile` and
