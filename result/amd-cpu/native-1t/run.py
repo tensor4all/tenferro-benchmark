@@ -31,6 +31,9 @@ def monitor():
             if len(p) >= 5 and int(p[2]) in domain and p[3].startswith('R'):
                 try:
                     owned = container_id in Path(f'/proc/{p[0]}/cgroup').read_text()
+                    # A managed CPU worker may leave the container cgroup.
+                    executable = Path(f'/proc/{p[0]}/cmdline').read_bytes().split(b'\0')[0]
+                    owned = owned or executable in (b'/tmp/eager-views-candidate', b'/tmp/canonical-copy-candidate')
                 except FileNotFoundError:
                     owned = False
                 if not owned:

@@ -15,6 +15,8 @@ all-domain preflight selected CPU32 again for the single complete rerun. No
 favorable case was selectively retried. The monitor also sometimes classified
 short-lived benchmark workers as foreign; the independently identified Julia/pi
 samples suffice to invalidate both suites regardless of those false positives.
+The executable-name heuristic subsequently added to `run.py` was not used in
+these recorded suites and does not retroactively change their classification.
 
 ## LM opt_flops: raw medians (milliseconds), not accepted speedup evidence
 
@@ -41,7 +43,14 @@ its timer. Native inputs are zeros: separate unit/AD and nonzero probe validatio
 must not be mislabeled a full nonzero LM cross-backend oracle.
 
 No other workload was stopped or re-pinned, and no shared service was changed.
-No further timing retries were made. A reliably reserved L3 window (or explicit
-permission to coordinate competing workloads) is needed for acceptance-quality
-measurement. Previously measured instruction savings remain instruction results,
-not native speedup claims. PR creation/promotion has not happened.
+The maintainer authorized temporarily excluding CPU32–39 from competing jobs,
+but the first affinity write failed with EPERM (the Julia jobs belonged to a
+different UID); passwordless sudo was unavailable. No measurement started.
+Independent verification found all 369 live-thread masks unchanged; see
+`reserved/post-failure-verification.json`. The attempted script's restoration
+warning concerned redundant writes to unchanged masks, not actual affinity loss.
+No privilege workaround or further timing retry was attempted.
+
+The maintainer then stopped measurement attempts and requested PR integration.
+Previously measured instruction savings remain instruction results, not native
+speedup claims. Acceptance-quality timing and 4T remain deferred.
