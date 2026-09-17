@@ -1,0 +1,143 @@
+{
+  "protocol": {
+    "baseline": "57bee76de1a752782bdd985f332050422f885372",
+    "candidate": "2fd8163e568a232072348e8939d534713f3b3a98",
+    "strided": "17e05ffb168d0f826529ea2c3aceeb4ec851448b",
+    "benchmark_source": "976c4b9a459f94086c714ec0f6836978a7bbdfc0",
+    "build": "release, CARGO_PROFILE_RELEASE_DEBUG=1, system-openblas, local strided patch, RUSTC_WRAPPER empty",
+    "provider": "OpenBLAS 0.3.26 LP64 pthreads, existing authorized OpenBLAS diagnostic Docker image",
+    "cpu": 16,
+    "l3_cpus": "16-23",
+    "threads": 1,
+    "cases": [
+      {
+        "name": "bin_elementwise_mul_2048x2048",
+        "divisor": 2,
+        "minimum_reduction_percent": 20
+      },
+      {
+        "name": "bin_matmul_1024",
+        "divisor": 2,
+        "minimum_reduction_percent": -1
+      },
+      {
+        "name": "lm_batch_likelihood_sentence_3_12d",
+        "divisor": 4,
+        "minimum_reduction_percent": -1
+      }
+    ],
+    "repetitions": 3,
+    "runs": [
+      1,
+      3
+    ],
+    "warmups": 1,
+    "metric": "whole-process N3-N1 Ir divided by added contractions; median paired percentage reduction",
+    "scope": "Warmed eager operation including intrinsic allocations; fixed setup cancels; per-repeat harness overhead remains. Not a kernel-only or native timing measurement.",
+    "validity": "All cases and pairs required, successful exits and numerical checks required, same 1T environment and CPU16 affinity. Incomplete runs or configuration/numerical failures invalidate the whole comparison. Inspect provider GEMM self-cost changes rather than assume invariance.",
+    "host_noise": "Record active workloads and CPU16 L3 topology; any competing native workload precludes native timing acceptance. Instruction diagnostics remain allowed; no native speedup will be inferred.",
+    "integration": "Deferred: UI diagnostic snapshots/local-patch propagation, full integration, native timings and normal dependency pins remain separate blockers. Candidate is not a fully validated release."
+  },
+  "results": {
+    "bin_elementwise_mul_2048x2048": {
+      "samples": [
+        {
+          "baseline": 11108652.0,
+          "baseline_gemm_self": 0.0,
+          "candidate": 5308238.5,
+          "candidate_gemm_self": 0.0,
+          "reduction_percent": 52.21527778527943
+        },
+        {
+          "baseline": 11106156.5,
+          "baseline_gemm_self": 0.0,
+          "candidate": 5310668.0,
+          "candidate_gemm_self": 0.0,
+          "reduction_percent": 52.18266553330129
+        },
+        {
+          "baseline": 11102076.5,
+          "baseline_gemm_self": 0.0,
+          "candidate": 5309045.0,
+          "candidate_gemm_self": 0.0,
+          "reduction_percent": 52.17971160620267
+        }
+      ],
+      "baseline_median_Ir": 11106156.5,
+      "candidate_median_Ir": 5309045.0,
+      "median_paired_reduction_percent": 52.18266553330129,
+      "paired_reduction_range": [
+        52.17971160620267,
+        52.21527778527943
+      ],
+      "instruction_gate_passed": true
+    },
+    "bin_matmul_1024": {
+      "samples": [
+        {
+          "baseline": 524967422.5,
+          "baseline_gemm_self": 512386632.0,
+          "candidate": 523500184.0,
+          "candidate_gemm_self": 512386632.0,
+          "reduction_percent": 0.2794913431032997
+        },
+        {
+          "baseline": 524969610.5,
+          "baseline_gemm_self": 512386632.0,
+          "candidate": 523494310.5,
+          "candidate_gemm_self": 512386632.0,
+          "reduction_percent": 0.2810257909205194
+        },
+        {
+          "baseline": 524959940.5,
+          "baseline_gemm_self": 512386632.0,
+          "candidate": 523502370.0,
+          "candidate_gemm_self": 512386632.0,
+          "reduction_percent": 0.2776536622226322
+        }
+      ],
+      "baseline_median_Ir": 524967422.5,
+      "candidate_median_Ir": 523500184.0,
+      "median_paired_reduction_percent": 0.2794913431032997,
+      "paired_reduction_range": [
+        0.2776536622226322,
+        0.2810257909205194
+      ],
+      "instruction_gate_passed": true
+    },
+    "lm_batch_likelihood_sentence_3_12d": {
+      "samples": [
+        {
+          "baseline": 968053178.5,
+          "baseline_gemm_self": 444650842.0,
+          "candidate": 950507132.5,
+          "candidate_gemm_self": 444650842.0,
+          "reduction_percent": 1.8125084850387663
+        },
+        {
+          "baseline": 968029959.75,
+          "baseline_gemm_self": 444650842.0,
+          "candidate": 950473312.75,
+          "candidate_gemm_self": 444650842.0,
+          "reduction_percent": 1.813647069821489
+        },
+        {
+          "baseline": 968079181.25,
+          "baseline_gemm_self": 444650842.0,
+          "candidate": 950542303.0,
+          "candidate_gemm_self": 444650842.0,
+          "reduction_percent": 1.8115127966450095
+        }
+      ],
+      "baseline_median_Ir": 968053178.5,
+      "candidate_median_Ir": 950507132.5,
+      "median_paired_reduction_percent": 1.8125084850387663,
+      "paired_reduction_range": [
+        1.8115127966450095,
+        1.813647069821489
+      ],
+      "instruction_gate_passed": true
+    }
+  },
+  "native_speedup": null
+}

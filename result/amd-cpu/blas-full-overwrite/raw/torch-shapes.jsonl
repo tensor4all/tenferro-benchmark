@@ -1,0 +1,74 @@
+{"strategy": "opt_flops", "threads": 1}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 12], "stride": [1, 144]}, {"shape": [12, 12], "stride": [12, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 144], "stride": [144, 1]}, {"shape": [144, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1728, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 144], "stride": [1, 11]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 1584], "stride": [1, 11]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 144, 11], "stride": [1584, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 12, 1]}, {"shape": [1100, 12, 12], "stride": [144, 1, 12]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 144], "stride": [144, 1]}, {"shape": [144, 1728], "stride": [1728, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 1584], "stride": [1584, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 144, 11], "stride": [1584, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 1, 12]}, {"shape": [1100, 12, 12], "stride": [144, 1, 12]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 12, 1]}, {"shape": [1100, 12, 144], "stride": [1728, 144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [13200, 144], "stride": [144, 1]}, {"shape": [144, 12], "stride": [12, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 144], "stride": [144, 1]}, {"shape": [144, 121], "stride": [121, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 11, 11], "stride": [121, 1, 11]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 1, 11], "stride": [11, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 12], "stride": [1, 144]}, {"shape": [12, 12], "stride": [12, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 144], "stride": [144, 1]}, {"shape": [144, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1728, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 144], "stride": [1, 11]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 1584], "stride": [1, 11]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 144, 11], "stride": [1584, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 12, 1]}, {"shape": [1100, 12, 12], "stride": [144, 1, 12]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 144], "stride": [144, 1]}, {"shape": [144, 1728], "stride": [1728, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 1584], "stride": [1584, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 144, 11], "stride": [1584, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 1, 12]}, {"shape": [1100, 12, 12], "stride": [144, 1, 12]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 12, 1]}, {"shape": [1100, 12, 144], "stride": [1728, 144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [13200, 144], "stride": [144, 1]}, {"shape": [144, 12], "stride": [12, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 144], "stride": [144, 1]}, {"shape": [144, 121], "stride": [121, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 11, 11], "stride": [121, 1, 11]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 1, 11], "stride": [11, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"strategy": "opt_size", "threads": 1}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 12], "stride": [1, 144]}, {"shape": [12, 12], "stride": [1, 12]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 144], "stride": [144, 1]}, {"shape": [144, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1728, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 144], "stride": [1, 11]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 1584], "stride": [1584, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 144, 11], "stride": [1584, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 12, 1]}, {"shape": [1100, 12, 12], "stride": [144, 1, 12]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 144], "stride": [144, 1]}, {"shape": [144, 1728], "stride": [1728, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 1584], "stride": [1, 11]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 144, 11], "stride": [1584, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [13200, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [1, 12]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 144], "stride": [1728, 144, 1]}, {"shape": [1100, 144, 12], "stride": [1728, 1, 144]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 12, 1]}, {"shape": [1100, 12, 12], "stride": [144, 12, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 144], "stride": [144, 1]}, {"shape": [144, 121], "stride": [121, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 11, 11], "stride": [121, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 1, 11], "stride": [11, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 12], "stride": [1, 144]}, {"shape": [12, 12], "stride": [1, 12]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [144, 144], "stride": [144, 1]}, {"shape": [144, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1728, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 144], "stride": [144, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 1584], "stride": [1584, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 144, 11], "stride": [1584, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 1, 12]}, {"shape": [1100, 12, 12], "stride": [144, 1, 12]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 144], "stride": [144, 1]}, {"shape": [144, 1728], "stride": [1728, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 144], "stride": [1, 11]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 11], "stride": [11, 1]}, {"shape": [11, 1584], "stride": [1, 11]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 144, 11], "stride": [1584, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [13200, 12], "stride": [12, 1]}, {"shape": [12, 144], "stride": [144, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 144], "stride": [1728, 144, 1]}, {"shape": [1100, 144, 12], "stride": [1728, 1, 144]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 12, 12], "stride": [144, 12, 1]}, {"shape": [1100, 12, 12], "stride": [144, 12, 1]}]}
+{"op": "aten.mm.default", "inputs": [{"shape": [1100, 144], "stride": [144, 1]}, {"shape": [144, 121], "stride": [121, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 11, 11], "stride": [121, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}
+{"op": "aten.bmm.default", "inputs": [{"shape": [1100, 1, 11], "stride": [11, 11, 1]}, {"shape": [1100, 11, 1], "stride": [11, 1, 1]}]}

@@ -1,0 +1,51 @@
+2026-09-17T15:21:04+09:00
+sha256:228bf2e4baf4ef4117a65bb8a5a2d58247ce0c0985aec8a8fb53b7a58193893f
+sha256:228bf2e4baf4ef4117a65bb8a5a2d58247ce0c0985aec8a8fb53b7a58193893f
+    PID PSR %CPU COMMAND
+3846490   9  300 ps
+ 840925  27 99.9 julia
+1832959  40 99.9 julia
+ 640469   6 99.7 julia
+1713399  48 51.1 pi
+1566797  15 26.0 pi
+2176687  35  6.0 pi
+   4960   0  2.8 zellij
+16-23
+TENFERRO_CPU_BACKEND_KIND=blas
+OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1
+RAYON_NUM_THREADS=1
+rustc 1.98.1 (48a229cea 2026-09-01)
+binary: rustc
+commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+commit-date: 2026-09-01
+host: x86_64-unknown-linux-gnu
+release: 1.98.1
+LLVM version: 22.1.8
+3295ad136f4484eabf59e2cd5f8298c767f94c069757fbd3d83cf938bcc9081c  /tmp/blas-uninit-final
+7e98d41f7b5a999393ca0fc402bd85cea0b7e441d51b1108eb4837587177af79  /tmp/eager-views-candidate
+7d03970fd7daff86aedd09cf5c405e89e947ddba29c5a33d40887d6778a7457c  /opt/openblas/lib/libopenblasp-r0.3.26.so
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/gpu_permutation_mac_patterns.json (parse failed: missing field `name` at line 75 column 1)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/gpu_permutation_patterns.json (parse failed: missing field `name` at line 112 column 1)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/permutation_patterns.json (parse failed: missing field `name` at line 127 column 1)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/session_matrix.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/small_work.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+  [1/1] bin_matmul_1024...
+verified OpenBLAS threads=1 at dgemm 1024 1024 1024
+verified OpenBLAS threads=1 at dgemm 1024 1024 1024
+  [1/1] bin_matmul_1024...
+  -> bin_matmul_1024 strategy=opt_size: reusing previous measurement for identical path
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/gpu_permutation_mac_patterns.json (parse failed: missing field `name` at line 75 column 1)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/gpu_permutation_patterns.json (parse failed: missing field `name` at line 112 column 1)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/permutation_patterns.json (parse failed: missing field `name` at line 127 column 1)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/session_matrix.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/small_work.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+  [1/1] bin_matmul_1024...
+verified OpenBLAS threads=1 at dgemm 1024 1024 1024
+verified OpenBLAS threads=1 at dgemm 1024 1024 1024
+  [1/1] bin_matmul_1024...
+  -> bin_matmul_1024 strategy=opt_size: reusing previous measurement for identical path
+Post-collection L3-domain thread snapshot (not a native timing clearance):
+2026-09-17T15:55:46+09:00
+    PID     TID PSR %CPU STAT COMMAND
+ 840925  840925  16 99.9 Rl   julia

@@ -1,0 +1,24 @@
+{
+  "baseline": "57bee76de1a752782bdd985f332050422f885372",
+  "candidate": "2fd8163e568a232072348e8939d534713f3b3a98",
+  "strided": "17e05ffb168d0f826529ea2c3aceeb4ec851448b",
+  "benchmark_source": "976c4b9a459f94086c714ec0f6836978a7bbdfc0",
+  "build": "release, CARGO_PROFILE_RELEASE_DEBUG=1, system-openblas, local strided patch, RUSTC_WRAPPER empty",
+  "provider": "OpenBLAS 0.3.26 LP64 pthreads, existing authorized OpenBLAS diagnostic Docker image",
+  "cpu": 16,
+  "l3_cpus": "16-23",
+  "threads": 1,
+  "cases": [
+    {"name": "bin_elementwise_mul_2048x2048", "divisor": 2, "minimum_reduction_percent": 20},
+    {"name": "bin_matmul_1024", "divisor": 2, "minimum_reduction_percent": -1},
+    {"name": "lm_batch_likelihood_sentence_3_12d", "divisor": 4, "minimum_reduction_percent": -1}
+  ],
+  "repetitions": 3,
+  "runs": [1, 3],
+  "warmups": 1,
+  "metric": "whole-process N3-N1 Ir divided by added contractions; median paired percentage reduction",
+  "scope": "Warmed eager operation including intrinsic allocations; fixed setup cancels; per-repeat harness overhead remains. Not a kernel-only or native timing measurement.",
+  "validity": "All cases and pairs required, successful exits and numerical checks required, same 1T environment and CPU16 affinity. Incomplete runs or configuration/numerical failures invalidate the whole comparison. Inspect provider GEMM self-cost changes rather than assume invariance.",
+  "host_noise": "Record active workloads and CPU16 L3 topology; any competing native workload precludes native timing acceptance. Instruction diagnostics remain allowed; no native speedup will be inferred.",
+  "integration": "Deferred: UI diagnostic snapshots/local-patch propagation, full integration, native timings and normal dependency pins remain separate blockers. Candidate is not a fully validated release."
+}

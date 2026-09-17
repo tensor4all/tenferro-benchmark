@@ -1,0 +1,94 @@
+{
+  "baseline_tenferro": "03ec9804beca51dce6355d1751e10251ff2972d4",
+  "candidate_tenferro": "57bee76de1a752782bdd985f332050422f885372",
+  "strided": "17e05ffb168d0f826529ea2c3aceeb4ec851448b",
+  "provider": "OpenBLAS 0.3.26",
+  "threads": 1,
+  "cpu": 16,
+  "metric": "whole-process N3-N1 Ir; divide by 2 for cached identical binary paths, by 4 for the two distinct LM paths; three pairs for binary controls, one exploratory LM pair",
+  "native_speedup": null,
+  "cases": {
+    "bin_batched_matmul_b32_m128_n128_k128": {
+      "samples": [
+        {
+          "baseline": 43892259.5,
+          "baseline_gemm_kernel_self": 33273536.0,
+          "final": 39692121.5,
+          "final_gemm_kernel_self": 33273536.0,
+          "reduction_percent": 9.569199781114024
+        },
+        {
+          "baseline": 43895567.5,
+          "baseline_gemm_kernel_self": 33273536.0,
+          "final": 39699083.0,
+          "final_gemm_kernel_self": 33273536.0,
+          "reduction_percent": 9.560155475834776
+        },
+        {
+          "baseline": 43895074.0,
+          "baseline_gemm_kernel_self": 33273536.0,
+          "final": 39696305.0,
+          "final_gemm_kernel_self": 33273536.0,
+          "reduction_percent": 9.565467414407369
+        }
+      ],
+      "baseline_median_Ir": 43895074.0,
+      "final_median_Ir": 39696305.0,
+      "paired_reduction_percent_range": [
+        9.560155475834776,
+        9.569199781114024
+      ],
+      "all_pairs_pass_instruction_gate": true
+    },
+    "bin_matmul_1024": {
+      "samples": [
+        {
+          "baseline": 533357366.5,
+          "baseline_gemm_kernel_self": 512386632.0,
+          "final": 524961347.5,
+          "final_gemm_kernel_self": 512386632.0,
+          "reduction_percent": 1.5741826263873326
+        },
+        {
+          "baseline": 533359123.0,
+          "baseline_gemm_kernel_self": 512386632.0,
+          "final": 524962594.0,
+          "final_gemm_kernel_self": 512386632.0,
+          "reduction_percent": 1.574273062542142
+        },
+        {
+          "baseline": 533358520.0,
+          "baseline_gemm_kernel_self": 512386632.0,
+          "final": 524970052.5,
+          "final_gemm_kernel_self": 512386632.0,
+          "reduction_percent": 1.5727633824992648
+        }
+      ],
+      "baseline_median_Ir": 533358520.0,
+      "final_median_Ir": 524962594.0,
+      "paired_reduction_percent_range": [
+        1.5727633824992648,
+        1.574273062542142
+      ],
+      "all_pairs_pass_instruction_gate": true
+    },
+    "lm_batch_likelihood_sentence_3_12d": {
+      "samples": [
+        {
+          "baseline": 1009589326.5,
+          "baseline_gemm_kernel_self": 444650842.0,
+          "final": 968164607.75,
+          "final_gemm_kernel_self": 444650842.0,
+          "reduction_percent": 4.103125663343665
+        }
+      ],
+      "baseline_median_Ir": 1009589326.5,
+      "final_median_Ir": 968164607.75,
+      "paired_reduction_percent_range": [
+        4.103125663343665,
+        4.103125663343665
+      ],
+      "all_pairs_pass_instruction_gate": null
+    }
+  }
+}

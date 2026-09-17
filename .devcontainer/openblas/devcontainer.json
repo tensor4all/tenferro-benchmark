@@ -1,0 +1,17 @@
+{
+  "name": "tenferro-benchmark-openblas",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "../.."
+  },
+  "remoteUser": "vscode",
+  "remoteEnv": {
+    "PATH": "/home/vscode/.cargo/bin:/home/vscode/.local/bin:/home/vscode/.juliaup/bin:${containerEnv:PATH}"
+  },
+  "mounts": [
+    "source=tenferro-benchmark-cargo-registry,target=/home/vscode/.cargo/registry,type=volume",
+    "source=tenferro-benchmark-cargo-git,target=/home/vscode/.cargo/git,type=volume",
+    "source=tenferro-benchmark-uv-cache,target=/home/vscode/.cache/uv,type=volume"
+  ],
+  "postCreateCommand": "bash -c 'source scripts/python_venv.sh; prepare_cpu_benchmark_python_venv \"$PWD\" && uv run python /usr/local/bin/verify-openblas-pytorch --threads 1'"
+}

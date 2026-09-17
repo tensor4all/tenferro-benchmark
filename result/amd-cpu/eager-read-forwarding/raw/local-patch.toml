@@ -1,0 +1,7 @@
+[patch."https://github.com/tensor4all/strided-rs.git"]
+strided-traits = { path = "/home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/extern/strided-rs/strided-traits" }
+strided-view = { path = "/home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/extern/strided-rs/strided-view" }
+strided-perm = { path = "/home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/extern/strided-rs/strided-perm" }
+strided-basic = { path = "/home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/extern/strided-rs/strided-basic" }
+strided-fused = { path = "/home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/extern/strided-rs/strided-fused" }
+strided-kernel = { path = "/home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/extern/strided-rs/strided-kernel" }

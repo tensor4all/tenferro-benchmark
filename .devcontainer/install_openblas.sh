@@ -5,6 +5,7 @@ set -euo pipefail
 : "${OPENBLAS_VERSION:=0.3.26}"
 : "${OPENBLAS_MAX_THREADS:=64}"
 : "${OPENBLAS_DYNAMIC_ARCH:=1}"
+: "${BUILD_JOBS:=16}"
 
 build_dir="$(mktemp -d)"
 trap 'rm -rf "$build_dir"' EXIT
@@ -21,16 +22,22 @@ curl -fsSL \
 make_flags=(
     "USE_THREAD=1"
     "USE_OPENMP=0"
+    "INTERFACE64=0"
     "NUM_THREADS=${OPENBLAS_MAX_THREADS}"
     "NO_AFFINITY=1"
+    "MAKE_NB_JOBS=${BUILD_JOBS}"
 )
 
 if [[ "$OPENBLAS_DYNAMIC_ARCH" == "1" ]]; then
     make_flags+=("DYNAMIC_ARCH=1")
 fi
 
-make -C "$build_dir" -j"$(nproc)" "${make_flags[@]}"
-make -C "$build_dir" install PREFIX="$OPENBLAS_ROOT"
+if [[ -n "${OPENBLAS_TARGET:-}" ]]; then
+    make_flags+=("TARGET=${OPENBLAS_TARGET}")
+fi
+
+make -C "$build_dir" -j"${BUILD_JOBS}" "${make_flags[@]}"
+make -C "$build_dir" "${make_flags[@]}" install PREFIX="$OPENBLAS_ROOT"
 
 echo "$OPENBLAS_ROOT/lib" > /etc/ld.so.conf.d/openblas.conf
 ldconfig

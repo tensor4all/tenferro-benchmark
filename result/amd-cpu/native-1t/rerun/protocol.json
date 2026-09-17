@@ -1,0 +1,30 @@
+{
+  "authorization": "User permits distant idle L3 domain while unrelated workloads run elsewhere; not a globally quiet host.",
+  "cpu": 32,
+  "l3_cpus": "32-39",
+  "preflight": "5-second sample, every selected-domain CPU <=5% busy",
+  "during": "sample per-CPU load and runnable tasks; reject contamination from foreign runnable tasks in selected L3 or >5% mean activity on other domain cores",
+  "threads": 1,
+  "variants": {
+    "baseline": "2fd8163 + strided17e05ff /tmp/eager-views-candidate",
+    "copy": "636cd499 + strided78d5190 /tmp/canonical-copy-candidate",
+    "gemv_probe": "copy binary with diagnostic LD_PRELOAD=/tmp/gemv_probe.so; not production",
+    "pytorch": "2.12.0+openblas"
+  },
+  "provider": "same OpenBLAS0.3.26 LP64 pthread library",
+  "cases": [
+    "bin_elementwise_mul_2048x2048",
+    "bin_matmul_1024",
+    "lm_batch_likelihood_sentence_3_12d"
+  ],
+  "warmups": 3,
+  "samples": 15,
+  "processes_per_variant_case": 1,
+  "order": "each case baseline, copy, gemv_probe, pytorch, sequentially",
+  "statistics": "existing harness median and IQR, both contraction strategies retained; logs expose aggregate statistics rather than individual samples",
+  "native_hypothesis": "LM opt_flops >=5% median reduction for copy vs baseline and separately GEMV vs copy; multiplication and GEMM controls <=3% regression; inspect variability and both strategies, no claims if contaminated",
+  "scope": "warmed eager contraction workflow; input tensors, runtime and path preparation outside timer, intrinsic workflow handle/dispatch/allocation costs inside. Not a kernel-only or prepared standard-operation latency result.",
+  "correctness": "Native fixtures are zero-input smoke runs. Independent nonzero copy tests, CPU/AD validation and GEMV diagnostic96 cases are separate evidence; no claim of full nonzero LM cross-backend validation.",
+  "limitations": "Shared socket/memory/power and possible migrating workloads; no independent process repetitions. GEMV instruction gate failed5% (measured4.3%); this separate native hypothesis does not change that result. Production promotion and PR validation are separate.",
+  "reason": "Full unchanged-suite rerun; choose lowest maximum observed load among distant L3 domains before timing."
+}

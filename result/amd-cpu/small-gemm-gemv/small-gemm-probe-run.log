@@ -1,0 +1,6 @@
+bin_elementwise_mul_2048x2048 n1 done
+bin_elementwise_mul_2048x2048 n3 done
+bin_matmul_1024 n1 done
+bin_matmul_1024 n3 done
+lm_batch_likelihood_sentence_3_12d n1 done
+lm_batch_likelihood_sentence_3_12d n3 done

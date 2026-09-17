@@ -1,0 +1,25 @@
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/gpu_permutation_mac_patterns.json (parse failed: missing field `name` at line 75 column 1)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/gpu_permutation_patterns.json (parse failed: missing field `name` at line 112 column 1)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/permutation_patterns.json (parse failed: missing field `name` at line 127 column 1)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/session_matrix.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+Warning: skip /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances/small_work.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+  [1/1] lm_batch_likelihood_sentence_3_12d...
+tenferro-eager benchmark suite
+==================================
+Loaded 1 instances from /home/shinaoka/tensor4all/.worktrees/blas-uninit-benchmark/data/instances
+Backend: tenferro-eager
+TENFERRO_CPU_BACKEND_KIND=blas
+TENFERRO_OPT_DOT_DECOMPOSER=0
+RAYON_NUM_THREADS=1, OMP_NUM_THREADS=1
+Timing: median ± IQR of 15 runs (3 warmup), precomputed path, eager binary contractions
+
+Strategy: opt_flops
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms) Compile (ms)
+------------------------------------------------------------------------------------------------------------------------
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86      140.396      2.454        0.000
+
+Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms) Compile (ms)
+------------------------------------------------------------------------------------------------------------------------
+  [1/1] lm_batch_likelihood_sentence_3_12d...
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86      142.802      9.176        0.000

@@ -1,0 +1,17 @@
+{
+  "bin_elementwise_mul_2048x2048": {
+    "baseline_Ir": 5310838.5,
+    "gemv_probe_Ir": 5307457.5,
+    "reduction_percent": 0.06366226350132953
+  },
+  "bin_matmul_1024": {
+    "baseline_Ir": 523494508.5,
+    "gemv_probe_Ir": 523494137.5,
+    "reduction_percent": 7.086989337601324e-05
+  },
+  "lm_batch_likelihood_sentence_3_12d": {
+    "baseline_Ir": 837405324.5,
+    "gemv_probe_Ir": 801393466.0,
+    "reduction_percent": 4.3004095443866515
+  }
+}
