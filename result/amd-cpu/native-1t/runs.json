@@ -1,0 +1,98 @@
+[
+  {
+    "case": "bin_elementwise_mul_2048x2048",
+    "variant": "baseline",
+    "start": 1789648441.0913913,
+    "end": 1789648441.6121843,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=bin_elementwise_mul_2048x2048 BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 /tmp/eager-views-candidate"
+  },
+  {
+    "case": "bin_elementwise_mul_2048x2048",
+    "variant": "copy",
+    "start": 1789648441.612315,
+    "end": 1789648442.1316786,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=bin_elementwise_mul_2048x2048 BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 /tmp/canonical-copy-candidate"
+  },
+  {
+    "case": "bin_elementwise_mul_2048x2048",
+    "variant": "gemv_probe",
+    "start": 1789648442.1317906,
+    "end": 1789648442.6495543,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=bin_elementwise_mul_2048x2048 BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 env LD_PRELOAD=/tmp/gemv_probe.so /tmp/canonical-copy-candidate"
+  },
+  {
+    "case": "bin_elementwise_mul_2048x2048",
+    "variant": "pytorch",
+    "start": 1789648442.6496701,
+    "end": 1789648444.4714665,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=bin_elementwise_mul_2048x2048 BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 .venv/bin/python scripts/benchmark_python.py --backend pytorch --num-threads 1"
+  },
+  {
+    "case": "bin_matmul_1024",
+    "variant": "baseline",
+    "start": 1789648444.471619,
+    "end": 1789648445.489609,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=bin_matmul_1024 BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 /tmp/eager-views-candidate"
+  },
+  {
+    "case": "bin_matmul_1024",
+    "variant": "copy",
+    "start": 1789648445.4897313,
+    "end": 1789648446.5089586,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=bin_matmul_1024 BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 /tmp/canonical-copy-candidate"
+  },
+  {
+    "case": "bin_matmul_1024",
+    "variant": "gemv_probe",
+    "start": 1789648446.5090806,
+    "end": 1789648447.5287557,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=bin_matmul_1024 BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 env LD_PRELOAD=/tmp/gemv_probe.so /tmp/canonical-copy-candidate"
+  },
+  {
+    "case": "bin_matmul_1024",
+    "variant": "pytorch",
+    "start": 1789648447.5288696,
+    "end": 1789648449.7508404,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=bin_matmul_1024 BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 .venv/bin/python scripts/benchmark_python.py --backend pytorch --num-threads 1"
+  },
+  {
+    "case": "lm_batch_likelihood_sentence_3_12d",
+    "variant": "baseline",
+    "start": 1789648449.7510262,
+    "end": 1789648454.7369912,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=lm_batch_likelihood_sentence_3_12d BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 /tmp/eager-views-candidate"
+  },
+  {
+    "case": "lm_batch_likelihood_sentence_3_12d",
+    "variant": "copy",
+    "start": 1789648454.7370946,
+    "end": 1789648459.874804,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=lm_batch_likelihood_sentence_3_12d BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 /tmp/canonical-copy-candidate"
+  },
+  {
+    "case": "lm_batch_likelihood_sentence_3_12d",
+    "variant": "gemv_probe",
+    "start": 1789648459.87493,
+    "end": 1789648464.9080932,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=lm_batch_likelihood_sentence_3_12d BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 env LD_PRELOAD=/tmp/gemv_probe.so /tmp/canonical-copy-candidate"
+  },
+  {
+    "case": "lm_batch_likelihood_sentence_3_12d",
+    "variant": "pytorch",
+    "start": 1789648464.9082425,
+    "end": 1789648470.743737,
+    "exit_code": 0,
+    "command": "source scripts/thread_env.sh; configure_cpu_thread_env 1; export TENFERRO_MODE=eager TENFERRO_OPT_DOT_DECOMPOSER=0 BENCH_INSTANCE=lm_batch_likelihood_sentence_3_12d BENCH_RUNS=15 BENCH_WARMUPS=3; timeout 90s taskset -c 32 .venv/bin/python scripts/benchmark_python.py --backend pytorch --num-threads 1"
+  }
+]

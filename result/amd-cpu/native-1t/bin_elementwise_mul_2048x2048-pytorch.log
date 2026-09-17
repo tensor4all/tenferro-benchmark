@@ -1,0 +1,38 @@
+Warning: skip gpu_permutation_mac_patterns.json (missing field 'name')
+Warning: skip gpu_permutation_patterns.json (missing field 'name')
+Warning: skip permutation_patterns.json (missing field 'name')
+Warning: skip session_matrix.json (missing field 'name')
+Warning: skip small_work.json (missing field 'name')
+  [1/1] bin_elementwise_mul_2048x2048...
+  [1/1] bin_elementwise_mul_2048x2048...
+  -> bin_elementwise_mul_2048x2048 strategy=opt_size: reusing previous measurement for identical path
+pytorch-cpu einsum benchmark suite
+==================================
+Loaded 1 instances from /home/shinaoka/tensor4all/.worktrees/bench-openblas-cpu/data/instances
+Backend: pytorch-cpu
+OMP_NUM_THREADS=1
+OMP_THREAD_LIMIT=1
+OMP_DYNAMIC=FALSE
+RAYON_NUM_THREADS=1
+OPENBLAS_NUM_THREADS=1
+GOTO_NUM_THREADS=1
+MKL_NUM_THREADS=1
+VECLIB_MAXIMUM_THREADS=1
+VECLIB_NUM_THREADS=1
+NUMEXPR_NUM_THREADS=1
+BLIS_NUM_THREADS=1
+PJRT_NPROC=1
+XLA_FLAGS=--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1
+TORCH_NUM_THREADS=1
+TORCH_NUM_INTEROP_THREADS=1
+Timing: median ± IQR of 15 runs (3 warmup), path precomputed
+
+Strategy: opt_flops
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_elementwise_mul_2048x2048                             2       6.62        22.00       19.527      0.226
+
+Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_elementwise_mul_2048x2048                             2       6.62        22.00       19.527      0.226
