@@ -1,0 +1,14 @@
+{
+  "name": "bin_matmul_1024",
+  "intent": "Larger binary GEMM-shaped einsum diagnostic for separating fixed wrapper overhead from backend compute throughput.",
+  "format_string": "ij,jk->ik",
+  "shapes": [[1024, 1024], [1024, 1024]],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {"path": [[0, 1]], "log2_size": 20.0, "log10_flops": 9.0309},
+    "opt_flops": {"path": [[0, 1]], "log2_size": 20.0, "log10_flops": 9.0309}
+  },
+  "format_string_colmajor": "ji,kj->ki",
+  "shapes_colmajor": [[1024, 1024], [1024, 1024]]
+}
