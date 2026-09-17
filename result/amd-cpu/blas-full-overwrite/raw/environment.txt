@@ -1,0 +1,53 @@
+2026-09-17T13:51:09+09:00
+sha256:228bf2e4baf4ef4117a65bb8a5a2d58247ce0c0985aec8a8fb53b7a58193893f
+sha256:228bf2e4baf4ef4117a65bb8a5a2d58247ce0c0985aec8a8fb53b7a58193893f
+17e05ffb168d0f826529ea2c3aceeb4ec851448b
+a43fd6a18e15cd92f87cb7bcb64797f2a1302e94db7aa56b3e14fe32d500ce8c  /tmp/blas-uninit-baseline
+3295ad136f4484eabf59e2cd5f8298c767f94c069757fbd3d83cf938bcc9081c  .worktrees/blas-uninit-benchmark/target/release/tenferro-einsum-benchmark
+9e07fb5b923e52e82dd74d5fb3da175547d9cfeacda0d7d17de5d9bde3b254c9  .worktrees/blas-uninit-benchmark/Cargo.lock
+アーキテクチャ:                      x86_64
+CPU 操作モード:                      32-bit, 64-bit
+アドレスサイズ:                      48 bits physical, 48 bits virtual
+バイト順序:                          Little Endian
+CPU:                                 64
+オンラインになっている CPU のリスト: 0-63
+ベンダー ID:                         AuthenticAMD
+モデル名:                            AMD EPYC 7713P 64-Core Processor
+CPU ファミリー:                      25
+モデル:                              1
+コアあたりのスレッド数:              1
+ソケットあたりのコア数:              64
+ソケット数:                          1
+ステッピング:                        1
+周波数ブースト:                      使用する
+CPU スケーリング MHz:                49%
+CPU 最大 MHz:                        3720.7029
+CPU 最小 MHz:                        1500.0000
+BogoMIPS:                            3999.93
+フラグ:                              fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf rapl pni pclmulqdq monitor ssse3 fma cx16 pcid sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 hw_pstate ssbd mba ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local user_shstk clzero irperf xsaveerptr rdpru wbnoinvd amd_ppin brs arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload vgif v_spec_ctrl umip pku ospke vaes vpclmulqdq rdpid overflow_recov succor smca fsrm debug_swap ibpb_exit_to_user
+16-23
+    PID PSR %CPU COMMAND
+1594763  60  100 rustfmt
+ 840925   8 99.9 julia
+1832959  21 99.9 julia
+ 640469  48 99.7 julia
+1713399  28 51.5 pi
+1566797  57 28.6 pi
+2176687  32  6.1 pi
+   4960   0  2.8 zellij
+rustc 1.98.1 (48a229cea 2026-09-01)
+binary: rustc
+commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+commit-date: 2026-09-01
+host: x86_64-unknown-linux-gnu
+release: 1.98.1
+LLVM version: 22.1.8
+valgrind-3.22.0
+7d03970fd7daff86aedd09cf5c405e89e947ddba29c5a33d40887d6778a7457c  /opt/openblas/lib/libopenblasp-r0.3.26.so
+TENFERRO_CPU_BACKEND_KIND=blas
+OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1
+RAYON_NUM_THREADS=1
+MKL_NUM_THREADS=1
+/home/shinaoka/.cargo/config.toml
+rustc-wrapper = "/home/shinaoka/.cargo/bin/kache"
