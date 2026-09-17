@@ -29,9 +29,22 @@ prepare_cpu_benchmark_python_venv() {
     echo "Preparing CPU Python benchmark environment"
     (
         cd "$project_dir"
-        UV_EXTRA_INDEX_URL="https://download.pytorch.org/whl/cpu" uv sync
-        uv pip install --index-url "https://download.pytorch.org/whl/cpu" --force-reinstall "torch==2.12.0+cpu"
-    )
+        if [[ -n "${BENCHMARK_TORCH_WHEEL:-}" ]]; then
+            # The OpenBLAS image supplies a source-built wheel. Do not replace
+            # it with the lockfile's provider-mismatched binary distribution.
+            local wheel
+            wheel="$(realpath -e -- "$BENCHMARK_TORCH_WHEEL")" || exit 1
+            uv venv --allow-existing .venv || exit 1
+            # Prune wheel-only CUDA dependencies too, while retaining the
+            # lockfile versions for the rest of the benchmark environment.
+            set -o pipefail
+            uv export --frozen --no-hashes --no-emit-project --prune torch |
+                uv pip install --reinstall-package torch -r - "$wheel" || exit 1
+        else
+            UV_EXTRA_INDEX_URL="https://download.pytorch.org/whl/cpu" uv sync || exit 1
+            uv pip install --index-url "https://download.pytorch.org/whl/cpu" --force-reinstall "torch==2.12.0+cpu" || exit 1
+        fi
+    ) || return 1
 
     # Keep subsequent `uv run` invocations from syncing the lockfile back to a
     # non-CPU PyTorch wheel during benchmark collection.

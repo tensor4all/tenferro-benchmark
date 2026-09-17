@@ -371,8 +371,9 @@ lineage visible in the comparison, not merely to add another backend.
 
 C++ Torch/LibTorch runners are intentionally removed; PyTorch Python is the
 ATen comparison backend. The PyTorch CPU provider is detected at run time and
-recorded in `run.yaml` and generated reports; Linux does not source-build
-PyTorch to force OpenBLAS.
+recorded in `run.yaml` and generated reports. The default Linux image uses a
+binary PyTorch wheel; the separate [provider-matched OpenBLAS image](docs/linux-cpu-devcontainer.md#provider-matched-openblas-image)
+source-builds PyTorch against the same OpenBLAS as tenferro.
 
 ## Documentation
 
