@@ -26,10 +26,9 @@ use tenferro_gpu::cuda::{
 use tenferro_linalg::{EagerTensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
-    DType, DotGeneralConfig, Error as TfError, GraphCompiler, Runtime, Tensor, TraceContext,
-    TracedTensor,
+    DType, DotGeneralConfig, Error as TfError, GraphCompiler, Runtime, TraceContext, TracedTensor,
 };
-use tenferro_tensor::TypedTensor;
+use tenferro_tensor::Tensor;
 
 fn eager_from_tensor_in(
     tensor: Tensor,
@@ -1732,14 +1731,9 @@ fn verify_eigh(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f
 }
 
 fn tensor_f64_parts(t: &Tensor) -> Option<(Vec<usize>, Vec<f64>)> {
-    if let Tensor::F64(typed) = t {
-        typed
-            .as_slice()
-            .ok()
-            .map(|data| (typed.shape().to_vec(), data.to_vec()))
-    } else {
-        None
-    }
+    t.as_slice::<f64>()
+        .ok()
+        .map(|data| (t.shape().to_vec(), data.to_vec()))
 }
 
 fn matmul_col_major(
@@ -1799,10 +1793,8 @@ fn compare_vectors(
 // ---------------------------------------------------------------------------
 
 fn tensor_f64(shape: &[usize], data: Vec<f64>) -> Tensor {
-    Tensor::F64(
-        TypedTensor::from_vec_col_major(shape.to_vec(), data)
-            .expect("benchmark shape/data length should match"),
-    )
+    Tensor::from_vec_col_major(shape.to_vec(), data)
+        .expect("benchmark shape/data length should match")
 }
 
 fn normal_data(shape: &[usize], seed: u64) -> Vec<f64> {

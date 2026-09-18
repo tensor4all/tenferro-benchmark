@@ -15,8 +15,8 @@ use tenferro_gpu::cuda::{
     cuda_runtime_engine_registration, gpu_available, upload_tensor, CudaBackend, CudaRuntime,
 };
 use tenferro_linalg::TracedTensorLinalgExt;
-use tenferro_runtime::{GraphCompiler, Runtime, Tensor, TracedTensor};
-use tenferro_tensor::TypedTensor;
+use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
+use tenferro_tensor::Tensor;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -554,10 +554,8 @@ fn json_field_str(value: &serde_yaml::Value) -> String {
 }
 
 fn tensor_f64(shape: &[usize], data: Vec<f64>) -> Tensor {
-    Tensor::F64(
-        TypedTensor::from_vec_col_major(shape.to_vec(), data)
-            .expect("benchmark shape/data length should match"),
-    )
+    Tensor::from_vec_col_major(shape.to_vec(), data)
+        .expect("benchmark shape/data length should match")
 }
 
 fn data_for_shape(shape: &[usize], seed: u64) -> Vec<f64> {

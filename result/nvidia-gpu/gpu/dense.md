@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/dense`
 - Suite file: `benchmarks/gpu/dense.yaml`
-- Timestamp: `2026-09-17T21:01:26.200962+00:00`
-- tenferro-rs commit: `292cdffef8d910abb88dca44cd3c928bc6051005`
+- Timestamp: `2026-09-18T14:58:26.104588+00:00`
+- tenferro-rs commit: `cf971d0f18d0357133da97dae66802e26bd56e2f`
 
 ## GPU Information
 
@@ -40,35 +40,35 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_batched_matmul_f64_b1024_256 | 3.606 | 3.581 | 2.079 | 2.080 | 61.213 | unsupported | unsupported | unsupported |
+| dense_batched_matmul_f64_b1024_256 | 2.320 | 2.320 | 2.079 | 2.077 | not configured | unsupported | unsupported | unsupported |
 
 ## gpu/dense / eigh / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_eigh_f64_1024 | 14.362 | 14.384 | 14.303 | unsupported | unsupported | 14.268 | unsupported | unsupported |
+| dense_eigh_f64_1024 | 14.218 | 14.033 | 14.272 | unsupported | unsupported | 14.259 | unsupported | unsupported |
 
 ## gpu/dense / matmul / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_matmul_f64_3072 | 3.509 | 3.508 | 3.126 | 3.124 | 3.479 | unsupported | unsupported | unsupported |
+| dense_matmul_f64_3072 | 3.306 | 3.297 | 3.124 | 3.124 | not configured | unsupported | unsupported | unsupported |
 
 ## gpu/dense / qr / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_qr_f64_1536 | 12.175 | 12.184 | 11.786 | unsupported | unsupported | 11.798 | unsupported | unsupported |
+| dense_qr_f64_1536 | 12.003 | 12.053 | 11.771 | unsupported | unsupported | 11.770 | unsupported | unsupported |
 
 ## gpu/dense / solve / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_solve_f64_1024_rhs16 | 5.240 | 5.197 | 4.405 | unsupported | unsupported | 4.418 | unsupported | unsupported |
-| dense_solve_f64_2048_rhs128 | 10.207 | 10.172 | 9.152 | unsupported | unsupported | 9.141 | unsupported | unsupported |
-| dense_solve_f64_2048_rhs16 | 11.190 | 11.092 | 10.208 | unsupported | unsupported | 10.240 | unsupported | unsupported |
-| dense_solve_f64_4096_rhs16 | 28.592 | 28.259 | 27.649 | unsupported | unsupported | 27.794 | unsupported | unsupported |
-| dense_solve_f64_512_rhs16 | 3.404 | 2.724 | 2.049 | unsupported | unsupported | 2.033 | unsupported | unsupported |
+| dense_solve_f64_1024_rhs16 | 5.206 | 5.201 | 4.419 | unsupported | unsupported | 5.994 | unsupported | unsupported |
+| dense_solve_f64_2048_rhs128 | 10.213 | 10.101 | 9.129 | unsupported | unsupported | 9.140 | unsupported | unsupported |
+| dense_solve_f64_2048_rhs16 | 10.998 | 10.828 | 10.199 | unsupported | unsupported | 10.221 | unsupported | unsupported |
+| dense_solve_f64_4096_rhs16 | 28.589 | 28.459 | 27.584 | unsupported | unsupported | 27.651 | unsupported | unsupported |
+| dense_solve_f64_512_rhs16 | 3.376 | 2.751 | 2.048 | unsupported | unsupported | 2.041 | unsupported | unsupported |
 
 ## gpu/dense / svd / allocating output
 
@@ -76,4 +76,4 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_svd_f64_256 | 12.192 | 12.184 | 12.187 | unsupported | unsupported | 23.373 | unsupported | unsupported |
+| dense_svd_f64_256 | 12.200 | 12.203 | 12.141 | unsupported | unsupported | 23.073 | unsupported | unsupported |

@@ -9,10 +9,9 @@ use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_einsum::EagerEinsumExt;
 #[cfg(feature = "cuda")]
 use tenferro_einsum::TraceContextEinsumExt;
-use tenferro_runtime::Tensor;
+use tenferro_tensor::Tensor as StorageTensor;
 #[cfg(feature = "cuda")]
 use tenferro_runtime::{TraceContext, TraceValue};
-use tenferro_tensor::TypedTensor;
 
 pub const DEFAULT_FILL_VALUE: f32 = 0.840_896_4; // 0.5f32.powf(0.4)
 pub const DEFAULT_BOND_DIM: usize = 2;
@@ -88,10 +87,9 @@ pub fn load_tensor_network(path: &Path) -> Result<TensorNetworkFile, String> {
     serde_json::from_str(&text).map_err(|e| format!("parse {}: {e}", path.display()))
 }
 
-pub fn tensor_f32_col_major(shape: &[usize], fill_value: f32) -> Result<Tensor, String> {
+pub fn tensor_f32_col_major(shape: &[usize], fill_value: f32) -> Result<StorageTensor, String> {
     let len: usize = shape.iter().product();
-    TypedTensor::from_vec_col_major(shape.to_vec(), vec![fill_value; len])
-        .map(Tensor::F32)
+    StorageTensor::from_vec_col_major(shape.to_vec(), vec![fill_value; len])
         .map_err(|e| format!("{e}"))
 }
 
@@ -229,16 +227,13 @@ pub fn scalar_f32(result: &EagerTensor) -> Result<f32, String> {
     scalar_f32_tensor(&tensor)
 }
 
-pub fn scalar_f32_tensor(tensor: &Tensor) -> Result<f32, String> {
-    match tensor {
-        Tensor::F32(t) => t
-            .host_data()
-            .map_err(|e| format!("{e}"))?
-            .first()
-            .copied()
-            .ok_or_else(|| "empty tensor result".to_string()),
-        other => Err(format!("expected F32 result, got {other:?}")),
-    }
+pub fn scalar_f32_tensor(tensor: &StorageTensor) -> Result<f32, String> {
+    tensor
+        .as_slice::<f32>()
+        .map_err(|e| format!("{e}"))?
+        .first()
+        .copied()
+        .ok_or_else(|| "empty tensor result".to_string())
 }
 
 pub fn integer_labels_to_expr(ixs: &[Vec<usize>], iy: &[usize]) -> String {
