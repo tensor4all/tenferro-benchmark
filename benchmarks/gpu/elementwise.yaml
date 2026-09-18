@@ -1,0 +1,72 @@
+schema_version: 1
+suite_id: gpu/elementwise
+title: GPU Elementwise Chain Benchmarks
+description: >-
+  Pure elementwise chains on CUDA. Every step is tanh(t * a + b), repeated
+  ELEMENTWISE_CHAIN_STEPS (8) times, so the whole chain is fusable. The small
+  problem measures per-command overhead and the large problem measures the
+  bandwidth cost of the chain. This suite is the GPU detection device for the
+  prepared/segmented execution-path divergence: the prepared path must fuse the
+  chain into one command, as the segmented path does.
+defaults:
+  device:
+    kind: cuda
+    ordinal: 0
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-9
+    atol: 1.0e-11
+backends:
+- tenferro-cuda-trace
+- tenferro-cuda-eager
+- pytorch-cuda
+problems:
+- id: elementwise_chain_f64_1k
+  family: elementwise
+  op: elementwise_chain
+  intent: "Per-command bound: 8 chained elementwise ops over a small vector."
+  dtype:
+    a: f64
+    b: f64
+  data:
+    generator: normal
+    seed: 7
+  elementwise_chain:
+    n: 1024
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-9
+    atol: 1.0e-11
+  notes: n=1024, steps=8
+- id: elementwise_chain_f64_1m
+  family: elementwise
+  op: elementwise_chain
+  intent: "Bandwidth bound: 8 chained elementwise ops over a large vector."
+  dtype:
+    a: f64
+    b: f64
+  data:
+    generator: normal
+    seed: 7
+  elementwise_chain:
+    n: 1048576
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-9
+    atol: 1.0e-11
+  notes: n=1048576, steps=8

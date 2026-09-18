@@ -157,12 +157,13 @@
         "id": { "type": "string", "minLength": 1 },
         "intent": { "type": "string", "minLength": 1 },
         "notes": { "type": "string", "minLength": 1 },
-        "family": { "enum": ["dense", "sparse", "einsum", "tensornetwork", "linalg_ad"] },
+        "family": { "enum": ["dense", "sparse", "einsum", "elementwise", "tensornetwork", "linalg_ad"] },
         "op": {
           "enum": [
             "matmul",
             "batched_matmul",
             "einsum",
+            "elementwise_chain",
             "tensor_network_contract",
             "qr",
             "solve",
@@ -184,6 +185,7 @@
         "matmul": { "$ref": "#/$defs/matmul" },
         "batched_matmul": { "$ref": "#/$defs/batched_matmul" },
         "einsum": { "$ref": "#/$defs/einsum" },
+        "elementwise_chain": { "$ref": "#/$defs/elementwise_chain" },
         "tensor_network": { "$ref": "#/$defs/tensor_network" },
         "linalg": { "$ref": "#/$defs/linalg" },
         "linalg_ad": { "$ref": "#/$defs/linalg_ad" },
@@ -210,6 +212,10 @@
         {
           "if": { "properties": { "family": { "const": "einsum" } } },
           "then": { "properties": { "op": { "const": "einsum" } } }
+        },
+        {
+          "if": { "properties": { "family": { "const": "elementwise" } } },
+          "then": { "properties": { "op": { "const": "elementwise_chain" } } }
         },
         {
           "if": { "properties": { "family": { "const": "tensornetwork" } } },
@@ -349,6 +355,14 @@
           }
         }
       ]
+    },
+    "elementwise_chain": {
+      "type": "object",
+      "required": ["n"],
+      "additionalProperties": false,
+      "properties": {
+        "n": { "type": "integer", "minimum": 1 }
+      }
     },
     "matmul": {
       "type": "object",

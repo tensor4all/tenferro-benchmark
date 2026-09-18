@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/tensornetwork`
 - Suite file: `benchmarks/gpu/tensornetwork.yaml`
-- Timestamp: `2026-09-16T02:37:14.947104+00:00`
-- tenferro-rs commit: `bca2d54a5884586b1aeae8006caa9b8c0ba44a26`
+- Timestamp: `2026-09-18T14:58:26.104588+00:00`
+- tenferro-rs commit: `cf971d0f18d0357133da97dae66802e26bd56e2f`
 
 ## GPU Information
 
@@ -40,4 +40,4 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA |
 |---|---:|---:|---:|
-| tensornetwork_permutation_optimized_f32 | 75.996 | 214.497 | 108.522 |
+| tensornetwork_permutation_optimized_f32 | runtime failed | runtime failed | runtime failed |

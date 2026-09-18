@@ -1,9 +1,9 @@
 # GPU Benchmark Results
 
 - Target profile: `nvidia-gpu`
-- Suite: `gpu/einsum`
-- Suite file: `benchmarks/gpu/einsum.yaml`
-- Timestamp: `2026-09-18T14:58:26.104588+00:00`
+- Suite: `gpu/elementwise`
+- Suite file: `benchmarks/gpu/elementwise.yaml`
+- Timestamp: `2026-09-18T15:03:46.544224+00:00`
 - tenferro-rs commit: `cf971d0f18d0357133da97dae66802e26bd56e2f`
 
 ## GPU Information
@@ -36,8 +36,9 @@ tenferro-rs uses native column-major GPU tensors; PyTorch and vendor-wrapper col
 The cuSOLVER column is torch.linalg with preferred_linalg_library=cusolver; for SVD it pins driver=gesvd as a QR-based cuSOLVER comparison. tenferro-rs CUDA SVD uses its backend default driver policy, currently gesvdj for matrices with both dimensions at most 1024 and gesvd otherwise.
 Non-`ok` cells show the structured backend status.
 
-## gpu/einsum / einsum / allocating output
+## gpu/elementwise / elementwise_chain / allocating output
 
-| Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| einsum_bin_matmul_3072_f64 | 3.275 | 3.301 | 3.164 | 3.162 | not configured | unsupported | unsupported | unsupported |
+| Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA |
+|---|---:|---:|---:|
+| elementwise_chain_f64_1k | 0.197 | 2.541 | 0.130 |
+| elementwise_chain_f64_1m | 0.194 | 1.725 | 0.320 |

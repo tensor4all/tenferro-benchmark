@@ -26,10 +26,9 @@ use tenferro_gpu::cuda::{
 use tenferro_linalg::{EagerTensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
-    DType, DotGeneralConfig, Error as TfError, GraphCompiler, Runtime, Tensor, TraceContext,
-    TracedTensor,
+    DType, DotGeneralConfig, Error as TfError, GraphCompiler, Runtime, TraceContext, TracedTensor,
 };
-use tenferro_tensor::TypedTensor;
+use tenferro_tensor::Tensor;
 
 fn eager_from_tensor_in(
     tensor: Tensor,
@@ -602,6 +601,7 @@ fn run_eager(
         "matmul",
         "batched_matmul",
         "einsum",
+        "elementwise_chain",
         "qr",
         "solve",
         "svd",
@@ -959,7 +959,15 @@ fn run_trace(
     if op == "einsum" {
         return run_semantic_trace_einsum(suite_id, problem, backend, device_ordinal, ts, bc, tc);
     }
-    let supported = ["matmul", "batched_matmul", "qr", "solve", "svd", "eigh"];
+    let supported = [
+        "matmul",
+        "batched_matmul",
+        "elementwise_chain",
+        "qr",
+        "solve",
+        "svd",
+        "eigh",
+    ];
     if !supported.contains(&op) {
         return stub(
             suite_id,
@@ -1011,7 +1019,6 @@ fn run_trace(
         let prepared = runtime
             .prepare_compiled(&program, &[])
             .map_err(|e| format!("prepare: {e}"))?;
-
         // Warmup (triggers JIT compilation on first run)
         for _ in 0..n_warmup.max(1) {
             let out = runtime
@@ -1155,6 +1162,15 @@ fn build_and_upload_eager_inputs(
                 extra: vec![],
             })
         }
+        "elementwise_chain" => {
+            let p = &problem["elementwise_chain"];
+            let n = yaml_usize(&p["n"], 1024);
+            Ok(EagerInputs {
+                a: upload(tensor_f64(&[n], normal_data(&[n], seed)))?,
+                b: Some(upload(tensor_f64(&[n], normal_data(&[n], seed + 1)))?),
+                extra: vec![],
+            })
+        }
         "batched_matmul" => {
             let p = &problem["batched_matmul"];
             let batch = yaml_usize(&p["batch"], 16);
@@ -1254,6 +1270,15 @@ fn build_cpu_eager_inputs(
                 extra: vec![],
             }
         }
+        "elementwise_chain" => {
+            let p = &problem["elementwise_chain"];
+            let n = yaml_usize(&p["n"], 1024);
+            EagerInputs {
+                a: cpu(tensor_f64(&[n], normal_data(&[n], seed))),
+                b: Some(cpu(tensor_f64(&[n], normal_data(&[n], seed + 1)))),
+                extra: vec![],
+            }
+        }
         "batched_matmul" => {
             let p = &problem["batched_matmul"];
             let batch = yaml_usize(&p["batch"], 16);
@@ -1350,6 +1375,19 @@ fn run_eager_op(
                 .matmul(inputs.b.as_ref().unwrap())
                 .map_err(|e| format!("matmul: {e}"))?;
             Ok(vec![out])
+        }
+        "elementwise_chain" => {
+            let a = &inputs.a;
+            let b = inputs.b.as_ref().unwrap();
+            let mut t = a.clone();
+            for _ in 0..ELEMENTWISE_CHAIN_STEPS {
+                t = t
+                    .mul(a)
+                    .and_then(|value| value.add(b))
+                    .and_then(|value| value.tanh())
+                    .map_err(|e| format!("elementwise_chain: {e}"))?;
+            }
+            Ok(vec![t])
         }
         "batched_matmul" => {
             let out = inputs
@@ -1462,6 +1500,17 @@ fn build_trace_graph_inner(
         "einsum" => Err(TfError::Internal(
             "einsum uses the semantic TraceContext runner".to_string(),
         )),
+        "elementwise_chain" => {
+            let p = &problem["elementwise_chain"];
+            let n = yaml_usize(&p["n"], 1024);
+            let (a, a_data) = inp!(&[n], normal_data(&[n], seed));
+            let (b, b_data) = inp!(&[n], normal_data(&[n], seed + 1));
+            let mut t = a.clone();
+            for _ in 0..ELEMENTWISE_CHAIN_STEPS {
+                t = t.mul(&a)?.add(&b)?.tanh()?;
+            }
+            Ok((vec![t], vec![(a, a_data), (b, b_data)]))
+        }
         "qr" => {
             let p = &problem["linalg"];
             let (m, n) = (yaml_usize(&p["m"], 64), yaml_usize(&p["n"], 64));
@@ -1682,14 +1731,9 @@ fn verify_eigh(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f
 }
 
 fn tensor_f64_parts(t: &Tensor) -> Option<(Vec<usize>, Vec<f64>)> {
-    if let Tensor::F64(typed) = t {
-        typed
-            .as_slice()
-            .ok()
-            .map(|data| (typed.shape().to_vec(), data.to_vec()))
-    } else {
-        None
-    }
+    t.as_slice::<f64>()
+        .ok()
+        .map(|data| (t.shape().to_vec(), data.to_vec()))
 }
 
 fn matmul_col_major(
@@ -1749,10 +1793,8 @@ fn compare_vectors(
 // ---------------------------------------------------------------------------
 
 fn tensor_f64(shape: &[usize], data: Vec<f64>) -> Tensor {
-    Tensor::F64(
-        TypedTensor::from_vec_col_major(shape.to_vec(), data)
-            .expect("benchmark shape/data length should match"),
-    )
+    Tensor::from_vec_col_major(shape.to_vec(), data)
+        .expect("benchmark shape/data length should match")
 }
 
 fn normal_data(shape: &[usize], seed: u64) -> Vec<f64> {
@@ -1808,6 +1850,12 @@ fn solve_matrix_data(n: usize, seed: u64, gen: &str) -> Vec<f64> {
         }
     }
 }
+
+/// Number of chained elementwise steps in `elementwise_chain` problems.
+///
+/// The chain is `t = tanh(t * a + b)` repeated this many times (three ops per
+/// step). `scripts/benchmark_gpu_python.py` uses the same length.
+const ELEMENTWISE_CHAIN_STEPS: usize = 8;
 
 fn batched_matmul_cfg() -> DotGeneralConfig {
     DotGeneralConfig {

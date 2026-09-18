@@ -156,12 +156,20 @@ def format_markdown(
         "Timed runs include the host API call and backend-native device synchronization "
         "without downloading AD outputs in the timed region."
     )
-    lines.append(
-        "Small cases (n=2, 4, 8) are single-call diagnostics, not batched shared-session "
-        "small-work comparisons. Public API session entry remains included; these rows "
-        "must not be interpreted as isolated kernel or shared-session overhead. "
-        "This suite checks successful execution only; AD outputs are not numerically compared."
-    )
+    suites_present = {suite for suite, _, _, _ in by_key}
+    if "small" in suites_present:
+        lines.append(
+            "Small cases (n=2, 4, 8) are single-call diagnostics, not batched shared-session "
+            "small-work comparisons. Public API session entry remains included; these rows "
+            "must not be interpreted as isolated kernel or shared-session overhead. "
+            "This suite checks successful execution only; AD outputs are not numerically compared."
+        )
+    if suites_present == {"small"}:
+        lines.append(
+            "This suite exists to measure single-call latency and per-op overhead: the "
+            "device kernels are a small fraction of each row, so the numbers are not GPU "
+            "throughput. GPU-sized AD results live in `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`."
+        )
     lines.append("")
 
     lines.extend(
