@@ -102,6 +102,7 @@ Expected latest report paths:
 - `result/nvidia-gpu/gpu/einsum.md`
 - `result/nvidia-gpu/gpu/sparse.md`
 - `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`
+- `result/nvidia-gpu/gpu/linalg_ad_latency.md`
 - `result/nvidia-gpu/gpu/permutation.md`
 
 Raw runs are written under:
@@ -361,6 +362,24 @@ result/nvidia-gpu/gpu/linalg_jvp_vjp.md
 
 Run this sequentially after the standard GPU suite; do not overlap it with
 other GPU benchmark processes.
+
+For the GPU linalg AD single-call latency / per-op overhead report (n=2, 4, 8):
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_linalg_ad_latency.sh'
+```
+
+Expected report path:
+
+```text
+result/nvidia-gpu/gpu/linalg_ad_latency.md
+```
+
+Device kernel time is a small fraction of each row in this suite, so these rows
+are latency/overhead diagnostics and must not be reported as GPU throughput.
+GPU-sized AD rows stay in `gpu/linalg_jvp_vjp`. Run it sequentially; do not
+overlap it with other GPU benchmark processes.
 
 For the GPU permutation / materialize-kernel report (CUDA port of
 `cpu/permutation`; see `docs/gpu-permutation-suite.md`):

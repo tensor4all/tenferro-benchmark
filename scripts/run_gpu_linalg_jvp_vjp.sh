@@ -7,7 +7,11 @@ RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
 TIMESTAMP="${GPU_BENCH_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-nvidia-gpu}"
-SUITE_FILE="$PROJECT_DIR/benchmarks/gpu/linalg_jvp_vjp.yaml"
+# `LINALG_AD_SUITE_FILE` selects the suite document; the report path and
+# suite_id are derived from it. Defaults to the GPU-sized JVP/VJP suite; the
+# n=2/4/8 latency suite lives in `benchmarks/gpu/linalg_ad_latency.yaml` and is
+# normally driven by `scripts/run_gpu_linalg_ad_latency.sh`.
+SUITE_FILE="${LINALG_AD_SUITE_FILE:-$PROJECT_DIR/benchmarks/gpu/linalg_jvp_vjp.yaml}"
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 RUST_MIN_STACK="${RUST_MIN_STACK:-67108864}"
 
@@ -77,7 +81,7 @@ fi
 "${METADATA[@]}" "${metadata_args[@]}"
 
 echo "============================================"
-echo " GPU linalg JVP/VJP benchmark suite"
+echo " $suite_id benchmark suite"
 echo "============================================"
 echo "Suite:    $SUITE_FILE"
 echo "Device:   cuda:$DEVICE_ORDINAL"

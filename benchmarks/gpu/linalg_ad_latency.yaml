@@ -1,8 +1,9 @@
 schema_version: 1
-suite_id: gpu/linalg_jvp_vjp
-title: GPU Linalg JVP/VJP Benchmarks
-description: Trace-mode linalg automatic differentiation on CUDA for tenferro-rs and
-  PyTorch at GPU-sized matrices (n=256, 512).
+suite_id: gpu/linalg_ad_latency
+title: GPU Linalg AD Single-Call Latency Benchmarks
+description: Single-call latency and per-op overhead of trace-mode linalg AD on CUDA
+  at n=2, 4, 8. Device kernel time is a small fraction of each measurement, so these
+  rows are latency/overhead diagnostics, not GPU throughput.
 defaults:
   device:
     kind: cuda
@@ -22,7 +23,7 @@ backends:
 - tenferro-cuda-trace
 - pytorch-cuda
 problems:
-- id: linalg_ad_large_grad_sum_svd_s_jvp_f64_256
+- id: linalg_ad_small_grad_sum_svd_s_jvp_f64_2
   family: linalg_ad
   op: jvp
   dtype:
@@ -32,12 +33,12 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 34
+    seed: 10
   linalg_ad: &id001
-    suite: large
+    suite: small
     loss: grad_sum_svd_s
-    n: 256
-    matrix_seed: 34
+    n: 2
+    matrix_seed: 10
   run:
     warmups: 3
     runs: 7
@@ -46,8 +47,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256
-- id: linalg_ad_large_grad_sum_svd_s_vjp_f64_256
+  notes: shape=2x2
+- id: linalg_ad_small_grad_sum_svd_s_vjp_f64_2
   family: linalg_ad
   op: vjp
   dtype:
@@ -57,7 +58,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 34
+    seed: 10
   linalg_ad: *id001
   run:
     warmups: 3
@@ -67,8 +68,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256
-- id: linalg_ad_large_grad_sum_qr_jvp_f64_256
+  notes: shape=2x2
+- id: linalg_ad_small_grad_sum_qr_jvp_f64_2
   family: linalg_ad
   op: jvp
   dtype:
@@ -78,12 +79,12 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 26
+    seed: 4
   linalg_ad: &id002
-    suite: large
+    suite: small
     loss: grad_sum_qr
-    n: 256
-    matrix_seed: 26
+    n: 2
+    matrix_seed: 4
   run:
     warmups: 3
     runs: 7
@@ -92,8 +93,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256
-- id: linalg_ad_large_grad_sum_qr_vjp_f64_256
+  notes: shape=2x2
+- id: linalg_ad_small_grad_sum_qr_vjp_f64_2
   family: linalg_ad
   op: vjp
   dtype:
@@ -103,7 +104,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 26
+    seed: 4
   linalg_ad: *id002
   run:
     warmups: 3
@@ -113,8 +114,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256
-- id: linalg_ad_large_grad_sum_eigh_jvp_f64_256
+  notes: shape=2x2
+- id: linalg_ad_small_grad_sum_eigh_jvp_f64_2
   family: linalg_ad
   op: jvp
   dtype:
@@ -124,12 +125,12 @@ problems:
     framework: row_major_contiguous
   data:
     generator: spd
-    seed: 27
+    seed: 5
   linalg_ad: &id003
-    suite: large
+    suite: small
     loss: grad_sum_eigh
-    n: 256
-    matrix_seed: 27
+    n: 2
+    matrix_seed: 5
   run:
     warmups: 3
     runs: 7
@@ -138,8 +139,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256
-- id: linalg_ad_large_grad_sum_eigh_vjp_f64_256
+  notes: shape=2x2
+- id: linalg_ad_small_grad_sum_eigh_vjp_f64_2
   family: linalg_ad
   op: vjp
   dtype:
@@ -149,7 +150,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: spd
-    seed: 27
+    seed: 5
   linalg_ad: *id003
   run:
     warmups: 3
@@ -159,8 +160,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256
-- id: linalg_ad_large_grad_sum_lu_jvp_f64_256
+  notes: shape=2x2
+- id: linalg_ad_small_grad_sum_lu_jvp_f64_2
   family: linalg_ad
   op: jvp
   dtype:
@@ -170,12 +171,12 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 54
+    seed: 52
   linalg_ad: &id004
-    suite: large
+    suite: small
     loss: grad_sum_lu
-    n: 256
-    matrix_seed: 54
+    n: 2
+    matrix_seed: 52
   run:
     warmups: 3
     runs: 7
@@ -184,8 +185,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256
-- id: linalg_ad_large_grad_sum_lu_vjp_f64_256
+  notes: shape=2x2
+- id: linalg_ad_small_grad_sum_lu_vjp_f64_2
   family: linalg_ad
   op: vjp
   dtype:
@@ -195,7 +196,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 54
+    seed: 52
   linalg_ad: *id004
   run:
     warmups: 3
@@ -205,8 +206,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256
-- id: linalg_ad_large_grad_sum_solve_jvp_f64_256
+  notes: shape=2x2
+- id: linalg_ad_small_grad_sum_solve_jvp_f64_2
   family: linalg_ad
   op: jvp
   dtype:
@@ -216,13 +217,13 @@ problems:
     framework: row_major_contiguous
   data:
     generator: spd
-    seed: 35
+    seed: 11
   linalg_ad: &id005
-    suite: large
+    suite: small
     loss: grad_sum_solve
-    n: 256
-    matrix_seed: 35
-    rhs_seed: 36
+    n: 2
+    matrix_seed: 11
+    rhs_seed: 12
     rhs_cols: 1
   run:
     warmups: 3
@@ -232,8 +233,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256,rhs=1
-- id: linalg_ad_large_grad_sum_solve_vjp_f64_256
+  notes: shape=2x2,rhs=1
+- id: linalg_ad_small_grad_sum_solve_vjp_f64_2
   family: linalg_ad
   op: vjp
   dtype:
@@ -243,7 +244,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: spd
-    seed: 35
+    seed: 11
   linalg_ad: *id005
   run:
     warmups: 3
@@ -253,8 +254,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=256x256,rhs=1
-- id: linalg_ad_large_grad_sum_svd_s_jvp_f64_512
+  notes: shape=2x2,rhs=1
+- id: linalg_ad_small_grad_sum_svd_s_jvp_f64_4
   family: linalg_ad
   op: jvp
   dtype:
@@ -264,12 +265,12 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 34
+    seed: 10
   linalg_ad: &id006
-    suite: large
+    suite: small
     loss: grad_sum_svd_s
-    n: 512
-    matrix_seed: 34
+    n: 4
+    matrix_seed: 10
   run:
     warmups: 3
     runs: 7
@@ -278,8 +279,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_svd_s_vjp_f64_512
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_svd_s_vjp_f64_4
   family: linalg_ad
   op: vjp
   dtype:
@@ -289,7 +290,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 34
+    seed: 10
   linalg_ad: *id006
   run:
     warmups: 3
@@ -299,8 +300,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_qr_jvp_f64_512
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_qr_jvp_f64_4
   family: linalg_ad
   op: jvp
   dtype:
@@ -310,12 +311,12 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 26
+    seed: 4
   linalg_ad: &id007
-    suite: large
+    suite: small
     loss: grad_sum_qr
-    n: 512
-    matrix_seed: 26
+    n: 4
+    matrix_seed: 4
   run:
     warmups: 3
     runs: 7
@@ -324,8 +325,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_qr_vjp_f64_512
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_qr_vjp_f64_4
   family: linalg_ad
   op: vjp
   dtype:
@@ -335,7 +336,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 26
+    seed: 4
   linalg_ad: *id007
   run:
     warmups: 3
@@ -345,8 +346,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_eigh_jvp_f64_512
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_eigh_jvp_f64_4
   family: linalg_ad
   op: jvp
   dtype:
@@ -356,12 +357,12 @@ problems:
     framework: row_major_contiguous
   data:
     generator: spd
-    seed: 27
+    seed: 5
   linalg_ad: &id008
-    suite: large
+    suite: small
     loss: grad_sum_eigh
-    n: 512
-    matrix_seed: 27
+    n: 4
+    matrix_seed: 5
   run:
     warmups: 3
     runs: 7
@@ -370,8 +371,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_eigh_vjp_f64_512
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_eigh_vjp_f64_4
   family: linalg_ad
   op: vjp
   dtype:
@@ -381,7 +382,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: spd
-    seed: 27
+    seed: 5
   linalg_ad: *id008
   run:
     warmups: 3
@@ -391,8 +392,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_lu_jvp_f64_512
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_lu_jvp_f64_4
   family: linalg_ad
   op: jvp
   dtype:
@@ -402,12 +403,12 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 54
+    seed: 52
   linalg_ad: &id009
-    suite: large
+    suite: small
     loss: grad_sum_lu
-    n: 512
-    matrix_seed: 54
+    n: 4
+    matrix_seed: 52
   run:
     warmups: 3
     runs: 7
@@ -416,8 +417,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_lu_vjp_f64_512
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_lu_vjp_f64_4
   family: linalg_ad
   op: vjp
   dtype:
@@ -427,7 +428,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: well_conditioned
-    seed: 54
+    seed: 52
   linalg_ad: *id009
   run:
     warmups: 3
@@ -437,8 +438,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512
-- id: linalg_ad_large_grad_sum_solve_jvp_f64_512
+  notes: shape=4x4
+- id: linalg_ad_small_grad_sum_solve_jvp_f64_4
   family: linalg_ad
   op: jvp
   dtype:
@@ -448,13 +449,13 @@ problems:
     framework: row_major_contiguous
   data:
     generator: spd
-    seed: 35
+    seed: 11
   linalg_ad: &id010
-    suite: large
+    suite: small
     loss: grad_sum_solve
-    n: 512
-    matrix_seed: 35
-    rhs_seed: 36
+    n: 4
+    matrix_seed: 11
+    rhs_seed: 12
     rhs_cols: 1
   run:
     warmups: 3
@@ -464,8 +465,8 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512,rhs=1
-- id: linalg_ad_large_grad_sum_solve_vjp_f64_512
+  notes: shape=4x4,rhs=1
+- id: linalg_ad_small_grad_sum_solve_vjp_f64_4
   family: linalg_ad
   op: vjp
   dtype:
@@ -475,7 +476,7 @@ problems:
     framework: row_major_contiguous
   data:
     generator: spd
-    seed: 35
+    seed: 11
   linalg_ad: *id010
   run:
     warmups: 3
@@ -485,4 +486,236 @@ problems:
     reference: cpu_fp64
     rtol: 1.0e-05
     atol: 1.0e-08
-  notes: shape=512x512,rhs=1
+  notes: shape=4x4,rhs=1
+- id: linalg_ad_small_grad_sum_svd_s_jvp_f64_8
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 10
+  linalg_ad: &id011
+    suite: small
+    loss: grad_sum_svd_s
+    n: 8
+    matrix_seed: 10
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8
+- id: linalg_ad_small_grad_sum_svd_s_vjp_f64_8
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 10
+  linalg_ad: *id011
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8
+- id: linalg_ad_small_grad_sum_qr_jvp_f64_8
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 4
+  linalg_ad: &id012
+    suite: small
+    loss: grad_sum_qr
+    n: 8
+    matrix_seed: 4
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8
+- id: linalg_ad_small_grad_sum_qr_vjp_f64_8
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 4
+  linalg_ad: *id012
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8
+- id: linalg_ad_small_grad_sum_eigh_jvp_f64_8
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 5
+  linalg_ad: &id013
+    suite: small
+    loss: grad_sum_eigh
+    n: 8
+    matrix_seed: 5
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8
+- id: linalg_ad_small_grad_sum_eigh_vjp_f64_8
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 5
+  linalg_ad: *id013
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8
+- id: linalg_ad_small_grad_sum_lu_jvp_f64_8
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 52
+  linalg_ad: &id014
+    suite: small
+    loss: grad_sum_lu
+    n: 8
+    matrix_seed: 52
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8
+- id: linalg_ad_small_grad_sum_lu_vjp_f64_8
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 52
+  linalg_ad: *id014
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8
+- id: linalg_ad_small_grad_sum_solve_jvp_f64_8
+  family: linalg_ad
+  op: jvp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 11
+  linalg_ad: &id015
+    suite: small
+    loss: grad_sum_solve
+    n: 8
+    matrix_seed: 11
+    rhs_seed: 12
+    rhs_cols: 1
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8,rhs=1
+- id: linalg_ad_small_grad_sum_solve_vjp_f64_8
+  family: linalg_ad
+  op: vjp
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: spd
+    seed: 11
+  linalg_ad: *id015
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=8x8,rhs=1

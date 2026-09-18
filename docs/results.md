@@ -28,8 +28,13 @@ result/
     gpu/einsum.md
     gpu/sparse.md
     gpu/linalg_jvp_vjp.md
+    gpu/linalg_ad_latency.md
     gpu/permutation.md
 ```
+
+`gpu/linalg_jvp_vjp` holds GPU-sized AD rows; `gpu/linalg_ad_latency` holds the
+n=2, 4, 8 single-call latency/overhead rows (device kernel time is a small
+fraction there, so it is not a throughput report).
 
 Raw run data is written under `data/results/<target_profile>/<suite_id>/<timestamp>/`:
 
