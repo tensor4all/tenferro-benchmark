@@ -26,6 +26,7 @@ result/
   nvidia-gpu/
     gpu/dense.md
     gpu/einsum.md
+    gpu/elementwise.md
     gpu/sparse.md
     gpu/linalg_jvp_vjp.md
     gpu/linalg_ad_latency.md

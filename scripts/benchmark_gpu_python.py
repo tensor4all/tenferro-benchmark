@@ -26,7 +26,11 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import tensornetwork_contract as tnc
 
-_PYTORCH_OPS = {"matmul", "batched_matmul", "einsum", "tensor_network_contract", "qr", "solve", "svd", "eigh", "spmv", "spmm"}
+# Number of chained elementwise steps in `elementwise_chain` problems; must
+# match `ELEMENTWISE_CHAIN_STEPS` in src/bin/benchmark_gpu_rust.rs.
+ELEMENTWISE_CHAIN_STEPS = 8
+
+_PYTORCH_OPS = {"matmul", "batched_matmul", "einsum", "elementwise_chain", "tensor_network_contract", "qr", "solve", "svd", "eigh", "spmv", "spmm"}
 _JAX_OPS = {"matmul", "batched_matmul", "einsum", "tensor_network_contract", "qr", "solve", "svd", "eigh"}
 _CUBLASLT_OPS = {"matmul", "batched_matmul", "einsum"}
 _CUSOLVER_OPS = {"qr", "solve", "svd", "eigh"}
@@ -1220,6 +1224,11 @@ def _make_data_np(problem: dict) -> dict:
         tensors = [normal(*s, data_seed=seed + i) for i, s in enumerate(shapes)]
         return {"op": op, "expr": p["format_rowmajor"], "tensors": tensors}
 
+    if op == "elementwise_chain":
+        p = problem["elementwise_chain"]
+        n = p["n"]
+        return {"op": op, "A": normal(n, data_seed=seed), "B": normal(n, data_seed=seed + 1)}
+
     if op == "qr":
         p = problem["linalg"]
         m, n = p["m"], p["n"]
@@ -1350,6 +1359,16 @@ def _torch_fn(op: str, d: dict):
         return lambda: torch.mm(a, b)
     if op == "batched_matmul":
         return lambda: torch.bmm(d["A"], d["B"])
+    if op == "elementwise_chain":
+        a, b = d["A"], d["B"]
+
+        def chain():
+            t = a
+            for _ in range(ELEMENTWISE_CHAIN_STEPS):
+                t = torch.tanh(t * a + b)
+            return t
+
+        return chain
     if op == "einsum":
         import opt_einsum as oe
         tensors = d["tensors"]
@@ -1457,7 +1476,7 @@ def _verify_torch(op, gpu_result, cpu_result, data, rtol, atol):
             r = float(np.max(np.abs(residual) / max(float(b_norm), 1e-10)))
             return check(a, r, b_norm)
 
-        if op in ("matmul", "batched_matmul", "einsum"):
+        if op in ("matmul", "batched_matmul", "einsum", "elementwise_chain"):
             cpu_np = to_np(cpu_result)
             a = abs_err(gpu_result, cpu_np)
             r = rel_err(gpu_result, cpu_np)
@@ -1528,7 +1547,7 @@ def _verify_jax(op, gpu_result, cpu_result, data, rtol, atol):
             r = float(np.max(np.abs(residual) / max(float(b_norm), 1e-10)))
             return check(a, r, b_norm)
 
-        if op in ("matmul", "batched_matmul", "einsum"):
+        if op in ("matmul", "batched_matmul", "einsum", "elementwise_chain"):
             cpu_np = to_np(cpu_result)
             a = abs_err(gpu_result, cpu_np)
             r = rel_err(gpu_result, cpu_np)

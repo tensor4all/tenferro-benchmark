@@ -100,6 +100,7 @@ Expected latest report paths:
 - `result/linux-cpu/cpu/linalg_jvp_jvp.md`
 - `result/nvidia-gpu/gpu/dense.md`
 - `result/nvidia-gpu/gpu/einsum.md`
+- `result/nvidia-gpu/gpu/elementwise.md`
 - `result/nvidia-gpu/gpu/sparse.md`
 - `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`
 - `result/nvidia-gpu/gpu/linalg_ad_latency.md`
@@ -362,6 +363,25 @@ result/nvidia-gpu/gpu/linalg_jvp_vjp.md
 
 Run this sequentially after the standard GPU suite; do not overlap it with
 other GPU benchmark processes.
+
+For the GPU elementwise chain report (prepared/segmented fusion detection; see
+`benchmarks/gpu/elementwise.yaml`):
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_SUITE=benchmarks/gpu/elementwise.yaml ./scripts/run_gpu_suite.sh'
+```
+
+Expected report path:
+
+```text
+result/nvidia-gpu/gpu/elementwise.md
+```
+
+The chain is `tanh(t * a + b)` repeated eight times, so the whole chain is
+fusable. The small problem (n=1024) measures per-command overhead and the large
+one (n=1048576) measures the bandwidth cost; a prepared/segmented execution-path
+divergence shows up as the trace rows sitting far above the PyTorch rows.
 
 For the GPU linalg AD single-call latency / per-op overhead report (n=2, 4, 8):
 
