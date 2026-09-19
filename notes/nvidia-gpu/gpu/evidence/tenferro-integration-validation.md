@@ -19,7 +19,7 @@ fast PR gate (including CPU extension tests), CUDA/WebGPU all-target Clippy,
 and committed-head deterministic rules review also passed. No external AI
 review was requested or used. Cargo resolves one CubeCL common revision.
 
-All eight required hosted checks passed: rustfmt, coverage, docs-site, BLAS
+All eight required hosted checks passed before merge: rustfmt, coverage, docs-site, BLAS
 injection, PR workspace tests, GPU gate, repository-rules gate and macOS tests.
 The branch required no separate human approval. CI configuration and sample
 checks also passed; no check was bypassed.
@@ -29,6 +29,18 @@ actually executed CUDA host 899/899 and device 209/209 tests, plus PJRT host
 51/51 and device 3/3 tests. All three new CUDA read-path regressions executed.
 The existing two-GPU/compile-only/benchmark/external-tool partitions are not
 claimed as executed by these counts. GPU provisioning and cleanup succeeded.
+A second actual run [35447119679](https://github.com/tensor4all/tenferro-rs/actions/runs/35447119679)
+also completed successfully.
+
+**Post-merge check-display caveat:** queued duplicate run
+[35447622072](https://github.com/tensor4all/tenferro-rs/actions/runs/35447622072)
+started provisioning validation at 14:18Z, after the 14:08Z merge. Its open-PR
+revalidation correctly refused the now-closed PR; GPU tests were skipped and
+cleanup succeeded. Its publisher then emitted a failing `CI GPU gate` at
+14:19:01Z, superseding the displayed successful check. This is not an actual
+GPU test failure. The required passing evidence at merge remains the runs above;
+we did not overwrite check status or bypass the closed-PR safety guard. The
+late-run check-publishing behavior is an existing CI bookkeeping limitation.
 
 Earlier CI failures exposed stale sample/test revision pins, a stale generated
 boundary digest and five unclassified new tests. These were corrected, with

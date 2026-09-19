@@ -1,0 +1,5 @@
+rustc 1.97.1 (8bab26f4f 2026-07-14)
+10473098c1ff6b285dbbcb01e3afc97e8d2ca50dff558d56e268ea3a8355a81c  target/release/benchmark_gpu_rust
+92f536fee896d830162721f115ff0c1cdcf2d5da19b036cd6dcbba39e325678a  target/release/benchmark_gpu_linalg_ad
+1e7adbbe8e354caa0180933369e50274a092067bddb0f832927462ae7ae034f3  target/release/benchmark_gpu_permutation
+877a78f89ca977551a70e8da1987801e8be5496e5c2fc89c37ebaa5d2cb4b824  Cargo.lock

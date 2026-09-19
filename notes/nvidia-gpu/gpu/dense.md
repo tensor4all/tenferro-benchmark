@@ -17,13 +17,13 @@ unqualified promise about the latest library or the current generated results.
 - Earlier instrumentation found ~173 us in eager's first input-pointer request
   and ~113 us in trace's post-return flush. They are different observation points,
   not additive components proven to occur on every call.
-- CubeCL's idle device-service thread polls with a 150 us sleep after its
+- The historical CubeCL baseline's idle device-service thread polls with a 150 us sleep after its
   spin/yield budgets. OSRT traces observed ~200 us actual sleeps. Removing only
   that sleep improved large BMM in every paired round, supporting causality.
   This is per batched operation/service interaction, **not one wait per matrix**;
   a strict single-wait-per-call count has not been established.
 
-### Candidate and verification status — adoption approved, integration pending
+### Historical candidate and verification status
 
 Busy polling was rejected: CPU usage increased and small-case checks failed.
 A second candidate retains batching and the spin/yield budgets, then uses
@@ -35,7 +35,7 @@ It preserves task ownership, atomic publication ordering and completion waits.
   All 60 numerical records in each of the two complete experiments pass.
 - The notification candidate nevertheless **failed the original nonregression
   gate**: small eager batch=1 in round 2 regressed 40.8%, and eager chain 1k in
-  round 3 regressed 20.2%. No production dependency pin was changed.
+  round 3 regressed 20.2%. No production dependency pin was changed at that stage.
 
 ### Why the small cases varied
 
@@ -52,7 +52,7 @@ a universal notification penalty. Original failed rounds did not record thread
 placement, so their exact assignments cannot be reconstructed. Frequency effects
 were not independently isolated.
 
-### Adoption decision and remaining work
+### Adoption decision and integration
 
 On 2026-09-19, the user approved notification-based wakeup with the small GPU
 cases treated as documented limitations, not adoption blockers. This changes the
@@ -69,9 +69,8 @@ update and materialization repair merged in
 [PR #1820](https://github.com/tensor4all/tenferro-rs/pull/1820) as `d7a8c60c`, after
 all required checks passed, including actual RunPod device execution. See
 [integration validation](evidence/tenferro-integration-validation.md).
-The post-merge eight-suite benchmark refresh is next.
-The [post-merge refresh protocol](evidence/integration-refresh-protocol.md)
-is declared before those measurements.
+The post-merge eight-suite refresh is complete; see the snapshot below and the
+[declared protocol](evidence/integration-refresh-protocol.md).
 The PR candidate additionally registers the wake target before returning a client
 and tests delayed initialization plus concurrent publishers: 46 common unit tests
 and all-target common Clippy pass locally. Hosted code-quality/documentation also
@@ -84,7 +83,25 @@ reinterpretation failure on both main and the candidate. See the
 [PR validation checkpoint](evidence/cubecl-pr-validation.md) for exact outcomes.
 Loom was not run.
 The historical 44-test candidate and archived patch below are not this final PR
-revision, and its performance has not yet been remeasured.
+revision. The refresh below measures the integrated revision, not an isolated
+notification-only change.
+
+### Post-merge refresh snapshot
+
+With tenferro `d7a8c60c`, the `20260919_142600` BMM medians are 2.152053 ms
+(trace), 2.167014 ms (eager), and 2.079491 ms (PyTorch). The tenferro medians are
+5.9%/6.5% below the historical published run, but this is not a randomized paired
+causal comparison. Host-side overhead remains; no universal latency guarantee
+or single-wait-per-call claim follows.
+
+All eight suites have fresh results: 201 numerically checked successes,
+61 unsupported and five not-configured rows. The two AD suites were corrected
+and rerun at `20260919_151433` after discovering legacy execution-only checks;
+see [small AD notes](linalg_ad_latency.md) for retained small-case regressions.
+Provider threads are 1; PyTorch intra-op/inter-op are both 1. CPU affinity remains
+unrestricted (CPUs 0–63), unlike the earlier matched-L3 diagnostic experiment.
+[Refresh manifest](evidence/integration-refresh-summary.json) records exact
+sources, raw-file hashes, historical ratios and limitations.
 
 ### Evidence and handoff
 

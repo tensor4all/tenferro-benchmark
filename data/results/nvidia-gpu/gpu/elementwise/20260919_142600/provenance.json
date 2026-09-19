@@ -1,0 +1,9 @@
+{
+  "benchmark_commit": "d9a703efe70a9d9b8e711ebe4d3a754e2c7f2c60",
+  "tenferro_commit": "d7a8c60caedac9aa3e630eea793d606df02dfc09",
+  "cubecl_commit": "a2adda17affd40494393a1f40d90980e1235617c",
+  "cubek_commit": "739dbfb414dffb27d44af3ec369f1e8bead9cccf",
+  "benchmark_worktree_dirty": true,
+  "dirty_scope": "generated results and untracked diagnostics/build/index artifacts; measured code matches the named commit",
+  "verification_scope": "numerical comparison"
+}

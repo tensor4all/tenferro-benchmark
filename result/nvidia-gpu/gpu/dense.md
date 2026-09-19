@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/dense`
 - Suite file: `benchmarks/gpu/dense.yaml`
-- Timestamp: `2026-09-19T08:19:30.947571+00:00`
-- tenferro-rs commit: `40e24634f9aa814db82efd9faae5e99a8fcee8c4`
+- Timestamp: `2026-09-19T14:27:23.269205+00:00`
+- tenferro-rs commit: `d7a8c60caedac9aa3e630eea793d606df02dfc09`
 
 ## GPU Information
 
@@ -40,35 +40,35 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| [dense_batched_matmul_f64_b1024_256](../../../notes/nvidia-gpu/gpu/dense.md#dense_batched_matmul_f64_b1024_256) | 2.287 | 2.317 | 2.078 | 2.077 | not configured | unsupported | unsupported | unsupported |
+| [dense_batched_matmul_f64_b1024_256](../../../notes/nvidia-gpu/gpu/dense.md#dense_batched_matmul_f64_b1024_256) | 2.152 | 2.167 | 2.079 | 2.083 | not configured | unsupported | unsupported | unsupported |
 
 ## gpu/dense / eigh / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_eigh_f64_1024 | 14.226 | 14.180 | 14.235 | unsupported | unsupported | 14.261 | unsupported | unsupported |
+| dense_eigh_f64_1024 | 14.362 | 14.334 | 14.315 | unsupported | unsupported | 14.295 | unsupported | unsupported |
 
 ## gpu/dense / matmul / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_matmul_f64_3072 | 3.248 | 3.220 | 3.123 | 3.124 | not configured | unsupported | unsupported | unsupported |
+| dense_matmul_f64_3072 | 3.218 | 3.220 | 3.127 | 3.126 | not configured | unsupported | unsupported | unsupported |
 
 ## gpu/dense / qr / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_qr_f64_1536 | 12.206 | 12.118 | 11.768 | unsupported | unsupported | 11.778 | unsupported | unsupported |
+| dense_qr_f64_1536 | 11.948 | 11.976 | 11.797 | unsupported | unsupported | 11.788 | unsupported | unsupported |
 
 ## gpu/dense / solve / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_solve_f64_1024_rhs16 | 5.145 | 5.196 | 4.405 | unsupported | unsupported | 4.425 | unsupported | unsupported |
-| dense_solve_f64_2048_rhs128 | 10.226 | 10.163 | 9.122 | unsupported | unsupported | 9.138 | unsupported | unsupported |
-| dense_solve_f64_2048_rhs16 | 10.998 | 10.880 | 10.194 | unsupported | unsupported | 10.216 | unsupported | unsupported |
-| dense_solve_f64_4096_rhs16 | 28.590 | 28.419 | 27.548 | unsupported | unsupported | 27.635 | unsupported | unsupported |
-| dense_solve_f64_512_rhs16 | 3.349 | 2.735 | 2.037 | unsupported | unsupported | 2.034 | unsupported | unsupported |
+| dense_solve_f64_1024_rhs16 | 4.895 | 5.089 | 4.415 | unsupported | unsupported | 4.427 | unsupported | unsupported |
+| dense_solve_f64_2048_rhs128 | 10.136 | 10.015 | 9.141 | unsupported | unsupported | 9.155 | unsupported | unsupported |
+| dense_solve_f64_2048_rhs16 | 11.070 | 10.863 | 10.212 | unsupported | unsupported | 10.244 | unsupported | unsupported |
+| dense_solve_f64_4096_rhs16 | 28.305 | 28.095 | 27.582 | unsupported | unsupported | 27.654 | unsupported | unsupported |
+| dense_solve_f64_512_rhs16 | 2.576 | 2.509 | 2.049 | unsupported | unsupported | 2.040 | unsupported | unsupported |
 
 ## gpu/dense / svd / allocating output
 
@@ -76,4 +76,4 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_svd_f64_256 | 12.209 | 12.201 | 12.134 | unsupported | unsupported | 23.090 | unsupported | unsupported |
+| dense_svd_f64_256 | 12.139 | 12.202 | 12.210 | unsupported | unsupported | 23.296 | unsupported | unsupported |

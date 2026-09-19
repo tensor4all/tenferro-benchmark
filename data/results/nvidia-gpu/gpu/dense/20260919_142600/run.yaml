@@ -1,0 +1,81 @@
+schema_version: 1
+target_profile: nvidia-gpu
+suite_id: gpu/dense
+suite_file: benchmarks/gpu/dense.yaml
+timestamp: '2026-09-19T14:27:23.269205+00:00'
+tenferro_rs:
+  path: /home/shinaoka/tensor4all/.worktrees/bench-gpu-20260919/extern/tenferro-rs
+  commit: d7a8c60caedac9aa3e630eea793d606df02dfc09
+  dirty: false
+  features:
+  - cuda
+environment:
+  hostname: 19b08d6fe8a1
+  os: Linux-6.8.0-101-generic-x86_64-with-glibc2.39
+  arch: x86_64
+  cpu: x86_64
+  env:
+    OMP_NUM_THREADS: '1'
+    OMP_THREAD_LIMIT: '1'
+    OMP_DYNAMIC: 'FALSE'
+    RAYON_NUM_THREADS: '1'
+    BENCHMARK_TARGET_PROFILE: nvidia-gpu
+    OPENBLAS_ROOT: /opt/openblas
+    OPENBLAS_NUM_THREADS: '1'
+    GOTO_NUM_THREADS: '1'
+    MKL_NUM_THREADS: '1'
+    VECLIB_MAXIMUM_THREADS: '1'
+    VECLIB_NUM_THREADS: '1'
+    NUMEXPR_NUM_THREADS: '1'
+    BLIS_NUM_THREADS: '1'
+    PJRT_NPROC: '1'
+    XLA_FLAGS: --xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1
+    JULIA_NUM_THREADS: '1'
+    CUDA_HOME: /usr/local/cuda
+timing_policy:
+  version: 2
+  scope: operation execution and completion synchronization
+  setup: inputs, transfers, runtimes/handles, plans and compilation outside timer;
+    public API session entry may remain inside
+  cleanup: returned outputs retained until after timer stops
+  minimum_untimed_priming_runs: 1
+  short_operation_sampling: single-call intervals; short GPU cases are diagnostics,
+    not batched shared-session measurements
+  trace_execution: prepare_compiled outside timing; run_prepared inside
+  setup_diagnostics: false
+blas:
+  implementation: none
+python_backends:
+  pytorch:
+    available: true
+    version: 2.12.0+cu130
+    file: /home/shinaoka/tensor4all/.worktrees/bench-gpu-20260913/.venv/lib/python3.12/site-packages/torch/__init__.py
+    provider: mkl
+    blas_info: mkl
+    lapack_info: mkl
+    library: /home/shinaoka/tensor4all/.worktrees/bench-gpu-20260913/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so
+    linked_libraries:
+    - /home/shinaoka/tensor4all/.worktrees/bench-gpu-20260913/.venv/lib/python3.12/site-packages/torch/lib/libgomp.so.1
+  jax:
+    available: true
+    version: 0.10.1
+    jaxlib_version: 0.10.1
+    backend: cpu
+    file: /home/shinaoka/tensor4all/.worktrees/bench-gpu-20260913/.venv/lib/python3.12/site-packages/jaxlib/__init__.py
+    provider: xla_cpu
+    dot_backend: xla_cpu
+    lapack_provider: none_detected
+    library: /home/shinaoka/tensor4all/.worktrees/bench-gpu-20260913/.venv/lib/python3.12/site-packages/jaxlib/_ifrt_proxy.so
+    linked_libraries: []
+julia:
+  available: false
+  reason: julia not found on PATH
+cuda:
+  device_ordinal: 0
+  device_name: NVIDIA A100 80GB PCIe
+  device_uuid: GPU-530977e1-4968-9283-4129-9fbec3e66542
+  device_memory_bytes: 85899345920
+  driver_version: 580.126.09
+  runtime_version: '12.9'
+  cuda_version: '13.0'
+  cudnn_version: '92000'

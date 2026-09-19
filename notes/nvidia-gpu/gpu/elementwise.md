@@ -26,7 +26,14 @@ The expression repeats `tanh(t * a + b)` eight times.
 The patch does **not** remove every materialization. Offset/noncompact views,
 scalar/broadcast binary inputs, unlisted operations and most view-output paths
 retain fallbacks. CPU common-linalg routing also uses existing read hooks; no
-CPU speedup was measured. The repair was uncommitted/unmerged at this analysis.
+CPU speedup was measured. The repair was uncommitted/unmerged during that
+historical analysis; it subsequently merged in tenferro PR #1820 as `d7a8c60c`.
+
+The post-merge `20260919_142600` snapshot measures eager at 0.433215 ms and trace
+at 0.165355 ms; freshly measured PyTorch eager is 0.325121 ms. The historical
+published tenferro eager median was about 1.67932 ms. This integrated refresh is not
+an isolated causal test, and eager still trails Torch here. The distinct trace
+fusion path must not be conflated with eager execution.
 
 <a id="elementwise_chain_f64_1k"></a>
 ## f64 chain, 1,024 elements
@@ -43,6 +50,14 @@ A subsequent CubeCL wakeup candidate initially failed one chain comparison by
 [dense BMM note](dense.md#dense_batched_matmul_f64_b1024_256) for the distinction
 between that diagnostic and the still-failed original acceptance gate. Neither
 GPU kernel slowdown nor a universal notification penalty was established.
+
+The post-merge snapshot measures eager at 0.268949 ms, trace at 0.115574 ms and
+PyTorch eager at 0.151766 ms. The historical published eager median was
+about 2.65623 ms. CPU placement remains unrestricted; do not generalize this large
+historical/current change into a universal small-case speedup. Both current
+chain sizes pass numerical verification. See the
+[refresh manifest](evidence/integration-refresh-summary.json) for raw sources and
+configuration differences, including the explicit PyTorch inter-op=1 setting.
 
 ## Evidence
 

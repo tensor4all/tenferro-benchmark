@@ -7,6 +7,14 @@ snapshots, not the final merged source**.
 - [CubeCL final validation and merge](cubecl-pr-validation.md).
 - [tenferro/Cubek integration validation and merge](tenferro-integration-validation.md).
 - [Declared post-merge refresh protocol](integration-refresh-protocol.md).
+- [Refresh manifest, hashes and historical comparisons](integration-refresh-summary.json).
+- [Requirement-to-evidence delivery audit](integration-delivery-audit.md).
+- Exact collection commands: [initial eight suites](integration-refresh-command.sh),
+  [corrected AD suites](integration-ad-refresh-command.sh). These are archival
+  commands run from the benchmark root inside the CUDA container; for reproduction,
+  create `data/diagnostics/` and choose fresh timestamps rather than overwriting runs.
+- [Resolved Cargo lock snapshot](integration-Cargo.lock) and
+  [compiler/binary/lock hashes](integration-build-hashes.txt).
 
 - [Materialization protocol](materialization-protocol.md),
   [all paired medians/IQRs](materialization-summary.json),

@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/elementwise`
 - Suite file: `benchmarks/gpu/elementwise.yaml`
-- Timestamp: `2026-09-19T08:24:51.731306+00:00`
-- tenferro-rs commit: `40e24634f9aa814db82efd9faae5e99a8fcee8c4`
+- Timestamp: `2026-09-19T14:27:23.269205+00:00`
+- tenferro-rs commit: `d7a8c60caedac9aa3e630eea793d606df02dfc09`
 
 ## GPU Information
 
@@ -40,5 +40,5 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| [elementwise_chain_f64_1k](../../../notes/nvidia-gpu/gpu/elementwise.md#elementwise_chain_f64_1k) | 0.145 | 2.656 | 0.134 | unsupported | unsupported | unsupported | unsupported | unsupported |
-| [elementwise_chain_f64_1m](../../../notes/nvidia-gpu/gpu/elementwise.md#elementwise_chain_f64_1m) | 0.202 | 1.679 | 0.323 | unsupported | unsupported | unsupported | unsupported | unsupported |
+| [elementwise_chain_f64_1k](../../../notes/nvidia-gpu/gpu/elementwise.md#elementwise_chain_f64_1k) | 0.116 | 0.269 | 0.152 | unsupported | unsupported | unsupported | unsupported | unsupported |
+| [elementwise_chain_f64_1m](../../../notes/nvidia-gpu/gpu/elementwise.md#elementwise_chain_f64_1m) | 0.165 | 0.433 | 0.325 | unsupported | unsupported | unsupported | unsupported | unsupported |

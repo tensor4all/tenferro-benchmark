@@ -14,6 +14,18 @@ directional derivative against the backend's primal central difference, outside
 timing, with fixed h=1e-5 and unchanged YAML tolerances. They do not compare every
 gradient component or enforce cross-backend decomposition gauges.
 
+The corrected `20260919_151433` runs passed all 100 directional checks (60 small,
+40 GPU-sized), without changing h or the YAML tolerances. The fixed runner also
+rejects deliberately wrong and non-finite derivatives in focused tests.
+
+<a id="linalg_ad_small_grad_sum_svd_s_jvp_f64_2"></a>
+## SVD-values JVP, n=2 — corrected run
+
+The numerically verified final tenferro trace median is 1.011777 ms, 45.2% above
+the historical median. This is retained as a nonblocking small-case regression;
+CPU placement was unrestricted, and the change is not causally attributed to a
+single implementation detail. No latency rerun was selected to make it disappear.
+
 The three small-case increases below were observed before that verification
 correction and are retained, not erased by the subsequent AD remeasurement.
 The user accepted small-case latency regressions as nonblocking. These are

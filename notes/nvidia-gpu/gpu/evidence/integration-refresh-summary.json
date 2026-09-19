@@ -1,0 +1,971 @@
+{
+  "latest_canonical_records": 267,
+  "status_counts": {
+    "ok": 201,
+    "not_configured": 5,
+    "unsupported": 61
+  },
+  "numerical_scope": {
+    "directional_ad": 100,
+    "other_numerical": 101
+  },
+  "runs": [
+    {
+      "suite": "dense",
+      "timestamp": "20260919_142600",
+      "records": 80,
+      "status_counts": {
+        "ok": 40,
+        "not_configured": 2,
+        "unsupported": 38
+      },
+      "benchmark_commit": "d9a703efe70a9d9b8e711ebe4d3a754e2c7f2c60",
+      "files": {
+        "data/results/nvidia-gpu/gpu/dense/20260919_142600/records.jsonl": "98852104cd9a4e68534485f9adfb18a3de22565cbc2393071c9846a52c244c16",
+        "data/results/nvidia-gpu/gpu/dense/20260919_142600/run.yaml": "25e4403aceea9a60e2bc92149a7a5c38d785b57019544ddec6379bae9a46ee55",
+        "data/results/nvidia-gpu/gpu/dense/20260919_142600/provenance.json": "e3b86a43f3a4acf18ae4d6baad9e79e215abb82ad53965e71f72c9aa37ff05c4"
+      }
+    },
+    {
+      "suite": "einsum",
+      "timestamp": "20260919_142600",
+      "records": 8,
+      "status_counts": {
+        "ok": 4,
+        "not_configured": 1,
+        "unsupported": 3
+      },
+      "benchmark_commit": "d9a703efe70a9d9b8e711ebe4d3a754e2c7f2c60",
+      "files": {
+        "data/results/nvidia-gpu/gpu/einsum/20260919_142600/records.jsonl": "1e97056a336b4e85f65b2a0e765d5d7a32a448854d08feb9d96e7cdeeef2e9d7",
+        "data/results/nvidia-gpu/gpu/einsum/20260919_142600/run.yaml": "6da86314013026527b609634b142971406288a3f404c0ae6d4e026e15ba55620",
+        "data/results/nvidia-gpu/gpu/einsum/20260919_142600/provenance.json": "e3b86a43f3a4acf18ae4d6baad9e79e215abb82ad53965e71f72c9aa37ff05c4"
+      }
+    },
+    {
+      "suite": "elementwise",
+      "timestamp": "20260919_142600",
+      "records": 16,
+      "status_counts": {
+        "ok": 6,
+        "unsupported": 10
+      },
+      "benchmark_commit": "d9a703efe70a9d9b8e711ebe4d3a754e2c7f2c60",
+      "files": {
+        "data/results/nvidia-gpu/gpu/elementwise/20260919_142600/records.jsonl": "f1e50ccd7bb17d953dedd36dbc352e331889efced07cf96d8a7d5b1c55539236",
+        "data/results/nvidia-gpu/gpu/elementwise/20260919_142600/run.yaml": "b02d9529317f62721313f05f7b3a8f1a1a75b434665bddabc2c2de5abea6e6ed",
+        "data/results/nvidia-gpu/gpu/elementwise/20260919_142600/provenance.json": "e3b86a43f3a4acf18ae4d6baad9e79e215abb82ad53965e71f72c9aa37ff05c4"
+      }
+    },
+    {
+      "suite": "sparse",
+      "timestamp": "20260919_142600",
+      "records": 16,
+      "status_counts": {
+        "ok": 4,
+        "unsupported": 10,
+        "not_configured": 2
+      },
+      "benchmark_commit": "d9a703efe70a9d9b8e711ebe4d3a754e2c7f2c60",
+      "files": {
+        "data/results/nvidia-gpu/gpu/sparse/20260919_142600/records.jsonl": "10593832aec7d2d31160dde00186da88b6537c513986368de0dd568ce9aaa227",
+        "data/results/nvidia-gpu/gpu/sparse/20260919_142600/run.yaml": "6b53d34d69079871853b9b607c14ec52d9567354c5a85778a85d00c6f3a7f373",
+        "data/results/nvidia-gpu/gpu/sparse/20260919_142600/provenance.json": "e3b86a43f3a4acf18ae4d6baad9e79e215abb82ad53965e71f72c9aa37ff05c4"
+      }
+    },
+    {
+      "suite": "tensornetwork",
+      "timestamp": "20260919_142600",
+      "records": 3,
+      "status_counts": {
+        "ok": 3
+      },
+      "benchmark_commit": "d9a703efe70a9d9b8e711ebe4d3a754e2c7f2c60",
+      "files": {
+        "data/results/nvidia-gpu/gpu/tensornetwork/20260919_142600/records.jsonl": "b1388067933dd3da0012dacca17c8bc58d5442f2e5c68905e51d7b14923b2242",
+        "data/results/nvidia-gpu/gpu/tensornetwork/20260919_142600/run.yaml": "057e10f8a71f2863ec09ab89bf407355d2fd3b1917cf132a7ac18b136746e9a3",
+        "data/results/nvidia-gpu/gpu/tensornetwork/20260919_142600/provenance.json": "e3b86a43f3a4acf18ae4d6baad9e79e215abb82ad53965e71f72c9aa37ff05c4"
+      }
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "timestamp": "20260919_151433",
+      "records": 60,
+      "status_counts": {
+        "ok": 60
+      },
+      "benchmark_commit": "d1a8bb5252d9163493b98dc157699fba1e9da8a0",
+      "files": {
+        "data/results/nvidia-gpu/gpu/linalg_ad_latency/20260919_151433/records.jsonl": "57ef5a5bb3260b48f8a362abe4db2f4f08cba83fa1dba4245f09d232ec18c3fc",
+        "data/results/nvidia-gpu/gpu/linalg_ad_latency/20260919_151433/run.yaml": "cdf0079fbcea1c60838a14a2020a90aa4e0337ae5d37e51d65ab3da6f63d78ef",
+        "data/results/nvidia-gpu/gpu/linalg_ad_latency/20260919_151433/provenance.json": "df5d75b6f9f2af2b34d242abe18878b81a72410e629df96d8ae89f3030b207b2"
+      }
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "timestamp": "20260919_151433",
+      "records": 40,
+      "status_counts": {
+        "ok": 40
+      },
+      "benchmark_commit": "d1a8bb5252d9163493b98dc157699fba1e9da8a0",
+      "files": {
+        "data/results/nvidia-gpu/gpu/linalg_jvp_vjp/20260919_151433/records.jsonl": "578a3a33235876a5aae281c48bb3f3ee95ca5e43e7a6e53f69e6591435305489",
+        "data/results/nvidia-gpu/gpu/linalg_jvp_vjp/20260919_151433/run.yaml": "88d3f6d17e10dd0f0e9b034c41e2a4ec94e6947ce29edc41929e87abedd2894f",
+        "data/results/nvidia-gpu/gpu/linalg_jvp_vjp/20260919_151433/provenance.json": "df5d75b6f9f2af2b34d242abe18878b81a72410e629df96d8ae89f3030b207b2"
+      }
+    },
+    {
+      "suite": "permutation",
+      "timestamp": "20260919_142600",
+      "records": 44,
+      "status_counts": {
+        "ok": 44
+      },
+      "benchmark_commit": "d9a703efe70a9d9b8e711ebe4d3a754e2c7f2c60",
+      "files": {
+        "data/results/nvidia-gpu/gpu/permutation/20260919_142600/rust_output.jsonl": "b2410d385f73661f9fbb79eab5c676d7ef2ca654ec3bfbd58c571900d6da19de",
+        "data/results/nvidia-gpu/gpu/permutation/20260919_142600/python_output_pytorch-cuda.jsonl": "b83f25754932d10ff5dd6aaf181c5a0ad01507eb7df7a41836b97d31a9632f21",
+        "data/results/nvidia-gpu/gpu/permutation/20260919_142600/python_output_memcpy-d2d.jsonl": "f3a063e5048c2b6fc76b8465c4b0f2098a64a7ca7712181f8d148e826b609a6d",
+        "data/results/nvidia-gpu/gpu/permutation/20260919_142600/run.yaml": "e30702192440b1b52f3c6bd9d52ceff5bb50fca20ed28bc191aef3f4bd7191c5",
+        "data/results/nvidia-gpu/gpu/permutation/20260919_142600/provenance.json": "e3b86a43f3a4acf18ae4d6baad9e79e215abb82ad53965e71f72c9aa37ff05c4"
+      }
+    }
+  ],
+  "tenferro_historical_comparisons": [
+    {
+      "suite": "dense",
+      "problem": "dense_matmul_f64_3072",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 3.248218,
+      "new_ms": 3.21783,
+      "new_over_old": 0.9906447165799833
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_matmul_f64_3072",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 3.219596,
+      "new_ms": 3.219681,
+      "new_over_old": 1.00002640082793
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_batched_matmul_f64_b1024_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.28664,
+      "new_ms": 2.152053,
+      "new_over_old": 0.9411420249798832
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_batched_matmul_f64_b1024_256",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 2.316661,
+      "new_ms": 2.167014,
+      "new_over_old": 0.935404014657302
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_qr_f64_1536",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 12.206198,
+      "new_ms": 11.948189,
+      "new_over_old": 0.978862459874893
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_qr_f64_1536",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 12.118294,
+      "new_ms": 11.976320000000001,
+      "new_over_old": 0.9882843245097042
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_512_rhs16",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 3.349081,
+      "new_ms": 2.575538,
+      "new_over_old": 0.7690282796982216
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_512_rhs16",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 2.735027,
+      "new_ms": 2.508616,
+      "new_over_old": 0.917218001869817
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_1024_rhs16",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 5.14464,
+      "new_ms": 4.894637,
+      "new_over_old": 0.9514051517696088
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_1024_rhs16",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 5.195863,
+      "new_ms": 5.089424,
+      "new_over_old": 0.9795146638777812
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_2048_rhs16",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 10.998469,
+      "new_ms": 11.069638,
+      "new_over_old": 1.0064708097099695
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_2048_rhs16",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 10.879614,
+      "new_ms": 10.863470999999999,
+      "new_over_old": 0.9985162157407421
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_4096_rhs16",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 28.590284,
+      "new_ms": 28.304736000000002,
+      "new_over_old": 0.9900124112093466
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_4096_rhs16",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 28.418737,
+      "new_ms": 28.095438,
+      "new_over_old": 0.9886237379233286
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_2048_rhs128",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 10.225708000000001,
+      "new_ms": 10.136475,
+      "new_over_old": 0.9912736604643904
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_solve_f64_2048_rhs128",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 10.162706,
+      "new_ms": 10.014852,
+      "new_over_old": 0.9854513158208059
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_svd_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 12.209025,
+      "new_ms": 12.138584,
+      "new_over_old": 0.9942304156146784
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_svd_f64_256",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 12.201395,
+      "new_ms": 12.201566,
+      "new_over_old": 1.0000140147909318
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_eigh_f64_1024",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 14.226023000000001,
+      "new_ms": 14.361820000000002,
+      "new_over_old": 1.0095456755552834
+    },
+    {
+      "suite": "dense",
+      "problem": "dense_eigh_f64_1024",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 14.179851000000001,
+      "new_ms": 14.333758,
+      "new_over_old": 1.0108539222309176
+    },
+    {
+      "suite": "einsum",
+      "problem": "einsum_bin_matmul_3072_f64",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 3.285007,
+      "new_ms": 3.202308,
+      "new_over_old": 0.9748253200069285
+    },
+    {
+      "suite": "einsum",
+      "problem": "einsum_bin_matmul_3072_f64",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 3.214495,
+      "new_ms": 3.183938,
+      "new_over_old": 0.9904939967242133
+    },
+    {
+      "suite": "elementwise",
+      "problem": "elementwise_chain_f64_1k",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.14543499999999998,
+      "new_ms": 0.115574,
+      "new_over_old": 0.7946780348609345
+    },
+    {
+      "suite": "elementwise",
+      "problem": "elementwise_chain_f64_1k",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 2.656232,
+      "new_ms": 0.268949,
+      "new_over_old": 0.10125207436699805
+    },
+    {
+      "suite": "elementwise",
+      "problem": "elementwise_chain_f64_1m",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.20249699999999998,
+      "new_ms": 0.165355,
+      "new_over_old": 0.8165799987160305
+    },
+    {
+      "suite": "elementwise",
+      "problem": "elementwise_chain_f64_1m",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 1.679324,
+      "new_ms": 0.43321499999999996,
+      "new_over_old": 0.2579698735919929
+    },
+    {
+      "suite": "tensornetwork",
+      "problem": "tensornetwork_permutation_optimized_f32",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 66.7041855,
+      "new_ms": 68.701246,
+      "new_over_old": 1.02993905832191
+    },
+    {
+      "suite": "tensornetwork",
+      "problem": "tensornetwork_permutation_optimized_f32",
+      "backend": "tenferro-cuda-eager",
+      "old_ms": 71.657894,
+      "new_ms": 70.7640835,
+      "new_over_old": 0.9875266987332896
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_svd_s_jvp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.6966760000000001,
+      "new_ms": 1.011777,
+      "new_over_old": 1.4522920267096897
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_svd_s_vjp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.640764,
+      "new_ms": 0.623313,
+      "new_over_old": 0.9727653238946008
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_qr_jvp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.5311869999999996,
+      "new_ms": 2.1693900000000004,
+      "new_over_old": 0.8570642943409558
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_qr_vjp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.445775,
+      "new_ms": 1.125241,
+      "new_over_old": 0.778296069582058
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_eigh_jvp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.608493,
+      "new_ms": 0.47055699999999995,
+      "new_over_old": 0.7733153873586056
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_eigh_vjp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.721247,
+      "new_ms": 0.558171,
+      "new_over_old": 0.7738971531250737
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_lu_jvp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.0233889999999999,
+      "new_ms": 0.940845,
+      "new_over_old": 0.9193424983070955
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_lu_vjp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.022569,
+      "new_ms": 0.785709,
+      "new_over_old": 0.7683677091717037
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_solve_jvp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.538619,
+      "new_ms": 1.37536,
+      "new_over_old": 0.8938925101015911
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_solve_vjp_f64_2",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.9338140000000001,
+      "new_ms": 1.316668,
+      "new_over_old": 0.6808658950653992
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_svd_s_jvp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.9830979999999999,
+      "new_ms": 0.7011660000000001,
+      "new_over_old": 0.71322085895811
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_svd_s_vjp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.899054,
+      "new_ms": 0.748097,
+      "new_over_old": 0.8320935116244408
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_qr_jvp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.392923,
+      "new_ms": 0.9379339999999999,
+      "new_over_old": 0.673356675135668
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_qr_vjp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.610951,
+      "new_ms": 0.9336439999999999,
+      "new_over_old": 0.5795607687632957
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_eigh_jvp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.745069,
+      "new_ms": 0.55977,
+      "new_over_old": 0.7512995440690728
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_eigh_vjp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.7517090000000001,
+      "new_ms": 0.491578,
+      "new_over_old": 0.653947205634095
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_lu_jvp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.326631,
+      "new_ms": 0.885742,
+      "new_over_old": 0.6676626733432282
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_lu_vjp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.290949,
+      "new_ms": 0.793439,
+      "new_over_old": 0.6146168438877136
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_solve_jvp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.5255480000000001,
+      "new_ms": 1.136721,
+      "new_over_old": 0.7451230639743882
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_solve_vjp_f64_4",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.9815150000000001,
+      "new_ms": 1.141612,
+      "new_over_old": 0.5761308897485005
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_svd_s_jvp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.937306,
+      "new_ms": 0.794619,
+      "new_over_old": 0.8477690316716205
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_svd_s_vjp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.018599,
+      "new_ms": 0.859382,
+      "new_over_old": 0.8436902058611877
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_qr_jvp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.2243270000000002,
+      "new_ms": 0.968645,
+      "new_over_old": 0.7911652687558143
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_qr_vjp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.508748,
+      "new_ms": 0.9551050000000001,
+      "new_over_old": 0.633044749686495
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_eigh_jvp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.8669129999999999,
+      "new_ms": 0.602182,
+      "new_over_old": 0.694627949978833
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_eigh_vjp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 0.78691,
+      "new_ms": 0.531619,
+      "new_over_old": 0.6755778932787739
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_lu_jvp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.30169,
+      "new_ms": 0.795949,
+      "new_over_old": 0.6114735459287541
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_lu_vjp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.29283,
+      "new_ms": 0.805,
+      "new_over_old": 0.6226650062266501
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_solve_jvp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.555519,
+      "new_ms": 1.344579,
+      "new_over_old": 0.8643925275101108
+    },
+    {
+      "suite": "linalg_ad_latency",
+      "problem": "linalg_ad_small_grad_sum_solve_vjp_f64_8",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 1.922813,
+      "new_ms": 1.201424,
+      "new_over_old": 0.6248262311519633
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_svd_s_jvp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 12.201336,
+      "new_ms": 11.928015,
+      "new_over_old": 0.9775990924272555
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_svd_s_vjp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 12.003279000000001,
+      "new_ms": 12.069230000000001,
+      "new_over_old": 1.005494415317681
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 3.947031,
+      "new_ms": 2.140338,
+      "new_over_old": 0.5422653128389414
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.510296,
+      "new_ms": 2.288844,
+      "new_over_old": 0.9117825148906743
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_eigh_jvp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 3.440681,
+      "new_ms": 3.224408,
+      "new_over_old": 0.9371423854754335
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_eigh_vjp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 3.463983,
+      "new_ms": 3.4737359999999997,
+      "new_over_old": 1.0028155449954574
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_lu_jvp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.421152,
+      "new_ms": 1.7278529999999999,
+      "new_over_old": 0.713649122401237
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_lu_vjp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.009337,
+      "new_ms": 1.808416,
+      "new_over_old": 0.9000063204927795
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_solve_jvp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 3.233354,
+      "new_ms": 2.819003,
+      "new_over_old": 0.8718510252821065
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_solve_vjp_f64_256",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.3392999999999997,
+      "new_ms": 2.281763,
+      "new_over_old": 0.9754041807378278
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_svd_s_jvp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 32.804103,
+      "new_ms": 32.779965000000004,
+      "new_over_old": 0.9992641774109783
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_svd_s_vjp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 32.98757,
+      "new_ms": 32.656121000000006,
+      "new_over_old": 0.9899523062777891
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_qr_jvp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 4.004003,
+      "new_ms": 3.729186,
+      "new_over_old": 0.9313644370396326
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_qr_vjp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 4.568715,
+      "new_ms": 3.8510400000000002,
+      "new_over_old": 0.8429153492831135
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_eigh_jvp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 6.792759,
+      "new_ms": 6.60872,
+      "new_over_old": 0.9729065906798695
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_eigh_vjp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 6.786739,
+      "new_ms": 6.897272,
+      "new_over_old": 1.0162866142340232
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_lu_jvp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.777486,
+      "new_ms": 2.571424,
+      "new_over_old": 0.9258098870705378
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_lu_vjp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.6630019999999996,
+      "new_ms": 2.6917579999999997,
+      "new_over_old": 1.0107983396182203
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_solve_jvp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.832949,
+      "new_ms": 3.0239109999999996,
+      "new_over_old": 1.0674074965698286
+    },
+    {
+      "suite": "linalg_jvp_vjp",
+      "problem": "linalg_ad_large_grad_sum_solve_vjp_f64_512",
+      "backend": "tenferro-cuda-trace",
+      "old_ms": 2.946832,
+      "new_ms": 3.037711,
+      "new_over_old": 1.0308395592283508
+    },
+    {
+      "suite": "permutation",
+      "problem": "transpose_2d_32768_16384",
+      "backend": "tenferro-cuda-transpose",
+      "old_ms": 5.620444,
+      "new_ms": 5.565847,
+      "new_over_old": 0.9902859987573935
+    },
+    {
+      "suite": "permutation",
+      "problem": "transpose_2d_32768_16384",
+      "backend": "tenferro-cuda-to-contiguous",
+      "old_ms": 7.188441999999999,
+      "new_ms": 7.0225360000000006,
+      "new_over_old": 0.9769204509127293
+    },
+    {
+      "suite": "permutation",
+      "problem": "transpose_2d_32768_16384",
+      "backend": "tenferro-cuda-destination-reuse",
+      "old_ms": 5.5930219999999995,
+      "new_ms": 5.534616,
+      "new_over_old": 0.9895573448486347
+    },
+    {
+      "suite": "permutation",
+      "problem": "transpose_3d_1024_1024_512_201",
+      "backend": "tenferro-cuda-transpose",
+      "old_ms": 5.404885,
+      "new_ms": 5.4005920000000005,
+      "new_over_old": 0.9992057185305516
+    },
+    {
+      "suite": "permutation",
+      "problem": "transpose_3d_1024_1024_512_201",
+      "backend": "tenferro-cuda-to-contiguous",
+      "old_ms": 6.999175,
+      "new_ms": 6.8887719999999995,
+      "new_over_old": 0.9842262838120206
+    },
+    {
+      "suite": "permutation",
+      "problem": "transpose_3d_1024_1024_512_201",
+      "backend": "tenferro-cuda-destination-reuse",
+      "old_ms": 5.4106939999999994,
+      "new_ms": 5.341348999999999,
+      "new_over_old": 0.9871837143257408
+    },
+    {
+      "suite": "permutation",
+      "problem": "transpose_3d_1024_1024_512_102",
+      "backend": "tenferro-cuda-transpose",
+      "old_ms": 5.436014,
+      "new_ms": 5.321748,
+      "new_over_old": 0.9789798186686054
+    },
+    {
+      "suite": "permutation",
+      "problem": "transpose_3d_1024_1024_512_102",
+      "backend": "tenferro-cuda-to-contiguous",
+      "old_ms": 5.529827999999999,
+      "new_ms": 5.425802,
+      "new_over_old": 0.9811882033220565
+    },
+    {
+      "suite": "permutation",
+      "problem": "transpose_3d_1024_1024_512_102",
+      "backend": "tenferro-cuda-destination-reuse",
+      "old_ms": 5.401363,
+      "new_ms": 5.280128,
+      "new_over_old": 0.9775547394241048
+    },
+    {
+      "suite": "permutation",
+      "problem": "rotation_6d_64_32_32_32_16_16",
+      "backend": "tenferro-cuda-transpose",
+      "old_ms": 5.517678,
+      "new_ms": 5.396321,
+      "new_over_old": 0.9780057843172436
+    },
+    {
+      "suite": "permutation",
+      "problem": "rotation_6d_64_32_32_32_16_16",
+      "backend": "tenferro-cuda-to-contiguous",
+      "old_ms": 5.645712,
+      "new_ms": 5.555707,
+      "new_over_old": 0.984057812371584
+    },
+    {
+      "suite": "permutation",
+      "problem": "rotation_6d_64_32_32_32_16_16",
+      "backend": "tenferro-cuda-destination-reuse",
+      "old_ms": 5.414373,
+      "new_ms": 5.360119,
+      "new_over_old": 0.9899796338375653
+    },
+    {
+      "suite": "permutation",
+      "problem": "reverse_23d_128x2",
+      "backend": "tenferro-cuda-transpose",
+      "old_ms": 7.737475,
+      "new_ms": 7.620985,
+      "new_over_old": 0.984944700952184
+    },
+    {
+      "suite": "permutation",
+      "problem": "reverse_23d_128x2",
+      "backend": "tenferro-cuda-to-contiguous",
+      "old_ms": 8.371394,
+      "new_ms": 8.279688,
+      "new_over_old": 0.9890453131222828
+    },
+    {
+      "suite": "permutation",
+      "problem": "reverse_23d_128x2",
+      "backend": "tenferro-cuda-destination-reuse",
+      "old_ms": 7.732523,
+      "new_ms": 7.614575,
+      "new_over_old": 0.9847465051187045
+    },
+    {
+      "suite": "permutation",
+      "problem": "reverse_18d_3",
+      "backend": "tenferro-cuda-transpose",
+      "old_ms": 8.792067000000001,
+      "new_ms": 8.741103,
+      "new_over_old": 0.9942034108702765
+    },
+    {
+      "suite": "permutation",
+      "problem": "reverse_18d_3",
+      "backend": "tenferro-cuda-to-contiguous",
+      "old_ms": 8.788003000000002,
+      "new_ms": 8.720241,
+      "new_over_old": 0.9922892607114493
+    },
+    {
+      "suite": "permutation",
+      "problem": "reverse_18d_3",
+      "backend": "tenferro-cuda-destination-reuse",
+      "old_ms": 8.79043,
+      "new_ms": 8.724262,
+      "new_over_old": 0.9924727231773643
+    },
+    {
+      "suite": "permutation",
+      "problem": "cyclic_18d_3",
+      "backend": "tenferro-cuda-transpose",
+      "old_ms": 6.381136,
+      "new_ms": 6.315641,
+      "new_over_old": 0.9897361535626259
+    },
+    {
+      "suite": "permutation",
+      "problem": "cyclic_18d_3",
+      "backend": "tenferro-cuda-to-contiguous",
+      "old_ms": 6.37744,
+      "new_ms": 6.247479,
+      "new_over_old": 0.979621760455606
+    },
+    {
+      "suite": "permutation",
+      "problem": "cyclic_18d_3",
+      "backend": "tenferro-cuda-destination-reuse",
+      "old_ms": 6.3812549999999995,
+      "new_ms": 6.310340999999999,
+      "new_over_old": 0.9888871389718793
+    },
+    {
+      "suite": "permutation",
+      "problem": "tn_light_415_24d_scattered_to_colmajor_gpu",
+      "backend": "tenferro-cuda-to-contiguous",
+      "old_ms": 5.628735,
+      "new_ms": 5.569006,
+      "new_over_old": 0.9893885571091906
+    },
+    {
+      "suite": "permutation",
+      "problem": "tn_light_415_24d_contiguous_same_perm_gpu",
+      "backend": "tenferro-cuda-transpose",
+      "old_ms": 5.607773,
+      "new_ms": 5.5616959999999995,
+      "new_over_old": 0.9917833692626288
+    },
+    {
+      "suite": "permutation",
+      "problem": "tn_light_415_24d_contiguous_same_perm_gpu",
+      "backend": "tenferro-cuda-to-contiguous",
+      "old_ms": 5.629378,
+      "new_ms": 5.557675,
+      "new_over_old": 0.9872627135715526
+    },
+    {
+      "suite": "permutation",
+      "problem": "tn_light_415_24d_contiguous_same_perm_gpu",
+      "backend": "tenferro-cuda-destination-reuse",
+      "old_ms": 5.595141,
+      "new_ms": 5.553441,
+      "new_over_old": 0.9925471047110341
+    }
+  ],
+  "limitations": [
+    "Not a randomized paired causal experiment; PyTorch inter-op setting also changed from default to 1.",
+    "CPU affinity remained unrestricted (CPUs 0-63); small-case regressions are accepted and retained.",
+    "Initial AD collection 20260919_142600 was execution-only, superseded by numerically checked 20260919_151433.",
+    "The first shell monitor timed out after 1200 seconds; the owned container process continued and all eight outputs/reports completed. Console capture stopped early; complete raw output and schema/numerical audits establish completion. No permutation timing retry was made."
+  ],
+  "non_small_comparison_exclusions": [
+    "suite linalg_ad_latency",
+    "problem elementwise_chain_f64_1k"
+  ]
+}
