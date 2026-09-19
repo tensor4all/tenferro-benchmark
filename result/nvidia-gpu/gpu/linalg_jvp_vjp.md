@@ -2,9 +2,9 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/linalg_jvp_vjp`
-- Suite file: `/workspace/benchmarks/gpu/linalg_jvp_vjp.yaml`
-- Timestamp: `2026-09-18T15:05:34.258416+00:00`
-- tenferro-rs commit: `cf971d0f18d0357133da97dae66802e26bd56e2f`
+- Suite file: `/home/shinaoka/tensor4all/.worktrees/bench-gpu-20260919/benchmarks/gpu/linalg_jvp_vjp.yaml`
+- Timestamp: `2026-09-19T08:25:11.356784+00:00`
+- tenferro-rs commit: `40e24634f9aa814db82efd9faae5e99a8fcee8c4`
 
 ## GPU Information
 
@@ -38,26 +38,26 @@ Timed runs include the host API call and backend-native device synchronization w
 
 | suite | benchmark | dtype | shape | tenferro-rs CUDA trace | PyTorch CUDA |
 |---|---|---:|---|---:|---:|
-| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 3.423 ± 0.100 | 3.037 ± 0.019 |
-| large | `grad_sum_eigh_jvp` | f64 | `512x512` | 6.750 ± 0.173 | 6.436 ± 0.009 |
-| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 3.539 ± 0.109 | 3.207 ± 0.025 |
-| large | `grad_sum_eigh_vjp` | f64 | `512x512` | 6.775 ± 0.101 | 6.480 ± 0.113 |
-| large | `grad_sum_lu_jvp` | f64 | `256x256` | 2.802 ± 0.022 | 1.142 ± 0.002 |
-| large | `grad_sum_lu_jvp` | f64 | `512x512` | 2.599 ± 0.010 | 2.435 ± 0.007 |
-| large | `grad_sum_lu_vjp` | f64 | `256x256` | 1.999 ± 0.015 | 0.925 ± 0.087 |
-| large | `grad_sum_lu_vjp` | f64 | `512x512` | 2.761 ± 0.007 | 1.927 ± 0.009 |
-| large | `grad_sum_qr_jvp` | f64 | `256x256` | 3.962 ± 0.024 | 1.484 ± 0.009 |
-| large | `grad_sum_qr_jvp` | f64 | `512x512` | 4.117 ± 0.163 | 3.267 ± 0.014 |
-| large | `grad_sum_qr_vjp` | f64 | `256x256` | 2.496 ± 0.015 | 1.463 ± 0.004 |
-| large | `grad_sum_qr_vjp` | f64 | `512x512` | 4.413 ± 0.047 | 3.225 ± 0.013 |
-| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 3.374 ± 0.082 | 0.939 ± 0.035 |
-| large | `grad_sum_solve_jvp` | f64 | `512x512,rhs=1` | 2.934 ± 0.017 | 1.867 ± 0.005 |
-| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 2.316 ± 0.014 | 1.714 ± 0.014 |
-| large | `grad_sum_solve_vjp` | f64 | `512x512,rhs=1` | 3.082 ± 0.241 | 3.388 ± 0.136 |
-| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 12.181 ± 0.165 | 12.479 ± 0.067 |
-| large | `grad_sum_svd_s_jvp` | f64 | `512x512` | 32.988 ± 0.024 | 33.414 ± 0.021 |
-| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 12.205 ± 0.008 | 12.497 ± 0.043 |
-| large | `grad_sum_svd_s_vjp` | f64 | `512x512` | 33.089 ± 0.147 | 33.476 ± 0.047 |
+| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 3.441 ± 0.140 | 3.080 ± 0.048 |
+| large | `grad_sum_eigh_jvp` | f64 | `512x512` | 6.793 ± 0.083 | 6.385 ± 0.035 |
+| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 3.464 ± 0.112 | 3.066 ± 0.062 |
+| large | `grad_sum_eigh_vjp` | f64 | `512x512` | 6.787 ± 0.163 | 6.394 ± 0.044 |
+| large | `grad_sum_lu_jvp` | f64 | `256x256` | 2.421 ± 0.030 | 1.143 ± 0.002 |
+| large | `grad_sum_lu_jvp` | f64 | `512x512` | 2.777 ± 0.124 | 2.418 ± 0.016 |
+| large | `grad_sum_lu_vjp` | f64 | `256x256` | 2.009 ± 0.018 | 0.903 ± 0.005 |
+| large | `grad_sum_lu_vjp` | f64 | `512x512` | 2.663 ± 0.184 | 1.927 ± 0.002 |
+| large | `grad_sum_qr_jvp` | f64 | `256x256` | 3.947 ± 0.430 | 1.488 ± 0.009 |
+| large | `grad_sum_qr_jvp` | f64 | `512x512` | 4.004 ± 0.360 | 3.270 ± 0.022 |
+| large | `grad_sum_qr_vjp` | f64 | `256x256` | 2.510 ± 0.010 | 1.474 ± 0.034 |
+| large | `grad_sum_qr_vjp` | f64 | `512x512` | 4.569 ± 0.113 | 3.234 ± 0.022 |
+| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 3.233 ± 0.018 | 0.942 ± 0.031 |
+| large | `grad_sum_solve_jvp` | f64 | `512x512,rhs=1` | 2.833 ± 0.187 | 1.870 ± 0.045 |
+| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 2.339 ± 0.188 | 1.580 ± 0.009 |
+| large | `grad_sum_solve_vjp` | f64 | `512x512,rhs=1` | 2.947 ± 0.035 | 3.320 ± 0.082 |
+| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 12.201 ± 0.024 | 12.477 ± 0.100 |
+| large | `grad_sum_svd_s_jvp` | f64 | `512x512` | 32.804 ± 0.085 | 33.444 ± 0.085 |
+| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 12.003 ± 0.134 | 12.370 ± 0.087 |
+| large | `grad_sum_svd_s_vjp` | f64 | `512x512` | 32.988 ± 0.059 | 33.319 ± 0.022 |
 
 ## Loss Definitions
 

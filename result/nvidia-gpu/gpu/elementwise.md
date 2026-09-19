@@ -3,8 +3,8 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/elementwise`
 - Suite file: `benchmarks/gpu/elementwise.yaml`
-- Timestamp: `2026-09-18T15:03:46.544224+00:00`
-- tenferro-rs commit: `cf971d0f18d0357133da97dae66802e26bd56e2f`
+- Timestamp: `2026-09-19T08:24:51.731306+00:00`
+- tenferro-rs commit: `40e24634f9aa814db82efd9faae5e99a8fcee8c4`
 
 ## GPU Information
 
@@ -38,7 +38,7 @@ Non-`ok` cells show the structured backend status.
 
 ## gpu/elementwise / elementwise_chain / allocating output
 
-| Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA |
-|---|---:|---:|---:|
-| elementwise_chain_f64_1k | 0.197 | 2.541 | 0.130 |
-| elementwise_chain_f64_1m | 0.194 | 1.725 | 0.320 |
+| Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| elementwise_chain_f64_1k | 0.145 | 2.656 | 0.134 | unsupported | unsupported | unsupported | unsupported | unsupported |
+| elementwise_chain_f64_1m | 0.202 | 1.679 | 0.323 | unsupported | unsupported | unsupported | unsupported | unsupported |

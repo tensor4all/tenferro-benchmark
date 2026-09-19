@@ -1016,10 +1016,7 @@ fn run_tenferro_cuda_to_contiguous(
     let flat_host = Tensor::from_vec_col_major(vec![total], prepared.src_data.clone())
         .expect("building flat source tensor must succeed");
     let flat_gpu = upload_tensor(backend.runtime(), &flat_host).expect("upload must succeed");
-    let typed: &TypedTensor<f64> = match &flat_gpu {
-        Tensor::F64(t) => t,
-        _ => unreachable!("upload_tensor preserves dtype"),
-    };
+    let typed: &TypedTensor<f64> = flat_gpu.as_typed().expect("upload_tensor preserves dtype");
     // Mirror the CPU runner's composition exactly: build the strided view
     // over the SOURCE layout (pattern shape + pattern source strides -- for
     // the explicit-stride pattern these are the JSON strides), then apply
@@ -1038,8 +1035,8 @@ fn run_tenferro_cuda_to_contiguous(
         .to_contiguous(&view)
         .expect("tenferro-cuda-to-contiguous must succeed on a validated pattern");
     backend.runtime().synchronize().expect("device sync");
-    let downloaded =
-        download_tensor(backend.runtime(), &Tensor::F64(compact)).expect("download must succeed");
+    let downloaded = download_tensor(backend.runtime(), &Tensor::from_typed(compact))
+        .expect("download must succeed");
     let actual = downloaded
         .as_slice::<f64>()
         .expect("tenferro-cuda-to-contiguous output must be f64");
@@ -1132,9 +1129,9 @@ fn run_tenferro_cuda_destination_reuse(
     let inverse_perm = inverse_permutation(&pattern.perm);
 
     let execute = |backend: &mut CudaBackend, destination: &mut Tensor| {
-        let Tensor::F64(destination) = destination else {
-            unreachable!("upload_tensor preserves destination dtype");
-        };
+        let destination = destination
+            .as_typed_mut::<f64>()
+            .expect("upload_tensor preserves destination dtype");
         let destination_view = destination
             .as_view_mut()
             .transpose_view(&inverse_perm)
@@ -1245,12 +1242,8 @@ fn run_cutensor(
         .expect("building flat destination tensor must succeed");
     let flat_dst = upload_tensor(backend.runtime(), &flat_dst_host).expect("upload must succeed");
 
-    let Tensor::F64(flat_src) = flat_src else {
-        unreachable!("f64 source")
-    };
-    let Tensor::F64(mut flat_dst) = flat_dst else {
-        unreachable!("f64 destination")
-    };
+    let flat_src = flat_src.into_typed::<f64>().expect("f64 source");
+    let mut flat_dst = flat_dst.into_typed::<f64>().expect("f64 destination");
     use tenferro_runtime::BackendSessionHost;
     let mut session_backend = backend.clone();
     session_backend
