@@ -1964,7 +1964,7 @@ fn push_linalg_jvp_vjp_trace_benches(
 }
 
 fn tensor(shape: &[usize], data: Vec<f64>) -> Tensor {
-    Tensor::F64(
+    Tensor::from_typed(
         TypedTensor::from_vec_col_major(shape.to_vec(), data)
             .expect("benchmark shape/data length should match"),
     )

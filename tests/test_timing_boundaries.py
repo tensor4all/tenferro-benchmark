@@ -17,6 +17,21 @@ import tensornetwork_contract as tnc
 
 
 class TimingBoundaries(unittest.TestCase):
+    def test_eager_einsum_enters_shared_scope_before_sampling(self):
+        source = (ROOT / "src/main.rs").read_text()
+        self.assertIn("fn run_instance_eager_in_scope(", source)
+        wrapper = source.split("fn run_instance_eager(", 1)[1].split(
+            "fn run_instance_eager_in_scope(", 1
+        )[0]
+        measured = source.split("fn run_instance_eager_in_scope(", 1)[1].split(
+            "fn run_instance(", 1
+        )[0]
+        self.assertIn(".with_execution_scope(", wrapper)
+        self.assertNotIn("Instant::now()", wrapper)
+        self.assertIn("EagerRuntime::with_cpu_backend(backend.clone())", measured)
+        self.assertNotIn("cpu_backend_from_env()", measured)
+        self.assertNotIn(".with_execution_scope(", measured)
+
     def test_setup_and_destruction_outside_clock_even_with_zero_warmups(self):
         state = {
             "timed": False,

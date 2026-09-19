@@ -110,7 +110,7 @@ fn create_operand_tensors(shapes: &[Vec<usize>]) -> Vec<Tensor> {
     shapes
         .iter()
         .map(|shape| {
-            Tensor::F64(
+            Tensor::from_typed(
                 TypedTensor::<f64>::zeros(shape.clone())
                     .expect("benchmark zero tensor shape should be valid"),
             )
@@ -394,7 +394,9 @@ impl TenferroMode {
     fn timing_note(self) -> &'static str {
         match self {
             Self::Trace => "graph compiled once, executed through Runtime::run_compiled",
-            Self::Eager => "precomputed path, eager binary contractions",
+            Self::Eager => {
+                "precomputed path, eager binary contractions in one shared CPU execution scope"
+            }
         }
     }
 }
@@ -677,12 +679,27 @@ fn run_instance_eager(
     path_meta: &PathMeta,
     strategy_name: &str,
 ) -> Result<(Duration, Duration, Duration), String> {
+    let backend = cpu_backend_from_env()?;
+    // Match CPU ops: enter the reusable execution scope before sampling, not
+    // once per binary contraction inside each timed tensor-network evaluation.
+    backend
+        .with_execution_scope(|| {
+            run_instance_eager_in_scope(&backend, instance, path_meta, strategy_name)
+        })
+        .map_err(|err| err.to_string())?
+}
+
+fn run_instance_eager_in_scope(
+    backend: &CpuBackend,
+    instance: &BenchmarkInstance,
+    path_meta: &PathMeta,
+    strategy_name: &str,
+) -> Result<(Duration, Duration, Duration), String> {
     if instance.dtype == "complex128" {
         return Err("complex128 not supported".into());
     }
 
-    let ctx =
-        EagerRuntime::with_cpu_backend(cpu_backend_from_env()?).map_err(|err| err.to_string())?;
+    let ctx = EagerRuntime::with_cpu_backend(backend.clone()).map_err(|err| err.to_string())?;
     let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
     let prepared = prepare_eager_path(instance, path_meta)?;
 
