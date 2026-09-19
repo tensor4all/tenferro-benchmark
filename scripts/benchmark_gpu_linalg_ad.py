@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import sys
 import time
@@ -206,11 +207,18 @@ def run_torch(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                 return primal, vjp_fn(cotangent)
 
         med, iqr = bench(runner, sync, n_runs, n_warmup)
+        # Reference work and scalar downloads are outside every timed interval.
+        _, derivative = runner()
+        direction = torch.tensor(tangent, dtype=torch.float64, device=device)
+        actual = float(derivative if phase == "jvp" else (derivative[0] * direction).sum())
+        reference = float((fn(x + FD_STEP * direction) - fn(x - FD_STEP * direction)) / (2 * FD_STEP))
         return ok_record(
             suite_id,
             problem,
             backend,
             device_ordinal,
+            actual=actual,
+            reference=reference,
             path="phase2-measured-pytorch-cuda-linalg-ad",
             n_warmup=n_warmup,
             n_runs=n_runs,
@@ -329,11 +337,17 @@ def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             runner = lambda: compiled(x, cotangent)
 
         med, iqr = bench(runner, sync, n_runs, n_warmup)
+        _, derivative = runner()
+        direction = jnp.asarray(tangent, dtype=jnp.float64, device=dev)
+        actual = float(derivative if phase == "jvp" else jnp.sum(derivative[0] * direction))
+        reference = float((fn(x + FD_STEP * direction) - fn(x - FD_STEP * direction)) / (2 * FD_STEP))
         return ok_record(
             suite_id,
             problem,
             backend,
             device_ordinal,
+            actual=actual,
+            reference=reference,
             path="phase2-measured-jax-cuda-linalg-ad",
             n_warmup=n_warmup,
             n_runs=n_runs,
@@ -358,6 +372,26 @@ def run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             bc=bc,
             tc=tc,
         )
+
+
+FD_STEP = 1e-5
+
+
+def directional_verification(actual, reference, rtol, atol):
+    error = abs(actual - reference)
+    finite = all(math.isfinite(value) for value in (actual, reference, error))
+    passed = finite and error <= atol + rtol * abs(reference)
+    relative = error / abs(reference) if reference else None
+    return {
+        "status": "passed" if passed else "failed",
+        "reference_backend": f"backend_primal_central_difference_h{FD_STEP:g}",
+        "max_abs_error": error if finite else None,
+        "max_rel_error": relative if relative is not None and math.isfinite(relative) else None,
+        "residual": None,
+        "rtol": rtol,
+        "atol": atol,
+        "reason": None if passed else f"directional AD {actual} != central difference {reference}",
+    }
 
 
 def _layout_str(problem) -> str:
@@ -438,19 +472,22 @@ def ok_record(
     n_runs,
     median,
     iqr,
+    actual,
+    reference,
     rtol,
     atol,
     ts,
     bc,
     tc,
 ):
+    verification = directional_verification(actual, reference, rtol, atol)
     return {
         "schema_version": 1,
         "suite_id": suite_id,
         "problem_id": problem["id"],
         "op": problem["op"],
         "backend": backend,
-        "status": "ok",
+        "status": "ok" if verification["status"] == "passed" else "verification_failed",
         "timing": {
             "warmup_runs": n_warmup,
             "timed_runs": n_runs,
@@ -467,16 +504,7 @@ def ok_record(
             "effective_bandwidth_gbps": None,
             "peak_memory_bytes": None,
         },
-        "verification": {
-            "status": "passed",
-            "reference_backend": None,
-            "max_abs_error": None,
-            "max_rel_error": None,
-            "residual": None,
-            "rtol": rtol,
-            "atol": atol,
-            "reason": None,
-        },
+        "verification": verification,
         "execution": {
             "device": "cuda",
             "device_ordinal": device_ordinal,

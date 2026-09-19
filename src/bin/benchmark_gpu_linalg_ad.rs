@@ -12,7 +12,8 @@ use std::time::Instant;
 use serde_json::{json, Value};
 use tenferro_ad::AdContext;
 use tenferro_gpu::cuda::{
-    cuda_runtime_engine_registration, gpu_available, upload_tensor, CudaBackend, CudaRuntime,
+    cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaBackend,
+    CudaRuntime,
 };
 use tenferro_linalg::TracedTensorLinalgExt;
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
@@ -52,9 +53,6 @@ fn main() {
                     device_ordinal,
                     "not_configured",
                     "no CUDA GPU available",
-                    &timestamp,
-                    benchmark_commit.as_deref(),
-                    tenferro_commit.as_deref(),
                 )
             } else {
                 dispatch(
@@ -93,9 +91,6 @@ fn dispatch(
             device_ordinal,
             "not_configured",
             &format!("unsupported op: {phase}"),
-            ts,
-            bc,
-            tc,
         );
     }
 
@@ -155,11 +150,31 @@ fn dispatch(
             black_box(out.len());
         }
 
-        Ok((times_ms,))
+        // Download and reference evaluations are outside every timed interval.
+        let out = runtime
+            .run_prepared(&prepared, &[])
+            .map_err(|e| e.to_string())?;
+        sync_runtime(compute_bk.runtime())?;
+        let derivative =
+            download_tensor(compute_bk.runtime(), &out[1]).map_err(|e| e.to_string())?;
+        let derivative = derivative
+            .as_typed::<f64>()
+            .ok_or("AD derivative is not f64")?;
+        let values = derivative.as_slice().map_err(|e| e.to_string())?;
+        let actual = if phase == "jvp" {
+            values[0]
+        } else {
+            let direction = data_for_shape(&[n, n], tangent_seed(matrix_seed));
+            assert_eq!(values.len(), direction.len());
+            values.iter().zip(direction).map(|(g, d)| g * d).sum()
+        };
+        let plus = primal_value(n, &loss_spec, &compute_bk, &runtime, FD_STEP)?;
+        let minus = primal_value(n, &loss_spec, &compute_bk, &runtime, -FD_STEP)?;
+        Ok((times_ms, actual, (plus - minus) / (2.0 * FD_STEP)))
     }));
 
     match result {
-        Ok(Ok((times_ms,))) => {
+        Ok(Ok((times_ms, actual, reference))) => {
             let stats = timing_stats(&times_ms);
             ok_record(
                 suite_id,
@@ -168,6 +183,8 @@ fn dispatch(
                 n_warmup,
                 n_runs,
                 stats,
+                actual,
+                reference,
                 ts,
                 bc,
                 tc,
@@ -175,16 +192,7 @@ fn dispatch(
         }
         Ok(Err(msg)) => {
             let (status, reason) = classify_linalg_ad_error(&msg);
-            stub(
-                suite_id,
-                problem,
-                device_ordinal,
-                status,
-                &reason,
-                ts,
-                bc,
-                tc,
-            )
+            stub(suite_id, problem, device_ordinal, status, &reason)
         }
         Err(_) => stub(
             suite_id,
@@ -192,9 +200,6 @@ fn dispatch(
             device_ordinal,
             "runtime_failed",
             "panic during linalg AD benchmark",
-            ts,
-            bc,
-            tc,
         ),
     }
 }
@@ -246,7 +251,7 @@ fn build_ad_outputs(
     loss: &LossKind,
     rt: &CudaRuntime,
 ) -> Result<Vec<TracedTensor>, String> {
-    let (output, wrt) = build_loss(n, loss, rt)?;
+    let (output, wrt) = build_loss(n, loss, rt, 0.0)?;
     match phase {
         "jvp" => {
             let tangent_seed = tangent_seed(loss.matrix_seed());
@@ -275,22 +280,62 @@ impl LossKind {
     }
 }
 
+const FD_STEP: f64 = 1e-5;
+
+fn primal_value(
+    n: usize,
+    loss: &LossKind,
+    backend: &CudaBackend,
+    runtime: &Runtime,
+    delta: f64,
+) -> Result<f64, String> {
+    let (output, _) = build_loss(n, loss, backend.runtime(), delta)?;
+    let program = GraphCompiler::new()
+        .compile_many(&[&output])
+        .map_err(|e| e.to_string())?;
+    let prepared = runtime
+        .prepare_compiled(&program, &[])
+        .map_err(|e| e.to_string())?;
+    let out = runtime
+        .run_prepared(&prepared, &[])
+        .map_err(|e| e.to_string())?;
+    sync_runtime(backend.runtime())?;
+    let host = download_tensor(backend.runtime(), &out[0]).map_err(|e| e.to_string())?;
+    Ok(host
+        .as_typed::<f64>()
+        .ok_or("primal loss is not f64")?
+        .as_slice()
+        .map_err(|e| e.to_string())?[0])
+}
+
 fn build_loss(
     n: usize,
     loss: &LossKind,
     rt: &CudaRuntime,
+    delta: f64,
 ) -> Result<(TracedTensor, TracedTensor), String> {
+    let mut values = match loss {
+        LossKind::Eigh { .. } | LossKind::Solve { .. } => spd_matrix(n, loss.matrix_seed()),
+        _ => well_conditioned_matrix(n, loss.matrix_seed()),
+    };
+    if delta != 0.0 {
+        for (value, direction) in values
+            .iter_mut()
+            .zip(data_for_shape(&[n, n], tangent_seed(loss.matrix_seed())))
+        {
+            *value += delta * direction;
+        }
+    }
+    let a = upload_traced(rt, &[n, n], values)?;
     match *loss {
-        LossKind::SvdS { matrix_seed } => {
-            let a = upload_traced(rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
+        LossKind::SvdS { .. } => {
             let (_, s, _) = a.svd().map_err(|e| format!("svd: {e}"))?;
             let out = s
                 .reduce_sum(Some(&[0]))
                 .map_err(|e| format!("reduce: {e}"))?;
             Ok((out, a))
         }
-        LossKind::Qr { matrix_seed } => {
-            let a = upload_traced(rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
+        LossKind::Qr { .. } => {
             let (q, r) = a.qr().map_err(|e| format!("qr: {e}"))?;
             let q_sum = q
                 .reduce_sum(Some(&[0, 1]))
@@ -301,16 +346,14 @@ fn build_loss(
             let loss = (&q_sum + &r_sum).map_err(|e| format!("add: {e}"))?;
             Ok((loss, a))
         }
-        LossKind::Eigh { matrix_seed } => {
-            let a = upload_traced(rt, &[n, n], spd_matrix(n, matrix_seed))?;
+        LossKind::Eigh { .. } => {
             let (w, _) = a.eigh().map_err(|e| format!("eigh: {e}"))?;
             let out = w
                 .reduce_sum(Some(&[0]))
                 .map_err(|e| format!("reduce: {e}"))?;
             Ok((out, a))
         }
-        LossKind::Lu { matrix_seed } => {
-            let a = upload_traced(rt, &[n, n], well_conditioned_matrix(n, matrix_seed))?;
+        LossKind::Lu { .. } => {
             let (_, l, u, _) = a.lu().map_err(|e| format!("lu: {e}"))?;
             let l_sum = l
                 .reduce_sum(Some(&[0, 1]))
@@ -322,11 +365,8 @@ fn build_loss(
             Ok((loss, a))
         }
         LossKind::Solve {
-            matrix_seed,
-            rhs_seed,
-            rhs_cols,
+            rhs_seed, rhs_cols, ..
         } => {
-            let a = upload_traced(rt, &[n, n], spd_matrix(n, matrix_seed))?;
             let b = upload_traced(rt, &[n, rhs_cols], data_for_shape(&[n, rhs_cols], rhs_seed))?;
             let x = a.solve(&b).map_err(|e| format!("solve: {e}"))?;
             let out = x
@@ -417,7 +457,7 @@ fn timing_stats(times_ms: &[f64]) -> (f64, f64, f64, f64, f64) {
     sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
     let n = sorted.len();
     let first = times_ms[0];
-    let median = if n % 2 == 0 {
+    let median = if n.is_multiple_of(2) {
         (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0
     } else {
         sorted[n / 2]
@@ -449,9 +489,6 @@ fn stub(
     device_ordinal: usize,
     status: &str,
     reason: &str,
-    _ts: &str,
-    _bc: Option<&str>,
-    _tc: Option<&str>,
 ) -> Value {
     json!({
         "schema_version": 1,
@@ -491,6 +528,8 @@ fn ok_record(
     n_warmup: usize,
     n_runs: usize,
     stats: (f64, f64, f64, f64, f64),
+    actual: f64,
+    reference: f64,
     _ts: &str,
     _bc: Option<&str>,
     _tc: Option<&str>,
@@ -498,13 +537,18 @@ fn ok_record(
     let (first, median, min_t, p95, iqr) = stats;
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
+    let error = (actual - reference).abs();
+    let passed = actual.is_finite()
+        && reference.is_finite()
+        && error.is_finite()
+        && error <= atol + rtol * reference.abs();
     json!({
         "schema_version": 1,
         "suite_id": suite_id,
         "problem_id": problem["id"].as_str().unwrap_or(""),
         "op": problem["op"].as_str().unwrap_or(""),
         "backend": "tenferro-cuda-trace",
-        "status": "ok",
+        "status": if passed { "ok" } else { "verification_failed" },
         "timing": {
             "warmup_runs": n_warmup,
             "timed_runs": n_runs,
@@ -518,14 +562,14 @@ fn ok_record(
         },
         "performance": { "tflops": null, "effective_bandwidth_gbps": null, "peak_memory_bytes": null },
         "verification": {
-            "status": "passed",
-            "reference_backend": null,
-            "max_abs_error": null,
-            "max_rel_error": null,
+            "status": if passed { "passed" } else { "failed" },
+            "reference_backend": format!("backend_primal_central_difference_h{FD_STEP}"),
+            "max_abs_error": error,
+            "max_rel_error": if reference == 0.0 { None } else { Some(error / reference.abs()) },
             "residual": null,
             "rtol": rtol,
             "atol": atol,
-            "reason": null
+            "reason": if passed { None } else { Some(format!("directional AD {actual} != central difference {reference}")) }
         },
         "execution": {
             "device": "cuda",
@@ -624,6 +668,44 @@ fn git_commit(path: &str) -> Option<String> {
         .ok()
         .filter(|o| o.status.success())
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn record(actual: f64, reference: f64) -> Value {
+        ok_record(
+            "gpu/test",
+            &serde_yaml::Value::Null,
+            0,
+            1,
+            1,
+            (1.0, 1.0, 1.0, 1.0, 0.0),
+            actual,
+            reference,
+            "",
+            None,
+            None,
+        )
+    }
+
+    #[test]
+    fn directional_check_records_error_and_rejects_wrong_derivative() {
+        let matched = record(2.0 + 1e-7, 2.0);
+        assert_eq!(matched["status"], "ok");
+        assert!(matched["verification"]["max_abs_error"].as_f64().unwrap() > 0.0);
+        assert_eq!(record(3.0, 2.0)["status"], "verification_failed");
+        assert_eq!(record(0.0, 0.0)["status"], "ok");
+    }
+
+    #[test]
+    fn directional_check_rejects_nonfinite_values() {
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_eq!(record(value, 1.0)["status"], "verification_failed");
+            assert_eq!(record(1.0, value)["status"], "verification_failed");
+        }
+    }
 }
 
 fn utc_timestamp() -> String {

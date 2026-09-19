@@ -14,6 +14,7 @@ import yaml
 
 from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown
 from collect_gpu_info import markdown as gpu_info_markdown, resolve_gpu_info
+from format_gpu_results import load_problem_notes
 
 BACKEND_ORDER = [
     "tenferro-cuda-trace",
@@ -95,6 +96,7 @@ def problem_meta(problem_id: str) -> tuple[str, str, str]:
 def format_markdown(
     records: list[dict[str, Any]],
     run_metadata: dict[str, Any] | None = None,
+    problem_notes: dict[str, str] | None = None,
 ) -> str:
     by_key: dict[tuple[str, str, str, str], dict[str, dict[str, Any]]] = defaultdict(dict)
     for record in records:
@@ -156,13 +158,18 @@ def format_markdown(
         "Timed runs include the host API call and backend-native device synchronization "
         "without downloading AD outputs in the timed region."
     )
+    lines.append(
+        "Numerically verified rows record an untimed backend-primal central-difference "
+        "reference (h=1e-5), comparing the JVP or the VJP dotted with the deterministic "
+        "tangent. This checks one direction, not every gradient component. Legacy rows "
+        "without a reference_backend are execution-only, even if their status says passed."
+    )
     suites_present = {suite for suite, _, _, _ in by_key}
     if "small" in suites_present:
         lines.append(
             "Small cases (n=2, 4, 8) are single-call diagnostics, not batched shared-session "
             "small-work comparisons. Public API session entry remains included; these rows "
-            "must not be interpreted as isolated kernel or shared-session overhead. "
-            "This suite checks successful execution only; AD outputs are not numerically compared."
+            "must not be interpreted as isolated kernel or shared-session overhead."
         )
     if suites_present == {"small"}:
         lines.append(
@@ -187,9 +194,13 @@ def format_markdown(
 
     for suite, benchmark, dtype, shape in sorted(by_key):
         backends = by_key[(suite, benchmark, dtype, shape)]
+        label = f"`{benchmark}`"
+        problem_id = next(iter(backends.values()))["problem_id"]
+        if problem_notes and problem_id in problem_notes:
+            label = f"[{label}]({problem_notes[problem_id]})"
         row = [
             suite,
-            f"`{benchmark}`",
+            label,
             dtype,
             f"`{shape}`",
             *(format_cell(backends.get(backend)) for backend in BACKEND_ORDER),
@@ -217,9 +228,11 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    records = load_records(args.results)
     markdown = format_markdown(
-        load_records(args.results),
+        records,
         load_run_metadata(args.run_metadata),
+        load_problem_notes(args.output, records),
     )
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

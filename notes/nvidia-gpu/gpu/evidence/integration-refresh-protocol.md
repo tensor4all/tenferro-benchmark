@@ -43,6 +43,23 @@ OpenBLAS also reports 1. This is an additional configuration difference from the
 historical run, not an isolated CubeCL/materialization comparison. Tensor setup,
 operation timing, backend selections and numerical tolerances are unchanged.
 
+## AD verification correction (declared before the corrected AD runs)
+
+The initial `20260919_142600` collection completed all eight suites, but source
+inspection found that both AD runners marked successful execution as
+`verification: passed` without comparing outputs. Those 100 AD rows are retained
+as execution-only evidence, not numerical verification. Their first timings are
+not substituted into the corrected AD reports.
+
+Add an untimed directional derivative check: compare the JVP scalar, or the dot
+product of the VJP gradient with the existing deterministic tangent, to a central
+finite difference of the same backend's primal loss, with fixed step `h=1e-5`.
+Use the existing YAML rtol/atol unchanged, reject non-finite values, and retain
+verification failures. This checks one declared direction, not every gradient
+component or cross-backend gauge equality. Downloads and reference evaluations
+remain outside timing. Test the check, then rerun only the two affected AD
+suites under a new timestamp; the other six suites need no remeasurement.
+
 ## Interpretation and acceptance
 
 The historical published comparison is benchmark `9a5b104`, tenferro `40e24634`,
