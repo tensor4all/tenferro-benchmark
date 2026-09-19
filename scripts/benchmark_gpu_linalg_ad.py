@@ -61,6 +61,12 @@ def main() -> None:
     backends = sys.argv[4:sep]
     suites = [Path(p) for p in sys.argv[sep + 1 :]]
 
+    if "pytorch-cuda" in backends:
+        import torch
+        torch.set_num_threads(int(os.environ.get("OMP_NUM_THREADS", "1")))
+        torch.set_num_interop_threads(1)
+        print(f"PyTorch threads: intra-op={torch.get_num_threads()}, inter-op={torch.get_num_interop_threads()}")
+
     root = PROJECT_DIR
     ts = datetime.now(timezone.utc).isoformat()
     bc = _git_commit(root)

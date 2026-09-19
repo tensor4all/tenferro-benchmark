@@ -463,6 +463,11 @@ def main() -> int:
             Path(bench_output).write_text("")
         return 0
 
+    import torch
+    torch.set_num_threads(int(os.environ.get("OMP_NUM_THREADS", "1")))
+    torch.set_num_interop_threads(1)
+    print(f"PyTorch threads: intra-op={torch.get_num_threads()}, inter-op={torch.get_num_interop_threads()}")
+
     device_name = gpu_name(device_ordinal)
     print(f"Device: cuda:{device_ordinal} ({device_name})")
     print()

@@ -33,6 +33,16 @@ change rather than silently comparing different contracts.
 - Keep existing published records and all diagnostic experiments. Save fresh raw
   records and run metadata under a new timestamp before regenerating reports.
 
+## Pre-collection configuration correction
+
+The post-merge preflight found PyTorch intra-op=1 but inter-op=64 with the existing
+thread environment. Before collecting any refresh measurements, the Python
+runners used here were updated to set intra-op from `OMP_NUM_THREADS` and inter-op
+to 1 at CLI startup, printing both effective values. The refresh uses 1 for both;
+OpenBLAS also reports 1. This is an additional configuration difference from the
+historical run, not an isolated CubeCL/materialization comparison. Tensor setup,
+operation timing, backend selections and numerical tolerances are unchanged.
+
 ## Interpretation and acceptance
 
 The historical published comparison is benchmark `9a5b104`, tenferro `40e24634`,
