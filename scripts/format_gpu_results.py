@@ -5,12 +5,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown
 from collect_gpu_info import markdown as gpu_info_markdown, resolve_gpu_info
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 import yaml
 
@@ -109,7 +111,30 @@ def run_metadata_lines(metadata: dict[str, Any] | None) -> list[str]:
     return lines + [""]
 
 
-def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] | None = None) -> str:
+def load_problem_notes(output: Path | None, records: list[dict[str, Any]]) -> dict[str, str]:
+    """Link only documented problem anchors in the matching persistent notes file."""
+    if output is None:
+        return {}
+    root = Path(__file__).resolve().parent.parent
+    output = output.resolve()
+    try:
+        relative = output.relative_to(root / "result")
+    except ValueError:
+        return {}
+    notes = root / "notes" / relative.with_suffix(".md")
+    if not notes.is_file():
+        return {}
+    text = notes.read_text(encoding="utf-8")
+    href = quote(Path(os.path.relpath(notes, output.parent)).as_posix())
+    return {
+        problem: f"{href}#{quote(problem, safe='')}"
+        for problem in {record["problem_id"] for record in records}
+        if f'<a id="{problem}"></a>' in text
+    }
+
+
+def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] | None = None,
+                    problem_notes: dict[str, str] | None = None) -> str:
     if not records:
         return clean_markdown_eof("# GPU Benchmark Results\n\nNo GPU benchmark records found.")
 
@@ -159,7 +184,10 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
                 by_problem_backend[key] = record
 
         for problem_id in problem_ids:
-            row = [markdown_cell(problem_id)]
+            label = markdown_cell(problem_id)
+            if problem_notes and problem_id in problem_notes:
+                label = f"[{label}]({problem_notes[problem_id]})"
+            row = [label]
             for backend in backends:
                 row.append(markdown_cell(format_cell(by_problem_backend.get((problem_id, backend)))))
             lines.append("| " + " | ".join(row) + " |")
@@ -178,7 +206,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    markdown = format_markdown(load_records(args.results), load_run_metadata(args.run_metadata))
+    records = load_records(args.results)
+    markdown = format_markdown(records, load_run_metadata(args.run_metadata),
+                               load_problem_notes(args.output, records))
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(markdown)

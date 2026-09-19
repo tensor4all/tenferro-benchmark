@@ -254,7 +254,8 @@ for suite in "${SUITES[@]}"; do
     "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"
 
     "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
-    cp "$MARKDOWN_OUT" "$REPORT_OUT"
+    # Persistent item-note links are relative to the published report location.
+    "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$REPORT_OUT"
 
     echo ""
     echo "GPU benchmark suite complete: $suite_id"

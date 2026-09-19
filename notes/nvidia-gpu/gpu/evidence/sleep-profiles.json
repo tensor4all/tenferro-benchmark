@@ -1,0 +1,38 @@
+[
+  {
+    "profile": "profile-baseline-tenferro-cuda-eager",
+    "names": [
+      "void cutlass::Kernel2<cutlass_80_tensorop_d884gemm_128x64_16x3_nn_align1>(T1::Params)"
+    ],
+    "count": 35,
+    "median_us": 2061.8075,
+    "gap_us": 113.154
+  },
+  {
+    "profile": "profile-baseline-tenferro-cuda-trace",
+    "names": [
+      "void cutlass::Kernel2<cutlass_80_tensorop_d884gemm_128x64_16x3_nn_align1>(T1::Params)"
+    ],
+    "count": 35,
+    "median_us": 2062.223,
+    "gap_us": 246.244
+  },
+  {
+    "profile": "profile-candidate-tenferro-cuda-eager",
+    "names": [
+      "void cutlass::Kernel2<cutlass_80_tensorop_d884gemm_128x64_16x3_nn_align1>(T1::Params)"
+    ],
+    "count": 35,
+    "median_us": 2061.9350000000004,
+    "gap_us": 108.577
+  },
+  {
+    "profile": "profile-candidate-tenferro-cuda-trace",
+    "names": [
+      "void cutlass::Kernel2<cutlass_80_tensorop_d884gemm_128x64_16x3_nn_align1>(T1::Params)"
+    ],
+    "count": 35,
+    "median_us": 2061.839,
+    "gap_us": 103.81
+  }
+]

@@ -8,6 +8,11 @@ Do not duplicate result tables in README.md or overview docs.
 Historical report files are not maintained. Use git history for older latest
 reports.
 
+Before investigating a benchmark item, read its persistent notes under
+`notes/<target_profile>/<suite_id>.md`. Update findings, candidate status and
+remaining work there; do not leave the only handoff in a worklog or local traces.
+See `notes/README.md` for anchors and generated-report links.
+
 ## Benchmark Timing Discipline
 
 Run benchmark timing collection sequentially. Do not run multiple CPU benchmark

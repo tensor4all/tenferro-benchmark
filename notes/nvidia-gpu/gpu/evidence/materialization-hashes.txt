@@ -1,0 +1,3 @@
+63011bb4a9e406a08bf2778cec4f8482b86c6ee5d2a446f74157d2054d4361ee  .worktrees/bench-gpu-20260919/data/diagnostics/read-path-results/baseline
+34982fb32b847e51310abd1e06c10d20db94eb5d829ae50eca9a10639daabfa0  .worktrees/bench-gpu-20260919/data/diagnostics/read-path-results/candidate
+3bdbda219cf7beef73defe08fbdcce6bca2f14cf13e089d0b246d2119d09114e  .worktrees/bench-gpu-20260919/data/diagnostics/read-path-results/candidate.patch

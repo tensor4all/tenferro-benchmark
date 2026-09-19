@@ -393,6 +393,8 @@ source-builds PyTorch against the same OpenBLAS as tenferro.
   TensorNetworkBenchmarks parity on CUDA.
 - [Result layout and metadata](docs/results.md): `target_profile`,
   `suite_id`, `run.yaml`, latest reports.
+- [Per-item benchmark notes](notes/README.md): persistent findings, caveats,
+  candidate status and evidence linked from generated GPU reports.
 - [Architecture terminology](docs/architecture.md): suite, runner, backend,
   strategy, target profile.
 - [PyTorch einsum dispatch notes](docs/pytorch-einsum-dispatch.md): PyTorch

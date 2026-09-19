@@ -1,0 +1,22 @@
+[
+  {
+    "profile": "profile-candidate-tenferro-cuda-eager",
+    "names": [
+      "void cutlass::Kernel2<cutlass_80_tensorop_d884gemm_128x64_16x3_nn_align1>(T1::Params)"
+    ],
+    "count": 35,
+    "median_us": 2061.3305,
+    "gap_us": 104.737,
+    "sleep_calls": 0
+  },
+  {
+    "profile": "profile-candidate-tenferro-cuda-trace",
+    "names": [
+      "void cutlass::Kernel2<cutlass_80_tensorop_d884gemm_128x64_16x3_nn_align1>(T1::Params)"
+    ],
+    "count": 35,
+    "median_us": 2061.731,
+    "gap_us": 129.346,
+    "sleep_calls": 0
+  }
+]

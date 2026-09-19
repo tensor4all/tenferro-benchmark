@@ -40,5 +40,5 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| elementwise_chain_f64_1k | 0.145 | 2.656 | 0.134 | unsupported | unsupported | unsupported | unsupported | unsupported |
-| elementwise_chain_f64_1m | 0.202 | 1.679 | 0.323 | unsupported | unsupported | unsupported | unsupported | unsupported |
+| [elementwise_chain_f64_1k](../../../notes/nvidia-gpu/gpu/elementwise.md#elementwise_chain_f64_1k) | 0.145 | 2.656 | 0.134 | unsupported | unsupported | unsupported | unsupported | unsupported |
+| [elementwise_chain_f64_1m](../../../notes/nvidia-gpu/gpu/elementwise.md#elementwise_chain_f64_1m) | 0.202 | 1.679 | 0.323 | unsupported | unsupported | unsupported | unsupported | unsupported |

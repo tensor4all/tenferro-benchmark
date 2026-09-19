@@ -9,8 +9,9 @@ RUN_YAML="$RUN_DIR/run.yaml"
 JSONL="$RUN_DIR/records.jsonl"
 MARKDOWN="$RUN_DIR/report.md"
 REPORT="result/nvidia-gpu/gpu/dense.md"
+NOTES="notes/nvidia-gpu/gpu/dense.md"
 TMP="$(mktemp -d)"
-ARTIFACTS=("$RUN_YAML" "$JSONL" "$MARKDOWN" "$RUN_DIR/rust_records.jsonl" "$REPORT")
+ARTIFACTS=("$RUN_YAML" "$JSONL" "$MARKDOWN" "$RUN_DIR/rust_records.jsonl" "$REPORT" "$NOTES")
 
 mkdir -p "$TMP/originals"
 for artifact in "${ARTIFACTS[@]}"; do
@@ -225,6 +226,9 @@ assert mod._verify_jax("solve", np.array([[1.0], [2.0]]), np.zeros((2, 1)), solv
 assert mod._verify_jax("solve", np.array([[1.0], [3.0]]), np.zeros((2, 1)), solve_data, 1.0e-12, 1.0e-12)[0] == "failed"
 PY
 
+mkdir -p "$(dirname "$NOTES")"
+printf '\n<a id="dense_matmul_f64_3072"></a>\nContract-test note.\n' >> "$NOTES"
+
 GPU_BENCH_TIMESTAMP=19990101_000000 \
 BENCHMARK_TARGET_PROFILE=nvidia-gpu \
 GPU_BENCH_SUITE=benchmarks/gpu/dense.yaml \
@@ -236,6 +240,9 @@ test -s "$RUN_YAML"
 test -s "$JSONL"
 test -s "$MARKDOWN"
 test -s "$REPORT"
+rg -Fq '[dense_matmul_f64_3072](../../../notes/nvidia-gpu/gpu/dense.md#dense_matmul_f64_3072)' "$REPORT"
+rg -Fq '| dense_matmul_f64_3072 |' "$MARKDOWN"
+rg -Fq 'Contract-test note.' "$NOTES"
 
 uv run python scripts/validate_benchmark_suite.py --kind run "$RUN_YAML"
 grep -q 'single-call intervals; short GPU cases are diagnostics' "$RUN_YAML"

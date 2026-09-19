@@ -40,7 +40,7 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| dense_batched_matmul_f64_b1024_256 | 2.287 | 2.317 | 2.078 | 2.077 | not configured | unsupported | unsupported | unsupported |
+| [dense_batched_matmul_f64_b1024_256](../../../notes/nvidia-gpu/gpu/dense.md#dense_batched_matmul_f64_b1024_256) | 2.287 | 2.317 | 2.078 | 2.077 | not configured | unsupported | unsupported | unsupported |
 
 ## gpu/dense / eigh / allocating output
 

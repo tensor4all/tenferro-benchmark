@@ -1,0 +1,1065 @@
+diff --git a/PERFORMANCE_TIPS.md b/PERFORMANCE_TIPS.md
+index 94016650..f692d655 100644
+--- a/PERFORMANCE_TIPS.md
++++ b/PERFORMANCE_TIPS.md
+@@ -112,12 +112,31 @@ Audit hints:
+ - When an output contiguity contract, backend limitation, or external ABI
+   boundary requires a copy or materialization, make that boundary explicit in
+   the implementation and cover it with tests.
++- Audit owned, compact borrowed, offset/strided borrowed, and preallocated-output
++  paths together on CPU and GPU. `TensorRead::View` is not a contiguity test:
++  do not pack an already supported layout merely to call an owned-input API.
++  Route owned inputs through borrowed execution where possible; allocating and
++  `_into` operations should share the output-writing kernel, not allocate a
++  temporary result and copy it into the caller's destination.
++- Trace copies across eager/runtime adapters, extension dispatch, and provider
++  preparation. Reuse an existing read hook instead of packing before it, and
++  avoid packing followed by another full copy into vendor work storage. Keep
++  required independent ownership, destructive-input protection, alias checks,
++  and asynchronous storage retention; do not replace these with unsafe aliases.
++- Regression checks for removed materializations must cover data movement as
++  well as numerical results: use existing allocation/copy counters, a dispatch
++  spy, or a focused device trace. Include compact views and a noncompact/offset
++  case, input preservation, and `_into` where supported. CPU-only numerical
++  tests do not establish CUDA copy behavior.
+ 
+ Audit hints:
+ 
+ - Detect: `to_vec`, `collect::<Vec<_>>`, `to_dense`, `clone` of tensor data,
+   or a fresh output allocation on a production path whose size is a product
+-  of tensor dimensions; `to_host`/`to_device` inside library operations.
++  of tensor dimensions; `to_host`/`to_device` inside library operations;
++  `as_tensor()`/`TensorRead::View` branches that unconditionally materialize;
++  read-into helpers that call allocating operations; repeated canonicalization
++  and work-buffer copies across adjacent layers.
+ - Fix: strided views, borrowed slices, metadata-only layout changes, or
+   backend-native buffers; make any required copy explicit and tested.
+ 
+diff --git a/crates/tenferro-gpu/src/cubecl/dispatch.rs b/crates/tenferro-gpu/src/cubecl/dispatch.rs
+index 71075762..57bfd83f 100644
+--- a/crates/tenferro-gpu/src/cubecl/dispatch.rs
++++ b/crates/tenferro-gpu/src/cubecl/dispatch.rs
+@@ -607,6 +607,15 @@ pub(crate) fn typed_tensor_array_arg<T: CubeElement + TensorScalar + Clone>(
+     Ok(prepared.into_array_arg(tensor.n_elements()))
+ }
+ 
++pub(crate) fn typed_tensor_mut_array_arg<T: CubeElement + TensorScalar + Clone>(
++    tensor: &mut TypedTensor<T, impl TensorRank>,
++    op: &'static str,
++) -> crate::Result<ArrayArg<CubeclCudaRuntime>> {
++    let len = tensor.n_elements();
++    let prepared = downcast_prepared(tensor.prepare_device_write(op)?, op)?;
++    Ok(prepared.into_array_arg(len))
++}
++
+ pub(crate) fn typed_view_array_arg<T: CubeElement + TensorScalar + Clone>(
+     view: &TypedTensorView<'_, T, impl TensorRank>,
+     op: &'static str,
+@@ -853,6 +862,109 @@ where
+     Ok(output)
+ }
+ 
++pub(crate) fn launch_unary_view<TIn, TOut>(
++    rt: &CudaRuntime,
++    input: &TypedTensorView<'_, TIn>,
++    out_shape: &[usize],
++    op: &'static str,
++    launch: impl FnOnce(
++        &ComputeClient<CubeclCudaRuntime>,
++        CubeCount,
++        CubeDim,
++        ArrayArg<CubeclCudaRuntime>,
++        ArrayArg<CubeclCudaRuntime>,
++    ),
++) -> crate::Result<TypedTensor<TOut>>
++where
++    TIn: CubeElement + TensorScalar + Clone,
++    TOut: CubeElement + TensorScalar + Clone,
++{
++    ensure_same_shape(op, input.shape(), out_shape)?;
++    if input.offset() != 0 || !input.is_col_major_contiguous()? {
++        return Err(crate::Error::unsupported(
++            op,
++            "native elementwise read requires a zero-offset compact view",
++        ));
++    }
++    let output = alloc_output::<TOut>(rt, out_shape)?;
++    let len = output.n_elements();
++    ensure_view_resident_on_runtime(rt, input, op)?;
++    // INVARIANT: the zero-offset compact check above makes the raw array's
++    // logical order identical to the view's element order.
++    let input_arg = typed_view_array_arg(input, op)?;
++    if len == 0 {
++        return Ok(output);
++    }
++    let output_arg = typed_tensor_array_arg(&output, op)?;
++    launch(
++        rt.client(),
++        cube_count_for_len(len)?,
++        cube_dim_1d(),
++        output_arg,
++        input_arg,
++    );
++    Ok(output)
++}
++
++pub(crate) fn launch_binary_views<TLhs, TRhs, TOut>(
++    rt: &CudaRuntime,
++    lhs: &TypedTensorView<'_, TLhs>,
++    rhs: &TypedTensorView<'_, TRhs>,
++    out_shape: &[usize],
++    op: &'static str,
++    launch: impl FnOnce(
++        &ComputeClient<CubeclCudaRuntime>,
++        CubeCount,
++        CubeDim,
++        ArrayArg<CubeclCudaRuntime>,
++        ArrayArg<CubeclCudaRuntime>,
++        ArrayArg<CubeclCudaRuntime>,
++    ),
++) -> crate::Result<TypedTensor<TOut>>
++where
++    TLhs: CubeElement + TensorScalar + Clone,
++    TRhs: CubeElement + TensorScalar + Clone,
++    TOut: CubeElement + TensorScalar + Clone,
++{
++    ensure_same_shape(op, lhs.shape(), out_shape)?;
++    ensure_same_shape(op, rhs.shape(), out_shape)?;
++    for view in [lhs.offset(), rhs.offset()] {
++        if view != 0 {
++            return Err(crate::Error::unsupported(
++                op,
++                "native elementwise read requires a zero-offset compact view",
++            ));
++        }
++    }
++    if !lhs.is_col_major_contiguous()? || !rhs.is_col_major_contiguous()? {
++        return Err(crate::Error::unsupported(
++            op,
++            "native elementwise read requires a zero-offset compact view",
++        ));
++    }
++    let output = alloc_output::<TOut>(rt, out_shape)?;
++    let len = output.n_elements();
++    ensure_view_resident_on_runtime(rt, lhs, op)?;
++    ensure_view_resident_on_runtime(rt, rhs, op)?;
++    // INVARIANT: the zero-offset compact checks above make both raw arrays'
++    // logical order identical to their view element order.
++    let lhs_arg = typed_view_array_arg(lhs, op)?;
++    let rhs_arg = typed_view_array_arg(rhs, op)?;
++    if len == 0 {
++        return Ok(output);
++    }
++    let output_arg = typed_tensor_array_arg(&output, op)?;
++    launch(
++        rt.client(),
++        cube_count_for_len(len)?,
++        cube_dim_1d(),
++        output_arg,
++        lhs_arg,
++        rhs_arg,
++    );
++    Ok(output)
++}
++
+ pub(crate) fn launch_compare_bool<T>(
+     rt: &CudaRuntime,
+     lhs: &TypedTensor<T>,
+diff --git a/crates/tenferro-gpu/src/cubecl/mod.rs b/crates/tenferro-gpu/src/cubecl/mod.rs
+index 7418e94b..ae737a9a 100644
+--- a/crates/tenferro-gpu/src/cubecl/mod.rs
++++ b/crates/tenferro-gpu/src/cubecl/mod.rs
+@@ -160,7 +160,8 @@ use dispatch::{
+     launch_nullary_into, launch_select_bool, launch_ternary, launch_unary,
+     launch_unary_bool_tensor, launch_unary_tensor, launch_unary_tensor_into,
+     ternary_dtype_mismatch, typed_tensor_array_arg, typed_tensor_array_arg_as,
+-    typed_tensor_binding, typed_view_array_arg, typed_view_binding, typed_view_mut_array_arg,
++    typed_tensor_binding, typed_tensor_mut_array_arg, typed_view_array_arg, typed_view_binding,
++    typed_view_mut_array_arg,
+ };
+ use error::{unsupported_dtype, unsupported_operation};
+ 
+@@ -2152,8 +2153,13 @@ impl CudaBackend {
+         let mut sorted_axes = axes.to_vec();
+         sorted_axes.sort_unstable();
+ 
+-        let mut current = self.to_contiguous_view_typed(&input.as_view(), op)?;
+-        for axis in sorted_axes {
++        // The first reduction reads the caller-owned input directly. Subsequent
++        // axes consume the fresh keepdims result from the preceding launch.
++        let (first_axis, remaining_axes) = sorted_axes
++            .split_first()
++            .ok_or_else(|| crate::Error::invalid_argument(op, "axes", "axes must not be empty"))?;
++        let mut current = launch_axis(self, input, *first_axis)?;
++        for &axis in remaining_axes {
+             current = launch_axis(self, &current, axis)?;
+         }
+ 
+@@ -3796,12 +3802,25 @@ where
+     Ok(output)
+ }
+ 
++#[derive(Clone, Copy)]
++enum UnaryReadOp {
++    Neg,
++    Exp,
++    Log,
++    Sin,
++    Cos,
++    Tanh,
++    Sqrt,
++    Rsqrt,
++    Expm1,
++    Log1p,
++}
++
+ /// Operand accepted by a CUDA `_read` entry point.
+ ///
+ /// The traced runtime prepares operands as `TensorRead`, which is either an
+-/// owned tensor or a borrowed view over another tensor's storage. CUDA kernels
+-/// consume owned compact tensors, so a borrowed view is materialized once
+-/// through this backend's own `to_contiguous_read`.
++/// owned tensor or a borrowed view over another tensor's storage. Operations
++/// without a native view kernel retain the explicit materialization fallback.
+ enum CudaReadInput<'a> {
+     /// The caller owns the tensor for the duration of the call.
+     Borrowed(&'a Tensor),
+@@ -3818,12 +3837,364 @@ impl CudaReadInput<'_> {
+     }
+ }
+ 
++fn launch_elementwise_binary_into<T>(
++    backend: &CudaBackend,
++    lhs: &Tensor,
++    rhs: &Tensor,
++    out: &mut Tensor,
++    op: &'static str,
++    launch: impl FnOnce(
++        &ComputeClient<CubeclCudaRuntime>,
++        CubeCount,
++        CubeDim,
++        ArrayArg<CubeclCudaRuntime>,
++        ArrayArg<CubeclCudaRuntime>,
++        ArrayArg<CubeclCudaRuntime>,
++    ),
++) -> crate::Result<()>
++where
++    T: CubeElement + TensorScalar + Clone,
++{
++    let lhs = lhs.as_typed::<T>().ok_or_else(|| {
++        crate::Error::unsupported(op, "the GPU dispatch requires a preset scalar")
++    })?;
++    let rhs = rhs.as_typed::<T>().ok_or_else(|| {
++        crate::Error::unsupported(op, "the GPU dispatch requires a preset scalar")
++    })?;
++    let out = out.as_typed_mut::<T>().ok_or_else(|| {
++        crate::Error::unsupported(op, "the GPU dispatch requires a preset scalar")
++    })?;
++    ensure_resident_on_runtime(backend.runtime(), lhs, op)?;
++    ensure_resident_on_runtime(backend.runtime(), rhs, op)?;
++    let lhs_arg = typed_tensor_array_arg(lhs, op)?;
++    let rhs_arg = typed_tensor_array_arg(rhs, op)?;
++    let out_len = out.n_elements();
++    ensure_resident_on_runtime(backend.runtime(), out, op)?;
++    let out_arg = typed_tensor_mut_array_arg(out, op)?;
++    if out_len == 0 {
++        return Ok(());
++    }
++    launch(
++        backend.runtime().client(),
++        cube_count_for_len(out_len)?,
++        cube_dim_1d(),
++        out_arg,
++        lhs_arg,
++        rhs_arg,
++    );
++    Ok(())
++}
++
++fn launch_elementwise_unary_into<T>(
++    backend: &CudaBackend,
++    input: &Tensor,
++    out: &mut Tensor,
++    op: &'static str,
++    launch: impl FnOnce(
++        &ComputeClient<CubeclCudaRuntime>,
++        CubeCount,
++        CubeDim,
++        ArrayArg<CubeclCudaRuntime>,
++        ArrayArg<CubeclCudaRuntime>,
++    ),
++) -> crate::Result<()>
++where
++    T: CubeElement + TensorScalar + Clone,
++{
++    let input = input.as_typed::<T>().ok_or_else(|| {
++        crate::Error::unsupported(op, "the GPU dispatch requires a preset scalar")
++    })?;
++    let out = out.as_typed_mut::<T>().ok_or_else(|| {
++        crate::Error::unsupported(op, "the GPU dispatch requires a preset scalar")
++    })?;
++    ensure_resident_on_runtime(backend.runtime(), input, op)?;
++    let input_arg = typed_tensor_array_arg(input, op)?;
++    let out_len = out.n_elements();
++    ensure_resident_on_runtime(backend.runtime(), out, op)?;
++    let out_arg = typed_tensor_mut_array_arg(out, op)?;
++    if out_len == 0 {
++        return Ok(());
++    }
++    launch(
++        backend.runtime().client(),
++        cube_count_for_len(out_len)?,
++        cube_dim_1d(),
++        out_arg,
++        input_arg,
++    );
++    Ok(())
++}
++
+ impl CudaBackend {
+-    /// Accept a read operand the runtime prepared, materializing a view.
+-    ///
+-    /// Keeping the materialized tensor inside [`CudaReadInput`] bounds the
+-    /// view's device storage to the call that needs it; the traced runtime
+-    /// releases it together with the operation result.
++    /// Run the common same-shape elementwise cases directly into the caller's
++    /// owned CUDA output. Views and broadcast/scalar cases retain the existing
++    /// allocating fallback so their layout and ownership contracts are unchanged.
++    fn elementwise_read_into_native(
++        &mut self,
++        op: ElementwiseReadOp,
++        inputs: &[TensorRead<'_>],
++        out: &mut TensorWrite<'_>,
++    ) -> Option<crate::Result<()>> {
++        if inputs.len() != op.arity() || inputs.iter().any(|input| input.as_tensor().is_none()) {
++            return None;
++        }
++        let TensorWrite::Tensor(output) = out else {
++            return None;
++        };
++        if inputs
++            .iter()
++            .any(|input| input.shape() != output.shape() || input.dtype() != output.dtype())
++        {
++            return None;
++        }
++        let first = inputs.first().and_then(|input| input.as_tensor())?;
++        let second = inputs.get(1).and_then(|input| input.as_tensor());
++        let dtype = output.dtype();
++
++        macro_rules! binary {
++            ($ty:ty, $kernel:ident) => {
++                launch_elementwise_binary_into::<$ty>(
++                    self,
++                    first,
++                    second?,
++                    output,
++                    op.label(),
++                    |client, count, dim, out, lhs, rhs| unsafe {
++                        elementwise::$kernel::launch_unchecked::<$ty, CubeclCudaRuntime>(
++                            client, count, dim, out, lhs, rhs,
++                        );
++                    },
++                )
++            };
++        }
++        macro_rules! unary {
++            ($ty:ty, $kernel:ident) => {
++                launch_elementwise_unary_into::<$ty>(
++                    self,
++                    first,
++                    output,
++                    op.label(),
++                    |client, count, dim, out, input| unsafe {
++                        elementwise::$kernel::launch_unchecked::<$ty, CubeclCudaRuntime>(
++                            client, count, dim, out, input,
++                        );
++                    },
++                )
++            };
++        }
++
++        let result = match op {
++            ElementwiseReadOp::Add => match dtype {
++                DType::F32 => binary!(f32, add_float),
++                DType::F64 => binary!(f64, add_float),
++                DType::I32 => binary!(i32, add_int),
++                DType::I64 => binary!(i64, add_int),
++                DType::C32 => binary!(Complex32, add_complex),
++                DType::C64 => binary!(Complex64, add_complex),
++                _ => return None,
++            },
++            ElementwiseReadOp::Subtract => match dtype {
++                DType::F32 => binary!(f32, sub_float),
++                DType::F64 => binary!(f64, sub_float),
++                DType::I32 => binary!(i32, sub_int),
++                DType::I64 => binary!(i64, sub_int),
++                DType::C32 => binary!(Complex32, sub_complex),
++                DType::C64 => binary!(Complex64, sub_complex),
++                _ => return None,
++            },
++            ElementwiseReadOp::Multiply => match dtype {
++                DType::F32 => binary!(f32, mul_float),
++                DType::F64 => binary!(f64, mul_float),
++                DType::I32 => binary!(i32, mul_int),
++                DType::I64 => binary!(i64, mul_int),
++                DType::C32 => binary!(Complex32, mul_complex),
++                DType::C64 => binary!(Complex64, mul_complex),
++                _ => return None,
++            },
++            ElementwiseReadOp::Negate => match dtype {
++                DType::F32 => unary!(f32, neg_float),
++                DType::F64 => unary!(f64, neg_float),
++                DType::I32 => unary!(i32, neg_int),
++                DType::I64 => unary!(i64, neg_int),
++                DType::C32 => unary!(Complex32, neg_complex),
++                DType::C64 => unary!(Complex64, neg_complex),
++                _ => return None,
++            },
++            ElementwiseReadOp::Conj | ElementwiseReadOp::Divide => return None,
++            _ => return None,
++        };
++        Some(result)
++    }
++
++    fn binary_read_native(
++        &self,
++        op: ElementwiseReadOp,
++        lhs: TensorRead<'_>,
++        rhs: TensorRead<'_>,
++    ) -> Option<crate::Result<Tensor>> {
++        let lhs = lhs.tensor_view();
++        let rhs = rhs.tensor_view();
++        if lhs.dtype() != rhs.dtype() || lhs.shape() != rhs.shape() {
++            return None;
++        }
++        let compact = |view: &TensorView| -> crate::Result<bool> {
++            Ok(view.offset() == 0 && view.is_col_major_contiguous()?)
++        };
++        match (compact(&lhs), compact(&rhs)) {
++            (Ok(true), Ok(true)) => {}
++            (Ok(false), _) | (_, Ok(false)) => return None,
++            (Err(error), _) | (_, Err(error)) => return Some(Err(error)),
++        }
++
++        macro_rules! binary {
++            ($ty:ty, $lhs:expr, $rhs:expr, $kernel:ident) => {
++                dispatch::launch_binary_views(
++                    self.runtime(),
++                    $lhs,
++                    $rhs,
++                    lhs.shape(),
++                    op.label(),
++                    |client, count, dim, out, lhs_arg, rhs_arg| unsafe {
++                        elementwise::$kernel::launch_unchecked::<$ty, CubeclCudaRuntime>(
++                            client, count, dim, out, lhs_arg, rhs_arg,
++                        );
++                    },
++                )
++                .map(Tensor::from_typed::<$ty>)
++            };
++        }
++        macro_rules! dispatch_binary {
++            ($variant:ident, $ty:ty, $kernel:ident) => {
++                match (&lhs, &rhs) {
++                    (TensorView::$variant(lhs), TensorView::$variant(rhs)) => {
++                        Some(binary!($ty, lhs, rhs, $kernel))
++                    }
++                    _ => None,
++                }
++            };
++        }
++
++        match op {
++            ElementwiseReadOp::Add => match lhs.dtype() {
++                DType::F32 => dispatch_binary!(F32, f32, add_float),
++                DType::F64 => dispatch_binary!(F64, f64, add_float),
++                DType::I32 => dispatch_binary!(I32, i32, add_int),
++                DType::I64 => dispatch_binary!(I64, i64, add_int),
++                DType::C32 => dispatch_binary!(C32, Complex32, add_complex),
++                DType::C64 => dispatch_binary!(C64, Complex64, add_complex),
++                _ => None,
++            },
++            ElementwiseReadOp::Subtract => match lhs.dtype() {
++                DType::F32 => dispatch_binary!(F32, f32, sub_float),
++                DType::F64 => dispatch_binary!(F64, f64, sub_float),
++                DType::I32 => dispatch_binary!(I32, i32, sub_int),
++                DType::I64 => dispatch_binary!(I64, i64, sub_int),
++                DType::C32 => dispatch_binary!(C32, Complex32, sub_complex),
++                DType::C64 => dispatch_binary!(C64, Complex64, sub_complex),
++                _ => None,
++            },
++            ElementwiseReadOp::Multiply => match lhs.dtype() {
++                DType::F32 => dispatch_binary!(F32, f32, mul_float),
++                DType::F64 => dispatch_binary!(F64, f64, mul_float),
++                DType::I32 => dispatch_binary!(I32, i32, mul_int),
++                DType::I64 => dispatch_binary!(I64, i64, mul_int),
++                DType::C32 => dispatch_binary!(C32, Complex32, mul_complex),
++                DType::C64 => dispatch_binary!(C64, Complex64, mul_complex),
++                _ => None,
++            },
++            ElementwiseReadOp::Divide => match lhs.dtype() {
++                DType::F32 => dispatch_binary!(F32, f32, div_float),
++                DType::F64 => dispatch_binary!(F64, f64, div_float),
++                DType::C32 => dispatch_binary!(C32, Complex32, div_complex),
++                DType::C64 => dispatch_binary!(C64, Complex64, div_complex),
++                _ => None,
++            },
++            _ => None,
++        }
++    }
++
++    fn unary_read_native(
++        &self,
++        op: UnaryReadOp,
++        input: TensorRead<'_>,
++    ) -> Option<crate::Result<Tensor>> {
++        let input = input.tensor_view();
++        let compact = if input.offset() != 0 {
++            false
++        } else {
++            match input.is_col_major_contiguous() {
++                Ok(compact) => compact,
++                Err(error) => return Some(Err(error)),
++            }
++        };
++        if !compact {
++            return None;
++        }
++
++        macro_rules! unary {
++            ($variant:ident, $ty:ty, $kernel:ident) => {
++                match &input {
++                    TensorView::$variant(input) => Some(
++                        dispatch::launch_unary_view(
++                            self.runtime(),
++                            input,
++                            input.shape(),
++                            match op {
++                                UnaryReadOp::Neg => "neg",
++                                UnaryReadOp::Exp => "exp",
++                                UnaryReadOp::Log => "log",
++                                UnaryReadOp::Sin => "sin",
++                                UnaryReadOp::Cos => "cos",
++                                UnaryReadOp::Tanh => "tanh",
++                                UnaryReadOp::Sqrt => "sqrt",
++                                UnaryReadOp::Rsqrt => "rsqrt",
++                                UnaryReadOp::Expm1 => "expm1",
++                                UnaryReadOp::Log1p => "log1p",
++                            },
++                            |client, count, dim, out, input_arg| unsafe {
++                                elementwise::$kernel::launch_unchecked::<$ty, CubeclCudaRuntime>(
++                                    client, count, dim, out, input_arg,
++                                );
++                            },
++                        )
++                        .map(Tensor::from_typed::<$ty>),
++                    ),
++                    _ => None,
++                }
++            };
++        }
++
++        match (input.dtype(), op) {
++            (DType::F32, UnaryReadOp::Neg) => unary!(F32, f32, neg_float),
++            (DType::F64, UnaryReadOp::Neg) => unary!(F64, f64, neg_float),
++            (DType::I32, UnaryReadOp::Neg) => unary!(I32, i32, neg_int),
++            (DType::I64, UnaryReadOp::Neg) => unary!(I64, i64, neg_int),
++            (DType::C32, UnaryReadOp::Neg) => unary!(C32, Complex32, neg_complex),
++            (DType::C64, UnaryReadOp::Neg) => unary!(C64, Complex64, neg_complex),
++            (DType::F32, UnaryReadOp::Exp) => unary!(F32, f32, exp_float),
++            (DType::F64, UnaryReadOp::Exp) => unary!(F64, f64, exp_float),
++            (DType::F32, UnaryReadOp::Log) => unary!(F32, f32, log_float),
++            (DType::F64, UnaryReadOp::Log) => unary!(F64, f64, log_float),
++            (DType::F32, UnaryReadOp::Sin) => unary!(F32, f32, sin_float),
++            (DType::F64, UnaryReadOp::Sin) => unary!(F64, f64, sin_float),
++            (DType::F32, UnaryReadOp::Cos) => unary!(F32, f32, cos_float),
++            (DType::F64, UnaryReadOp::Cos) => unary!(F64, f64, cos_float),
++            (DType::F32, UnaryReadOp::Tanh) => unary!(F32, f32, tanh_float),
++            (DType::F64, UnaryReadOp::Tanh) => unary!(F64, f64, tanh_float),
++            (DType::F32, UnaryReadOp::Sqrt) => unary!(F32, f32, sqrt_float),
++            (DType::F64, UnaryReadOp::Sqrt) => unary!(F64, f64, sqrt_float),
++            (DType::F32, UnaryReadOp::Rsqrt) => unary!(F32, f32, rsqrt_float),
++            (DType::F64, UnaryReadOp::Rsqrt) => unary!(F64, f64, rsqrt_float),
++            (DType::F32, UnaryReadOp::Expm1) => unary!(F32, f32, expm1_float),
++            (DType::F64, UnaryReadOp::Expm1) => unary!(F64, f64, expm1_float),
++            (DType::F32, UnaryReadOp::Log1p) => unary!(F32, f32, log1p_float),
++            (DType::F64, UnaryReadOp::Log1p) => unary!(F64, f64, log1p_float),
++            _ => None,
++        }
++    }
++
++    /// Accept a read operand the runtime prepared, materializing a view only
++    /// when the operation has no native borrowed implementation.
+     fn read_input<'a>(&mut self, input: TensorRead<'a>) -> crate::Result<CudaReadInput<'a>> {
+         match input.as_tensor() {
+             Some(tensor) => Ok(CudaReadInput::Borrowed(tensor)),
+@@ -3835,27 +4206,45 @@ impl CudaBackend {
+ }
+ 
+ impl TensorElementwise for CudaBackend {
+-    // Borrowed-view entry points. The traced runtime prepares operands as
+-    // `TensorRead`; a view is materialized before the CUDA kernel runs.
++    // Borrowed-view entry points. Compact views use the same native kernels as
++    // owned tensors; strided views retain the explicit materialization fallback.
+     fn add_read(&mut self, lhs: TensorRead<'_>, rhs: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) =
++            self.binary_read_native(ElementwiseReadOp::Add, lhs.clone(), rhs.clone())
++        {
++            return result;
++        }
+         let lhs = self.read_input(lhs)?;
+         let rhs = self.read_input(rhs)?;
+         self.add(lhs.as_tensor(), rhs.as_tensor())
+     }
+ 
+     fn sub_read(&mut self, lhs: TensorRead<'_>, rhs: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) =
++            self.binary_read_native(ElementwiseReadOp::Subtract, lhs.clone(), rhs.clone())
++        {
++            return result;
++        }
+         let lhs = self.read_input(lhs)?;
+         let rhs = self.read_input(rhs)?;
+         self.sub(lhs.as_tensor(), rhs.as_tensor())
+     }
+ 
+     fn mul_read(&mut self, lhs: TensorRead<'_>, rhs: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) =
++            self.binary_read_native(ElementwiseReadOp::Multiply, lhs.clone(), rhs.clone())
++        {
++            return result;
++        }
+         let lhs = self.read_input(lhs)?;
+         let rhs = self.read_input(rhs)?;
+         self.mul(lhs.as_tensor(), rhs.as_tensor())
+     }
+ 
+     fn neg_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Neg, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.neg(input.as_tensor())
+     }
+@@ -3866,6 +4255,11 @@ impl TensorElementwise for CudaBackend {
+     }
+ 
+     fn div_read(&mut self, lhs: TensorRead<'_>, rhs: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) =
++            self.binary_read_native(ElementwiseReadOp::Divide, lhs.clone(), rhs.clone())
++        {
++            return result;
++        }
+         let lhs = self.read_input(lhs)?;
+         let rhs = self.read_input(rhs)?;
+         self.div(lhs.as_tensor(), rhs.as_tensor())
+@@ -3938,8 +4332,19 @@ impl TensorElementwise for CudaBackend {
+         &mut self,
+         op: ElementwiseReadOp,
+         inputs: &[TensorRead<'_>],
+-        out: TensorWrite<'_>,
++        mut out: TensorWrite<'_>,
+     ) -> crate::Result<()> {
++        if inputs.len() != op.arity() {
++            return Err(crate::Error::invalid_argument(
++                op.label(),
++                "inputs",
++                format!("expected {} inputs, got {}", op.arity(), inputs.len()),
++            ));
++        }
++        tenferro_tensor::backend::validate_read_into_destination(op.label(), inputs, &out)?;
++        if let Some(result) = self.elementwise_read_into_native(op, inputs, &mut out) {
++            return result;
++        }
+         tenferro_tensor::backend::elementwise_read_into_via_allocating_ops(self, op, inputs, out)
+     }
+ 
+@@ -4683,39 +5088,60 @@ impl TensorElementwise for CudaBackend {
+ }
+ 
+ impl TensorAnalytic for CudaBackend {
+-    // Borrowed-view entry points. The traced runtime prepares operands as
+-    // `TensorRead`; a view is materialized before the CUDA kernel runs.
++    // Borrowed-view entry points. Compact views use the native elementwise
++    // kernels; unsupported layouts retain the explicit materialization fallback.
+     fn exp_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Exp, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.exp(input.as_tensor())
+     }
+ 
+     fn log_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Log, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.log(input.as_tensor())
+     }
+ 
+     fn sin_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Sin, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.sin(input.as_tensor())
+     }
+ 
+     fn cos_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Cos, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.cos(input.as_tensor())
+     }
+ 
+     fn tanh_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Tanh, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.tanh(input.as_tensor())
+     }
+ 
+     fn sqrt_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Sqrt, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.sqrt(input.as_tensor())
+     }
+ 
+     fn rsqrt_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Rsqrt, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.rsqrt(input.as_tensor())
+     }
+@@ -4727,11 +5153,17 @@ impl TensorAnalytic for CudaBackend {
+     }
+ 
+     fn expm1_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Expm1, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.expm1(input.as_tensor())
+     }
+ 
+     fn log1p_read(&mut self, input: TensorRead<'_>) -> crate::Result<Tensor> {
++        if let Some(result) = self.unary_read_native(UnaryReadOp::Log1p, input.clone()) {
++            return result;
++        }
+         let input = self.read_input(input)?;
+         self.log1p(input.as_tensor())
+     }
+diff --git a/crates/tenferro-gpu/src/cubecl/tests/elementwise_tests.rs b/crates/tenferro-gpu/src/cubecl/tests/elementwise_tests.rs
+index c49c3511..2bb2f992 100644
+--- a/crates/tenferro-gpu/src/cubecl/tests/elementwise_tests.rs
++++ b/crates/tenferro-gpu/src/cubecl/tests/elementwise_tests.rs
+@@ -5,6 +5,7 @@ use crate::{DType, DeviceKind, GpuBackendKind, Tensor};
+ use num_complex::{Complex32, Complex64};
+ use tenferro_tensor::{
+     ErrorKind, TensorAnalytic, TensorElementwise, TensorFusion, TensorRead, TensorStructural,
++    TensorView, TensorWrite,
+ };
+ 
+ use super::{
+@@ -13,6 +14,122 @@ use super::{
+     tensor_c64, tensor_f32, tensor_f64, tensor_i32, tensor_i64, upload,
+ };
+ 
++#[test]
++#[ignore = "requires CUDA 12.8+ GPU"]
++fn elementwise_read_into_writes_owned_output_without_mutating_inputs() {
++    assert!(gpu_available(), "CUDA test requires an available device");
++    let lhs = tensor_f32(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0]);
++    let rhs = tensor_f32(vec![2, 2], vec![5.0, 6.0, 7.0, 8.0]);
++    let expected = lhs
++        .as_typed::<f32>()
++        .unwrap()
++        .as_slice()
++        .unwrap()
++        .iter()
++        .zip(rhs.as_typed::<f32>().unwrap().as_slice().unwrap())
++        .map(|(lhs, rhs)| lhs * rhs)
++        .collect::<Vec<_>>();
++
++    let mut gpu = gpu_backend();
++    let gpu_lhs = upload(&gpu, &lhs);
++    let gpu_rhs = upload(&gpu, &rhs);
++    let mut gpu_out = upload(&gpu, &tensor_f32(vec![2, 2], vec![0.0; 4]));
++    gpu.mul_read_into(
++        TensorRead::from_tensor(&gpu_lhs),
++        TensorRead::from_tensor(&gpu_rhs),
++        TensorWrite::from_tensor(&mut gpu_out),
++    )
++    .unwrap();
++
++    let actual = download(&gpu, &gpu_out);
++    assert_eq!(
++        actual.as_typed::<f32>().unwrap().as_slice().unwrap(),
++        expected
++    );
++    assert_tensor_close(&download(&gpu, &gpu_lhs), &lhs, 0.0);
++    assert_tensor_close(&download(&gpu, &gpu_rhs), &rhs, 0.0);
++}
++
++#[test]
++#[ignore = "requires CUDA 12.8+ GPU"]
++fn elementwise_read_compact_view_chain_uses_native_kernels() {
++    assert!(gpu_available(), "CUDA test requires an available device");
++    let host_lhs = tensor_f32(vec![2, 2], vec![0.5, -1.0, 2.0, 3.5]);
++    let host_rhs = tensor_f32(vec![2, 2], vec![2.0, 4.0, -0.5, 1.5]);
++    let mut cpu = cpu_backend();
++    let sum = cpu.add(&host_lhs, &host_rhs).unwrap();
++    let product = cpu.mul(&sum, &host_rhs).unwrap();
++    let expected = cpu.tanh(&product).unwrap();
++
++    let mut gpu = gpu_backend();
++    let lhs = upload(&gpu, &host_lhs);
++    let rhs = upload(&gpu, &host_rhs);
++    let sum = gpu
++        .add_read(
++            TensorRead::from_view(TensorView::F32(lhs.as_typed::<f32>().unwrap().as_view())),
++            TensorRead::from_view(TensorView::F32(rhs.as_typed::<f32>().unwrap().as_view())),
++        )
++        .unwrap();
++    let product = gpu
++        .mul_read(
++            TensorRead::from_view(TensorView::F32(sum.as_typed::<f32>().unwrap().as_view())),
++            TensorRead::from_view(TensorView::F32(rhs.as_typed::<f32>().unwrap().as_view())),
++        )
++        .unwrap();
++    let actual = gpu
++        .tanh_read(TensorRead::from_view(TensorView::F32(
++            product.as_typed::<f32>().unwrap().as_view(),
++        )))
++        .unwrap();
++
++    assert_tensor_close(&download(&gpu, &actual), &expected, 1e-6);
++    assert_tensor_close(&download(&gpu, &lhs), &host_lhs, 0.0);
++    assert_tensor_close(&download(&gpu, &rhs), &host_rhs, 0.0);
++}
++
++#[test]
++#[ignore = "requires CUDA 12.8+ GPU"]
++fn elementwise_read_preserves_offset_and_strided_layouts() {
++    use tenferro_tensor::StridedSliceSpec;
++    let host = tensor_f64(vec![2, 3], vec![0.1, 0.2, 0.3, 0.4, 0.5, 0.6]);
++    let mut gpu = gpu_backend();
++    let mut cpu = cpu_backend();
++    let device = upload(&gpu, &host);
++    let view = device.as_typed::<f64>().unwrap().as_view();
++    let host_view = host.as_typed::<f64>().unwrap().as_view();
++    fn layouts(
++        view: tenferro_tensor::TypedTensorView<'_, f64>,
++    ) -> [tenferro_tensor::TypedTensorView<'_, f64>; 4] {
++        [
++            view.clone(),
++            view.transpose_view([1, 0]).unwrap(),
++            view.try_slice_axis(1, StridedSliceSpec::new(1, None, 1))
++                .unwrap(),
++            view.try_slice_axis(0, StridedSliceSpec::reverse()).unwrap(),
++        ]
++    }
++    for (device_view, host_view) in layouts(view).into_iter().zip(layouts(host_view)) {
++        let read = TensorRead::from_view(TensorView::F64(device_view));
++        let expected_read = TensorRead::from_view(TensorView::F64(host_view));
++        let expected = cpu
++            .add_read(expected_read.clone(), expected_read.clone())
++            .unwrap();
++        let actual = gpu.add_read(read.clone(), read.clone()).unwrap();
++        assert_tensor_close(&download(&gpu, &actual), &expected, 1e-12);
++        let expected = cpu.tanh_read(expected_read).unwrap();
++        let actual = gpu.tanh_read(read).unwrap();
++        assert_tensor_close(&download(&gpu, &actual), &expected, 1e-12);
++    }
++    assert_tensor_close(&download(&gpu, &device), &host, 0.0);
++    let mut host_output = tensor_f64(vec![2, 3], vec![0.; 6]);
++    assert!(gpu
++        .neg_read_into(
++            TensorRead::from_tensor(&device),
++            TensorWrite::from_tensor(&mut host_output)
++        )
++        .is_err());
++}
++
+ fn assert_complex_classes_and_values_match(actual: &Tensor, expected: &Tensor) {
+     fn component_matches<T: num_traits::Float + std::fmt::Debug>(actual: T, expected: T) {
+         if expected.is_nan() {
+diff --git a/crates/tenferro-gpu/tests/integration/cubecl_launch_contract.rs b/crates/tenferro-gpu/tests/integration/cubecl_launch_contract.rs
+index 7fdaa78b..7d9e83cb 100644
+--- a/crates/tenferro-gpu/tests/integration/cubecl_launch_contract.rs
++++ b/crates/tenferro-gpu/tests/integration/cubecl_launch_contract.rs
+@@ -16,6 +16,31 @@ fn rust_sources_under(dir: &Path, sources: &mut Vec<(PathBuf, String)>) {
+     }
+ }
+ 
++#[test]
++fn reduction_first_axis_reads_input_without_pre_materializing() {
++    let source = std::fs::read_to_string("src/cubecl/mod.rs").unwrap();
++    let body = source_section(
++        &source,
++        "    fn reduce_axes_typed<",
++        "    fn reduce_sum_float_typed<",
++    );
++    assert!(body.contains("launch_axis(self, input, *first_axis)"));
++    // Empty axes must still return independent storage; only nonempty
++    // reductions avoid the preliminary copy.
++    let nonempty = body.split("let final_shape =").nth(1).unwrap();
++    assert!(!nonempty.contains("to_contiguous_view_typed"));
++}
++
++#[test]
++fn cuda_elementwise_read_into_has_native_output_path() {
++    let source = std::fs::read_to_string("src/cubecl/mod.rs").unwrap();
++    let body = source_section(&source, "    fn elementwise_read_into(", "    fn add(");
++    assert!(body.contains("elementwise_read_into_native"));
++    assert!(body.contains("elementwise_read_into_via_allocating_ops"));
++    let dispatch = std::fs::read_to_string("src/cubecl/dispatch.rs").unwrap();
++    assert!(dispatch.contains("typed_tensor_mut_array_arg"));
++}
++
+ #[test]
+ fn bool_structural_support_uses_copy_kernels_and_scatter_stays_excluded() {
+     let source = std::fs::read_to_string("src/cubecl/mod.rs").unwrap();
+diff --git a/crates/tenferro-linalg/src/extension.rs b/crates/tenferro-linalg/src/extension.rs
+index cc69c102..e4e8992d 100644
+--- a/crates/tenferro-linalg/src/extension.rs
++++ b/crates/tenferro-linalg/src/extension.rs
+@@ -758,8 +758,44 @@ fn execute_linalg_extension_reads_in_session<S: LinalgBackend>(
+         let cotangent = session.to_contiguous_read(inputs[0].clone())?;
+         return Ok(vec![session.slice(&cotangent, &config)?]);
+     }
+-    if op.op() == LinalgOp::Cholesky {
+-        return Ok(vec![session.cholesky_read(inputs[0].clone())?]);
++    // Preserve borrowed layouts through the same provider hooks used by the
++    // concrete read API. In particular, CPU Faer can consume strided views;
++    // packing here would defeat that path before provider dispatch.
++    match op.op() {
++        LinalgOp::Cholesky => return Ok(vec![session.cholesky_read(inputs[0].clone())?]),
++        LinalgOp::Lu => return session.lu_read(inputs[0].clone()),
++        LinalgOp::FullPivLu => return session.full_piv_lu_read(inputs[0].clone()),
++        LinalgOp::Svd {
++            derivative_eps,
++            gauge,
++        } => {
++            validate_derivative_eps("svd_with_options", derivative_eps)?;
++            let mut outputs = session.svd_read(inputs[0].clone())?;
++            apply_svd_gauge(gauge, &mut outputs)?;
++            return Ok(outputs);
++        }
++        LinalgOp::SvdVals { .. } => return Ok(vec![session.svd_values_read(inputs[0].clone())?]),
++        LinalgOp::Qr { gauge } => {
++            return session.qr_with_options_read(inputs[0].clone(), QrOptions { gauge });
++        }
++        LinalgOp::RankRevealingQr { gauge, rtol, atol } => {
++            return session.rank_revealing_qr_read(
++                inputs[0].clone(),
++                RankRevealingQrOptions { gauge, rtol, atol },
++            );
++        }
++        LinalgOp::Eigh {
++            derivative_eps,
++            gauge,
++        } => {
++            validate_derivative_eps("eigh_with_options", derivative_eps)?;
++            let mut outputs = session.eigh_read(inputs[0].clone())?;
++            apply_eigh_gauge(gauge, &mut outputs)?;
++            return Ok(outputs);
++        }
++        LinalgOp::EighVals { .. } => return Ok(vec![session.eigh_values_read(inputs[0].clone())?]),
++        LinalgOp::Eig { .. } => return session.eig_read(inputs[0].clone()),
++        _ => {}
+     }
+     if let LinalgOp::TriangularSolve {
+         left_side,
+diff --git a/crates/tenferro-linalg/src/extension/tests.rs b/crates/tenferro-linalg/src/extension/tests.rs
+index 56ffc283..2b6ca489 100644
+--- a/crates/tenferro-linalg/src/extension/tests.rs
++++ b/crates/tenferro-linalg/src/extension/tests.rs
+@@ -108,6 +108,80 @@ fn session_support_admits_every_cpu_linear_algebra_op() {
+     );
+ }
+ 
++#[test]
++fn extension_reads_preserve_strided_inputs() {
++    use tenferro_cpu::{with_cpu_exec_session, CpuBackend};
++    use tenferro_tensor::{BackendSessionHost, TensorRead, TensorView};
++
++    // Owned, compact, transposed and offset reads describe the same spectrum.
++    let input = Tensor::from_vec_col_major([2, 3], vec![3., 0., 0., 2., 0., 0.]).unwrap();
++    let typed = input.as_typed::<f64>().unwrap();
++    let offset_data = [99., 99., 3., 0., 0., 2., 0., 0.];
++    let offset =
++        tenferro_tensor::TypedTensorView::from_slice([2, 3], [1, 2], 2, &offset_data).unwrap();
++    let reads = [
++        TensorRead::from_tensor(&input),
++        TensorRead::from_view(TensorView::F64(typed.as_view())),
++        TensorRead::from_view(TensorView::F64(
++            typed.as_view().transpose_view([1, 0]).unwrap(),
++        )),
++        TensorRead::from_view(TensorView::F64(offset)),
++    ];
++    let mut backend = CpuBackend::with_threads(1).unwrap();
++    for read in reads {
++        let outputs = backend
++            .with_backend_session(|session| {
++                with_cpu_exec_session(session, |session| {
++                    super::execute_linalg_extension_reads_in_session(
++                        &LinalgExtensionOp::new(LinalgOp::SvdVals {
++                            derivative_eps: 0.0,
++                        }),
++                        &[read],
++                        session,
++                    )
++                })
++                .unwrap()
++            })
++            .unwrap();
++        let values = outputs[0].as_slice::<f64>().unwrap();
++        assert_eq!(values.len(), 2);
++        assert!((values[0] - 3.).abs() < 1e-12);
++        assert!((values[1] - 2.).abs() < 1e-12);
++    }
++    assert_eq!(input.as_slice::<f64>().unwrap(), &[3., 0., 0., 2., 0., 0.]);
++    assert_eq!(offset_data, [99., 99., 3., 0., 0., 2., 0., 0.]);
++}
++
++#[test]
++fn read_capable_extension_ops_dispatch_before_owned_fallback() {
++    let source = include_str!("../extension.rs");
++    let body = source
++        .split("fn execute_linalg_extension_reads_in_session")
++        .nth(1)
++        .unwrap()
++        .split("let materialized_inputs")
++        .next()
++        .unwrap();
++    for hook in [
++        "svd_read",
++        "svd_values_read",
++        "qr_with_options_read",
++        "rank_revealing_qr_read",
++        "eigh_read",
++        "eigh_values_read",
++        "lu_read",
++        "full_piv_lu_read",
++        "eig_read",
++        "cholesky_read",
++        "triangular_solve_read",
++    ] {
++        assert!(
++            body.contains(&format!("session.{hook}(")),
++            "missing direct read hook: {hook}"
++        );
++    }
++}
++
+ #[test]
+ fn infer_output_meta_returns_error_on_input_count_mismatch() {
+     let op = LinalgExtensionOp::new(LinalgOp::Cholesky);

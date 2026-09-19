@@ -1,0 +1,199 @@
+diff --git a/crates/cubecl-common/src/device/handle/channel.rs b/crates/cubecl-common/src/device/handle/channel.rs
+index e87ca4ff..6633c88d 100644
+--- a/crates/cubecl-common/src/device/handle/channel.rs
++++ b/crates/cubecl-common/src/device/handle/channel.rs
+@@ -565,7 +565,7 @@ mod normal_channel {
+     }
+ }
+ 
+-/// We implement a custom channel with automatic batching, no locking and
++/// We implement a custom channel with automatic batching and
+ /// no allocation (most of the time, see [`task`] for more details.
+ mod custom_channel {
+     use crate::device::handle::{
+@@ -580,7 +580,11 @@ mod custom_channel {
+         sync::atomic::{AtomicPtr, AtomicU32, Ordering},
+         time::Duration,
+     };
+-    use std::{sync::Arc, vec::Vec};
++    use std::{
++        sync::{Arc, OnceLock},
++        thread::Thread,
++        vec::Vec,
++    };
+ 
+     /// Maximum number of [`Task`] that can be queued.
+     pub const CHANNEL_MAX_TASK: usize = 32;
+@@ -589,11 +593,8 @@ mod custom_channel {
+     /// Gives a hot window to absorb back-to-back submits without any syscall.
+     const SPIN_BUDGET_SERVER: u32 = 8192;
+     /// Number of `thread::yield_now` calls after the spin budget is exhausted,
+-    /// before the server drops to sleeping.
++    /// before the server parks until a batch is ready.
+     const YIELD_BUDGET_SERVER: u32 = 64;
+-    /// Sleep duration once both the spin and yield budgets are exhausted.
+-    /// Bounds the wake-up latency from a fully idle state.
+-    const SLEEP_STEP_SERVER: Duration = Duration::from_micros(150);
+ 
+     /// The client has the buffer to fill plus we add a factor of two to account for the double
+     /// buffering approach.
+@@ -671,7 +672,7 @@ mod custom_channel {
+                 }
+ 
+                 self.state.init_task_at(index, func);
+-                self.state.enqueued_count.fetch_add(1, Ordering::SeqCst);
++                self.state.publish_tasks(1);
+                 return Ok(());
+             }
+         }
+@@ -700,9 +701,7 @@ mod custom_channel {
+             }
+ 
+             let actual_added = index_end - index_start;
+-            self.state
+-                .enqueued_count
+-                .fetch_add(actual_added as u32, Ordering::SeqCst);
++            self.state.publish_tasks(actual_added as u32);
+         }
+     }
+ 
+@@ -716,11 +715,25 @@ mod custom_channel {
+         available_index: AtomicU32,
+         /// Number of tasks successfully written and ready for processing.
+         enqueued_count: AtomicU32,
++        /// Registered before the server's first queue check.
++        thread: OnceLock<Thread>,
+         /// The runner id (for debugging purposes).
+         runner_id: RunnerId,
+     }
+ 
+     impl State {
++        fn publish_tasks(&self, count: u32) {
++            let previous = self.enqueued_count.fetch_add(count, Ordering::SeqCst);
++            if previous + count == CHANNEL_MAX_TASK as u32 {
++                if let Some(thread) = self.thread.get() {
++                    // The token persists if publication races with park().
++                    thread.unpark();
++                }
++                // Before registration, the server has not checked the queue
++                // yet and will observe this ready batch on its first check.
++            }
++        }
++
+         /// Initializes the task at `index` in the current queue with `func`.
+         /// Exclusive access per slot is guaranteed by `available_index.fetch_add`.
+         fn init_task_at<F: FnOnce() + Send + 'static>(&self, index: usize, func: F) {
+@@ -756,6 +769,9 @@ mod custom_channel {
+         }
+     }
+ 
++    #[cfg(test)]
++    mod tests;
++
+     /// The server-side runner that processes tasks.
+     struct Server {
+         state: Arc<State>,
+@@ -773,6 +789,7 @@ mod custom_channel {
+                 queue_ptr: AtomicPtr::new(buffers[0].tasks.as_mut_ptr()),
+                 available_index: AtomicU32::new(0),
+                 enqueued_count: AtomicU32::new(0),
++                thread: OnceLock::new(),
+                 runner_id,
+             });
+ 
+@@ -786,6 +803,7 @@ mod custom_channel {
+ 
+         /// Main execution loop for the device thread.
+         fn start(&mut self) {
++            self.state.thread.get_or_init(std::thread::current);
+             let mut idle_count: u32 = 0;
+             loop {
+                 if self.ready_to_execute {
+@@ -806,7 +824,10 @@ mod custom_channel {
+                 } else if idle_count < SPIN_BUDGET_SERVER + YIELD_BUDGET_SERVER {
+                     std::thread::yield_now();
+                 } else {
+-                    std::thread::sleep(SLEEP_STEP_SERVER);
++                    // INVARIANT: publishers leave an unpark token when a full
++                    // batch becomes ready, including between this loop's
++                    // queue check and park. Always recheck after waking.
++                    std::thread::park();
+                 }
+                 idle_count = idle_count.saturating_add(1);
+             }
+diff --git a/crates/cubecl-common/src/device/handle/channel/custom_channel/tests.rs b/crates/cubecl-common/src/device/handle/channel/custom_channel/tests.rs
+new file mode 100644
+index 00000000..e35b890d
+--- /dev/null
++++ b/crates/cubecl-common/src/device/handle/channel/custom_channel/tests.rs
+@@ -0,0 +1,70 @@
++use super::*;
++use crate::device::{DeviceId, DeviceServiceStage};
++use std::sync::{atomic::AtomicBool, mpsc};
++
++fn runner_id() -> RunnerId {
++    RunnerId {
++        device: DeviceId {
++            type_id: 999,
++            index_id: 1,
++        },
++        stage: DeviceServiceStage::Downstream,
++    }
++}
++
++#[test]
++fn full_and_partial_batches_wake_after_idle() {
++    let client = DeviceClient::new(runner_id(), || {});
++    for size in [CHANNEL_MAX_TASK, 1, CHANNEL_MAX_TASK, 1] {
++        std::thread::sleep(Duration::from_millis(10));
++        let (tx, rx) = mpsc::channel();
++        for index in 0..size {
++            let tx = tx.clone();
++            client.enqueue(move || tx.send(index).unwrap()).unwrap();
++        }
++        if size < CHANNEL_MAX_TASK {
++            client.flush();
++        }
++        for index in 0..size {
++            assert_eq!(rx.recv_timeout(Duration::from_secs(2)).unwrap(), index);
++        }
++    }
++}
++
++#[test]
++fn ready_batch_before_server_registration_is_processed() {
++    let mut server = Server::new(runner_id());
++    let client = DeviceClient {
++        state: server.state.clone(),
++    };
++    let (tx, rx) = mpsc::channel();
++    client.enqueue(move || tx.send(()).unwrap()).unwrap();
++    client.flush();
++    assert!(client.state.thread.get().is_none());
++    std::thread::spawn(move || server.start());
++    rx.recv_timeout(Duration::from_secs(2)).unwrap();
++}
++
++#[test]
++fn notification_between_queue_check_and_park_is_retained() {
++    let state = Server::new(runner_id()).state;
++    let proceed = Arc::new(AtomicBool::new(false));
++    let (tx, rx) = mpsc::channel();
++    let worker_state = state.clone();
++    let worker_proceed = proceed.clone();
++    let worker = std::thread::spawn(move || {
++        worker_state.thread.get_or_init(std::thread::current);
++        assert_eq!(worker_state.enqueued_count.load(Ordering::Acquire), 0);
++        tx.send(()).unwrap();
++        while !worker_proceed.load(Ordering::Acquire) {
++            spin_loop();
++        }
++        std::thread::park();
++        tx.send(()).unwrap();
++    });
++    rx.recv_timeout(Duration::from_secs(2)).unwrap();
++    state.publish_tasks(CHANNEL_MAX_TASK as u32);
++    proceed.store(true, Ordering::Release);
++    rx.recv_timeout(Duration::from_secs(2)).unwrap();
++    worker.join().unwrap();
++}
