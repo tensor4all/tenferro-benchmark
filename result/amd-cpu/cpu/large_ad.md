@@ -1,0 +1,189 @@
+# CPU large-matrix eager AD: gap survey and fixes
+
+- Suite: `cpu/large_ad`
+- Target profile: `amd-cpu`
+- Provider: system MKL, one backend worker thread, `MKL_NUM_THREADS=1`
+- Affinity: pinned to CPU 1 for every row
+- Thread budget: 1
+- tenferro-rs revision measured: `5782859f` (the tree that became #1828), plus the
+  `#1835` eigvalsh change measured separately after it merged
+- Reference: PyTorch 2.12.0+cpu, `torch.set_num_threads(1)`
+
+## Commands
+
+```sh
+cargo build -j 16 --release --features system-mkl --bin publication_gate
+
+export LD_LIBRARY_PATH=/opt/intel/oneapi/mkl/latest/lib:/opt/intel/oneapi/compiler/latest/lib
+export MKL_NUM_THREADS=1 OMP_NUM_THREADS=1 RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_DYNAMIC=FALSE
+export PUBLICATION_GATE_PROFILE=full PUBLICATION_GATE_SUITE=large \
+       PUBLICATION_GATE_TENFERRO_MODE=both BENCH_RUNS=15 BENCH_WARMUPS=3
+
+# Interleave the two backends per repetition so the reference is not inflated by drift.
+for rep in 1 2 3; do
+  taskset -c 1 target/release/publication_gate > fin$rep-rust.csv 2> fin$rep-rust.stderr
+  taskset -c 1 .venv/bin/python scripts/benchmark_cpu_ops_python.py \
+    --backend pytorch-cpu --num-threads 1 --output fin$rep-torch.csv
+done
+```
+
+The `full` profile now covers 64/128/256/512/1024 for the large-matrix primal and
+AD rows in both the Rust gate and the Python runner; that size extension is part of
+this change.
+
+## Scope
+
+Timings are **forward + sum + backward** for the eager rows, not backward alone.
+Eager includes its own recording/AD preparation inside the timing; the prepared
+trace builds and compiles the derivative graph outside the timing and the timed
+region is one `run_prepared` call. Input construction and sessions are outside
+timing in both cases, and outputs are retained until the clock stops. Cross-backend
+ratios come from interleaved runs, because two sequential suite runs drift more than
+the effects measured here.
+
+## Results
+
+Median of three interleaved repetitions, 15 samples and 3 warmups each.
+
+| operation | phase | shape | eager ms | trace ms | Torch ms | eager/Torch |
+|---|---|---|---:|---:|---:|---:|
+| `matmul` | primal | 128x128 | 0.155 | 0.146 | 0.200 | 0.77x |
+| `matmul` | primal | 256x256 | 1.119 | 0.786 | 1.089 | 1.03x |
+| `matmul` | primal | 512x512 | 7.442 | 5.656 | 6.941 | 1.07x |
+| `matmul` | primal | 1024x1024 | 53.912 | 43.147 | 53.226 | 1.01x |
+| `matmul_rect` | primal | 256x1024 * 1024x256 | 3.381 | 3.472 | 3.419 | 0.99x |
+| `matmul_rect` | primal | 1024x256 * 256x1024 | 12.157 | 12.317 | 13.194 | 0.92x |
+| `svd` | primal | 64x64 | 0.626 | 0.614 | 0.649 | 0.96x |
+| `svd` | primal | 128x128 | 2.626 | 2.611 | 2.529 | 1.04x |
+| `svd` | primal | 256x256 | 13.943 | 11.918 | 14.707 | 0.95x |
+| `svd` | primal | 512x512 | 91.391 | 78.582 | 96.974 | 0.94x |
+| `svd` | primal | 1024x1024 | 496.685 | 531.127 | 573.071 | 0.87x |
+| `qr` | primal | 64x64 | 0.111 | 0.108 | 0.112 | 0.99x |
+| `qr` | primal | 128x128 | 0.558 | 0.464 | 0.584 | 0.96x |
+| `qr` | primal | 256x256 | 3.182 | 2.655 | 3.356 | 0.95x |
+| `qr` | primal | 512x512 | 21.731 | 18.863 | 23.547 | 0.92x |
+| `qr` | primal | 1024x1024 | 120.038 | 117.875 | 128.080 | 0.94x |
+| `eigh` | primal | 64x64 | 0.321 | 0.278 | 0.330 | 0.97x |
+| `eigh` | primal | 128x128 | 1.390 | 1.163 | 1.333 | 1.04x |
+| `eigh` | primal | 256x256 | 7.648 | 6.351 | 7.522 | 1.02x |
+| `eigh` | primal | 512x512 | 40.155 | 40.882 | 45.367 | 0.89x |
+| `eigh` | primal | 1024x1024 | 297.875 | 251.507 | 259.070 | 1.15x |
+| `solve` | primal | 64x64,rhs=16 | 0.071 | 0.097 | 0.066 | 1.08x |
+| `solve` | primal | 64x64,rhs=1 | 0.059 | 0.074 | 0.048 | 1.21x |
+| `solve` | primal | 64x64,rhs=64 | 0.125 | 0.149 | 0.121 | 1.04x |
+| `solve` | primal | 128x128,rhs=64 | 0.339 | 0.304 | 0.340 | 1.00x |
+| `solve` | primal | 128x128,rhs=16 | 0.195 | 0.197 | 0.216 | 0.90x |
+| `solve` | primal | 128x128,rhs=1 | 0.175 | 0.142 | 0.150 | 1.16x |
+| `solve` | primal | 256x256,rhs=16 | 0.838 | 0.815 | 0.950 | 0.88x |
+| `solve` | primal | 256x256,rhs=1 | 0.683 | 0.733 | 0.801 | 0.85x |
+| `solve` | primal | 256x256,rhs=64 | 1.213 | 1.032 | 1.280 | 0.95x |
+| `solve` | primal | 512x512,rhs=16 | 4.160 | 4.553 | 5.557 | 0.75x |
+| `solve` | primal | 512x512,rhs=64 | 5.422 | 4.890 | 6.705 | 0.81x |
+| `solve` | primal | 512x512,rhs=1 | 3.558 | 4.255 | 5.183 | 0.69x |
+| `solve` | primal | 1024x1024,rhs=1 | 24.992 | 22.617 | 36.142 | 0.69x |
+| `solve` | primal | 1024x1024,rhs=16 | 25.127 | 23.971 | 37.328 | 0.67x |
+| `solve` | primal | 1024x1024,rhs=64 | 29.266 | 26.953 | 41.021 | 0.71x |
+| `grad_sum_matmul` | primal | 64x64 | 0.046 | 0.037 | 0.027 | 1.69x |
+| `grad_sum_matmul` | primal | 128x128 | 0.171 | 0.160 | 0.142 | 1.20x |
+| `grad_sum_matmul` | primal | 256x256 | 0.944 | 0.783 | 0.906 | 1.04x |
+| `grad_sum_matmul` | primal | 512x512 | 6.725 | 6.548 | 6.944 | 0.97x |
+| `grad_sum_matmul` | primal | 1024x1024 | 51.614 | 46.676 | 51.012 | 1.01x |
+| `grad_sum_matmul_backward` | backward | 64x64 | 0.320 | 0.129 | 0.138 | 2.33x |
+| `grad_sum_matmul_backward` | backward | 128x128 | 0.687 | 0.505 | 0.479 | 1.44x |
+| `grad_sum_matmul_backward` | backward | 256x256 | 2.993 | 2.339 | 2.768 | 1.08x |
+| `grad_sum_matmul_backward` | backward | 512x512 | 18.786 | 19.508 | 20.488 | 0.92x |
+| `grad_sum_matmul_backward` | backward | 1024x1024 | 141.814 | 147.108 | 151.254 | 0.94x |
+| `grad_sum_svd_s_backward` | backward | 64x64 | 0.884 | 0.609 | 0.787 | 1.12x |
+| `grad_sum_svd_s_backward` | backward | 128x128 | 3.191 | 2.644 | 3.102 | 1.03x |
+| `grad_sum_svd_s_backward` | backward | 256x256 | 15.972 | 13.328 | 16.301 | 0.98x |
+| `grad_sum_svd_s_backward` | backward | 512x512 | 94.485 | 96.003 | 106.058 | 0.89x |
+| `grad_sum_svd_s_backward` | backward | 1024x1024 | 575.980 | 577.247 | 639.680 | 0.90x |
+| `grad_sum_solve_backward` | backward | 64x64,rhs=1 | 0.430 | 0.174 | 0.144 | 2.97x |
+| `grad_sum_solve_backward` | backward | 128x128,rhs=1 | 0.614 | 0.285 | 0.278 | 2.21x |
+| `grad_sum_solve_backward` | backward | 256x256,rhs=1 | 1.294 | 0.830 | 0.975 | 1.33x |
+| `grad_sum_solve_backward` | backward | 512x512,rhs=1 | 5.153 | 4.253 | 5.517 | 0.93x |
+| `grad_sum_solve_backward` | backward | 1024x1024,rhs=1 | 40.472 | 25.401 | 35.154 | 1.15x |
+| `grad_sum_svd_s_jvp` | jvp | 256x256 | - | 13.290 | 19.309 | - |
+| `grad_sum_svd_s_jvp` | jvp | 512x512 | - | 89.714 | 125.656 | - |
+| `grad_sum_svd_s_jvp` | jvp | 1024x1024 | - | 569.768 | 846.715 | - |
+| `grad_sum_svd_s_vjp` | vjp | 256x256 | - | 13.824 | 16.728 | - |
+| `grad_sum_svd_s_vjp` | vjp | 512x512 | - | 92.648 | 102.852 | - |
+| `grad_sum_svd_s_vjp` | vjp | 1024x1024 | - | 583.408 | 610.775 | - |
+| `grad_sum_qr_jvp` | jvp | 256x256 | - | 6.767 | 7.754 | - |
+| `grad_sum_qr_jvp` | jvp | 512x512 | - | 47.922 | 51.488 | - |
+| `grad_sum_qr_jvp` | jvp | 1024x1024 | - | 307.620 | 359.045 | - |
+| `grad_sum_qr_vjp` | vjp | 256x256 | - | 6.489 | 7.677 | - |
+| `grad_sum_qr_vjp` | vjp | 512x512 | - | 46.586 | 49.181 | - |
+| `grad_sum_qr_vjp` | vjp | 1024x1024 | - | 307.302 | 360.033 | - |
+| `grad_sum_eigh_jvp` | jvp | 256x256 | - | 8.145 | 10.675 | - |
+| `grad_sum_eigh_jvp` | jvp | 512x512 | - | 62.156 | 63.780 | - |
+| `grad_sum_eigh_jvp` | jvp | 1024x1024 | - | 378.166 | 463.654 | - |
+| `grad_sum_eigh_vjp` | vjp | 256x256 | - | 9.688 | 8.786 | - |
+| `grad_sum_eigh_vjp` | vjp | 512x512 | - | 58.568 | 50.272 | - |
+| `grad_sum_eigh_vjp` | vjp | 1024x1024 | - | 379.309 | 332.450 | - |
+| `grad_sum_lu_jvp` | jvp | 256x256 | - | 4.664 | 10.344 | - |
+| `grad_sum_lu_jvp` | jvp | 512x512 | - | 31.661 | 69.995 | - |
+| `grad_sum_lu_jvp` | jvp | 1024x1024 | - | 241.292 | 555.989 | - |
+| `grad_sum_lu_vjp` | vjp | 256x256 | - | 4.534 | 5.525 | - |
+| `grad_sum_lu_vjp` | vjp | 512x512 | - | 34.715 | 38.451 | - |
+| `grad_sum_lu_vjp` | vjp | 1024x1024 | - | 224.337 | 322.493 | - |
+| `grad_sum_solve_jvp` | jvp | 256x256,rhs=1 | - | 0.823 | 1.249 | - |
+| `grad_sum_solve_jvp` | jvp | 512x512,rhs=1 | - | 4.519 | 6.462 | - |
+| `grad_sum_solve_jvp` | jvp | 1024x1024,rhs=1 | - | 25.405 | 36.689 | - |
+| `grad_sum_solve_vjp` | vjp | 256x256,rhs=1 | - | 0.848 | 1.744 | - |
+| `grad_sum_solve_vjp` | vjp | 512x512,rhs=1 | - | 4.503 | 10.171 | - |
+| `grad_sum_solve_vjp` | vjp | 1024x1024,rhs=1 | - | 28.978 | 66.182 | - |
+
+## Provider floor
+
+Measured inside the benchmark binary with an `LD_PRELOAD` probe at n=1024, so the
+kernel's own overhead is separable from its LAPACK call:
+
+| call | real decomposition | row | row/call |
+|---|---:|---:|---:|
+| `dgesdd_` (svd) | 500.3 ms | 497.9 ms eager / 529.9 ms trace | within noise |
+| `dsyevd_` (eigh) | 266.9 ms | 273.9 ms eager / 265.6 ms trace | +2.6% / -0.5% |
+| `dgetrf_` (solve) | 21.6 ms | 25.0 ms eager (includes `dgetrs`) | - |
+
+Every primal row is within about 3% of the provider call, so the remaining cost is
+the decomposition itself. `dsyevr` (MRRR) is not an alternative here: 373.6 ms
+against 292.0 ms for `dsyevd` (divide and conquer) at n=1024 for all eigenpairs.
+
+## Changes that came out of this survey
+
+| change | measured effect at 1024 |
+|---|---|
+| eager reverse mode binds declared residuals instead of replaying producer graphs (#1828) | eager SVD forward+backward 1047.8 -> 576.5 ms; decomposition count 2 -> 1 per workflow |
+| tracked eager solve reuses saved LU/pivots and the saved solution (#1828) | eager solve forward+backward 101.4 -> ~40 ms; `dgetrf` count 3 -> 1 per workflow |
+| eigvalsh pulls the eigenvalue cotangent back with one matmul instead of two (#1835) | `grad_sum_eigh` jvp 1.10x, vjp 1.20x; 1024-class `dgemm` 2 -> 1 per workflow |
+| LAPACK scratch comes from the session buffer pool (#1831, not from this survey's branch) | LU overhead above the `dgetrf` floor 6.6 -> ~1 ms |
+
+The eigvalsh pair, interleaved A/B with both rows in one process:
+
+| row | before ms | after ms |
+|---|---:|---:|
+| `grad_sum_eigh` jvp | 358.5 / 365.4 | 321.0 / 326.6 / 335.2 |
+| `grad_sum_eigh` vjp | 381.3 / 368.3 | 312.3 / 304.1 / 329.3 |
+
+## Remaining, not addressed
+
+- Small-size eager AD rows still carry a fixed per-backward cost (64x64 solve
+  backward 2.97x and matmul backward 2.33x versus Torch, about 0.2-0.3 ms in
+  absolute terms). This is latency, not large-matrix throughput.
+- Eager rows remain marginally slower than their own prepared-trace counterparts.
+  A dedicated clean-context probe of the n=1024 solve row measured eager 27.0-27.9 ms
+  against trace 24.6 ms, and running both linalg operations inside one entered
+  session was not faster than two separate entries once the pooled workspace was
+  warm. The much larger eager solve numbers that appear inside a full suite run
+  (up to about 45 ms) are a memory/buffer-pool context effect, so that row's
+  absolute value is not a stable artifact.
+- The eigenvalue-only workspace zeroing suspected during the eigvalsh analysis was
+  measured at 0.332 ms for the 16.8 MB `dsyevd` workspace and left unchanged.
+
+## Evidence
+
+Raw samples, protocol scripts, provider probes and source snapshots are kept under
+`data/results/amd-cpu/cpu/large-ad/` in the benchmark checkout; that tree is
+git-ignored by policy. Files of interest: `fin{1,2,3}-{rust,torch}.{csv,jsonl}`,
+`eighAB-{beforeA,beforeB,afterA,afterB,afterC}.{csv,stderr}`, `sym-floor.{csv,stderr}`,
+`eigh_ab.sh`, `gemm_probe.c`, `sym_probe.c`, `syev_compare.c`, `getrf_probe.c`.
