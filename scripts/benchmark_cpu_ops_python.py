@@ -654,7 +654,7 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
                 ),
                 sync,
             )
-        for n in sizes_for(profile, [64], [64, 128, 256]):
+        for n in sizes_for(profile, [64], [64, 128, 256, 512, 1024]):
             emit_row(
                 writer,
                 args,
@@ -707,7 +707,7 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
                     ),
                     sync,
                 )
-        for n in sizes_for(profile, [64], [64, 128]):
+        for n in sizes_for(profile, [64], [64, 128, 256, 512, 1024]):
             emit_row(
                 writer,
                 args,
@@ -1124,7 +1124,7 @@ def run_jax(args, writer: csv.DictWriter) -> None:
                 ),
                 sync,
             )
-        for n in sizes_for(profile, [64], [64, 128, 256]):
+        for n in sizes_for(profile, [64], [64, 128, 256, 512, 1024]):
             emit_row(
                 writer,
                 args,
@@ -1177,7 +1177,7 @@ def run_jax(args, writer: csv.DictWriter) -> None:
                     ),
                     sync,
                 )
-        for n in sizes_for(profile, [64], [64, 128]):
+        for n in sizes_for(profile, [64], [64, 128, 256, 512, 1024]):
             emit_row(
                 writer,
                 args,

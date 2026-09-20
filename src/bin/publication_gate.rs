@@ -577,7 +577,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
 
     let linalg_sizes: &[usize] = match config.profile {
         Profile::Quick => &[64],
-        Profile::Full => &[64, 128, 256],
+        Profile::Full => &[64, 128, 256, 512, 1024],
     };
     for &n in linalg_sizes {
         rows.push(bench_row(
@@ -661,7 +661,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
 
     for &n in match config.profile {
         Profile::Quick => &[64][..],
-        Profile::Full => &[64, 128][..],
+        Profile::Full => &[64, 128, 256, 512, 1024][..],
     } {
         rows.push(bench_row(
             config,
@@ -1137,7 +1137,7 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
     }
     let linalg_sizes: &[usize] = match config.profile {
         Profile::Quick => &[64],
-        Profile::Full => &[64, 128, 256],
+        Profile::Full => &[64, 128, 256, 512, 1024],
     };
     for &n in linalg_sizes {
         rows.push(bench_trace_row(
@@ -1197,7 +1197,7 @@ fn run_large_throughput_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
     }
     for &n in match config.profile {
         Profile::Quick => &[64][..],
-        Profile::Full => &[64, 128][..],
+        Profile::Full => &[64, 128, 256, 512, 1024][..],
     } {
         rows.push(bench_trace_row(
             config,
