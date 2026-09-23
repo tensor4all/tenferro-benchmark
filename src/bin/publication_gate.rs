@@ -13,6 +13,9 @@ use std::time::{Duration, Instant};
 use tenferro_ad::{AdContext, EagerRuntime, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
 use tenferro_einsum::{EagerEinsumExt, TraceContextEinsumExt};
+use tenferro_einsum_benchmark::thread_enforcement::{
+    enforce_thread_request, verify_backend_threads,
+};
 use tenferro_linalg::{EagerTensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
@@ -270,8 +273,47 @@ fn tenferro_mode_includes(mode: &str) -> bool {
     }
 }
 
+fn requested_threads() -> usize {
+    static REQUESTED: OnceLock<usize> = OnceLock::new();
+    *REQUESTED.get_or_init(|| {
+        env::var("RAYON_NUM_THREADS")
+            .unwrap_or_else(|_| "1".into())
+            .trim()
+            .parse()
+            .expect("RAYON_NUM_THREADS must be a positive integer")
+    })
+}
+
+/// Fail before any timing when the thread environment disagrees with the
+/// requested count or when the shared backend or its scope runs a different
+/// number of Rayon workers.
+fn enforce_threads_or_exit() {
+    let requested = requested_threads();
+    let check = enforce_thread_request(requested)
+        .and_then(|()| {
+            verify_backend_threads("CpuBackend", cpu_backend().num_threads(), requested)
+        })
+        .and_then(|()| {
+            let scope_threads = cpu_backend()
+                .with_execution_scope(rayon::current_num_threads)
+                .map_err(|error| format!("enter CpuBackend execution scope: {error}"))?;
+            verify_backend_threads("CpuBackend execution scope", scope_threads, requested)?;
+            eprintln!(
+                "publication_gate: requested_threads={requested} backend_threads={} scope_rayon_threads={scope_threads} global_rayon_threads={}",
+                cpu_backend().num_threads(),
+                rayon::current_num_threads(),
+            );
+            Ok(())
+        });
+    if let Err(error) = check {
+        eprintln!("publication_gate: thread enforcement failed: {error}");
+        std::process::exit(2);
+    }
+}
+
 fn main() {
     let config = BenchConfig::from_env();
+    enforce_threads_or_exit();
     println!("suite,op,phase,dtype,backend,profile,shape,warmups,runs,median_ms,iqr_ms,status");
 
     let rows = cpu_backend()
@@ -1536,11 +1578,7 @@ fn summarize_measurement(
 fn cpu_backend() -> &'static CpuBackend {
     static BACKEND: OnceLock<CpuBackend> = OnceLock::new();
     BACKEND.get_or_init(|| {
-        let threads = env::var("RAYON_NUM_THREADS")
-            .unwrap_or_else(|_| "1".into())
-            .parse()
-            .expect("RAYON_NUM_THREADS must be a positive integer");
-        CpuBackend::with_threads(threads).expect("configure explicit CPU thread count")
+        CpuBackend::with_threads(requested_threads()).expect("configure explicit CPU thread count")
     })
 }
 

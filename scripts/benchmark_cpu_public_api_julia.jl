@@ -189,6 +189,8 @@ struct Fixtures
     prod_matrix::Matrix{Float64}
     matrix_max::Matrix{Float64}
     matrix_min::Matrix{Float64}
+    matrix_axis::Matrix{Float64}
+    prod_axis::Matrix{Float64}
 end
 
 function build_elementwise_fixtures()
@@ -215,6 +217,8 @@ function build_elementwise_fixtures()
         fill(1.000001, 8192, 4096),
         tensor_f64((2048, 2048), 1),
         tensor_f64((4096, 4096), 1),
+        tensor_f64((2048, 2048), 1),
+        fill(1.000001, 2048, 2048),
     )
 end
 
@@ -308,6 +312,22 @@ function elementwise_cases(fx::Fixtures)
         () -> maximum(fx.matrix_max; dims = 1), nothing))
     push!(cases, ("cpu/elementwise_reduction", "reduce_min_axis1", "f64", "4096x4096", "axis reduction",
         () -> minimum(fx.matrix_min; dims = 2), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "reduce_max_all", "f64", "8192x4096", "full reduction",
+        () -> maximum(fx.matrix_sum), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "reduce_min_all", "f64", "8192x4096", "full reduction",
+        () -> minimum(fx.matrix_sum), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "reduce_max_axis1", "f64", "2048x2048", "axis reduction",
+        () -> maximum(fx.matrix_axis; dims = 2), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "reduce_min_axis0", "f64", "2048x2048", "axis reduction",
+        () -> minimum(fx.matrix_axis; dims = 1), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "reduce_sum_axis0", "f64", "2048x2048", "axis reduction",
+        () -> sum(fx.matrix_axis; dims = 1), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "reduce_sum_axis1", "f64", "2048x2048", "axis reduction",
+        () -> sum(fx.matrix_axis; dims = 2), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "reduce_prod_axis0", "f64", "2048x2048", "axis reduction",
+        () -> prod(fx.prod_axis; dims = 1), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "reduce_prod_axis1", "f64", "2048x2048", "axis reduction",
+        () -> prod(fx.prod_axis; dims = 2), nothing))
     return cases
 end
 
@@ -352,6 +372,94 @@ end
 # ---------------------------------------------------------------------------
 # linalg_uncovered cases.
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Batched prepared LU cases. Fixtures are [n, n, 1024] column-major arrays
+# with the same logical values as the Rust fixtures. Julia has no batched
+# LAPACK entry point, so each row loops the per-matrix LAPACK call over the
+# trailing batch axis; the output arrays are allocated inside the timed call.
+# ---------------------------------------------------------------------------
+
+const LU_BATCH = 1024
+const LU_BATCHED_SIZES = (2, 4, 8, 16)
+
+function batched_well_conditioned(n::Int, seed::Int)
+    x = tensor_f64((n, n, LU_BATCH), seed)
+    for k in 1:LU_BATCH, i in 1:n
+        x[i, i, k] += 2.0 + (i - 1) / n
+    end
+    return x
+end
+
+function batched_lower_triangular(n::Int, seed::Int)
+    x = 0.05 .* tensor_f64((n, n, LU_BATCH), seed)
+    for k in 1:LU_BATCH, j in 1:n, i in 1:n
+        if i < j
+            x[i, j, k] = 0.0
+        elseif i == j
+            x[i, i, k] = 2.0 + (i - 1) / n
+        end
+    end
+    return x
+end
+
+function batched_lu_factor(a::Array{Float64,3})
+    packed = copy(a)
+    n = size(a, 1)
+    pivots = Matrix{LinearAlgebra.BlasInt}(undef, n, size(a, 3))
+    @inbounds for k in axes(a, 3)
+        _, ipiv, _ = LAPACK.getrf!(view(packed, :, :, k))
+        pivots[:, k] = ipiv
+    end
+    return packed, pivots
+end
+
+function batched_lu_solve(packed::Array{Float64,3}, pivots::Matrix{LinearAlgebra.BlasInt}, rhs::Array{Float64,3})
+    x = copy(rhs)
+    @inbounds for k in axes(packed, 3)
+        LAPACK.getrs!('N', view(packed, :, :, k), view(pivots, :, k), view(x, :, :, k))
+    end
+    return x
+end
+
+function batched_triangular_solve(lower::Array{Float64,3}, rhs::Array{Float64,3})
+    x = copy(rhs)
+    @inbounds for k in axes(lower, 3)
+        LAPACK.trtrs!('L', 'N', 'N', view(lower, :, :, k), view(x, :, :, k))
+    end
+    return x
+end
+
+function linalg_batched_cases()
+    cases = Vector{Tuple{String,String,String,String,String,Function}}()
+    fixtures = Dict(n => (
+        a = batched_well_conditioned(n, 1),
+        lower = batched_lower_triangular(n, 1),
+        rhs = tensor_f64((n, 1, LU_BATCH), 2),
+    ) for n in LU_BATCHED_SIZES)
+    # Prepared factors are built here, outside every timed region.
+    factors = Dict(n => batched_lu_factor(fixtures[n].a) for n in LU_BATCHED_SIZES)
+    for n in LU_BATCHED_SIZES
+        fx = fixtures[n]
+        push!(cases, ("cpu/linalg_batched", "batched_lu_factor", "f64", "$(LU_BATCH)x$(n)x$(n),rhs=1",
+            "packed LU factorization only (LAPACK.getrf! per matrix)",
+            () -> batched_lu_factor(fx.a)))
+    end
+    for n in LU_BATCHED_SIZES
+        fx = fixtures[n]
+        packed, pivots = factors[n]
+        push!(cases, ("cpu/linalg_batched", "batched_lu_solve", "f64", "$(LU_BATCH)x$(n)x$(n),rhs=1",
+            "solve with prepared LU factors (LAPACK.getrs! per matrix)",
+            () -> batched_lu_solve(packed, pivots, fx.rhs)))
+    end
+    for n in LU_BATCHED_SIZES
+        fx = fixtures[n]
+        push!(cases, ("cpu/linalg_batched", "batched_triangular_solve", "f64", "$(LU_BATCH)x$(n)x$(n),rhs=1",
+            "lower-triangular solve (LAPACK.trtrs! per matrix)",
+            () -> batched_triangular_solve(fx.lower, fx.rhs)))
+    end
+    return cases
+end
 
 function linalg_uncovered_cases()
     spd1536 = spd_fixture(1536, 1)
@@ -634,7 +742,9 @@ function main()
             "add", "sub", "mul", "div", "rem", "neg", "abs", "sign", "maximum", "minimum",
             "compare_lt", "select", "clamp", "exp", "log", "sin", "cos", "tanh", "sqrt", "rsqrt",
             "pow", "expm1", "log1p", "chain_log1p_exp_mul", "reduce_sum_all", "reduce_prod_all",
-            "reduce_max_axis0", "reduce_min_axis1",
+            "reduce_max_axis0", "reduce_min_axis1", "reduce_max_all", "reduce_min_all",
+            "reduce_max_axis1", "reduce_min_axis0", "reduce_sum_axis0", "reduce_sum_axis1",
+            "reduce_prod_axis0", "reduce_prod_axis1",
         )
         if any(name -> selected("cpu/elementwise_reduction", name), elementwise_names)
             fx = build_elementwise_fixtures()
@@ -667,6 +777,15 @@ function main()
                ("cholesky", "eig", "eigvals", "eigvalsh", "triangular_solve", "det", "slogdet", "inv",
                 "pinv", "pinv_with_rtol", "lu", "lstsq", "svd_full", "norm_fro"))
             for (suite, benchmark, dtype, shape, notes, fn) in linalg_uncovered_cases()
+                selected(suite, benchmark) || continue
+                emit_case(io, suite, benchmark, dtype, num_threads, shape, "julia-base",
+                    "$notes; input allocation outside timed region", runs, warmups, fn)
+            end
+        end
+
+        if any(name -> selected("cpu/linalg_batched", name),
+               ("batched_lu_factor", "batched_lu_solve", "batched_triangular_solve"))
+            for (suite, benchmark, dtype, shape, notes, fn) in linalg_batched_cases()
                 selected(suite, benchmark) || continue
                 emit_case(io, suite, benchmark, dtype, num_threads, shape, "julia-base",
                     "$notes; input allocation outside timed region", runs, warmups, fn)

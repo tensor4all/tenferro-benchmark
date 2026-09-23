@@ -226,6 +226,58 @@ def lower_triangular(n: int, seed: int):
     return LazyTensor(build)
 
 
+LU_BATCH = 1024
+LU_BATCHED_SIZES = (2, 4, 8, 16)
+
+
+def batch_leading(x):
+    """Logical col-major [n, m, batch] fixture as a contiguous [batch, n, m]."""
+    return x.permute(2, 0, 1).contiguous()
+
+
+def batched_fixtures(n: int) -> dict[str, LazyTensor]:
+    """Batched LU inputs matching the Rust [n, n, 1024] col-major fixtures."""
+
+    def well():
+        import torch
+
+        x = tensor_f64((n, n, LU_BATCH), 1).get().clone()
+        x.diagonal(dim1=0, dim2=1).add_((2.0 + torch.arange(n, dtype=torch.float64) / n).unsqueeze(0))
+        return batch_leading(x)
+
+    def lower():
+        import torch
+
+        x = batch_leading(tensor_f64((n, n, LU_BATCH), 1).get())
+        x = torch.tril(0.05 * x)
+        x.diagonal(dim1=1, dim2=2).copy_(2.0 + torch.arange(n, dtype=torch.float64) / n)
+        return x
+
+    a = LazyTensor(well)
+    return {
+        "a": a,
+        "lower": LazyTensor(lower),
+        "rhs": LazyTensor(lambda: batch_leading(tensor_f64((n, 1, LU_BATCH), 2).get())),
+        # Prepared factors are built on the first (untimed warmup) use.
+        "factors": LazyTensor(lambda: __import__("torch").linalg.lu_factor(a.get())),
+    }
+
+
+def batched_lu_cases(batched: dict[int, dict[str, LazyTensor]]):
+    import torch
+
+    cases = []
+    for bench, note, fn in (
+        ("batched_lu_factor", "packed LU factorization only (torch.linalg.lu_factor)", lambda f: torch.linalg.lu_factor(f["a"])),
+        ("batched_lu_solve", "solve with prepared LU factors (torch.linalg.lu_solve)", lambda f: torch.linalg.lu_solve(*f["factors"].get(), f["rhs"].get())),
+        ("batched_triangular_solve", "lower-triangular solve (torch.linalg.solve_triangular)", lambda f: torch.linalg.solve_triangular(f["lower"], f["rhs"], upper=False, left=True, unitriangular=False)),
+    ):
+        for n in LU_BATCHED_SIZES:
+            fixtures = batched[n]
+            cases.append(("cpu/linalg_batched", bench, "f64", f"{LU_BATCH}x{n}x{n},rhs=1", note, lambda fn=fn, fixtures=fixtures: fn(fixtures)))
+    return cases
+
+
 def spd(n: int, seed: int):
     def build():
         import torch
@@ -274,6 +326,9 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
     prod_matrix = LazyTensor(lambda: torch.full((8192, 4096), 1.000001, dtype=torch.float64))
     matrix_max = tensor_f64((2048, 2048), 1)
     matrix_min = tensor_f64((4096, 4096), 1)
+    matrix_axis = tensor_f64((2048, 2048), 1)
+    prod_axis = LazyTensor(lambda: torch.full((2048, 2048), 1.000001, dtype=torch.float64))
+    batched = {n: batched_fixtures(n) for n in LU_BATCHED_SIZES}
     gather_n = 262_144
     base_gather = tensor_f64((gather_n,), 1)
     updates_gather = tensor_f64((gather_n,), 2)
@@ -359,6 +414,14 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/elementwise_reduction", "reduce_prod_all", "f64", "8192x4096", "full reduction", lambda: torch.prod(prod_matrix)),
         ("cpu/elementwise_reduction", "reduce_max_axis0", "f64", "2048x2048", "axis reduction", lambda: torch.max(matrix_max, dim=0).values),
         ("cpu/elementwise_reduction", "reduce_min_axis1", "f64", "4096x4096", "axis reduction", lambda: torch.min(matrix_min, dim=1).values),
+        ("cpu/elementwise_reduction", "reduce_max_all", "f64", "8192x4096", "full reduction", lambda: torch.max(matrix_sum)),
+        ("cpu/elementwise_reduction", "reduce_min_all", "f64", "8192x4096", "full reduction", lambda: torch.min(matrix_sum)),
+        ("cpu/elementwise_reduction", "reduce_max_axis1", "f64", "2048x2048", "axis reduction", lambda: torch.max(matrix_axis, dim=1).values),
+        ("cpu/elementwise_reduction", "reduce_min_axis0", "f64", "2048x2048", "axis reduction", lambda: torch.min(matrix_axis, dim=0).values),
+        ("cpu/elementwise_reduction", "reduce_sum_axis0", "f64", "2048x2048", "axis reduction", lambda: torch.sum(matrix_axis, dim=0)),
+        ("cpu/elementwise_reduction", "reduce_sum_axis1", "f64", "2048x2048", "axis reduction", lambda: torch.sum(matrix_axis, dim=1)),
+        ("cpu/elementwise_reduction", "reduce_prod_axis0", "f64", "2048x2048", "axis reduction", lambda: torch.prod(prod_axis, dim=0)),
+        ("cpu/elementwise_reduction", "reduce_prod_axis1", "f64", "2048x2048", "axis reduction", lambda: torch.prod(prod_axis, dim=1)),
         ("cpu/indexing_layout", "gather", "f64", "262144", "1D gather", lambda: torch.gather(base_gather, 0, gather_idx)),
         ("cpu/indexing_layout", "scatter", "f64", "262144", "1D scatter", lambda: torch.zeros_like(base_gather).scatter(0, scatter_idx, updates_gather)),
         ("cpu/indexing_layout", "slice", "f64", "4194304 -> 2096128", "static slice materialized to owned output", lambda: base_slice[1024 : 4_194_304 - 1024 : 2].clone()),
@@ -389,6 +452,7 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/output_reuse", "dot_general_read_into", "f64", "1024x1024", "torch.mm out= caller-owned output", lambda: torch.mm(dot_reuse_a, dot_reuse_b, out=dot_reuse_out)),
         ("cpu/output_reuse", "dot_general_read_into_accum", "f64", "1024x1024", "torch.addmm out = lhs @ rhs + out", lambda: torch.addmm(dot_reuse_out, dot_reuse_a, dot_reuse_b, beta=1.0, alpha=1.0, out=dot_reuse_out)),
         ("cpu/einsum_concrete", "einsum_ij_jk_ik", "f64", "1024x1024", "torch.einsum allocation-returning API", lambda: torch.einsum("ij,jk->ik", dot_reuse_a, dot_reuse_b)),
+        *batched_lu_cases(batched),
         ("cpu/linalg_uncovered", "cholesky", "f64", "1536x1536", "SPD input", lambda: torch.linalg.cholesky(spd1536)),
         ("cpu/linalg_uncovered", "eig", "f64", "160x160", "general input", lambda: torch.linalg.eig(a160)),
         ("cpu/linalg_uncovered", "eigvals", "f64", "192x192", "general input values only", lambda: torch.linalg.eigvals(a192)),
