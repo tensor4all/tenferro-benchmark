@@ -1,6 +1,6 @@
 # CPU shared-session matrix results
 
-Raw data and provenance: `data/results/mac-cpu/cpu/session_matrix/20260916_080229`.
+Raw data and provenance: `data/results/mac-cpu/cpu/session_matrix/20260923_021923`.
 
 Each sample executes 1024 independent, distinct f64 matrix pairs. Three warmups and 15 samples; one wall-clock interval covers the whole loop. All inputs, output-container allocation, session entry, and initialization are outside timing. Outputs remain alive until timer stop. Every output is checked after timing (solve uses the residual).
 
@@ -10,63 +10,63 @@ EagerTensor and compiled trace are not labeled shared-session: their current pub
 
 | Operation | Matrix | Operations | Threads | Provider | Route | Execution mode | Median total ms | IQR total ms | Median ns/op | Check |
 |---|---|---:|---:|---|---|---|---:|---:|---:|---|
-| matmul | 2×2 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.676292 | 0.229750 | 1637.00 | passed |
-| matmul | 2×2 | 1024 | 1 | faer | shared-session | Compatibility | 0.982083 | 0.041146 | 959.07 | passed |
-| matmul | 2×2 | 1024 | 1 | pytorch | python-loop | not applicable | 0.335708 | 0.008000 | 327.84 | passed |
-| matmul | 2×2 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.090000 | 0.022229 | 1064.45 | passed |
-| matmul | 2×2 | 1024 | 4 | faer | shared-session | Compatibility | 0.782834 | 0.026583 | 764.49 | passed |
-| matmul | 2×2 | 1024 | 4 | pytorch | python-loop | not applicable | 0.331292 | 0.014313 | 323.53 | passed |
-| matmul | 4×4 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.096000 | 0.014021 | 1070.31 | passed |
-| matmul | 4×4 | 1024 | 1 | faer | shared-session | Compatibility | 0.817875 | 0.042792 | 798.71 | passed |
-| matmul | 4×4 | 1024 | 1 | pytorch | python-loop | not applicable | 0.363791 | 0.074063 | 355.26 | passed |
-| matmul | 4×4 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.083375 | 0.025687 | 1057.98 | passed |
-| matmul | 4×4 | 1024 | 4 | faer | shared-session | Compatibility | 0.795041 | 0.018541 | 776.41 | passed |
-| matmul | 4×4 | 1024 | 4 | pytorch | python-loop | not applicable | 0.331125 | 0.012771 | 323.36 | passed |
-| matmul | 8×8 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.142166 | 0.039729 | 1115.40 | passed |
-| matmul | 8×8 | 1024 | 1 | faer | shared-session | Compatibility | 0.827666 | 0.021438 | 808.27 | passed |
-| matmul | 8×8 | 1024 | 1 | pytorch | python-loop | not applicable | 0.404125 | 0.014230 | 394.65 | passed |
-| matmul | 8×8 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.141583 | 0.016353 | 1114.83 | passed |
-| matmul | 8×8 | 1024 | 4 | faer | shared-session | Compatibility | 0.829125 | 0.014812 | 809.69 | passed |
-| matmul | 8×8 | 1024 | 4 | pytorch | python-loop | not applicable | 0.400250 | 0.017583 | 390.87 | passed |
-| matmul | 16×16 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.921541 | 0.076688 | 1876.50 | passed |
-| matmul | 16×16 | 1024 | 1 | faer | shared-session | Compatibility | 1.079625 | 0.035125 | 1054.32 | passed |
-| matmul | 16×16 | 1024 | 1 | pytorch | python-loop | not applicable | 0.780791 | 0.020751 | 762.49 | passed |
-| matmul | 16×16 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.797416 | 0.046646 | 1755.29 | passed |
-| matmul | 16×16 | 1024 | 4 | faer | shared-session | Compatibility | 1.105542 | 0.041980 | 1079.63 | passed |
-| matmul | 16×16 | 1024 | 4 | pytorch | python-loop | not applicable | 0.795875 | 0.028792 | 777.22 | passed |
-| matmul | 32×32 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 2.369333 | 0.053354 | 2313.80 | passed |
-| matmul | 32×32 | 1024 | 1 | faer | shared-session | Compatibility | 2.341417 | 0.134625 | 2286.54 | passed |
-| matmul | 32×32 | 1024 | 1 | pytorch | python-loop | not applicable | 1.094042 | 0.038416 | 1068.40 | passed |
-| matmul | 32×32 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 2.314375 | 0.041292 | 2260.13 | passed |
-| matmul | 32×32 | 1024 | 4 | faer | shared-session | Compatibility | 2.461750 | 0.041772 | 2404.05 | passed |
-| matmul | 32×32 | 1024 | 4 | pytorch | python-loop | not applicable | 1.064625 | 0.028312 | 1039.67 | passed |
-| solve | 2×2 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.996792 | 0.038271 | 1949.99 | passed |
-| solve | 2×2 | 1024 | 1 | faer | shared-session | Compatibility | 2.038625 | 0.049125 | 1990.84 | passed |
-| solve | 2×2 | 1024 | 1 | pytorch | python-loop | not applicable | 4.254250 | 0.088708 | 4154.54 | passed |
-| solve | 2×2 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.982750 | 0.019083 | 1936.28 | passed |
-| solve | 2×2 | 1024 | 4 | faer | shared-session | Compatibility | 2.047625 | 0.020730 | 1999.63 | passed |
-| solve | 2×2 | 1024 | 4 | pytorch | python-loop | not applicable | 4.278792 | 0.125438 | 4178.51 | passed |
-| solve | 4×4 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 2.059667 | 0.041938 | 2011.39 | passed |
-| solve | 4×4 | 1024 | 1 | faer | shared-session | Compatibility | 2.143583 | 0.032459 | 2093.34 | passed |
-| solve | 4×4 | 1024 | 1 | pytorch | python-loop | not applicable | 4.506875 | 0.211895 | 4401.25 | passed |
-| solve | 4×4 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 2.060625 | 0.046021 | 2012.33 | passed |
-| solve | 4×4 | 1024 | 4 | faer | shared-session | Compatibility | 2.126625 | 0.037750 | 2076.78 | passed |
-| solve | 4×4 | 1024 | 4 | pytorch | python-loop | not applicable | 4.290209 | 0.127167 | 4189.66 | passed |
-| solve | 8×8 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 2.441791 | 0.032313 | 2384.56 | passed |
-| solve | 8×8 | 1024 | 1 | faer | shared-session | Compatibility | 2.540042 | 0.043250 | 2480.51 | passed |
-| solve | 8×8 | 1024 | 1 | pytorch | python-loop | not applicable | 4.592250 | 0.138313 | 4484.62 | passed |
-| solve | 8×8 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 2.448292 | 0.054208 | 2390.91 | passed |
-| solve | 8×8 | 1024 | 4 | faer | shared-session | Compatibility | 2.592584 | 0.045855 | 2531.82 | passed |
-| solve | 8×8 | 1024 | 4 | pytorch | python-loop | not applicable | 4.518167 | 0.122333 | 4412.27 | passed |
-| solve | 16×16 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 3.808916 | 0.063937 | 3719.64 | passed |
-| solve | 16×16 | 1024 | 1 | faer | shared-session | Compatibility | 4.041458 | 0.035771 | 3946.74 | passed |
-| solve | 16×16 | 1024 | 1 | pytorch | python-loop | not applicable | 5.387042 | 0.095395 | 5260.78 | passed |
-| solve | 16×16 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 3.788542 | 0.050875 | 3699.75 | passed |
-| solve | 16×16 | 1024 | 4 | faer | shared-session | Compatibility | 4.045542 | 0.021917 | 3950.72 | passed |
-| solve | 16×16 | 1024 | 4 | pytorch | python-loop | not applicable | 5.270042 | 0.097292 | 5146.53 | passed |
-| solve | 32×32 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 12.308459 | 0.551646 | 12019.98 | passed |
-| solve | 32×32 | 1024 | 1 | faer | shared-session | Compatibility | 11.168500 | 0.073104 | 10906.74 | passed |
-| solve | 32×32 | 1024 | 1 | pytorch | python-loop | not applicable | 10.909667 | 0.050563 | 10653.97 | passed |
-| solve | 32×32 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 12.238458 | 0.065603 | 11951.62 | passed |
-| solve | 32×32 | 1024 | 4 | faer | shared-session | Compatibility | 11.164500 | 0.090896 | 10902.83 | passed |
-| solve | 32×32 | 1024 | 4 | pytorch | python-loop | not applicable | 10.969750 | 0.129729 | 10712.65 | passed |
+| matmul | 2×2 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.238667 | 0.152417 | 1209.64 | passed |
+| matmul | 2×2 | 1024 | 1 | faer | shared-session | Compatibility | 0.946667 | 0.038895 | 924.48 | passed |
+| matmul | 2×2 | 1024 | 1 | pytorch | python-loop | not applicable | 0.300750 | 0.012688 | 293.70 | passed |
+| matmul | 2×2 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 0.778542 | 0.011416 | 760.29 | passed |
+| matmul | 2×2 | 1024 | 4 | faer | shared-session | Compatibility | 0.755625 | 0.006208 | 737.92 | passed |
+| matmul | 2×2 | 1024 | 4 | pytorch | python-loop | not applicable | 0.293583 | 0.008083 | 286.70 | passed |
+| matmul | 4×4 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 0.760959 | 0.009437 | 743.12 | passed |
+| matmul | 4×4 | 1024 | 1 | faer | shared-session | Compatibility | 0.755625 | 0.012833 | 737.92 | passed |
+| matmul | 4×4 | 1024 | 1 | pytorch | python-loop | not applicable | 0.325917 | 0.006188 | 318.28 | passed |
+| matmul | 4×4 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 0.762709 | 0.015104 | 744.83 | passed |
+| matmul | 4×4 | 1024 | 4 | faer | shared-session | Compatibility | 0.739125 | 0.015521 | 721.80 | passed |
+| matmul | 4×4 | 1024 | 4 | pytorch | python-loop | not applicable | 0.310667 | 0.014667 | 303.39 | passed |
+| matmul | 8×8 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 0.824791 | 0.009041 | 805.46 | passed |
+| matmul | 8×8 | 1024 | 1 | faer | shared-session | Compatibility | 0.822500 | 0.027751 | 803.22 | passed |
+| matmul | 8×8 | 1024 | 1 | pytorch | python-loop | not applicable | 0.371625 | 0.012708 | 362.92 | passed |
+| matmul | 8×8 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 0.835333 | 0.022541 | 815.75 | passed |
+| matmul | 8×8 | 1024 | 4 | faer | shared-session | Compatibility | 0.766375 | 0.011188 | 748.41 | passed |
+| matmul | 8×8 | 1024 | 4 | pytorch | python-loop | not applicable | 0.367959 | 0.008042 | 359.33 | passed |
+| matmul | 16×16 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.385750 | 0.040167 | 1353.27 | passed |
+| matmul | 16×16 | 1024 | 1 | faer | shared-session | Compatibility | 1.067917 | 0.021854 | 1042.89 | passed |
+| matmul | 16×16 | 1024 | 1 | pytorch | python-loop | not applicable | 0.784125 | 0.015459 | 765.75 | passed |
+| matmul | 16×16 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.363500 | 0.031312 | 1331.54 | passed |
+| matmul | 16×16 | 1024 | 4 | faer | shared-session | Compatibility | 1.062208 | 0.012021 | 1037.31 | passed |
+| matmul | 16×16 | 1024 | 4 | pytorch | python-loop | not applicable | 0.752417 | 0.022708 | 734.78 | passed |
+| matmul | 32×32 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.573959 | 0.045687 | 1537.07 | passed |
+| matmul | 32×32 | 1024 | 1 | faer | shared-session | Compatibility | 2.297750 | 0.050604 | 2243.90 | passed |
+| matmul | 32×32 | 1024 | 1 | pytorch | python-loop | not applicable | 1.003000 | 0.014021 | 979.49 | passed |
+| matmul | 32×32 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.641500 | 0.028313 | 1603.03 | passed |
+| matmul | 32×32 | 1024 | 4 | faer | shared-session | Compatibility | 2.313958 | 0.043604 | 2259.72 | passed |
+| matmul | 32×32 | 1024 | 4 | pytorch | python-loop | not applicable | 1.002458 | 0.033397 | 978.96 | passed |
+| solve | 2×2 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.508416 | 0.041021 | 1473.06 | passed |
+| solve | 2×2 | 1024 | 1 | faer | shared-session | Compatibility | 1.562125 | 0.024250 | 1525.51 | passed |
+| solve | 2×2 | 1024 | 1 | pytorch | python-loop | not applicable | 4.047167 | 0.059812 | 3952.31 | passed |
+| solve | 2×2 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.482917 | 0.031209 | 1448.16 | passed |
+| solve | 2×2 | 1024 | 4 | faer | shared-session | Compatibility | 1.562541 | 0.029396 | 1525.92 | passed |
+| solve | 2×2 | 1024 | 4 | pytorch | python-loop | not applicable | 4.571000 | 0.247854 | 4463.87 | passed |
+| solve | 4×4 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.578500 | 0.023062 | 1541.50 | passed |
+| solve | 4×4 | 1024 | 1 | faer | shared-session | Compatibility | 1.671500 | 0.024417 | 1632.32 | passed |
+| solve | 4×4 | 1024 | 1 | pytorch | python-loop | not applicable | 4.168708 | 0.077521 | 4071.00 | passed |
+| solve | 4×4 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.517000 | 0.023146 | 1481.45 | passed |
+| solve | 4×4 | 1024 | 4 | faer | shared-session | Compatibility | 1.636208 | 0.028813 | 1597.86 | passed |
+| solve | 4×4 | 1024 | 4 | pytorch | python-loop | not applicable | 4.198916 | 0.096333 | 4100.50 | passed |
+| solve | 8×8 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 1.840375 | 0.041126 | 1797.24 | passed |
+| solve | 8×8 | 1024 | 1 | faer | shared-session | Compatibility | 2.090334 | 0.013855 | 2041.34 | passed |
+| solve | 8×8 | 1024 | 1 | pytorch | python-loop | not applicable | 4.296583 | 0.052625 | 4195.88 | passed |
+| solve | 8×8 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 1.831667 | 0.039563 | 1788.74 | passed |
+| solve | 8×8 | 1024 | 4 | faer | shared-session | Compatibility | 2.072292 | 0.021542 | 2023.72 | passed |
+| solve | 8×8 | 1024 | 4 | pytorch | python-loop | not applicable | 4.264042 | 0.137687 | 4164.10 | passed |
+| solve | 16×16 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 2.826000 | 0.066209 | 2759.77 | passed |
+| solve | 16×16 | 1024 | 1 | faer | shared-session | Compatibility | 3.525125 | 0.073729 | 3442.50 | passed |
+| solve | 16×16 | 1024 | 1 | pytorch | python-loop | not applicable | 5.035958 | 0.116146 | 4917.93 | passed |
+| solve | 16×16 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 2.808584 | 0.060708 | 2742.76 | passed |
+| solve | 16×16 | 1024 | 4 | faer | shared-session | Compatibility | 3.518250 | 0.027751 | 3435.79 | passed |
+| solve | 16×16 | 1024 | 4 | pytorch | python-loop | not applicable | 5.008166 | 0.158126 | 4890.79 | passed |
+| solve | 32×32 | 1024 | 1 | accelerate | shared-session | ProviderDefaultExclusive | 9.194166 | 0.153250 | 8978.68 | passed |
+| solve | 32×32 | 1024 | 1 | faer | shared-session | Compatibility | 10.485541 | 0.051667 | 10239.79 | passed |
+| solve | 32×32 | 1024 | 1 | pytorch | python-loop | not applicable | 10.797666 | 0.648021 | 10544.60 | passed |
+| solve | 32×32 | 1024 | 4 | accelerate | shared-session | ProviderDefaultExclusive | 9.071000 | 0.108875 | 8858.40 | passed |
+| solve | 32×32 | 1024 | 4 | faer | shared-session | Compatibility | 10.476042 | 0.077021 | 10230.51 | passed |
+| solve | 32×32 | 1024 | 4 | pytorch | python-loop | not applicable | 10.710833 | 0.111126 | 10459.80 | passed |
