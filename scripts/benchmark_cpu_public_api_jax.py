@@ -166,6 +166,47 @@ def hpd_c64(n: int) -> LazyArray:
     )
 
 
+LU_BATCH = 1024
+LU_BATCHED_SIZES = (2, 4, 8, 16)
+
+
+def batch_leading(shape: tuple[int, int], seed: int):
+    """Logical col-major [n, m, batch] fixture as a [batch, n, m] array."""
+    import jax.numpy as jnp
+
+    return jnp.moveaxis(tensor_f64((*shape, LU_BATCH), seed).get(), 2, 0)
+
+
+def batched_lu_cases() -> list[Case]:
+    """Batched prepared LU rows matching the Rust [n, n, 1024] fixtures."""
+    import jax
+    import jax.numpy as jnp
+    from jax.scipy.linalg import lu_factor, lu_solve, solve_triangular
+
+    lu_factor_jit = jax.jit(lu_factor)
+    cases: list[Case] = []
+    for n in LU_BATCHED_SIZES:
+        a = LazyArray(
+            lambda n=n: batch_leading((n, n), 1).at[:, jnp.arange(n), jnp.arange(n)].add(2.0 + jnp.arange(n, dtype=jnp.float64) / n)
+        )
+        lower = LazyArray(
+            lambda n=n: jnp.tril(0.05 * batch_leading((n, n), 1)).at[:, jnp.arange(n), jnp.arange(n)].set(2.0 + jnp.arange(n, dtype=jnp.float64) / n)
+        )
+        rhs = LazyArray(lambda n=n: batch_leading((n, 1), 2))
+        # Prepared factors are built on the first (untimed warmup) use.
+        factors = LazyArray(lambda a=a: jax.block_until_ready(lu_factor_jit(a.get())))
+        packed = LazyArray(lambda factors=factors: factors.get()[0])
+        pivots = LazyArray(lambda factors=factors: factors.get()[1])
+        shape = f"{LU_BATCH}x{n}x{n},rhs=1"
+        cases += [
+            ("cpu/linalg_batched", "batched_lu_factor", "f64", shape, "packed LU factorization only (jax.scipy.linalg.lu_factor)", compiled(lu_factor, a)),
+            ("cpu/linalg_batched", "batched_lu_solve", "f64", shape, "solve with prepared LU factors (jax.scipy.linalg.lu_solve)", compiled(lambda lu, piv, b: lu_solve((lu, piv), b), packed, pivots, rhs)),
+            ("cpu/linalg_batched", "batched_triangular_solve", "f64", shape, "lower-triangular solve (jax.scipy.linalg.solve_triangular)", compiled(lambda l, b: solve_triangular(l, b, lower=True), lower, rhs)),
+        ]
+    order = {"batched_lu_factor": 0, "batched_lu_solve": 1, "batched_triangular_solve": 2}
+    return sorted(cases, key=lambda case: order[case[1]])
+
+
 def compiled(fn: Callable[..., object], *inputs: LazyArray) -> Callable[[], object]:
     import jax
 
@@ -199,6 +240,8 @@ def make_cases() -> list[Case]:
     matrix_prod = LazyArray(lambda: jnp.full((8192, 4096), 1.000001, dtype=jnp.float64))
     matrix_max = tensor_f64((2048, 2048), 1)
     matrix_min = tensor_f64((4096, 4096), 1)
+    matrix_axis = tensor_f64((2048, 2048), 1)
+    prod_axis = LazyArray(lambda: jnp.full((2048, 2048), 1.000001, dtype=jnp.float64))
 
     gather_n = 262_144
     gather_base = tensor_f64((gather_n,), 1)
@@ -286,6 +329,14 @@ def make_cases() -> list[Case]:
         (elem, "reduce_prod_all", "f64", "8192x4096", "full reduction", compiled(jnp.prod, matrix_prod)),
         (elem, "reduce_max_axis0", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.max(a, axis=0), matrix_max)),
         (elem, "reduce_min_axis1", "f64", "4096x4096", "axis reduction", compiled(lambda a: jnp.min(a, axis=1), matrix_min)),
+        (elem, "reduce_max_all", "f64", "8192x4096", "full reduction", compiled(jnp.max, matrix_sum)),
+        (elem, "reduce_min_all", "f64", "8192x4096", "full reduction", compiled(jnp.min, matrix_sum)),
+        (elem, "reduce_max_axis1", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.max(a, axis=1), matrix_axis)),
+        (elem, "reduce_min_axis0", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.min(a, axis=0), matrix_axis)),
+        (elem, "reduce_sum_axis0", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.sum(a, axis=0), matrix_axis)),
+        (elem, "reduce_sum_axis1", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.sum(a, axis=1), matrix_axis)),
+        (elem, "reduce_prod_axis0", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.prod(a, axis=0), prod_axis)),
+        (elem, "reduce_prod_axis1", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.prod(a, axis=1), prod_axis)),
         (idx, "gather", "f64", "262144", "1D gather", compiled(lambda a, i: jnp.take(a, i), gather_base, gather_idx)),
         (idx, "scatter", "f64", "262144", "1D scatter", compiled(lambda a, i, u: jnp.zeros_like(a).at[i].set(u), gather_base, gather_idx, gather_updates)),
         (idx, "slice", "f64", "4194304 -> 2096128", "static slice materialized output", compiled(lambda a: a[1024 : 4_194_304 - 1024 : 2], slice_base)),
@@ -303,6 +354,7 @@ def make_cases() -> list[Case]:
         ("cpu/structural_shape", "tril", "f64", "4096x4096", "lower triangle", compiled(jnp.tril, structural_matrix)),
         ("cpu/structural_shape", "triu", "f64", "4096x4096", "upper triangle", compiled(jnp.triu, structural_matrix)),
         ("cpu/einsum_concrete", "einsum_ij_jk_ik", "f64", "1024x1024", "jnp.einsum allocation-returning API", compiled(lambda a, b: jnp.einsum("ij,jk->ik", a, b), tensor_f64((1024, 1024), 1), tensor_f64((1024, 1024), 2))),
+        *batched_lu_cases(),
         (lin, "cholesky", "f64", "1536x1536", "SPD input", compiled(jnp.linalg.cholesky, spd1536)),
         (lin, "eig", "f64", "160x160", "general input", compiled(jnp.linalg.eig, a160)),
         (lin, "eigvals", "f64", "192x192", "general input values only", compiled(jnp.linalg.eigvals, a192)),

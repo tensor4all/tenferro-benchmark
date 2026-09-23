@@ -188,13 +188,15 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_rust_group cpu/elementwise_reduction "add,sub,mul,div,neg,abs,sign,maximum,minimum,compare_lt,select,sqrt,rsqrt"
     run_rust_group cpu/elementwise_reduction "rem,clamp,exp,log,sin,cos,tanh"
     run_rust_group cpu/elementwise_reduction "pow,expm1,log1p,chain_log1p_exp_mul"
-    run_rust_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1"
+    run_rust_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_all,reduce_min_all"
+    run_rust_group cpu/elementwise_reduction "reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1"
     run_rust_group cpu/indexing_layout
     run_rust_group cpu/structural_shape
     run_rust_group cpu/view_metadata
     run_rust_group cpu/output_reuse
     run_rust_group cpu/einsum_concrete
     run_rust_group cpu/linalg_uncovered
+    run_rust_group cpu/linalg_batched
     run_rust_group cpu/complex "conj"
     run_rust_group cpu/complex "mul,div"
     run_rust_group cpu/complex "exp,log"
@@ -235,11 +237,13 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_jax_group cpu/elementwise_reduction "add,sub,mul,div,neg,abs,sign,maximum,minimum,compare_lt,select,sqrt,rsqrt"
     run_jax_group cpu/elementwise_reduction "rem,clamp,exp,log,sin,cos,tanh"
     run_jax_group cpu/elementwise_reduction "pow,expm1,log1p,chain_log1p_exp_mul"
-    run_jax_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1"
+    run_jax_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_all,reduce_min_all"
+    run_jax_group cpu/elementwise_reduction "reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1"
     run_jax_group cpu/indexing_layout
     run_jax_group cpu/structural_shape
     run_jax_group cpu/einsum_concrete
     run_jax_group cpu/linalg_uncovered
+    run_jax_group cpu/linalg_batched
     run_jax_group cpu/complex "conj"
     run_jax_group cpu/complex "mul,div"
     run_jax_group cpu/complex "exp,log"
@@ -270,9 +274,11 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
         run_julia_group cpu/elementwise_reduction "add,sub,mul,div,neg,abs,sign,maximum,minimum,compare_lt,select,sqrt,rsqrt"
         run_julia_group cpu/elementwise_reduction "rem,clamp,exp,log,sin,cos,tanh"
         run_julia_group cpu/elementwise_reduction "pow,expm1,log1p,chain_log1p_exp_mul"
-        run_julia_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1"
+        run_julia_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_all,reduce_min_all"
+        run_julia_group cpu/elementwise_reduction "reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1"
         run_julia_group cpu/structural_shape
         run_julia_group cpu/linalg_uncovered
+        run_julia_group cpu/linalg_batched
         run_julia_group cpu/indexing_layout
         run_julia_group cpu/view_metadata
         run_julia_group cpu/output_reuse
@@ -351,6 +357,10 @@ fi
     echo "- \`pad\` has no natural Base spelling and stays missing for Julia."
     echo "- \`dynamic_update_slice\` reports trace mode as \`unsupported\` because tenferro-rs does not currently expose a corresponding \`TracedTensor\` API."
     echo "- \`full_piv_lu\` and \`full_piv_lu_solve\` are excluded because PyTorch has no direct public full-pivot equivalent; substituting \`torch.linalg.solve\` would compare different algorithms."
+    echo "- \`cpu/linalg_batched\` rows use a batch of 1024 matrices with one rhs column. \`batched_lu_factor\` times the packed LU factorization alone. \`batched_lu_solve\` reuses LU factors prepared during warmup, outside the measured region, and times only the solve (tenferro-rs \`LinalgBackend::lu_solve_prepared\`, PyTorch \`torch.linalg.lu_solve\`, JAX \`jax.scipy.linalg.lu_solve\`, Julia \`LAPACK.getrs!\`). \`batched_triangular_solve\` times a lower-triangular solve."
+    echo "- Trace mode is \`unsupported\` for \`batched_lu_factor\` and \`batched_lu_solve\` because \`LinalgOp\` is not public, so a trace cannot hold a bare LU factor or prepared solve. The traced solve (LU factor plus prepared solve) and its backward are measured by the \`cpu/cpu_ops\` \`batched_solve\` and \`grad_sum_batched_solve_backward\` rows."
+    echo "- Julia has no batched LAPACK entry point, so the Julia \`cpu/linalg_batched\` rows loop the per-matrix LAPACK call over the batch axis and allocate their outputs inside the timed call."
+    echo "- The tenferro-rs runner builds its direct \`CpuBackend\`, the trace runtime, and the eager runtime with exactly \`--num-threads\` workers, and it fails at startup when a thread environment variable disagrees with that count or when the backend execution scope reports a different Rayon thread count."
     echo "- \`svd_full\` remains in the table even when the selected tenferro-rs provider reports it as unsupported."
     echo "- Julia is column-major, like tenferro-rs, so the \`julia-base\`/\`strided-jl\` columns need no PyTorch/JAX-style layout reconstruction to keep the same logical fixture values."
     echo "- Julia warmup runs move JIT compilation outside the measured region, the same way PyTorch/JAX warmups do."

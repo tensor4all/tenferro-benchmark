@@ -15,7 +15,12 @@ use num_complex::Complex64;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuBackendKind, CpuExecSession};
 use tenferro_einsum::{TensorDotAxes, TensorEinsumExt, TensorTensordotExt, TracedTensorEinsumExt};
-use tenferro_linalg::{EagerTensorLinalgExt, TensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_einsum_benchmark::thread_enforcement::{
+    enforce_thread_request, verify_backend_threads,
+};
+use tenferro_linalg::{
+    EagerTensorLinalgExt, LinalgBackend, TensorLinalgExt, TracedTensorLinalgExt,
+};
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
 use tenferro_tensor::{
     BackendSessionHost, CompareDir, DType, DotGeneralAccumulation, DotGeneralConfig, GatherConfig,
@@ -162,7 +167,24 @@ fn main() -> BenchResult<()> {
         )?;
     }
 
+    // Bind the process to the requested thread count before any backend or
+    // provider initializes, then prove the direct backend honors it.
+    enforce_thread_request(args.num_threads)?;
+    let _ = REQUESTED_THREADS.set(args.num_threads);
     let mut backend = cpu_backend_from_env()?;
+    let scope_threads = backend.with_execution_scope(rayon::current_num_threads)?;
+    verify_backend_threads(
+        "CpuBackend execution scope",
+        scope_threads,
+        args.num_threads,
+    )?;
+    eprintln!(
+        "benchmark_cpu_public_api: requested_threads={} backend_threads={} scope_rayon_threads={} global_rayon_threads={}",
+        args.num_threads,
+        backend.num_threads(),
+        scope_threads,
+        rayon::current_num_threads(),
+    );
     let mut attribution = args
         .attribution_output
         .as_ref()
@@ -328,6 +350,62 @@ fn cases() -> Vec<Case> {
             "4096x4096",
             "axis reduction",
             reduce_min_axis1_f64,
+        ),
+        elem(
+            "reduce_max_all",
+            "f64",
+            "8192x4096",
+            "full reduction",
+            reduce_max_all_f64,
+        ),
+        elem(
+            "reduce_min_all",
+            "f64",
+            "8192x4096",
+            "full reduction",
+            reduce_min_all_f64,
+        ),
+        elem(
+            "reduce_max_axis1",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_max_axis1_f64,
+        ),
+        elem(
+            "reduce_min_axis0",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_min_axis0_f64,
+        ),
+        elem(
+            "reduce_sum_axis0",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_sum_axis0_f64,
+        ),
+        elem(
+            "reduce_sum_axis1",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_sum_axis1_f64,
+        ),
+        elem(
+            "reduce_prod_axis0",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_prod_axis0_f64,
+        ),
+        elem(
+            "reduce_prod_axis1",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_prod_axis1_f64,
         ),
         // Indexing/layout (#72).
         idx(
@@ -519,6 +597,91 @@ fn cases() -> Vec<Case> {
             "TensorEinsumExt allocation-returning API",
             einsum_ij_jk_f64,
         ),
+        // Batched prepared LU (tenferro-rs#1878). Batch 1024, one rhs column.
+        bat(
+            "batched_lu_factor",
+            "f64",
+            "1024x2x2,rhs=1",
+            "packed LU factorization only (LinalgBackend::lu_factor)",
+            batched_lu_factor_f64::<2>,
+        ),
+        bat(
+            "batched_lu_factor",
+            "f64",
+            "1024x4x4,rhs=1",
+            "packed LU factorization only (LinalgBackend::lu_factor)",
+            batched_lu_factor_f64::<4>,
+        ),
+        bat(
+            "batched_lu_factor",
+            "f64",
+            "1024x8x8,rhs=1",
+            "packed LU factorization only (LinalgBackend::lu_factor)",
+            batched_lu_factor_f64::<8>,
+        ),
+        bat(
+            "batched_lu_factor",
+            "f64",
+            "1024x16x16,rhs=1",
+            "packed LU factorization only (LinalgBackend::lu_factor)",
+            batched_lu_factor_f64::<16>,
+        ),
+        bat(
+            "batched_lu_solve",
+            "f64",
+            "1024x2x2,rhs=1",
+            "solve with prepared LU factors (LinalgBackend::lu_solve_prepared)",
+            batched_lu_solve_f64::<2>,
+        ),
+        bat(
+            "batched_lu_solve",
+            "f64",
+            "1024x4x4,rhs=1",
+            "solve with prepared LU factors (LinalgBackend::lu_solve_prepared)",
+            batched_lu_solve_f64::<4>,
+        ),
+        bat(
+            "batched_lu_solve",
+            "f64",
+            "1024x8x8,rhs=1",
+            "solve with prepared LU factors (LinalgBackend::lu_solve_prepared)",
+            batched_lu_solve_f64::<8>,
+        ),
+        bat(
+            "batched_lu_solve",
+            "f64",
+            "1024x16x16,rhs=1",
+            "solve with prepared LU factors (LinalgBackend::lu_solve_prepared)",
+            batched_lu_solve_f64::<16>,
+        ),
+        bat(
+            "batched_triangular_solve",
+            "f64",
+            "1024x2x2,rhs=1",
+            "lower-triangular solve (TensorLinalgExt::triangular_solve)",
+            batched_triangular_solve_f64::<2>,
+        ),
+        bat(
+            "batched_triangular_solve",
+            "f64",
+            "1024x4x4,rhs=1",
+            "lower-triangular solve (TensorLinalgExt::triangular_solve)",
+            batched_triangular_solve_f64::<4>,
+        ),
+        bat(
+            "batched_triangular_solve",
+            "f64",
+            "1024x8x8,rhs=1",
+            "lower-triangular solve (TensorLinalgExt::triangular_solve)",
+            batched_triangular_solve_f64::<8>,
+        ),
+        bat(
+            "batched_triangular_solve",
+            "f64",
+            "1024x16x16,rhs=1",
+            "lower-triangular solve (TensorLinalgExt::triangular_solve)",
+            batched_triangular_solve_f64::<16>,
+        ),
         // Uncovered linalg (#71).
         lin("cholesky", "f64", "1536x1536", "SPD input", cholesky_f64),
         lin("eig", "f64", "160x160", "general input", eig_f64),
@@ -667,6 +830,23 @@ fn lin(
 ) -> Case {
     Case {
         suite: "cpu/linalg_uncovered",
+        benchmark,
+        dtype,
+        shape,
+        notes,
+        run,
+    }
+}
+
+fn bat(
+    benchmark: &'static str,
+    dtype: &'static str,
+    shape: &'static str,
+    notes: &'static str,
+    run: fn(&mut CpuBackend) -> tenferro_tensor::Result<()>,
+) -> Case {
+    Case {
+        suite: "cpu/linalg_batched",
         benchmark,
         dtype,
         shape,
@@ -874,6 +1054,21 @@ fn emit_trace_case(
         )?;
         return Ok(());
     }
+    if case.suite == "cpu/linalg_batched"
+        && matches!(case.benchmark, "batched_lu_factor" | "batched_lu_solve")
+    {
+        writeln!(
+            writer,
+            "{},{},{},{},\"{}\",tenferro-trace,,,unsupported,\"{}\"",
+            case.suite,
+            case.benchmark,
+            case.dtype,
+            args.num_threads,
+            csv_escape(case.shape),
+            "LinalgOp is not public, so a trace cannot hold a bare LuFactor or LuSolvePrepared; traced solve (LuFactor plus LuSolvePrepared) and its backward are measured by cpu/cpu_ops batched_solve and grad_sum_batched_solve_backward",
+        )?;
+        return Ok(());
+    }
     if case.suite == "cpu/indexing_layout" && case.benchmark == "dynamic_update_slice" {
         writeln!(
             writer,
@@ -928,6 +1123,9 @@ fn emit_trace_case(
 
 type SessionOperation = for<'a, 'b> fn(&'a mut CpuExecSession<'b>) -> tenferro_tensor::Result<()>;
 fn session_operation(case: &Case) -> Option<SessionOperation> {
+    if case.suite == "cpu/linalg_batched" {
+        return batched_session_operation(case);
+    }
     match (case.benchmark, case.dtype) {
         ("norm_fro", "c64") => Some(norm_c64_in_session),
         ("cholesky", "c64") => Some(cholesky_c64_in_session),
@@ -949,6 +1147,31 @@ fn session_operation(case: &Case) -> Option<SessionOperation> {
         ("cholesky", "f64") => Some(cholesky_f64_in_session),
         _ => None,
     }
+}
+
+fn batched_session_operation(case: &Case) -> Option<SessionOperation> {
+    let op: SessionOperation = match (case.benchmark, batched_matrix_size(case)?) {
+        ("batched_lu_factor", 2) => batched_lu_factor_in_session::<2>,
+        ("batched_lu_factor", 4) => batched_lu_factor_in_session::<4>,
+        ("batched_lu_factor", 8) => batched_lu_factor_in_session::<8>,
+        ("batched_lu_factor", 16) => batched_lu_factor_in_session::<16>,
+        ("batched_lu_solve", 2) => batched_lu_solve_in_session::<2>,
+        ("batched_lu_solve", 4) => batched_lu_solve_in_session::<4>,
+        ("batched_lu_solve", 8) => batched_lu_solve_in_session::<8>,
+        ("batched_lu_solve", 16) => batched_lu_solve_in_session::<16>,
+        ("batched_triangular_solve", 2) => batched_triangular_solve_in_session::<2>,
+        ("batched_triangular_solve", 4) => batched_triangular_solve_in_session::<4>,
+        ("batched_triangular_solve", 8) => batched_triangular_solve_in_session::<8>,
+        ("batched_triangular_solve", 16) => batched_triangular_solve_in_session::<16>,
+        _ => return None,
+    };
+    Some(op)
+}
+
+/// Matrix size `n` from a `cpu/linalg_batched` shape label `BxNxN,rhs=R`.
+fn batched_matrix_size(case: &Case) -> Option<usize> {
+    let dims = case.shape.split(',').next()?;
+    dims.split('x').nth(1)?.parse().ok()
 }
 
 fn time_case(
@@ -1134,16 +1357,31 @@ fn median_iqr(times: &[f64]) -> (f64, f64) {
     (median, iqr)
 }
 
+// Thread count requested on the command line, recorded once in `main` after
+// `enforce_thread_request` succeeds. Every backend (direct, trace runtime, and
+// eager runtime) is built from it; `CpuBackend::new()` would instead size its
+// pool from the environment and fall back to every available core.
+static REQUESTED_THREADS: OnceLock<usize> = OnceLock::new();
+
+fn requested_threads() -> usize {
+    *REQUESTED_THREADS
+        .get()
+        .expect("main records the requested thread count before building backends")
+}
+
 fn cpu_backend_from_env() -> BenchResult<CpuBackend> {
-    match env::var("TENFERRO_CPU_BACKEND_KIND")
+    let threads = requested_threads();
+    let backend = match env::var("TENFERRO_CPU_BACKEND_KIND")
         .unwrap_or_else(|_| "default".to_string())
         .as_str()
     {
-        "" | "default" => Ok(CpuBackend::new()),
-        "blas" => Ok(CpuBackend::with_kind(CpuBackendKind::Blas)?),
-        "faer" => Ok(CpuBackend::with_kind(CpuBackendKind::Faer)?),
-        other => Err(format!("unsupported TENFERRO_CPU_BACKEND_KIND={other}").into()),
-    }
+        "" | "default" => CpuBackend::with_threads(threads)?,
+        "blas" => CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Blas)?,
+        "faer" => CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?,
+        other => return Err(format!("unsupported TENFERRO_CPU_BACKEND_KIND={other}").into()),
+    };
+    verify_backend_threads("CpuBackend", backend.num_threads(), threads)?;
+    Ok(backend)
 }
 
 fn csv_escape(value: &str) -> String {
@@ -1300,6 +1538,47 @@ fn well_conditioned(n: usize, seed: u64) -> &'static Tensor {
     })
 }
 
+/// Batch count for `cpu/linalg_batched`; batch is the trailing axis.
+const LU_BATCH: usize = 1024;
+
+/// `[n, n, LU_BATCH]` col-major: `data_f64` over the whole buffer with
+/// `2 + j/n` added to each matrix diagonal, matching `well_conditioned`.
+fn batched_well_conditioned(n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{n}:{seed}"), || {
+        let mut values = data_f64(n * n * LU_BATCH, seed);
+        for batch in 0..LU_BATCH {
+            for j in 0..n {
+                values[batch * n * n + j + j * n] += 2.0 + j as f64 / n as f64;
+            }
+        }
+        Tensor::from_vec_col_major(vec![n, n, LU_BATCH], values).unwrap()
+    })
+}
+
+/// `[n, n, LU_BATCH]` col-major lower-triangular batch: diagonal `2 + row/n`,
+/// strict lower part `0.05 * data_f64` at the same linear index.
+fn batched_lower_triangular(n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{n}:{seed}"), || {
+        let mut values = vec![0.0; n * n * LU_BATCH];
+        for batch in 0..LU_BATCH {
+            let offset = batch * n * n;
+            for col in 0..n {
+                for row in col..n {
+                    let index = offset + row + col * n;
+                    values[index] = if row == col {
+                        2.0 + row as f64 / n as f64
+                    } else {
+                        0.05 * pseudo_value(index, seed)
+                    };
+                }
+            }
+        }
+        Tensor::from_vec_col_major(vec![n, n, LU_BATCH], values).unwrap()
+    })
+}
+
 fn lower_triangular(n: usize, seed: u64) -> &'static Tensor {
     static CACHE: TensorCache = OnceLock::new();
     cached_tensor(&CACHE, format!("{n}:{seed}"), || {
@@ -1439,6 +1718,30 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         ("cpu/elementwise_reduction", "reduce_min_axis1") => {
             one(traced(tensor_f64(&[4096, 4096], 1))?.reduce_min(Some(&[1]))?)
         }
+        ("cpu/elementwise_reduction", "reduce_max_all") => {
+            one(traced(tensor_f64(&[8192, 4096], 1))?.reduce_max(Some(&[0, 1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_min_all") => {
+            one(traced(tensor_f64(&[8192, 4096], 1))?.reduce_min(Some(&[0, 1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_max_axis1") => {
+            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_max(Some(&[1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_min_axis0") => {
+            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_min(Some(&[0]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_sum_axis0") => {
+            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_sum(Some(&[0]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_sum_axis1") => {
+            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_sum(Some(&[1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_prod_axis0") => {
+            one(traced(tensor_f64_constant(&[2048, 2048], 1.000001))?.reduce_prod(Some(&[0]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_prod_axis1") => {
+            one(traced(tensor_f64_constant(&[2048, 2048], 1.000001))?.reduce_prod(Some(&[1]))?)
+        }
         ("cpu/indexing_layout", "gather") => {
             const N: usize = 262_144;
             one(traced(tensor_f64(&[N], 1))?.gather(
@@ -1521,6 +1824,16 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         }
         ("cpu/linalg_uncovered", "eigvals") => one(traced(well_conditioned(192, 1))?.eigvals()?),
         ("cpu/linalg_uncovered", "eigvalsh") => one(traced(spd(512, 1))?.eigvalsh()?),
+        ("cpu/linalg_batched", "batched_triangular_solve") => {
+            let n = batched_matrix_size(case).ok_or("invalid batched shape label")?;
+            one(traced(batched_lower_triangular(n, 1))?.triangular_solve(
+                &traced(tensor_f64(&[n, 1, LU_BATCH], 2))?,
+                true,
+                true,
+                false,
+                false,
+            )?)
+        }
         ("cpu/linalg_uncovered", "triangular_solve") => one(traced(lower_triangular(4096, 1))?
             .triangular_solve(
                 &traced(tensor_f64(&[4096, 64], 2))?,
@@ -1742,6 +2055,38 @@ fn reduce_max_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
 }
 fn reduce_min_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(b.reduce_min(tensor_f64(&[4096, 4096], 1), &[1])?);
+    Ok(())
+}
+fn reduce_max_all_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.reduce_max(tensor_f64(&[8192, 4096], 1), &[0, 1])?);
+    Ok(())
+}
+fn reduce_min_all_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.reduce_min(tensor_f64(&[8192, 4096], 1), &[0, 1])?);
+    Ok(())
+}
+fn reduce_max_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.reduce_max(tensor_f64(&[2048, 2048], 1), &[1])?);
+    Ok(())
+}
+fn reduce_min_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.reduce_min(tensor_f64(&[2048, 2048], 1), &[0])?);
+    Ok(())
+}
+fn reduce_sum_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.reduce_sum(tensor_f64(&[2048, 2048], 1), &[0])?);
+    Ok(())
+}
+fn reduce_sum_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.reduce_sum(tensor_f64(&[2048, 2048], 1), &[1])?);
+    Ok(())
+}
+fn reduce_prod_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.reduce_prod(tensor_f64_constant(&[2048, 2048], 1.000001), &[0])?);
+    Ok(())
+}
+fn reduce_prod_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(b.reduce_prod(tensor_f64_constant(&[2048, 2048], 1.000001), &[1])?);
     Ok(())
 }
 
@@ -2144,6 +2489,75 @@ fn triangular_solve_f64_in_session(
     Ok(())
 }
 
+fn batched_lu_factor_f64<const N: usize>(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_cpu_linalg(b, batched_lu_factor_in_session::<N>)
+}
+fn batched_lu_factor_in_session<const N: usize>(
+    session: &mut CpuExecSession<'_>,
+) -> tenferro_tensor::Result<()> {
+    consume_many(LinalgBackend::lu_factor(
+        session,
+        batched_well_conditioned(N, 1),
+    )?);
+    Ok(())
+}
+
+/// Packed LU factors and pivots of `batched_well_conditioned(n, 1)`, built on
+/// the first (untimed warmup) call and reused by every timed solve.
+fn batched_lu_factors(
+    session: &mut CpuExecSession<'_>,
+    n: usize,
+) -> tenferro_tensor::Result<&'static (Tensor, Tensor)> {
+    static CACHE: OnceLock<Mutex<HashMap<usize, &'static (Tensor, Tensor)>>> = OnceLock::new();
+    let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+    if let Some(factors) = cache.lock().unwrap().get(&n) {
+        return Ok(factors);
+    }
+    let mut outputs = LinalgBackend::lu_factor(session, batched_well_conditioned(n, 1))?;
+    outputs.truncate(2);
+    let pivots = outputs.pop().expect("lu_factor returns pivots");
+    let packed = outputs.pop().expect("lu_factor returns packed LU");
+    let factors: &'static (Tensor, Tensor) = Box::leak(Box::new((packed, pivots)));
+    cache.lock().unwrap().insert(n, factors);
+    Ok(factors)
+}
+
+fn batched_lu_solve_f64<const N: usize>(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_cpu_linalg(b, batched_lu_solve_in_session::<N>)
+}
+fn batched_lu_solve_in_session<const N: usize>(
+    session: &mut CpuExecSession<'_>,
+) -> tenferro_tensor::Result<()> {
+    let (packed, pivots) = batched_lu_factors(session, N)?;
+    consume(LinalgBackend::lu_solve_prepared(
+        session,
+        batched_well_conditioned(N, 1),
+        packed,
+        pivots,
+        tensor_f64(&[N, 1, LU_BATCH], 2),
+        false,
+        false,
+    )?);
+    Ok(())
+}
+
+fn batched_triangular_solve_f64<const N: usize>(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_cpu_linalg(b, batched_triangular_solve_in_session::<N>)
+}
+fn batched_triangular_solve_in_session<const N: usize>(
+    session: &mut CpuExecSession<'_>,
+) -> tenferro_tensor::Result<()> {
+    consume(batched_lower_triangular(N, 1).triangular_solve(
+        tensor_f64(&[N, 1, LU_BATCH], 2),
+        true,
+        true,
+        false,
+        false,
+        session,
+    )?);
+    Ok(())
+}
+
 fn det_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     with_cpu_linalg(b, det_f64_in_session)
 }
@@ -2207,17 +2621,7 @@ thread_local! {
 
 fn eager_cpu_context() -> Arc<EagerRuntime> {
     EagerRuntime::with_cpu_backend(
-        match env::var("TENFERRO_CPU_BACKEND_KIND")
-            .unwrap_or_else(|_| "default".to_string())
-            .as_str()
-        {
-            "" | "default" => CpuBackend::new(),
-            "blas" => CpuBackend::with_kind(CpuBackendKind::Blas)
-                .expect("configured BLAS CPU backend should initialize"),
-            "faer" => CpuBackend::with_kind(CpuBackendKind::Faer)
-                .expect("configured faer CPU backend should initialize"),
-            other => panic!("unsupported TENFERRO_CPU_BACKEND_KIND={other}"),
-        },
+        cpu_backend_from_env().expect("configured CPU backend should initialize"),
     )
     .expect("configured eager CPU runtime should initialize")
 }
@@ -2430,6 +2834,53 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn batched_matvec_residual(a: &Tensor, x: &Tensor, b: &Tensor, n: usize) -> f64 {
+        let (a, x, b) = (
+            a.as_slice::<f64>().unwrap(),
+            x.as_slice::<f64>().unwrap(),
+            b.as_slice::<f64>().unwrap(),
+        );
+        let mut worst: f64 = 0.0;
+        for batch in 0..LU_BATCH {
+            for row in 0..n {
+                let ax: f64 = (0..n)
+                    .map(|col| a[batch * n * n + row + col * n] * x[batch * n + col])
+                    .sum();
+                worst = worst.max((ax - b[batch * n + row]).abs());
+            }
+        }
+        worst
+    }
+
+    #[test]
+    fn batched_prepared_lu_rows_solve_their_systems() {
+        let mut backend = CpuBackend::with_threads(1).unwrap();
+        for n in [2, 4, 8, 16] {
+            let a = batched_well_conditioned(n, 1);
+            let lower = batched_lower_triangular(n, 1);
+            let rhs = tensor_f64(&[n, 1, LU_BATCH], 2);
+            let (lu_x, tri_x) = with_cpu_linalg(&mut backend, |session| {
+                let (packed, pivots) = batched_lu_factors(session, n)?;
+                assert_eq!(packed.shape(), &[n, n, LU_BATCH]);
+                let lu_x = LinalgBackend::lu_solve_prepared(
+                    session, a, packed, pivots, rhs, false, false,
+                )?;
+                let tri_x = lower.triangular_solve(rhs, true, true, false, false, session)?;
+                Ok((lu_x, tri_x))
+            })
+            .unwrap();
+            assert_eq!(lu_x.shape(), &[n, 1, LU_BATCH]);
+            assert!(
+                batched_matvec_residual(a, &lu_x, rhs, n) < 1e-12,
+                "lu n={n}"
+            );
+            assert!(
+                batched_matvec_residual(lower, &tri_x, rhs, n) < 1e-12,
+                "tri n={n}"
+            );
+        }
+    }
 
     #[test]
     fn spd_fixture_is_dense_symmetric_and_strictly_diagonally_dominant() {

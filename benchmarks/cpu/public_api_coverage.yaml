@@ -62,7 +62,7 @@ coverage:
       - TypedTensorOpsExt::reduce_sum
     pytorch: torch.{sum,prod,max,min}
     disposition: measured
-    benchmarks: cpu/elementwise_reduction::{reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1}
+    benchmarks: cpu/elementwise_reduction::{reduce_sum_all,reduce_prod_all,reduce_max_all,reduce_min_all,reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1}
 
   - family: structural
     tenferro_apis:
@@ -211,7 +211,16 @@ coverage:
       - TracedTensorLinalgExt::{svd,qr,lu,solve,lstsq,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
     pytorch: torch.linalg equivalents
     disposition: measured
-    benchmarks: cpu/cpu_ops; cpu/linalg_uncovered
+    benchmarks: cpu/cpu_ops; cpu/linalg_uncovered; cpu/linalg_batched::batched_triangular_solve
+  - family: batched_prepared_lu
+    tenferro_apis:
+      - LinalgBackend::{lu_factor,lu_solve_prepared} (doc hidden, on CpuExecSession)
+      - TensorLinalgExt::triangular_solve
+      - TracedTensorLinalgExt::triangular_solve
+    pytorch: torch.linalg.{lu_factor,lu_solve,solve_triangular}
+    disposition: measured
+    benchmarks: cpu/linalg_batched::{batched_lu_factor,batched_lu_solve,batched_triangular_solve}
+    reason: Batch 1024 at n in {2,4,8,16} with one rhs column separates the packed LU factorization from the solve that reuses prepared factors. LinalgOp is not public, so bare LU factor and prepared solve rows are unsupported in trace mode; the traced solve (LuFactor plus LuSolvePrepared) and its backward are measured by cpu/cpu_ops batched_solve and grad_sum_batched_solve_backward.
   - family: eager_linalg_operation_spellings
     tenferro_apis:
       - EagerTensorLinalgExt::{svd,qr,lu,solve,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
