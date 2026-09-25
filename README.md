@@ -35,6 +35,7 @@ live in git history only.
 | `linux-cpu` | `cpu/linalg_jvp_vjp` | [result/linux-cpu/cpu/linalg_jvp_vjp.md](result/linux-cpu/cpu/linalg_jvp_vjp.md) |
 | `linux-cpu` | `cpu/permutation` | [result/linux-cpu/cpu/permutation.md](result/linux-cpu/cpu/permutation.md) |
 | `amd-cpu` (Linux devcontainer) | `cpu/small_work` | [result/amd-cpu/cpu/small_work.md](result/amd-cpu/cpu/small_work.md) |
+| `amd-cpu` | `cpu/large_ad` | [result/amd-cpu/cpu/large_ad.md](result/amd-cpu/cpu/large_ad.md) |
 | `linux-cpu` | linalg JVP/JVP repro | [result/linux-cpu/cpu/linalg_jvp_jvp.md](result/linux-cpu/cpu/linalg_jvp_jvp.md) |
 | `nvidia-gpu` (CUDA devcontainer) | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
@@ -134,9 +135,9 @@ PUBLICATION_GATE_SUITE=small \
 
 Useful environment variables: `BENCH_INSTANCE` (restrict to one einsum
 instance), `BENCH_RUNS` / `BENCH_WARMUPS` (iteration counts),
-`TENFERRO_CPU_FEATURES` (BLAS provider: `system-accelerate`,
-`system-openblas`, `system-mkl`; macOS defaults to `system-accelerate`),
-`RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, and `RUN_PERMUTATION_SUITE=0`
+`TENFERRO_CPU_FEATURES` (BLAS provider: `system-openblas`,
+`system-mkl`, `system-accelerate`; **Linux defaults to `system-openblas`**,
+macOS defaults to `system-accelerate`), `RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, and `RUN_PERMUTATION_SUITE=0`
 (skip one of the follow-up suites in a multi-thread-count `run_all.sh`
 invocation; HPTT still needs `PERMUTATION_EXTRA_FEATURES=hptt`).
 
@@ -335,6 +336,14 @@ the runtime API above instead of relying on `strings`.
   effective thread environment is recorded in each run's `run.yaml`.
 - Every run records provenance (target profile, suite, tenferro-rs commit,
   CPU/GPU info) in `data/results/.../run.yaml`.
+- A provider's thread count does not prove which CPUs its threads may use:
+  BLAS/LAPACK provider threads inherit the CPU mask of the thread that creates
+  them. At least one run per lane records the observed per-thread
+  `Cpus_allowed_list` groups with
+  [`scripts/cpu_provider_affinity_check.py`](scripts/cpu_provider_affinity_check.py)
+  (`--output FILE.json -- COMMAND`), which also reports whether the run was
+  signalled. A 4-thread provider whose threads are all confined to one CPU is a
+  configuration failure, not a result.
 
 ## Comparison Backends
 
@@ -374,6 +383,30 @@ ATen comparison backend. The PyTorch CPU provider is detected at run time and
 recorded in `run.yaml` and generated reports. The default Linux image uses a
 binary PyTorch wheel; the separate [provider-matched OpenBLAS image](docs/linux-cpu-devcontainer.md#provider-matched-openblas-image)
 source-builds PyTorch against the same OpenBLAS as tenferro.
+
+### CPU provider pairs
+
+A CPU result compares two provider stacks, and each side is fixed by a
+different mechanism:
+
+| Side | Selection | Linux default |
+|---|---|---|
+| tenferro | `TENFERRO_CPU_FEATURES` (`system-openblas`, `system-mkl`, `cpu-faer`) | OpenBLAS from `OPENBLAS_ROOT` (`/opt/openblas`) |
+| PyTorch CPU | Build-time choice inside the wheel | wheel-bundled Intel MKL |
+
+Consequences to state in a report instead of assuming provider identity:
+
+- A `system-openblas` lane is **tenferro=OpenBLAS vs PyTorch=bundled MKL**, not
+  OpenBLAS on both sides. The provider-matched image above is the only supported
+  way to align them, and it applies to OpenBLAS only.
+- A `system-mkl` lane compares **different MKL builds**: the system oneAPI MKL
+  that tenferro links against, and the older MKL inside the wheel (reported by
+  `torch.__config__`). Both sides say "MKL" but they are not the same library
+  or OpenMP runtime, and replacing the wheel's MKL by preloading the system one
+  is not supported.
+- Record both sides with `run.yaml` (tenferro features and BLAS implementation)
+  plus the reference's own provider report (`torch.__config__` BLAS/MKL/OpenMP
+  lines), so a reader can see the pair that was actually measured.
 
 ## Documentation
 
