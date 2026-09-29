@@ -45,6 +45,10 @@ def collect(binary, output, threads):
             command = [str(binary), "--case", case["id"]]
             for key in ("operation", "dtype", "api_tier", "workflow", "layout"):
                 command += ["--" + key.replace("_", "-"), str(case[key])]
+            if "operand_shapes" in case:
+                # Generic einsum cases carry explicit subscripts and operand shapes.
+                command += ["--subscripts", case["subscripts"], "--operand-shapes",
+                            ",".join("x".join(map(str, shape)) for shape in case["operand_shapes"])]
             command += ["--size", str(math.prod(case["shape"])),
                         "--calls", str(case["calls_per_workflow"]),
                         "--warmups", str(config["warmups"]), "--samples", str(config["runs"]),
@@ -77,6 +81,15 @@ def summary(row):
     # A descriptive label, never a performance gate or reason to drop a row.
     status = "NOISY" if cov > 0.10 else "ok"
     return f"{median:.2f}", f"{q[2]-q[0]:.2f}", f"{cov*100:.1f}%", status
+
+
+def shape_label(row):
+    """Output shape; generic einsum rows also name subscripts and operand shapes."""
+    shape = "×".join(map(str, row["shape"]))
+    if "operand_shapes" not in row:
+        return shape
+    operands = ", ".join("×".join(map(str, s)) for s in row["operand_shapes"])
+    return f"`{row['subscripts']}` {operands} → {shape}"
 
 
 def report(run_dir, target):
@@ -117,7 +130,7 @@ def report(run_dir, target):
         median, iqr, cov, status = summary(row)
         per_op = f"{float(median)/row['calls_per_workflow']:.2f}" if median != "—" and row['calls_per_workflow'] > 1 else "—"
         lines.append("| " + " | ".join(map(str, [row["case_id"], row["operation"], row["api_tier"], row["dtype"],
-            "×".join(map(str, row["shape"])), row["layout"], row["workflow"], row["threads"], row.get("provider", "unknown"),
+            shape_label(row), row["layout"], row["workflow"], row["threads"], row.get("provider", "unknown"),
             row["samples"][0]["iterations"] * row["calls_per_workflow"] if row["samples"] else "—",
             f"{statistics.median(s['elapsed_ns'] for s in row['samples'])/1e6:.6f}" if row["samples"] else "—",
             median, iqr, cov, per_op, status])) + " |")
@@ -131,7 +144,7 @@ def report(run_dir, target):
     lines += ["", "## Per-route timing boundaries", "",
               "Shared-session routes enter/exit the session once around warmup/calibration/all samples, outside timing. "
               "With tenferro-rs PR #1796 or later, managed BLAS and faer sessions reuse the entered executor context. Earlier BLAS revisions included per-operation executor entry; consult the recorded tenferro commit. "
-              "Fresh routes enter/exit for each operation. Prepared-repeat excludes plan preparation; compiled-repeat excludes tracing/compilation and runtime construction.", ""]
+              "Fresh routes enter/exit for each operation. Prepared-repeat excludes plan preparation; compiled-repeat excludes tracing/compilation and runtime construction. Prepared-into-repeat and dot-general-into-shared write into one destination preallocated outside timing (no per-call output allocation) and re-check it after the last batch.", ""]
     scopes = {}
     for row in rows:
         if "scope" in row:

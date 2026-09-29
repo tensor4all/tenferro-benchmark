@@ -1,7 +1,8 @@
 //! Executable public-boundary case producer for cpu/small_work.
 //!
-//! Reuses the 154-case producer from feat/95-small-work (38b9a83), without
-//! affinity/provenance machinery. Numerical checks precede calibrated timing;
+//! Extends the 154-case producer from feat/95-small-work (38b9a83), without
+//! affinity/provenance machinery, with generic two-operand einsum cases
+//! selected by `--subscripts` and `--operand-shapes`. Numerical checks precede calibrated timing;
 //! outputs are black-boxed and dropped. Emits one JSON object on stdout.
 
 use std::error::Error;
@@ -963,6 +964,371 @@ fn check_active_ad(
     Ok(value)
 }
 
+/// Generic two-operand f64 einsum case with explicit subscripts and
+/// per-operand shapes (for example `abcd,dbef->acef` or `ax,asb->xsb`).
+///
+/// Square `ij,jk->ik` cases keep the size-selected path above; this path is
+/// selected only when `--operand-shapes` is given.
+struct GenericEinsum {
+    subscripts: String,
+    labels: [Vec<char>; 2],
+    output_labels: Vec<char>,
+    shapes: [Vec<usize>; 2],
+    output_shape: Vec<usize>,
+}
+
+impl GenericEinsum {
+    fn parse(subscripts: &str, operand_shapes: &str) -> Result<Self, BoxError> {
+        let (inputs, output) = subscripts
+            .split_once("->")
+            .ok_or("generic einsum subscripts require an explicit '->' output")?;
+        let labels: Vec<Vec<char>> = inputs.split(',').map(|l| l.chars().collect()).collect();
+        let shapes: Vec<Vec<usize>> = operand_shapes
+            .split(',')
+            .map(|shape| {
+                shape
+                    .split('x')
+                    .map(|extent| extent.parse::<usize>())
+                    .collect::<Result<Vec<_>, _>>()
+            })
+            .collect::<Result<_, _>>()?;
+        if labels.len() != 2 || shapes.len() != 2 {
+            return Err("generic einsum cases require exactly two operands".into());
+        }
+        let mut extents = std::collections::BTreeMap::new();
+        for (operand, shape) in labels.iter().zip(&shapes) {
+            if operand.len() != shape.len() {
+                return Err(
+                    format!("subscripts {subscripts} do not match rank of {shape:?}").into(),
+                );
+            }
+            for (&label, &extent) in operand.iter().zip(shape) {
+                if !label.is_ascii_lowercase() || extent == 0 {
+                    return Err(format!("invalid label/extent {label}:{extent}").into());
+                }
+                if *extents.entry(label).or_insert(extent) != extent {
+                    return Err(format!("label {label} has inconsistent extents").into());
+                }
+            }
+        }
+        let output_labels: Vec<char> = output.chars().collect();
+        let output_shape = output_labels
+            .iter()
+            .map(|label| {
+                extents
+                    .get(label)
+                    .copied()
+                    .ok_or_else(|| format!("output label {label} is not an input label"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(Self {
+            subscripts: subscripts.to_string(),
+            labels: [labels[0].clone(), labels[1].clone()],
+            output_labels,
+            shapes: [shapes[0].clone(), shapes[1].clone()],
+            output_shape,
+        })
+    }
+
+    fn operand_values(&self, operand: usize) -> Vec<f64> {
+        // Small dyadic values keep every GEMM partial sum exact in f64.
+        let len = self.shapes[operand].iter().product::<usize>();
+        (0..len)
+            .map(|i| {
+                if operand == 0 {
+                    ((3 * i + 1) % 7) as f64 * 0.125 - 0.375
+                } else {
+                    ((3 * i + 2) % 5) as f64 * 0.25 - 0.5
+                }
+            })
+            .collect()
+    }
+
+    fn inputs(&self) -> Result<(Tensor, Tensor, Tensor), BoxError> {
+        let a = self.operand_values(0);
+        let b = self.operand_values(1);
+        let expected = self.reference(&a, &b);
+        Ok((
+            Tensor::from_vec_col_major(self.shapes[0].clone(), a)?,
+            Tensor::from_vec_col_major(self.shapes[1].clone(), b)?,
+            Tensor::from_vec_col_major(self.output_shape.clone(), expected)?,
+        ))
+    }
+
+    /// Independent loop-nest reference over every label, column-major.
+    fn reference(&self, a: &[f64], b: &[f64]) -> Vec<f64> {
+        let mut all: Vec<char> = Vec::new();
+        for &label in self.labels.iter().flatten() {
+            if !all.contains(&label) {
+                all.push(label);
+            }
+        }
+        let extent = |label: char| {
+            for (operand, shape) in self.labels.iter().zip(&self.shapes) {
+                if let Some(axis) = operand.iter().position(|&l| l == label) {
+                    return shape[axis];
+                }
+            }
+            unreachable!("label comes from an operand")
+        };
+        let extents: Vec<usize> = all.iter().map(|&l| extent(l)).collect();
+        let offset = |labels: &[char], shape: &[usize], index: &[usize]| {
+            let mut stride = 1;
+            let mut offset = 0;
+            for (axis, &label) in labels.iter().enumerate() {
+                let position = all.iter().position(|&l| l == label).unwrap();
+                offset += index[position] * stride;
+                stride *= shape[axis];
+            }
+            offset
+        };
+        let mut output = vec![0.0; self.output_shape.iter().product()];
+        let mut index = vec![0usize; all.len()];
+        'outer: loop {
+            let lhs = a[offset(&self.labels[0], &self.shapes[0], &index)];
+            let rhs = b[offset(&self.labels[1], &self.shapes[1], &index)];
+            output[offset(&self.output_labels, &self.output_shape, &index)] += lhs * rhs;
+            for axis in 0..index.len() {
+                index[axis] += 1;
+                if index[axis] < extents[axis] {
+                    continue 'outer;
+                }
+                index[axis] = 0;
+            }
+            break;
+        }
+        output
+    }
+
+    /// The dot_general configuration equivalent to these subscripts. Requires
+    /// the output to be in dot_general's `[lhs_free, rhs_free, batch]` order.
+    fn dot_general_config(&self) -> Result<tenferro_tensor::DotGeneralConfig, BoxError> {
+        let [lhs, rhs] = &self.labels;
+        let out = &self.output_labels;
+        let (mut lc, mut rc, mut lb, mut rb) = (vec![], vec![], vec![], vec![]);
+        let (mut lhs_free, mut rhs_free, mut batch) = (vec![], vec![], vec![]);
+        for (i, &label) in lhs.iter().enumerate() {
+            match (rhs.iter().position(|&l| l == label), out.contains(&label)) {
+                (Some(j), false) => {
+                    lc.push(i);
+                    rc.push(j);
+                }
+                (Some(j), true) => {
+                    lb.push(i);
+                    rb.push(j);
+                    batch.push(label);
+                }
+                (None, true) => lhs_free.push(label),
+                (None, false) => return Err("lhs-only summed labels are unsupported".into()),
+            }
+        }
+        for &label in rhs {
+            match (lhs.contains(&label), out.contains(&label)) {
+                (false, true) => rhs_free.push(label),
+                (false, false) => return Err("rhs-only summed labels are unsupported".into()),
+                _ => {}
+            }
+        }
+        let natural: Vec<char> = lhs_free.into_iter().chain(rhs_free).chain(batch).collect();
+        if &natural != out {
+            return Err(format!(
+                "{} output order differs from dot_general's [lhs_free, rhs_free, batch] order",
+                self.subscripts
+            )
+            .into());
+        }
+        Ok(tenferro_tensor::DotGeneralConfig {
+            lhs_contracting_dims: lc.as_slice().into(),
+            rhs_contracting_dims: rc.as_slice().into(),
+            lhs_batch_dims: lb.as_slice().into(),
+            rhs_batch_dims: rb.as_slice().into(),
+        })
+    }
+
+    fn descriptor(&self, api_tier: &str, provider: &str) -> Result<serde_json::Value, BoxError> {
+        let (contract_id, timer, outside): (&str, &[&str], &[&str]) = match api_tier {
+            "concrete-shared" => (
+                "einsum.einsum.ordinary.concrete",
+                &["einsum", "output_allocation"],
+                &[],
+            ),
+            "prepared-repeat" => (
+                "einsum.einsum.prepared.concrete",
+                &["prepared_execute", "output_allocation"],
+                &["plan_preparation"],
+            ),
+            "prepared-into-repeat" => (
+                "einsum.einsum.prepared_into.concrete",
+                &["prepared_execute_into"],
+                &["plan_preparation", "output_preallocation"],
+            ),
+            "dot-general-into-shared" => (
+                "core.dot_general.ordinary_into.concrete",
+                &["dot_general_read_into"],
+                &["dot_general_config_construction", "output_preallocation"],
+            ),
+            _ => {
+                return Err(format!(
+                    "generic einsum cases support concrete-shared, prepared-repeat, \
+                     prepared-into-repeat and dot-general-into-shared, not {api_tier}"
+                )
+                .into())
+            }
+        };
+        let mut outside_timer = vec![
+            "backend_construction",
+            "input_construction",
+            "session_entry_exit",
+            "shared_admission_exit",
+            "correctness_check",
+        ];
+        outside_timer.extend_from_slice(outside);
+        outside_timer.push("output_destruction");
+        outside_timer.push("operation_config_construction");
+        let family = if api_tier == "dot-general-into-shared" {
+            "core"
+        } else {
+            "einsum"
+        };
+        Ok(serde_json::json!({
+            "contract_id": contract_id, "family": family, "surface": "concrete",
+            "operation": "einsum", "phase": "execution", "api_tier": api_tier,
+            "backend": "tenferro-rs", "provider": provider, "dtype": "f64",
+            "layout": "col_major_contiguous", "shape": self.output_shape, "workflow": "single",
+            "calls_per_workflow": 1,
+            "subscripts": self.subscripts, "operand_shapes": self.shapes,
+            "setup": {"includes": timer, "excludes": outside_timer},
+            "scope": {"timer": timer, "outside_timer": outside_timer},
+            "descriptor_source": "rust_case_selection"
+        }))
+    }
+}
+
+/// Run one generic einsum case: numerical check first, then calibrated
+/// batched timing inside one entered session.
+#[allow(clippy::too_many_arguments)]
+fn run_generic_einsum(
+    case_id: &str,
+    einsum: &GenericEinsum,
+    api_tier: &str,
+    mode: &str,
+    mut backend: CpuBackend,
+    provider: &str,
+    timing: (usize, usize, u128, usize, usize),
+) -> Result<serde_json::Value, BoxError> {
+    use tenferro_einsum::{ConcreteEinsumPlan, TensorEinsumExt};
+    use tenferro_tensor::TensorWrite;
+    let (warmups, samples_count, target_ns, process_index, sample_start) = timing;
+    let descriptor = einsum.descriptor(api_tier, provider)?;
+    let (lhs, rhs, expected) = einsum.inputs()?;
+    let subscripts = einsum.subscripts.as_str();
+    let plan = ConcreteEinsumPlan::prepare([&lhs, &rhs], subscripts)?;
+    let config = match einsum.dot_general_config() {
+        Ok(config) => Some(config),
+        Err(error) if api_tier == "dot-general-into-shared" => return Err(error),
+        Err(_) => None,
+    };
+    let nan_output = || {
+        Tensor::from_vec_col_major(
+            einsum.output_shape.clone(),
+            vec![f64::NAN; einsum.output_shape.iter().product()],
+        )
+    };
+    let mut out = nan_output()?;
+    let mut checked_out = nan_output()?;
+    // Numerical check of the timed route (and of every sibling route, so a
+    // tier-specific wrong answer cannot hide behind another tier's pass).
+    let checked = backend.session_scope(|session| {
+        let mut value =
+            check_tensor_reference(&[&lhs, &rhs].einsum(subscripts, session)?, &expected)?;
+        value += check_tensor_reference(&plan.execute([&lhs, &rhs], session)?, &expected)?;
+        plan.execute_into(
+            [&lhs, &rhs],
+            session,
+            TensorWrite::from_tensor(&mut checked_out),
+        )?;
+        value += check_tensor_reference(&checked_out, &expected)?;
+        if let Some(config) = config.as_ref() {
+            let mut dot_out = nan_output()?;
+            session.dot_general_read_into(
+                TensorRead::from_tensor(&lhs),
+                TensorRead::from_tensor(&rhs),
+                config,
+                TensorWrite::from_tensor(&mut dot_out),
+            )?;
+            value += check_tensor_reference(&dot_out, &expected)?;
+        }
+        Ok(value)
+    })?;
+    let mut output = serde_json::json!({
+        "suite_id": "cpu/small_work", "case_id": case_id,
+        "provider": provider, "calls_per_workflow": 1,
+        "correctness_status": if checked.is_finite() { "passed" } else { "failed" },
+        "samples": Vec::<Sample>::new(),
+        "timing_scope": "many_operations_single_interval",
+        "session_policy": "shared_routes_enter_once_before_all_samples",
+    });
+    if let serde_json::Value::Object(fields) = descriptor {
+        for (key, value) in fields {
+            output[key] = value;
+        }
+    }
+    if mode == "correctness-only" {
+        return Ok(output);
+    }
+    // Ordinary einsum re-plans per call, matching the square concrete-shared
+    // einsum rows, so it stays an explicit diagnostic.
+    let setup_diagnostic = api_tier == "concrete-shared";
+    if setup_diagnostic && std::env::var("BENCH_INCLUDE_SETUP_DIAGNOSTICS").as_deref() != Ok("1") {
+        return Err("setup-inclusive route requires BENCH_INCLUDE_SETUP_DIAGNOSTICS=1; use shared/prepared operation routes".into());
+    }
+    output["measurement_kind"] = serde_json::json!(if setup_diagnostic {
+        "setup_diagnostic"
+    } else {
+        "operation"
+    });
+    let measurement = backend.session_scope(|session| {
+        measure(
+            warmups,
+            samples_count,
+            target_ns,
+            process_index,
+            sample_start,
+            || -> Result<Option<Tensor>, BoxError> {
+                Ok(match api_tier {
+                    "concrete-shared" => Some([&lhs, &rhs].einsum(subscripts, session)?),
+                    "prepared-repeat" => Some(plan.execute([&lhs, &rhs], session)?),
+                    "prepared-into-repeat" => {
+                        plan.execute_into(
+                            [&lhs, &rhs],
+                            session,
+                            TensorWrite::from_tensor(&mut out),
+                        )?;
+                        None
+                    }
+                    "dot-general-into-shared" => {
+                        session.dot_general_read_into(
+                            TensorRead::from_tensor(&lhs),
+                            TensorRead::from_tensor(&rhs),
+                            config.as_ref().ok_or("dot_general config missing")?,
+                            TensorWrite::from_tensor(&mut out),
+                        )?;
+                        None
+                    }
+                    _ => return Err(format!("unsupported generic einsum tier: {api_tier}").into()),
+                })
+            },
+        )
+    })?;
+    if matches!(api_tier, "prepared-into-repeat" | "dot-general-into-shared") {
+        // The reused destination must still hold the reference after timing.
+        check_tensor_reference(&out, &expected)?;
+    }
+    output["samples"] = serde_json::to_value(&measurement.samples)?;
+    output["calibration"] = serde_json::json!({"target_ns": target_ns, "iterations": measurement.iterations, "elapsed_ns": measurement.calibrated_ns});
+    Ok(output)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1112,7 +1478,9 @@ mod tests {
                         check_tensor_reference(&output, &expected)?;
                         assert_eq!(input.as_slice::<f64>()?, original);
                     }
-                    assert!(session.reduce_sum_read(TensorRead::from_tensor(&input), &[1]).is_err());
+                    assert!(session
+                        .reduce_sum_read(TensorRead::from_tensor(&input), &[1])
+                        .is_err());
                     Ok::<_, Box<dyn Error + Send + Sync>>(())
                 })
                 .unwrap();
@@ -1558,6 +1926,71 @@ mod tests {
     }
 
     #[test]
+    fn generic_einsum_reference_and_dot_general_config_match_issue_cases() {
+        let matmul = GenericEinsum::parse("ij,jk->ik", "2x2,2x2").unwrap();
+        let (a, b) = (vec![1.0, 2.0, 3.0, 4.0], vec![5.0, 6.0, 7.0, 8.0]);
+        assert_eq!(matmul.reference(&a, &b), matmul_reference(2, &a, &b));
+        let cases: [(&str, &str, Vec<usize>, &[usize], &[usize]); 3] = [
+            (
+                "abcd,dbef->acef",
+                "4x4x4x4,4x4x4x4",
+                vec![4, 4, 4, 4],
+                &[1, 3],
+                &[1, 0],
+            ),
+            ("ax,asb->xsb", "4x4,4x2x4", vec![4, 2, 4], &[0], &[0]),
+            ("ij,jk->ik", "95x95,95x1", vec![95, 1], &[1], &[0]),
+        ];
+        for (subscripts, shapes, output_shape, lhs_contracting, rhs_contracting) in cases {
+            let einsum = GenericEinsum::parse(subscripts, shapes).unwrap();
+            assert_eq!(einsum.output_shape, output_shape);
+            let config = einsum.dot_general_config().unwrap();
+            assert_eq!(config.lhs_contracting_dims.as_slice(), lhs_contracting);
+            assert_eq!(config.rhs_contracting_dims.as_slice(), rhs_contracting);
+            assert!(config.lhs_batch_dims.is_empty() && config.rhs_batch_dims.is_empty());
+            let (lhs, rhs, expected) = einsum.inputs().unwrap();
+            assert!(expected
+                .as_slice::<f64>()
+                .unwrap()
+                .iter()
+                .any(|x| *x != 0.0));
+            let mut backend = CpuBackend::new();
+            backend
+                .session_scope(|session| {
+                    use tenferro_einsum::TensorEinsumExt;
+                    check_tensor_reference(&[&lhs, &rhs].einsum(subscripts, session)?, &expected)
+                })
+                .unwrap();
+            for tier in [
+                "concrete-shared",
+                "prepared-repeat",
+                "prepared-into-repeat",
+                "dot-general-into-shared",
+            ] {
+                let output = run_generic_einsum(
+                    "test",
+                    &einsum,
+                    tier,
+                    "correctness-only",
+                    CpuBackend::new(),
+                    "faer",
+                    (1, 1, 1, 0, 0),
+                )
+                .unwrap();
+                assert_eq!(output["correctness_status"], "passed");
+                assert_eq!(output["shape"], serde_json::json!(einsum.output_shape));
+                assert_eq!(output["subscripts"], subscripts);
+            }
+            assert!(einsum.descriptor("prepared-setup", "faer").is_err());
+        }
+        // Output order other than [lhs_free, rhs_free, batch] has no dot_general spelling.
+        let transposed = GenericEinsum::parse("ij,jk->ki", "2x3,3x4").unwrap();
+        assert!(transposed.dot_general_config().is_err());
+        assert!(GenericEinsum::parse("ij,jk->ik", "2x3,4x5").is_err());
+        assert!(GenericEinsum::parse("ij,jk", "2x3,3x4").is_err());
+    }
+
+    #[test]
     fn calibration_uses_each_batch_duration() {
         let durations = [60, 70, 80, 120];
         let mut seen = Vec::new();
@@ -1669,6 +2102,36 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         Ok(other) => return Err(format!("unsupported CPU backend: {other}").into()),
     };
     let provider = format!("{:?}", backend.kind()).to_ascii_lowercase();
+    let operand_shapes = arg("--operand-shapes", "");
+    if !operand_shapes.is_empty() {
+        let einsum = GenericEinsum::parse(&arg("--subscripts", "ij,jk->ik"), &operand_shapes)?;
+        if operation != "einsum" || dtype != "f64" || workflow != "single" || calls != 1 {
+            return Err("generic einsum cases require einsum/f64/single".into());
+        }
+        if size != einsum.output_shape.iter().product::<usize>() {
+            return Err("--size must equal the generic einsum output element count".into());
+        }
+        if layout != "col_major_contiguous" {
+            return Err("generic einsum cases require col_major_contiguous layout".into());
+        }
+        let output = run_generic_einsum(
+            &case_id,
+            &einsum,
+            &api_tier,
+            &mode,
+            backend,
+            &provider,
+            (
+                warmups,
+                samples_count,
+                target_ns,
+                process_index,
+                sample_start,
+            ),
+        )?;
+        println!("{}", serde_json::to_string(&output)?);
+        return Ok(());
+    }
     let mut descriptor = case_descriptor(
         &operation, &dtype, &api_tier, &workflow, size, calls, &provider,
     )?;
