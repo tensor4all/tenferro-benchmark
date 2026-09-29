@@ -3,7 +3,7 @@ use std::{error::Error, hint::black_box, time::Instant};
 use tenferro_cpu::{CpuBackend, CpuBackendKind};
 use tenferro_linalg::TensorLinalgExt;
 use tenferro_runtime::BackendSessionHost;
-use tenferro_tensor::{DotGeneralConfig, Tensor};
+use tenferro_tensor::{DotGeneralConfig, Tensor, TensorRead};
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
 
 fn fixture(n: usize, k: usize) -> Result<(Tensor, Tensor, Vec<f64>, Vec<f64>)> {
@@ -59,10 +59,10 @@ fn main() -> Result<()> {
         .map(|k| fixture(n, k))
         .collect::<Result<Vec<_>>>()?;
     let config = DotGeneralConfig {
-        lhs_contracting_dims: vec![1],
-        rhs_contracting_dims: vec![0],
-        lhs_batch_dims: vec![],
-        rhs_batch_dims: vec![],
+        lhs_contracting_dims: vec![1].into(),
+        rhs_contracting_dims: vec![0].into(),
+        lhs_batch_dims: vec![].into(),
+        rhs_batch_dims: vec![].into(),
     };
     // Output slots and every input are prepared before entering the session.
     let mut outputs = Vec::with_capacity(count);
@@ -73,7 +73,11 @@ fn main() -> Result<()> {
             let start = Instant::now();
             for (a, b, _, _) in &fixtures {
                 outputs.push(if op == "matmul" {
-                    session.dot_general(a, b, &config)?
+                    session.dot_general_read(
+                        TensorRead::from_tensor(a),
+                        TensorRead::from_tensor(b),
+                        &config,
+                    )?
                 } else {
                     a.solve(b, session)?
                 });
@@ -109,7 +113,7 @@ fn main() -> Result<()> {
             }
         }
         Ok(())
-    })?;
+    })??;
     println!(
         "{}",
         serde_json::json!({"operation":op,"n":n,"operations_per_sample":count,"provider":provider,"route":"shared-session","session_count":1,"execution_mode":execution_mode,"worker_count":worker_count,"warmups":3,"samples_ns":elapsed_ns,"correctness":"passed"})

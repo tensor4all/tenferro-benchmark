@@ -22,6 +22,33 @@ use tenferro_tensor::{Tensor, TensorRead, TypedTensorView};
 const CALIBRATION_MAX_ITERATIONS: usize = 1 << 16;
 const CALIBRATION_DEADLINE_NS: u128 = 10_000_000_000;
 
+type BoxError = Box<dyn Error + Send + Sync>;
+
+/// Enter one backend session and flatten the session-entry error into the
+/// callback's own error channel.
+trait SessionScope {
+    fn session_scope<R: Send>(
+        &mut self,
+        f: impl FnOnce(&mut dyn BackendSession) -> Result<R, BoxError> + Send,
+    ) -> Result<R, BoxError>;
+}
+
+impl SessionScope for CpuBackend {
+    fn session_scope<R: Send>(
+        &mut self,
+        f: impl FnOnce(&mut dyn BackendSession) -> Result<R, BoxError> + Send,
+    ) -> Result<R, BoxError> {
+        self.with_backend_session(f)?
+    }
+}
+
+/// Sum all axes of an eager tensor inside one borrowed eager session.
+fn eager_reduce_sum(input: &EagerTensor, axes: &[usize]) -> Result<EagerTensor, BoxError> {
+    Ok(input
+        .runtime()
+        .with_eager_session(|session| session.reduce_sum(input, Some(axes)))??)
+}
+
 #[derive(Serialize)]
 struct Sample {
     process_index: usize,
@@ -399,7 +426,7 @@ fn concrete_operation(
         "add" => lhs.add(rhs, session)?,
         "einsum" => [lhs, rhs].einsum("ij,jk->ik", session)?,
         "solve" => lhs.solve(rhs, session)?,
-        "reduce_sum" => session.reduce_sum(lhs, &[0])?,
+        "reduce_sum" => session.reduce_sum_read(TensorRead::from_tensor(lhs), &[0])?,
         "gather" => session.gather(lhs, rhs, gather)?,
         _ => return Err(format!("unsupported operation: {operation}").into()),
     })
@@ -411,7 +438,7 @@ fn concrete_fresh(
     lhs: &Tensor,
     rhs: &Tensor,
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
-    backend.with_backend_session(|session| concrete_operation(operation, session, lhs, rhs))
+    backend.session_scope(|session| concrete_operation(operation, session, lhs, rhs))
 }
 
 fn add_chain<T, F>(
@@ -439,7 +466,9 @@ fn eager_operation(
     static SUBS: std::sync::OnceLock<EinsumSubscripts> = std::sync::OnceLock::new();
     let subs = SUBS.get_or_init(|| EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2]));
     Ok(match operation {
-        "add" => lhs.add(rhs)?,
+        "add" => lhs
+            .runtime()
+            .with_eager_session(|session| session.add(lhs, rhs))??,
         "einsum" => [lhs, rhs].einsum_subscripts(subs)?,
         _ => return Err(format!("unsupported operation: {operation}").into()),
     })
@@ -719,7 +748,7 @@ fn check_einsum_ad(
     expected: &[f64],
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     let value = check_tensor_shape(&output.to_tensor()?, expected, a.shape())?;
-    let loss = output.reduce_sum(Some(&[0, 1]))?;
+    let loss = eager_reduce_sum(output, &[0, 1])?;
     let _ = loss.backward()?;
     let av = TensorRead::from_tensor(a).as_slice::<f64>()?;
     let bv = TensorRead::from_tensor(b).as_slice::<f64>()?;
@@ -759,7 +788,7 @@ fn check_complex_einsum_ad(
     expected: &Tensor,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     let value = check_tensor_reference(&output.to_tensor()?, expected)?;
-    output.reduce_sum(Some(&[0, 1]))?.backward()?;
+    eager_reduce_sum(output, &[0, 1])?.backward()?;
     let av = a.as_slice::<Complex64>()?;
     let bv = b.as_slice::<Complex64>()?;
     let n = a.shape()[0];
@@ -915,7 +944,7 @@ fn check_active_ad(
     rhs_gradient: f64,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     let value = check_eager(output, expected)?;
-    let loss = output.reduce_sum(Some(&[0]))?;
+    let loss = eager_reduce_sum(output, &[0])?;
     let _ = loss.backward()?;
     for (input, expected_gradient) in [(lhs, 1.0), (rhs, rhs_gradient)] {
         let gradient = input.grad()?.ok_or("active AD gradient is missing")?;
@@ -976,7 +1005,7 @@ mod tests {
             let fresh = concrete_fresh("einsum", &mut backend, &lhs, &rhs).unwrap();
             check_tensor_reference(&fresh, &expected).unwrap();
             backend
-                .with_backend_session(|session| {
+                .session_scope(|session| {
                     let output = concrete_operation("einsum", session, &lhs, &rhs)?;
                     check_tensor_reference(&output, &expected)
                 })
@@ -1026,7 +1055,7 @@ mod tests {
             );
             let mut backend = CpuBackend::new();
             backend
-                .with_backend_session(|session| {
+                .session_scope(|session| {
                     for (a, b, reference) in [
                         (&lhs, &rhs, &expected),
                         (&rhs, &lhs, &swapped),
@@ -1077,13 +1106,13 @@ mod tests {
             check_tensor_reference(&output, &expected).unwrap();
             assert_eq!(input.as_slice::<f64>().unwrap(), original);
             backend
-                .with_backend_session(|session| {
+                .session_scope(|session| {
                     for _ in 0..2 {
                         let output = concrete_operation("reduce_sum", session, &input, &input)?;
                         check_tensor_reference(&output, &expected)?;
                         assert_eq!(input.as_slice::<f64>()?, original);
                     }
-                    assert!(session.reduce_sum(&input, &[1]).is_err());
+                    assert!(session.reduce_sum_read(TensorRead::from_tensor(&input), &[1]).is_err());
                     Ok::<_, Box<dyn Error + Send + Sync>>(())
                 })
                 .unwrap();
@@ -1131,7 +1160,7 @@ mod tests {
             let output = concrete_fresh("gather", &mut backend, &data, &indices).unwrap();
             check_tensor_shape(&output, &expected, &[size]).unwrap();
             backend
-                .with_backend_session(|session| {
+                .session_scope(|session| {
                     let output = concrete_operation("gather", session, &data, &indices)?;
                     check_tensor_shape(&output, &expected, &[size])?;
                     assert!(concrete_operation("gather", session, &data, &data).is_err());
@@ -1170,7 +1199,7 @@ mod tests {
                 let plan =
                     tenferro_einsum::ConcreteEinsumPlan::prepare([&a, &b], "ij,jk->ik").unwrap();
                 backend
-                    .with_backend_session(|session| {
+                    .session_scope(|session| {
                         check_tensor_reference(
                             &concrete_operation("einsum", session, &a, &b)?,
                             &expected,
@@ -1213,7 +1242,7 @@ mod tests {
             assert_eq!(a.as_slice::<f64>().unwrap(), &before_a);
             assert_eq!(b.as_slice::<f64>().unwrap(), &before_b);
             backend
-                .with_backend_session(|session| {
+                .session_scope(|session| {
                     let result = concrete_operation("solve", session, &a, &b)?;
                     check_solve_result(&result, &a, &b, &expected)?;
                     Ok::<_, Box<dyn Error + Send + Sync>>(())
@@ -1260,8 +1289,7 @@ mod tests {
             assert!(lhs.grad().unwrap().is_none());
             assert!(rhs.grad().unwrap().is_none());
             if size == 4 {
-                output
-                    .reduce_sum(Some(&[0, 1]))
+                eager_reduce_sum(&output, &[0, 1])
                     .unwrap()
                     .backward()
                     .unwrap();
@@ -1410,11 +1438,11 @@ mod tests {
                 }
                 let mut backend = CpuBackend::new();
                 let fresh = backend
-                    .with_backend_session(|session| borrowed_einsum(&views, session))
+                    .session_scope(|session| borrowed_einsum(&views, session))
                     .unwrap();
                 check_tensor_reference(&fresh, &expected).unwrap();
                 backend
-                    .with_backend_session(|session| {
+                    .session_scope(|session| {
                         for _ in 0..2 {
                             check_tensor_reference(&borrowed_einsum(&views, session)?, &expected)?;
                         }
@@ -1453,13 +1481,13 @@ mod tests {
             }
             let mut backend = CpuBackend::new();
             backend
-                .with_backend_session(|session| {
+                .session_scope(|session| {
                     check_tensor_shape(&borrowed_einsum(&views, session)?, &expected, &[n, n])?;
                     Ok::<_, Box<dyn Error + Send + Sync>>(())
                 })
                 .unwrap();
             backend
-                .with_backend_session(|session| {
+                .session_scope(|session| {
                     check_tensor_shape(&borrowed_einsum(&views, session)?, &expected, &[n, n])?;
                     check_tensor_shape(&borrowed_einsum(&views, session)?, &expected, &[n, n])?;
                     Ok::<_, Box<dyn Error + Send + Sync>>(())
@@ -1492,11 +1520,11 @@ mod tests {
                 }
                 let mut backend = CpuBackend::new();
                 let fresh = backend
-                    .with_backend_session(|session| borrowed_einsum(&views, session))
+                    .session_scope(|session| borrowed_einsum(&views, session))
                     .unwrap();
                 check_tensor_shape(&fresh, &expected, &[n, n]).unwrap();
                 backend
-                    .with_backend_session(|session| {
+                    .session_scope(|session| {
                         for _ in 0..2 {
                             let output = borrowed_einsum(&views, session)?;
                             check_tensor_shape(&output, &expected, &[n, n])?;
@@ -1757,7 +1785,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
         "borrowed-fresh" | "borrowed-shared" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
-            backend.with_backend_session(|session| {
+            backend.session_scope(|session| {
                 check_tensor_reference(
                     &borrowed_einsum(borrowed.as_ref().ok_or("borrowed inputs missing")?, session)?,
                     &expected_values,
@@ -1766,7 +1794,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
         "prepared-setup" | "prepared-repeat" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
-            backend.with_backend_session(|session| {
+            backend.session_scope(|session| {
                 check_tensor_reference(
                     &prepared
                         .as_ref()
@@ -1778,7 +1806,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
         "concrete-shared" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
-            backend.with_backend_session(|session| {
+            backend.session_scope(|session| {
                 check_concrete(&add_chain(&lhs, rhs, calls, |a, b| {
                     concrete_operation(&operation, session, a, b)
                 })?)
@@ -1896,7 +1924,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         )?,
         "concrete-shared" | "borrowed-shared" | "prepared-repeat" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
-            backend.with_backend_session(|session| {
+            backend.session_scope(|session| {
                 measure(
                     warmups,
                     samples_count,
@@ -1925,7 +1953,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 sample_start,
                 || {
                     if let Some(views) = borrowed.as_ref() {
-                        backend.with_backend_session(|session| borrowed_einsum(views, session))
+                        backend.session_scope(|session| borrowed_einsum(views, session))
                     } else {
                         execute_fresh(&operation, backend, &lhs, rhs, calls)
                     }
