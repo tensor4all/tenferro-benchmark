@@ -11,35 +11,82 @@ import subprocess
 import yaml
 
 from benchmark_layout import safe_target_profile
+import bench_selection
+import case_status as cs
 from suite_instances import resolve_suite_instance_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 SUITE = ROOT / "benchmarks/cpu/small_work.yaml"
+MANIFEST = ROOT / "benchmarks/cpu/manifests/small_work.yaml"
+SUITE_ID = "cpu/small_work"
+
+# Route dimensions of each API tier (tenferro-rs #1946 B1). `scope` separates
+# steady-state operation rows from explicitly labelled diagnostics; only the
+# former are operation comparisons.
+TIER_ROUTES = {
+    "concrete-shared": ("concrete", "allocating", "owned", "shared-session", "steady_state"),
+    "concrete-fresh": ("concrete", "allocating", "owned", "session-per-call", "session_entry_diagnostic"),
+    "borrowed-shared": ("concrete", "allocating", "view", "shared-session", "steady_state"),
+    "borrowed-fresh": ("concrete", "allocating", "view", "session-per-call", "session_entry_diagnostic"),
+    "prepared-setup": ("concrete-prepared", "none", "owned", "shared-session", "preparation_diagnostic"),
+    "prepared-repeat": ("concrete-prepared", "allocating", "owned", "shared-session", "steady_state"),
+    "prepared-into-repeat": ("concrete-prepared", "reused", "owned", "shared-session", "steady_state"),
+    "dot-general-into-shared": ("concrete", "reused", "owned", "shared-session", "steady_state"),
+    "eager-no-ad": ("eager", "allocating", "owned", "session-per-call", "session_entry_diagnostic"),
+    "eager-ad": ("eager", "allocating", "owned", "session-per-call", "session_entry_diagnostic"),
+    "compiled-setup": ("compiled-trace", "none", "owned", "runtime", "preparation_diagnostic"),
+    "compiled-repeat": ("compiled-trace", "allocating", "owned", "runtime-internal-session", "session_entry_diagnostic"),
+}
+
+
+def route_for(case):
+    path, output, representation, boundary, scope = TIER_ROUTES[case["api_tier"]]
+    layout = case.get("layout", "col_major_contiguous")
+    return {
+        "execution_path": path,
+        "output": output,
+        "representation": representation,
+        "layout": {"col_major_contiguous": "direct", "row_major_contiguous": "direct-transposed",
+                   "strided": "direct-strided", "broadcast": "broadcast"}.get(layout, layout),
+        "session_boundary": boundary,
+        "measurement_scope": scope,
+    }
+
+
+def coverage_choice():
+    # BENCH_INCLUDE_SETUP_DIAGNOSTICS=1 is the older spelling of full coverage.
+    if not os.environ.get("BENCH_COVERAGE") and os.environ.get("BENCH_INCLUDE_SETUP_DIAGNOSTICS") == "1":
+        return "full"
+    return bench_selection.resolve_coverage()
+
+
+def plan():
+    suite = yaml.safe_load(SUITE.read_text())
+    cases = {c["id"]: c for c in json.loads((ROOT / suite["problems"]["source"]).read_text())}
+    manifest = bench_selection.load_manifest(MANIFEST)
+    if set(manifest["coverage"]["full"]) != set(resolve_suite_instance_ids(SUITE)):
+        raise bench_selection.SelectionError("small_work manifest full list != suite include list")
+    coverage = coverage_choice()
+    expected, selected, raw = bench_selection.select(manifest, coverage)
+    return suite, cases, manifest, coverage, expected, selected, raw
 
 
 def selected_cases():
-    suite = yaml.safe_load(SUITE.read_text())
-    cases = {c["id"]: c for c in json.loads((ROOT / suite["problems"]["source"]).read_text())}
-    ids = resolve_suite_instance_ids(SUITE)
-    selected = os.environ.get("BENCH_INSTANCE", "")
-    if selected:
-        requested = selected.split(",")
-        unknown = set(requested) - set(ids)
-        if unknown:
-            raise ValueError(f"unknown case IDs: {sorted(unknown)}")
-        ids = [i for i in ids if i in requested]
-    if os.environ.get("BENCH_INCLUDE_SETUP_DIAGNOSTICS") != "1":
-        ids = [i for i in ids if not (
-            cases[i]["api_tier"] in {"eager-no-ad", "eager-ad", "compiled-repeat"}
-            or cases[i]["api_tier"].endswith(("-fresh", "-setup"))
-            or (cases[i]["operation"] == "einsum" and cases[i]["api_tier"] in {"concrete-shared", "borrowed-shared"})
-        )]
-    return [cases[i] for i in ids], suite["defaults"]["run"]
+    suite, cases, _, _, _, selected, _ = plan()
+    return [cases[i] for i in selected], suite["defaults"]["run"]
 
 
 def collect(binary, output, threads):
-    cases, config = selected_cases()
+    suite, all_cases, manifest, coverage, expected, selected, raw = plan()
+    cases = [all_cases[i] for i in selected]
+    config = dict(suite["defaults"]["run"])
+    effort = bench_selection.resolve_effort(config, suite["defaults"].get("effort"))
+    config.update(warmups=effort["warmups"], runs=effort["runs"])
+    env = dict(os.environ)
+    if coverage == "full":
+        env["BENCH_INCLUDE_SETUP_DIAGNOSTICS"] = "1"
     failed = False
+    rows = []
     with output.open("w") as fh:
         for case in cases:
             command = [str(binary), "--case", case["id"]]
@@ -53,8 +100,10 @@ def collect(binary, output, threads):
                         "--calls", str(case["calls_per_workflow"]),
                         "--warmups", str(config["warmups"]), "--samples", str(config["runs"]),
                         "--target-ns", str(int(config["min_runtime_ms"] * 1_000_000))]
-            result = subprocess.run(command, text=True, capture_output=True)
-            row = dict(case, threads=threads, case_id=case["id"], samples=[])
+            result = subprocess.run(command, text=True, capture_output=True, env=env)
+            row = dict(case, threads=threads, case_id=case["id"], samples=[],
+                       route=route_for(case), case_key=cs.case_key(case["id"], threads),
+                       effort=effort["effort"])
             if result.returncode:
                 row.update(correctness_status="failed", error=result.stderr.strip())
             else:
@@ -63,10 +112,19 @@ def collect(binary, output, threads):
                 except (ValueError, TypeError) as error:
                     row.update(correctness_status="failed", error=f"invalid case output: {error}")
             failed |= row["correctness_status"] != "passed"
+            row["status"] = row["correctness_status"]
+            values = [s["elapsed_ns"] / s["iterations"] for s in row["samples"]]
+            row["cov"] = cs.coefficient_of_variation(values) if row["status"] == "passed" else None
             fh.write(json.dumps(row) + "\n")
             fh.flush()
+            rows.append(row)
             print(f"{case['id']}: {row['correctness_status']}", flush=True)
-    return failed
+    status = cs.build_case_status(
+        suite_id=SUITE_ID, manifest_version=manifest["manifest_version"], coverage=coverage,
+        effort=effort["effort"], expected=[cs.case_key(i, threads) for i in expected],
+        selected=[cs.case_key(i, threads) for i in selected], rows=rows, selection_filter=raw)
+    cs.write_case_status(output.parent / f"case_status_t{threads}.json", status)
+    return failed or bool(status["missing"])
 
 
 def summary(row):
@@ -109,10 +167,15 @@ def report(run_dir, target):
         conditions = {k: metadata[k] for k in ("timestamp", "tenferro_rs", "blas", "environment") if k in metadata}
         lines += [f"## {path.stem}", "", f"Full metadata: `{path.relative_to(ROOT)}`", "",
                   "```yaml", yaml.safe_dump(conditions, sort_keys=False).rstrip(), "```", ""]
+    parts = [json.loads(p.read_text()) for p in sorted(run_dir.glob("case_status_t*.json"))]
+    if parts:
+        status = cs.merge_case_status(parts)
+        cs.write_case_status(run_dir / "case_status.json", status)
+        lines += cs.markdown_section(status)
     passed = sum(r["correctness_status"] == "passed" for r in rows)
     lines += [f"Numerical checks: **{passed}/{len(rows)} recorded rows passed** (case × thread count).", ""]
     lines += ["## Timing", "",
-              "Sequential release runs; 3 warmups, then calibration from at least 1024 operations toward a 1 ms batch and 15 measured batches per case. "
+              "Sequential release runs; warmups, then calibration from at least 1024 operations toward a 1 ms batch, then the measured batches of the recorded effort (standard: 3 warmups and 15 batches; scan: a low-repetition screen that only marks suspects). "
               "Each batch uses one wall-clock interval; all outputs are retained until it stops. Statistics divide batch time by iterations. "
               "Median and inclusive IQR are in nanoseconds (ns); CoV is sample standard deviation / mean. "
               "NOISY means CoV > 10%, a descriptive label only. No noisy rows are excluded.", "",
@@ -122,14 +185,17 @@ def report(run_dir, target):
               "Inputs and backend construction, independent numerical checks and AD backward checks are outside timing. "
               "Returned outputs/plans are retained until after each batch interval; "
               "value downloads/checks are outside. Eager AD rows measure forward execution/recording, not backward.", "",
-              "| Case ID | Operation | API route | Dtype | Shape | Layout | Workflow | Threads | Provider | Operations/batch | Median batch ms | Median workflow ns | IQR ns | CoV | ns/op (chain only) | Status |",
-              "|---|---|---|---|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|---|"]
+              "| Case ID | Operation | API route | Route (path / output / repr / session) | Dtype | Shape | Layout | Workflow | Threads | Provider | Operations/batch | Median batch ms | Median workflow ns | IQR ns | CoV | ns/op (chain only) | Status |",
+              "|---|---|---|---|---|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|---|"]
     for row in rows:
         if row.get("measurement_kind") == "setup_diagnostic" or row["api_tier"].endswith(("-fresh", "-setup")):
             continue
         median, iqr, cov, status = summary(row)
         per_op = f"{float(median)/row['calls_per_workflow']:.2f}" if median != "—" and row['calls_per_workflow'] > 1 else "—"
-        lines.append("| " + " | ".join(map(str, [row["case_id"], row["operation"], row["api_tier"], row["dtype"],
+        route = row.get("route") or route_for(row)
+        route_label = (f"{route['execution_path']} / {route['output']} / {route['representation']} / "
+                       f"{route['session_boundary']}")
+        lines.append("| " + " | ".join(map(str, [row["case_id"], row["operation"], row["api_tier"], route_label, row["dtype"],
             shape_label(row), row["layout"], row["workflow"], row["threads"], row.get("provider", "unknown"),
             row["samples"][0]["iterations"] * row["calls_per_workflow"] if row["samples"] else "—",
             f"{statistics.median(s['elapsed_ns'] for s in row['samples'])/1e6:.6f}" if row["samples"] else "—",
