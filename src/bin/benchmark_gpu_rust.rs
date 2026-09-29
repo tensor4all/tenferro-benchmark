@@ -13,7 +13,7 @@ use std::time::Instant;
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::CpuBackend;
-use tenferro_einsum::{EagerEinsumExt, TraceContextEinsumExt};
+use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::tensornetwork::{
     build_cpu_eager_inputs as build_tensor_network_cpu_inputs, contract_tree_eager,
     contract_tree_trace, load_tensor_network, scalar_f32, scalar_f32_tensor, tensor_f32_col_major,
@@ -1410,9 +1410,11 @@ fn run_eager_op(
         }
         "einsum" => {
             let refs: Vec<&EagerTensor> = inputs.extra.iter().collect();
-            let out = refs
-                .as_slice()
-                .einsum_subscripts(subscripts)
+            // One borrowed eager session per public einsum call (#1946 F5).
+            let out = refs[0]
+                .runtime()
+                .with_eager_session(|session| session.einsum_subscripts(&refs, subscripts))
+                .map_err(|e| format!("einsum: {e}"))?
                 .map_err(|e| format!("einsum: {e}"))?;
             Ok(vec![out])
         }

@@ -167,8 +167,7 @@ diagnostics.
 ## GPU
 
 No GPU route cases were added and no GPU measurement was taken; GPU rows
-remain **unmeasured**, not validated. The WebGPU runner builds against the
-repair. The CUDA runners were adapted to the session-side canonicalization,
-but `--features cuda` could not be checked: the repair revision itself fails
-to compile `tenferro-linalg/src/gpu/mod.rs` under `cuda`
-(`TensorViewCanonicalization` not in scope for `CudaExecSession::to_contiguous`).
+remain **unmeasured**, not validated. The CUDA and WebGPU runners were adapted
+to the session-side canonicalization and borrowed-session eager einsum, and
+`cargo check --features cuda --bins` / `--features webgpu --bins` pass against
+the repair (compile-only; no CUDA device was used).
