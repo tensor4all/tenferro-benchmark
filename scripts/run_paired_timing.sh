@@ -91,7 +91,9 @@ PY
     *) echo "unknown mode $MODE" >&2; exit 2 ;;
 esac
 
-if [[ -n "$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no)" ]]; then
+# Generated reports under result/ are outputs, not harness: an A/A run
+# rewrites result/<profile>/cpu/session_matrix_aa.md before the paired run.
+if [[ -n "$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no -- . ':(exclude)result')" ]]; then
     echo "ERROR: the harness checkout is dirty; paired timing must use one committed harness." >&2
     exit 1
 fi
