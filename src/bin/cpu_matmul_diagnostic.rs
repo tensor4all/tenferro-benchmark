@@ -9,7 +9,7 @@ use std::time::{Duration, Instant};
 
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{CpuBackend, CpuBackendKind};
-use tenferro_einsum::{ContractionTree, EagerEinsumExt, EinsumSubscripts, Subscripts};
+use tenferro_einsum::{ContractionTree, EagerSessionEinsumExt, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, CompiledEinsum};
 use tenferro_runtime::{Runtime, TensorRead};
 use tenferro_tensor::{BackendSessionHost, DotGeneralConfig, Tensor};
@@ -271,9 +271,11 @@ fn main() -> Result<(), String> {
     let subscripts = EinsumSubscripts::new(&[&[0, 1], &[2, 0]], &[2, 1]);
     let inputs = [&eager_lhs, &eager_rhs];
     measure("tenferro_eager_einsum", warmups, runs, || {
-        inputs
-            .as_slice()
-            .einsum_subscripts(&subscripts)
+        // One borrowed eager session per public einsum call.
+        eager_lhs
+            .runtime()
+            .with_eager_session(|session| session.einsum_subscripts(&inputs, &subscripts))
+            .map_err(|e| e.to_string())?
             .map_err(|e| e.to_string())
     })?;
 

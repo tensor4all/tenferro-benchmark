@@ -11,7 +11,7 @@ use std::io::Write;
 use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
-use tenferro_gpu::webgpu::{webgpu_available, WebGpuBackend};
+use tenferro_gpu::webgpu::{webgpu_available, with_webgpu_exec_session, WebGpuBackend};
 use tenferro_tensor::{
     BackendSessionHost, Tensor, TensorDeviceTransfer, TensorViewCanonicalization, TypedTensor,
 };
@@ -309,6 +309,22 @@ fn run_transpose(
     )
 }
 
+/// tenferro-rs #1946 F6 moved view canonicalization off the backend owner onto
+/// the entered session. The owner method used to enter once per call, so each
+/// timed call still enters its own session.
+fn webgpu_to_contiguous(
+    backend: &mut WebGpuBackend,
+    view: &tenferro_tensor::TypedTensorView<'_, f32>,
+) -> TypedTensor<f32> {
+    backend
+        .with_backend_session(|session| {
+            with_webgpu_exec_session(session, |session| session.to_contiguous(view))
+        })
+        .unwrap()
+        .expect("a WebGPU backend session is a WebGPU execution session")
+        .unwrap()
+}
+
 fn run_to_contiguous(
     backend: &mut WebGpuBackend,
     pattern: &Pattern,
@@ -330,7 +346,7 @@ fn run_to_contiguous(
         .backend_region_view(pattern.shape.clone(), source_strides(pattern), 0)
         .unwrap();
     let view = source.transpose_view(&pattern.perm).unwrap();
-    let output: TypedTensor<f32> = backend.to_contiguous(&view).unwrap();
+    let output: TypedTensor<f32> = webgpu_to_contiguous(backend, &view);
     backend.synchronize().unwrap();
     let host_output = backend
         .download_to_host(tenferro_tensor::TensorRead::from_tensor(
@@ -351,7 +367,7 @@ fn run_to_contiguous(
     }
     let bytes = std::mem::size_of_val(data) * 2;
     let timing = measure(warmup, iters, bytes, || {
-        let output = backend.to_contiguous(&view).unwrap();
+        let output = webgpu_to_contiguous(backend, &view);
         backend.synchronize().unwrap();
         output
     });

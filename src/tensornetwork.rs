@@ -5,13 +5,13 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use serde::Deserialize;
-use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_einsum::EagerEinsumExt;
+use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
+use tenferro_einsum::EagerSessionEinsumExt;
 #[cfg(feature = "cuda")]
 use tenferro_einsum::TraceContextEinsumExt;
-use tenferro_tensor::Tensor as StorageTensor;
 #[cfg(feature = "cuda")]
 use tenferro_runtime::{TraceContext, TraceValue};
+use tenferro_tensor::Tensor as StorageTensor;
 
 pub const DEFAULT_FILL_VALUE: f32 = 0.840_896_4; // 0.5f32.powf(0.4)
 pub const DEFAULT_BOND_DIM: usize = 2;
@@ -143,7 +143,25 @@ impl PreparedEagerTree {
         })
     }
 
+    /// Execute the whole tree inside one borrowed eager session of the
+    /// inputs' runtime (one session entry per tree execution).
     pub fn execute(&self, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
+        let runtime = inputs
+            .first()
+            .ok_or("tree has no inputs")?
+            .runtime()
+            .clone();
+        runtime
+            .with_eager_session(|session| self.execute_in(session, inputs))
+            .map_err(|e| e.to_string())?
+    }
+
+    /// Execute the tree on an already-entered eager session.
+    pub fn execute_in(
+        &self,
+        session: &mut EagerSession<'_>,
+        inputs: &[EagerTensor],
+    ) -> Result<EagerTensor, String> {
         match self {
             Self::Input(index) => inputs
                 .get(*index)
@@ -155,11 +173,11 @@ impl PreparedEagerTree {
             } => {
                 let operands = children
                     .iter()
-                    .map(|child| child.execute(inputs))
+                    .map(|child| child.execute_in(session, inputs))
                     .collect::<Result<Vec<_>, _>>()?;
                 let refs = operands.iter().collect::<Vec<_>>();
-                refs.as_slice()
-                    .einsum_subscripts(subscripts)
+                session
+                    .einsum_subscripts(&refs, subscripts)
                     .map_err(|e| e.to_string())
             }
         }
@@ -167,6 +185,21 @@ impl PreparedEagerTree {
 }
 
 pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
+    let runtime = inputs
+        .first()
+        .ok_or("tree has no inputs")?
+        .runtime()
+        .clone();
+    runtime
+        .with_eager_session(|session| contract_tree_eager_in(session, node, inputs))
+        .map_err(|e| e.to_string())?
+}
+
+fn contract_tree_eager_in(
+    session: &mut EagerSession<'_>,
+    node: &TreeNode,
+    inputs: &[EagerTensor],
+) -> Result<EagerTensor, String> {
     if node.isleaf {
         let index = node
             .tensorindex
@@ -183,12 +216,12 @@ pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<Ea
     let args = node.args.as_ref().ok_or("internal node missing args")?;
     let child_tensors: Vec<EagerTensor> = args
         .iter()
-        .map(|child| contract_tree_eager(child, inputs))
+        .map(|child| contract_tree_eager_in(session, child, inputs))
         .collect::<Result<_, _>>()?;
     let refs: Vec<&EagerTensor> = child_tensors.iter().collect();
     let expr = integer_labels_to_expr(&eins.ixs, &eins.iy);
-    refs.as_slice()
-        .einsum(&expr)
+    session
+        .einsum(&refs, &expr)
         .map_err(|e| format!("einsum ({expr}): {e}"))
 }
 

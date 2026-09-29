@@ -46,7 +46,9 @@ use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 
-use tenferro_gpu::cuda::{download_tensor, gpu_available, upload_tensor, CudaBackend};
+use tenferro_gpu::cuda::{
+    download_tensor, gpu_available, upload_tensor, with_cuda_exec_session, CudaBackend,
+};
 use tenferro_tensor::{
     BackendSessionHost, Tensor, TensorRead, TensorViewCanonicalization, TensorViewMut, TensorWrite,
     TypedTensor,
@@ -1011,6 +1013,23 @@ fn run_tenferro_cuda_transpose(
 }
 
 #[allow(clippy::too_many_arguments)]
+/// tenferro-rs #1946 F6 moved view canonicalization off the backend owner onto
+/// the entered session. The owner method used to enter once per call, so each
+/// timed call still enters its own session.
+fn cuda_to_contiguous(
+    backend: &mut CudaBackend,
+    view: &tenferro_tensor::TypedTensorView<'_, f64>,
+) -> tenferro_tensor::Result<TypedTensor<f64>> {
+    backend
+        .with_backend_session(|session| {
+            with_cuda_exec_session(session, |session| session.to_contiguous(view))
+        })
+        .map_err(|error| {
+            tenferro_tensor::Error::backend_failure("cuda session", error.to_string())
+        })?
+        .expect("a CUDA backend session is a CUDA execution session")
+}
+
 fn run_tenferro_cuda_to_contiguous(
     pattern: &PermutePattern,
     prepared: &PreparedPattern,
@@ -1044,8 +1063,7 @@ fn run_tenferro_cuda_to_contiguous(
         .expect("transpose_view must succeed on a validated permutation");
     debug_assert_eq!(view.shape(), prepared.out_shape.as_slice());
 
-    let compact = backend
-        .to_contiguous(&view)
+    let compact = cuda_to_contiguous(backend, &view)
         .expect("tenferro-cuda-to-contiguous must succeed on a validated pattern");
     backend.runtime().synchronize().expect("device sync");
     let downloaded = download_tensor(backend.runtime(), &Tensor::from_typed(compact))
@@ -1072,7 +1090,7 @@ fn run_tenferro_cuda_to_contiguous(
     }
 
     let timing = bench_n(warmup, iters, bytes, || {
-        let compact = backend.to_contiguous(&view).unwrap();
+        let compact = cuda_to_contiguous(backend, &view).unwrap();
         backend.runtime().synchronize().unwrap();
         compact
     });

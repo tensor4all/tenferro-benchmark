@@ -2014,6 +2014,12 @@ fn tenferro_notes(op: &str) -> &'static str {
             "tenferro-rs uses native column-major GPU tensors and its direct cuSOLVER path, ",
             "so compare SVD against row-major torch.linalg preferred-cusolver columns with caution"
         ),
+        "tensor_network_contract" => concat!(
+            "timing uses tenferro-rs explicit synchronization without result download; ",
+            "verification downloads outputs after timing; tenferro-rs uses native column-major GPU tensors; ",
+            "eager route: one borrowed EagerSession per tree execution (EagerSessionEinsumExt), ",
+            "not one session per contraction node as before tenferro-rs #1946"
+        ),
         _ => concat!(
             "timing uses tenferro-rs explicit synchronization without result download; ",
             "verification downloads outputs after timing; tenferro-rs uses native column-major GPU tensors"

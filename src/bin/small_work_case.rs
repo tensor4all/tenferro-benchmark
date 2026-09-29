@@ -463,14 +463,16 @@ fn eager_operation(
     lhs: &EagerTensor,
     rhs: &EagerTensor,
 ) -> Result<EagerTensor, Box<dyn Error + Send + Sync>> {
-    use tenferro_einsum::{EagerEinsumExt, EinsumSubscripts};
+    use tenferro_einsum::{EagerSessionEinsumExt, EinsumSubscripts};
     static SUBS: std::sync::OnceLock<EinsumSubscripts> = std::sync::OnceLock::new();
     let subs = SUBS.get_or_init(|| EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2]));
     Ok(match operation {
         "add" => lhs
             .runtime()
             .with_eager_session(|session| session.add(lhs, rhs))??,
-        "einsum" => [lhs, rhs].einsum_subscripts(subs)?,
+        "einsum" => lhs
+            .runtime()
+            .with_eager_session(|session| session.einsum_subscripts(&[lhs, rhs], subs))??,
         _ => return Err(format!("unsupported operation: {operation}").into()),
     })
 }

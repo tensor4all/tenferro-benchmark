@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 
 use tenferro_ad::{AdContext, EagerRuntime, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
-use tenferro_einsum::{EagerEinsumExt, TraceContextEinsumExt};
+use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::thread_enforcement::{
     enforce_thread_request, verify_backend_threads,
 };
@@ -115,8 +115,14 @@ mod eager_einsum_tensor {
             std::sync::OnceLock::new();
         let subs = SUBS
             .get_or_init(|| tenferro_einsum::EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2]));
-        inputs
-            .einsum_subscripts(subs)
+        // One borrowed eager session per public einsum call.
+        let runtime = inputs
+            .first()
+            .expect("einsum has operands")
+            .runtime()
+            .clone();
+        runtime
+            .with_eager_session(|session| session.einsum_subscripts(inputs, subs))?
             .map_err(|e| runtime_einsum_error(e, ErrorPhase::Execution))
     }
 }
