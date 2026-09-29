@@ -34,7 +34,7 @@ cases:
   suite_id: cpu/session_matrix
   manifest_version: null       # must equal benchmarks/cpu/manifests/session_matrix.yaml
   coverage: null               # quick | full
-  case_ids: null               # optional explicit subset; null = the whole coverage list
+  case_ids: null               # optional explicit subset (passed as BENCH_INSTANCE); null = the whole coverage list
 
 timing:
   scope: null                  # e.g. many_operations_single_interval (session/inputs outside)

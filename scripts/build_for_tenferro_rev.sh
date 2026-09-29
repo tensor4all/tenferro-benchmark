@@ -9,8 +9,10 @@
 # the previous link target afterwards. Writes shell assignments to
 # <out-var-file>: TENFERRO_REV, TENFERRO_DIRTY, TENFERRO_DIR, BIN_DIR.
 # Default bins: benchmark_cpu_session cpu_route_diagnostic (the cross-revision
-# binaries). Honors TENFERRO_CPU_FEATURES (default cpu-faer) and
-# BENCH_BUILD_PROFILE (default release).
+# binaries). Honors TENFERRO_CPU_FEATURES (default cpu-faer; system BLAS
+# features need their provider environment, e.g. OPENBLAS_ROOT/MKLROOT) and
+# BENCH_BUILD_PROFILE (default release). The build clears RUSTC_WRAPPER so a
+# compiler cache cannot mix artifacts across tenferro-rs revisions.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -24,7 +26,10 @@ if [[ ! -d "$TENFERRO_DIR/crates/tenferro-cpu" ]]; then
     echo "ERROR: $TENFERRO_DIR is not a tenferro-rs checkout" >&2
     exit 1
 fi
+# shellcheck source=scripts/cpu_blas_provider.sh
+source "$SCRIPT_DIR/cpu_blas_provider.sh"
 FEATURES="${TENFERRO_CPU_FEATURES:-cpu-faer}"
+ensure_blas_env_for_features "$FEATURES"
 PROFILE="${BENCH_BUILD_PROFILE:-release}"
 LINK="$PROJECT_DIR/extern/tenferro-rs"
 

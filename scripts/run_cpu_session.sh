@@ -29,13 +29,14 @@ for var in BENCHMARK_TARGET_PROFILE TENFERRO_CPU_FEATURES BENCH_COVERAGE BENCH_E
     BENCH_INSTANCE BENCH_CONFIRM_CONFIG BENCH_AA_WARMUPS BENCH_AA_RUNS BENCH_SESSION_BINARY; do
     if [[ -n "${!var:-}" ]]; then COMMAND="$var=${!var} $COMMAND"; fi
 done
+# Also needed by prebuilt binaries: sets the provider library paths.
+ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 if [[ -n "${BENCH_SESSION_BINARY:-}" ]]; then
     BINARY="$BENCH_SESSION_BINARY"
 else
     if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
         git -C extern/tenferro-rs pull --ff-only
     fi
-    ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
     cargo build --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_session
     BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_cpu_session"
 fi

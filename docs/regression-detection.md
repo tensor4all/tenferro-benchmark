@@ -152,6 +152,10 @@ devcontainer exec --workspace-folder . bash -lc "
   --route-contract data/results/amd-cpu/cpu/route_contract/<repair-timestamp>
 ```
 
+`quick` also runs the PyTorch and BLAS loop rows in both arms; they do the
+same work in both arms and act as a host-drift control. Set `cases.case_ids`
+in the declaration (passed as `BENCH_INSTANCE`) to trim the paired set.
+
 Every round keeps its raw directory (`rNN_baseline`, `rNN_candidate`) with
 `run_t*.yaml`, `samples_t*.jsonl` and `case_status*.json`; `plan.json` records
 the executed order, `command.txt` the command, and the latest summary goes to

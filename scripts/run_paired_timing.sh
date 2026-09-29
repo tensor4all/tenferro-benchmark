@@ -77,6 +77,8 @@ if rounds % 2:
 print(f"ROUNDS={rounds}")
 print("THREADS=(" + " ".join(str(t) for t in config["threads"]) + ")")
 print(f"export BENCH_COVERAGE={config['cases']['coverage']}")
+if config["cases"].get("case_ids"):
+    print("export BENCH_INSTANCE=" + ",".join(config["cases"]["case_ids"]))
 if config["build"]["features"] != __import__("os").environ["TENFERRO_CPU_FEATURES"]:
     sys.exit("ERROR: build.features does not match TENFERRO_CPU_FEATURES")
 PY
