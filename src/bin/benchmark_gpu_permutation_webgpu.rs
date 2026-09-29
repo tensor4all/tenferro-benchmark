@@ -13,7 +13,7 @@ use std::time::Instant;
 use serde::{Deserialize, Serialize};
 use tenferro_gpu::webgpu::{webgpu_available, WebGpuBackend};
 use tenferro_tensor::{
-    Tensor, TensorDeviceTransfer, TensorStructural, TensorViewCanonicalization, TypedTensor,
+    BackendSessionHost, Tensor, TensorDeviceTransfer, TensorViewCanonicalization, TypedTensor,
 };
 
 const PATTERN_PATH: &str = "data/instances/gpu_permutation_mac_patterns.json";
@@ -251,7 +251,15 @@ fn run_transpose(
     let input = backend
         .upload_host_tensor(tenferro_tensor::TensorRead::from_tensor(&host))
         .unwrap();
-    let output = backend.transpose(&input, &pattern.perm).unwrap();
+    let output = backend
+        .with_backend_session(|session| {
+            session.transpose_read(
+                tenferro_tensor::TensorRead::from_tensor(&input),
+                &pattern.perm,
+            )
+        })
+        .unwrap()
+        .unwrap();
     backend.synchronize().unwrap();
     let host_output = backend
         .download_to_host(tenferro_tensor::TensorRead::from_tensor(&output))
@@ -269,8 +277,19 @@ fn run_transpose(
         );
     }
     let bytes = std::mem::size_of_val(data) * 2;
+    // tenferro-rs #1938 moved `transpose` onto the entered session. The
+    // pre-#1938 backend method entered once per call, so each timed call still
+    // enters its own session.
     let timing = measure(warmup, iters, bytes, || {
-        let output = backend.transpose(&input, &pattern.perm).unwrap();
+        let output = backend
+            .with_backend_session(|session| {
+                session.transpose_read(
+                    tenferro_tensor::TensorRead::from_tensor(&input),
+                    &pattern.perm,
+                )
+            })
+            .unwrap()
+            .unwrap();
         backend.synchronize().unwrap();
         output
     });
@@ -304,7 +323,7 @@ fn run_to_contiguous(
     let input = backend
         .upload_host_tensor(tenferro_tensor::TensorRead::from_tensor(&host))
         .unwrap();
-    let Tensor::F32(typed) = &input else {
+    let Some(typed) = input.as_typed::<f32>() else {
         unreachable!("f32 upload must preserve dtype")
     };
     let source = typed
@@ -314,9 +333,9 @@ fn run_to_contiguous(
     let output: TypedTensor<f32> = backend.to_contiguous(&view).unwrap();
     backend.synchronize().unwrap();
     let host_output = backend
-        .download_to_host(tenferro_tensor::TensorRead::from_tensor(&Tensor::F32(
-            output,
-        )))
+        .download_to_host(tenferro_tensor::TensorRead::from_tensor(
+            &Tensor::from_typed(output),
+        ))
         .unwrap();
     if let Err(note) = verify(host_output.as_slice::<f32>().unwrap(), expected) {
         return record(

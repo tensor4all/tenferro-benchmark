@@ -48,7 +48,7 @@ use serde::{Deserialize, Serialize};
 
 use tenferro_gpu::cuda::{download_tensor, gpu_available, upload_tensor, CudaBackend};
 use tenferro_tensor::{
-    Tensor, TensorRead, TensorStructural, TensorViewCanonicalization, TensorViewMut, TensorWrite,
+    BackendSessionHost, Tensor, TensorRead, TensorViewCanonicalization, TensorViewMut, TensorWrite,
     TypedTensor,
 };
 
@@ -959,7 +959,10 @@ fn run_tenferro_cuda_transpose(
     let gpu_in = upload_tensor(backend.runtime(), &host).expect("upload must succeed");
 
     let out = backend
-        .transpose(&gpu_in, &pattern.perm)
+        .with_backend_session(|session| {
+            session.transpose_read(TensorRead::from_tensor(&gpu_in), &pattern.perm)
+        })
+        .expect("entering the CUDA backend session must succeed")
         .expect("tenferro-cuda-transpose must succeed on a validated pattern");
     backend.runtime().synchronize().expect("device sync");
     let downloaded = download_tensor(backend.runtime(), &out).expect("download must succeed");
@@ -984,8 +987,16 @@ fn run_tenferro_cuda_transpose(
         return;
     }
 
+    // tenferro-rs #1938 moved `transpose` onto the entered session. The
+    // pre-#1938 backend method entered once per call, so each timed call still
+    // enters its own session.
     let timing = bench_n(warmup, iters, bytes, || {
-        let out = backend.transpose(&gpu_in, &pattern.perm).unwrap();
+        let out = backend
+            .with_backend_session(|session| {
+                session.transpose_read(TensorRead::from_tensor(&gpu_in), &pattern.perm)
+            })
+            .unwrap()
+            .unwrap();
         backend.runtime().synchronize().unwrap();
         out
     });
@@ -1016,10 +1027,9 @@ fn run_tenferro_cuda_to_contiguous(
     let flat_host = Tensor::from_vec_col_major(vec![total], prepared.src_data.clone())
         .expect("building flat source tensor must succeed");
     let flat_gpu = upload_tensor(backend.runtime(), &flat_host).expect("upload must succeed");
-    let typed: &TypedTensor<f64> = match &flat_gpu {
-        Tensor::F64(t) => t,
-        _ => unreachable!("upload_tensor preserves dtype"),
-    };
+    let typed: &TypedTensor<f64> = flat_gpu
+        .as_typed::<f64>()
+        .unwrap_or_else(|| unreachable!("upload_tensor preserves dtype"));
     // Mirror the CPU runner's composition exactly: build the strided view
     // over the SOURCE layout (pattern shape + pattern source strides -- for
     // the explicit-stride pattern these are the JSON strides), then apply
@@ -1038,8 +1048,8 @@ fn run_tenferro_cuda_to_contiguous(
         .to_contiguous(&view)
         .expect("tenferro-cuda-to-contiguous must succeed on a validated pattern");
     backend.runtime().synchronize().expect("device sync");
-    let downloaded =
-        download_tensor(backend.runtime(), &Tensor::F64(compact)).expect("download must succeed");
+    let downloaded = download_tensor(backend.runtime(), &Tensor::from_typed(compact))
+        .expect("download must succeed");
     let actual = downloaded
         .as_slice::<f64>()
         .expect("tenferro-cuda-to-contiguous output must be f64");
@@ -1132,17 +1142,22 @@ fn run_tenferro_cuda_destination_reuse(
     let inverse_perm = inverse_permutation(&pattern.perm);
 
     let execute = |backend: &mut CudaBackend, destination: &mut Tensor| {
-        let Tensor::F64(destination) = destination else {
-            unreachable!("upload_tensor preserves destination dtype");
-        };
+        let destination = destination
+            .as_typed_mut::<f64>()
+            .unwrap_or_else(|| unreachable!("upload_tensor preserves destination dtype"));
         let destination_view = destination
             .as_view_mut()
             .transpose_view(&inverse_perm)
             .expect("inverse destination view must match the source shape");
-        backend.copy_read_into(
-            TensorRead::from_tensor(&gpu_source),
-            TensorWrite::from_view(TensorViewMut::F64(destination_view)),
-        )
+        // One backend session per call, as the pre-#1938 backend method entered.
+        backend
+            .with_backend_session(|session| {
+                session.copy_read_into(
+                    TensorRead::from_tensor(&gpu_source),
+                    TensorWrite::from_view(TensorViewMut::F64(destination_view)),
+                )
+            })
+            .expect("entering the CUDA backend session must succeed")
     };
 
     execute(backend, &mut gpu_destination)
@@ -1245,10 +1260,10 @@ fn run_cutensor(
         .expect("building flat destination tensor must succeed");
     let flat_dst = upload_tensor(backend.runtime(), &flat_dst_host).expect("upload must succeed");
 
-    let Tensor::F64(flat_src) = flat_src else {
+    let Ok(flat_src) = flat_src.into_typed::<f64>() else {
         unreachable!("f64 source")
     };
-    let Tensor::F64(mut flat_dst) = flat_dst else {
+    let Ok(mut flat_dst) = flat_dst.into_typed::<f64>() else {
         unreachable!("f64 destination")
     };
     use tenferro_runtime::BackendSessionHost;
@@ -1367,6 +1382,7 @@ fn run_cutensor(
             })
             .expect("CUDA execution session")
         })
+        .expect("entering the CUDA backend session must succeed")
         .expect("cuTENSOR raw session");
 }
 

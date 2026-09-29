@@ -11,7 +11,7 @@ use std::panic;
 use std::time::Instant;
 
 use serde_json::{json, Value};
-use tenferro_ad::{EagerRuntime, EagerTensor};
+use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::CpuBackend;
 use tenferro_einsum::{EagerEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::tensornetwork::{
@@ -23,7 +23,7 @@ use tenferro_gpu::cuda::{
     cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaBackend,
     CudaRuntime,
 };
-use tenferro_linalg::{EagerTensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_linalg::{EagerSessionLinalgExt, EagerTensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
     DType, DotGeneralConfig, Error as TfError, GraphCompiler, Runtime, TraceContext, TracedTensor,
@@ -1362,6 +1362,18 @@ fn build_cpu_eager_inputs(
     }
 }
 
+/// Run one eager operation in its own borrowed eager session.
+///
+/// tenferro-rs #1938 moved eager ops from `EagerTensor` onto `EagerSession`.
+/// Each pre-#1938 tensor-owned op entered the eager backend once, so entering
+/// one session per op keeps that entry inside the timed region.
+fn in_eager_session<R: Send>(
+    anchor: &EagerTensor,
+    op: impl FnOnce(&mut EagerSession<'_>) -> Result<R, tenferro_ad::Error> + Send,
+) -> Result<R, tenferro_ad::Error> {
+    anchor.runtime().with_eager_session(op)?
+}
+
 fn run_eager_op(
     op: &str,
     subscripts: &tenferro_einsum::EinsumSubscripts,
@@ -1370,9 +1382,8 @@ fn run_eager_op(
 ) -> Result<Vec<EagerTensor>, String> {
     match op {
         "matmul" => {
-            let out = inputs
-                .a
-                .matmul(inputs.b.as_ref().unwrap())
+            let b = inputs.b.as_ref().unwrap();
+            let out = in_eager_session(&inputs.a, |session| session.matmul(&inputs.a, b))
                 .map_err(|e| format!("matmul: {e}"))?;
             Ok(vec![out])
         }
@@ -1381,19 +1392,20 @@ fn run_eager_op(
             let b = inputs.b.as_ref().unwrap();
             let mut t = a.clone();
             for _ in 0..ELEMENTWISE_CHAIN_STEPS {
-                t = t
-                    .mul(a)
-                    .and_then(|value| value.add(b))
-                    .and_then(|value| value.tanh())
+                // One eager session per op, as each pre-#1938 tensor-owned op entered.
+                t = in_eager_session(a, |session| session.mul(&t, a))
+                    .and_then(|value| in_eager_session(a, |session| session.add(&value, b)))
+                    .and_then(|value| in_eager_session(a, |session| session.tanh(&value)))
                     .map_err(|e| format!("elementwise_chain: {e}"))?;
             }
             Ok(vec![t])
         }
         "batched_matmul" => {
-            let out = inputs
-                .a
-                .dot_general(inputs.b.as_ref().unwrap(), batched_config)
-                .map_err(|e| format!("batched_matmul: {e}"))?;
+            let b = inputs.b.as_ref().unwrap();
+            let out = in_eager_session(&inputs.a, |session| {
+                session.dot_general(&inputs.a, b, batched_config)
+            })
+            .map_err(|e| format!("batched_matmul: {e}"))?;
             Ok(vec![out])
         }
         "einsum" => {
@@ -1405,7 +1417,8 @@ fn run_eager_op(
             Ok(vec![out])
         }
         "qr" => {
-            let (q, r) = inputs.a.qr().map_err(|e| format!("qr: {e}"))?;
+            let (q, r) = in_eager_session(&inputs.a, |session| session.qr(&inputs.a))
+                .map_err(|e| format!("qr: {e}"))?;
             Ok(vec![q, r])
         }
         "solve" => {
@@ -1416,11 +1429,13 @@ fn run_eager_op(
             Ok(vec![x])
         }
         "svd" => {
-            let (u, s, vh) = inputs.a.svd().map_err(|e| format!("svd: {e}"))?;
+            let (u, s, vh) = in_eager_session(&inputs.a, |session| session.svd(&inputs.a))
+                .map_err(|e| format!("svd: {e}"))?;
             Ok(vec![u, s, vh])
         }
         "eigh" => {
-            let (w, v) = inputs.a.eigh().map_err(|e| format!("eigh: {e}"))?;
+            let (w, v) = in_eager_session(&inputs.a, |session| session.eigh(&inputs.a))
+                .map_err(|e| format!("eigh: {e}"))?;
             Ok(vec![w, v])
         }
         _ => Err(format!("unknown op: {op}")),
@@ -1859,10 +1874,10 @@ const ELEMENTWISE_CHAIN_STEPS: usize = 8;
 
 fn batched_matmul_cfg() -> DotGeneralConfig {
     DotGeneralConfig {
-        lhs_contracting_dims: vec![1],
-        rhs_contracting_dims: vec![0],
-        lhs_batch_dims: vec![2],
-        rhs_batch_dims: vec![2],
+        lhs_contracting_dims: vec![1].into(),
+        rhs_contracting_dims: vec![0].into(),
+        lhs_batch_dims: vec![2].into(),
+        rhs_batch_dims: vec![2].into(),
     }
 }
 
