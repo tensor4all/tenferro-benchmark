@@ -158,7 +158,15 @@ devcontainer exec --workspace-folder . bash -lc '
 ### Small-work public API suite (`cpu/small_work`)
 
 Reuses the 154 cases from `feat/95-small-work` (`38b9a83`): F64
-add/einsum/solve/gather/reduce_sum and C64 einsum. Shared/prepared operation routes use one clock interval for at least 1024 operations.
+add/einsum/solve/gather/reduce_sum and C64 einsum. Twelve further f64 einsum
+cases carry explicit `subscripts` and `operand_shapes` and guard tenferro-rs
+CPU fixes: `abcd,dbef->acef` at extent 4 (#1897, canonical-fallback fixed
+cost), `ax,asb->xsb` at D=4, s=2 (#1899, prepared einsum dispatch) and
+`ij,jk->ik` with 95x95 times 95x1 (#1904, in-session tiny GEMM). Each runs as
+prepared `execute` (`prepared-repeat`), prepared `execute_into` into a
+preallocated destination (`prepared-into-repeat`), the plain in-session
+`dot_general_read_into` (`dot-general-into-shared`) and, as a diagnostic,
+ordinary einsum (`concrete-shared`). Shared/prepared operation routes use one clock interval for at least 1024 operations.
 Fresh-session, eager and compiled per-call routes are opt-in diagnostics.
 No cross-library equivalents or automatic performance gates are added.
 

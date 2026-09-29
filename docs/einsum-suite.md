@@ -53,6 +53,7 @@ selected from the source package; they pin specific implementation questions.
 - `bin_batched_outer_product_compact_j16_k16_o64_t64`: compact batched outer-product kernel path.
 - `bin_batched_outer_product_noncompact_j16_k16_o64_t64`: non-compact batched outer-product path.
 - `bin_elementwise_mul_2048x2048`: binary elementwise einsum overhead and kernel behavior.
+- `bin_elementwise_mul_512x512`: pure Hadamard (`ab,ab->ab`) guard for tenferro-rs #1898; every index is a batch index, so it catches a per-element GEMM lowering. Compare 1T and 4T.
 - `nary_matmul_chain_64`: small N-ary case that exposes traced extension/runtime overhead.
 
 Each instance may include optional `intent` and `notes` fields. They explain why

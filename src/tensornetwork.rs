@@ -5,13 +5,22 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use serde::Deserialize;
+#[cfg(tenferro_session_einsum)]
+use tenferro_ad::EagerSession;
 use tenferro_ad::{EagerRuntime, EagerTensor};
+// tenferro-rs #1946 moved eager einsum onto the borrowed session. The legacy
+// path below only keeps this library compiling against the #1946 audit
+// baseline, so the cross-revision CPU binaries (benchmark_cpu_session,
+// cpu_route_diagnostic) can be built there; build.rs sets the cfg.
+#[cfg(not(tenferro_session_einsum))]
 use tenferro_einsum::EagerEinsumExt;
+#[cfg(tenferro_session_einsum)]
+use tenferro_einsum::EagerSessionEinsumExt;
 #[cfg(feature = "cuda")]
 use tenferro_einsum::TraceContextEinsumExt;
-use tenferro_tensor::Tensor as StorageTensor;
 #[cfg(feature = "cuda")]
 use tenferro_runtime::{TraceContext, TraceValue};
+use tenferro_tensor::Tensor as StorageTensor;
 
 pub const DEFAULT_FILL_VALUE: f32 = 0.840_896_4; // 0.5f32.powf(0.4)
 pub const DEFAULT_BOND_DIM: usize = 2;
@@ -143,6 +152,51 @@ impl PreparedEagerTree {
         })
     }
 
+    /// Execute the whole tree inside one borrowed eager session of the
+    /// inputs' runtime (one session entry per tree execution).
+    #[cfg(tenferro_session_einsum)]
+    pub fn execute(&self, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
+        let runtime = inputs
+            .first()
+            .ok_or("tree has no inputs")?
+            .runtime()
+            .clone();
+        runtime
+            .with_eager_session(|session| self.execute_in(session, inputs))
+            .map_err(|e| e.to_string())?
+    }
+
+    /// Execute the tree on an already-entered eager session.
+    #[cfg(tenferro_session_einsum)]
+    pub fn execute_in(
+        &self,
+        session: &mut EagerSession<'_>,
+        inputs: &[EagerTensor],
+    ) -> Result<EagerTensor, String> {
+        match self {
+            Self::Input(index) => inputs
+                .get(*index)
+                .cloned()
+                .ok_or_else(|| format!("tensorindex {index} out of range")),
+            Self::Contract {
+                children,
+                subscripts,
+            } => {
+                let operands = children
+                    .iter()
+                    .map(|child| child.execute_in(session, inputs))
+                    .collect::<Result<Vec<_>, _>>()?;
+                let refs = operands.iter().collect::<Vec<_>>();
+                session
+                    .einsum_subscripts(&refs, subscripts)
+                    .map_err(|e| e.to_string())
+            }
+        }
+    }
+
+    /// Execute the tree; each contraction enters its own eager session
+    /// (tensor-owned einsum at the #1946 audit baseline).
+    #[cfg(not(tenferro_session_einsum))]
     pub fn execute(&self, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
         match self {
             Self::Input(index) => inputs
@@ -166,7 +220,24 @@ impl PreparedEagerTree {
     }
 }
 
+#[cfg(tenferro_session_einsum)]
 pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
+    let runtime = inputs
+        .first()
+        .ok_or("tree has no inputs")?
+        .runtime()
+        .clone();
+    runtime
+        .with_eager_session(|session| contract_tree_eager_in(session, node, inputs))
+        .map_err(|e| e.to_string())?
+}
+
+#[cfg(tenferro_session_einsum)]
+fn contract_tree_eager_in(
+    session: &mut EagerSession<'_>,
+    node: &TreeNode,
+    inputs: &[EagerTensor],
+) -> Result<EagerTensor, String> {
     if node.isleaf {
         let index = node
             .tensorindex
@@ -179,6 +250,33 @@ pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<Ea
             .ok_or_else(|| format!("tensorindex {index} out of range"));
     }
 
+    let eins = node.eins.as_ref().ok_or("internal node missing eins")?;
+    let args = node.args.as_ref().ok_or("internal node missing args")?;
+    let child_tensors: Vec<EagerTensor> = args
+        .iter()
+        .map(|child| contract_tree_eager_in(session, child, inputs))
+        .collect::<Result<_, _>>()?;
+    let refs: Vec<&EagerTensor> = child_tensors.iter().collect();
+    let expr = integer_labels_to_expr(&eins.ixs, &eins.iy);
+    session
+        .einsum(&refs, &expr)
+        .map_err(|e| format!("einsum ({expr}): {e}"))
+}
+
+/// Legacy (#1946 audit baseline) tree contraction; see the import note.
+#[cfg(not(tenferro_session_einsum))]
+pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
+    if node.isleaf {
+        let index = node
+            .tensorindex
+            .ok_or("leaf missing tensorindex")?
+            .checked_sub(1)
+            .ok_or("tensorindex must be >= 1")?;
+        return inputs
+            .get(index)
+            .cloned()
+            .ok_or_else(|| format!("tensorindex {index} out of range"));
+    }
     let eins = node.eins.as_ref().ok_or("internal node missing eins")?;
     let args = node.args.as_ref().ok_or("internal node missing args")?;
     let child_tensors: Vec<EagerTensor> = args

@@ -195,8 +195,3 @@ required-features = ["cuda"]
 name = "benchmark_gpu_permutation_webgpu"
 path = "src/bin/benchmark_gpu_permutation_webgpu.rs"
 required-features = ["webgpu"]
-
-[[example]]
-name = "svd_backward_panic_mwe"
-path = "examples/svd_backward_panic_mwe.rs"
-required-features = ["cpu-faer"]

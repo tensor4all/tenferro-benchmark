@@ -11,10 +11,10 @@ use num_complex::{Complex32, Complex64};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuBackendKind, CpuExecSession};
 use tenferro_fft::{
-    EagerTensorFftExt, FftExecutor, FftNorm, TensorFftExt, TensorReadFftExt, TracedTensorFftExt,
+    EagerSessionFftExt, FftExecutor, FftNorm, TensorFftExt, TensorReadFftExt, TracedTensorFftExt,
 };
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
-use tenferro_tensor::{BackendSessionHost, Tensor, TensorRead};
+use tenferro_tensor::{BackendSessionHost, SessionEntryError, Tensor, TensorRead};
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
 
@@ -295,7 +295,7 @@ fn time_case(
             black_box(&outputs);
         }
         Ok::<_, tenferro_tensor::Error>(median_iqr(&times))
-    })?)
+    })??)
 }
 
 fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
@@ -328,13 +328,15 @@ fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
 fn time_eager_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
     let runtime = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?)?;
     let input = EagerTensor::from_tensor_in(input.duplicate()?, runtime)?;
+    // tenferro-rs #1938 moved eager FFTs onto `EagerSession`. Enter one eager
+    // session per call, as the pre-#1938 tensor-owned FFT methods did.
     let run = || -> Result<EagerTensor, tenferro_ad::Error> {
-        match op {
-            Op::Fft => input.fft(None, -1, FftNorm::Backward),
-            Op::Ifft => input.ifft(None, -1, FftNorm::Backward),
-            Op::Rfft => input.rfft(None, -1, FftNorm::Backward),
-            Op::Irfft => input.irfft(Some(n), -1, FftNorm::Backward),
-        }
+        input.runtime().with_eager_session(|session| match op {
+            Op::Fft => session.fft(&input, None, -1, FftNorm::Backward),
+            Op::Ifft => session.ifft(&input, None, -1, FftNorm::Backward),
+            Op::Rfft => session.rfft(&input, None, -1, FftNorm::Backward),
+            Op::Irfft => session.irfft(&input, Some(n), -1, FftNorm::Backward),
+        })?
     };
 
     for _ in 0..args.warmups.max(1) {
@@ -406,7 +408,7 @@ fn run_fft(
 fn with_cpu_session<R>(
     backend: &mut CpuBackend,
     f: impl for<'a> FnOnce(&'a mut CpuExecSession<'a>) -> R + Send,
-) -> R
+) -> Result<R, SessionEntryError>
 where
     R: Send,
 {

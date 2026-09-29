@@ -458,6 +458,27 @@ cmake --build build/cpp-plan-test --target einsum_plan_test
 ctest --test-dir build/cpp-plan-test --output-on-failure
 ```
 
+## Route coverage and regression detection
+
+See `docs/regression-detection.md`. Keep coverage (`BENCH_COVERAGE=quick|full`,
+versioned manifests under `benchmarks/cpu/manifests/`) separate from effort
+(`BENCH_EFFORT=scan|standard|confirm|aa`). A scan only flags suspects; a
+performance claim needs a paired, balanced, A/A-characterized confirmation run
+with a declared `benchmarks/cpu/confirmation.yaml` (never fill its thresholds
+from candidate data). Route-contract diagnostics (`scripts/run_route_diagnostic.sh`)
+are counter runs, never timing. Unsupported, failed, missing and unselected
+cases never count as covered. Regenerate `cpu/session_matrix` cases with
+`scripts/generate_session_matrix_cases.py` and bump its manifest version when
+cases change. Checks:
+
+```bash
+uv run python -m unittest tests/test_session_matrix_suite.py tests/test_route_contract.py \
+  tests/test_route_coverage.py tests/test_regression_detector.py tests/test_small_work_suite.py
+uv run python scripts/route_coverage.py entrypoints
+bash tests/test_paired_timing_guard.sh
+cargo test --bin cpu_route_diagnostic --bin benchmark_cpu_session
+```
+
 ## Short-operation sampling
 
 For very short CPU/GPU operations, measure many declared operations in one

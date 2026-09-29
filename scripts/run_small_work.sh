@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Ordinary cpu/small_work suite; optional BENCH_INSTANCE=id[,id...] selection.
+# Ordinary cpu/small_work suite. Coverage BENCH_COVERAGE=quick|full (versioned
+# manifest benchmarks/cpu/manifests/small_work.yaml; BENCH_INCLUDE_SETUP_DIAGNOSTICS=1
+# is the older spelling of full), effort BENCH_EFFORT=scan|standard|confirm, and
+# an optional BENCH_INSTANCE=id[,id...] filter inside the coverage choice.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -27,6 +30,7 @@ RUN_DIR="$PROJECT_DIR/data/results/$BENCHMARK_TARGET_PROFILE/cpu/small_work/$TIM
 mkdir -p "$RUN_DIR"
 "$PYTHON" "$SCRIPT_DIR/collect_cpu_info.py" --markdown > "$RUN_DIR/cpu_info.md"
 export BENCHMARK_COMMIT="${BENCHMARK_COMMIT:-$(git rev-parse HEAD)}"
+export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE TENFERRO_CPU_FEATURES BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
 failed=0
 for threads in "${THREAD_COUNTS[@]}"; do
     configure_cpu_thread_env "$threads"
@@ -43,7 +47,16 @@ metadata = yaml.safe_load(path.read_text())
 metadata['environment'].setdefault('env', {}).update({
     'BENCHMARK_COMMIT': os.environ['BENCHMARK_COMMIT'], 'BENCHMARK_BUILD_PROFILE': 'release',
     'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
-    'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE', 'all 154')})
+    'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None})
+# What this run actually selects, from the versioned manifest (never "all N").
+sys.path.insert(0, 'scripts')
+import benchmark_small_work as suite
+_, _, manifest, coverage, expected, selected, raw = suite.plan()
+metadata['collection'] = {
+    'command': os.environ.get('BENCH_COMMAND', ''), 'coverage': coverage,
+    'manifest_version': manifest['manifest_version'], 'selection_filter': raw,
+    'expected_cases': len(expected), 'selected_cases': len(selected),
+    'effort': os.environ.get('BENCH_EFFORT') or 'standard'}
 path.write_text(yaml.safe_dump(metadata, sort_keys=False))
 PY
     assert_benchmark_host_idle

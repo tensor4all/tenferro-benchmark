@@ -60,6 +60,29 @@
     "suite_file": { "type": "string", "minLength": 1 },
     "timestamp": { "type": "string", "format": "date-time", "minLength": 1 },
     "tenferro_rs": { "$ref": "#/$defs/tenferro_rs" },
+    "harness": {
+      "type": "object",
+      "required": ["commit", "dirty"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string" },
+        "commit": { "type": "string", "minLength": 1 },
+        "dirty": { "type": ["boolean", "null"] }
+      }
+    },
+    "collection": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "command": { "type": "string" },
+        "coverage": { "enum": ["quick", "full"] },
+        "effort": { "enum": ["scan", "standard", "confirm", "aa"] },
+        "manifest_version": { "type": "integer" },
+        "selection_filter": { "type": ["string", "null"] },
+        "expected_cases": { "type": "integer" },
+        "selected_cases": { "type": "integer" }
+      }
+    },
     "environment": { "$ref": "#/$defs/environment" },
     "blas": { "$ref": "#/$defs/blas" },
     "python_backends": { "$ref": "#/$defs/python_backends" },
@@ -78,6 +101,7 @@
           "type": "string",
           "pattern": "^[0-9a-fA-F]{7,40}$"
         },
+        "resolved_path": { "type": "string" },
         "dirty": { "type": ["boolean", "null"] },
         "features": {
           "type": "array",

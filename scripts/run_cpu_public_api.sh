@@ -81,6 +81,11 @@ prepare_cpu_benchmark_python_venv "$PROJECT_DIR"
 
 ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 
+# The coverage manifest must name only entrypoints of the tenferro-rs revision
+# under test; a removed spelling fails here instead of silently counting.
+"$PROJECT_DIR/.venv/bin/python" "$SCRIPT_DIR/route_coverage.py" entrypoints \
+    --tenferro-dir "$PROJECT_DIR/extern/tenferro-rs"
+
 # shellcheck source=scripts/benchmark_host_idle.sh
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
 assert_benchmark_host_idle
