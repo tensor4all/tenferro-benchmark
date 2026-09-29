@@ -1,7 +1,11 @@
 schema_version: 1
 suite_id: cpu/small_work
 title: CPU small-work public API benchmarks
-description: 154 saved F64 add/einsum/solve/gather/reduce_sum and C64 einsum cases.
+description: >-
+  166 saved F64 add/einsum/solve/gather/reduce_sum and C64 einsum cases,
+  including 12 generic-subscript f64 einsum cases that guard tenferro-rs
+  #1897 (canonical-fallback fixed cost), #1899 (prepared einsum dispatch)
+  and #1904 (in-session tiny GEMM).
 defaults:
   device:
     kind: cpu
@@ -174,3 +178,15 @@ problems:
   - reduce_sum_f64_concrete-shared_size16_single
   - reduce_sum_f64_concrete-fresh_size256_single
   - reduce_sum_f64_concrete-shared_size256_single
+  - einsum_f64_concrete-shared_abcd-dbef-acef_d4_single
+  - einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single
+  - einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single
+  - einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single
+  - einsum_f64_concrete-shared_ax-asb-xsb_d4s2_single
+  - einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single
+  - einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single
+  - einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single
+  - einsum_f64_concrete-shared_ij-jk-ik_m95k95n1_single
+  - einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single
+  - einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single
+  - einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single

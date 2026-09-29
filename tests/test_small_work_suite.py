@@ -17,10 +17,10 @@ class SmallWorkSuiteTest(unittest.TestCase):
         with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):
             cases, config = suite.selected_cases()
         self.assertGreater(len(cases), 0)
-        self.assertLess(len(cases), 154)
+        self.assertLess(len(cases), 166)
         self.assertFalse(any(c["api_tier"].endswith(("-fresh", "-setup")) for c in cases))
         with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_INCLUDE_SETUP_DIAGNOSTICS": "1"}):
-            self.assertEqual(len(suite.selected_cases()[0]), 154)
+            self.assertEqual(len(suite.selected_cases()[0]), 166)
         self.assertEqual(len({c['id'] for c in cases}), len(cases))
         self.assertEqual(config['runs'], 15)
         with patch.dict(os.environ, {"BENCH_INSTANCE": cases[0]['id']}):
@@ -28,6 +28,29 @@ class SmallWorkSuiteTest(unittest.TestCase):
         with patch.dict(os.environ, {"BENCH_INSTANCE": "misspelled"}):
             with self.assertRaises(ValueError):
                 suite.selected_cases()
+
+    def test_generic_einsum_cases_carry_subscripts_and_issue_intent(self):
+        with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_INCLUDE_SETUP_DIAGNOSTICS": "1"}):
+            cases, _ = suite.selected_cases()
+        generic = [c for c in cases if "operand_shapes" in c]
+        self.assertEqual(len(generic), 12)
+        for issue, subscripts in [("#1897", "abcd,dbef->acef"), ("#1899", "ax,asb->xsb"),
+                                  ("#1904", "ij,jk->ik")]:
+            family = [c for c in generic if c["subscripts"] == subscripts]
+            self.assertEqual({c["api_tier"] for c in family},
+                             {"concrete-shared", "prepared-repeat", "prepared-into-repeat",
+                              "dot-general-into-shared"})
+            self.assertTrue(all(issue in c["intent"] for c in family))
+        with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):
+            default_ids = {c["id"] for c in suite.selected_cases()[0]}
+        # Steady-state generic routes are in the default run; ordinary einsum is a diagnostic.
+        self.assertIn("einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single", default_ids)
+        self.assertIn("einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single", default_ids)
+        self.assertIn("einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single", default_ids)
+        self.assertNotIn("einsum_f64_concrete-shared_ax-asb-xsb_d4s2_single", default_ids)
+        row = dict(generic[1], samples=[])
+        self.assertEqual(suite.shape_label(row), "`abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4")
+        self.assertEqual(suite.shape_label({"shape": [2, 2]}), "2×2")
 
     def test_noisy_chain_and_failure_are_retained(self):
         with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):

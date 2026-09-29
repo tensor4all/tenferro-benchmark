@@ -43,7 +43,7 @@ metadata = yaml.safe_load(path.read_text())
 metadata['environment'].setdefault('env', {}).update({
     'BENCHMARK_COMMIT': os.environ['BENCHMARK_COMMIT'], 'BENCHMARK_BUILD_PROFILE': 'release',
     'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
-    'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE', 'all 154')})
+    'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE', 'all 166')})
 path.write_text(yaml.safe_dump(metadata, sort_keys=False))
 PY
     assert_benchmark_host_idle
