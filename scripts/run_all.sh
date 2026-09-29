@@ -31,8 +31,11 @@ set -euo pipefail
 # Set RUN_PUBLIC_API_SUITE=1 to also run scripts/run_cpu_public_api.sh (the
 # cpu/public_api suite) sequentially after CPU FFT if enabled.
 #
-# Set RUN_SMALL_WORK_SUITE=1 to run cpu/small_work sequentially as well.
-# It is included by default in multi-thread-count invocations.
+# Set RUN_SMALL_WORK_SUITE=1 to run cpu/small_work and cpu/session_matrix
+# sequentially as well. It is included by default in multi-thread-count
+# invocations, followed by the cpu/route_contract counter diagnostics
+# (RUN_ROUTE_DIAGNOSTIC=0 skips them). BENCH_COVERAGE=quick|full and
+# BENCH_EFFORT=scan|standard|confirm apply to these suites.
 #
 # Set RUN_PERMUTATION_SUITE=1 to also run scripts/run_permutation.sh (the
 # cpu/permutation suite) sequentially after everything above completes; see
@@ -76,6 +79,11 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     if [[ "${RUN_SMALL_WORK_SUITE:-1}" == "1" ]]; then
         "$SCRIPT_DIR/run_small_work.sh" "${THREAD_COUNTS[@]}"
         "$SCRIPT_DIR/run_cpu_session.sh" "${THREAD_COUNTS[@]}"
+        # Deterministic route-contract diagnostics (counters, not timing).
+        if [[ "${RUN_ROUTE_DIAGNOSTIC:-1}" == "1" ]]; then
+            "$SCRIPT_DIR/run_route_diagnostic.sh" "${THREAD_COUNTS[@]}" \
+                || echo "WARNING: cpu/route_contract reported a deterministic route-contract failure (exit $?)." >&2
+        fi
     fi
 
     if [[ "${RUN_PERMUTATION_SUITE:-1}" == "1" ]]; then

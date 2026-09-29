@@ -23,7 +23,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 COVERAGES = ("quick", "full")
-EFFORTS = ("scan", "standard", "confirm")
+EFFORTS = ("scan", "standard", "confirm", "aa")
 SCAN_DEFAULT = {"warmups": 1, "runs": 3}
 CONFIRMATION_CONFIG = ROOT / "benchmarks/cpu/confirmation.yaml"
 
@@ -140,6 +140,15 @@ def resolve_effort(run_defaults: dict[str, Any], effort_defaults: dict[str, Any]
     if effort == "scan":
         scan = dict(SCAN_DEFAULT, **((effort_defaults or {}).get("scan") or {}))
         return {"effort": effort, "warmups": scan["warmups"], "runs": scan["runs"]}
+    if effort == "aa":
+        # A/A noise characterization runs before thresholds are declared, so
+        # its repetitions are explicit inputs, never defaults.
+        try:
+            warmups, runs = int(os.environ["BENCH_AA_WARMUPS"]), int(os.environ["BENCH_AA_RUNS"])
+        except (KeyError, ValueError) as error:
+            raise SelectionError("BENCH_EFFORT=aa needs integer BENCH_AA_WARMUPS and "
+                                 "BENCH_AA_RUNS") from error
+        return {"effort": effort, "warmups": warmups, "runs": runs}
     config = load_confirmation_config()
     reps = config["repetitions"]
     return {"effort": effort, "warmups": reps["warmups"], "runs": reps["runs"],

@@ -76,7 +76,7 @@
       "properties": {
         "command": { "type": "string" },
         "coverage": { "enum": ["quick", "full"] },
-        "effort": { "enum": ["scan", "standard", "confirm"] },
+        "effort": { "enum": ["scan", "standard", "confirm", "aa"] },
         "manifest_version": { "type": "integer" },
         "selection_filter": { "type": ["string", "null"] },
         "expected_cases": { "type": "integer" },
