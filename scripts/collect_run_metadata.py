@@ -555,6 +555,26 @@ def collect_julia_backend() -> dict[str, Any]:
     }
 
 
+def collect_harness(harness_dir: Path) -> dict[str, Any]:
+    """Revision and dirty state of this benchmark repository."""
+    try:
+        commit = run_git_rev_parse(harness_dir)
+    except MetadataError:
+        commit = "unknown"
+    return {"path": str(harness_dir), "commit": commit, "dirty": git_dirty(harness_dir)}
+
+
+def collect_collection(args: argparse.Namespace) -> dict[str, Any]:
+    """Exact command and case selection of this collection, when provided."""
+    collection: dict[str, Any] = {}
+    command = args.command or os.environ.get("BENCH_COMMAND")
+    if command:
+        collection["command"] = command
+    if args.collection_json:
+        collection.update(json.loads(args.collection_json))
+    return collection
+
+
 def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
     safe_suite_id_parts(args.suite_id)
     safe_target_profile(args.target_profile)
@@ -574,6 +594,7 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
             "dirty": git_dirty(tenferro_dir),
             "features": parse_features(args.features),
         },
+        "harness": collect_harness(args.harness_dir),
         "environment": collect_environment(),
         "timing_policy": {
             "version": 2,
@@ -594,6 +615,11 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
             "setup_diagnostics": os.environ.get("BENCH_INCLUDE_SETUP_DIAGNOSTICS") == "1",
         },
     }
+    if tenferro_dir is not None and tenferro_dir.exists():
+        metadata["tenferro_rs"]["resolved_path"] = str(tenferro_dir.resolve())
+    collection = collect_collection(args)
+    if collection:
+        metadata["collection"] = collection
     blas = collect_blas(args.blas)
     if blas is not None:
         metadata["blas"] = blas
@@ -619,6 +645,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--blas", choices=["openblas", "accelerate", "mkl", "none"])
     parser.add_argument("--cuda-device-ordinal", type=int)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--harness-dir", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--command", help="exact collection command (default: $BENCH_COMMAND)")
+    parser.add_argument("--collection-json",
+                        help="JSON object merged into `collection` (case selection, effort, ...)")
     return parser.parse_args()
 
 
