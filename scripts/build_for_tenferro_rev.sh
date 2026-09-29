@@ -20,6 +20,10 @@ shift 2
 BINS=("${@:-benchmark_cpu_session cpu_route_diagnostic}")
 # shellcheck disable=SC2206
 BINS=(${BINS[*]})
+if [[ ! -d "$TENFERRO_DIR/crates/tenferro-cpu" ]]; then
+    echo "ERROR: $TENFERRO_DIR is not a tenferro-rs checkout" >&2
+    exit 1
+fi
 FEATURES="${TENFERRO_CPU_FEATURES:-cpu-faer}"
 PROFILE="${BENCH_BUILD_PROFILE:-release}"
 LINK="$PROJECT_DIR/extern/tenferro-rs"

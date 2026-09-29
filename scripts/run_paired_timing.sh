@@ -57,7 +57,8 @@ case "$MODE" in
         DIR_B="${2:?candidate tenferro-rs dir required}"
         CONFIG="${BENCH_CONFIRM_CONFIG:-$PROJECT_DIR/benchmarks/cpu/confirmation.yaml}"
         export BENCH_CONFIRM_CONFIG="$CONFIG" BENCH_EFFORT=confirm
-        eval "$("$PYTHON" - "$CONFIG" "$DIR_A" "$DIR_B" "$HARNESS" <<'PY'
+        # Capture first: a failing command substitution inside eval would not stop the script.
+        declared="$("$PYTHON" - "$CONFIG" "$DIR_A" "$DIR_B" "$HARNESS" <<'PY'
 import subprocess, sys
 sys.path.insert(0, "scripts")
 import bench_selection
@@ -79,7 +80,8 @@ print(f"export BENCH_COVERAGE={config['cases']['coverage']}")
 if config["build"]["features"] != __import__("os").environ["TENFERRO_CPU_FEATURES"]:
     sys.exit("ERROR: build.features does not match TENFERRO_CPU_FEATURES")
 PY
-)"
+)" || exit 1
+        eval "$declared"
         ARM_A=baseline ARM_B=candidate
         SUITE=session_matrix_paired
         COMMAND="BENCH_CONFIRM_CONFIG=$CONFIG ${BENCH_AA_DIR:+BENCH_AA_DIR=$BENCH_AA_DIR }$COMMAND"
