@@ -36,6 +36,8 @@ class ManifestTest(unittest.TestCase):
                              "bdot_f64_b1024_m4n4k4_canonical_alloc_auto",
                              "hadamard_f64_m64n64_einsum_alloc", "chain3_f64_n4_einsum_alloc"]:
             self.assertIn(case_id, quick)
+        for stream in ("fixed", "mixed", "fresh", "strides"):
+            self.assertIn(f"stream_f64_{stream}_len32_einsum_alloc", quick)
         cases = suite.load_cases()
         # The batched op and the 1024-call loop are different workloads.
         self.assertEqual(cases[F2[0]]["route"]["workload_shape"], "one-batched-op")

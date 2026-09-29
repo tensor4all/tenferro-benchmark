@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/session_matrix.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/session_matrix.yaml"
 SUITE = ROOT / "benchmarks/cpu/session_matrix.yaml"
-MANIFEST_VERSION = 2
+MANIFEST_VERSION = 3
 SUITE_ID = "cpu/session_matrix"
 
 # Default Auto lane cost model of tenferro-cpu (dot_runtime.rs at 5a4e7fd84;
@@ -233,6 +233,34 @@ def chain_case(*, n: int, coverage: str) -> dict:
     }
 
 
+def stream_case(stream: str, coverage: str) -> dict:
+    return {
+        "id": f"stream_f64_{stream}_len32_einsum_alloc",
+        "workload": "stream",
+        "operation": "einsum",
+        "dtype": "f64",
+        "stream": stream,
+        "length": 32,
+        "keys": 4,
+        "providers": ["faer"],
+        "coverage": coverage,
+        "pair": None,
+        "route": {
+            "execution_path": "concrete-einsum",
+            "entrypoint": "TensorReadEinsumExt::einsum_read",
+            "output": "allocating",
+            "representation": "view",
+            "layout": "direct-strided" if stream == "strides" else "direct",
+            "session_boundary": "shared-session",
+            "policy": "auto",
+            "workload_shape": f"key-stream:{stream}",
+        },
+        "intent": ("Contraction-key stream (tenferro-benchmark #107): one sample is the whole "
+                   "32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride "
+                   "calls expose repeated planning or cache misses; planning is inside the timer."),
+    }
+
+
 def batched_cases() -> list[dict]:
     cases = []
 
@@ -285,6 +313,8 @@ def batched_cases() -> list[dict]:
     cases.append(hadamard_case(n=256, via="einsum", coverage="full"))
     cases.append(chain_case(n=4, coverage="quick"))
     cases.append(chain_case(n=64, coverage="full"))
+    for stream in ("fixed", "mixed", "fresh", "strides"):
+        cases.append(stream_case(stream, "quick"))
     return cases
 
 

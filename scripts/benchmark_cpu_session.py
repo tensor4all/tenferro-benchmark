@@ -34,7 +34,9 @@ SUITE = ROOT / "benchmarks/cpu/session_matrix.yaml"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/session_matrix.yaml"
 INSTANCES = ROOT / "data/instances/session_matrix.json"
 SUITE_ID = "cpu/session_matrix"
-BATCHED = {"batched_dot", "batched_einsum", "hadamard", "chain3"}
+BATCHED = {"batched_dot", "batched_einsum", "hadamard", "chain3", "stream"}
+# Workloads the provider-spy diagnostic can run (key streams are timing-only).
+DIAGNOSABLE = BATCHED - {"stream"}
 CASE_TIMEOUT_S = int(os.environ.get("BENCH_CASE_TIMEOUT_S", "900"))
 
 
@@ -273,7 +275,7 @@ def main():
         return
     if args.list_diagnostic_cases:
         _, _, _, selected, _, cases = plan(args.coverage)
-        print(",".join(i for i in selected if cases[i]["workload"] in BATCHED))
+        print(",".join(i for i in selected if cases[i]["workload"] in DIAGNOSABLE))
         return
     if args.describe_selection:
         manifest, coverage, expected, selected, raw, _ = plan(args.coverage)

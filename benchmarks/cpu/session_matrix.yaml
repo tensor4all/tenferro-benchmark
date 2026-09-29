@@ -94,3 +94,7 @@ problems:
   - hadamard_f64_m256n256_einsum_alloc
   - chain3_f64_n4_einsum_alloc
   - chain3_f64_n64_einsum_alloc
+  - stream_f64_fixed_len32_einsum_alloc
+  - stream_f64_mixed_len32_einsum_alloc
+  - stream_f64_fresh_len32_einsum_alloc
+  - stream_f64_strides_len32_einsum_alloc

@@ -2,6 +2,8 @@
 //! one-operation batched routes of `cpu/session_matrix` (`--case <id>`).
 #[path = "../bench_support/batch_route.rs"]
 mod batch_route;
+#[path = "../bench_support/shape_stream.rs"]
+mod shape_stream;
 
 use std::{error::Error, hint::black_box, time::Instant};
 use tenferro_cpu::{CpuBackend, CpuBackendKind};
@@ -52,6 +54,9 @@ fn run_batched_case(args: &[String]) -> Result<()> {
     let target_ns: u128 = get("--target-ns", "1000000").parse()?;
     let instances = get("--instances", "data/instances/session_matrix.json");
     tenferro_einsum_benchmark::thread_enforcement::enforce_thread_request(threads)?;
+    if let Some(stream) = shape_stream::load_stream(&instances, &case_id)? {
+        return run_stream_case(&stream, threads, warmups, samples);
+    }
     let spec = load_cases(&instances)?
         .into_iter()
         .find(|c| c.id == case_id)
@@ -175,6 +180,52 @@ fn run_batched_case(args: &[String]) -> Result<()> {
             println!("{row}");
         }
     }
+    Ok(())
+}
+
+/// Time a contraction-key stream: one sample is one whole call sequence.
+fn run_stream_case(
+    spec: &shape_stream::StreamSpec,
+    threads: usize,
+    warmups: usize,
+    samples: usize,
+) -> Result<()> {
+    let mut backend = CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?;
+    let info = backend.execution_info();
+    tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
+        "CpuBackend",
+        info.worker_count(),
+        threads,
+    )?;
+    // Inputs for every call of every pass exist before the session is entered.
+    let stream = shape_stream::Stream::new(spec, 1 + warmups + samples)?;
+    let (elapsed, worst) = backend.with_backend_session(|session| {
+        stream.measure(session, warmups).map_err(|e| e.to_string())
+    })??;
+    println!(
+        "{}",
+        serde_json::json!({
+            "case_id": spec.id, "workload": "stream", "stream": spec.stream,
+            "sequence_order": match spec.stream.as_str() {
+                "mixed" | "strides" => format!("round-robin over {} keys", spec.keys),
+                "fresh" => "every call a key unseen in this process".into(),
+                _ => "one key".to_string(),
+            },
+            "operation": "einsum", "dtype": "f64", "provider": "faer", "route": spec.route,
+            "requested_threads": threads, "worker_count": info.worker_count(),
+            "execution_mode": format!("{:?}", info.execution_mode()),
+            "operations_per_sample": spec.length, "warmups": warmups, "samples_ns": elapsed,
+            "correctness": "passed", "max_abs_error": worst,
+            "timing_scope": "whole_call_sequence_single_interval",
+            "planning_in_timer": true,
+            "cache_mode": "default (no bypass); pass 0 is an untimed initialization pass",
+            "plan_counters": {"builds": "unavailable", "hits": "unavailable",
+                              "misses": "unavailable", "evictions": "unavailable",
+                              "cache_bytes": "unavailable"},
+            "outside_timer": ["input generation for every call", "view construction",
+                              "backend construction", "session entry", "output checks"],
+        })
+    );
     Ok(())
 }
 

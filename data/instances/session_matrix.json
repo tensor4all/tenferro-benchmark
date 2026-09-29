@@ -2294,5 +2294,105 @@
       "workload_shape": "multi-operand-contraction"
     },
     "intent": "Three-operand contraction through the public concrete einsum route: path planning plus two binary contractions per call (tiny fixed-overhead and larger control)."
+  },
+  {
+    "id": "stream_f64_fixed_len32_einsum_alloc",
+    "workload": "stream",
+    "operation": "einsum",
+    "dtype": "f64",
+    "stream": "fixed",
+    "length": 32,
+    "keys": 4,
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumExt::einsum_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:fixed"
+    },
+    "intent": "Contraction-key stream (tenferro-benchmark #107): one sample is the whole 32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride calls expose repeated planning or cache misses; planning is inside the timer."
+  },
+  {
+    "id": "stream_f64_mixed_len32_einsum_alloc",
+    "workload": "stream",
+    "operation": "einsum",
+    "dtype": "f64",
+    "stream": "mixed",
+    "length": 32,
+    "keys": 4,
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumExt::einsum_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:mixed"
+    },
+    "intent": "Contraction-key stream (tenferro-benchmark #107): one sample is the whole 32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride calls expose repeated planning or cache misses; planning is inside the timer."
+  },
+  {
+    "id": "stream_f64_fresh_len32_einsum_alloc",
+    "workload": "stream",
+    "operation": "einsum",
+    "dtype": "f64",
+    "stream": "fresh",
+    "length": 32,
+    "keys": 4,
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumExt::einsum_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:fresh"
+    },
+    "intent": "Contraction-key stream (tenferro-benchmark #107): one sample is the whole 32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride calls expose repeated planning or cache misses; planning is inside the timer."
+  },
+  {
+    "id": "stream_f64_strides_len32_einsum_alloc",
+    "workload": "stream",
+    "operation": "einsum",
+    "dtype": "f64",
+    "stream": "strides",
+    "length": 32,
+    "keys": 4,
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumExt::einsum_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct-strided",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:strides"
+    },
+    "intent": "Contraction-key stream (tenferro-benchmark #107): one sample is the whole 32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride calls expose repeated planning or cache misses; planning is inside the timer."
   }
 ]
