@@ -12,7 +12,7 @@ use tenferro_cpu::{CpuBackend, CpuBackendKind};
 use tenferro_einsum::{ContractionTree, EagerEinsumExt, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, CompiledEinsum};
 use tenferro_runtime::{Runtime, TensorRead};
-use tenferro_tensor::{DotGeneralConfig, Tensor, TensorDot};
+use tenferro_tensor::{BackendSessionHost, DotGeneralConfig, Tensor};
 
 const DEFAULT_N: usize = 1024;
 const DEFAULT_WARMUPS: usize = 3;
@@ -58,10 +58,10 @@ fn bool_env(key: &str) -> bool {
 
 fn matmul_ji_kj_ki_config() -> DotGeneralConfig {
     DotGeneralConfig {
-        lhs_contracting_dims: vec![0],
-        rhs_contracting_dims: vec![1],
-        lhs_batch_dims: vec![],
-        rhs_batch_dims: vec![],
+        lhs_contracting_dims: vec![0].into(),
+        rhs_contracting_dims: vec![1].into(),
+        lhs_batch_dims: vec![].into(),
+        rhs_batch_dims: vec![].into(),
     }
 }
 
@@ -197,9 +197,20 @@ fn main() -> Result<(), String> {
 
     let mut direct_backend = CpuBackend::with_kind(CpuBackendKind::Blas)
         .map_err(|err| format!("failed to create BLAS backend: {err}"))?;
+    // tenferro-rs #1938 removed the owned-tensor `dot_general` spelling; the
+    // public session operation is `dot_general_read` over owned-tensor reads,
+    // so this row and `tenferro_blas_dot_general_read` now reach the same call.
+    // Both keep the pre-#1938 per-call backend entry inside the timed region.
     measure("tenferro_blas_dot_general", warmups, runs, || {
         let out = direct_backend
-            .dot_general(&lhs, &rhs, &config)
+            .with_backend_session(|session| {
+                session.dot_general_read(
+                    TensorRead::from_tensor(&lhs),
+                    TensorRead::from_tensor(&rhs),
+                    &config,
+                )
+            })
+            .map_err(|err| err.to_string())?
             .map_err(|err| err.to_string())?;
         Ok(out)
     })?;
@@ -208,11 +219,14 @@ fn main() -> Result<(), String> {
         .map_err(|err| format!("failed to create BLAS backend: {err}"))?;
     measure("tenferro_blas_dot_general_read", warmups, runs, || {
         let out = read_backend
-            .dot_general_read(
-                TensorRead::from_tensor(&lhs),
-                TensorRead::from_tensor(&rhs),
-                &config,
-            )
+            .with_backend_session(|session| {
+                session.dot_general_read(
+                    TensorRead::from_tensor(&lhs),
+                    TensorRead::from_tensor(&rhs),
+                    &config,
+                )
+            })
+            .map_err(|err| err.to_string())?
             .map_err(|err| err.to_string())?;
         Ok(out)
     })?;
@@ -274,8 +288,8 @@ mod tests {
     fn matmul_config_matches_colmajor_einsum_labels() {
         let config = matmul_ji_kj_ki_config();
 
-        assert_eq!(config.lhs_contracting_dims, vec![0]);
-        assert_eq!(config.rhs_contracting_dims, vec![1]);
+        assert_eq!(config.lhs_contracting_dims.as_slice(), &[0]);
+        assert_eq!(config.rhs_contracting_dims.as_slice(), &[1]);
         assert!(config.lhs_batch_dims.is_empty());
         assert!(config.rhs_batch_dims.is_empty());
     }

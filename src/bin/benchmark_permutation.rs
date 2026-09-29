@@ -646,11 +646,15 @@ fn run_participant(
                 .transpose_view(&pattern.perm)
                 .expect("transpose_view must succeed on a validated permutation");
             let mut backend = CpuBackend::new();
-            let compact = backend.with_backend_session(|session| {
-                session
-                    .to_contiguous_read(TensorRead::from_view(TensorView::F64(transposed.clone())))
-                    .expect("session materialization must succeed")
-            });
+            let compact = backend
+                .with_backend_session(|session| {
+                    session
+                        .to_contiguous_read(TensorRead::from_view(TensorView::F64(
+                            transposed.clone(),
+                        )))
+                        .expect("session materialization must succeed")
+                })
+                .expect("entering the CPU backend session must succeed");
             let actual = compact
                 .as_slice::<f64>()
                 .expect("to_contiguous output must be host-contiguous");
@@ -666,11 +670,13 @@ fn run_participant(
                 .map(|_| TensorRead::from_view(TensorView::F64(transposed.clone())))
                 .collect::<Vec<_>>()
                 .into_iter();
-            let timing = backend.with_backend_session(|session| {
-                bench_n(warmup, iters, bytes, || {
-                    session.to_contiguous_read(reads.next().unwrap()).unwrap()
+            let timing = backend
+                .with_backend_session(|session| {
+                    bench_n(warmup, iters, bytes, || {
+                        session.to_contiguous_read(reads.next().unwrap()).unwrap()
+                    })
                 })
-            });
+                .expect("entering the CPU backend session must succeed");
             finish!(base("ok", "passed", true), Some(timing));
         }
         Participant::Hptt => {
@@ -1071,11 +1077,13 @@ mod tests {
             .unwrap();
             let transposed = view.transpose_view(&pattern.perm).unwrap();
             let mut backend = CpuBackend::new();
-            let compact = backend.with_backend_session(|session| {
-                session
-                    .to_contiguous_read(TensorRead::from_view(TensorView::F64(transposed)))
-                    .unwrap()
-            });
+            let compact = backend
+                .with_backend_session(|session| {
+                    session
+                        .to_contiguous_read(TensorRead::from_view(TensorView::F64(transposed)))
+                        .unwrap()
+                })
+                .unwrap();
             assert_eq!(
                 compact.as_slice::<f64>().unwrap(),
                 prepared.reference.as_slice(),
