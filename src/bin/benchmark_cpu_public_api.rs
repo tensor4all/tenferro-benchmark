@@ -1380,6 +1380,7 @@ fn cpu_backend_from_env() -> BenchResult<CpuBackend> {
         "faer" => CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?,
         other => return Err(format!("unsupported TENFERRO_CPU_BACKEND_KIND={other}").into()),
     };
+    let backend = tenferro_einsum_benchmark::cpu_provider::configure(backend)?;
     verify_backend_threads("CpuBackend", backend.num_threads(), threads)?;
     Ok(backend)
 }

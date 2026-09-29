@@ -405,6 +405,8 @@ source-builds PyTorch against the same OpenBLAS as tenferro.
   strategy, target profile.
 - [PyTorch einsum dispatch notes](docs/pytorch-einsum-dispatch.md): PyTorch
   source investigation notes.
+- [tprims provider comparison](docs/tprims-provider.md): `--features tprims`,
+  acceptance runs, and the shape log that builds tprims-rs corpora.
 
 ## Development Checks
 

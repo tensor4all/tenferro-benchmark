@@ -1,3 +1,5 @@
+#[cfg(feature = "cpu-faer")]
+pub mod cpu_provider;
 pub mod tensornetwork;
 pub mod thread_enforcement;
 

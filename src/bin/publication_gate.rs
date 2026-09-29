@@ -1729,7 +1729,11 @@ fn summarize_measurement(
 fn cpu_backend() -> &'static CpuBackend {
     static BACKEND: OnceLock<CpuBackend> = OnceLock::new();
     BACKEND.get_or_init(|| {
-        CpuBackend::with_threads(requested_threads()).expect("configure explicit CPU thread count")
+        tenferro_einsum_benchmark::cpu_provider::configure(
+            CpuBackend::with_threads(requested_threads())
+                .expect("configure explicit CPU thread count"),
+        )
+        .expect("install the configured CPU provider")
     })
 }
 
