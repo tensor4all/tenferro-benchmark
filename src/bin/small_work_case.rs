@@ -2103,6 +2103,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         Ok("") | Ok("default") | Err(_) => CpuBackend::new(),
         Ok(other) => return Err(format!("unsupported CPU backend: {other}").into()),
     };
+    let backend = tenferro_einsum_benchmark::cpu_provider::configure(backend)?;
     let provider = format!("{:?}", backend.kind()).to_ascii_lowercase();
     let operand_shapes = arg("--operand-shapes", "");
     if !operand_shapes.is_empty() {

@@ -131,6 +131,12 @@ devcontainer rather than the default `system-openblas` path. Record the detected
 PyTorch provider in `run.yaml` using `torch.__config__.show()` and linked
 library inspection.
 
+tprims provider comparisons (`--features tprims`, tenferro-rs #1953) compare a
+default build with a `--features tprims` build of the same commits and pin to
+idle cores of one L3 domain as described in
+[docs/tprims-provider.md](docs/tprims-provider.md); they are an exception to
+the devcontainer suites' no-pinning convention and say so in the result.
+
 ## macOS CPU Workflow
 
 Use native macOS execution. Do not use Docker for the standard Mac CPU path.

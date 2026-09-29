@@ -190,7 +190,9 @@ fn run_stream_case(
     warmups: usize,
     samples: usize,
 ) -> Result<()> {
-    let mut backend = CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?;
+    let mut backend = tenferro_einsum_benchmark::cpu_provider::configure(
+        CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?,
+    )?;
     let info = backend.execution_info();
     tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
         "CpuBackend",
@@ -269,7 +271,8 @@ fn main() -> Result<()> {
         "faer" => CpuBackendKind::Faer,
         _ => return Err("invalid provider".into()),
     };
-    let mut backend = CpuBackend::with_kind(kind)?;
+    let mut backend =
+        tenferro_einsum_benchmark::cpu_provider::configure(CpuBackend::with_kind(kind)?)?;
     let execution_info = backend.execution_info();
     let execution_mode = format!("{:?}", execution_info.execution_mode());
     let worker_count = execution_info.worker_count();

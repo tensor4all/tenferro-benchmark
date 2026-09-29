@@ -149,9 +149,13 @@ fn cpu_backend_from_env() -> Result<CpuBackend, String> {
         .to_ascii_lowercase()
         .as_str()
     {
-        "default" | "" => Ok(CpuBackend::new()),
-        "blas" => CpuBackend::with_kind(CpuBackendKind::Blas).map_err(|e| e.to_string()),
-        "faer" => CpuBackend::with_kind(CpuBackendKind::Faer).map_err(|e| e.to_string()),
+        "default" | "" => tenferro_einsum_benchmark::cpu_provider::configure(CpuBackend::new()),
+        "blas" => CpuBackend::with_kind(CpuBackendKind::Blas)
+            .map_err(|e| e.to_string())
+            .and_then(tenferro_einsum_benchmark::cpu_provider::configure),
+        "faer" => CpuBackend::with_kind(CpuBackendKind::Faer)
+            .map_err(|e| e.to_string())
+            .and_then(tenferro_einsum_benchmark::cpu_provider::configure),
         other => Err(format!(
             "unknown TENFERRO_CPU_BACKEND_KIND={other:?}; use default, blas, or faer"
         )),
@@ -904,6 +908,10 @@ fn main() {
     );
     println!("Backend: {backend_name}");
     println!("TENFERRO_CPU_BACKEND_KIND={cpu_backend_kind}");
+    println!(
+        "TENFERRO_CPU_PROVIDER={}",
+        tenferro_einsum_benchmark::cpu_provider::describe()
+    );
     println!("TENFERRO_OPT_DOT_DECOMPOSER={dot_decomposer}");
     println!("RAYON_NUM_THREADS={rayon_threads}, OMP_NUM_THREADS={omp_threads}");
     println!(

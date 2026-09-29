@@ -14,6 +14,11 @@ tenferro-runtime  = { path = "extern/tenferro-rs/crates/tenferro-runtime", defau
 tenferro-tensor   = { path = "extern/tenferro-rs/crates/tenferro-tensor", default-features = false }
 tenferro-gpu      = { path = "extern/tenferro-rs/crates/tenferro-gpu", default-features = false, optional = true }
 tenferro-cpu      = { path = "extern/tenferro-rs/crates/tenferro-cpu", default-features = false, optional = true }
+# Optional tprims providers (feature `tprims`): the unpublished standalone
+# ext crate of extern/tenferro-rs. Like every path dependency, its manifest must
+# exist in the checkout even when the feature is off, so this needs an
+# extern/tenferro-rs that contains ext/tenferro-cpu-tprims (tenferro-rs #1954).
+tenferro-cpu-tprims = { path = "extern/tenferro-rs/ext/tenferro-cpu-tprims", optional = true }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -62,6 +67,12 @@ hptt = ["dep:hptt"]
 # copy_into_col_major_par) so 4-thread runs exercise strided-perm's rayon
 # path, matching this repo's other rayon-backed backends.
 strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel"]
+# Measure tprims instead of tenferro's built-in GEMM and dot_general: every CPU
+# backend built through `cpu_provider::configure` installs the tprims providers
+# (tensor4all/tprims-rs phase 1e). Compare a default build with a
+# `--features tprims` build of the same commit; `TPRIMS_SHAPE_LOG=<file>`
+# additionally logs every provider call's shapes (see src/cpu_provider.rs).
+tprims = ["cpu-faer", "dep:tenferro-cpu-tprims"]
 cpu-faer = [
     "tenferro-ad/cpu-faer",
     "tenferro-einsum/autodiff",
