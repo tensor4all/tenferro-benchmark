@@ -99,12 +99,19 @@ def resolve_tenferro_commit(explicit_commit: str | None, tenferro_dir: Path | No
     return run_git_rev_parse(tenferro_dir)
 
 
-def git_dirty(checkout_dir: Path | None, *, include_untracked: bool = True) -> bool | None:
+def git_dirty(
+    checkout_dir: Path | None,
+    *,
+    include_untracked: bool = True,
+    exclude: tuple[str, ...] = (),
+) -> bool | None:
     if checkout_dir is None or not (checkout_dir / ".git").exists():
         return None
     command = ["git", "status", "--porcelain"]
     if not include_untracked:
         command.append("--untracked-files=no")
+    if exclude:
+        command += ["--", ".", *(f":(exclude){path}" for path in exclude)]
     try:
         result = subprocess.run(
             command,
@@ -565,9 +572,10 @@ def collect_harness(harness_dir: Path) -> dict[str, Any]:
     except MetadataError:
         commit = "unknown"
     # Untracked files are excluded: generated reports under result/ must not
-    # make an otherwise committed harness look modified.
+    # make an otherwise committed harness look modified; neither do the
+    # generated reports under result/, which runs rewrite.
     return {"path": str(harness_dir), "commit": commit,
-            "dirty": git_dirty(harness_dir, include_untracked=False)}
+            "dirty": git_dirty(harness_dir, include_untracked=False, exclude=("result",))}
 
 
 def collect_collection(args: argparse.Namespace) -> dict[str, Any]:
