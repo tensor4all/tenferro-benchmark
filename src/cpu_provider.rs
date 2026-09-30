@@ -7,6 +7,11 @@
 //! 1e): the acceptance comparison is a default build against a
 //! `--features tprims` build of the same commit.
 //!
+//! `TPRIMS_ROUTES` (comma-separated `gemm`, `contract`, `linalg`; default all
+//! three) selects which provider slots get tprims, so an acceptance run can
+//! route one operation family at a time; `gemm` alone makes `dot_general`
+//! lower to tprims GEMM, which is how batched-GEMM shapes are logged.
+//!
 //! With the feature and `TPRIMS_SHAPE_LOG=<file>`, every provider call is
 //! also appended to `<file>` as one JSON line (operation, dtype, operand
 //! shapes and strides, contraction axes, elapsed nanoseconds, outcome); the
@@ -16,12 +21,18 @@
 use tenferro_cpu::CpuBackend;
 
 /// Name of the CPU provider configuration this binary measures, for run
-/// metadata: `default` or `tprims`.
-pub fn describe() -> &'static str {
-    if cfg!(feature = "tprims") {
-        "tprims"
-    } else {
-        "default"
+/// metadata: `default`, or `tprims(<routes>)`.
+pub fn describe() -> String {
+    #[cfg(feature = "tprims")]
+    {
+        match tprims::routes() {
+            Ok(r) => format!("tprims({})", r.join(",")),
+            Err(e) => format!("tprims(invalid: {e})"),
+        }
+    }
+    #[cfg(not(feature = "tprims"))]
+    {
+        "default".to_string()
     }
 }
 
@@ -57,14 +68,42 @@ mod tprims {
     };
     use tenferro_cpu::{CpuBackend, CpuProviderBundle, CpuProviderExecutionCapabilities};
     use tenferro_cpu_tprims::TprimsProvider;
+    use tenferro_linalg::cpu_kernels::install_linalg_kernels;
     use tenferro_tensor::{col_major_strides, TensorRead, TensorView};
 
+    const ROUTES: [&str; 3] = ["gemm", "contract", "linalg"];
+
+    /// The provider slots `TPRIMS_ROUTES` selects (all three by default).
+    pub(super) fn routes() -> Result<Vec<&'static str>, String> {
+        let Ok(spec) = std::env::var("TPRIMS_ROUTES") else {
+            return Ok(ROUTES.to_vec());
+        };
+        let mut out = Vec::new();
+        for part in spec.split(',').map(str::trim).filter(|p| !p.is_empty()) {
+            let route = ROUTES
+                .iter()
+                .find(|r| **r == part)
+                .ok_or_else(|| format!("unknown TPRIMS_ROUTES entry {part:?}; use gemm, contract, linalg"))?;
+            if !out.contains(route) {
+                out.push(*route);
+            }
+        }
+        Ok(out)
+    }
+
     pub(super) fn install(backend: CpuBackend) -> Result<CpuBackend, String> {
-        let bundle = CpuProviderBundle::builder(backend.kind())
-            .gemm_provider(Arc::new(Logged))
-            .prefer_general_contraction_provider(Arc::new(Logged))
-            .build()
-            .map_err(|e| e.to_string())?;
+        let routes = routes()?;
+        let mut builder = CpuProviderBundle::builder(backend.kind());
+        if routes.contains(&"gemm") {
+            builder = builder.gemm_provider(Arc::new(Logged));
+        }
+        if routes.contains(&"contract") {
+            builder = builder.prefer_general_contraction_provider(Arc::new(Logged));
+        }
+        if routes.contains(&"linalg") {
+            builder = install_linalg_kernels(builder, Arc::new(Logged));
+        }
+        let bundle = builder.build().map_err(|e| e.to_string())?;
         backend
             .with_provider_bundle(bundle)
             .map_err(|e| e.to_string())
@@ -136,7 +175,18 @@ mod tprims {
 
     /// `TprimsProvider` plus the optional shape log.
     #[derive(Debug)]
-    struct Logged;
+    pub(super) struct Logged;
+
+    /// Append a linalg call to the shape log, if one is open.
+    pub(super) fn log_linalg(mut entry: serde_json::Value, start: Instant, outcome: &str) {
+        let Some(log) = log() else { return };
+        entry["ns"] = json!(start.elapsed().as_nanos() as u64);
+        entry["outcome"] = json!(outcome);
+        if let Ok(mut w) = log.lock() {
+            let _ = writeln!(w, "{entry}");
+            let _ = w.flush();
+        }
+    }
 
     impl CpuGemmProvider for Logged {
         fn execution_capabilities(&self) -> CpuProviderExecutionCapabilities {
@@ -215,6 +265,64 @@ mod tprims {
                 record(e, start, &out);
             }
             out
+        }
+    }
+}
+
+#[cfg(feature = "tprims")]
+mod tprims_linalg {
+    //! Logged tprims linalg kernels (the operations the ext crate handles).
+    use std::time::Instant;
+
+    use serde_json::json;
+    use tenferro_cpu::CpuExecutionContext;
+    use tenferro_cpu_tprims::TprimsProvider;
+    use tenferro_linalg::cpu_kernels::{CpuLinalgKernels, CpuLinalgOutcome, TriangularSolveOptions};
+    use tenferro_tensor::{Tensor, TensorView};
+
+    use super::tprims::{log_linalg, Logged};
+
+    fn timed<R>(op: &str, inputs: &[&TensorView<'_>], f: impl FnOnce() -> tenferro_tensor::Result<CpuLinalgOutcome<R>>) -> tenferro_tensor::Result<CpuLinalgOutcome<R>> {
+        let entry = json!({
+            "op": format!("linalg:{op}"),
+            "dtype": format!("{:?}", inputs[0].dtype()),
+            "shapes": inputs.iter().map(|v| v.shape().to_vec()).collect::<Vec<_>>(),
+        });
+        let start = Instant::now();
+        let out = f();
+        let outcome = match &out {
+            Ok(CpuLinalgOutcome::Executed(_)) => "executed",
+            Ok(CpuLinalgOutcome::Unsupported(_)) => "unsupported",
+            Err(_) => "error",
+        };
+        log_linalg(entry, start, outcome);
+        out
+    }
+
+    impl CpuLinalgKernels for Logged {
+        fn cholesky(&self, c: &CpuExecutionContext<'_>, i: TensorView<'_>) -> tenferro_tensor::Result<CpuLinalgOutcome<Tensor>> {
+            timed("cholesky", &[&i], || TprimsProvider::new().cholesky(c, i.clone()))
+        }
+        fn triangular_solve(&self, c: &CpuExecutionContext<'_>, a: TensorView<'_>, b: TensorView<'_>, o: TriangularSolveOptions) -> tenferro_tensor::Result<CpuLinalgOutcome<Tensor>> {
+            timed("triangular_solve", &[&a, &b], || TprimsProvider::new().triangular_solve(c, a.clone(), b.clone(), o))
+        }
+        fn solve(&self, c: &CpuExecutionContext<'_>, a: TensorView<'_>, b: TensorView<'_>) -> tenferro_tensor::Result<CpuLinalgOutcome<Tensor>> {
+            timed("solve", &[&a, &b], || TprimsProvider::new().solve(c, a.clone(), b.clone()))
+        }
+        fn svd(&self, c: &CpuExecutionContext<'_>, i: TensorView<'_>) -> tenferro_tensor::Result<CpuLinalgOutcome<Vec<Tensor>>> {
+            timed("svd", &[&i], || TprimsProvider::new().svd(c, i.clone()))
+        }
+        fn svd_values(&self, c: &CpuExecutionContext<'_>, i: TensorView<'_>) -> tenferro_tensor::Result<CpuLinalgOutcome<Tensor>> {
+            timed("svd_values", &[&i], || TprimsProvider::new().svd_values(c, i.clone()))
+        }
+        fn qr(&self, c: &CpuExecutionContext<'_>, i: TensorView<'_>) -> tenferro_tensor::Result<CpuLinalgOutcome<Vec<Tensor>>> {
+            timed("qr", &[&i], || TprimsProvider::new().qr(c, i.clone()))
+        }
+        fn eigh(&self, c: &CpuExecutionContext<'_>, i: TensorView<'_>) -> tenferro_tensor::Result<CpuLinalgOutcome<Vec<Tensor>>> {
+            timed("eigh", &[&i], || TprimsProvider::new().eigh(c, i.clone()))
+        }
+        fn eigh_values(&self, c: &CpuExecutionContext<'_>, i: TensorView<'_>) -> tenferro_tensor::Result<CpuLinalgOutcome<Tensor>> {
+            timed("eigh_values", &[&i], || TprimsProvider::new().eigh_values(c, i.clone()))
         }
     }
 }

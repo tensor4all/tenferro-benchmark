@@ -17,7 +17,7 @@ tenferro-cpu      = { path = "extern/tenferro-rs/crates/tenferro-cpu", default-f
 # Optional tprims providers (feature `tprims`): the unpublished standalone
 # ext crate of extern/tenferro-rs. Like every path dependency, its manifest must
 # exist in the checkout even when the feature is off, so this needs an
-# extern/tenferro-rs that contains ext/tenferro-cpu-tprims (tenferro-rs #1954).
+# extern/tenferro-rs that contains ext/tenferro-cpu-tprims (tenferro-rs #1955).
 tenferro-cpu-tprims = { path = "extern/tenferro-rs/ext/tenferro-cpu-tprims", optional = true }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
