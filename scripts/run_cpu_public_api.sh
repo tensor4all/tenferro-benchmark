@@ -202,6 +202,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_rust_group cpu/einsum_concrete
     run_rust_group cpu/linalg_uncovered
     run_rust_group cpu/linalg_batched
+    run_rust_group cpu/linalg_batch_families
     run_rust_group cpu/complex "conj"
     run_rust_group cpu/complex "mul,div"
     run_rust_group cpu/complex "exp,log"
@@ -249,6 +250,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_jax_group cpu/einsum_concrete
     run_jax_group cpu/linalg_uncovered
     run_jax_group cpu/linalg_batched
+    run_jax_group cpu/linalg_batch_families
     run_jax_group cpu/complex "conj"
     run_jax_group cpu/complex "mul,div"
     run_jax_group cpu/complex "exp,log"

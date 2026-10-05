@@ -278,6 +278,71 @@ def batched_lu_cases(batched: dict[int, dict[str, LazyTensor]]):
     return cases
 
 
+# cpu/linalg_batch_families (tenferro-rs #1956, #2000): mirrors the Rust case list.
+BATCH_FAMILY_SUITE = "cpu/linalg_batch_families"
+BATCH_FAMILY_SQUARE = (
+    (1, 2), (3, 2), (4, 2), (8, 2), (1024, 2),
+    (1, 4), (3, 4), (4, 4), (8, 4), (1024, 4),
+    (1, 8), (3, 8), (4, 8), (8, 8), (1024, 8),
+    (1, 32), (8, 32), (1, 128), (8, 128),
+)
+BATCH_FAMILY_TALL = ("batched_svd", "batched_svdvals", "batched_qr", "batched_lu")
+
+
+def batch_family_input(hpd: bool, complex_: bool, batch: int, rows: int, cols: int):
+    """Contiguous [batch, rows, cols] with the logical values of the Rust [rows, cols, batch] fixture."""
+
+    def build():
+        import torch
+
+        logical = tensor_c64((rows, cols, batch), 1) if complex_ else tensor_f64((rows, cols, batch), 1)
+        x = batch_leading(logical.get())
+        if hpd:
+            n = rows
+            x = (0.125 / n) * (x + x.transpose(1, 2).conj())
+        else:
+            x = x.clone()
+        if hpd or rows == cols:
+            shift = 2.0 if hpd or not complex_ else 3.0
+            x.diagonal(dim1=1, dim2=2).add_(shift + torch.arange(rows, dtype=torch.float64) / rows)
+        return x.contiguous()
+
+    return LazyTensor(build)
+
+
+def batch_family_cases():
+    import torch
+
+    families = (
+        ("batched_solve", "general solve, one rhs column (torch.linalg.solve)", False, None),
+        ("batched_cholesky", "SPD Cholesky (torch.linalg.cholesky)", True, torch.linalg.cholesky),
+        ("batched_qr", "thin QR (torch.linalg.qr)", False, torch.linalg.qr),
+        ("batched_eigh", "symmetric/Hermitian eigendecomposition (torch.linalg.eigh)", True, torch.linalg.eigh),
+        ("batched_eigvalsh", "symmetric eigenvalues only (torch.linalg.eigvalsh)", True, torch.linalg.eigvalsh),
+        ("batched_svd", "thin SVD (torch.linalg.svd full_matrices=False)", False, lambda a: torch.linalg.svd(a, full_matrices=False)),
+        ("batched_svdvals", "singular values only (torch.linalg.svdvals)", False, torch.linalg.svdvals),
+        ("batched_lu", "partial-pivot LU, P L U (torch.linalg.lu)", False, torch.linalg.lu),
+    )
+    cases = []
+    for bench, note, hpd, fn in families:
+        shapes = [(batch, n, n) for batch, n in BATCH_FAMILY_SQUARE]
+        if bench in BATCH_FAMILY_TALL:
+            shapes.append((1, 64, 24))
+        dtypes = ("f64", "c64") if bench in ("batched_svd", "batched_eigh") else ("f64",)
+        for dtype in dtypes:
+            for batch, rows, cols in shapes:
+                a = batch_family_input(hpd, dtype == "c64", batch, rows, cols)
+                label = f"{batch}x{rows}x{cols}"
+                if bench == "batched_solve":
+                    rhs = LazyTensor(lambda rows=rows, batch=batch: batch_leading(tensor_f64((rows, 1, batch), 2).get()))
+                    run = lambda a=a, rhs=rhs: torch.linalg.solve(a.get(), rhs.get())
+                    label += ",rhs=1"
+                else:
+                    run = lambda a=a, fn=fn: fn(a.get())
+                cases.append((BATCH_FAMILY_SUITE, bench, dtype, label, note, run))
+    return cases
+
+
 def spd(n: int, seed: int):
     def build():
         import torch
@@ -453,6 +518,7 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/output_reuse", "dot_general_read_into_accum", "f64", "1024x1024", "torch.addmm out = lhs @ rhs + out", lambda: torch.addmm(dot_reuse_out, dot_reuse_a, dot_reuse_b, beta=1.0, alpha=1.0, out=dot_reuse_out)),
         ("cpu/einsum_concrete", "einsum_ij_jk_ik", "f64", "1024x1024", "torch.einsum allocation-returning API", lambda: torch.einsum("ij,jk->ik", dot_reuse_a, dot_reuse_b)),
         *batched_lu_cases(batched),
+        *batch_family_cases(),
         ("cpu/linalg_uncovered", "cholesky", "f64", "1536x1536", "SPD input", lambda: torch.linalg.cholesky(spd1536)),
         ("cpu/linalg_uncovered", "eig", "f64", "160x160", "general input", lambda: torch.linalg.eig(a160)),
         ("cpu/linalg_uncovered", "eigvals", "f64", "192x192", "general input values only", lambda: torch.linalg.eigvals(a192)),
