@@ -60,6 +60,7 @@ PUBLIC_API_MATERIALIZING_SUITES = {
     "cpu/einsum_concrete",
     "cpu/indexing_layout",
     "cpu/linalg_batched",
+    "cpu/linalg_batch_families",
     "cpu/linalg_uncovered",
     "cpu/output_reuse",
     "cpu/structural_shape",
@@ -91,6 +92,7 @@ REDUCTION_BENCHMARKS = {
 # Batched solves labeled `BxNxN,rhs=R` write a `BxNxR` output.
 BATCHED_SOLVE_BENCHMARKS = {
     "batched_lu_solve",
+    "batched_solve",
     "batched_triangular_solve",
 }
 
@@ -223,11 +225,17 @@ def estimated_flops(benchmark: str, workload: WorkloadShape) -> int:
         return batch * rows * rows * workload.rhs
     if benchmark == "batched_lu_factor" and rows == cols:
         return batch * rows**3 // 3
-    if benchmark in {"eig", "eigvals", "eigvalsh"} and rows == cols:
+    if benchmark in {"eig", "eigvals", "eigvalsh", "eigh", "batched_eigh", "batched_eigvalsh"} and rows == cols:
         return batch * rows**3
-    if benchmark in {"cholesky", "det", "inv", "lu", "slogdet", "solve"} and rows == cols:
+    if benchmark in {
+        "cholesky", "det", "inv", "lu", "slogdet", "solve",
+        "batched_cholesky", "batched_solve",
+    } and rows == cols:
         return batch * rows**3 // 3
-    if benchmark in {"lstsq", "pinv", "pinv_with_rtol", "qr", "svd", "svd_full"}:
+    if benchmark in {
+        "lstsq", "pinv", "pinv_with_rtol", "qr", "svd", "svd_full",
+        "batched_qr", "batched_svd", "batched_svdvals", "batched_lu",
+    }:
         return batch * rows * cols * min(rows, cols)
     return 0
 

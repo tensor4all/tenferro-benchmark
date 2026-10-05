@@ -267,7 +267,7 @@ fn parse_args() -> BenchResult<Args> {
 }
 
 fn cases() -> Vec<Case> {
-    vec![
+    let mut cases = vec![
         // Elementwise and reductions (#73).
         elem("add", "f64", "33554432", "binary elementwise", add_f64),
         elem("sub", "f64", "33554432", "binary elementwise", sub_f64),
@@ -784,7 +784,9 @@ fn cases() -> Vec<Case> {
             "complex Frobenius norm",
             norm_c64,
         ),
-    ]
+    ];
+    cases.extend(batch_family_cases());
+    cases
 }
 
 fn elem(
@@ -1069,6 +1071,19 @@ fn emit_trace_case(
         )?;
         return Ok(());
     }
+    if case.suite == BATCH_FAMILY_SUITE && case.benchmark == "batched_svdvals" {
+        writeln!(
+            writer,
+            "{},{},{},{},\"{}\",tenferro-trace,,,unsupported,\"{}\"",
+            case.suite,
+            case.benchmark,
+            case.dtype,
+            args.num_threads,
+            csv_escape(case.shape),
+            "tenferro-rs has no TracedTensor svdvals API; traced singular values come from svd",
+        )?;
+        return Ok(());
+    }
     if case.suite == "cpu/indexing_layout" && case.benchmark == "dynamic_update_slice" {
         writeln!(
             writer,
@@ -1183,7 +1198,15 @@ fn time_case(
     if case.suite == "cpu/view_metadata" {
         return time_view_case(args, case, attribution);
     }
-    let times = if let Some(operation) = session_operation(case) {
+    let times = if case.suite == BATCH_FAMILY_SUITE {
+        let spec = BatchFamilySpec::parse(case)?;
+        backend.with_backend_session(|session| {
+            with_cpu_exec_session(session, |session| {
+                sample_case(args, || batch_family_in_session(&spec, session))
+            })
+            .expect("CpuBackend must expose a CPU execution session")
+        })??
+    } else if let Some(operation) = session_operation(case) {
         backend.with_backend_session(|session| {
             with_cpu_exec_session(session, |session| sample_case(args, || operation(session)))
                 .expect("CpuBackend must expose a CPU execution session")
@@ -1644,6 +1667,9 @@ fn traced(tensor: &Tensor) -> BenchResult<TracedTensor> {
 
 fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
     let one = |value| Ok(vec![value]);
+    if case.suite == BATCH_FAMILY_SUITE {
+        return build_batch_family_trace(&BatchFamilySpec::parse(case)?);
+    }
     match (case.suite, case.benchmark) {
         ("cpu/elementwise_reduction", "add") => {
             one(traced(tensor_f64(&[EW_FAST_N], 1))?.add(&traced(tensor_f64(&[EW_FAST_N], 2))?)?)
@@ -2983,6 +3009,324 @@ fn norm_c64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Res
     Ok(())
 }
 
+/// Route-level CPU linalg batch cases (tenferro-rs #1956, #2000).
+///
+/// Every family the tlinalg extraction made batched, measured through the public tensor routes on
+/// tenferro's column-major `[rows, cols, batch]` layout (batch trailing). Shape labels are
+/// `BxMxN` (`,rhs=1` for solve), the same convention as `cpu/linalg_batched`. Small matrices with
+/// several items exercise the batch fan-out; `n = 32/128` and the tall `64x24` case exercise the
+/// single-item and the `max(rows, cols) > 64` Auto paths.
+const BATCH_FAMILY_SUITE: &str = "cpu/linalg_batch_families";
+
+/// Square `(batch, n)` shapes for every family.
+const BATCH_FAMILY_SQUARE: &[(usize, usize)] = &[
+    (1, 2),
+    (3, 2),
+    (4, 2),
+    (8, 2),
+    (1024, 2),
+    (1, 4),
+    (3, 4),
+    (4, 4),
+    (8, 4),
+    (1024, 4),
+    (1, 8),
+    (3, 8),
+    (4, 8),
+    (8, 8),
+    (1024, 8),
+    (1, 32),
+    (8, 32),
+    (1, 128),
+    (8, 128),
+];
+
+/// Families that also take the tall `64x24` single matrix.
+const BATCH_FAMILY_TALL: &[&str] = &["batched_svd", "batched_svdvals", "batched_qr", "batched_lu"];
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum BatchFamily {
+    Solve,
+    Cholesky,
+    Qr,
+    Eigh,
+    Eigvalsh,
+    Svd,
+    Svdvals,
+    Lu,
+}
+
+impl BatchFamily {
+    const ALL: [(&'static str, BatchFamily, &'static str); 8] = [
+        (
+            "batched_solve",
+            Self::Solve,
+            "general solve, one rhs column (TensorLinalgExt::solve)",
+        ),
+        (
+            "batched_cholesky",
+            Self::Cholesky,
+            "SPD Cholesky (TensorLinalgExt::cholesky)",
+        ),
+        ("batched_qr", Self::Qr, "thin QR (TensorLinalgExt::qr)"),
+        (
+            "batched_eigh",
+            Self::Eigh,
+            "symmetric/Hermitian eigendecomposition (TensorLinalgExt::eigh)",
+        ),
+        (
+            "batched_eigvalsh",
+            Self::Eigvalsh,
+            "symmetric eigenvalues only (TensorLinalgExt::eigvalsh)",
+        ),
+        ("batched_svd", Self::Svd, "thin SVD (TensorLinalgExt::svd)"),
+        (
+            "batched_svdvals",
+            Self::Svdvals,
+            "singular values only (TensorLinalgExt::svdvals)",
+        ),
+        (
+            "batched_lu",
+            Self::Lu,
+            "partial-pivot LU, P L U and pivots (TensorLinalgExt::lu)",
+        ),
+    ];
+
+    fn from_benchmark(benchmark: &str) -> Option<Self> {
+        Self::ALL
+            .iter()
+            .find(|(name, _, _)| *name == benchmark)
+            .map(|(_, family, _)| *family)
+    }
+
+    /// Whether the input is a Hermitian positive-definite batch.
+    fn needs_hpd(self) -> bool {
+        matches!(self, Self::Cholesky | Self::Eigh | Self::Eigvalsh)
+    }
+}
+
+/// The case list: every family on f64, `svd` and `eigh` on c64 too.
+fn batch_family_cases() -> Vec<Case> {
+    let mut cases = Vec::new();
+    for &(benchmark, family, notes) in &BatchFamily::ALL {
+        let mut shapes: Vec<String> = BATCH_FAMILY_SQUARE
+            .iter()
+            .map(|&(batch, n)| format!("{batch}x{n}x{n}"))
+            .collect();
+        if BATCH_FAMILY_TALL.contains(&benchmark) {
+            shapes.push("1x64x24".to_string());
+        }
+        let dtypes: &[&'static str] = if matches!(family, BatchFamily::Svd | BatchFamily::Eigh) {
+            &["f64", "c64"]
+        } else {
+            &["f64"]
+        };
+        for &dtype in dtypes {
+            for shape in &shapes {
+                let shape = if family == BatchFamily::Solve {
+                    format!("{shape},rhs=1")
+                } else {
+                    shape.clone()
+                };
+                cases.push(Case {
+                    suite: BATCH_FAMILY_SUITE,
+                    benchmark,
+                    dtype,
+                    // The runner's case labels are `'static`; this suite's are generated once per
+                    // process, like the leaked fixtures.
+                    shape: Box::leak(shape.into_boxed_str()),
+                    notes,
+                    run: batch_family_direct,
+                });
+            }
+        }
+    }
+    cases
+}
+
+/// `Case::run` for this suite: never called, because `time_case` dispatches on the parsed shape.
+fn batch_family_direct(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    Err(tenferro_tensor::Error::invalid_argument(
+        "cpu/linalg_batch_families",
+        "case",
+        "batch family cases are dispatched by time_case from their shape label",
+    ))
+}
+
+#[derive(Clone, Copy, Debug)]
+struct BatchFamilySpec {
+    family: BatchFamily,
+    complex: bool,
+    batch: usize,
+    rows: usize,
+    cols: usize,
+}
+
+impl BatchFamilySpec {
+    fn parse(case: &Case) -> BenchResult<Self> {
+        let family = BatchFamily::from_benchmark(case.benchmark)
+            .ok_or_else(|| format!("unknown batch family {}", case.benchmark))?;
+        let dims = case.shape.split(',').next().unwrap_or_default();
+        let parsed: Vec<usize> = dims
+            .split('x')
+            .map(str::parse)
+            .collect::<Result<_, _>>()
+            .map_err(|_| format!("invalid batch family shape {}", case.shape))?;
+        let [batch, rows, cols] = parsed[..] else {
+            return Err(format!("invalid batch family shape {}", case.shape).into());
+        };
+        Ok(Self {
+            family,
+            complex: case.dtype == "c64",
+            batch,
+            rows,
+            cols,
+        })
+    }
+
+    fn input(&self) -> &'static Tensor {
+        batch_family_input(
+            self.family.needs_hpd(),
+            self.complex,
+            self.batch,
+            self.rows,
+            self.cols,
+        )
+    }
+
+    fn rhs(&self) -> &'static Tensor {
+        tensor_f64(&[self.rows, 1, self.batch], 2)
+    }
+}
+
+/// `[rows, cols, batch]` column-major input, items contiguous in batch order.
+///
+/// General inputs are `data_f64` / `data_c64` over the whole buffer with `2 + j/n` (`3 + j/n` for
+/// complex) added to each square item's diagonal, matching `batched_well_conditioned`. Hermitian
+/// positive-definite inputs follow `spd` per item: `(0.125 / n) (S + Sᴴ) + diag(2 + j/n)` with `S`
+/// the item's slice of the same buffer.
+fn batch_family_input(
+    hpd: bool,
+    complex: bool,
+    batch: usize,
+    rows: usize,
+    cols: usize,
+) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{hpd}:{complex}:{batch}:{rows}:{cols}");
+    cached_tensor(&CACHE, key, || {
+        let item = rows * cols;
+        let shape = vec![rows, cols, batch];
+        let square = rows == cols;
+        if complex {
+            let source = data_c64(item * batch, 1);
+            let mut values = source.clone();
+            for b in 0..batch {
+                let off = b * item;
+                if hpd {
+                    let n = rows;
+                    let scale = 0.125 / n as f64;
+                    for col in 0..n {
+                        for row in 0..n {
+                            values[off + row + col * n] = (source[off + row + col * n]
+                                + source[off + col + row * n].conj())
+                                * scale;
+                        }
+                        values[off + col + col * n] +=
+                            Complex64::new(2.0 + col as f64 / n as f64, 0.0);
+                    }
+                } else if square {
+                    for j in 0..rows {
+                        values[off + j + j * rows] +=
+                            Complex64::new(3.0 + j as f64 / rows as f64, 0.0);
+                    }
+                }
+            }
+            Tensor::from_vec_col_major(shape, values).unwrap()
+        } else {
+            let source = data_f64(item * batch, 1);
+            let mut values = source.clone();
+            for b in 0..batch {
+                let off = b * item;
+                if hpd {
+                    let n = rows;
+                    let scale = 0.125 / n as f64;
+                    for col in 0..n {
+                        for row in 0..n {
+                            values[off + row + col * n] =
+                                scale * (source[off + row + col * n] + source[off + col + row * n]);
+                        }
+                        values[off + col + col * n] += 2.0 + col as f64 / n as f64;
+                    }
+                } else if square {
+                    for j in 0..rows {
+                        values[off + j + j * rows] += 2.0 + j as f64 / rows as f64;
+                    }
+                }
+            }
+            Tensor::from_vec_col_major(shape, values).unwrap()
+        }
+    })
+}
+
+fn batch_family_in_session(
+    spec: &BatchFamilySpec,
+    session: &mut CpuExecSession<'_>,
+) -> tenferro_tensor::Result<()> {
+    let input = spec.input();
+    match spec.family {
+        BatchFamily::Solve => consume(input.solve(spec.rhs(), session)?),
+        BatchFamily::Cholesky => consume(input.cholesky(session)?),
+        BatchFamily::Qr => {
+            let (q, r) = input.qr(session)?;
+            consume_many([q, r]);
+        }
+        BatchFamily::Eigh => {
+            let (values, vectors) = input.eigh(session)?;
+            consume_many([values, vectors]);
+        }
+        BatchFamily::Eigvalsh => consume(input.eigvalsh(session)?),
+        BatchFamily::Svd => {
+            let (u, s, vt) = input.svd(session)?;
+            consume_many([u, s, vt]);
+        }
+        BatchFamily::Svdvals => consume(input.svdvals(session)?),
+        BatchFamily::Lu => {
+            let (p, l, u, pivots) = input.lu(session)?;
+            consume_many([p, l, u, pivots]);
+        }
+    }
+    Ok(())
+}
+
+fn build_batch_family_trace(spec: &BatchFamilySpec) -> BenchResult<Vec<TracedTensor>> {
+    let input = traced(spec.input())?;
+    Ok(match spec.family {
+        BatchFamily::Solve => vec![input.solve(&traced(spec.rhs())?)?],
+        BatchFamily::Cholesky => vec![input.cholesky()?],
+        BatchFamily::Qr => {
+            let (q, r) = input.qr()?;
+            vec![q, r]
+        }
+        BatchFamily::Eigh => {
+            let (values, vectors) = input.eigh()?;
+            vec![values, vectors]
+        }
+        BatchFamily::Eigvalsh => vec![input.eigvalsh()?],
+        BatchFamily::Svd => {
+            let (u, s, vt) = input.svd()?;
+            vec![u, s, vt]
+        }
+        BatchFamily::Svdvals => {
+            return Err("tenferro-rs has no TracedTensor svdvals API (unsupported)".into())
+        }
+        BatchFamily::Lu => {
+            let (p, l, u, pivots) = input.lu()?;
+            vec![p, l, u, pivots]
+        }
+    })
+}
+
 fn with_cpu_linalg<R>(
     backend: &mut CpuBackend,
     f: impl for<'a> FnOnce(&'a mut CpuExecSession<'a>) -> tenferro_tensor::Result<R> + Send,
@@ -3043,6 +3387,93 @@ mod tests {
                 batched_matvec_residual(lower, &tri_x, rhs, n) < 1e-12,
                 "tri n={n}"
             );
+        }
+    }
+
+    #[test]
+    fn batch_family_cases_cover_every_family_shape_and_dtype() {
+        let cases = batch_family_cases();
+        // 8 f64 families x 19 square shapes, + 4 tall rows, + c64 svd/eigh (19 each, + svd tall).
+        assert_eq!(cases.len(), 8 * 19 + 4 + 19 * 2 + 1);
+        let mut seen = std::collections::HashSet::new();
+        for case in &cases {
+            assert!(
+                seen.insert((case.benchmark, case.dtype, case.shape)),
+                "duplicate {case:?}",
+                case = (case.benchmark, case.dtype, case.shape)
+            );
+            let spec = BatchFamilySpec::parse(case).unwrap();
+            if spec.family.needs_hpd() || spec.family == BatchFamily::Solve {
+                assert_eq!(spec.rows, spec.cols);
+            }
+            assert_eq!(
+                case.shape.ends_with(",rhs=1"),
+                spec.family == BatchFamily::Solve
+            );
+        }
+    }
+
+    #[test]
+    fn batch_family_rows_execute_and_solve_their_systems() {
+        let mut backend = CpuBackend::with_threads(2).unwrap();
+        for case in batch_family_cases()
+            .iter()
+            .filter(|case| matches!(case.shape.split(',').next(), Some("3x4x4" | "1x64x24")))
+        {
+            let spec = BatchFamilySpec::parse(case).unwrap();
+            with_cpu_linalg(&mut backend, |session| {
+                batch_family_in_session(&spec, session)
+            })
+            .unwrap_or_else(|error| {
+                panic!("{} {} {}: {error}", case.benchmark, case.dtype, case.shape)
+            });
+            clear_outputs();
+        }
+        // Residual of the batched solve, item by item.
+        let spec = BatchFamilySpec {
+            family: BatchFamily::Solve,
+            complex: false,
+            batch: 3,
+            rows: 4,
+            cols: 4,
+        };
+        let x = with_cpu_linalg(&mut backend, |session| {
+            spec.input().solve(spec.rhs(), session)
+        })
+        .unwrap();
+        let (a, x, b) = (
+            spec.input().as_slice::<f64>().unwrap(),
+            x.as_slice::<f64>().unwrap(),
+            spec.rhs().as_slice::<f64>().unwrap(),
+        );
+        for item in 0..3 {
+            for row in 0..4 {
+                let ax: f64 = (0..4)
+                    .map(|col| a[item * 16 + row + col * 4] * x[item * 4 + col])
+                    .sum();
+                assert!((ax - b[item * 4 + row]).abs() < 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn batch_family_hpd_inputs_are_hermitian_per_item() {
+        for complex in [false, true] {
+            let tensor = batch_family_input(true, complex, 3, 4, 4);
+            for item in 0..3 {
+                for col in 0..4 {
+                    for row in 0..4 {
+                        let (i, j) = (item * 16 + row + col * 4, item * 16 + col + row * 4);
+                        if complex {
+                            let v = tensor.as_slice::<Complex64>().unwrap();
+                            assert_eq!(v[i], v[j].conj());
+                        } else {
+                            let v = tensor.as_slice::<f64>().unwrap();
+                            assert_eq!(v[i], v[j]);
+                        }
+                    }
+                }
+            }
         }
     }
 

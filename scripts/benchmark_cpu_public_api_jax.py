@@ -207,6 +207,73 @@ def batched_lu_cases() -> list[Case]:
     return sorted(cases, key=lambda case: order[case[1]])
 
 
+# cpu/linalg_batch_families (tenferro-rs #1956, #2000): mirrors the Rust case list.
+BATCH_FAMILY_SUITE = "cpu/linalg_batch_families"
+BATCH_FAMILY_SQUARE = (
+    (1, 2), (3, 2), (4, 2), (8, 2), (1024, 2),
+    (1, 4), (3, 4), (4, 4), (8, 4), (1024, 4),
+    (1, 8), (3, 8), (4, 8), (8, 8), (1024, 8),
+    (1, 32), (8, 32), (1, 128), (8, 128),
+)
+BATCH_FAMILY_TALL = ("batched_svd", "batched_svdvals", "batched_qr", "batched_lu")
+
+
+def batch_family_input(hpd: bool, complex_: bool, batch: int, rows: int, cols: int) -> LazyArray:
+    """[batch, rows, cols] array with the logical values of the Rust [rows, cols, batch] fixture."""
+    import jax.numpy as jnp
+
+    def build():
+        logical = tensor_c64((rows, cols, batch), 1) if complex_ else tensor_f64((rows, cols, batch), 1)
+        x = jnp.moveaxis(logical.get(), 2, 0)
+        if hpd:
+            x = (0.125 / rows) * (x + jnp.conj(jnp.swapaxes(x, 1, 2)))
+        if hpd or rows == cols:
+            shift = 2.0 if hpd or not complex_ else 3.0
+            idx = jnp.arange(rows)
+            x = x.at[:, idx, idx].add(shift + idx.astype(jnp.float64) / rows)
+        return x
+
+    return LazyArray(build)
+
+
+def batch_family_cases() -> list[Case]:
+    import jax
+    import jax.numpy as jnp
+
+    families = (
+        ("batched_solve", "general solve, one rhs column (jnp.linalg.solve)", False, None),
+        ("batched_cholesky", "SPD Cholesky (jnp.linalg.cholesky)", True, jnp.linalg.cholesky),
+        ("batched_qr", "thin QR (jnp.linalg.qr)", False, jnp.linalg.qr),
+        ("batched_eigh", "symmetric/Hermitian eigendecomposition (jnp.linalg.eigh)", True, jnp.linalg.eigh),
+        ("batched_eigvalsh", "symmetric eigenvalues only (jnp.linalg.eigvalsh)", True, jnp.linalg.eigvalsh),
+        ("batched_svd", "thin SVD (jnp.linalg.svd full_matrices=False)", False, lambda a: jnp.linalg.svd(a, full_matrices=False)),
+        ("batched_svdvals", "singular values only (jnp.linalg.svd compute_uv=False)", False, lambda a: jnp.linalg.svd(a, compute_uv=False)),
+        ("batched_lu", "partial-pivot LU, P L U (jax.vmap(jax.scipy.linalg.lu); lu is unbatched)", False, None),
+    )
+    from jax.scipy.linalg import lu
+
+    cases: list[Case] = []
+    for bench, note, hpd, fn in families:
+        shapes = [(batch, n, n) for batch, n in BATCH_FAMILY_SQUARE]
+        if bench in BATCH_FAMILY_TALL:
+            shapes.append((1, 64, 24))
+        dtypes = ("f64", "c64") if bench in ("batched_svd", "batched_eigh") else ("f64",)
+        for dtype in dtypes:
+            for batch, rows, cols in shapes:
+                a = batch_family_input(hpd, dtype == "c64", batch, rows, cols)
+                label = f"{batch}x{rows}x{cols}"
+                if bench == "batched_solve":
+                    rhs = LazyArray(lambda rows=rows, batch=batch: jnp.moveaxis(tensor_f64((rows, 1, batch), 2).get(), 2, 0))
+                    run = compiled(jnp.linalg.solve, a, rhs)
+                    label += ",rhs=1"
+                elif bench == "batched_lu":
+                    run = compiled(jax.vmap(lu), a)
+                else:
+                    run = compiled(fn, a)
+                cases.append((BATCH_FAMILY_SUITE, bench, dtype, label, note, run))
+    return cases
+
+
 def compiled(fn: Callable[..., object], *inputs: LazyArray) -> Callable[[], object]:
     import jax
 
@@ -355,6 +422,7 @@ def make_cases() -> list[Case]:
         ("cpu/structural_shape", "triu", "f64", "4096x4096", "upper triangle", compiled(jnp.triu, structural_matrix)),
         ("cpu/einsum_concrete", "einsum_ij_jk_ik", "f64", "1024x1024", "jnp.einsum allocation-returning API", compiled(lambda a, b: jnp.einsum("ij,jk->ik", a, b), tensor_f64((1024, 1024), 1), tensor_f64((1024, 1024), 2))),
         *batched_lu_cases(),
+        *batch_family_cases(),
         (lin, "cholesky", "f64", "1536x1536", "SPD input", compiled(jnp.linalg.cholesky, spd1536)),
         (lin, "eig", "f64", "160x160", "general input", compiled(jnp.linalg.eig, a160)),
         (lin, "eigvals", "f64", "192x192", "general input values only", compiled(jnp.linalg.eigvals, a192)),
