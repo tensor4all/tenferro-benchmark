@@ -1786,6 +1786,30 @@
   "reference_for": "layer_norm_f32_eager-composed_d1024_len8_b1"
  },
  {
+  "id": "layer_norm_f32_eager-single-call_d1024_len8_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006 (#2010 PR-B1): one EagerSession::layer_norm call (axis 0, weight, bias for layer_norm, eps 1e-5), a composite of existing primitives; the eager-composed row is the hand composition it replaces (same performance expected until the fused B2 kernel)."
+ },
+ {
   "id": "layer_norm_f32_eager-composed_d1024_len8_b8",
   "issues": [
    "#2006"
@@ -1833,6 +1857,30 @@
   ],
   "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
   "reference_for": "layer_norm_f32_eager-composed_d1024_len8_b8"
+ },
+ {
+  "id": "layer_norm_f32_eager-single-call_d1024_len8_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006 (#2010 PR-B1): one EagerSession::layer_norm call (axis 0, weight, bias for layer_norm, eps 1e-5), a composite of existing primitives; the eager-composed row is the hand composition it replaces (same performance expected until the fused B2 kernel)."
  },
  {
   "id": "layer_norm_f32_eager-composed_d1024_len64_b1",
@@ -1884,6 +1932,30 @@
   "reference_for": "layer_norm_f32_eager-composed_d1024_len64_b1"
  },
  {
+  "id": "layer_norm_f32_eager-single-call_d1024_len64_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006 (#2010 PR-B1): one EagerSession::layer_norm call (axis 0, weight, bias for layer_norm, eps 1e-5), a composite of existing primitives; the eager-composed row is the hand composition it replaces (same performance expected until the fused B2 kernel)."
+ },
+ {
   "id": "layer_norm_f32_eager-composed_d1024_len64_b8",
   "issues": [
    "#2006"
@@ -1931,6 +2003,30 @@
   ],
   "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
   "reference_for": "layer_norm_f32_eager-composed_d1024_len64_b8"
+ },
+ {
+  "id": "layer_norm_f32_eager-single-call_d1024_len64_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006 (#2010 PR-B1): one EagerSession::layer_norm call (axis 0, weight, bias for layer_norm, eps 1e-5), a composite of existing primitives; the eager-composed row is the hand composition it replaces (same performance expected until the fused B2 kernel)."
  },
  {
   "id": "rms_norm_f32_eager-composed_d1024_len8_b1",
@@ -1982,6 +2078,30 @@
   "reference_for": "rms_norm_f32_eager-composed_d1024_len8_b1"
  },
  {
+  "id": "rms_norm_f32_eager-single-call_d1024_len8_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006 (#2010 PR-B1): one EagerSession::rms_norm call (axis 0, weight, bias for layer_norm, eps 1e-5), a composite of existing primitives; the eager-composed row is the hand composition it replaces (same performance expected until the fused B2 kernel)."
+ },
+ {
   "id": "rms_norm_f32_eager-composed_d1024_len8_b8",
   "issues": [
    "#2006"
@@ -2029,6 +2149,30 @@
   ],
   "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
   "reference_for": "rms_norm_f32_eager-composed_d1024_len8_b8"
+ },
+ {
+  "id": "rms_norm_f32_eager-single-call_d1024_len8_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006 (#2010 PR-B1): one EagerSession::rms_norm call (axis 0, weight, bias for layer_norm, eps 1e-5), a composite of existing primitives; the eager-composed row is the hand composition it replaces (same performance expected until the fused B2 kernel)."
  },
  {
   "id": "rms_norm_f32_eager-composed_d1024_len64_b1",
@@ -2080,6 +2224,30 @@
   "reference_for": "rms_norm_f32_eager-composed_d1024_len64_b1"
  },
  {
+  "id": "rms_norm_f32_eager-single-call_d1024_len64_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006 (#2010 PR-B1): one EagerSession::rms_norm call (axis 0, weight, bias for layer_norm, eps 1e-5), a composite of existing primitives; the eager-composed row is the hand composition it replaces (same performance expected until the fused B2 kernel)."
+ },
+ {
   "id": "rms_norm_f32_eager-composed_d1024_len64_b8",
   "issues": [
    "#2006"
@@ -2127,6 +2295,30 @@
   ],
   "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
   "reference_for": "rms_norm_f32_eager-composed_d1024_len64_b8"
+ },
+ {
+  "id": "rms_norm_f32_eager-single-call_d1024_len64_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006 (#2010 PR-B1): one EagerSession::rms_norm call (axis 0, weight, bias for layer_norm, eps 1e-5), a composite of existing primitives; the eager-composed row is the hand composition it replaces (same performance expected until the fused B2 kernel)."
  },
  {
   "id": "small_contraction_abcd-dbef-acef_f64_per-call-default-pool_d4",
@@ -2194,5 +2386,1297 @@
    "mac-cpu"
   ],
   "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend)."
+ },
+ {
+  "id": "activation_erf_f32_eager-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "erf",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference."
+ },
+ {
+  "id": "activation_erf_f32_session-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "erf",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference."
+ },
+ {
+  "id": "activation_erf_f32_pytorch_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "erf",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference.",
+  "reference_for": "activation_erf_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "activation_sigmoid_f32_eager-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "sigmoid",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+ },
+ {
+  "id": "activation_sigmoid_f32_session-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "sigmoid",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+ },
+ {
+  "id": "activation_sigmoid_f32_eager-composed_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "sigmoid",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "reference_for": "activation_sigmoid_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "activation_sigmoid_f32_pytorch_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "sigmoid",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "reference_for": "activation_sigmoid_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "activation_silu_f32_eager-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "silu",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+ },
+ {
+  "id": "activation_silu_f32_session-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "silu",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+ },
+ {
+  "id": "activation_silu_f32_eager-composed_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "silu",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "reference_for": "activation_silu_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "activation_silu_f32_pytorch_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "silu",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "reference_for": "activation_silu_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "activation_softplus_f32_eager-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softplus",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+ },
+ {
+  "id": "activation_softplus_f32_session-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softplus",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+ },
+ {
+  "id": "activation_softplus_f32_eager-composed_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softplus",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "reference_for": "activation_softplus_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "activation_softplus_f32_pytorch_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "softplus",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "reference_for": "activation_softplus_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "activation_gelu_f32_eager-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "gelu",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference."
+ },
+ {
+  "id": "activation_gelu_f32_session-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "gelu",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference."
+ },
+ {
+  "id": "activation_gelu_f32_pytorch_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "gelu",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference.",
+  "reference_for": "activation_gelu_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "activation_gelu_tanh_f32_eager-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "gelu_tanh",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+ },
+ {
+  "id": "activation_gelu_tanh_f32_session-single-call_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "gelu_tanh",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+ },
+ {
+  "id": "activation_gelu_tanh_f32_eager-composed_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "gelu_tanh",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "reference_for": "activation_gelu_tanh_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "activation_gelu_tanh_f32_pytorch_1024x64",
+  "issues": [
+   "#1975"
+  ],
+  "kind": "activation",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "gelu_tanh",
+   "rows": 1024,
+   "cols": 64,
+   "kind": "activation",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "reference_for": "activation_gelu_tanh_f32_eager-single-call_1024x64"
+ },
+ {
+  "id": "softmax_f32_eager-single-call_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "softmax_f32_session-single-call_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "softmax_f32_eager-composed_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "softmax_f32_eager-single-call_len64_b8"
+ },
+ {
+  "id": "softmax_f32_pytorch_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "softmax_f32_eager-single-call_len64_b8"
+ },
+ {
+  "id": "softmax_f32_eager-single-call_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "softmax_f32_session-single-call_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "softmax_f32_eager-composed_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "softmax_f32_eager-single-call_len512_b8"
+ },
+ {
+  "id": "softmax_f32_pytorch_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "softmax_f32_eager-single-call_len512_b8"
+ },
+ {
+  "id": "log_softmax_f32_eager-single-call_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "log_softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): log_softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "log_softmax_f32_session-single-call_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "log_softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): log_softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "log_softmax_f32_eager-composed_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "log_softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): log_softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "log_softmax_f32_eager-single-call_len64_b8"
+ },
+ {
+  "id": "log_softmax_f32_pytorch_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "log_softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): log_softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "log_softmax_f32_eager-single-call_len64_b8"
+ },
+ {
+  "id": "log_softmax_f32_eager-single-call_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "log_softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): log_softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "log_softmax_f32_session-single-call_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "log_softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): log_softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "log_softmax_f32_eager-composed_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "log_softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): log_softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "log_softmax_f32_eager-single-call_len512_b8"
+ },
+ {
+  "id": "log_softmax_f32_pytorch_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "log_softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): log_softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "log_softmax_f32_eager-single-call_len512_b8"
+ },
+ {
+  "id": "masked_softmax_f32_eager-single-call_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "masked_softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): masked_softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor with a causal Bool mask (key <= query) broadcast over the batch as (len, len, 1), as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log, select for the mask, which is pre-broadcast to the full (len, len, batch) shape outside timing) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "masked_softmax_f32_session-single-call_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "masked_softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): masked_softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor with a causal Bool mask (key <= query) broadcast over the batch as (len, len, 1), as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log, select for the mask, which is pre-broadcast to the full (len, len, batch) shape outside timing) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "masked_softmax_f32_eager-composed_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "masked_softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): masked_softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor with a causal Bool mask (key <= query) broadcast over the batch as (len, len, 1), as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log, select for the mask, which is pre-broadcast to the full (len, len, batch) shape outside timing) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "masked_softmax_f32_eager-single-call_len64_b8"
+ },
+ {
+  "id": "masked_softmax_f32_pytorch_len64_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "masked_softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): masked_softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor with a causal Bool mask (key <= query) broadcast over the batch as (len, len, 1), as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log, select for the mask, which is pre-broadcast to the full (len, len, batch) shape outside timing) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "masked_softmax_f32_eager-single-call_len64_b8"
+ },
+ {
+  "id": "masked_softmax_f32_eager-single-call_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "masked_softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): masked_softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor with a causal Bool mask (key <= query) broadcast over the batch as (len, len, 1), as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log, select for the mask, which is pre-broadcast to the full (len, len, batch) shape outside timing) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "masked_softmax_f32_session-single-call_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "masked_softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): masked_softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor with a causal Bool mask (key <= query) broadcast over the batch as (len, len, 1), as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log, select for the mask, which is pre-broadcast to the full (len, len, batch) shape outside timing) without the all-masked guard; PyTorch is the external reference."
+ },
+ {
+  "id": "masked_softmax_f32_eager-composed_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "masked_softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): masked_softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor with a causal Bool mask (key <= query) broadcast over the batch as (len, len, 1), as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log, select for the mask, which is pre-broadcast to the full (len, len, batch) shape outside timing) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "masked_softmax_f32_eager-single-call_len512_b8"
+ },
+ {
+  "id": "masked_softmax_f32_pytorch_len512_b8",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "softmax",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "masked_softmax",
+   "len": 512,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): masked_softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor with a causal Bool mask (key <= query) broadcast over the batch as (len, len, 1), as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log, select for the mask, which is pre-broadcast to the full (len, len, batch) shape outside timing) without the all-masked guard; PyTorch is the external reference.",
+  "reference_for": "masked_softmax_f32_eager-single-call_len512_b8"
+ },
+ {
+  "id": "reduce_mean_f32_eager-single-call_1024x64_axis0",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "reduce_mean",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "axis": 0,
+   "kind": "reduce_mean",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): reduce_mean over axis 0 of a 1024x64 f32 tensor as one eager call and one concrete session call; the composed reference is reduce_sum + scale_real, PyTorch mean is the external reference."
+ },
+ {
+  "id": "reduce_mean_f32_session-single-call_1024x64_axis0",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "reduce_mean",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "axis": 0,
+   "kind": "reduce_mean",
+   "arm": "session-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): reduce_mean over axis 0 of a 1024x64 f32 tensor as one eager call and one concrete session call; the composed reference is reduce_sum + scale_real, PyTorch mean is the external reference."
+ },
+ {
+  "id": "reduce_mean_f32_eager-composed_1024x64_axis0",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "reduce_mean",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "axis": 0,
+   "kind": "reduce_mean",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): reduce_mean over axis 0 of a 1024x64 f32 tensor as one eager call and one concrete session call; the composed reference is reduce_sum + scale_real, PyTorch mean is the external reference.",
+  "reference_for": "reduce_mean_f32_eager-single-call_1024x64_axis0"
+ },
+ {
+  "id": "reduce_mean_f32_pytorch_1024x64_axis0",
+  "issues": [
+   "#1976"
+  ],
+  "kind": "reduce_mean",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "axis": 0,
+   "kind": "reduce_mean",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): reduce_mean over axis 0 of a 1024x64 f32 tensor as one eager call and one concrete session call; the composed reference is reduce_sum + scale_real, PyTorch mean is the external reference.",
+  "reference_for": "reduce_mean_f32_eager-single-call_1024x64_axis0"
+ },
+ {
+  "id": "take_along_axis_rows_f64_eager-single-call_n64_b256",
+  "issues": [
+   "#2008"
+  ],
+  "kind": "take_along_axis",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "batch": 256,
+   "axis": 0,
+   "kind": "take_along_axis",
+   "arm": "eager-single-call",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2008 (#2010 PR-B1): per-batch row gather out[i, j, b] = x[idx[i, b], j, b] on x [64, 64, 256] f64 with an I64 index [64, 1, 256] (a different row permutation per batch), as one take_along_axis call (eager and concrete session; the composite builds the (index, batch) tuples inside the call). The eager-gather-prebuilt arm calls the existing gather with the tuples built outside timing, isolating the index-construction cost; PyTorch take_along_dim is the external reference."
+ },
+ {
+  "id": "take_along_axis_rows_f64_session-single-call_n64_b256",
+  "issues": [
+   "#2008"
+  ],
+  "kind": "take_along_axis",
+  "arm": "session-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "batch": 256,
+   "axis": 0,
+   "kind": "take_along_axis",
+   "arm": "session-single-call",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2008 (#2010 PR-B1): per-batch row gather out[i, j, b] = x[idx[i, b], j, b] on x [64, 64, 256] f64 with an I64 index [64, 1, 256] (a different row permutation per batch), as one take_along_axis call (eager and concrete session; the composite builds the (index, batch) tuples inside the call). The eager-gather-prebuilt arm calls the existing gather with the tuples built outside timing, isolating the index-construction cost; PyTorch take_along_dim is the external reference."
+ },
+ {
+  "id": "take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256",
+  "issues": [
+   "#2008"
+  ],
+  "kind": "take_along_axis",
+  "arm": "eager-gather-prebuilt",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "batch": 256,
+   "axis": 0,
+   "kind": "take_along_axis",
+   "arm": "eager-gather-prebuilt",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2008 (#2010 PR-B1): per-batch row gather out[i, j, b] = x[idx[i, b], j, b] on x [64, 64, 256] f64 with an I64 index [64, 1, 256] (a different row permutation per batch), as one take_along_axis call (eager and concrete session; the composite builds the (index, batch) tuples inside the call). The eager-gather-prebuilt arm calls the existing gather with the tuples built outside timing, isolating the index-construction cost; PyTorch take_along_dim is the external reference.",
+  "reference_for": "take_along_axis_rows_f64_eager-single-call_n64_b256"
+ },
+ {
+  "id": "take_along_axis_rows_f64_pytorch_n64_b256",
+  "issues": [
+   "#2008"
+  ],
+  "kind": "take_along_axis",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "batch": 256,
+   "axis": 0,
+   "kind": "take_along_axis",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2008 (#2010 PR-B1): per-batch row gather out[i, j, b] = x[idx[i, b], j, b] on x [64, 64, 256] f64 with an I64 index [64, 1, 256] (a different row permutation per batch), as one take_along_axis call (eager and concrete session; the composite builds the (index, batch) tuples inside the call). The eager-gather-prebuilt arm calls the existing gather with the tuples built outside timing, isolating the index-construction cost; PyTorch take_along_dim is the external reference.",
+  "reference_for": "take_along_axis_rows_f64_eager-single-call_n64_b256"
  }
 ]

@@ -43,7 +43,7 @@ class PerfIssueSuiteTest(unittest.TestCase):
         cpu = {i for c in gen.generate_cases() for i in c["issues"]}
         gpu = {i for c in gen.generate_gpu_cases() for i in c["issues"]}
         self.assertTrue({"#1992", "#2003", "#1995", "#1900", "#1615", "#2007", "#1803", "#1990",
-                         "#2006", "#1885"} <= cpu)
+                         "#2006", "#1885", "#1975", "#1976", "#2008"} <= cpu)
         self.assertEqual(gpu, {"#2009", "#1887", "#1885"})
         einsum = (ROOT / "benchmarks/cpu/einsum.yaml").read_text()
         for name in gen.einsum_instances():

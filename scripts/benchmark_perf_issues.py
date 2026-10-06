@@ -133,6 +133,58 @@ def torch_case(case):
             ref = reference()
             return float(((op().double() - ref).abs() / ref.abs().clamp(min=1.0)).max())
         return op, check, d * length * batch * 4, [f"torch.nn.functional.{p['norm']} (fused)", "output_allocation"]
+    # #2010 PR-B1 ops (#1975, #1976, #2008): same data as the Rust arms.
+    if kind == "activation":
+        rows, cols, name = p["rows"], p["cols"], p["op"]
+        x = 8.0 * torch.tensor(_values(rows * cols, 50), dtype=torch.float32)
+        f = torch.nn.functional
+        ops = {"erf": torch.erf, "sigmoid": torch.sigmoid, "silu": f.silu, "softplus": f.softplus,
+               "gelu": f.gelu, "gelu_tanh": lambda t: f.gelu(t, approximate="tanh")}
+        op_fn = ops[name]
+
+        def check():
+            ref = op_fn(x.double())
+            return float(((op_fn(x).double() - ref).abs() / ref.abs().clamp(min=1.0)).max())
+        return (lambda: op_fn(x)), check, rows * cols * 4, [f"torch {name}", "output_allocation"]
+    if kind == "softmax":
+        length, batch, name = p["len"], p["batch"], p["op"]
+        # Column-major (key, query, batch) == row-major (batch, query, key); reduce the key axis.
+        x = 8.0 * torch.tensor(_values(length * length * batch, 60), dtype=torch.float32)
+        x = x.reshape(batch, length, length)
+        causal = torch.arange(length).reshape(1, length) <= torch.arange(length).reshape(length, 1)
+        if name == "softmax":
+            op_fn = lambda t: torch.softmax(t, -1)
+        elif name == "log_softmax":
+            op_fn = lambda t: torch.log_softmax(t, -1)
+        else:
+            op_fn = lambda t: torch.softmax(t.masked_fill(~causal, float("-inf")), -1)
+
+        def check():
+            ref = op_fn(x.double())
+            return float(((op_fn(x).double() - ref).abs() / ref.abs().clamp(min=1.0)).max())
+        return (lambda: op_fn(x)), check, length * length * batch * 4, [f"torch {name}", "output_allocation"]
+    if kind == "reduce_mean":
+        rows, cols = p["rows"], p["cols"]
+        # Column-major (rows, cols) == row-major (cols, rows); axis 0 is the last torch dim.
+        x = torch.tensor(_values(rows * cols, 70), dtype=torch.float32).reshape(cols, rows)
+
+        def check():
+            ref = x.double().mean(-1)
+            return float(((x.mean(-1).double() - ref).abs() / ref.abs().clamp(min=1.0)).max())
+        return (lambda: x.mean(-1)), check, cols * 4, ["torch.mean", "output_allocation"]
+    if kind == "take_along_axis":
+        n, batch = p["n"], p["batch"]
+        # Column-major x [n, n, batch] == row-major (batch, n_j, n_i); idx [n, 1, batch] == (batch, 1, n).
+        x = torch.tensor(_values(n * n * batch, 80), dtype=torch.float64).reshape(batch, n, n)
+        idx = torch.tensor([((2 * (b % (n // 2)) + 1) * i + (b * 7) % n) % n
+                            for b in range(batch) for i in range(n)], dtype=torch.int64).reshape(batch, 1, n)
+
+        def check():
+            got = torch.take_along_dim(x, idx, dim=2)
+            ref = torch.stack([x[b][:, idx[b, 0]] for b in range(batch)])
+            return float((got - ref).abs().max())
+        return (lambda: torch.take_along_dim(x, idx, dim=2)), check, n * n * batch * 8, \
+            ["torch.take_along_dim", "output_allocation"]
     raise ValueError(f"no PyTorch arm for {kind}")
 
 

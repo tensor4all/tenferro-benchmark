@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 1
+MANIFEST_VERSION = 2
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -172,13 +172,22 @@ def other_cases():
         for length in (8, 64):
             for batch in (1, 8):
                 for arm, backend, ref in (("eager-composed", "tenferro-rs", None),
-                                          ("pytorch-fused", "pytorch-cpu", "eager-composed")):
+                                          ("pytorch-fused", "pytorch-cpu", "eager-composed"),
+                                          # #2010 PR-B1: the single-call composite op, a
+                                          # second row under test next to eager-composed.
+                                          ("eager-single-call", "tenferro-rs", None)):
+                    single = arm == "eager-single-call"
                     rows.append(case(
                         f"{norm}_f32_{arm}_d1024_len{length}_b{batch}", ("#2006",), "composed_norm",
                         {"norm": norm, "d": 1024, "len": length, "batch": batch}, arm=arm,
                         backend=backend, dtype="f32",
                         reference_for=ref and f"{norm}_f32_{ref}_d1024_len{length}_b{batch}",
-                        intent=("tenferro-rs #2006: feature-first (d, len, batch) activation "
+                        intent=(f"tenferro-rs #2006 (#2010 PR-B1): one EagerSession::{norm} call "
+                                "(axis 0, weight, bias for layer_norm, eps 1e-5), a composite of "
+                                "existing primitives; the eager-composed row is the hand "
+                                "composition it replaces (same performance expected until the "
+                                "fused B2 kernel)." if single else
+                                "tenferro-rs #2006: feature-first (d, len, batch) activation "
                                 "normalized over d with weight (and bias for layer_norm). The "
                                 "tenferro row is today's ~10-op eager composition and is the "
                                 "baseline for the fused B1/B2 op; PyTorch's fused "
@@ -199,8 +208,101 @@ def other_cases():
     return rows
 
 
+def b1_op_cases():
+    """#2010 PR-B1 composite operations (and the new erf primitive).
+
+    Each op has a single-call arm on the eager surface (``EagerSession``) and on
+    the concrete session surface (``TensorSessionOpsExt`` inside one
+    ``with_backend_session``), next to a composed reference built from the
+    primitives that existed before B1 and, where PyTorch has the op, a
+    ``pytorch-cpu`` reference. The ``layer_norm`` / ``rms_norm`` single-call arms
+    live in the #2006 ``composed_norm`` family above.
+    """
+    rows = []
+    # erf and exact gelu have no composition from pre-B1 primitives (erf is the
+    # new primitive), so they have no eager-composed arm.
+    composed = {"sigmoid", "silu", "softplus", "gelu_tanh"}
+    rows_, cols = 1024, 64
+    for op in ("erf", "sigmoid", "silu", "softplus", "gelu", "gelu_tanh"):
+        arms = [("eager-single-call", "tenferro-rs", None),
+                ("session-single-call", "tenferro-rs", None)]
+        if op in composed:
+            arms.append(("eager-composed", "tenferro-rs", "eager-single-call"))
+        arms.append(("pytorch", "pytorch-cpu", "eager-single-call"))
+        for arm, backend, ref in arms:
+            rows.append(case(
+                f"activation_{op}_f32_{arm}_{rows_}x{cols}", ("#1975",), "activation",
+                {"op": op, "rows": rows_, "cols": cols}, arm=arm, backend=backend, dtype="f32",
+                reference_for=ref and f"activation_{op}_f32_{ref}_{rows_}x{cols}",
+                intent=(f"tenferro-rs #1975 (#2010 PR-B1): elementwise {op} on a {rows_}x{cols} "
+                        "f32 tensor as one eager call and as one concrete session call "
+                        "(TensorSessionOpsExt). "
+                        + ("erf is the new B1 primitive (libm erff on CPU). " if op == "erf" else "")
+                        + ("The eager-composed arm is the hand-written formula from existing "
+                           "primitives (exp, neg, abs, log1p, tanh, maximum, ...). " if op in composed else
+                           "No pre-B1 composition exists (it needs erf), so the reference is "
+                           "PyTorch only. ")
+                        + "PyTorch is the external reference.")))
+    for op in ("softmax", "log_softmax", "masked_softmax"):
+        for length in (64, 512):
+            batch = 8
+            for arm, backend, ref in (("eager-single-call", "tenferro-rs", None),
+                                      ("session-single-call", "tenferro-rs", None),
+                                      ("eager-composed", "tenferro-rs", "eager-single-call"),
+                                      ("pytorch", "pytorch-cpu", "eager-single-call")):
+                rows.append(case(
+                    f"{op}_f32_{arm}_len{length}_b{batch}", ("#1976",), "softmax",
+                    {"op": op, "len": length, "batch": batch, "axis": 0}, arm=arm,
+                    backend=backend, dtype="f32",
+                    reference_for=ref and f"{op}_f32_{ref}_len{length}_b{batch}",
+                    intent=(f"tenferro-rs #1976 (#2010 PR-B1): {op} over axis 0 of an "
+                            f"attention-score-like (key {length}, query {length}, batch {batch}) "
+                            "f32 tensor"
+                            + (" with a causal Bool mask (key <= query) broadcast over the batch "
+                               "as (len, len, 1)" if op.startswith("masked") else "")
+                            + ", as one eager call and one concrete session call. The "
+                            "eager-composed arm is the plain max-subtracted composition from "
+                            "existing primitives (reduce_max, broadcast_in_dim, sub, exp, "
+                            "reduce_sum, div/log"
+                            + (", select for the mask, which is pre-broadcast to the full "
+                               "(len, len, batch) shape outside timing" if op.startswith("masked")
+                               else "")
+                            + ") without the all-masked guard; PyTorch is the external "
+                            "reference.")))
+    for arm, backend, ref in (("eager-single-call", "tenferro-rs", None),
+                              ("session-single-call", "tenferro-rs", None),
+                              ("eager-composed", "tenferro-rs", "eager-single-call"),
+                              ("pytorch", "pytorch-cpu", "eager-single-call")):
+        rows.append(case(
+            f"reduce_mean_f32_{arm}_1024x64_axis0", ("#1976",), "reduce_mean",
+            {"rows": 1024, "cols": 64, "axis": 0}, arm=arm, backend=backend, dtype="f32",
+            reference_for=ref and f"reduce_mean_f32_{ref}_1024x64_axis0",
+            intent=("tenferro-rs #1976 (#2010 PR-B1): reduce_mean over axis 0 of a 1024x64 f32 "
+                    "tensor as one eager call and one concrete session call; the composed "
+                    "reference is reduce_sum + scale_real, PyTorch mean is the external "
+                    "reference.")))
+    n, batch = 64, 256
+    for arm, backend, ref in (("eager-single-call", "tenferro-rs", None),
+                              ("session-single-call", "tenferro-rs", None),
+                              ("eager-gather-prebuilt", "tenferro-rs", "eager-single-call"),
+                              ("pytorch", "pytorch-cpu", "eager-single-call")):
+        rows.append(case(
+            f"take_along_axis_rows_f64_{arm}_n{n}_b{batch}", ("#2008",), "take_along_axis",
+            {"n": n, "batch": batch, "axis": 0}, arm=arm, backend=backend, dtype="f64",
+            reference_for=ref and f"take_along_axis_rows_f64_{ref}_n{n}_b{batch}",
+            intent=(f"tenferro-rs #2008 (#2010 PR-B1): per-batch row gather "
+                    f"out[i, j, b] = x[idx[i, b], j, b] on x [{n}, {n}, {batch}] f64 with an "
+                    f"I64 index [{n}, 1, {batch}] (a different row permutation per batch), "
+                    "as one take_along_axis call (eager and concrete session; the composite "
+                    "builds the (index, batch) tuples inside the call). The "
+                    "eager-gather-prebuilt arm calls the existing gather with the tuples built "
+                    "outside timing, isolating the index-construction cost; PyTorch "
+                    "take_along_dim is the external reference.")))
+    return rows
+
+
 def generate_cases():
-    return decode_cases() + other_cases()
+    return decode_cases() + other_cases() + b1_op_cases()
 
 
 def generate_gpu_cases():

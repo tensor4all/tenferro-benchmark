@@ -2,11 +2,11 @@
 schema_version: 1
 suite_id: cpu/perf_issues
 title: Workloads of open tenferro-rs performance issues (CPU)
-description: 'One case family per open tenferro-rs performance issue (#1615, #1803, #1885, #1900, #1990,
-  #1992, #1995, #2003, #2006, #2007), each with its reference arm(s); the issue numbers are recorded per
-  case in data/instances/perf_issues.json. Workloads are added when an issue is opened; perf-fix PRs report
-  numbers from these cases. Steady-state rows and labelled diagnostics are reported separately. #1865
-  and #1863 live in cpu/einsum.'
+description: 'One case family per open tenferro-rs performance issue (#1615, #1803, #1885, #1900, #1975,
+  #1976, #1990, #1992, #1995, #2003, #2006, #2007, #2008), each with its reference arm(s); the issue numbers
+  are recorded per case in data/instances/perf_issues.json. Workloads are added when an issue is opened;
+  perf-fix PRs report numbers from these cases. Steady-state rows and labelled diagnostics are reported
+  separately. #1865 and #1863 live in cpu/einsum.'
 defaults:
   device:
     kind: cpu
@@ -107,20 +107,82 @@ problems:
   - tanh_chain_f32_eager-shared_k200_1024x64
   - layer_norm_f32_eager-composed_d1024_len8_b1
   - layer_norm_f32_pytorch-fused_d1024_len8_b1
+  - layer_norm_f32_eager-single-call_d1024_len8_b1
   - layer_norm_f32_eager-composed_d1024_len8_b8
   - layer_norm_f32_pytorch-fused_d1024_len8_b8
+  - layer_norm_f32_eager-single-call_d1024_len8_b8
   - layer_norm_f32_eager-composed_d1024_len64_b1
   - layer_norm_f32_pytorch-fused_d1024_len64_b1
+  - layer_norm_f32_eager-single-call_d1024_len64_b1
   - layer_norm_f32_eager-composed_d1024_len64_b8
   - layer_norm_f32_pytorch-fused_d1024_len64_b8
+  - layer_norm_f32_eager-single-call_d1024_len64_b8
   - rms_norm_f32_eager-composed_d1024_len8_b1
   - rms_norm_f32_pytorch-fused_d1024_len8_b1
+  - rms_norm_f32_eager-single-call_d1024_len8_b1
   - rms_norm_f32_eager-composed_d1024_len8_b8
   - rms_norm_f32_pytorch-fused_d1024_len8_b8
+  - rms_norm_f32_eager-single-call_d1024_len8_b8
   - rms_norm_f32_eager-composed_d1024_len64_b1
   - rms_norm_f32_pytorch-fused_d1024_len64_b1
+  - rms_norm_f32_eager-single-call_d1024_len64_b1
   - rms_norm_f32_eager-composed_d1024_len64_b8
   - rms_norm_f32_pytorch-fused_d1024_len64_b8
+  - rms_norm_f32_eager-single-call_d1024_len64_b8
   - small_contraction_abcd-dbef-acef_f64_per-call-default-pool_d4
   - small_contraction_abcd-dbef-acef_f64_per-call-threads1_d4
   - small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4
+  - activation_erf_f32_eager-single-call_1024x64
+  - activation_erf_f32_session-single-call_1024x64
+  - activation_erf_f32_pytorch_1024x64
+  - activation_sigmoid_f32_eager-single-call_1024x64
+  - activation_sigmoid_f32_session-single-call_1024x64
+  - activation_sigmoid_f32_eager-composed_1024x64
+  - activation_sigmoid_f32_pytorch_1024x64
+  - activation_silu_f32_eager-single-call_1024x64
+  - activation_silu_f32_session-single-call_1024x64
+  - activation_silu_f32_eager-composed_1024x64
+  - activation_silu_f32_pytorch_1024x64
+  - activation_softplus_f32_eager-single-call_1024x64
+  - activation_softplus_f32_session-single-call_1024x64
+  - activation_softplus_f32_eager-composed_1024x64
+  - activation_softplus_f32_pytorch_1024x64
+  - activation_gelu_f32_eager-single-call_1024x64
+  - activation_gelu_f32_session-single-call_1024x64
+  - activation_gelu_f32_pytorch_1024x64
+  - activation_gelu_tanh_f32_eager-single-call_1024x64
+  - activation_gelu_tanh_f32_session-single-call_1024x64
+  - activation_gelu_tanh_f32_eager-composed_1024x64
+  - activation_gelu_tanh_f32_pytorch_1024x64
+  - softmax_f32_eager-single-call_len64_b8
+  - softmax_f32_session-single-call_len64_b8
+  - softmax_f32_eager-composed_len64_b8
+  - softmax_f32_pytorch_len64_b8
+  - softmax_f32_eager-single-call_len512_b8
+  - softmax_f32_session-single-call_len512_b8
+  - softmax_f32_eager-composed_len512_b8
+  - softmax_f32_pytorch_len512_b8
+  - log_softmax_f32_eager-single-call_len64_b8
+  - log_softmax_f32_session-single-call_len64_b8
+  - log_softmax_f32_eager-composed_len64_b8
+  - log_softmax_f32_pytorch_len64_b8
+  - log_softmax_f32_eager-single-call_len512_b8
+  - log_softmax_f32_session-single-call_len512_b8
+  - log_softmax_f32_eager-composed_len512_b8
+  - log_softmax_f32_pytorch_len512_b8
+  - masked_softmax_f32_eager-single-call_len64_b8
+  - masked_softmax_f32_session-single-call_len64_b8
+  - masked_softmax_f32_eager-composed_len64_b8
+  - masked_softmax_f32_pytorch_len64_b8
+  - masked_softmax_f32_eager-single-call_len512_b8
+  - masked_softmax_f32_session-single-call_len512_b8
+  - masked_softmax_f32_eager-composed_len512_b8
+  - masked_softmax_f32_pytorch_len512_b8
+  - reduce_mean_f32_eager-single-call_1024x64_axis0
+  - reduce_mean_f32_session-single-call_1024x64_axis0
+  - reduce_mean_f32_eager-composed_1024x64_axis0
+  - reduce_mean_f32_pytorch_1024x64_axis0
+  - take_along_axis_rows_f64_eager-single-call_n64_b256
+  - take_along_axis_rows_f64_session-single-call_n64_b256
+  - take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256
+  - take_along_axis_rows_f64_pytorch_n64_b256

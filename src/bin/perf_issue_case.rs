@@ -23,11 +23,13 @@ use std::time::Instant;
 use num_complex::Complex64;
 use serde::Serialize;
 use serde_json::{json, Value};
-use tenferro_ad::{EagerRuntime, EagerTensor};
+use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::{runtime_engine_registration, CpuBackend};
 use tenferro_linalg::TensorLinalgExt;
-use tenferro_runtime::{DType, GraphCompiler, Runtime, TracedTensor};
-use tenferro_tensor::{BackendSession, BackendSessionHost, DotGeneralConfig, Tensor, TensorRead};
+use tenferro_runtime::{DType, GraphCompiler, Runtime, TensorSessionOpsExt, TracedTensor};
+use tenferro_tensor::{
+    BackendSession, BackendSessionHost, DotGeneralConfig, GatherConfig, Tensor, TensorRead,
+};
 
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
@@ -260,7 +262,7 @@ fn eager_runtime(backend: CpuBackend) -> Result<Arc<EagerRuntime>> {
 }
 
 fn eager_const(runtime: &Arc<EagerRuntime>, tensor: Tensor) -> Result<EagerTensor> {
-    Ok(runtime.with_eager_session(|s| s.constant_from(tensor))??)
+    Ok(runtime.with_eager_session(|s| s.constant_from(tensor))?)
 }
 
 // ---------------------------------------------------------------------------
@@ -305,14 +307,14 @@ fn decode_projection(params: &Value, timing: &Timing, threads: usize) -> Result<
                 &runtime,
                 Tensor::from_vec_col_major(vec![din, dout], w.clone())?,
             )?;
-            let y = runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))??;
+            let y = runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))?;
             let error = check(y.to_tensor()?.as_slice::<f32>()?)?;
             if arm == "eager-shared" {
                 let measurement = runtime.with_eager_session(|s| {
                     measure(timing, out_bytes, || {
                         Ok(s.dot_general(&xt, &wt, cfg.clone())?)
                     })
-                })??;
+                })?;
                 (
                     error,
                     measurement,
@@ -321,7 +323,7 @@ fn decode_projection(params: &Value, timing: &Timing, threads: usize) -> Result<
                 )
             } else {
                 let measurement = measure(timing, out_bytes, || {
-                    Ok(runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))??)
+                    Ok(runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))?)
                 })?;
                 (
                     error,
@@ -477,7 +479,7 @@ fn copy_volume(params: &Value) -> Result<CaseOutcome> {
         (
             "reduce_sum_squares axis 0",
             len * 4,
-            Box::new(|s| s.reduce_sum_squares(&x, &[0])),
+            Box::new(|s| s.reduce_sum_squares(&x, Some(&[0]))),
         ),
         ("rsqrt (len)", len * 4, Box::new(|s| s.rsqrt(&eps))),
         (
@@ -487,11 +489,11 @@ fn copy_volume(params: &Value) -> Result<CaseOutcome> {
         ),
     ];
     for (name, output_bytes, op) in &ops {
-        runtime.with_eager_session(|s| op(s))??;
+        runtime.with_eager_session(|s| op(s))?;
         let (_, allocations, bytes) = count_allocations(|| {
             let mut kept = Vec::with_capacity(repeats);
             for _ in 0..repeats {
-                kept.push(runtime.with_eager_session(|s| op(s))??);
+                kept.push(runtime.with_eager_session(|s| op(s))?);
             }
             black_box(&kept);
             Ok(())
@@ -859,8 +861,8 @@ fn backward_live_leaves(params: &Value, timing: &Timing) -> Result<CaseOutcome> 
         })
         .collect::<Result<_>>()?;
     let workflow = || -> Result<()> {
-        let c = runtime.with_eager_session(|s| s.matmul(&a, &b))??;
-        let loss = runtime.with_eager_session(|s| s.reduce_sum(&c, None))??;
+        let c = runtime.with_eager_session(|s| s.matmul(&a, &b))?;
+        let loss = runtime.with_eager_session(|s| s.reduce_sum(&c, None))?;
         loss.backward()?;
         Ok(())
     };
@@ -982,7 +984,7 @@ fn tanh_chain(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                     let error = check(y.to_tensor()?.as_slice::<f32>()?)?;
                     let measurement = measure(timing, bytes, chain_once)?;
                     Ok((error, measurement))
-                })??;
+                })?;
             (
                 error,
                 measurement,
@@ -1022,6 +1024,13 @@ fn composed_norm(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
         param_usize(params, "batch")?,
     );
     let norm = param_str(params, "norm")?;
+    // #2010 PR-B1: the single-call composite (`EagerSession::layer_norm` /
+    // `rms_norm`) next to today's hand composition.
+    let single = match param_str(params, "arm")? {
+        "eager-composed" => false,
+        "eager-single-call" => true,
+        arm => return Err(format!("unknown norm arm {arm}").into()),
+    };
     let layer = match norm {
         "layer_norm" => true,
         "rms_norm" => false,
@@ -1051,12 +1060,16 @@ fn composed_norm(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let (error, measurement, ops) =
         runtime.with_eager_session(|s| -> Result<(f64, Measurement, usize)> {
             let mut forward = || -> Result<EagerTensor> {
-                Ok(if layer {
+                Ok(if single && layer {
+                    s.layer_norm(&x, 0, Some(&weight), Some(&bias), eps as f64)?
+                } else if single {
+                    s.rms_norm(&x, 0, Some(&weight), None, eps as f64)?
+                } else if layer {
                     let sum = s.reduce_sum(&x, Some(&[0]))?;
                     let mean = s.scale_real(&sum, inv_d)?;
                     let mean = s.broadcast_in_dim(&mean, &shape, &[1, 2])?;
                     let centered = s.sub(&x, &mean)?;
-                    let sq = s.reduce_sum_squares(&centered, &[0])?;
+                    let sq = s.reduce_sum_squares(&centered, Some(&[0]))?;
                     let var = s.scale_real(&sq, inv_d)?;
                     let var = s.add(&var, &eps_t)?;
                     let inv = s.rsqrt(&var)?;
@@ -1067,7 +1080,7 @@ fn composed_norm(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                     let b = s.broadcast_in_dim(&bias, &shape, &[0])?;
                     s.add(&scaled, &b)?
                 } else {
-                    let sq = s.reduce_sum_squares(&x, &[0])?;
+                    let sq = s.reduce_sum_squares(&x, Some(&[0]))?;
                     let ms = s.scale_real(&sq, inv_d)?;
                     let ms = s.add(&ms, &eps_t)?;
                     let inv = s.rsqrt(&ms)?;
@@ -1100,15 +1113,493 @@ fn composed_norm(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
             }
             let error = check_tol(worst, 1e-4, norm)?;
             let measurement = measure(timing, n * 4 * 4, forward)?;
-            Ok((error, measurement, if layer { 13 } else { 8 }))
-        })??;
+            let ops = match (single, layer) {
+                (true, _) => 1,
+                (false, true) => 13,
+                (false, false) => 8,
+            };
+            Ok((error, measurement, ops))
+        })?;
     Ok(CaseOutcome {
         max_rel_error: error,
         measurement: Some(measurement),
-        timer: vec!["eager composition (reduce_sum, scale_real, broadcast_in_dim, sub/add/mul, reduce_sum_squares, rsqrt)", "intermediate and output allocation"],
-        outside_timer: vec!["eager_runtime_construction", "input/weight/bias/eps construction", "eager session entry", "correctness_check"],
+        timer: if single {
+            vec![
+                "one EagerSession layer_norm / rms_norm call (composite)",
+                "intermediate and output allocation",
+            ]
+        } else {
+            vec!["eager composition (reduce_sum, scale_real, broadcast_in_dim, sub/add/mul, reduce_sum_squares, rsqrt)", "intermediate and output allocation"]
+        },
+        outside_timer: vec![
+            "eager_runtime_construction",
+            "input/weight/bias/eps construction",
+            "eager session entry",
+            "correctness_check",
+        ],
         extra: json!({"eager_ops_per_norm": ops}),
     })
+}
+
+// ---------------------------------------------------------------------------
+// #2010 PR-B1 composite ops: #1975 activations + erf, #1976 softmax family and
+// reduce_mean, #2008 take_along_axis. Each op runs as one eager call
+// (EagerSession), as one concrete session call (TensorSessionOpsExt inside one
+// with_backend_session), and as a composed reference from pre-B1 primitives.
+// ---------------------------------------------------------------------------
+
+/// Checks an output tensor against an independent f64 reference.
+type Check<'a> = dyn Fn(&Tensor) -> Result<f64> + Sync + 'a;
+
+/// One eager op timed inside one eager session (entry outside the timer).
+fn time_eager_op(
+    runtime: &Arc<EagerRuntime>,
+    timing: &Timing,
+    retained_bytes: usize,
+    check: &Check<'_>,
+    mut op: impl FnMut(&mut EagerSession<'_>) -> tenferro_ad::Result<EagerTensor> + Send,
+) -> Result<(f64, Measurement)> {
+    runtime.with_eager_session(|s| -> Result<(f64, Measurement)> {
+        let error = check(&op(s)?.to_tensor()?)?;
+        let measurement = measure(timing, retained_bytes, || Ok(op(s)?))?;
+        Ok((error, measurement))
+    })
+}
+
+/// One concrete-session op timed inside one `CpuBackend::new()` session.
+fn time_session_op(
+    timing: &Timing,
+    retained_bytes: usize,
+    check: &Check<'_>,
+    mut op: impl FnMut(&mut dyn BackendSession) -> tenferro_tensor::Result<Tensor> + Send,
+) -> Result<(f64, Measurement)> {
+    let mut backend = CpuBackend::new();
+    backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
+        let error = check(&op(s)?)?;
+        let measurement = measure(timing, retained_bytes, || Ok(op(s)?))?;
+        Ok((error, measurement))
+    })?
+}
+
+/// Worst relative error of `got` (f32) against an f64 reference, elementwise.
+fn check_f32_all(got: &Tensor, want: &[f64], tol: f64, what: &str) -> Result<f64> {
+    let got = got.as_slice::<f32>()?;
+    if got.len() != want.len() {
+        return Err(format!("{what}: {} outputs, expected {}", got.len(), want.len()).into());
+    }
+    let worst = got
+        .iter()
+        .zip(want)
+        .map(|(g, w)| rel_error(*g as f64, *w))
+        .fold(0.0f64, f64::max);
+    check_tol(worst, tol, what)
+}
+
+fn b1_outcome(
+    error: f64,
+    measurement: Measurement,
+    arm: &str,
+    single_call: &'static str,
+    composed: &'static str,
+    extra: Value,
+) -> CaseOutcome {
+    let (timer, entry) = match arm {
+        "eager-single-call" => (single_call, "eager session entry"),
+        "session-single-call" => (
+            single_call,
+            "with_backend_session entry (CpuBackend::new())",
+        ),
+        _ => (composed, "eager session entry"),
+    };
+    CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
+        timer: vec![timer, "intermediate and output allocation"],
+        outside_timer: vec![
+            "backend/runtime construction",
+            "input, constant, mask and index construction",
+            entry,
+            "correctness_check",
+        ],
+        extra,
+    }
+}
+
+fn activation_ref(op: &str, x: f64) -> f64 {
+    let sigmoid = 1.0 / (1.0 + (-x).exp());
+    match op {
+        "erf" => libm::erf(x),
+        "sigmoid" => sigmoid,
+        "silu" => x * sigmoid,
+        "softplus" => x.max(0.0) + (-x.abs()).exp().ln_1p(),
+        "gelu" => 0.5 * x * (1.0 + libm::erf(x / std::f64::consts::SQRT_2)),
+        "gelu_tanh" => {
+            let c = (2.0 / std::f64::consts::PI).sqrt();
+            0.5 * x * (1.0 + (c * (x + 0.044715 * x * x * x)).tanh())
+        }
+        _ => f64::NAN,
+    }
+}
+
+fn eager_activation(
+    s: &mut EagerSession<'_>,
+    op: &str,
+    x: &EagerTensor,
+) -> tenferro_ad::Result<EagerTensor> {
+    match op {
+        "erf" => s.erf(x),
+        "sigmoid" => s.sigmoid(x),
+        "silu" => s.silu(x),
+        "softplus" => s.softplus(x),
+        "gelu" => s.gelu(x),
+        _ => s.gelu_tanh(x),
+    }
+}
+
+fn session_activation(
+    s: &mut dyn BackendSession,
+    op: &str,
+    x: &Tensor,
+) -> tenferro_tensor::Result<Tensor> {
+    match op {
+        "erf" => x.erf(s),
+        "sigmoid" => x.sigmoid(s),
+        "silu" => x.silu(s),
+        "softplus" => x.softplus(s),
+        "gelu" => x.gelu(s),
+        _ => x.gelu_tanh(s),
+    }
+}
+
+/// Hand-written formulas from pre-B1 primitives (`one`/`zero` full-shape).
+fn composed_activation(
+    s: &mut EagerSession<'_>,
+    op: &str,
+    x: &EagerTensor,
+    one: &EagerTensor,
+    zero: &EagerTensor,
+) -> tenferro_ad::Result<EagerTensor> {
+    let sigmoid = |s: &mut EagerSession<'_>| -> tenferro_ad::Result<EagerTensor> {
+        let neg = s.neg(x)?;
+        let e = s.exp(&neg)?;
+        let denominator = s.add(one, &e)?;
+        s.div(one, &denominator)
+    };
+    match op {
+        "sigmoid" => sigmoid(s),
+        "silu" => {
+            let sg = sigmoid(s)?;
+            s.mul(x, &sg)
+        }
+        "softplus" => {
+            let abs = s.abs(x)?;
+            let neg_abs = s.neg(&abs)?;
+            let e = s.exp(&neg_abs)?;
+            let tail = s.log1p(&e)?;
+            let positive = s.maximum(x, zero)?;
+            s.add(&positive, &tail)
+        }
+        _ => {
+            // gelu_tanh (the caller rejects ops without a composition).
+            let x2 = s.mul(x, x)?;
+            let x3 = s.mul(&x2, x)?;
+            let cubic = s.scale_real(&x3, 0.044715)?;
+            let inner = s.add(x, &cubic)?;
+            let inner = s.scale_real(&inner, (2.0 / std::f64::consts::PI).sqrt())?;
+            let th = s.tanh(&inner)?;
+            let t = s.add(one, &th)?;
+            let y = s.mul(x, &t)?;
+            s.scale_real(&y, 0.5)
+        }
+    }
+}
+
+fn activation(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
+    let (rows, cols) = (param_usize(params, "rows")?, param_usize(params, "cols")?);
+    let op = param_str(params, "op")?;
+    let arm = param_str(params, "arm")?;
+    if arm == "eager-composed" && !matches!(op, "sigmoid" | "silu" | "softplus" | "gelu_tanh") {
+        return Err(format!("{op} has no pre-B1 composition").into());
+    }
+    let n = rows * cols;
+    // Spread over [-4, 4] so the saturating and linear regions both appear.
+    let data: Vec<f32> = values_f32(n, 50).into_iter().map(|v| 8.0 * v).collect();
+    let want: Vec<f64> = data.iter().map(|&v| activation_ref(op, v as f64)).collect();
+    let check = |t: &Tensor| check_f32_all(t, &want, 1e-4, op);
+    let x_t = Tensor::from_vec_col_major(vec![rows, cols], data.clone())?;
+    let bytes = n * 4;
+    let (error, measurement) = match arm {
+        "eager-single-call" | "eager-composed" => {
+            let runtime = eager_runtime(CpuBackend::new())?;
+            let x = eager_const(&runtime, x_t)?;
+            if arm == "eager-single-call" {
+                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                    eager_activation(s, op, &x)
+                })?
+            } else {
+                let one = eager_const(
+                    &runtime,
+                    Tensor::from_vec_col_major(vec![rows, cols], vec![1.0f32; n])?,
+                )?;
+                let zero = eager_const(
+                    &runtime,
+                    Tensor::from_vec_col_major(vec![rows, cols], vec![0.0f32; n])?,
+                )?;
+                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                    composed_activation(s, op, &x, &one, &zero)
+                })?
+            }
+        }
+        "session-single-call" => {
+            time_session_op(timing, bytes, &check, |s| session_activation(s, op, &x_t))?
+        }
+        _ => return Err(format!("unknown activation arm {arm}").into()),
+    };
+    Ok(b1_outcome(
+        error,
+        measurement,
+        arm,
+        "one activation call",
+        "hand-written formula from pre-B1 eager primitives",
+        json!({}),
+    ))
+}
+
+fn softmax_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
+    let (len, batch, axis) = (
+        param_usize(params, "len")?,
+        param_usize(params, "batch")?,
+        param_usize(params, "axis")?,
+    );
+    if axis != 0 {
+        return Err("softmax cases reduce axis 0".into());
+    }
+    let op = param_str(params, "op")?;
+    let arm = param_str(params, "arm")?;
+    let (log, masked) = match op {
+        "softmax" => (false, false),
+        "log_softmax" => (true, false),
+        "masked_softmax" => (false, true),
+        _ => return Err(format!("unknown softmax op {op}").into()),
+    };
+    // Column-major (key, query, batch) attention scores; causal mask key <= query.
+    let shape = vec![len, len, batch];
+    let n = len * len * batch;
+    let data: Vec<f32> = values_f32(n, 60).into_iter().map(|v| 8.0 * v).collect();
+    let mask: Vec<bool> = (0..len * len).map(|i| i % len <= i / len).collect();
+    let mut want = vec![0.0f64; n];
+    for col in 0..len * batch {
+        let q = col % len;
+        let keep = |k: usize| !masked || mask[k + q * len];
+        let xs = &data[col * len..(col + 1) * len];
+        let max = (0..len)
+            .filter(|&k| keep(k))
+            .map(|k| xs[k] as f64)
+            .fold(f64::NEG_INFINITY, f64::max);
+        let sum: f64 = (0..len)
+            .filter(|&k| keep(k))
+            .map(|k| (xs[k] as f64 - max).exp())
+            .sum();
+        for k in 0..len {
+            let shifted = xs[k] as f64 - max;
+            want[k + col * len] = match (keep(k), log) {
+                (false, _) => 0.0,
+                (true, true) => shifted - sum.ln(),
+                (true, false) => shifted.exp() / sum,
+            };
+        }
+    }
+    let check = |t: &Tensor| check_f32_all(t, &want, 1e-4, op);
+    let x_t = Tensor::from_vec_col_major(shape.clone(), data.clone())?;
+    let mask_t = Tensor::from_vec_col_major(vec![len, len, 1], mask.clone())?;
+    let bytes = n * 4;
+    let (error, measurement) = match arm {
+        "eager-single-call" | "eager-composed" => {
+            let runtime = eager_runtime(CpuBackend::new())?;
+            let x = eager_const(&runtime, x_t)?;
+            if arm == "eager-single-call" {
+                let m = eager_const(&runtime, mask_t)?;
+                time_eager_op(&runtime, timing, bytes, &check, |s| match op {
+                    "softmax" => s.softmax(&x, 0),
+                    "log_softmax" => s.log_softmax(&x, 0),
+                    _ => s.masked_softmax(&x, &m, 0),
+                })?
+            } else {
+                // Plain max-subtracted composition; the mask is pre-broadcast
+                // to the full shape outside timing (one select inside).
+                let full_mask: Vec<bool> = (0..n).map(|i| mask[i % (len * len)]).collect();
+                let m = eager_const(
+                    &runtime,
+                    Tensor::from_vec_col_major(shape.clone(), full_mask)?,
+                )?;
+                let neg_inf = eager_const(
+                    &runtime,
+                    Tensor::from_vec_col_major(shape.clone(), vec![f32::NEG_INFINITY; n])?,
+                )?;
+                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                    let selected;
+                    let x = if masked {
+                        selected = s.select(&m, &x, &neg_inf)?;
+                        &selected
+                    } else {
+                        &x
+                    };
+                    let max = s.reduce_max(x, Some(&[0]))?;
+                    let max = s.broadcast_in_dim(&max, &shape, &[1, 2])?;
+                    let shifted = s.sub(x, &max)?;
+                    let e = s.exp(&shifted)?;
+                    let sum = s.reduce_sum(&e, Some(&[0]))?;
+                    if log {
+                        let log_sum = s.log(&sum)?;
+                        let log_sum = s.broadcast_in_dim(&log_sum, &shape, &[1, 2])?;
+                        s.sub(&shifted, &log_sum)
+                    } else {
+                        let sum = s.broadcast_in_dim(&sum, &shape, &[1, 2])?;
+                        s.div(&e, &sum)
+                    }
+                })?
+            }
+        }
+        "session-single-call" => time_session_op(timing, bytes, &check, |s| match op {
+            "softmax" => x_t.softmax(0, s),
+            "log_softmax" => x_t.log_softmax(0, s),
+            _ => x_t.masked_softmax(&mask_t, 0, s),
+        })?,
+        _ => return Err(format!("unknown softmax arm {arm}").into()),
+    };
+    Ok(b1_outcome(
+        error,
+        measurement,
+        arm,
+        "one softmax-family call (composite, all-masked guard included)",
+        "max-subtracted composition (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log; select when masked)",
+        json!({}),
+    ))
+}
+
+fn reduce_mean_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
+    let (rows, cols) = (param_usize(params, "rows")?, param_usize(params, "cols")?);
+    if param_usize(params, "axis")? != 0 {
+        return Err("reduce_mean cases reduce axis 0".into());
+    }
+    let arm = param_str(params, "arm")?;
+    let data = values_f32(rows * cols, 70);
+    let want: Vec<f64> = (0..cols)
+        .map(|c| {
+            data[c * rows..(c + 1) * rows]
+                .iter()
+                .map(|&v| v as f64)
+                .sum::<f64>()
+                / rows as f64
+        })
+        .collect();
+    let check = |t: &Tensor| check_f32_all(t, &want, 1e-5, "reduce_mean");
+    let x_t = Tensor::from_vec_col_major(vec![rows, cols], data.clone())?;
+    let bytes = cols * 4;
+    let (error, measurement) = match arm {
+        "eager-single-call" | "eager-composed" => {
+            let runtime = eager_runtime(CpuBackend::new())?;
+            let x = eager_const(&runtime, x_t)?;
+            if arm == "eager-single-call" {
+                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                    s.reduce_mean(&x, Some(&[0]))
+                })?
+            } else {
+                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                    let sum = s.reduce_sum(&x, Some(&[0]))?;
+                    s.scale_real(&sum, 1.0 / rows as f64)
+                })?
+            }
+        }
+        "session-single-call" => {
+            time_session_op(timing, bytes, &check, |s| x_t.reduce_mean(Some(&[0]), s))?
+        }
+        _ => return Err(format!("unknown reduce_mean arm {arm}").into()),
+    };
+    Ok(b1_outcome(
+        error,
+        measurement,
+        arm,
+        "one reduce_mean call",
+        "reduce_sum + scale_real",
+        json!({}),
+    ))
+}
+
+fn take_along_axis_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
+    let (n, batch) = (param_usize(params, "n")?, param_usize(params, "batch")?);
+    if param_usize(params, "axis")? != 0 {
+        return Err("take_along_axis cases gather along axis 0".into());
+    }
+    let arm = param_str(params, "arm")?;
+    let data = values(n * n * batch, 80);
+    // A different row permutation per batch: idx[i, b] = (a_b i + c_b) mod n,
+    // a_b odd (n is a power of two, so the map is a bijection).
+    let idx: Vec<i64> = (0..batch)
+        .flat_map(|b| {
+            let (a, c) = (2 * (b % (n / 2)) + 1, (b * 7) % n);
+            (0..n).map(move |i| ((a * i + c) % n) as i64)
+        })
+        .collect();
+    let want: Vec<f64> = (0..n * n * batch)
+        .map(|flat| {
+            let (i, j, b) = (flat % n, (flat / n) % n, flat / (n * n));
+            data[idx[i + b * n] as usize + j * n + b * n * n]
+        })
+        .collect();
+    let check = |t: &Tensor| -> Result<f64> {
+        let got = t.as_slice::<f64>()?;
+        if got != want.as_slice() {
+            return Err("take_along_axis: gathered values differ from the reference".into());
+        }
+        Ok(0.0)
+    };
+    let x_t = Tensor::from_vec_col_major(vec![n, n, batch], data.clone())?;
+    let idx_t = Tensor::from_vec_col_major(vec![n, 1, batch], idx.clone())?;
+    let bytes = n * n * batch * 8;
+    let (error, measurement) = match arm {
+        "eager-single-call" | "eager-gather-prebuilt" => {
+            let runtime = eager_runtime(CpuBackend::new())?;
+            let x = eager_const(&runtime, x_t)?;
+            if arm == "eager-single-call" {
+                let i = eager_const(&runtime, idx_t)?;
+                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                    s.take_along_axis(&x, &i, 0)
+                })?
+            } else {
+                // The (row, batch) start-index tuples the composite builds,
+                // built here once outside timing: [n, batch, 2] column-major.
+                let mut tuples = idx.clone();
+                tuples.extend((0..batch).flat_map(|b| std::iter::repeat_n(b as i64, n)));
+                let t = eager_const(
+                    &runtime,
+                    Tensor::from_vec_col_major(vec![n, batch, 2], tuples)?,
+                )?;
+                let config = GatherConfig {
+                    offset_dims: vec![1],
+                    collapsed_slice_dims: vec![0, 2],
+                    start_index_map: vec![0, 2],
+                    index_vector_dim: 2,
+                    slice_sizes: vec![1, n, 1],
+                };
+                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                    s.gather(&x, &t, config.clone())
+                })?
+            }
+        }
+        "session-single-call" => {
+            time_session_op(timing, bytes, &check, |s| x_t.take_along_axis(&idx_t, 0, s))?
+        }
+        _ => return Err(format!("unknown take_along_axis arm {arm}").into()),
+    };
+    Ok(b1_outcome(
+        error,
+        measurement,
+        arm,
+        "one take_along_axis call (index tuples built inside, then gather)",
+        "gather with prebuilt (row, batch) index tuples",
+        json!({}),
+    ))
 }
 
 // ---------------------------------------------------------------------------
@@ -1235,6 +1726,10 @@ fn main() -> Result<()> {
         "tanh_chain" => tanh_chain(&params, &timing),
         "composed_norm" => composed_norm(&params, &timing),
         "small_contraction_pool_hop" => small_contraction_pool_hop(&params, &timing),
+        "activation" => activation(&params, &timing),
+        "softmax" => softmax_case(&params, &timing),
+        "reduce_mean" => reduce_mean_case(&params, &timing),
+        "take_along_axis" => take_along_axis_case(&params, &timing),
         _ => Err(format!("unknown case kind {kind}").into()),
     }?;
     let mut output = json!({
