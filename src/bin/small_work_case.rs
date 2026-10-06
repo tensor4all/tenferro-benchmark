@@ -47,7 +47,7 @@ impl SessionScope for CpuBackend {
 fn eager_reduce_sum(input: &EagerTensor, axes: &[usize]) -> Result<EagerTensor, BoxError> {
     Ok(input
         .runtime()
-        .with_eager_session(|session| session.reduce_sum(input, Some(axes)))??)
+        .with_eager_session(|session| session.reduce_sum(input, Some(axes)))?)
 }
 
 #[derive(Serialize)]
@@ -469,10 +469,12 @@ fn eager_operation(
     Ok(match operation {
         "add" => lhs
             .runtime()
-            .with_eager_session(|session| session.add(lhs, rhs))??,
-        "einsum" => lhs
-            .runtime()
-            .with_eager_session(|session| session.einsum_subscripts(&[lhs, rhs], subs))??,
+            .with_eager_session(|session| session.add(lhs, rhs))?,
+        "einsum" => lhs.runtime().with_eager_session(|session| {
+            session
+                .einsum_subscripts(&[lhs, rhs], subs)
+                .map_err(Box::<dyn Error + Send + Sync>::from)
+        })?,
         _ => return Err(format!("unsupported operation: {operation}").into()),
     })
 }

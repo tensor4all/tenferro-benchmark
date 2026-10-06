@@ -1371,7 +1371,7 @@ fn in_eager_session<R: Send>(
     anchor: &EagerTensor,
     op: impl FnOnce(&mut EagerSession<'_>) -> Result<R, tenferro_ad::Error> + Send,
 ) -> Result<R, tenferro_ad::Error> {
-    anchor.runtime().with_eager_session(op)?
+    anchor.runtime().with_eager_session(op)
 }
 
 fn run_eager_op(
@@ -1413,8 +1413,11 @@ fn run_eager_op(
             // One borrowed eager session per public einsum call (#1946 F5).
             let out = refs[0]
                 .runtime()
-                .with_eager_session(|session| session.einsum_subscripts(&refs, subscripts))
-                .map_err(|e| format!("einsum: {e}"))?
+                .with_eager_session(|session| {
+                    session
+                        .einsum_subscripts(&refs, subscripts)
+                        .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
+                })
                 .map_err(|e| format!("einsum: {e}"))?;
             Ok(vec![out])
         }

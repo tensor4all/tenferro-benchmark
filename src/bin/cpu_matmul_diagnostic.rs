@@ -274,8 +274,11 @@ fn main() -> Result<(), String> {
         // One borrowed eager session per public einsum call.
         eager_lhs
             .runtime()
-            .with_eager_session(|session| session.einsum_subscripts(&inputs, &subscripts))
-            .map_err(|e| e.to_string())?
+            .with_eager_session(|session| {
+                session
+                    .einsum_subscripts(&inputs, &subscripts)
+                    .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
+            })
             .map_err(|e| e.to_string())
     })?;
 
