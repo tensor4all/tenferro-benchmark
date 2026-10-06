@@ -1,0 +1,100 @@
+schema_version: 1
+target_profile: amd-cpu
+suite_id: cpu/perf_issues
+suite_file: benchmarks/cpu/perf_issues.yaml
+timestamp: '2026-10-06T18:54:37Z'
+tenferro_rs:
+  path: /workspaces/t4a-2010-bench-migrate/extern/tenferro-rs
+  commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+  dirty: false
+  features:
+  - system-mkl
+  resolved_path: /workspaces/t4a-2010-bench-migrate/extern/tenferro-rs
+harness:
+  path: /workspaces/t4a-2010-bench-migrate
+  commit: unknown
+  dirty: null
+environment:
+  hostname: 6b639a2fbdf8
+  os: Linux-6.8.0-101-generic-x86_64-with-glibc2.39
+  arch: x86_64
+  cpu: x86_64
+  env:
+    OMP_NUM_THREADS: '4'
+    OMP_THREAD_LIMIT: '4'
+    OMP_DYNAMIC: 'FALSE'
+    RAYON_NUM_THREADS: '4'
+    BENCHMARK_TARGET_PROFILE: amd-cpu
+    BENCHMARK_COMMIT: 320964928fdd481aaaf81ceae9606c0ea8df559f
+    OPENBLAS_ROOT: /opt/openblas
+    MKLROOT: /opt/intel/oneapi/mkl/latest
+    OPENBLAS_NUM_THREADS: '4'
+    GOTO_NUM_THREADS: '4'
+    MKL_NUM_THREADS: '4'
+    VECLIB_MAXIMUM_THREADS: '4'
+    VECLIB_NUM_THREADS: '4'
+    NUMEXPR_NUM_THREADS: '4'
+    BLIS_NUM_THREADS: '4'
+    PJRT_NPROC: '4'
+    XLA_FLAGS: --xla_cpu_multi_thread_eigen=true intra_op_parallelism_threads=4
+    JULIA_NUM_THREADS: '4'
+    USE_CUDA: '0'
+    BENCHMARK_BUILD_PROFILE: release
+    RUSTC_VERSION: rustc 1.99.0 (b940084d7 2026-09-28)
+    MATMUL_NUM_THREADS: '4'
+    BENCH_INSTANCE: null
+timing_policy:
+  version: 2
+  scope: operation execution and completion synchronization
+  setup: inputs, transfers, runtime/session/handles, plans and compilation outside
+    timer
+  cleanup: returned outputs retained until after timer stops
+  minimum_untimed_priming_runs: 1
+  short_operation_sampling: many operations per interval; shared session where supported;
+    see docs/short-operation-sessions.md
+  trace_execution: prepare_compiled outside timing; run_prepared inside
+  setup_diagnostics: false
+collection:
+  command: 'BENCHMARK_TARGET_PROFILE=amd-cpu TENFERRO_CPU_FEATURES=system-mkl BENCH_COVERAGE=full
+    ./scripts/run_perf_issues.sh 1 4 '
+  coverage: full
+  manifest_version: 2
+  selection_filter: null
+  expected_cases: 153
+  selected_cases: 153
+  effort: standard
+  correctness_only: false
+blas:
+  implementation: mkl
+  version: 2026.0.1
+  root: /opt/intel/oneapi/mkl/latest
+  library: /opt/intel/oneapi/mkl/latest/lib/libmkl_rt.so
+python_backends:
+  pytorch:
+    available: true
+    version: 2.12.0+cu130
+    file: /workspaces/t4a-2010-bench-migrate/.venv/lib/python3.12/site-packages/torch/__init__.py
+    provider: mkl
+    blas_info: mkl
+    lapack_info: mkl
+    library: /workspaces/t4a-2010-bench-migrate/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so
+    linked_libraries:
+    - /workspaces/t4a-2010-bench-migrate/.venv/lib/python3.12/site-packages/torch/lib/libgomp.so.1
+  jax:
+    available: true
+    version: 0.10.1
+    jaxlib_version: 0.10.1
+    backend: cpu
+    file: /workspaces/t4a-2010-bench-migrate/.venv/lib/python3.12/site-packages/jaxlib/__init__.py
+    provider: xla_cpu
+    dot_backend: xla_cpu
+    lapack_provider: none_detected
+    library: /workspaces/t4a-2010-bench-migrate/.venv/lib/python3.12/site-packages/jaxlib/_ifrt_proxy.so
+    linked_libraries: []
+julia:
+  available: true
+  version: 1.13.1
+  strided_version: 2.6.1
+  omeinsum_version: 0.9.4
+  blas_provider: LBTConfig([ILP64] libopenblas64_.so)
+  threads: 4

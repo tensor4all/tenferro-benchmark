@@ -134,7 +134,7 @@ write_run_metadata() {
     "${METADATA[@]}" "${args[@]}"
 }
 
-RUST_BIN="$PROJECT_DIR/target/release/benchmark_gpu_rust"
+RUST_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_rust"
 RUST_BUILT=0
 GPU_BENCH_BACKEND_SLEEP="${GPU_BENCH_BACKEND_SLEEP:-2}"
 

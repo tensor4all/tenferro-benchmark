@@ -1,0 +1,74 @@
+schema_version: 1
+target_profile: nvidia-gpu
+suite_id: gpu/permutation
+suite_file: benchmarks/gpu/permutation.yaml
+timestamp: '2026-10-06T19:49:20.873768+00:00'
+tenferro_rs:
+  path: /workspaces/t4a-2010-bench-gpu/extern/tenferro-rs
+  commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+  dirty: false
+  features:
+  - cuda
+  resolved_path: /workspaces/t4a-2010-bench-gpu/extern/tenferro-rs
+harness:
+  path: /workspaces/t4a-2010-bench-gpu
+  commit: unknown
+  dirty: null
+environment:
+  hostname: bd10f5edf7ea
+  os: Linux-6.8.0-101-generic-x86_64-with-glibc2.39
+  arch: x86_64
+  cpu: x86_64
+  env:
+    BENCHMARK_TARGET_PROFILE: nvidia-gpu
+    BENCHMARK_COMMIT: 5587a41df51ac27a9d431ac1d018786ee6e17132
+    OPENBLAS_ROOT: /opt/openblas
+    CUDA_HOME: /usr/local/cuda
+    USE_CUDA: '1'
+timing_policy:
+  version: 2
+  scope: operation execution and completion synchronization
+  setup: inputs, transfers, runtimes/handles, plans and compilation outside timer;
+    public API session entry may remain inside
+  cleanup: returned outputs retained until after timer stops
+  minimum_untimed_priming_runs: 1
+  short_operation_sampling: single-call intervals; short GPU cases are diagnostics,
+    not batched shared-session measurements
+  trace_execution: prepare_compiled outside timing; run_prepared inside
+  setup_diagnostics: false
+blas:
+  implementation: none
+python_backends:
+  pytorch:
+    available: true
+    version: 2.12.0+cu130
+    file: /workspaces/t4a-2010-bench-gpu/.venv/lib/python3.12/site-packages/torch/__init__.py
+    provider: mkl
+    blas_info: mkl
+    lapack_info: mkl
+    library: /workspaces/t4a-2010-bench-gpu/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so
+    linked_libraries:
+    - /workspaces/t4a-2010-bench-gpu/.venv/lib/python3.12/site-packages/torch/lib/libgomp.so.1
+  jax:
+    available: true
+    version: 0.10.1
+    jaxlib_version: 0.10.1
+    backend: gpu
+    file: /workspaces/t4a-2010-bench-gpu/.venv/lib/python3.12/site-packages/jaxlib/__init__.py
+    provider: xla_gpu
+    dot_backend: xla_gpu
+    lapack_provider: none_detected
+    library: /workspaces/t4a-2010-bench-gpu/.venv/lib/python3.12/site-packages/jaxlib/_ifrt_proxy.so
+    linked_libraries: []
+julia:
+  available: false
+  reason: julia not found on PATH
+cuda:
+  device_ordinal: 0
+  device_name: NVIDIA A100 80GB PCIe
+  device_uuid: GPU-530977e1-4968-9283-4129-9fbec3e66542
+  device_memory_bytes: 85899345920
+  driver_version: 580.126.09
+  runtime_version: '12.9'
+  cuda_version: '13.0'
+  cudnn_version: '92700'
