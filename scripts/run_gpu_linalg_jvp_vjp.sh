@@ -89,7 +89,7 @@ echo "Target:   $BENCHMARK_TARGET_PROFILE"
 echo "Timestamp: $TIMESTAMP"
 echo ""
 
-RUST_BIN="$PROJECT_DIR/target/release/benchmark_gpu_linalg_ad"
+RUST_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_linalg_ad"
 echo "Building benchmark_gpu_linalg_ad..."
 CUBECL_DEBUG_LOG=0 \
 CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \

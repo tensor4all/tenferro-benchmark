@@ -213,7 +213,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
 
     echo "Running Rust permutation benchmarks (threads=$NUM_THREADS)..."
     assert_benchmark_host_idle
-    BENCH_OUTPUT="$RUST_JSONL" "$PROJECT_DIR/target/release/benchmark_permutation"
+    BENCH_OUTPUT="$RUST_JSONL" "${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_permutation"
     validate_permutation_jsonl "$RUST_JSONL"
     INPUTS+=("$RUST_JSONL")
 
