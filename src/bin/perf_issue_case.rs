@@ -260,7 +260,7 @@ fn eager_runtime(backend: CpuBackend) -> Result<Arc<EagerRuntime>> {
 }
 
 fn eager_const(runtime: &Arc<EagerRuntime>, tensor: Tensor) -> Result<EagerTensor> {
-    Ok(runtime.with_eager_session(|s| s.constant_from(tensor))??)
+    Ok(runtime.with_eager_session(|s| s.constant_from(tensor))?)
 }
 
 // ---------------------------------------------------------------------------
@@ -305,14 +305,14 @@ fn decode_projection(params: &Value, timing: &Timing, threads: usize) -> Result<
                 &runtime,
                 Tensor::from_vec_col_major(vec![din, dout], w.clone())?,
             )?;
-            let y = runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))??;
+            let y = runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))?;
             let error = check(y.to_tensor()?.as_slice::<f32>()?)?;
             if arm == "eager-shared" {
                 let measurement = runtime.with_eager_session(|s| {
                     measure(timing, out_bytes, || {
                         Ok(s.dot_general(&xt, &wt, cfg.clone())?)
                     })
-                })??;
+                })?;
                 (
                     error,
                     measurement,
@@ -321,7 +321,7 @@ fn decode_projection(params: &Value, timing: &Timing, threads: usize) -> Result<
                 )
             } else {
                 let measurement = measure(timing, out_bytes, || {
-                    Ok(runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))??)
+                    Ok(runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))?)
                 })?;
                 (
                     error,
@@ -477,7 +477,7 @@ fn copy_volume(params: &Value) -> Result<CaseOutcome> {
         (
             "reduce_sum_squares axis 0",
             len * 4,
-            Box::new(|s| s.reduce_sum_squares(&x, &[0])),
+            Box::new(|s| s.reduce_sum_squares(&x, Some(&[0]))),
         ),
         ("rsqrt (len)", len * 4, Box::new(|s| s.rsqrt(&eps))),
         (
@@ -487,11 +487,11 @@ fn copy_volume(params: &Value) -> Result<CaseOutcome> {
         ),
     ];
     for (name, output_bytes, op) in &ops {
-        runtime.with_eager_session(|s| op(s))??;
+        runtime.with_eager_session(|s| op(s))?;
         let (_, allocations, bytes) = count_allocations(|| {
             let mut kept = Vec::with_capacity(repeats);
             for _ in 0..repeats {
-                kept.push(runtime.with_eager_session(|s| op(s))??);
+                kept.push(runtime.with_eager_session(|s| op(s))?);
             }
             black_box(&kept);
             Ok(())
@@ -859,8 +859,8 @@ fn backward_live_leaves(params: &Value, timing: &Timing) -> Result<CaseOutcome> 
         })
         .collect::<Result<_>>()?;
     let workflow = || -> Result<()> {
-        let c = runtime.with_eager_session(|s| s.matmul(&a, &b))??;
-        let loss = runtime.with_eager_session(|s| s.reduce_sum(&c, None))??;
+        let c = runtime.with_eager_session(|s| s.matmul(&a, &b))?;
+        let loss = runtime.with_eager_session(|s| s.reduce_sum(&c, None))?;
         loss.backward()?;
         Ok(())
     };
@@ -982,7 +982,7 @@ fn tanh_chain(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                     let error = check(y.to_tensor()?.as_slice::<f32>()?)?;
                     let measurement = measure(timing, bytes, chain_once)?;
                     Ok((error, measurement))
-                })??;
+                })?;
             (
                 error,
                 measurement,
@@ -1056,7 +1056,7 @@ fn composed_norm(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                     let mean = s.scale_real(&sum, inv_d)?;
                     let mean = s.broadcast_in_dim(&mean, &shape, &[1, 2])?;
                     let centered = s.sub(&x, &mean)?;
-                    let sq = s.reduce_sum_squares(&centered, &[0])?;
+                    let sq = s.reduce_sum_squares(&centered, Some(&[0]))?;
                     let var = s.scale_real(&sq, inv_d)?;
                     let var = s.add(&var, &eps_t)?;
                     let inv = s.rsqrt(&var)?;
@@ -1067,7 +1067,7 @@ fn composed_norm(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                     let b = s.broadcast_in_dim(&bias, &shape, &[0])?;
                     s.add(&scaled, &b)?
                 } else {
-                    let sq = s.reduce_sum_squares(&x, &[0])?;
+                    let sq = s.reduce_sum_squares(&x, Some(&[0]))?;
                     let ms = s.scale_real(&sq, inv_d)?;
                     let ms = s.add(&ms, &eps_t)?;
                     let inv = s.rsqrt(&ms)?;
@@ -1101,7 +1101,7 @@ fn composed_norm(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
             let error = check_tol(worst, 1e-4, norm)?;
             let measurement = measure(timing, n * 4 * 4, forward)?;
             Ok((error, measurement, if layer { 13 } else { 8 }))
-        })??;
+        })?;
     Ok(CaseOutcome {
         max_rel_error: error,
         measurement: Some(measurement),

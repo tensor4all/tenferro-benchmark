@@ -162,8 +162,11 @@ impl PreparedEagerTree {
             .runtime()
             .clone();
         runtime
-            .with_eager_session(|session| self.execute_in(session, inputs))
-            .map_err(|e| e.to_string())?
+            .with_eager_session(|session| {
+                self.execute_in(session, inputs)
+                    .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
+            })
+            .map_err(|e| e.to_string())
     }
 
     /// Execute the tree on an already-entered eager session.
@@ -228,8 +231,11 @@ pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<Ea
         .runtime()
         .clone();
     runtime
-        .with_eager_session(|session| contract_tree_eager_in(session, node, inputs))
-        .map_err(|e| e.to_string())?
+        .with_eager_session(|session| {
+            contract_tree_eager_in(session, node, inputs)
+                .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
+        })
+        .map_err(|e| e.to_string())
 }
 
 #[cfg(tenferro_session_einsum)]
