@@ -336,7 +336,7 @@ fn time_eager_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
             Op::Ifft => session.ifft(&input, None, -1, FftNorm::Backward),
             Op::Rfft => session.rfft(&input, None, -1, FftNorm::Backward),
             Op::Irfft => session.irfft(&input, Some(n), -1, FftNorm::Backward),
-        })?
+        })
     };
 
     for _ in 0..args.warmups.max(1) {

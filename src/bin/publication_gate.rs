@@ -121,9 +121,11 @@ mod eager_einsum_tensor {
             .expect("einsum has operands")
             .runtime()
             .clone();
-        runtime
-            .with_eager_session(|session| session.einsum_subscripts(inputs, subs))?
-            .map_err(|e| runtime_einsum_error(e, ErrorPhase::Execution))
+        runtime.with_eager_session(|session| {
+            session
+                .einsum_subscripts(inputs, subs)
+                .map_err(|e| runtime_einsum_error(e, ErrorPhase::Execution))
+        })
     }
 }
 
@@ -146,15 +148,15 @@ mod eager_linalg_tensor {
     pub fn svd(
         a: &EagerTensor,
     ) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor, EagerTensor)> {
-        a.runtime().with_eager_session(|session| session.svd(a))?
+        a.runtime().with_eager_session(|session| session.svd(a))
     }
 
     pub fn qr(a: &EagerTensor) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
-        a.runtime().with_eager_session(|session| session.qr(a))?
+        a.runtime().with_eager_session(|session| session.qr(a))
     }
 
     pub fn eigh(a: &EagerTensor) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
-        a.runtime().with_eager_session(|session| session.eigh(a))?
+        a.runtime().with_eager_session(|session| session.eigh(a))
     }
 
     pub fn solve(a: &EagerTensor, b: &EagerTensor) -> tenferro_ad::error::Result<EagerTensor> {
@@ -172,7 +174,7 @@ mod eager_session_ops {
 
     pub fn matmul(lhs: &EagerTensor, rhs: &EagerTensor) -> tenferro_ad::error::Result<EagerTensor> {
         lhs.runtime()
-            .with_eager_session(|session| session.matmul(lhs, rhs))?
+            .with_eager_session(|session| session.matmul(lhs, rhs))
     }
 
     pub fn dot_general(
@@ -181,7 +183,7 @@ mod eager_session_ops {
         config: DotGeneralConfig,
     ) -> tenferro_ad::error::Result<EagerTensor> {
         lhs.runtime()
-            .with_eager_session(|session| session.dot_general(lhs, rhs, config))?
+            .with_eager_session(|session| session.dot_general(lhs, rhs, config))
     }
 
     pub fn reduce_sum(
@@ -190,7 +192,7 @@ mod eager_session_ops {
     ) -> tenferro_ad::error::Result<EagerTensor> {
         input
             .runtime()
-            .with_eager_session(|session| session.reduce_sum(input, Some(axes)))?
+            .with_eager_session(|session| session.reduce_sum(input, Some(axes)))
     }
 }
 
@@ -2323,7 +2325,6 @@ mod timing_tests {
                         &expected,
                     );
                     ctx.with_eager_session(|session| session.reduce_sum(&output, None))
-                        .unwrap()
                         .unwrap()
                         .backward()
                         .unwrap();

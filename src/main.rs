@@ -662,10 +662,11 @@ fn contract_once_eager(
                 .runtime()
                 .clone()
                 .with_eager_session(|session| {
-                    session.einsum_subscripts(&input_refs, binary_subscripts)
+                    session
+                        .einsum_subscripts(&input_refs, binary_subscripts)
+                        .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
                 })
                 .map_err(|e| e.to_string())
-                .and_then(|r| r.map_err(|e| e.to_string()))
         }));
         let result = unwrap_eval_result(result, "panic during eager execution")?;
         if let Some(profile) = profile.as_deref_mut() {

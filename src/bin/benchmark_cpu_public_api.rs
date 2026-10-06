@@ -2825,7 +2825,6 @@ fn lstsq_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
         let output = a
             .runtime()
             .with_eager_session(|session| session.lstsq(a, rhs))
-            .and_then(|result| result)
             .map_err(|error| eager_linalg_error("lstsq", error))?;
         EAGER_OUTPUTS.with(|outputs| outputs.borrow_mut().push(output));
         Ok(())
@@ -2851,7 +2850,6 @@ fn svd_full_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
         let (u, s, vt) = input
             .runtime()
             .with_eager_session(|session| session.svd_full(input))
-            .and_then(|result| result)
             .map_err(|error| eager_linalg_error("svd_full", error))?;
         EAGER_OUTPUTS.with(|outputs| outputs.borrow_mut().extend([u, s, vt]));
         Ok(())
