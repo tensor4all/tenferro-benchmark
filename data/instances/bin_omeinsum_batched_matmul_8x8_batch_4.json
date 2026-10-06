@@ -1,0 +1,75 @@
+{
+  "name": "bin_omeinsum_batched_matmul_8x8_batch_4",
+  "format_string": "abcdefgh,abcdefgh->efgh",
+  "shapes": [
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ]
+  ],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 4.0,
+      "log10_flops": 2.7093
+    },
+    "opt_flops": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 4.0,
+      "log10_flops": 2.7093
+    }
+  },
+  "format_string_colmajor": "hgfedcba,hgfedcba->hgfe",
+  "shapes_colmajor": [
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ]
+  ],
+  "format_string_rowmajor": "abcdefgh,abcdefgh->efgh",
+  "intent": "tenferro-rs #1865: omeinsum-rs binary scenario batched_matmul_8x8_batch_4 (rank 8 x rank 8, 4 contracted and 4 batch modes, every extent 2), originally f32; this suite is f64. Small, batched, materialization-heavy contraction; PyTorch is the reference."
+}
