@@ -46,6 +46,9 @@ rayon = "1"
 # faer requirement so Cargo resolves one copy.
 faer = { version = "0.24", default-features = false, features = ["std", "rayon"] }
 matrixmultiply = { version = "0.3", features = ["threading"] }
+# f64 erf reference for the cpu/perf_issues erf / exact-gelu checks (tenferro-rs
+# #1975, #2010 PR-B1); the same crate tenferro-cpu evaluates erf with.
+libm = "0.2"
 # Optional path deps on extern/strided-rs (see scripts/setup_extern_deps.sh,
 # which clones it alongside extern/tenferro-rs), gated by the `strided-rs`
 # feature below. Cargo resolves every path dependency's manifest to build the

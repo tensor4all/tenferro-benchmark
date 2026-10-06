@@ -249,7 +249,10 @@ timing. Raw runs go to `data/results/<target_profile>/{cpu,gpu}/perf_issues/<tim
 | #2007 | `small_solve_f64_*` | `cpu/perf_issues` |
 | #1803 A | `eager_backward_matmul2x2_f64_leaves*` | `cpu/perf_issues` |
 | #1990 | `tanh_chain_f32_*` | `cpu/perf_issues` |
-| #2006 | `{layer_norm,rms_norm}_f32_*` | `cpu/perf_issues` |
+| #2006 (+ #2010 PR-B1 single call) | `{layer_norm,rms_norm}_f32_*` | `cpu/perf_issues` |
+| #1975 (#2010 PR-B1) | `activation_{erf,sigmoid,silu,softplus,gelu,gelu_tanh}_f32_*` | `cpu/perf_issues` |
+| #1976 (#2010 PR-B1) | `{softmax,log_softmax,masked_softmax}_f32_*`, `reduce_mean_f32_*` | `cpu/perf_issues` |
+| #2008 (#2010 PR-B1) | `take_along_axis_rows_f64_*` | `cpu/perf_issues` |
 | #1885 §4.1 | `small_contraction_abcd-dbef-acef_f64_*_d4` | `cpu/perf_issues` |
 | #2009 | `transfer_{up,down}_f64_*` | `gpu/perf_issues` |
 | #1887 | `alloc_zero_f64_*` | `gpu/perf_issues` |
