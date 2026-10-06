@@ -35,7 +35,7 @@ live in git history only.
 | `linux-cpu` | `cpu/linalg_jvp_vjp` | [result/linux-cpu/cpu/linalg_jvp_vjp.md](result/linux-cpu/cpu/linalg_jvp_vjp.md) |
 | `linux-cpu` | `cpu/permutation` | [result/linux-cpu/cpu/permutation.md](result/linux-cpu/cpu/permutation.md) |
 | `amd-cpu` (Linux devcontainer) | `cpu/small_work` | [result/amd-cpu/cpu/small_work.md](result/amd-cpu/cpu/small_work.md) |
-| `amd-cpu` (Linux devcontainer) | `cpu/perf_issues` | [result/amd-cpu/cpu/perf_issues.md](result/amd-cpu/cpu/perf_issues.md) (not collected yet) |
+| `amd-cpu` (Linux devcontainer) | `cpu/perf_issues` | [result/amd-cpu/cpu/perf_issues.md](result/amd-cpu/cpu/perf_issues.md) |
 | `linux-cpu` | linalg JVP/JVP repro | [result/linux-cpu/cpu/linalg_jvp_jvp.md](result/linux-cpu/cpu/linalg_jvp_jvp.md) |
 | `nvidia-gpu` (CUDA devcontainer) | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
@@ -43,7 +43,7 @@ live in git history only.
 | `nvidia-gpu` | `gpu/tensornetwork` | [result/nvidia-gpu/gpu/tensornetwork.md](result/nvidia-gpu/gpu/tensornetwork.md) |
 | `nvidia-gpu` | `gpu/linalg_jvp_vjp` | [result/nvidia-gpu/gpu/linalg_jvp_vjp.md](result/nvidia-gpu/gpu/linalg_jvp_vjp.md) |
 | `nvidia-gpu` | `gpu/permutation` | [result/nvidia-gpu/gpu/permutation.md](result/nvidia-gpu/gpu/permutation.md) |
-| `nvidia-gpu` | `gpu/perf_issues` | [result/nvidia-gpu/gpu/perf_issues.md](result/nvidia-gpu/gpu/perf_issues.md) (not collected yet) |
+| `nvidia-gpu` | `gpu/perf_issues` | [result/nvidia-gpu/gpu/perf_issues.md](result/nvidia-gpu/gpu/perf_issues.md) |
 
 Raw runs (per-timestamp `run.yaml` + machine-readable outputs) are written to
 `data/results/<target_profile>/<suite_id>/<timestamp>/`; the tracked report in

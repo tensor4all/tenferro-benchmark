@@ -1,0 +1,125 @@
+# CPU Linalg JVP/VJP Benchmark Results
+
+- Suite: `cpu/linalg_jvp_vjp`
+- Target profile: `amd-cpu`
+- Timestamp: `20261006_172037`
+
+Latest run: `./scripts/run_all.sh 1`.
+
+Derived from the CPU ops CSV under `data/results/amd-cpu/cpu/einsum/20261006_172037`.
+
+- tenferro-rs commit: `5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102`
+
+## CPU Information
+
+- Model: `AMD EPYC 7713P 64-Core Processor`
+- Vendor: `AuthenticAMD`
+- Logical CPUs: `64`
+- Sockets: `1`
+- Cores per socket: `64`
+- Threads per core: `1`
+- NUMA nodes: `1`
+- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
+
+## Thread Environment
+
+- OMP_NUM_THREADS: `1`
+- OMP_THREAD_LIMIT: `1`
+- OMP_DYNAMIC: `FALSE`
+- RAYON_NUM_THREADS: `1`
+- OPENBLAS_NUM_THREADS: `1`
+- GOTO_NUM_THREADS: `1`
+- MKL_NUM_THREADS: `1`
+- VECLIB_MAXIMUM_THREADS: `1`
+- VECLIB_NUM_THREADS: `1`
+- NUMEXPR_NUM_THREADS: `1`
+- BLIS_NUM_THREADS: `1`
+- XLA_FLAGS: `--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1`
+
+## Tenferro CPU BLAS Backend
+
+- tenferro-rs features: `system-mkl`
+- TENFERRO_CPU_BACKEND_KIND: `blas`
+- BLAS implementation: `mkl`
+- BLAS version: `2026.0.1`
+- BLAS root: `/opt/intel/oneapi/mkl/latest`
+- BLAS library: `/opt/intel/oneapi/mkl/latest/lib/libmkl_rt.so`
+
+## Python Backend Providers
+
+- PyTorch: BLAS provider `mkl`, version `2.12.0+cpu`, BLAS_INFO `mkl`, LAPACK_INFO `mkl`
+  - linked BLAS/LAPACK libs: `/workspaces/t4a-2010-bench-migrate/.venv/lib/python3.12/site-packages/torch/lib/libgomp.so.1`
+- JAX: dot backend `xla_cpu`, version `0.10.1`, jaxlib `0.10.1`, default backend `cpu`, LAPACK provider `none_detected`
+
+## Threads: 1
+
+- CSV: `data/results/amd-cpu/cpu/einsum/20261006_172037/cpu_ops_t1_20261006_172037.csv`
+- Source table: `data/results/amd-cpu/cpu/einsum/20261006_172037/linalg_jvp_vjp_t1_20261006_172037.md`
+
+## Linalg JVP/VJP Benchmark Items
+
+Median ± IQR (ms). Missing backends are shown as `-`.
+
+tenferro-rs JVP/VJP use trace-mode `AdContext`; PyTorch uses `torch.func.jvp` /
+`vjp`; JAX uses `jax.jvp` / `jax.vjp`.
+
+| suite | benchmark | dtype | threads | shape | tenferro-rs trace mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) |
+|---|---|---:|---:|---|---:|---:|---:|
+| large | `grad_sum_eigh_jvp` | f64 | 1 | `256x256` | 7.537 ± 0.014 | 8.831 ± 0.011 | 8.864 ± 0.755 |
+| large | `grad_sum_eigh_jvp` | f64 | 1 | `512x512` | 47.268 ± 0.449 | 57.227 ± 0.833 | 47.633 ± 2.472 |
+| large | `grad_sum_eigh_vjp` | f64 | 1 | `256x256` | 7.491 ± 0.084 | 7.290 ± 0.019 | 8.705 ± 0.032 |
+| large | `grad_sum_eigh_vjp` | f64 | 1 | `512x512` | 46.895 ± 0.079 | 44.833 ± 0.345 | 45.792 ± 1.836 |
+| large | `grad_sum_lu_jvp` | f64 | 1 | `256x256` | 5.255 ± 0.398 | 10.846 ± 0.047 | 4.023 ± 0.023 |
+| large | `grad_sum_lu_jvp` | f64 | 1 | `512x512` | 29.789 ± 0.520 | 71.088 ± 0.637 | 24.310 ± 0.559 |
+| large | `grad_sum_lu_vjp` | f64 | 1 | `256x256` | 5.194 ± 0.011 | 4.649 ± 0.035 | 4.220 ± 0.026 |
+| large | `grad_sum_lu_vjp` | f64 | 1 | `512x512` | 29.331 ± 0.237 | 37.136 ± 0.473 | 28.105 ± 4.177 |
+| large | `grad_sum_qr_jvp` | f64 | 1 | `256x256` | 6.471 ± 0.006 | 6.279 ± 0.013 | 6.732 ± 0.035 |
+| large | `grad_sum_qr_jvp` | f64 | 1 | `512x512` | 46.085 ± 0.505 | 44.571 ± 0.998 | 43.010 ± 4.969 |
+| large | `grad_sum_qr_vjp` | f64 | 1 | `256x256` | 6.398 ± 0.065 | 6.281 ± 0.012 | 6.852 ± 0.032 |
+| large | `grad_sum_qr_vjp` | f64 | 1 | `512x512` | 43.404 ± 0.282 | 44.288 ± 0.363 | 44.435 ± 1.604 |
+| large | `grad_sum_solve_jvp` | f64 | 1 | `256x256,rhs=1` | 0.657 ± 0.002 | 1.072 ± 0.011 | 1.422 ± 0.048 |
+| large | `grad_sum_solve_jvp` | f64 | 1 | `512x512,rhs=1` | 3.627 ± 0.026 | 4.805 ± 0.069 | 4.280 ± 0.022 |
+| large | `grad_sum_solve_vjp` | f64 | 1 | `256x256,rhs=1` | 0.640 ± 0.002 | 1.471 ± 0.001 | 1.416 ± 0.016 |
+| large | `grad_sum_solve_vjp` | f64 | 1 | `512x512,rhs=1` | 3.551 ± 0.117 | 8.151 ± 0.020 | 4.235 ± 0.028 |
+| large | `grad_sum_svd_s_jvp` | f64 | 1 | `256x256` | 13.043 ± 0.547 | 18.086 ± 0.047 | 13.146 ± 0.674 |
+| large | `grad_sum_svd_s_jvp` | f64 | 1 | `512x512` | 89.121 ± 4.801 | 118.288 ± 1.182 | 90.660 ± 1.320 |
+| large | `grad_sum_svd_s_vjp` | f64 | 1 | `256x256` | 12.978 ± 0.426 | 13.594 ± 0.113 | 12.946 ± 0.938 |
+| large | `grad_sum_svd_s_vjp` | f64 | 1 | `512x512` | 87.677 ± 2.333 | 93.180 ± 0.806 | 97.408 ± 3.399 |
+| small | `grad_sum_eigh_jvp` | f64 | 1 | `2x2` | 0.053 ± 0.000 | 0.167 ± 0.003 | 0.011 ± 0.001 |
+| small | `grad_sum_eigh_jvp` | f64 | 1 | `4x4` | 0.059 ± 0.000 | 0.171 ± 0.005 | 0.014 ± 0.000 |
+| small | `grad_sum_eigh_jvp` | f64 | 1 | `8x8` | 0.062 ± 0.000 | 0.178 ± 0.016 | 0.046 ± 0.002 |
+| small | `grad_sum_eigh_vjp` | f64 | 1 | `2x2` | 0.055 ± 0.002 | 0.167 ± 0.008 | 0.012 ± 0.000 |
+| small | `grad_sum_eigh_vjp` | f64 | 1 | `4x4` | 0.061 ± 0.005 | 0.170 ± 0.003 | 0.016 ± 0.002 |
+| small | `grad_sum_eigh_vjp` | f64 | 1 | `8x8` | 0.065 ± 0.002 | 0.210 ± 0.004 | 0.049 ± 0.001 |
+| small | `grad_sum_lu_jvp` | f64 | 1 | `2x2` | 0.053 ± 0.010 | 0.234 ± 0.009 | 0.013 ± 0.001 |
+| small | `grad_sum_lu_jvp` | f64 | 1 | `4x4` | 0.054 ± 0.006 | 0.233 ± 0.003 | 0.014 ± 0.000 |
+| small | `grad_sum_lu_jvp` | f64 | 1 | `8x8` | 0.055 ± 0.000 | 0.247 ± 0.046 | 0.049 ± 0.007 |
+| small | `grad_sum_lu_vjp` | f64 | 1 | `2x2` | 0.055 ± 0.000 | 0.221 ± 0.002 | 0.013 ± 0.000 |
+| small | `grad_sum_lu_vjp` | f64 | 1 | `4x4` | 0.057 ± 0.000 | 0.219 ± 0.004 | 0.015 ± 0.000 |
+| small | `grad_sum_lu_vjp` | f64 | 1 | `8x8` | 0.057 ± 0.000 | 0.221 ± 0.005 | 0.052 ± 0.006 |
+| small | `grad_sum_qr_jvp` | f64 | 1 | `2x2` | 0.093 ± 0.002 | 0.186 ± 0.004 | 0.013 ± 0.000 |
+| small | `grad_sum_qr_jvp` | f64 | 1 | `4x4` | 0.094 ± 0.000 | 0.186 ± 0.003 | 0.014 ± 0.000 |
+| small | `grad_sum_qr_jvp` | f64 | 1 | `8x8` | 0.095 ± 0.000 | 0.188 ± 0.003 | 0.048 ± 0.004 |
+| small | `grad_sum_qr_vjp` | f64 | 1 | `2x2` | 0.094 ± 0.000 | 0.209 ± 0.003 | 0.013 ± 0.000 |
+| small | `grad_sum_qr_vjp` | f64 | 1 | `4x4` | 0.097 ± 0.014 | 0.211 ± 0.003 | 0.016 ± 0.000 |
+| small | `grad_sum_qr_vjp` | f64 | 1 | `8x8` | 0.099 ± 0.001 | 0.214 ± 0.003 | 0.042 ± 0.003 |
+| small | `grad_sum_solve_jvp` | f64 | 1 | `2x2,rhs=1` | 0.030 ± 0.000 | 0.347 ± 0.001 | 0.013 ± 0.000 |
+| small | `grad_sum_solve_jvp` | f64 | 1 | `4x4,rhs=1` | 0.031 ± 0.000 | 0.348 ± 0.001 | 0.013 ± 0.001 |
+| small | `grad_sum_solve_jvp` | f64 | 1 | `8x8,rhs=1` | 0.031 ± 0.000 | 0.350 ± 0.005 | 0.014 ± 0.000 |
+| small | `grad_sum_solve_vjp` | f64 | 1 | `2x2,rhs=1` | 0.031 ± 0.000 | 0.209 ± 0.003 | 0.015 ± 0.000 |
+| small | `grad_sum_solve_vjp` | f64 | 1 | `4x4,rhs=1` | 0.032 ± 0.000 | 0.211 ± 0.003 | 0.015 ± 0.000 |
+| small | `grad_sum_solve_vjp` | f64 | 1 | `8x8,rhs=1` | 0.032 ± 0.000 | 0.211 ± 0.003 | 0.016 ± 0.003 |
+| small | `grad_sum_svd_s_jvp` | f64 | 1 | `2x2` | 0.031 ± 0.000 | 0.228 ± 0.008 | 0.014 ± 0.000 |
+| small | `grad_sum_svd_s_jvp` | f64 | 1 | `4x4` | 0.036 ± 0.000 | 0.243 ± 0.039 | 0.016 ± 0.003 |
+| small | `grad_sum_svd_s_jvp` | f64 | 1 | `8x8` | 0.046 ± 0.000 | 0.242 ± 0.002 | 0.045 ± 0.001 |
+| small | `grad_sum_svd_s_vjp` | f64 | 1 | `2x2` | 0.032 ± 0.000 | 0.191 ± 0.032 | 0.014 ± 0.000 |
+| small | `grad_sum_svd_s_vjp` | f64 | 1 | `4x4` | 0.037 ± 0.000 | 0.186 ± 0.002 | 0.017 ± 0.003 |
+| small | `grad_sum_svd_s_vjp` | f64 | 1 | `8x8` | 0.046 ± 0.000 | 0.196 ± 0.003 | 0.053 ± 0.001 |
+
+## Loss Definitions
+
+- `grad_sum_eigh`: loss = sum(eigenvalues); w.r.t. SPD input matrix A
+- `grad_sum_lu`: loss = sum(L) + sum(U); w.r.t. input matrix A
+- `grad_sum_qr`: loss = sum(Q) + sum(R); w.r.t. input matrix A
+- `grad_sum_solve`: loss = sum(solve(A, b)); w.r.t. input matrix A (rhs fixed)
+- `grad_sum_svd_s`: loss = sum(singular values); w.r.t. input matrix A
