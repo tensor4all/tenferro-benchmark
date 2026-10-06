@@ -1,0 +1,2198 @@
+[
+ {
+  "id": "decode_proj_f32_eager-shared_in1024_out1024_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "eager-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_eager-per-call_in1024_out1024_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-per-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "eager-per-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_faer-direct_in1024_out1024_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "faer-direct",
+  "backend": "faer-direct",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "faer-direct",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len8"
+ },
+ {
+  "id": "decode_proj_f32_host-sgemm_in1024_out1024_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "host-sgemm",
+  "backend": "matrixmultiply-sgemm",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "host-sgemm",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len8"
+ },
+ {
+  "id": "decode_proj_f32_pytorch_in1024_out1024_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len8"
+ },
+ {
+  "id": "decode_proj_f32_eager-shared_in1024_out1024_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "eager-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_eager-per-call_in1024_out1024_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-per-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "eager-per-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_faer-direct_in1024_out1024_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "faer-direct",
+  "backend": "faer-direct",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "faer-direct",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len64"
+ },
+ {
+  "id": "decode_proj_f32_host-sgemm_in1024_out1024_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "host-sgemm",
+  "backend": "matrixmultiply-sgemm",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "host-sgemm",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len64"
+ },
+ {
+  "id": "decode_proj_f32_pytorch_in1024_out1024_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len64"
+ },
+ {
+  "id": "decode_proj_f32_eager-shared_in1024_out1024_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "eager-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_eager-per-call_in1024_out1024_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-per-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "eager-per-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_faer-direct_in1024_out1024_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "faer-direct",
+  "backend": "faer-direct",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "faer-direct",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len512"
+ },
+ {
+  "id": "decode_proj_f32_host-sgemm_in1024_out1024_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "host-sgemm",
+  "backend": "matrixmultiply-sgemm",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "host-sgemm",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len512"
+ },
+ {
+  "id": "decode_proj_f32_pytorch_in1024_out1024_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len512"
+ },
+ {
+  "id": "decode_proj_f32_eager-shared_in1024_out4096_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "eager-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_eager-per-call_in1024_out4096_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-per-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "eager-per-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_faer-direct_in1024_out4096_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "faer-direct",
+  "backend": "faer-direct",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "faer-direct",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len8"
+ },
+ {
+  "id": "decode_proj_f32_host-sgemm_in1024_out4096_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "host-sgemm",
+  "backend": "matrixmultiply-sgemm",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "host-sgemm",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len8"
+ },
+ {
+  "id": "decode_proj_f32_pytorch_in1024_out4096_len8",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 8,
+   "kind": "decode_projection",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len8"
+ },
+ {
+  "id": "decode_proj_f32_eager-shared_in1024_out4096_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "eager-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_eager-per-call_in1024_out4096_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-per-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "eager-per-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_faer-direct_in1024_out4096_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "faer-direct",
+  "backend": "faer-direct",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "faer-direct",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len64"
+ },
+ {
+  "id": "decode_proj_f32_host-sgemm_in1024_out4096_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "host-sgemm",
+  "backend": "matrixmultiply-sgemm",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "host-sgemm",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len64"
+ },
+ {
+  "id": "decode_proj_f32_pytorch_in1024_out4096_len64",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 64,
+   "kind": "decode_projection",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len64"
+ },
+ {
+  "id": "decode_proj_f32_eager-shared_in1024_out4096_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "eager-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_eager-per-call_in1024_out4096_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "eager-per-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "eager-per-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+ },
+ {
+  "id": "decode_proj_f32_faer-direct_in1024_out4096_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "faer-direct",
+  "backend": "faer-direct",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "faer-direct",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len512"
+ },
+ {
+  "id": "decode_proj_f32_host-sgemm_in1024_out4096_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "host-sgemm",
+  "backend": "matrixmultiply-sgemm",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "host-sgemm",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len512"
+ },
+ {
+  "id": "decode_proj_f32_pytorch_in1024_out4096_len512",
+  "issues": [
+   "#1992",
+   "#2003",
+   "#1995"
+  ],
+  "kind": "decode_projection",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 4096,
+   "len": 512,
+   "kind": "decode_projection",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len512"
+ },
+ {
+  "id": "decode_block_copy_volume_f32_d1024_len8",
+  "issues": [
+   "#1995"
+  ],
+  "kind": "copy_volume",
+  "arm": "eager-counters",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "d": 1024,
+   "len": 8,
+   "kind": "copy_volume",
+   "arm": "eager-counters",
+   "dtype": "f32"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1995 ask 2: host allocation count and bytes per eager op of a decode block (broadcast_in_dim, reshape, transpose, elementwise, reduce, projection), through public APIs only. Counter run, not timing; per-op layout-copy counts have no public observation point and are reported as unavailable."
+ },
+ {
+  "id": "gemm_c64_mm256_t1",
+  "issues": [
+   "#1900"
+  ],
+  "kind": "gemm_mm256",
+  "arm": "dot-general-shared",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "n": 256,
+   "kind": "gemm_mm256",
+   "arm": "dot-general-shared",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu",
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1900: 256x256x256 GEMM through CpuBackend::with_threads(1) in one session; the c64/f64 time ratio (c64 = 4x the real flops) is the kernel-quality signal. The finding is on Apple NEON/FCMA (mac-cpu); the EPYC row is a control."
+ },
+ {
+  "id": "gemm_f64_mm256_t1",
+  "issues": [
+   "#1900"
+  ],
+  "kind": "gemm_mm256",
+  "arm": "dot-general-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 256,
+   "kind": "gemm_mm256",
+   "arm": "dot-general-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "mac-cpu",
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1900: 256x256x256 GEMM through CpuBackend::with_threads(1) in one session; the c64/f64 time ratio (c64 = 4x the real flops) is the kernel-quality signal. The finding is on Apple NEON/FCMA (mac-cpu); the EPYC row is a control.",
+  "reference_for": "gemm_c64_mm256_t1"
+ },
+ {
+  "id": "conj_dot_f64_dot-general-rank1_len100",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "dot-general-rank1",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "len": 100,
+   "kind": "rank1_dot",
+   "arm": "dot-general-rank1",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in."
+ },
+ {
+  "id": "conj_dot_f64_portable-loop_len100",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "portable-loop",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "len": 100,
+   "kind": "rank1_dot",
+   "arm": "portable-loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_f64_dot-general-rank1_len100"
+ },
+ {
+  "id": "conj_dot_f64_pytorch-vdot_len100",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "pytorch-vdot",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "len": 100,
+   "kind": "rank1_dot",
+   "arm": "pytorch-vdot",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_f64_dot-general-rank1_len100"
+ },
+ {
+  "id": "conj_dot_f64_dot-general-rank1_len10000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "dot-general-rank1",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "len": 10000,
+   "kind": "rank1_dot",
+   "arm": "dot-general-rank1",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in."
+ },
+ {
+  "id": "conj_dot_f64_portable-loop_len10000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "portable-loop",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "len": 10000,
+   "kind": "rank1_dot",
+   "arm": "portable-loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_f64_dot-general-rank1_len10000"
+ },
+ {
+  "id": "conj_dot_f64_pytorch-vdot_len10000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "pytorch-vdot",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "len": 10000,
+   "kind": "rank1_dot",
+   "arm": "pytorch-vdot",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_f64_dot-general-rank1_len10000"
+ },
+ {
+  "id": "conj_dot_f64_dot-general-rank1_len1000000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "dot-general-rank1",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "len": 1000000,
+   "kind": "rank1_dot",
+   "arm": "dot-general-rank1",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in."
+ },
+ {
+  "id": "conj_dot_f64_portable-loop_len1000000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "portable-loop",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "len": 1000000,
+   "kind": "rank1_dot",
+   "arm": "portable-loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_f64_dot-general-rank1_len1000000"
+ },
+ {
+  "id": "conj_dot_f64_pytorch-vdot_len1000000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "pytorch-vdot",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "len": 1000000,
+   "kind": "rank1_dot",
+   "arm": "pytorch-vdot",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_f64_dot-general-rank1_len1000000"
+ },
+ {
+  "id": "conj_dot_c64_dot-general-rank1_len100",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "dot-general-rank1",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "len": 100,
+   "kind": "rank1_dot",
+   "arm": "dot-general-rank1",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in."
+ },
+ {
+  "id": "conj_dot_c64_portable-loop_len100",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "portable-loop",
+  "backend": "rust-loop",
+  "dtype": "c64",
+  "params": {
+   "len": 100,
+   "kind": "rank1_dot",
+   "arm": "portable-loop",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_c64_dot-general-rank1_len100"
+ },
+ {
+  "id": "conj_dot_c64_pytorch-vdot_len100",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "pytorch-vdot",
+  "backend": "pytorch-cpu",
+  "dtype": "c64",
+  "params": {
+   "len": 100,
+   "kind": "rank1_dot",
+   "arm": "pytorch-vdot",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_c64_dot-general-rank1_len100"
+ },
+ {
+  "id": "conj_dot_c64_dot-general-rank1_len10000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "dot-general-rank1",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "len": 10000,
+   "kind": "rank1_dot",
+   "arm": "dot-general-rank1",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in."
+ },
+ {
+  "id": "conj_dot_c64_portable-loop_len10000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "portable-loop",
+  "backend": "rust-loop",
+  "dtype": "c64",
+  "params": {
+   "len": 10000,
+   "kind": "rank1_dot",
+   "arm": "portable-loop",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_c64_dot-general-rank1_len10000"
+ },
+ {
+  "id": "conj_dot_c64_pytorch-vdot_len10000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "pytorch-vdot",
+  "backend": "pytorch-cpu",
+  "dtype": "c64",
+  "params": {
+   "len": 10000,
+   "kind": "rank1_dot",
+   "arm": "pytorch-vdot",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_c64_dot-general-rank1_len10000"
+ },
+ {
+  "id": "conj_dot_c64_dot-general-rank1_len1000000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "dot-general-rank1",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "len": 1000000,
+   "kind": "rank1_dot",
+   "arm": "dot-general-rank1",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in."
+ },
+ {
+  "id": "conj_dot_c64_portable-loop_len1000000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "portable-loop",
+  "backend": "rust-loop",
+  "dtype": "c64",
+  "params": {
+   "len": 1000000,
+   "kind": "rank1_dot",
+   "arm": "portable-loop",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_c64_dot-general-rank1_len1000000"
+ },
+ {
+  "id": "conj_dot_c64_pytorch-vdot_len1000000",
+  "issues": [
+   "#1615"
+  ],
+  "kind": "rank1_dot",
+  "arm": "pytorch-vdot",
+  "backend": "pytorch-cpu",
+  "dtype": "c64",
+  "params": {
+   "len": 1000000,
+   "kind": "rank1_dot",
+   "arm": "pytorch-vdot",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1615: conjugated inner product sum(conj(x) y) of two contiguous vectors. The rank-1 dot_general route (conjugated operand prepared outside timing) is compared with an allocation-free Rust loop and torch.vdot (BLAS ddot/zdotc of the PyTorch provider). A direct BLAS Level-1 arm from this harness is not linked because the system BLAS is only reachable through tenferro's provider; torch.vdot stands in.",
+  "reference_for": "conj_dot_c64_dot-general-rank1_len1000000"
+ },
+ {
+  "id": "small_solve_f64_solve-loop_k16_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "solve-loop",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "k": 16,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "solve-loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row."
+ },
+ {
+  "id": "small_solve_f64_triangular-solve-loop_k16_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "triangular-solve-loop",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "k": 16,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "triangular-solve-loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row."
+ },
+ {
+  "id": "small_solve_f64_solve-batched_k16_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "solve-batched",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "k": 16,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "solve-batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "reference_for": "small_solve_f64_solve-loop_k16_b64"
+ },
+ {
+  "id": "small_solve_f64_pytorch-solve-batched_k16_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "pytorch-solve-batched",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "k": 16,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "pytorch-solve-batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "reference_for": "small_solve_f64_solve-loop_k16_b64"
+ },
+ {
+  "id": "small_solve_f64_pytorch-solve-triangular-batched_k16_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "pytorch-solve-triangular-batched",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "k": 16,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "pytorch-solve-triangular-batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "reference_for": "small_solve_f64_triangular-solve-loop_k16_b64"
+ },
+ {
+  "id": "small_solve_f64_solve-loop_k64_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "solve-loop",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "k": 64,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "solve-loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row."
+ },
+ {
+  "id": "small_solve_f64_triangular-solve-loop_k64_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "triangular-solve-loop",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "k": 64,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "triangular-solve-loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row."
+ },
+ {
+  "id": "small_solve_f64_solve-batched_k64_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "solve-batched",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "k": 64,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "solve-batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "reference_for": "small_solve_f64_solve-loop_k64_b64"
+ },
+ {
+  "id": "small_solve_f64_pytorch-solve-batched_k64_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "pytorch-solve-batched",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "k": 64,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "pytorch-solve-batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "reference_for": "small_solve_f64_solve-loop_k64_b64"
+ },
+ {
+  "id": "small_solve_f64_pytorch-solve-triangular-batched_k64_b64",
+  "issues": [
+   "#2007"
+  ],
+  "kind": "small_solves",
+  "arm": "pytorch-solve-triangular-batched",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "k": 64,
+   "batch": 64,
+   "kind": "small_solves",
+   "arm": "pytorch-solve-triangular-batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "reference_for": "small_solve_f64_triangular-solve-loop_k64_b64"
+ },
+ {
+  "id": "eager_backward_matmul2x2_f64_leaves0",
+  "issues": [
+   "#1803"
+  ],
+  "kind": "backward_live_leaves",
+  "arm": "eager-ad",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "unrelated_leaves": 0,
+   "kind": "backward_live_leaves",
+   "arm": "eager-ad",
+   "dtype": "f64"
+  },
+  "measurement_scope": "eager_ad_workflow",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1803 A: forward + sum + backward of one 2x2 matmul with N unrelated requires-grad leaves alive in the same eager runtime; N=0 is the reference. An eager AD workflow (internal session entries), not a steady-state operation row."
+ },
+ {
+  "id": "eager_backward_matmul2x2_f64_leaves2",
+  "issues": [
+   "#1803"
+  ],
+  "kind": "backward_live_leaves",
+  "arm": "eager-ad",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "unrelated_leaves": 2,
+   "kind": "backward_live_leaves",
+   "arm": "eager-ad",
+   "dtype": "f64"
+  },
+  "measurement_scope": "eager_ad_workflow",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1803 A: forward + sum + backward of one 2x2 matmul with N unrelated requires-grad leaves alive in the same eager runtime; N=0 is the reference. An eager AD workflow (internal session entries), not a steady-state operation row.",
+  "reference_for": "eager_backward_matmul2x2_f64_leaves0"
+ },
+ {
+  "id": "eager_backward_matmul2x2_f64_leaves32",
+  "issues": [
+   "#1803"
+  ],
+  "kind": "backward_live_leaves",
+  "arm": "eager-ad",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "unrelated_leaves": 32,
+   "kind": "backward_live_leaves",
+   "arm": "eager-ad",
+   "dtype": "f64"
+  },
+  "measurement_scope": "eager_ad_workflow",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1803 A: forward + sum + backward of one 2x2 matmul with N unrelated requires-grad leaves alive in the same eager runtime; N=0 is the reference. An eager AD workflow (internal session entries), not a steady-state operation row.",
+  "reference_for": "eager_backward_matmul2x2_f64_leaves0"
+ },
+ {
+  "id": "eager_backward_matmul2x2_f64_leaves128",
+  "issues": [
+   "#1803"
+  ],
+  "kind": "backward_live_leaves",
+  "arm": "eager-ad",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "unrelated_leaves": 128,
+   "kind": "backward_live_leaves",
+   "arm": "eager-ad",
+   "dtype": "f64"
+  },
+  "measurement_scope": "eager_ad_workflow",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1803 A: forward + sum + backward of one 2x2 matmul with N unrelated requires-grad leaves alive in the same eager runtime; N=0 is the reference. An eager AD workflow (internal session entries), not a steady-state operation row.",
+  "reference_for": "eager_backward_matmul2x2_f64_leaves0"
+ },
+ {
+  "id": "eager_backward_matmul2x2_f64_leaves512",
+  "issues": [
+   "#1803"
+  ],
+  "kind": "backward_live_leaves",
+  "arm": "eager-ad",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "unrelated_leaves": 512,
+   "kind": "backward_live_leaves",
+   "arm": "eager-ad",
+   "dtype": "f64"
+  },
+  "measurement_scope": "eager_ad_workflow",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1803 A: forward + sum + backward of one 2x2 matmul with N unrelated requires-grad leaves alive in the same eager runtime; N=0 is the reference. An eager AD workflow (internal session entries), not a steady-state operation row.",
+  "reference_for": "eager_backward_matmul2x2_f64_leaves0"
+ },
+ {
+  "id": "tanh_chain_f32_compiled-prepared_k10_1024x64",
+  "issues": [
+   "#1990"
+  ],
+  "kind": "tanh_chain",
+  "arm": "compiled-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "chain": 10,
+   "kind": "tanh_chain",
+   "arm": "compiled-prepared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1990: K chained tanh on a 1024x64 f32 tensor, compiled into one fused elementwise region (prepared once, run_prepared timed) vs the same chain as eager per-op kernels in one session."
+ },
+ {
+  "id": "tanh_chain_f32_eager-shared_k10_1024x64",
+  "issues": [
+   "#1990"
+  ],
+  "kind": "tanh_chain",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "chain": 10,
+   "kind": "tanh_chain",
+   "arm": "eager-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1990: K chained tanh on a 1024x64 f32 tensor, compiled into one fused elementwise region (prepared once, run_prepared timed) vs the same chain as eager per-op kernels in one session.",
+  "reference_for": "tanh_chain_f32_compiled-prepared_k10_1024x64"
+ },
+ {
+  "id": "tanh_chain_f32_compiled-prepared_k100_1024x64",
+  "issues": [
+   "#1990"
+  ],
+  "kind": "tanh_chain",
+  "arm": "compiled-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "chain": 100,
+   "kind": "tanh_chain",
+   "arm": "compiled-prepared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1990: K chained tanh on a 1024x64 f32 tensor, compiled into one fused elementwise region (prepared once, run_prepared timed) vs the same chain as eager per-op kernels in one session."
+ },
+ {
+  "id": "tanh_chain_f32_eager-shared_k100_1024x64",
+  "issues": [
+   "#1990"
+  ],
+  "kind": "tanh_chain",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "chain": 100,
+   "kind": "tanh_chain",
+   "arm": "eager-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1990: K chained tanh on a 1024x64 f32 tensor, compiled into one fused elementwise region (prepared once, run_prepared timed) vs the same chain as eager per-op kernels in one session.",
+  "reference_for": "tanh_chain_f32_compiled-prepared_k100_1024x64"
+ },
+ {
+  "id": "tanh_chain_f32_compiled-prepared_k200_1024x64",
+  "issues": [
+   "#1990"
+  ],
+  "kind": "tanh_chain",
+  "arm": "compiled-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "chain": 200,
+   "kind": "tanh_chain",
+   "arm": "compiled-prepared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1990: K chained tanh on a 1024x64 f32 tensor, compiled into one fused elementwise region (prepared once, run_prepared timed) vs the same chain as eager per-op kernels in one session."
+ },
+ {
+  "id": "tanh_chain_f32_eager-shared_k200_1024x64",
+  "issues": [
+   "#1990"
+  ],
+  "kind": "tanh_chain",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 64,
+   "chain": 200,
+   "kind": "tanh_chain",
+   "arm": "eager-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1990: K chained tanh on a 1024x64 f32 tensor, compiled into one fused elementwise region (prepared once, run_prepared timed) vs the same chain as eager per-op kernels in one session.",
+  "reference_for": "tanh_chain_f32_compiled-prepared_k200_1024x64"
+ },
+ {
+  "id": "layer_norm_f32_eager-composed_d1024_len8_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference."
+ },
+ {
+  "id": "layer_norm_f32_pytorch-fused_d1024_len8_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "pytorch-fused",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "pytorch-fused",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
+  "reference_for": "layer_norm_f32_eager-composed_d1024_len8_b1"
+ },
+ {
+  "id": "layer_norm_f32_eager-composed_d1024_len8_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference."
+ },
+ {
+  "id": "layer_norm_f32_pytorch-fused_d1024_len8_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "pytorch-fused",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "pytorch-fused",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
+  "reference_for": "layer_norm_f32_eager-composed_d1024_len8_b8"
+ },
+ {
+  "id": "layer_norm_f32_eager-composed_d1024_len64_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference."
+ },
+ {
+  "id": "layer_norm_f32_pytorch-fused_d1024_len64_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "pytorch-fused",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "pytorch-fused",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
+  "reference_for": "layer_norm_f32_eager-composed_d1024_len64_b1"
+ },
+ {
+  "id": "layer_norm_f32_eager-composed_d1024_len64_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference."
+ },
+ {
+  "id": "layer_norm_f32_pytorch-fused_d1024_len64_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "pytorch-fused",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "norm": "layer_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "pytorch-fused",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
+  "reference_for": "layer_norm_f32_eager-composed_d1024_len64_b8"
+ },
+ {
+  "id": "rms_norm_f32_eager-composed_d1024_len8_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference."
+ },
+ {
+  "id": "rms_norm_f32_pytorch-fused_d1024_len8_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "pytorch-fused",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "pytorch-fused",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
+  "reference_for": "rms_norm_f32_eager-composed_d1024_len8_b1"
+ },
+ {
+  "id": "rms_norm_f32_eager-composed_d1024_len8_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference."
+ },
+ {
+  "id": "rms_norm_f32_pytorch-fused_d1024_len8_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "pytorch-fused",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 8,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "pytorch-fused",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
+  "reference_for": "rms_norm_f32_eager-composed_d1024_len8_b8"
+ },
+ {
+  "id": "rms_norm_f32_eager-composed_d1024_len64_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference."
+ },
+ {
+  "id": "rms_norm_f32_pytorch-fused_d1024_len64_b1",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "pytorch-fused",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 1,
+   "kind": "composed_norm",
+   "arm": "pytorch-fused",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
+  "reference_for": "rms_norm_f32_eager-composed_d1024_len64_b1"
+ },
+ {
+  "id": "rms_norm_f32_eager-composed_d1024_len64_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference."
+ },
+ {
+  "id": "rms_norm_f32_pytorch-fused_d1024_len64_b8",
+  "issues": [
+   "#2006"
+  ],
+  "kind": "composed_norm",
+  "arm": "pytorch-fused",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "norm": "rms_norm",
+   "d": 1024,
+   "len": 64,
+   "batch": 8,
+   "kind": "composed_norm",
+   "arm": "pytorch-fused",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2006: feature-first (d, len, batch) activation normalized over d with weight (and bias for layer_norm). The tenferro row is today's ~10-op eager composition and is the baseline for the fused B1/B2 op; PyTorch's fused layer_norm / rms_norm is the reference.",
+  "reference_for": "rms_norm_f32_eager-composed_d1024_len64_b8"
+ },
+ {
+  "id": "small_contraction_abcd-dbef-acef_f64_per-call-default-pool_d4",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_contraction_pool_hop",
+  "arm": "per-call-default-pool",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "extent": 4,
+   "kind": "small_contraction_pool_hop",
+   "arm": "per-call-default-pool",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend)."
+ },
+ {
+  "id": "small_contraction_abcd-dbef-acef_f64_per-call-threads1_d4",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_contraction_pool_hop",
+  "arm": "per-call-threads1",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "extent": 4,
+   "kind": "small_contraction_pool_hop",
+   "arm": "per-call-threads1",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend).",
+  "reference_for": "small_contraction_abcd-dbef-acef_f64_per-call-default-pool_d4"
+ },
+ {
+  "id": "small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_contraction_pool_hop",
+  "arm": "shared-session-default-pool",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "extent": 4,
+   "kind": "small_contraction_pool_hop",
+   "arm": "shared-session-default-pool",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend)."
+ }
+]

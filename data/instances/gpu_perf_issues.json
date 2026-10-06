@@ -1,0 +1,1740 @@
+[
+ {
+  "id": "transfer_up_f64_tenferro_8B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 8,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pageable_8B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 8,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_8B"
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pinned_8B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 8,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_8B"
+ },
+ {
+  "id": "transfer_up_f64_tenferro_4096B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 4096,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pageable_4096B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 4096,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_4096B"
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pinned_4096B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 4096,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_4096B"
+ },
+ {
+  "id": "transfer_up_f64_tenferro_65536B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 65536,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pageable_65536B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 65536,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_65536B"
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pinned_65536B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 65536,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_65536B"
+ },
+ {
+  "id": "transfer_up_f64_tenferro_1048576B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 1048576,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pageable_1048576B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 1048576,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_1048576B"
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pinned_1048576B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 1048576,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_1048576B"
+ },
+ {
+  "id": "transfer_up_f64_tenferro_16777216B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 16777216,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pageable_16777216B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 16777216,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_16777216B"
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pinned_16777216B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 16777216,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_16777216B"
+ },
+ {
+  "id": "transfer_up_f64_tenferro_268435456B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 268435456,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pageable_268435456B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 268435456,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_268435456B"
+ },
+ {
+  "id": "transfer_up_f64_cudarc-pinned_268435456B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 268435456,
+   "direction": "up",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_up_f64_tenferro_268435456B"
+ },
+ {
+  "id": "transfer_down_f64_tenferro_8B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 8,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable_8B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 8,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_8B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pinned_8B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 8,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_8B"
+ },
+ {
+  "id": "transfer_down_f64_tenferro_4096B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 4096,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable_4096B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 4096,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_4096B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pinned_4096B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 4096,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_4096B"
+ },
+ {
+  "id": "transfer_down_f64_tenferro_65536B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 65536,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable_65536B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 65536,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_65536B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pinned_65536B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 65536,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_65536B"
+ },
+ {
+  "id": "transfer_down_f64_tenferro_1048576B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 1048576,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable_1048576B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 1048576,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_1048576B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pinned_1048576B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 1048576,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_1048576B"
+ },
+ {
+  "id": "transfer_down_f64_tenferro_16777216B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 16777216,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable_16777216B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 16777216,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_16777216B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pinned_16777216B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 16777216,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_16777216B"
+ },
+ {
+  "id": "transfer_down_f64_tenferro_268435456B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 268435456,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable_268435456B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 268435456,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_268435456B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pinned_268435456B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pinned",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 268435456,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pinned",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "reference_for": "transfer_down_f64_tenferro_268435456B"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-within-callback_0el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-within-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 0,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-within-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-per-callback_0el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 0,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_host-zero-upload_0el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "host-zero-upload",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 0,
+   "kind": "alloc_zero",
+   "arm": "host-zero-upload",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_0el"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-fill-per-callback_0el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-fill-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 0,
+   "kind": "alloc_zero",
+   "arm": "alloc-fill-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_0el"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-within-callback_16el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-within-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 16,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-within-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-per-callback_16el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 16,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_host-zero-upload_16el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "host-zero-upload",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 16,
+   "kind": "alloc_zero",
+   "arm": "host-zero-upload",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_16el"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-fill-per-callback_16el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-fill-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 16,
+   "kind": "alloc_zero",
+   "arm": "alloc-fill-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_16el"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-within-callback_512el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-within-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 512,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-within-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-per-callback_512el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 512,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_host-zero-upload_512el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "host-zero-upload",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 512,
+   "kind": "alloc_zero",
+   "arm": "host-zero-upload",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_512el"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-fill-per-callback_512el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-fill-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 512,
+   "kind": "alloc_zero",
+   "arm": "alloc-fill-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_512el"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-within-callback_32768el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-within-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 32768,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-within-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-per-callback_32768el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 32768,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_host-zero-upload_32768el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "host-zero-upload",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 32768,
+   "kind": "alloc_zero",
+   "arm": "host-zero-upload",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_32768el"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-fill-per-callback_32768el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-fill-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 32768,
+   "kind": "alloc_zero",
+   "arm": "alloc-fill-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_32768el"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-within-callback_2097152el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-within-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 2097152,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-within-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_alloc-zero-per-callback_2097152el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-zero-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 2097152,
+   "kind": "alloc_zero",
+   "arm": "alloc-zero-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+ },
+ {
+  "id": "alloc_zero_f64_host-zero-upload_2097152el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "host-zero-upload",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 2097152,
+   "kind": "alloc_zero",
+   "arm": "host-zero-upload",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_2097152el"
+ },
+ {
+  "id": "alloc_zero_f64_alloc-fill-per-callback_2097152el",
+  "issues": [
+   "#1887"
+  ],
+  "kind": "alloc_zero",
+  "arm": "alloc-fill-per-callback",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "elements": 2097152,
+   "kind": "alloc_zero",
+   "arm": "alloc-fill-per-callback",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_2097152el"
+ },
+ {
+  "id": "small_blocks_gemm_f64_loop_n8_count256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_blocks",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "count": 256,
+   "kind": "small_blocks",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.1/§3.2: 256 independent n x n GEMMs submitted one dot_general per block vs one batched dot_general call (the reference); the submission cost of many small blocks."
+ },
+ {
+  "id": "small_blocks_gemm_f64_batched_n8_count256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_blocks",
+  "arm": "batched",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "count": 256,
+   "kind": "small_blocks",
+   "arm": "batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.1/§3.2: 256 independent n x n GEMMs submitted one dot_general per block vs one batched dot_general call (the reference); the submission cost of many small blocks.",
+  "reference_for": "small_blocks_gemm_f64_loop_n8_count256"
+ },
+ {
+  "id": "small_blocks_gemm_f64_loop_n16_count256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_blocks",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "count": 256,
+   "kind": "small_blocks",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.1/§3.2: 256 independent n x n GEMMs submitted one dot_general per block vs one batched dot_general call (the reference); the submission cost of many small blocks."
+ },
+ {
+  "id": "small_blocks_gemm_f64_batched_n16_count256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_blocks",
+  "arm": "batched",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "count": 256,
+   "kind": "small_blocks",
+   "arm": "batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.1/§3.2: 256 independent n x n GEMMs submitted one dot_general per block vs one batched dot_general call (the reference); the submission cost of many small blocks.",
+  "reference_for": "small_blocks_gemm_f64_loop_n16_count256"
+ },
+ {
+  "id": "small_blocks_gemm_f64_loop_n32_count256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_blocks",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "count": 256,
+   "kind": "small_blocks",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.1/§3.2: 256 independent n x n GEMMs submitted one dot_general per block vs one batched dot_general call (the reference); the submission cost of many small blocks."
+ },
+ {
+  "id": "small_blocks_gemm_f64_batched_n32_count256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_blocks",
+  "arm": "batched",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "count": 256,
+   "kind": "small_blocks",
+   "arm": "batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.1/§3.2: 256 independent n x n GEMMs submitted one dot_general per block vs one batched dot_general call (the reference); the submission cost of many small blocks.",
+  "reference_for": "small_blocks_gemm_f64_loop_n32_count256"
+ },
+ {
+  "id": "small_blocks_gemm_f64_loop_n64_count256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_blocks",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "count": 256,
+   "kind": "small_blocks",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.1/§3.2: 256 independent n x n GEMMs submitted one dot_general per block vs one batched dot_general call (the reference); the submission cost of many small blocks."
+ },
+ {
+  "id": "small_blocks_gemm_f64_batched_n64_count256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "small_blocks",
+  "arm": "batched",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "count": 256,
+   "kind": "small_blocks",
+   "arm": "batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.1/§3.2: 256 independent n x n GEMMs submitted one dot_general per block vs one batched dot_general call (the reference); the submission cost of many small blocks.",
+  "reference_for": "small_blocks_gemm_f64_loop_n64_count256"
+ },
+ {
+  "id": "batched_qr_f64_loop_n32_b16",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 32,
+   "batch": 16,
+   "kind": "batched_factorization",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3: batch x (32 x 32) QR / SVD as a per-matrix loop vs one call on a [n, n, batch] tensor (whose CUDA implementation may itself loop with per-block info syncs). Time only; the sync count per block has no public counter and is reported as unavailable."
+ },
+ {
+  "id": "batched_qr_f64_batched_n32_b16",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "batched",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 32,
+   "batch": 16,
+   "kind": "batched_factorization",
+   "arm": "batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3: batch x (32 x 32) QR / SVD as a per-matrix loop vs one call on a [n, n, batch] tensor (whose CUDA implementation may itself loop with per-block info syncs). Time only; the sync count per block has no public counter and is reported as unavailable.",
+  "reference_for": "batched_qr_f64_loop_n32_b16"
+ },
+ {
+  "id": "batched_qr_f64_loop_n32_b256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 32,
+   "batch": 256,
+   "kind": "batched_factorization",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3: batch x (32 x 32) QR / SVD as a per-matrix loop vs one call on a [n, n, batch] tensor (whose CUDA implementation may itself loop with per-block info syncs). Time only; the sync count per block has no public counter and is reported as unavailable."
+ },
+ {
+  "id": "batched_qr_f64_batched_n32_b256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "batched",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 32,
+   "batch": 256,
+   "kind": "batched_factorization",
+   "arm": "batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3: batch x (32 x 32) QR / SVD as a per-matrix loop vs one call on a [n, n, batch] tensor (whose CUDA implementation may itself loop with per-block info syncs). Time only; the sync count per block has no public counter and is reported as unavailable.",
+  "reference_for": "batched_qr_f64_loop_n32_b256"
+ },
+ {
+  "id": "batched_svd_f64_loop_n32_b16",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "svd",
+   "n": 32,
+   "batch": 16,
+   "kind": "batched_factorization",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3: batch x (32 x 32) QR / SVD as a per-matrix loop vs one call on a [n, n, batch] tensor (whose CUDA implementation may itself loop with per-block info syncs). Time only; the sync count per block has no public counter and is reported as unavailable."
+ },
+ {
+  "id": "batched_svd_f64_batched_n32_b16",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "batched",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "svd",
+   "n": 32,
+   "batch": 16,
+   "kind": "batched_factorization",
+   "arm": "batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3: batch x (32 x 32) QR / SVD as a per-matrix loop vs one call on a [n, n, batch] tensor (whose CUDA implementation may itself loop with per-block info syncs). Time only; the sync count per block has no public counter and is reported as unavailable.",
+  "reference_for": "batched_svd_f64_loop_n32_b16"
+ },
+ {
+  "id": "batched_svd_f64_loop_n32_b256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "svd",
+   "n": 32,
+   "batch": 256,
+   "kind": "batched_factorization",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3: batch x (32 x 32) QR / SVD as a per-matrix loop vs one call on a [n, n, batch] tensor (whose CUDA implementation may itself loop with per-block info syncs). Time only; the sync count per block has no public counter and is reported as unavailable."
+ },
+ {
+  "id": "batched_svd_f64_batched_n32_b256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "batched",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "svd",
+   "n": 32,
+   "batch": 256,
+   "kind": "batched_factorization",
+   "arm": "batched",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3: batch x (32 x 32) QR / SVD as a per-matrix loop vs one call on a [n, n, batch] tensor (whose CUDA implementation may itself loop with per-block info syncs). Time only; the sync count per block has no public counter and is reported as unavailable.",
+  "reference_for": "batched_svd_f64_loop_n32_b256"
+ },
+ {
+  "id": "qr_live_buffers_f64_n32_live16",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 32,
+   "batch": 1,
+   "live_buffers": 16,
+   "kind": "batched_factorization",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3 addendum: host cost of one 32 x 32 QR while 16 / 256 / 1024 other device buffers are resident; the 16-buffer case is the reference."
+ },
+ {
+  "id": "qr_live_buffers_f64_n32_live256",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 32,
+   "batch": 1,
+   "live_buffers": 256,
+   "kind": "batched_factorization",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3 addendum: host cost of one 32 x 32 QR while 16 / 256 / 1024 other device buffers are resident; the 16-buffer case is the reference.",
+  "reference_for": "qr_live_buffers_f64_n32_live16"
+ },
+ {
+  "id": "qr_live_buffers_f64_n32_live1024",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "batched_factorization",
+  "arm": "loop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 32,
+   "batch": 1,
+   "live_buffers": 1024,
+   "kind": "batched_factorization",
+   "arm": "loop",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.3 addendum: host cost of one 32 x 32 QR while 16 / 256 / 1024 other device buffers are resident; the 16-buffer case is the reference.",
+  "reference_for": "qr_live_buffers_f64_n32_live16"
+ },
+ {
+  "id": "first_call_transpose_to-contiguous_f64_layouts_r2-12_c5-7",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "first_call_layouts",
+  "arm": "to-contiguous",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "max_rows": 12,
+   "cols": [
+    5,
+    7
+   ],
+   "kind": "first_call_layouts",
+   "arm": "to-contiguous",
+   "dtype": "f64"
+  },
+  "measurement_scope": "first_call_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.4 addendum: first and second call of a materializing transpose (TensorViewCanonicalization::to_contiguous, or copy_into a compact destination, of a transposed device view) for 22 distinct [r, c] layouts after one warm-up layout, in one cold process. A first-call (NVRTC compile) diagnostic, never a steady-state row; the second call is the warm reference."
+ },
+ {
+  "id": "first_call_transpose_copy-into_f64_layouts_r2-12_c5-7",
+  "issues": [
+   "#1885"
+  ],
+  "kind": "first_call_layouts",
+  "arm": "copy-into",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "max_rows": 12,
+   "cols": [
+    5,
+    7
+   ],
+   "kind": "first_call_layouts",
+   "arm": "copy-into",
+   "dtype": "f64"
+  },
+  "measurement_scope": "first_call_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1885 §3.4 addendum: first and second call of a materializing transpose (TensorViewCanonicalization::to_contiguous, or copy_into a compact destination, of a transposed device view) for 22 distinct [r, c] layouts after one warm-up layout, in one cold process. A first-call (NVRTC compile) diagnostic, never a steady-state row; the second call is the warm reference."
+ }
+]

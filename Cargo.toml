@@ -31,11 +31,21 @@ hptt = { version = "0.4.1", optional = true }
 # extern/tenferro-rs/crates/tenferro-gpu/src/cubecl/ffi/cutensor.rs's dlopen
 # style. Optional, only pulled in by the `cuda` feature.
 libloading = { version = "0.8", optional = true }
+# cudarc reference arms of the gpu/perf_issues transfer cases (tenferro-rs
+# #2009): pageable and pinned memcpy on the same device. Same version and
+# feature set as tenferro-rs's workspace pin, so Cargo resolves one copy.
+cudarc = { version = "0.19", optional = true, default-features = false, features = ["driver", "runtime", "nvrtc", "dynamic-loading", "cuda-12080"] }
 # Non-optional: benchmark_permutation always reports the actual size of
 # tenferro's global rayon pool (rayon::current_num_threads(), sized from
 # RAYON_NUM_THREADS at process start) as its `threads` field, regardless of
 # any Cargo feature.
 rayon = "1"
+# Reference arms of the cpu/perf_issues decode-projection cases (tenferro-rs
+# #1992/#2003/#1995): the identical GEMM through faer directly into a
+# preallocated output, and a plain host sgemm. faer matches tenferro-rs's own
+# faer requirement so Cargo resolves one copy.
+faer = { version = "0.24", default-features = false, features = ["std", "rayon"] }
+matrixmultiply = { version = "0.3", features = ["threading"] }
 # Optional path deps on extern/strided-rs (see scripts/setup_extern_deps.sh,
 # which clones it alongside extern/tenferro-rs), gated by the `strided-rs`
 # feature below. Cargo resolves every path dependency's manifest to build the
@@ -163,6 +173,7 @@ cuda = [
     "dep:tenferro-cpu",
     "tenferro-cpu?/cpu-faer",
     "dep:libloading",
+    "dep:cudarc",
 ]
 webgpu = [
     "dep:tenferro-gpu",
@@ -190,6 +201,11 @@ path = "src/bin/benchmark_cpu_public_api.rs"
 [[bin]]
 name = "benchmark_gpu_rust"
 path = "src/bin/benchmark_gpu_rust.rs"
+required-features = ["cuda"]
+
+[[bin]]
+name = "benchmark_gpu_perf_issues"
+path = "src/bin/benchmark_gpu_perf_issues.rs"
 required-features = ["cuda"]
 
 [[bin]]

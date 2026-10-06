@@ -1,0 +1,83 @@
+{
+  "name": "bin_omeinsum_matmul_10x10",
+  "format_string": "abcdefghij,fghijklmno->abcdeklmno",
+  "shapes": [
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ]
+  ],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 10.0,
+      "log10_flops": 4.8165
+    },
+    "opt_flops": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 10.0,
+      "log10_flops": 4.8165
+    }
+  },
+  "format_string_colmajor": "jihgfedcba,onmlkjihgf->onmlkedcba",
+  "shapes_colmajor": [
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ]
+  ],
+  "format_string_rowmajor": "abcdefghij,fghijklmno->abcdeklmno",
+  "intent": "tenferro-rs #1865: omeinsum-rs binary scenario matmul_10x10 (rank 10 x rank 10, 5 contracted and 0 batch modes, every extent 2), originally f32; this suite is f64. Small, batched, materialization-heavy contraction; PyTorch is the reference."
+}

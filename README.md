@@ -35,6 +35,7 @@ live in git history only.
 | `linux-cpu` | `cpu/linalg_jvp_vjp` | [result/linux-cpu/cpu/linalg_jvp_vjp.md](result/linux-cpu/cpu/linalg_jvp_vjp.md) |
 | `linux-cpu` | `cpu/permutation` | [result/linux-cpu/cpu/permutation.md](result/linux-cpu/cpu/permutation.md) |
 | `amd-cpu` (Linux devcontainer) | `cpu/small_work` | [result/amd-cpu/cpu/small_work.md](result/amd-cpu/cpu/small_work.md) |
+| `amd-cpu` (Linux devcontainer) | `cpu/perf_issues` | [result/amd-cpu/cpu/perf_issues.md](result/amd-cpu/cpu/perf_issues.md) (not collected yet) |
 | `linux-cpu` | linalg JVP/JVP repro | [result/linux-cpu/cpu/linalg_jvp_jvp.md](result/linux-cpu/cpu/linalg_jvp_jvp.md) |
 | `nvidia-gpu` (CUDA devcontainer) | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
@@ -42,6 +43,7 @@ live in git history only.
 | `nvidia-gpu` | `gpu/tensornetwork` | [result/nvidia-gpu/gpu/tensornetwork.md](result/nvidia-gpu/gpu/tensornetwork.md) |
 | `nvidia-gpu` | `gpu/linalg_jvp_vjp` | [result/nvidia-gpu/gpu/linalg_jvp_vjp.md](result/nvidia-gpu/gpu/linalg_jvp_vjp.md) |
 | `nvidia-gpu` | `gpu/permutation` | [result/nvidia-gpu/gpu/permutation.md](result/nvidia-gpu/gpu/permutation.md) |
+| `nvidia-gpu` | `gpu/perf_issues` | [result/nvidia-gpu/gpu/perf_issues.md](result/nvidia-gpu/gpu/perf_issues.md) (not collected yet) |
 
 Raw runs (per-timestamp `run.yaml` + machine-readable outputs) are written to
 `data/results/<target_profile>/<suite_id>/<timestamp>/`; the tracked report in
@@ -201,6 +203,57 @@ Noisy rows remain visible. Failed cases have no latency and the runner exits
 nonzero. Raw samples and metadata are retained under
 `data/results/<target_profile>/cpu/small_work/<timestamp>/`; the generated
 latest report is `result/<target_profile>/cpu/small_work.md`.
+
+### Performance-issue workloads (`cpu/perf_issues`, `gpu/perf_issues`)
+
+Every open tenferro-rs performance issue gets its workload added as cases when
+the issue is opened, with the issue number recorded next to each case
+(`issues` in `data/instances/perf_issues.json` /
+`data/instances/gpu_perf_issues.json`, or the suite description / instance
+`intent` where an existing suite already covers it). A performance-fix PR
+reports numbers from those cases. There is no automated audit, gate or
+scheduled run. Each family carries its reference arm(s) (faer direct, host
+sgemm, PyTorch, cudarc memcpy, the eager or batched counterpart, ...);
+`reference_for` names the compared case. Cases are built only from public
+tenferro-rs APIs (`CpuBackend::new()` / `with_threads(n)`,
+`with_backend_session`, public concrete/eager/traced ops). Steady-state rows,
+per-call session-entry diagnostics, eager AD workflows, counter runs and the
+GPU first-call diagnostic are reported in separate sections.
+
+Edit `scripts/generate_perf_issue_cases.py` (it also writes the #1865/#1863
+`cpu/einsum` instances), rerun it and bump the manifest version. Collection:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc '
+  TENFERRO_CPU_FEATURES=system-mkl BENCHMARK_TARGET_PROFILE=amd-cpu \
+  ./scripts/run_perf_issues.sh 1 4'
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_perf_issues.sh'
+```
+
+`BENCH_COVERAGE=full` adds the diagnostics, `BENCH_EFFORT=scan` is a
+low-repetition screen, `BENCH_INSTANCE` filters case IDs and
+`PERF_ISSUES_CORRECTNESS_ONLY=1` executes and validates every case without
+timing. Raw runs go to `data/results/<target_profile>/{cpu,gpu}/perf_issues/<timestamp>/`.
+
+| tenferro-rs issue | Cases | Suite |
+|---|---|---|
+| #1897, #1899, #1904 | generic einsum cases (`*_abcd-dbef-acef_d4`, `*_ax-asb-xsb_d4s2`, `*_ij-jk-ik_m95k95n1`) | `cpu/small_work` |
+| #2000, #1884 | `batched_lu_factor` / `batched_lu_solve` 1024x{8,16}, `cpu/linalg_batch_families` | `cpu/public_api` |
+| #1803 B/C | `batched_solve`, `*_backward` rows | `cpu/cpu_ops` |
+| #1865 | `bin_omeinsum_{matmul_10x10,batched_matmul_8x8_batch_4,high_d_12x12_contract_4_batch_4}` | `cpu/einsum` |
+| #1863 | `bin_permuted_r4_abcd_dbef_acef_d32` (1/4(/8)-thread runs) | `cpu/einsum` |
+| #1992, #2003, #1995 | `decode_proj_f32_*`, `decode_block_copy_volume_f32_d1024_len8` | `cpu/perf_issues` |
+| #1900 | `gemm_{c64,f64}_mm256_t1` | `cpu/perf_issues` |
+| #1615 | `conj_dot_{f64,c64}_*` | `cpu/perf_issues` |
+| #2007 | `small_solve_f64_*` | `cpu/perf_issues` |
+| #1803 A | `eager_backward_matmul2x2_f64_leaves*` | `cpu/perf_issues` |
+| #1990 | `tanh_chain_f32_*` | `cpu/perf_issues` |
+| #2006 | `{layer_norm,rms_norm}_f32_*` | `cpu/perf_issues` |
+| #1885 §4.1 | `small_contraction_abcd-dbef-acef_f64_*_d4` | `cpu/perf_issues` |
+| #2009 | `transfer_{up,down}_f64_*` | `gpu/perf_issues` |
+| #1887 | `alloc_zero_f64_*` | `gpu/perf_issues` |
+| #1885 §3.1-§3.4 | `small_blocks_gemm_*`, `batched_{qr,svd}_*`, `qr_live_buffers_*`, `first_call_transpose_*` | `gpu/perf_issues` |
 
 ### CPU permutation suite (`cpu/permutation`)
 

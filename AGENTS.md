@@ -76,6 +76,17 @@ When creating a PR that includes benchmark results, add a PR comment listing
 the exact commands used to collect those measurements, including relevant
 environment-variable assignments and thread counts.
 
+## Performance Issues Become Suite Cases
+
+Performance issues of tenferro-rs get their workload added as suite cases,
+with the issue number noted next to the case, when the issue is opened (not
+at fix time). A performance-fix PR reports numbers from those cases. Add the
+cases with their reference arm(s) to `scripts/generate_perf_issue_cases.py`
+(`cpu/perf_issues`, `gpu/perf_issues`), or record the issue number on the
+existing case that already covers the workload. Build the cases only from
+public tenferro-rs APIs. This is the whole requirement: no automated audit,
+registry, lint, scheduled run or mandatory baseline campaign.
+
 ## Target Profiles
 
 Use target profiles to keep latest reports for multiple hardware classes:
@@ -97,6 +108,7 @@ Expected latest report paths:
 - `result/amd-cpu/cpu/cpu_ops.md`
 - `result/amd-cpu/cpu/linalg_jvp_vjp.md`
 - `result/amd-cpu/cpu/permutation.md`
+- `result/amd-cpu/cpu/perf_issues.md`
 - `result/linux-cpu/cpu/linalg_jvp_jvp.md`
 - `result/nvidia-gpu/gpu/dense.md`
 - `result/nvidia-gpu/gpu/einsum.md`
@@ -105,6 +117,7 @@ Expected latest report paths:
 - `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`
 - `result/nvidia-gpu/gpu/linalg_ad_latency.md`
 - `result/nvidia-gpu/gpu/permutation.md`
+- `result/nvidia-gpu/gpu/perf_issues.md`
 
 Raw runs are written under:
 
