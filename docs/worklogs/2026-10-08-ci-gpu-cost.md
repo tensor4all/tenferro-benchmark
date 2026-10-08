@@ -65,3 +65,12 @@
   with CI execution tools, cuTENSOR and PJRT wheels staged on the hosted runner.
   No primary paired measurements have started; the previous diagnostic data
   remain retained and excluded by the original pilot policy.
+
+- Slim-image diagnostic uses A40 (ceiling $0.60/hour), retaining the frozen
+  workload and serial test execution. It stages real Cargo and nextest binaries,
+  cuTENSOR, CUDA headers and the three pinned PJRT wheels before provisioning.
+  A local archived host test passed with no Rust compiler/toolchain on PATH;
+  this establishes archive execution feasibility, not GPU correctness. Both
+  workflow arms currently select this diagnostic configuration; no primary
+  paired campaign is dispatched until distinct baseline/candidate preparation
+  is restored and its protocol is recorded.
