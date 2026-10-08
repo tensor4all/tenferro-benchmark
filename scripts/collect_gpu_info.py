@@ -4,6 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
+import os
+from pathlib import Path
 import re
 import shutil
 import subprocess
@@ -44,6 +47,24 @@ def _nvcc_runtime_version() -> str | None:
         return None
     match = re.search(r"release ([0-9.]+)", output)
     return match.group(1) if match else None
+
+
+def _cuda_runtime_version() -> str | None:
+    # Compiler presence/version does not identify a transferred runtime tree.
+    # In particular, the RunPod base image still contains CUDA 11.8 nvcc.
+    root = os.environ.get("CUDA_HOME")
+    candidates = sorted(Path(root, "lib64").glob("libcudart.so*")) if root else []
+    for library in [*(str(path) for path in candidates), "libcudart.so.12", "libcudart.so.13"]:
+        try:
+            function = ctypes.CDLL(library).cudaRuntimeGetVersion
+            function.argtypes = [ctypes.POINTER(ctypes.c_int)]
+            function.restype = ctypes.c_int
+            version = ctypes.c_int()
+            if function(ctypes.byref(version)) == 0 and version.value > 0:
+                return f"{version.value // 1000}.{(version.value % 1000) // 10}"
+        except (OSError, AttributeError):
+            continue
+    return _nvcc_runtime_version()
 
 
 def _torch_cudnn_version() -> str | None:
@@ -108,7 +129,7 @@ def collect_cuda_metadata(device_ordinal: int = 0) -> dict[str, Any] | None:
         "device_uuid": device["device_uuid"],
         "device_memory_bytes": device["device_memory_bytes"],
         "driver_version": device["driver_version"],
-        "runtime_version": _nvcc_runtime_version(),
+        "runtime_version": _cuda_runtime_version(),
         "cuda_version": _nvidia_smi_cuda_version(),
         "cudnn_version": _torch_cudnn_version(),
     }

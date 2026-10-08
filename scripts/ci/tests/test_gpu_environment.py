@@ -5,9 +5,20 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.ci.gpu_environment import INPUTS, PREFIX, cache_key, check_tar, digest, identity, verify
+from scripts.collect_gpu_info import _cuda_runtime_version
 
 
 class EnvironmentTests(unittest.TestCase):
+    @patch('scripts.collect_gpu_info._nvcc_runtime_version', return_value='11.8')
+    @patch('scripts.collect_gpu_info.ctypes.CDLL')
+    def test_runtime_metadata_uses_library_instead_of_base_image_compiler(self, load, nvcc):
+        def version(argument):
+            argument._obj.value = 12080
+            return 0
+        load.return_value.cudaRuntimeGetVersion.side_effect = version
+        self.assertEqual(_cuda_runtime_version(), '12.8')
+        nvcc.assert_not_called()
+
     def test_key_binds_inputs_and_only_needed_python_profile(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
