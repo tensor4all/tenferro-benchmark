@@ -132,9 +132,9 @@ jobs:
           config = json.loads(path.read_text())
           ids = [gpu for tier in config['gpu_tiers'] for gpu in tier['gpu_type_ids']]
           offers = fetch_gpu_offers(ids, min_vram_gb=config['min_vram_gb'], transport=http_transport(GRAPHQL_URL))
-          eligible = [offer for offer in offers if offer.price_per_hr <= 0.50]
+          eligible = [offer for offer in offers if offer.gpu_type_id == 'NVIDIA L4' and offer.price_per_hr <= 0.50]
           if not eligible:
-              raise SystemExit('No reviewed in-stock GPU below $0.50/hr; no pod created')
+              raise SystemExit('No in-stock L4 below $0.50/hr; no pod created')
           selected = eligible[0]
           print(f'One experiment candidate: {selected.gpu_type_id} at ${selected.price_per_hr:.2f}/hr')
           config['gpu_tiers'] = [{'name': 'experiment', 'gpu_type_ids': [selected.gpu_type_id]}]

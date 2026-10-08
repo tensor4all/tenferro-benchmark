@@ -34,7 +34,7 @@ measurement, not a single-core numerical benchmark. These observations cannot
 exclude RunPod-host or remote CDN contention; three pairs are limited evidence.
 Any failed gate makes the complete experiment INCONCLUSIVE.
 
-A live-priced reviewed candidate at <= $0.50/hour is selected, with one create
+A live-priced reviewed L4 at <= $0.50/hour is selected, with one create
 attempt and no candidate escalation. Downloads have three-minute step bounds,
 the paid job has a 20-minute bound, and the existing cleanup always deletes the
 pod. Setup/provision time and failure costs are separate from the primary metric.
@@ -47,3 +47,8 @@ The reporting tests cover incomplete samples and the predeclared noise gates.
 Actual paid results and confirmed deletion will be linked here after execution.
 No production tenferro-rs change is promoted on the strength of the earlier
 HTTP Range probe.
+
+The first two allocation attempts selected A5000 from live pricing but received
+HTTP 500 (no available instances) before any pod was created. No measurements
+or paid time were produced. Selection now targets L4, which successfully
+registered in benchmark run `37779219119`, under the same price limit.
