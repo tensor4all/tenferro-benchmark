@@ -19,14 +19,19 @@ sudo apt-get install -y --no-install-recommends zstd \
   cuda-cudart-12-8=12.8.90-1 cuda-nvrtc-12-8=12.8.93-1 \
   libcublas-12-8=12.8.5.5-1 libcusolver-12-8=11.7.3.90-1 \
   libcusparse-12-8=12.5.8.93-1 libnvjitlink-12-8=12.8.93-1 \
+  cuda-cudart-dev-12-8=12.8.90-1 cuda-cccl-12-8=12.8.90-1 \
+  cuda-crt-12-8=12.8.93-1 \
   libcutensor2=2.2.0.0-1
 # Preserve soname symlinks, excluding compiler, static archives and driver stubs.
 find /usr/local/cuda-12.8/targets/x86_64-linux/lib -maxdepth 1 -name '*.so*' \
   -exec cp -a -t "$runtime_root/cuda/lib64" {} +
 find /usr/lib/x86_64-linux-gnu/libcutensor/12 -maxdepth 1 -name '*.so*' \
   -exec cp -a -t "$runtime_root/cutensor/lib" {} +
+cp -a /usr/local/cuda-12.8/targets/x86_64-linux/include "$runtime_root/cuda/include"
 dpkg-query -W 'cuda-cudart-12-8' 'cuda-nvrtc-12-8' 'libcublas-12-8' \
-  'libcusolver-12-8' 'libcusparse-12-8' 'libnvjitlink-12-8' 'libcutensor2' > "$runtime_root/runtime-packages.txt"
+  'libcusolver-12-8' 'libcusparse-12-8' 'libnvjitlink-12-8' 'libcutensor2' \
+  'cuda-cudart-dev-12-8' 'cuda-cccl-12-8' 'cuda-crt-12-8' > "$runtime_root/runtime-packages.txt"
+python3 scripts/ci/check_cuda_headers.py --cuda-root "$runtime_root/cuda"
 
 cp "$(command -v uv)" "$runtime_root/bin/uv"
 export UV_PYTHON_INSTALL_DIR="$runtime_root/python"

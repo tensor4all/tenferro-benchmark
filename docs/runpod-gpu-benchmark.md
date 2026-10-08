@@ -57,11 +57,13 @@ and verifies the artifact before sampling. Missing, stale, or modified artifacts
 fail rather than silently rebuilding on a paid GPU.
 
 Another hosted Ubuntu 24.04 job prepares a managed Python 3.12.12 interpreter,
-the frozen `uv.lock` environment, CUDA 12.8 shared runtime libraries, and
+the frozen `uv.lock` environment, CUDA 12.8 shared runtime libraries and JIT headers, and
 cuTENSOR 2.2.0.0. JAX CUDA wheels are included only when `jax-cuda` is requested;
 their versions are also locked (`gpu` extra). The runtime archive is cached by
 the lockfile, preparation scripts, platform, and tool versions. Only `main`
-writes the shared cache. Both preparation jobs must finish before renting a GPU.
+writes the shared cache. The hosted job compiles a CubeCL-style source with
+the bundled NVRTC and CUDA/CCCL headers without requiring a GPU. Both
+preparation jobs must finish before renting a GPU.
 
 The runtime is created and restored at `/opt/tenferro-benchmark-ci` on both
 hosts. This preserves Python virtualenv interpreter links and script paths;

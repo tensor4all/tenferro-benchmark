@@ -351,6 +351,7 @@ jobs:
           set -euo pipefail
           nvidia-smi
           cat /opt/tenferro-benchmark-ci/runtime-packages.txt
+          python3 scripts/ci/check_cuda_headers.py --cuda-root "$CUDA_HOME"
           uv run python - <<'PY'
           import ctypes
           import torch
