@@ -16,9 +16,14 @@ def fixture(operation):
             def check(y):
                 assert bool((y[:4096].double() == x[:4096]).all())
             return lambda: x.to(torch.float32), check, n*4
+        # Same logical [8192,4096] values as Rust's column-major reshape.
+        # Prepare the metadata-only view outside timing; clone materializes
+        # a fresh output and preserves the column-major compact layout.
+        view = x.reshape(4096,8192).T
         def check(y):
-            assert bool((y.flatten()[:4096] == x[:4096]).all())
-        return lambda: x.reshape(4096,8192).clone(), check, n*8
+            assert tuple(y.shape) == (8192,4096)
+            assert bool((y.T.flatten()[:4096] == x[:4096]).all())
+        return lambda: view.clone(), check, n*8
     if operation == "ifft-pattern":
         # Exact periodic values used by the maintained FFT suite.
         i = np.arange(2048, dtype=np.uint64)

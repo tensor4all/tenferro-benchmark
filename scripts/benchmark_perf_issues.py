@@ -63,6 +63,13 @@ def torch_case(case):
 
     p = case["params"]
     kind = case["kind"]
+    if kind == "cpu_gap_mwe":
+        from cpu_gap_mwe_python import fixture
+        op, validate, retained = fixture(p["operation"])
+        def check():
+            validate(op())
+            return 0.0  # assertion checks against the analytical solution
+        return op, check, retained, [p["operation"], "intrinsic output allocation", "Python dispatch"]
     if kind == "decode_projection":
         din, dout, length = p["in"], p["out"], p["len"]
         # Same logical x (in, len) and W (in, out) as the Rust arms; PyTorch's
