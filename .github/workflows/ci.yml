@@ -1,0 +1,102 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.repository == 'tensor4all/tenferro-benchmark'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Install Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.10"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev libomp-dev cmake build-essential
+
+      - name: Prepare Python environment
+        run: uv sync --frozen || uv sync
+
+      - name: Setup external dependencies
+        run: ./scripts/setup_extern_deps.sh
+
+      - name: Validate benchmark suite YAML files
+        run: |
+          uv run python scripts/validate_benchmark_suite.py \
+            benchmarks/cpu/einsum.yaml \
+            benchmarks/cpu/public_api.yaml \
+            benchmarks/cpu/fft.yaml \
+            benchmarks/cpu/permutation.yaml \
+            benchmarks/cpu/cpu_ops.yaml \
+            benchmarks/cpu/session_matrix.yaml \
+            benchmarks/cpu/small_work.yaml \
+            benchmarks/cpu/perf_issues.yaml \
+            benchmarks/cpu/confirmation.yaml \
+            benchmarks/gpu/dense.yaml \
+            benchmarks/gpu/einsum.yaml \
+            benchmarks/gpu/sparse.yaml \
+            benchmarks/gpu/linalg_jvp_vjp.yaml \
+            benchmarks/gpu/linalg_ad_latency.yaml \
+            benchmarks/gpu/elementwise.yaml \
+            benchmarks/gpu/perf_issues.yaml
+
+      - name: Check Python scripts compile
+        run: |
+          uv run python -m py_compile \
+            scripts/generate_results_index.py \
+            scripts/validate_benchmark_suite.py \
+            scripts/collect_run_metadata.py \
+            scripts/format_results.py
+
+      - name: Run shell validation tests
+        run: |
+          bash tests/test_suite_result_layout.sh
+          bash tests/test_run_all_docs_outputs.sh
+          bash tests/test_clean_extern_deps.sh
+          bash tests/test_setup_extern_tenferro_checkout.sh
+
+      - name: Run Python unit tests
+        run: |
+          uv run python -m unittest \
+            tests/test_session_matrix_suite.py \
+            tests/test_route_contract.py \
+            tests/test_route_coverage.py \
+            tests/test_regression_detector.py \
+            tests/test_small_work_suite.py
+
+      - name: Build and test C++ einsum plan
+        run: |
+          cmake -S cpp -B build/cpp-plan-test
+          cmake --build build/cpp-plan-test --target einsum_plan_test
+          ctest --test-dir build/cpp-plan-test --output-on-failure
+
+      - name: Cargo check
+        run: cargo check --all-targets
