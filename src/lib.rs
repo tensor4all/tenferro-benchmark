@@ -1,14 +1,3 @@
-// Every CPU provider feature (and the GPU features, which also pull in
-// tenferro-cpu) needs this; the scripts build with --no-default-features.
-#[cfg(any(
-    feature = "cpu-faer",
-    feature = "system-openblas",
-    feature = "system-accelerate",
-    feature = "system-mkl",
-    feature = "cuda",
-    feature = "webgpu"
-))]
-pub mod cpu_provider;
 pub mod tensornetwork;
 pub mod thread_enforcement;
 
@@ -19,6 +8,18 @@ use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
     CompiledGraph, CompilerOptions, DType, GraphCompiler, OptimizerConfig, TraceContext,
 };
+
+/// The compiled tenferro CPU backend as this harness names it in result rows:
+/// `faer` for the `native` build, `blas` for a vendor BLAS build. tenferro-rs
+/// #2004 made the backend a compile-time choice, so the compiled provider id is
+/// the only authority for what a row measured.
+pub fn compiled_cpu_provider() -> &'static str {
+    if tenferro_cpu::cpu_provider_id() == "tenferro.cpu.blas" {
+        "blas"
+    } else {
+        "faer"
+    }
+}
 
 pub struct CompiledEinsum {
     pub program: CompiledGraph,

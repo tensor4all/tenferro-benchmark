@@ -35,7 +35,7 @@ cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-main/scripts/cpu_blas_prov
     bash scripts/setup_extern_deps.sh >"$TMP/project-main.log" 2>&1
 
   test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$NEW_COMMIT"
-  grep -q 'TENFERRO_CPU_FEATURES=system-accelerate' "$TMP/project-main.log"
+  grep -q 'TENFERRO_CPU_FEATURES=blas-accelerate' "$TMP/project-main.log"
   if grep -q 'OPENBLAS_ROOT=' "$TMP/project-main.log"; then
     echo "macOS Accelerate setup should not require or export OPENBLAS_ROOT" >&2
     cat "$TMP/project-main.log" >&2

@@ -331,18 +331,6 @@ routes:
     entrypoint: TensorEinsumExt::einsum
     dims: {execution_path: concrete-einsum, output: allocating, representation: owned, layout: direct, session_boundary: shared-session, provider: faer}
     cases: ["cpu/session_matrix:chain3_f64_n4_einsum_alloc[faer]"]
-  - route_id: batch_policy_backend_override
-    entrypoint: CpuBackend::with_batch_policy
-    dims: {execution_path: concrete, policy: backend default override, coverage: full}
-    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096[faer]", "cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096[faer]"]
-  - route_id: batch_policy_scoped_override
-    entrypoint: with_batch_policy
-    dims: {execution_path: concrete, policy: scoped override, coverage: full}
-    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096[faer]", "cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096[faer]"]
-  - route_id: batch_policy_lane_cost_model
-    entrypoint: CpuBatchThresholds::with_lane_min_work_ns
-    dims: {execution_path: concrete, policy: lane cost model override, coverage: full}
-    cases: ["cpu/session_matrix:bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0[faer]", "cpu/session_matrix:bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0[faer]"]
   - route_id: einsum_prepared_repeat
     entrypoint: ConcreteEinsumPlan::execute
     dims: {execution_path: concrete-prepared, output: allocating, representation: owned, session_boundary: shared-session}

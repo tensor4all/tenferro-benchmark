@@ -19,39 +19,42 @@ assert_eq() {
 }
 
 BENCHMARK_HOST_OS=Darwin
-assert_eq system-accelerate "$(normalize_cpu_blas_features "")" "darwin default"
-assert_eq system-accelerate "$(normalize_cpu_blas_features system-openblas)" "darwin openblas override"
-assert_eq system-accelerate "$(normalize_cpu_blas_features system-accelerate)" "darwin accelerate"
-assert_eq system-mkl "$(normalize_cpu_blas_features system-mkl)" "darwin mkl"
-assert_eq cpu-faer "$(normalize_cpu_blas_features cpu-faer)" "darwin faer"
-assert_eq accelerate "$(blas_impl_for_features system-accelerate)" "accelerate blas metadata"
-assert_eq mkl "$(blas_impl_for_features system-mkl)" "mkl blas metadata"
-assert_eq none "$(blas_impl_for_features cpu-faer)" "faer blas metadata"
+assert_eq blas-accelerate "$(normalize_cpu_blas_features "")" "darwin default"
+assert_eq blas-accelerate "$(normalize_cpu_blas_features blas-openblas)" "darwin openblas override"
+assert_eq blas-accelerate "$(normalize_cpu_blas_features blas-accelerate)" "darwin accelerate"
+assert_eq blas-mkl "$(normalize_cpu_blas_features blas-mkl)" "darwin mkl"
+assert_eq native "$(normalize_cpu_blas_features native)" "darwin native"
+assert_eq accelerate "$(blas_impl_for_features blas-accelerate)" "accelerate blas metadata"
+assert_eq mkl "$(blas_impl_for_features blas-mkl)" "mkl blas metadata"
+assert_eq none "$(blas_impl_for_features native)" "native blas metadata"
 
 unset OPENBLAS_ROOT MKLROOT
-ensure_blas_env_for_features system-accelerate
+ensure_blas_env_for_features blas-accelerate
 test -z "${OPENBLAS_ROOT:-}"
 
 BENCHMARK_HOST_OS=Linux
-assert_eq system-openblas "$(normalize_cpu_blas_features "")" "linux default"
-assert_eq system-openblas "$(normalize_cpu_blas_features system-openblas)" "linux openblas"
-assert_eq system-mkl "$(normalize_cpu_blas_features system-mkl)" "linux mkl"
-assert_eq openblas "$(blas_impl_for_features system-openblas)" "openblas metadata"
+assert_eq blas-openblas "$(normalize_cpu_blas_features "")" "linux default"
+assert_eq blas-openblas "$(normalize_cpu_blas_features blas-openblas)" "linux openblas"
+assert_eq blas-mkl "$(normalize_cpu_blas_features blas-mkl)" "linux mkl"
+assert_eq openblas "$(blas_impl_for_features blas-openblas)" "openblas metadata"
+assert_eq none "$(blas_impl_for_features native)" "native blas metadata"
 
-if ensure_blas_env_for_features system-openblas 2>"$TMP/cpu_blas_provider_test.err"; then
+if ensure_blas_env_for_features blas-openblas 2>"$TMP/cpu_blas_provider_test.err"; then
   echo "linux openblas without OPENBLAS_ROOT should fail" >&2
   exit 1
 fi
+grep -q 'blas-openblas' "$TMP/cpu_blas_provider_test.err" || { echo "openblas error should name blas-openblas" >&2; exit 1; }
 
-if ensure_blas_env_for_features system-mkl 2>"$TMP/cpu_blas_provider_test.err"; then
+if ensure_blas_env_for_features blas-mkl 2>"$TMP/cpu_blas_provider_test.err"; then
   echo "linux mkl without MKLROOT should fail" >&2
   exit 1
 fi
+grep -q 'blas-mkl' "$TMP/cpu_blas_provider_test.err" || { echo "mkl error should name blas-mkl" >&2; exit 1; }
 
 mkl_root="$TMP/mkl"
 mkdir -p "$mkl_root/lib" "$mkl_root/include"
 MKLROOT="$mkl_root"
-ensure_blas_env_for_features system-mkl
+ensure_blas_env_for_features blas-mkl
 assert_eq "$mkl_root" "$MKLROOT" "mkl root export"
 case ":${LD_LIBRARY_PATH:-}:" in
   *":$mkl_root/lib:"*) ;;

@@ -139,16 +139,10 @@ runners or `Torch_DIR`. The opt-in `.devcontainer/openblas/` image source-builds
 PyTorch Python to match tenferro's OpenBLAS provider; it is not a LibTorch runner.
 
 On Linux CPU devcontainer runs, PyTorch uses the installed wheel's MKL-backed
-provider. For fair CPU comparisons, run tenferro-rs with `system-mkl` inside the
-devcontainer rather than the default `system-openblas` path. Record the detected
+provider. For fair CPU comparisons, run tenferro-rs with `blas-mkl` inside the
+devcontainer rather than the default `blas-openblas` path. Record the detected
 PyTorch provider in `run.yaml` using `torch.__config__.show()` and linked
 library inspection.
-
-tprims provider comparisons (`--features tprims`, tenferro-rs #1953) compare a
-default build with a `--features tprims` build of the same commits and pin to
-idle cores of one L3 domain as described in
-[docs/tprims-provider.md](docs/tprims-provider.md); they are an exception to
-the devcontainer suites' no-pinning convention and say so in the result.
 
 ## macOS CPU Workflow
 
@@ -218,7 +212,7 @@ Run these checks after changing the public API suite or its update path:
 
 ```bash
 bash -n scripts/run_cpu_public_api.sh scripts/benchmark_host_idle.sh
-cargo check --features system-accelerate --bin benchmark_cpu_public_api
+cargo check --no-default-features --features blas-accelerate --bin benchmark_cpu_public_api
 uv run python -m py_compile scripts/benchmark_cpu_public_api_python.py \
   scripts/benchmark_cpu_public_api_jax.py scripts/format_cpu_ops_results.py
 uv run python scripts/validate_benchmark_suite.py benchmarks/cpu/public_api.yaml
@@ -234,8 +228,8 @@ variables, as required by the benchmark-result policy.
 
 Use the devcontainer/Docker path for Linux CPU measurements. **Always run Linux
 CPU benchmark collection inside the devcontainer.** The default image uses
-`system-mkl` to match the PyTorch wheel. For provider-matched OpenBLAS comparisons,
-use `.devcontainer/openblas/devcontainer.json` and `system-openblas` instead;
+`blas-mkl` to match the PyTorch wheel. For provider-matched OpenBLAS comparisons,
+use `.devcontainer/openblas/devcontainer.json` and `blas-openblas` instead;
 see `docs/linux-cpu-devcontainer.md`. Keep its `BENCHMARK_TORCH_WHEEL` setting
 when recreating `.venv`, and verify the runtime provider before collecting.
 Do not present differences from historical MKL runs as implementation speedups.
@@ -246,21 +240,19 @@ was created from the current `.devcontainer/Dockerfile` and
 or required tools and libraries are missing, recreate it with
 `devcontainer up --workspace-folder . --remove-existing-container`. In
 particular, verify that `MKLROOT` resolves to an installed oneMKL tree before a
-`system-mkl` run; do not silently fall back to an older image or another BLAS
+`blas-mkl` run; do not silently fall back to an older image or another BLAS
 backend.
 
 ```bash
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=system-mkl
-  export PUBLICATION_GATE_FEATURES=system-mkl
-  export TENFERRO_CPU_BACKEND_KIND=blas
+  export TENFERRO_CPU_FEATURES=blas-mkl
+  export PUBLICATION_GATE_FEATURES=blas-mkl
   export BENCHMARK_TARGET_PROFILE=amd-cpu
   ./scripts/run_all.sh 1'
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=system-mkl
-  export PUBLICATION_GATE_FEATURES=system-mkl
-  export TENFERRO_CPU_BACKEND_KIND=blas
+  export TENFERRO_CPU_FEATURES=blas-mkl
+  export PUBLICATION_GATE_FEATURES=blas-mkl
   export BENCHMARK_TARGET_PROFILE=amd-cpu
   ./scripts/run_all.sh 4'
 ```
@@ -277,8 +269,7 @@ image:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=system-mkl
-  export TENFERRO_CPU_BACKEND_KIND=blas
+  export TENFERRO_CPU_FEATURES=blas-mkl
   export BENCHMARK_TARGET_PROFILE=amd-cpu
   export PERMUTATION_EXTRA_FEATURES=hptt
   ./scripts/run_permutation.sh 1 4'
@@ -289,7 +280,7 @@ Thread counts are controlled only via the runner's thread environment
 thread count in `run_t<N>.yaml`); no `taskset` / `numactl` CPU-affinity pinning
 is applied, matching the other devcontainer CPU suites.
 
-`OPENBLAS_ROOT=/opt/openblas` is also configured for tenferro `system-openblas`
+`OPENBLAS_ROOT=/opt/openblas` is also configured for tenferro `blas-openblas`
 runs, but treat that as an alternate backend for experiments, not the standard
 Linux CPU comparison path. The devcontainer OpenBLAS is source-built with
 threading enabled; verify this with the OpenBLAS runtime API, not `strings`,
@@ -331,14 +322,13 @@ alias. To run specific thread counts, pass them explicitly:
 ```
 
 When updating this report, **run it inside the Linux devcontainer with tenferro-rs
-`system-mkl`** so the report matches PyTorch's MKL-backed CPU path:
+`blas-mkl`** so the report matches PyTorch's MKL-backed CPU path:
 
 ```bash
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=system-mkl
-  export PUBLICATION_GATE_FEATURES=system-mkl
-  export TENFERRO_CPU_BACKEND_KIND=blas
+  export TENFERRO_CPU_FEATURES=blas-mkl
+  export PUBLICATION_GATE_FEATURES=blas-mkl
   ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
 ```
 
@@ -346,9 +336,8 @@ For an alternate tenferro OpenBLAS run:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=system-openblas
-  export PUBLICATION_GATE_FEATURES=system-openblas
-  export TENFERRO_CPU_BACKEND_KIND=blas
+  export TENFERRO_CPU_FEATURES=blas-openblas
+  export PUBLICATION_GATE_FEATURES=blas-openblas
   ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
 ```
 
@@ -484,18 +473,17 @@ versioned manifests under `benchmarks/cpu/manifests/`) separate from effort
 (`BENCH_EFFORT=scan|standard|confirm|aa`). A scan only flags suspects; a
 performance claim needs a paired, balanced, A/A-characterized confirmation run
 with a declared `benchmarks/cpu/confirmation.yaml` (never fill its thresholds
-from candidate data). Route-contract diagnostics (`scripts/run_route_diagnostic.sh`)
-are counter runs, never timing. Unsupported, failed, missing and unselected
+from candidate data). Unsupported, failed, missing and unselected
 cases never count as covered. Regenerate `cpu/session_matrix` cases with
 `scripts/generate_session_matrix_cases.py` and bump its manifest version when
 cases change. Checks:
 
 ```bash
-uv run python -m unittest tests/test_session_matrix_suite.py tests/test_route_contract.py \
+uv run python -m unittest tests/test_session_matrix_suite.py \
   tests/test_route_coverage.py tests/test_regression_detector.py tests/test_small_work_suite.py
 uv run python scripts/route_coverage.py entrypoints
 bash tests/test_paired_timing_guard.sh
-cargo test --bin cpu_route_diagnostic --bin benchmark_cpu_session
+cargo test --bin benchmark_cpu_session
 ```
 
 ## Short-operation sampling

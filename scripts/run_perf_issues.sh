@@ -24,7 +24,7 @@ PYTHON="$PROJECT_DIR/.venv/bin/python"
 "$PYTHON" "$SCRIPT_DIR/generate_perf_issue_cases.py" --check
 "$PYTHON" "$SCRIPT_DIR/validate_benchmark_suite.py" benchmarks/cpu/perf_issues.yaml
 # Build once before sequential timing collection.
-cargo build --release --features "$TENFERRO_CPU_FEATURES" --bin perf_issue_case
+cargo build --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin perf_issue_case
 BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/perf_issue_case"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
 "$PYTHON" -c 'from scripts.benchmark_layout import safe_target_profile; import sys; safe_target_profile(sys.argv[1])' "$BENCHMARK_TARGET_PROFILE"

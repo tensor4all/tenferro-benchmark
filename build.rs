@@ -12,18 +12,11 @@ use std::path::PathBuf;
 /// its own `CARGO_TARGET_DIR` (scripts/build_for_tenferro_rev.sh does that).
 fn probe_tenferro_apis() {
     let root = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("extern/tenferro-rs");
-    let probes = [
-        (
-            "tenferro_lane_cost_policy",
-            "crates/tenferro-cpu/src/batch_policy.rs",
-            "pub fn with_lane_min_work_ns",
-        ),
-        (
-            "tenferro_session_einsum",
-            "crates/tenferro-einsum/src/eager_ad.rs",
-            "pub trait EagerSessionEinsumExt",
-        ),
-    ];
+    let probes = [(
+        "tenferro_session_einsum",
+        "crates/tenferro-einsum/src/eager_ad.rs",
+        "pub trait EagerSessionEinsumExt",
+    )];
     for (cfg, file, needle) in probes {
         println!("cargo:rustc-check-cfg=cfg({cfg})");
         let path = root.join(file);
@@ -42,40 +35,40 @@ fn probe_tenferro_apis() {
 
 fn main() {
     probe_tenferro_apis();
-    let system_openblas = env::var_os("CARGO_FEATURE_SYSTEM_OPENBLAS").is_some();
-    let system_accelerate = env::var_os("CARGO_FEATURE_SYSTEM_ACCELERATE").is_some();
-    let system_mkl = env::var_os("CARGO_FEATURE_SYSTEM_MKL").is_some();
-    let system_blas_features = [
-        ("system-openblas", system_openblas),
-        ("system-accelerate", system_accelerate),
-        ("system-mkl", system_mkl),
+    let blas_openblas = env::var_os("CARGO_FEATURE_BLAS_OPENBLAS").is_some();
+    let blas_accelerate = env::var_os("CARGO_FEATURE_BLAS_ACCELERATE").is_some();
+    let blas_mkl = env::var_os("CARGO_FEATURE_BLAS_MKL").is_some();
+    let vendor_features = [
+        ("blas-openblas", blas_openblas),
+        ("blas-accelerate", blas_accelerate),
+        ("blas-mkl", blas_mkl),
     ];
-    let enabled_system_blas_features: Vec<&str> = system_blas_features
+    let enabled_vendor_features: Vec<&str> = vendor_features
         .iter()
         .filter_map(|(name, enabled)| enabled.then_some(*name))
         .collect();
-    if enabled_system_blas_features.len() > 1 {
+    if enabled_vendor_features.len() > 1 {
         panic!(
             "features `{}` cannot be enabled together",
-            enabled_system_blas_features.join("`, `")
+            enabled_vendor_features.join("`, `")
         );
     }
 
-    if system_accelerate {
+    if blas_accelerate {
         println!("cargo:rustc-link-lib=framework=Accelerate");
         return;
     }
 
-    if system_openblas {
+    if blas_openblas {
         configure_openblas();
-    } else if system_mkl {
+    } else if blas_mkl {
         configure_mkl();
     }
 }
 
 fn configure_openblas() {
     let root = env::var("OPENBLAS_ROOT")
-        .expect("OPENBLAS_ROOT must be set when building with feature `system-openblas`");
+        .expect("OPENBLAS_ROOT must be set when building with feature `blas-openblas`");
     let root = PathBuf::from(root);
     let lib_dir = root.join("lib");
     let include_dir = root.join("include");
@@ -108,7 +101,7 @@ fn configure_openblas() {
 
 fn configure_mkl() {
     let root =
-        env::var("MKLROOT").expect("MKLROOT must be set when building with feature `system-mkl`");
+        env::var("MKLROOT").expect("MKLROOT must be set when building with feature `blas-mkl`");
     let root = PathBuf::from(root);
     let lib_dir = root.join("lib");
     let lib_intel64_dir = root.join("lib").join("intel64");

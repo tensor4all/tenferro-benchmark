@@ -11,7 +11,7 @@ export BENCHMARK_TARGET_PROFILE=mac-cpu
 
 BLAS policy:
 
-- tenferro BLAS-backed runs use `system-accelerate`.
+- tenferro BLAS-backed runs use `blas-accelerate`.
 - PyTorch uses the installed Python wheel provider and records it in metadata.
 - JAX is reported as XLA CPU, not as an Accelerate/OpenBLAS/MKL row.
 

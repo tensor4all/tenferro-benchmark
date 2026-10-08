@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Regression detector on synthetic report fixtures (tenferro-rs #1946 B5).
 
-Covers missing cases, route mismatches, changed baselines, route-contract
-failures, noisy data (INCONCLUSIVE), unbalanced order, A/A noise, and a
-deliberate timing regression that only confirmation mode may call a regression.
+Covers missing cases, changed baselines, numerical/liveness/unsupported failures,
+noisy data (INCONCLUSIVE), unbalanced order, A/A noise, and a deliberate timing
+regression that only confirmation mode may call a regression.
 """
 import copy
 import json
@@ -60,7 +60,7 @@ def declared_config(path, **overrides):
     config = yaml.safe_load((ROOT / "benchmarks/cpu/confirmation.yaml").read_text())
     config.update(status="declared", declared_before_candidate_results="2026-09-29T00:00:00Z",
                   library={"baseline_commit": BASE, "candidate_commit": CAND},
-                  harness_commit=HARNESS, build={"profile": "release", "features": "cpu-faer"},
+                  harness_commit=HARNESS, build={"profile": "release", "features": "native"},
                   host={"target_profile": "amd-cpu", "hostname": "h", "affinity": "none",
                         "provider": "faer"},
                   threads=[4], cases={"suite_id": "cpu/session_matrix", "manifest_version": 3,
@@ -120,14 +120,25 @@ class ScanTest(unittest.TestCase):
         self.assertEqual(code, 2, out)
         self.assertIn("MISSING", out)
 
-    def test_route_mismatch_and_changed_baseline(self):
+    def test_changed_baseline_is_deterministic(self):
         b = write_run(self.tmp / "b", [row(KEY_A, 1000)])
-        c = write_run(self.tmp / "c", [row(KEY_A, 1000, workers=1)], manifest=4)
+        c = write_run(self.tmp / "c", [row(KEY_A, 1000)], manifest=4)
         code, out = run("scan", "--baseline", b, "--candidate", c)
         self.assertEqual(code, 2, out)
-        self.assertIn("ROUTE_MISMATCH", out)
-        self.assertIn("worker_count", out)
         self.assertIn("CHANGED_BASELINE", out)
+
+    def test_worker_or_provider_mismatch_is_deterministic(self):
+        b = write_run(self.tmp / "b", [row(KEY_A, 1000), row(KEY_B, 500)])
+        c = write_run(self.tmp / "c", [row(KEY_A, 1000, workers=1), row(KEY_B, 500)])
+        code, out = run("scan", "--baseline", b, "--candidate", c)
+        self.assertEqual(code, 2, out)
+        self.assertIn("CHANGED_BASELINE", out)
+        self.assertIn("worker_count", out)
+        other = dict(row(KEY_B, 500), provider="blas")
+        c2 = write_run(self.tmp / "c2", [row(KEY_A, 1000), other])
+        code, out = run("scan", "--baseline", b, "--candidate", c2)
+        self.assertEqual(code, 2, out)
+        self.assertIn("provider", out)
 
     def test_numerical_liveness_and_unsupported_failures(self):
         b = write_run(self.tmp / "b", [row(KEY_A, 1000), row(KEY_B, 500)])
@@ -142,21 +153,6 @@ class ScanTest(unittest.TestCase):
         code, out = run("scan", "--baseline", b, "--candidate", c2)
         self.assertEqual(code, 2, out)
         self.assertIn("NEWLY_UNSUPPORTED", out)
-
-    def test_route_contract_failure_is_deterministic(self):
-        b = write_run(self.tmp / "b", [row(KEY_A, 1000)])
-        c = write_run(self.tmp / "c", [row(KEY_A, 1000)])
-        rc_dir = self.tmp / "rc"
-        rc_dir.mkdir()
-        (rc_dir / "diagnostics_t4.jsonl").write_text(
-            (ROOT / "tests/fixtures/route_contract/baseline_t4.jsonl").read_text())
-        subprocess.run([sys.executable, str(ROOT / "scripts/route_contract.py"), "--run-dir", rc_dir],
-                       capture_output=True)
-        code, out = run("scan", "--baseline", b, "--candidate", c, "--route-contract", rc_dir)
-        self.assertEqual(code, 2, out)
-        self.assertIn("ROUTE_CONTRACT_FAILURE", out)
-        self.assertIn("bdot_f64_b1024_m4n4k4_direct_auto@t4", out)
-
 
 class ConfirmTest(unittest.TestCase):
     def setUp(self):

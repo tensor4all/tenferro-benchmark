@@ -71,7 +71,7 @@ def main():
     config = yaml.safe_load((ROOT/"benchmarks/cpu/confirmation.yaml").read_text())
     config.update(status="declared", declared_before_candidate_results=datetime.now(timezone.utc).isoformat(),
         library={"baseline_commit": library_commit, "candidate_commit": library_commit},
-        harness_commit=harness_commit, build={"profile": "release", "features": ["system-mkl"]},
+        harness_commit=harness_commit, build={"profile": "release", "features": ["blas-mkl"]},
         host={"target_profile": "amd-cpu", "hostname": subprocess.check_output(["hostname"], text=True).strip(),
               "affinity": "none (thread env only)", "provider": "MKL; versions independently recorded"},
         threads=[1, 4], cases={"suite_id": "cpu/perf_issues", "manifest_version": "new MWE cases pending issue assignment",

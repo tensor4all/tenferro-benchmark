@@ -12,7 +12,7 @@ use std::time::Instant;
 use num_complex::Complex64;
 use serde::Serialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend, CpuBackendKind};
+use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
     BackendSession, BackendSessionHost, CompiledGraph, DType, GraphCompiler, Runtime,
@@ -2097,16 +2097,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         return Err("owned-input tiers require col_major_contiguous layout".into());
     }
 
-    // Construct exactly one CPU backend per process, and capture its actual provider
-    // before moving it into an eager runtime where applicable.
-    let backend = match std::env::var("TENFERRO_CPU_BACKEND_KIND").as_deref() {
-        Ok("blas") => CpuBackend::with_kind(CpuBackendKind::Blas)?,
-        Ok("faer") => CpuBackend::with_kind(CpuBackendKind::Faer)?,
-        Ok("") | Ok("default") | Err(_) => CpuBackend::new(),
-        Ok(other) => return Err(format!("unsupported CPU backend: {other}").into()),
-    };
-    let backend = tenferro_einsum_benchmark::cpu_provider::configure(backend)?;
-    let provider = format!("{:?}", backend.kind()).to_ascii_lowercase();
+    // Construct exactly one CPU backend per process (tenferro-rs #2004: a build
+    // compiles exactly one), and record the compiled provider in the rows.
+    let backend = CpuBackend::new();
+    let provider = tenferro_einsum_benchmark::compiled_cpu_provider();
     let operand_shapes = arg("--operand-shapes", "");
     if !operand_shapes.is_empty() {
         let einsum = GenericEinsum::parse(&arg("--subscripts", "ij,jk->ik"), &operand_shapes)?;

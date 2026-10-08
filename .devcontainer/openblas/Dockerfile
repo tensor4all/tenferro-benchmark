@@ -60,9 +60,8 @@ FROM base AS benchmark
 COPY --from=pytorch-builder /opt/pytorch-wheels /opt/pytorch-wheels
 COPY .devcontainer/openblas/verify_provider.py /usr/local/bin/verify-openblas-pytorch
 
-ENV TENFERRO_CPU_FEATURES=system-openblas \
-    PUBLICATION_GATE_FEATURES=system-openblas \
-    TENFERRO_CPU_BACKEND_KIND=blas \
+ENV TENFERRO_CPU_FEATURES=blas-openblas \
+    PUBLICATION_GATE_FEATURES=blas-openblas \
     BENCHMARK_TARGET_PROFILE=amd-cpu \
     BENCHMARK_TORCH_WHEEL=/opt/pytorch-wheels/torch.whl \
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 RAYON_NUM_THREADS=1 \

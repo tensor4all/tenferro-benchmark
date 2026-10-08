@@ -21,7 +21,9 @@ prepare_cpu_benchmark_python_venv "$PROJECT_DIR"
 # shellcheck source=scripts/cpu_blas_provider.sh
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
-PUBLICATION_GATE_FEATURES="$(normalize_cpu_blas_features "${PUBLICATION_GATE_FEATURES:-}")"
+# Follow the run's CPU feature selection so the CPU-ops rows and the rest of the
+# run describe one provider; an explicit PUBLICATION_GATE_FEATURES still wins.
+PUBLICATION_GATE_FEATURES="$(normalize_cpu_blas_features "${PUBLICATION_GATE_FEATURES:-${TENFERRO_CPU_FEATURES:-}}")"
 export PUBLICATION_GATE_FEATURES
 export PUBLICATION_GATE_TENFERRO_MODE="${PUBLICATION_GATE_TENFERRO_MODE:-both}"
 
@@ -72,7 +74,7 @@ with open(out_path, "w", newline="") as f:
         if phase and phase != "primal":
             benchmark = f"{benchmark}_{phase}"
         backend = row["backend"]
-        if backend in {"cpu-faer", "system-openblas", "system-accelerate", "system-mkl", "cuda"}:
+        if backend in {"native", "blas-openblas", "blas-accelerate", "blas-mkl", "cuda"}:
             backend = "tenferro-eager"
         writer.writerow(
             {

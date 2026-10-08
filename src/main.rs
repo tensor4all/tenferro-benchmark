@@ -11,7 +11,7 @@ use std::time::{Duration, Instant};
 
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
-use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend, CpuBackendKind};
+use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
 use tenferro_einsum::{ContractionTree, EagerSessionEinsumExt, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_runtime::{Runtime, Tensor};
@@ -143,27 +143,15 @@ fn bind_operands<'a>(
     Ok(operands.iter().collect())
 }
 
-fn cpu_backend_from_env() -> Result<CpuBackend, String> {
-    match std::env::var("TENFERRO_CPU_BACKEND_KIND")
-        .unwrap_or_else(|_| "default".into())
-        .to_ascii_lowercase()
-        .as_str()
-    {
-        "default" | "" => tenferro_einsum_benchmark::cpu_provider::configure(CpuBackend::new()),
-        "blas" => CpuBackend::with_kind(CpuBackendKind::Blas)
-            .map_err(|e| e.to_string())
-            .and_then(tenferro_einsum_benchmark::cpu_provider::configure),
-        "faer" => CpuBackend::with_kind(CpuBackendKind::Faer)
-            .map_err(|e| e.to_string())
-            .and_then(tenferro_einsum_benchmark::cpu_provider::configure),
-        other => Err(format!(
-            "unknown TENFERRO_CPU_BACKEND_KIND={other:?}; use default, blas, or faer"
-        )),
-    }
+/// The compiled CPU backend. tenferro-rs #2004 made it a compile-time choice
+/// (exactly one of `native` or `blas`), so nothing selects it at runtime;
+/// `tenferro_cpu::cpu_provider_id()` reports which one this build contains.
+fn cpu_backend() -> CpuBackend {
+    CpuBackend::new()
 }
 
 fn cpu_runtime_with_einsum() -> Result<Runtime, String> {
-    let backend = cpu_backend_from_env()?;
+    let backend = cpu_backend();
     let mut builder = Runtime::builder();
     builder
         .register_engine(runtime_engine_registration(&backend).map_err(|e| e.to_string())?)
@@ -686,7 +674,7 @@ fn run_instance_eager(
     path_meta: &PathMeta,
     strategy_name: &str,
 ) -> Result<(Duration, Duration, Duration), String> {
-    let backend = cpu_backend_from_env()?;
+    let backend = cpu_backend();
     // Match CPU ops: enter the reusable execution scope before sampling, not
     // once per binary contraction inside each timed tensor-network evaluation.
     backend
@@ -944,8 +932,6 @@ fn main() {
 
     let rayon_threads = std::env::var("RAYON_NUM_THREADS").unwrap_or_else(|_| "unset".into());
     let omp_threads = std::env::var("OMP_NUM_THREADS").unwrap_or_else(|_| "unset".into());
-    let cpu_backend_kind =
-        std::env::var("TENFERRO_CPU_BACKEND_KIND").unwrap_or_else(|_| "default".into());
     let dot_decomposer =
         std::env::var("TENFERRO_OPT_DOT_DECOMPOSER").unwrap_or_else(|_| "0".into());
 
@@ -957,11 +943,7 @@ fn main() {
         data_dir.display()
     );
     println!("Backend: {backend_name}");
-    println!("TENFERRO_CPU_BACKEND_KIND={cpu_backend_kind}");
-    println!(
-        "TENFERRO_CPU_PROVIDER={}",
-        tenferro_einsum_benchmark::cpu_provider::describe()
-    );
+    println!("TENFERRO_CPU_PROVIDER={}", tenferro_cpu::cpu_provider_id());
     println!("TENFERRO_OPT_DOT_DECOMPOSER={dot_decomposer}");
     println!("RAYON_NUM_THREADS={rayon_threads}, OMP_NUM_THREADS={omp_threads}");
     println!(

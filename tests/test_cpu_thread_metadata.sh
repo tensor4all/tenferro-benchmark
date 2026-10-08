@@ -27,7 +27,6 @@ EOF
   OMP_THREAD_LIMIT=1 \
   OMP_DYNAMIC=FALSE \
   RAYON_NUM_THREADS=1 \
-  TENFERRO_CPU_BACKEND_KIND=blas \
   OPENBLAS_ROOT="$openblas_root" \
   OPENBLAS_NUM_THREADS=1 \
   GOTO_NUM_THREADS=1 \
@@ -46,7 +45,7 @@ EOF
       --timestamp "2026-06-04T12:34:56+09:00" \
       --tenferro-dir extern/tenferro-rs \
       --tenferro-commit abcdef1 \
-      --features system-openblas \
+      --features blas-openblas \
       --blas openblas \
       --output "$output"
 
@@ -58,7 +57,7 @@ EOF
       --timestamp "2026-06-04T12:34:56+09:00" \
       --tenferro-dir extern/tenferro-rs \
       --tenferro-commit abcdef1 \
-      --features system-mkl \
+      --features blas-mkl \
       --blas mkl \
       --output "$mkl_output"
 
@@ -77,7 +76,6 @@ expected = {
     "OMP_THREAD_LIMIT": "1",
     "OMP_DYNAMIC": "FALSE",
     "RAYON_NUM_THREADS": "1",
-    "TENFERRO_CPU_BACKEND_KIND": "blas",
     "OPENBLAS_NUM_THREADS": "1",
     "GOTO_NUM_THREADS": "1",
     "MKL_NUM_THREADS": "1",

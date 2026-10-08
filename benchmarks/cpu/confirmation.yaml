@@ -20,7 +20,7 @@ harness_commit: null           # tenferro-benchmark SHA used for BOTH arms
 
 build:
   profile: release
-  features: null               # e.g. cpu-faer (must match TENFERRO_CPU_FEATURES)
+  features: null               # e.g. native or blas-mkl (must match TENFERRO_CPU_FEATURES)
 
 host:
   target_profile: null         # amd-cpu | mac-cpu
