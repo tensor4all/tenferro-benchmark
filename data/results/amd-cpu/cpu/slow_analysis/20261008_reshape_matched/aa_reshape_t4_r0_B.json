@@ -1,0 +1,113 @@
+{
+  "calibration": {
+    "elapsed_ns": 69212947,
+    "iterations": 1,
+    "target_ns": 2000000
+  },
+  "correctness_status": "passed",
+  "provider": "Blas",
+  "samples": [
+    {
+      "elapsed_ns": 67014121,
+      "iterations": 1,
+      "sample_index": 0
+    },
+    {
+      "elapsed_ns": 69392325,
+      "iterations": 1,
+      "sample_index": 1
+    },
+    {
+      "elapsed_ns": 66662018,
+      "iterations": 1,
+      "sample_index": 2
+    },
+    {
+      "elapsed_ns": 69123429,
+      "iterations": 1,
+      "sample_index": 3
+    },
+    {
+      "elapsed_ns": 67489535,
+      "iterations": 1,
+      "sample_index": 4
+    },
+    {
+      "elapsed_ns": 70243555,
+      "iterations": 1,
+      "sample_index": 5
+    },
+    {
+      "elapsed_ns": 67432478,
+      "iterations": 1,
+      "sample_index": 6
+    },
+    {
+      "elapsed_ns": 69564257,
+      "iterations": 1,
+      "sample_index": 7
+    },
+    {
+      "elapsed_ns": 68452066,
+      "iterations": 1,
+      "sample_index": 8
+    },
+    {
+      "elapsed_ns": 69342030,
+      "iterations": 1,
+      "sample_index": 9
+    },
+    {
+      "elapsed_ns": 66991498,
+      "iterations": 1,
+      "sample_index": 10
+    },
+    {
+      "elapsed_ns": 69007360,
+      "iterations": 1,
+      "sample_index": 11
+    },
+    {
+      "elapsed_ns": 69064447,
+      "iterations": 1,
+      "sample_index": 12
+    },
+    {
+      "elapsed_ns": 69558317,
+      "iterations": 1,
+      "sample_index": 13
+    },
+    {
+      "elapsed_ns": 67007288,
+      "iterations": 1,
+      "sample_index": 14
+    }
+  ],
+  "scope": {
+    "outside_timer": [
+      "fixture construction",
+      "runtime/backend construction",
+      "session entry",
+      "FFT plans and scratch priming",
+      "correctness validation",
+      "retention vector allocation",
+      "output destruction"
+    ],
+    "timer": [
+      "reshape",
+      "intrinsic output allocation"
+    ]
+  },
+  "threads_requested": 4,
+  "phase": "aa",
+  "operation": "reshape",
+  "threads": 4,
+  "round": 0,
+  "arm": "B",
+  "implementation": "rust",
+  "command": [
+    "/workspaces/tenferro-benchmark/target/compatibility-mkl/release/examples/cpu_gap_mwe",
+    "reshape",
+    "4"
+  ]
+}

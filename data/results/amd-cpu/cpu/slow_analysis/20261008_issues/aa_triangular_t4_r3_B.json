@@ -1,0 +1,113 @@
+{
+  "calibration": {
+    "elapsed_ns": 16169829,
+    "iterations": 1,
+    "target_ns": 2000000
+  },
+  "correctness_status": "passed",
+  "provider": "Blas",
+  "samples": [
+    {
+      "elapsed_ns": 16177063,
+      "iterations": 1,
+      "sample_index": 0
+    },
+    {
+      "elapsed_ns": 16741124,
+      "iterations": 1,
+      "sample_index": 1
+    },
+    {
+      "elapsed_ns": 16134633,
+      "iterations": 1,
+      "sample_index": 2
+    },
+    {
+      "elapsed_ns": 16139131,
+      "iterations": 1,
+      "sample_index": 3
+    },
+    {
+      "elapsed_ns": 14926691,
+      "iterations": 1,
+      "sample_index": 4
+    },
+    {
+      "elapsed_ns": 14730351,
+      "iterations": 1,
+      "sample_index": 5
+    },
+    {
+      "elapsed_ns": 14382737,
+      "iterations": 1,
+      "sample_index": 6
+    },
+    {
+      "elapsed_ns": 13697758,
+      "iterations": 1,
+      "sample_index": 7
+    },
+    {
+      "elapsed_ns": 15863643,
+      "iterations": 1,
+      "sample_index": 8
+    },
+    {
+      "elapsed_ns": 16139031,
+      "iterations": 1,
+      "sample_index": 9
+    },
+    {
+      "elapsed_ns": 16070803,
+      "iterations": 1,
+      "sample_index": 10
+    },
+    {
+      "elapsed_ns": 16206728,
+      "iterations": 1,
+      "sample_index": 11
+    },
+    {
+      "elapsed_ns": 16144281,
+      "iterations": 1,
+      "sample_index": 12
+    },
+    {
+      "elapsed_ns": 16169268,
+      "iterations": 1,
+      "sample_index": 13
+    },
+    {
+      "elapsed_ns": 16136386,
+      "iterations": 1,
+      "sample_index": 14
+    }
+  ],
+  "scope": {
+    "outside_timer": [
+      "fixture construction",
+      "runtime/backend construction",
+      "session entry",
+      "FFT plans and scratch priming",
+      "correctness validation",
+      "retention vector allocation",
+      "output destruction"
+    ],
+    "timer": [
+      "triangular",
+      "intrinsic output allocation"
+    ]
+  },
+  "threads_requested": 4,
+  "phase": "aa",
+  "operation": "triangular",
+  "threads": 4,
+  "round": 3,
+  "arm": "B",
+  "implementation": "rust",
+  "command": [
+    "/workspaces/tenferro-benchmark/target/compatibility-mkl/release/examples/cpu_gap_mwe",
+    "triangular",
+    "4"
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "calibration": {
+    "elapsed_ns": 9195429,
+    "iterations": 1,
+    "target_ns": 2000000
+  },
+  "correctness_status": "passed",
+  "provider": "Blas",
+  "samples": [
+    {
+      "elapsed_ns": 9368985,
+      "iterations": 1,
+      "sample_index": 0
+    },
+    {
+      "elapsed_ns": 9647349,
+      "iterations": 1,
+      "sample_index": 1
+    },
+    {
+      "elapsed_ns": 10172768,
+      "iterations": 1,
+      "sample_index": 2
+    },
+    {
+      "elapsed_ns": 9357103,
+      "iterations": 1,
+      "sample_index": 3
+    },
+    {
+      "elapsed_ns": 9336584,
+      "iterations": 1,
+      "sample_index": 4
+    },
+    {
+      "elapsed_ns": 9308061,
+      "iterations": 1,
+      "sample_index": 5
+    },
+    {
+      "elapsed_ns": 9378773,
+      "iterations": 1,
+      "sample_index": 6
+    },
+    {
+      "elapsed_ns": 9381018,
+      "iterations": 1,
+      "sample_index": 7
+    },
+    {
+      "elapsed_ns": 9397700,
+      "iterations": 1,
+      "sample_index": 8
+    },
+    {
+      "elapsed_ns": 9435690,
+      "iterations": 1,
+      "sample_index": 9
+    },
+    {
+      "elapsed_ns": 9360449,
+      "iterations": 1,
+      "sample_index": 10
+    },
+    {
+      "elapsed_ns": 9372482,
+      "iterations": 1,
+      "sample_index": 11
+    },
+    {
+      "elapsed_ns": 9447253,
+      "iterations": 1,
+      "sample_index": 12
+    },
+    {
+      "elapsed_ns": 9441752,
+      "iterations": 1,
+      "sample_index": 13
+    },
+    {
+      "elapsed_ns": 9412076,
+      "iterations": 1,
+      "sample_index": 14
+    }
+  ],
+  "scope": {
+    "outside_timer": [
+      "fixture construction",
+      "runtime/backend construction",
+      "session entry",
+      "FFT plans and scratch priming",
+      "correctness validation",
+      "retention vector allocation",
+      "output destruction"
+    ],
+    "timer": [
+      "lstsq",
+      "intrinsic output allocation"
+    ]
+  },
+  "threads_requested": 4,
+  "phase": "paired",
+  "operation": "lstsq",
+  "threads": 4,
+  "round": 0,
+  "arm": "A",
+  "implementation": "rust",
+  "command": [
+    "/workspaces/tenferro-benchmark/target/compatibility-mkl/release/examples/cpu_gap_mwe",
+    "lstsq",
+    "4"
+  ]
+}

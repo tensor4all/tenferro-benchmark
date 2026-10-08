@@ -1,0 +1,79 @@
+confirmation_config_version: 1
+status: declared
+declared_before_candidate_results: '2026-10-08T06:57:10.867893+00:00'
+library:
+  baseline_commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+  candidate_commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+harness_commit: 672df86a45e5b9fb621eea8a07313495955b1885
+build:
+  profile: release
+  features:
+  - system-mkl
+host:
+  target_profile: amd-cpu
+  hostname: 14099c68ff8e
+  affinity: none (thread env only)
+  provider: MKL; versions independently recorded
+threads:
+- 1
+- 4
+cases:
+  suite_id: cpu/perf_issues
+  manifest_version: new MWE cases pending issue assignment
+  coverage: explicit
+  case_ids:
+  - ifft-pattern
+  - cast
+  - reshape
+timing:
+  scope: many_operations_single_interval; session/setup/cleanup outside
+  cache_pool_state: warm, validated and primed
+repetitions:
+  warmups: 3
+  runs: 15
+  rounds: 4
+statistic: median_of_round_ratios
+thresholds:
+  relative: 0.2
+  absolute_ns: 500
+noise:
+  max_cov: 0.2
+  max_aa_relative_spread: 0.1
+  host_idle_guard: enabled, never bypassed
+comparison:
+  baseline: PyTorch Python
+  candidate: tenferro-rs borrowed-session public API
+  kind: cross-implementation; not historical revision regression
+  threshold_basis: 20% practical gap and 500ns minimum; A/A gate independently checks
+    stability
+  aa_ratios:
+    ifft-pattern@t1:
+    - 0.9887025321368454
+    - 0.9967386241367953
+    - 1.0000715286385342
+    - 0.9868448740378242
+    ifft-pattern@t4:
+    - 1.0098968747366468
+    - 0.9934922410135115
+    - 1.009488728869161
+    - 1.0106553971813828
+    cast@t1:
+    - 1.0010403546139706
+    - 0.9988520587545666
+    - 0.9554349556619888
+    - 0.965158871998948
+    cast@t4:
+    - 0.9935945403052868
+    - 0.9880716622795148
+    - 1.0229416238188036
+    - 0.9973638853606095
+    reshape@t1:
+    - 0.9939442682624782
+    - 1.0027037077291003
+    - 1.0137149799888823
+    - 1.0100252402699095
+    reshape@t4:
+    - 1.0065794555546113
+    - 0.9959867243207101
+    - 0.9734827703689598
+    - 1.0043053823722303

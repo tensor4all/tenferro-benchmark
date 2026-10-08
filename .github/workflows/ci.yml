@@ -19,6 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OPENBLAS_ROOT: /usr
+      # Validate the recorded compatible revision. Latest upstream main is
+      # exercised separately by benchmark-smoke-tenferro-main / nightly jobs.
+      TENFERRO_REF: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+      TENFERRO_UPDATE: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

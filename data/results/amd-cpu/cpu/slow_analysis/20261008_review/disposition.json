@@ -1,0 +1,26 @@
+{
+  "new_issues": {
+    "lstsq": 2027,
+    "triangular": 2028,
+    "materializing_reshape": 2029,
+    "gelu": 2030,
+    "softmax": 2031
+  },
+  "existing_closed_confirmed": {
+    "diagonal": 1001
+  },
+  "no_new_issue": [
+    "ifft: variable/mixed constant-input result; patterned fixture no material gap",
+    "cast: borrowed direct parity",
+    "reshape original mismatched shape superseded by matched output",
+    "GELU initial 2 ms noise gate failed; flattened-reference 10 ms control superseded by logical-shape-matched 13.1x/14.4x confirmation"
+  ],
+  "inventory": {
+    "rows": 1585,
+    "groups": 377,
+    "state": "descriptive; flagged scope/short-clock rows not performance evidence"
+  },
+  "tests": "provided Rust issue snippets compiled; Python suite checks passed; all 6 new suite arms numerically validated",
+  "source_sha": "5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102",
+  "exact_commands": "commands.sh and per-sample command JSON; thread_env configured 1/4 before every process"
+}

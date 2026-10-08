@@ -1,0 +1,113 @@
+{
+  "calibration": {
+    "elapsed_ns": 17436199,
+    "iterations": 16,
+    "target_ns": 10000000
+  },
+  "correctness_status": "passed",
+  "provider": "Blas",
+  "samples": [
+    {
+      "elapsed_ns": 17334707,
+      "iterations": 16,
+      "sample_index": 0
+    },
+    {
+      "elapsed_ns": 17301315,
+      "iterations": 16,
+      "sample_index": 1
+    },
+    {
+      "elapsed_ns": 17341060,
+      "iterations": 16,
+      "sample_index": 2
+    },
+    {
+      "elapsed_ns": 17276999,
+      "iterations": 16,
+      "sample_index": 3
+    },
+    {
+      "elapsed_ns": 17278342,
+      "iterations": 16,
+      "sample_index": 4
+    },
+    {
+      "elapsed_ns": 17279754,
+      "iterations": 16,
+      "sample_index": 5
+    },
+    {
+      "elapsed_ns": 17306765,
+      "iterations": 16,
+      "sample_index": 6
+    },
+    {
+      "elapsed_ns": 17293190,
+      "iterations": 16,
+      "sample_index": 7
+    },
+    {
+      "elapsed_ns": 17286658,
+      "iterations": 16,
+      "sample_index": 8
+    },
+    {
+      "elapsed_ns": 17359755,
+      "iterations": 16,
+      "sample_index": 9
+    },
+    {
+      "elapsed_ns": 17292007,
+      "iterations": 16,
+      "sample_index": 10
+    },
+    {
+      "elapsed_ns": 17290555,
+      "iterations": 16,
+      "sample_index": 11
+    },
+    {
+      "elapsed_ns": 17343655,
+      "iterations": 16,
+      "sample_index": 12
+    },
+    {
+      "elapsed_ns": 17315732,
+      "iterations": 16,
+      "sample_index": 13
+    },
+    {
+      "elapsed_ns": 17345418,
+      "iterations": 16,
+      "sample_index": 14
+    }
+  ],
+  "scope": {
+    "outside_timer": [
+      "fixture construction",
+      "runtime/backend construction",
+      "session entry",
+      "FFT plans and scratch priming",
+      "correctness validation",
+      "retention vector allocation",
+      "output destruction"
+    ],
+    "timer": [
+      "gelu",
+      "intrinsic output allocation"
+    ]
+  },
+  "threads_requested": 1,
+  "phase": "paired",
+  "operation": "gelu",
+  "threads": 1,
+  "round": 2,
+  "arm": "A",
+  "implementation": "rust",
+  "command": [
+    "/workspaces/tenferro-benchmark/target/compatibility-mkl/release/examples/cpu_gap_mwe",
+    "gelu",
+    "1"
+  ]
+}
