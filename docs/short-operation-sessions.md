@@ -37,8 +37,12 @@ batch duration, while the existing latency columns remain normalized per call.
 Since tenferro-rs PR #1802 (merge `d8759f4320a337d2399f4a87dfec55af51d2ebf1`),
 `publication_gate` uses `CpuBackend::with_execution_scope` outside all timing.
 Its eager runtime and prepared trace runtimes share clones of that exact backend
-witness. This is **not** a borrowed BackendSession and does not bypass the
-operation re-entry guard. The `cpu_ops` small suite is now included by default;
+witness. Prepared trace retains this execution scope. Eager primal operations now
+use the public borrowed EagerSession APIs, entering the session outside timing
+and reusing it across measured samples. Input handles and consumed operation
+descriptors are restored before each sample. Eager backward has no equivalent
+borrowed-session API and is reported as unsupported in standard operation tables.
+The `cpu_ops` small suite is now included by default;
 its former isolated-call results remain diagnostics, not new scope measurements.
 
 Rust, PyTorch and JAX calibrate a batch from one operation toward 5 ms. Batch
@@ -49,11 +53,11 @@ and multiple-RHS shapes; it is an estimate, **not** a bound on backend scratch,
 allocator caches or process RSS. A single operation is allowed if its estimate
 already exceeds the budget. A memory-limited batch may remain below 5 ms; its
 actual duration is preserved. Each batch prepares all fixtures and retention
-containers before timing, and destroys inputs/outputs afterward. Fresh eager
-and PyTorch AD leaves prevent gradient accumulation; prepared trace uses its
+containers before timing, and destroys inputs/outputs afterward. Fresh PyTorch
+AD leaves prevent gradient accumulation; prepared trace uses its
 immutable default inputs. Allocation-returning APIs remain allocation-returning
-(no preallocated output/reuse claim). Intrinsic eager tape/backward work remains
-part of the declared forward-plus-backward operation.
+(no preallocated output/reuse claim). Trace and Python AD rows retain their
+declared forward-plus-backward scope.
 
 `run_cpu_ops.sh` writes `cpu_ops_samples_t<N>_<timestamp>.jsonl` beside the CSV.
 It contains raw batch durations, counts, normalized ns/op, memory estimates and

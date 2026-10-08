@@ -19,7 +19,9 @@ configure_cpu_thread_env() {
     export NUMEXPR_NUM_THREADS="$threads"
     export BLIS_NUM_THREADS="$threads"
     export PJRT_NPROC="$threads"
-    export XLA_FLAGS="--xla_cpu_multi_thread_eigen=${xla_multi_thread} intra_op_parallelism_threads=${threads}"
+    # JAX 0.10's experimental YNNPACK lowering rejects rank > 8, including
+    # intermediates in the standard einsum corpus. Use the regular XLA path.
+    export XLA_FLAGS="--xla_cpu_multi_thread_eigen=${xla_multi_thread} --xla_cpu_experimental_ynn_fusion_type= intra_op_parallelism_threads=${threads}"
     export JULIA_NUM_THREADS="$threads"
 }
 

@@ -5,8 +5,8 @@
 #
 # Usage: scripts/build_for_tenferro_rev.sh <tenferro-rs-dir> <out-var-file> [bin...]
 #
-# Re-points extern/tenferro-rs at <tenferro-rs-dir> for the build and restores
-# the previous link target afterwards. Writes shell assignments to
+# Builds the existing real checkout in place, or re-points its symlink at
+# <tenferro-rs-dir> and restores the previous link target afterwards. Writes shell assignments to
 # <out-var-file>: TENFERRO_REV, TENFERRO_DIRTY, TENFERRO_DIR, BIN_DIR.
 # Default bins: benchmark_cpu_session cpu_route_diagnostic (the cross-revision
 # binaries). Honors TENFERRO_CPU_FEATURES (default cpu-faer; system BLAS
@@ -40,7 +40,12 @@ suffix=""
 if [[ $dirty == true ]]; then suffix="-dirty"; fi
 target="$PROJECT_DIR/target/tenferro-rev/${rev:0:12}${suffix}"
 
-if [[ -e "$LINK" && ! -L "$LINK" ]]; then
+in_place=false
+if [[ -d "$LINK" && ! -L "$LINK" && "$(cd "$LINK" && pwd -P)" == "$TENFERRO_DIR" ]]; then
+    # Normal setup creates a real checkout. Building that same revision does
+    # not require replacing it with a symlink.
+    in_place=true
+elif [[ -e "$LINK" && ! -L "$LINK" ]]; then
     echo "ERROR: $LINK is a real directory; this script only re-points a symlink." >&2
     exit 1
 fi
@@ -48,7 +53,9 @@ previous=""
 [[ -L "$LINK" ]] && previous="$(readlink "$LINK")"
 restore() { if [[ -n "$previous" ]]; then ln -sfn "$previous" "$LINK"; fi; }
 trap restore EXIT
-ln -sfn "$TENFERRO_DIR" "$LINK"
+if [[ "$in_place" != true ]]; then
+    ln -sfn "$TENFERRO_DIR" "$LINK"
+fi
 
 bin_args=()
 for bin in "${BINS[@]}"; do bin_args+=(--bin "$bin"); done

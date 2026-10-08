@@ -38,7 +38,9 @@ chmod +x "$TMP/bin/brew" "$TMP/bin/cargo"
 export CARGO_CALL_LOG="$TMP/cargo.log"
 (
   cd "$ROOT"
-  PATH="$TMP/bin:/usr/bin:/bin" BENCHMARK_TIMESTAMP=20000101_000000 ./scripts/run_all_rust.sh 1 >/tmp/run_all_rust_bin_test.out
+  PATH="$TMP/bin:/usr/bin:/bin" OPENBLAS_ROOT="$TMP/openblas" \
+    TENFERRO_CPU_FEATURES=system-openblas BENCHMARK_TIMESTAMP=20000101_000000 \
+    ./scripts/run_all_rust.sh 1 >/tmp/run_all_rust_bin_test.out
 )
 
 grep -q -- '--bin tenferro-einsum-benchmark' "$CARGO_CALL_LOG"

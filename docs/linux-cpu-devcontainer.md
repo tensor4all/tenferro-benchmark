@@ -11,18 +11,27 @@ export BENCHMARK_TARGET_PROFILE=amd-cpu
 
 BLAS/provider policy:
 
-- tenferro uses `system-openblas`.
+- Standard comparisons use tenferro `system-mkl` to match the installed
+  PyTorch wheel's MKL provider.
 - `OPENBLAS_ROOT=/opt/openblas` inside the devcontainer.
 - `/opt/openblas` is built from OpenBLAS source with pthread threading enabled
   (`USE_THREAD=1`, `USE_OPENMP=0`) instead of using Ubuntu's
   `libopenblas-dev` package.
 - Intel oneMKL is installed under `/opt/intel/oneapi/mkl/latest` and exported
-  as `MKLROOT` for opt-in `system-mkl` runs.
+  as `MKLROOT`. Verify that this tree exists before collecting.
+- OpenBLAS remains available for alternate-provider experiments. On x86_64,
+  its common code builds for CORE2 so CPU detection in the pinned release
+  cannot fail on newer hosts; dynamic runtime kernel dispatch remains enabled.
 - PyTorch Python uses the installed wheel provider. The benchmark records
   `BLAS_INFO`, `LAPACK_INFO`, and linked BLAS/LAPACK libraries in `run.yaml`.
 - The default image does not source-build PyTorch. For a provider-matched
   OpenBLAS comparison, use the separate image below.
 - JAX is reported as XLA CPU.
+- CPU runners disable experimental YNNPACK fusion with
+  `--xla_cpu_experimental_ynn_fusion_type=` because JAX 0.10's YNNPACK path
+  rejects rank-above-eight intermediates in the standard einsum corpus.
+  The regular XLA CPU path handles those contractions. `XLA_FLAGS` records
+  this setting in run metadata; keep it consistent across compared runs.
 
 ## Provider-matched OpenBLAS image
 
@@ -115,6 +124,9 @@ Smoke run from the host:
 ```bash
 devcontainer exec --workspace-folder . bash -lc '\
   BENCHMARK_TARGET_PROFILE=amd-cpu \
+  TENFERRO_CPU_FEATURES=system-mkl \
+  PUBLICATION_GATE_FEATURES=system-mkl \
+  TENFERRO_CPU_BACKEND_KIND=blas \
   BENCH_INSTANCE=bin_matmul_256 \
   BENCH_RUNS=1 \
   BENCH_WARMUPS=0 \
@@ -126,19 +138,20 @@ Normal runs:
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc \
-  'BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_all.sh 1'
+  'BENCHMARK_TARGET_PROFILE=amd-cpu TENFERRO_CPU_FEATURES=system-mkl PUBLICATION_GATE_FEATURES=system-mkl TENFERRO_CPU_BACKEND_KIND=blas ./scripts/run_all.sh 1'
 
 devcontainer exec --workspace-folder . bash -lc \
-  'BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_all.sh 4'
+  'BENCHMARK_TARGET_PROFILE=amd-cpu TENFERRO_CPU_FEATURES=system-mkl PUBLICATION_GATE_FEATURES=system-mkl TENFERRO_CPU_BACKEND_KIND=blas ./scripts/run_all.sh 4'
 ```
 
-Opt-in MKL tenferro run:
+Alternate OpenBLAS tenferro run (the default PyTorch wheel still uses MKL):
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '\
   BENCHMARK_TARGET_PROFILE=amd-cpu \
-  TENFERRO_CPU_FEATURES=system-mkl \
-  PUBLICATION_GATE_FEATURES=system-mkl \
+  TENFERRO_CPU_FEATURES=system-openblas \
+  PUBLICATION_GATE_FEATURES=system-openblas \
+  TENFERRO_CPU_BACKEND_KIND=blas \
     ./scripts/run_all.sh 1'
 ```
 

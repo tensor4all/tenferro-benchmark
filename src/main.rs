@@ -10,7 +10,7 @@ use std::path::Path;
 use std::time::{Duration, Instant};
 
 use serde::Deserialize;
-use tenferro_ad::{EagerRuntime, EagerTensor};
+use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend, CpuBackendKind};
 use tenferro_einsum::{ContractionTree, EagerSessionEinsumExt, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
@@ -627,18 +627,14 @@ fn prepare_eager_path(
 }
 
 fn contract_once_eager(
+    session: &mut EagerSession<'_>,
     prepared: &[EinsumSubscripts],
     path_meta: &PathMeta,
-    source_operands: &[EagerTensor],
+    operands: &mut Vec<EagerTensor>,
+    retained_inputs: &mut Vec<Vec<EagerTensor>>,
     mut profile: Option<&mut EagerRunBreakdown>,
 ) -> Result<EagerTensor, String> {
     let total_started = Instant::now();
-    let started = Instant::now();
-    let mut operands = source_operands.to_vec();
-    if let Some(profile) = profile.as_deref_mut() {
-        profile.operand_handles += started.elapsed();
-    }
-
     for (&[lhs_index, rhs_index], binary_subscripts) in path_meta.path.iter().zip(prepared) {
         let started = Instant::now();
         let first_remove = lhs_index.max(rhs_index);
@@ -650,22 +646,20 @@ fn contract_once_eager(
         } else {
             vec![rhs, lhs]
         };
-        let input_refs: Vec<&EagerTensor> = ordered.iter().collect();
+        retained_inputs.push(ordered);
+        let input_refs: Vec<&EagerTensor> = retained_inputs
+            .last()
+            .expect("retained operands")
+            .iter()
+            .collect();
         if let Some(profile) = profile.as_deref_mut() {
             profile.binary_setup += started.elapsed();
         }
 
         let started = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            // One borrowed eager session per binary contraction.
-            input_refs[0]
-                .runtime()
-                .clone()
-                .with_eager_session(|session| {
-                    session
-                        .einsum_subscripts(&input_refs, binary_subscripts)
-                        .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
-                })
+            session
+                .einsum_subscripts(&input_refs, binary_subscripts)
                 .map_err(|e| e.to_string())
         }));
         let result = unwrap_eval_result(result, "panic during eager execution")?;
@@ -716,22 +710,7 @@ fn run_instance_eager_in_scope(
     let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
     let prepared = prepare_eager_path(instance, path_meta)?;
 
-    for _ in 0..bench_warmups().max(1) {
-        let eval = contract_once_eager(&prepared, path_meta, &source_operands, None)?;
-        black_box(&eval);
-    }
-
-    let mut durations = Vec::with_capacity(bench_runs());
-    for _ in 0..bench_runs() {
-        let t0 = Instant::now();
-        let eval = contract_once_eager(&prepared, path_meta, &source_operands, None)?;
-        let elapsed = t0.elapsed();
-        black_box(&eval);
-        durations.push(elapsed);
-    }
-
-    let (median, iqr) = duration_stats(durations);
-
+    // Input wrapping enters its own session; profile it before borrowing one.
     if profile_bench_breakdown_enabled() {
         let mut input_create = Vec::with_capacity(bench_runs());
         for _ in 0..bench_runs() {
@@ -747,61 +726,131 @@ fn run_instance_eager_in_scope(
             "eager.input_create",
             input_create,
         );
-
-        let mut total = Vec::with_capacity(bench_runs());
-        let mut operand_handles = Vec::with_capacity(bench_runs());
-        let mut binary_setup = Vec::with_capacity(bench_runs());
-        let mut einsum_call = Vec::with_capacity(bench_runs());
-        let mut output_take = Vec::with_capacity(bench_runs());
-        for _ in 0..bench_runs() {
-            let mut breakdown = EagerRunBreakdown::default();
-            let eval =
-                contract_once_eager(&prepared, path_meta, &source_operands, Some(&mut breakdown))?;
-            black_box(&eval);
-            total.push(breakdown.total);
-            operand_handles.push(breakdown.operand_handles);
-            binary_setup.push(breakdown.binary_setup);
-            einsum_call.push(breakdown.einsum_call);
-            output_take.push(breakdown.output_take);
-        }
-        print_breakdown(
-            "tenferro-eager",
-            instance,
-            strategy_name,
-            "eager.total",
-            total,
-        );
-        print_breakdown(
-            "tenferro-eager",
-            instance,
-            strategy_name,
-            "eager.operand_handles",
-            operand_handles,
-        );
-        print_breakdown(
-            "tenferro-eager",
-            instance,
-            strategy_name,
-            "eager.binary_setup",
-            binary_setup,
-        );
-        print_breakdown(
-            "tenferro-eager",
-            instance,
-            strategy_name,
-            "eager.einsum_call",
-            einsum_call,
-        );
-        print_breakdown(
-            "tenferro-eager",
-            instance,
-            strategy_name,
-            "eager.output_take",
-            output_take,
-        );
     }
 
-    Ok((median, iqr, Duration::ZERO))
+    ctx.with_eager_session(|session| -> Result<_, tenferro_ad::Error> {
+        for _ in 0..bench_warmups().max(1) {
+            let mut operands = source_operands.to_vec();
+            let mut retained_inputs = Vec::with_capacity(path_meta.path.len());
+            let eval = contract_once_eager(
+                session,
+                &prepared,
+                path_meta,
+                &mut operands,
+                &mut retained_inputs,
+                None,
+            )
+            .map_err(|err| {
+                tenferro_ad::Error::runtime_state(
+                    "benchmark_einsum",
+                    tenferro_runtime::ErrorPhase::Execution,
+                    err,
+                )
+            })?;
+            black_box(&eval);
+        }
+
+        let mut durations = Vec::with_capacity(bench_runs());
+        for _ in 0..bench_runs() {
+            let mut operands = source_operands.to_vec();
+            let mut retained_inputs = Vec::with_capacity(path_meta.path.len());
+            let t0 = Instant::now();
+            let eval = contract_once_eager(
+                session,
+                &prepared,
+                path_meta,
+                &mut operands,
+                &mut retained_inputs,
+                None,
+            )
+            .map_err(|err| {
+                tenferro_ad::Error::runtime_state(
+                    "benchmark_einsum",
+                    tenferro_runtime::ErrorPhase::Execution,
+                    err,
+                )
+            })?;
+            let elapsed = t0.elapsed();
+            black_box(&eval);
+            durations.push(elapsed);
+        }
+
+        let (median, iqr) = duration_stats(durations);
+
+        if profile_bench_breakdown_enabled() {
+            let mut total = Vec::with_capacity(bench_runs());
+            let mut operand_handles = Vec::with_capacity(bench_runs());
+            let mut binary_setup = Vec::with_capacity(bench_runs());
+            let mut einsum_call = Vec::with_capacity(bench_runs());
+            let mut output_take = Vec::with_capacity(bench_runs());
+            for _ in 0..bench_runs() {
+                let mut breakdown = EagerRunBreakdown::default();
+                let started = Instant::now();
+                let mut operands = source_operands.to_vec();
+                let mut retained_inputs = Vec::with_capacity(path_meta.path.len());
+                breakdown.operand_handles = started.elapsed();
+                let eval = contract_once_eager(
+                    session,
+                    &prepared,
+                    path_meta,
+                    &mut operands,
+                    &mut retained_inputs,
+                    Some(&mut breakdown),
+                )
+                .map_err(|err| {
+                    tenferro_ad::Error::runtime_state(
+                        "benchmark_einsum",
+                        tenferro_runtime::ErrorPhase::Execution,
+                        err,
+                    )
+                })?;
+                black_box(&eval);
+                total.push(breakdown.total);
+                operand_handles.push(breakdown.operand_handles);
+                binary_setup.push(breakdown.binary_setup);
+                einsum_call.push(breakdown.einsum_call);
+                output_take.push(breakdown.output_take);
+            }
+            print_breakdown(
+                "tenferro-eager",
+                instance,
+                strategy_name,
+                "eager.total",
+                total,
+            );
+            print_breakdown(
+                "tenferro-eager",
+                instance,
+                strategy_name,
+                "eager.operand_handles",
+                operand_handles,
+            );
+            print_breakdown(
+                "tenferro-eager",
+                instance,
+                strategy_name,
+                "eager.binary_setup",
+                binary_setup,
+            );
+            print_breakdown(
+                "tenferro-eager",
+                instance,
+                strategy_name,
+                "eager.einsum_call",
+                einsum_call,
+            );
+            print_breakdown(
+                "tenferro-eager",
+                instance,
+                strategy_name,
+                "eager.output_take",
+                output_take,
+            );
+        }
+
+        Ok((median, iqr, Duration::ZERO))
+    })
+    .map_err(|err| err.to_string())
 }
 
 fn run_instance(

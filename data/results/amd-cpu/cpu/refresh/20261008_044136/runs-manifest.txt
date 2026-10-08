@@ -1,0 +1,2 @@
+/workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_044146
+/workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424

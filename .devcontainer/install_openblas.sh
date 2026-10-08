@@ -32,6 +32,11 @@ if [[ "$OPENBLAS_DYNAMIC_ARCH" == "1" ]]; then
     make_flags+=("DYNAMIC_ARCH=1")
 fi
 
+# Keep the common x86 code portable and avoid getarch failures on CPUs newer
+# than the pinned OpenBLAS release. DYNAMIC_ARCH still selects runtime kernels.
+if [[ -z "${OPENBLAS_TARGET:-}" && "$(uname -m)" == x86_64 ]]; then
+    OPENBLAS_TARGET=CORE2
+fi
 if [[ -n "${OPENBLAS_TARGET:-}" ]]; then
     make_flags+=("TARGET=${OPENBLAS_TARGET}")
 fi
