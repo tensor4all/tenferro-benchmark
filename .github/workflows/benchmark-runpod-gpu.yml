@@ -54,8 +54,7 @@ jobs:
           submodules: recursive
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
-      - name: Build fresh CUDA benchmark
-        id: build
+      - name: Prepare CUDA build toolchain and current sources
         run: |
           set -euo pipefail
           sudo apt-get update
@@ -69,7 +68,21 @@ jobs:
           if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
             git -C extern/tenferro-rs pull --ff-only
           fi
-          cargo build --release --features cuda --bin benchmark_gpu_rust
+          cargo generate-lockfile
+      - name: Restore Cargo dependencies and compiled artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: runpod-gpu-ubuntu24.04-cuda12.8-v1
+          cache-workspace-crates: true
+          cache-bin: false
+          env-vars: CARGO CC CFLAGS CXX CMAKE RUST CUDA TENFERRO
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build current CUDA benchmark with Cargo cache
+        id: build
+        run: |
+          set -euo pipefail
+          export PATH="$CUDA_HOME/bin:$PATH"
+          cargo build --locked --release --features cuda --bin benchmark_gpu_rust
           python3 scripts/ci/gpu_artifact.py target/release/benchmark_gpu_rust --write
           echo "tenferro_commit=$(git -C extern/tenferro-rs rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4

@@ -47,6 +47,11 @@ actual device, rather than treating all RunPod runs as the same hardware.
 
 Before renting a GPU, a hosted Ubuntu 24.04 job builds a fresh Rust CUDA
 benchmark and archives it with both source commits and its SHA-256 digest.
+The hosted job caches Cargo registry/git dependencies and compiled artifacts,
+including workspace crates, after resolving the lockfile. The cache separates
+Ubuntu 24.04/CUDA 12.8 builds and includes Rust/toolchain and dependency inputs.
+Only `main` saves it. Every invocation still runs `cargo build --locked` against
+the current sources; a cache hit does not skip freshness or artifact checks.
 The accepted pod checks out the exact tenferro-rs commit used for that build
 and verifies the artifact before sampling. Missing, stale, or modified artifacts
 fail rather than silently rebuilding on a paid GPU.
