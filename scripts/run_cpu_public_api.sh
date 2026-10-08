@@ -190,11 +190,11 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
                 --output "$CSV"
     }
 
-    run_rust_group cpu/elementwise_reduction "add,sub,mul,div,neg,abs,sign,maximum,minimum,compare_lt,select,sqrt,rsqrt"
+    run_rust_group cpu/elementwise_reduction "add,sub,mul,div,neg,abs,sign,maximum,minimum,compare_lt,select,where_select,sqrt,rsqrt"
     run_rust_group cpu/elementwise_reduction "rem,clamp,exp,log,sin,cos,tanh"
     run_rust_group cpu/elementwise_reduction "pow,expm1,log1p,chain_log1p_exp_mul"
     run_rust_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_all,reduce_min_all"
-    run_rust_group cpu/elementwise_reduction "reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1"
+    run_rust_group cpu/elementwise_reduction "reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1,reduce_sum_squares_axis0,masked_log_softmax_axis1"
     run_rust_group cpu/indexing_layout
     run_rust_group cpu/structural_shape
     run_rust_group cpu/view_metadata
@@ -240,11 +240,11 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
 
     # Keep large fixture families and XLA executable caches in separate
     # processes, matching the process isolation used by the Rust runner.
-    run_jax_group cpu/elementwise_reduction "add,sub,mul,div,neg,abs,sign,maximum,minimum,compare_lt,select,sqrt,rsqrt"
+    run_jax_group cpu/elementwise_reduction "add,sub,mul,div,neg,abs,sign,maximum,minimum,compare_lt,select,where_select,sqrt,rsqrt"
     run_jax_group cpu/elementwise_reduction "rem,clamp,exp,log,sin,cos,tanh"
     run_jax_group cpu/elementwise_reduction "pow,expm1,log1p,chain_log1p_exp_mul"
     run_jax_group cpu/elementwise_reduction "reduce_sum_all,reduce_prod_all,reduce_max_all,reduce_min_all"
-    run_jax_group cpu/elementwise_reduction "reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1"
+    run_jax_group cpu/elementwise_reduction "reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1,reduce_sum_squares_axis0,masked_log_softmax_axis1"
     run_jax_group cpu/indexing_layout
     run_jax_group cpu/structural_shape
     run_jax_group cpu/einsum_concrete

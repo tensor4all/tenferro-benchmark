@@ -282,6 +282,7 @@ def compiled(fn: Callable[..., object], *inputs: LazyArray) -> Callable[[], obje
 
 
 def make_cases() -> list[Case]:
+    import jax
     import jax.numpy as jnp
     from jax import lax
     from jax.scipy.linalg import lu, solve_triangular
@@ -342,6 +343,8 @@ def make_cases() -> list[Case]:
     lstsq_rhs = tensor_f64((768, 16), 2)
     svd_full_a = tensor_f64((768, 384), 1)
     norm = tensor_f64((2048, 2048), 1)
+    masked_log_softmax_input = tensor_f64((1024, 64), 1)
+    masked_log_softmax_mask = LazyArray(lambda: (jnp.arange(1024)[:, None] + 1024 * jnp.arange(64)[None, :]) % 3 == 0)
 
     z_conj = tensor_c64((16_777_216,), 1)
     z_mul = tensor_c64((8_388_608,), 1)
@@ -380,6 +383,7 @@ def make_cases() -> list[Case]:
         (elem, "minimum", "f64", "33554432", "binary elementwise", compiled(jnp.minimum, x_fast, y_fast)),
         (elem, "compare_lt", "f64", "33554432", "ordered compare", compiled(lambda a, b: a < b, x_fast, y_fast)),
         (elem, "select", "f64", "33554432", "ternary select", compiled(jnp.where, cond_fast, x_fast, y_fast)),
+        (elem, "where_select", "f64", "33554432", "uncovered public API; broadcasted boolean selection", compiled(jnp.where, cond_fast, x_fast, y_fast)),
         (elem, "clamp", "f64", "8388608", "clamp with tensor bounds", compiled(jnp.clip, x, lower, upper)),
         (elem, "exp", "f64", "8388608", "analytic unary", compiled(jnp.exp, x)),
         (elem, "log", "f64", "8388608", "analytic unary", compiled(jnp.log, xp)),
@@ -404,6 +408,8 @@ def make_cases() -> list[Case]:
         (elem, "reduce_sum_axis1", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.sum(a, axis=1), matrix_axis)),
         (elem, "reduce_prod_axis0", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.prod(a, axis=0), prod_axis)),
         (elem, "reduce_prod_axis1", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.prod(a, axis=1), prod_axis)),
+        (elem, "reduce_sum_squares_axis0", "f64", "2048x2048", "uncovered public API; sum of squares reduction", compiled(lambda a: jnp.sum(jnp.square(a), axis=0), matrix_axis)),
+        (elem, "masked_log_softmax_axis1", "f64", "1024x64", "uncovered public API; boolean-masked log-softmax", compiled(lambda a, m: jax.nn.log_softmax(a, axis=1, where=m), masked_log_softmax_input, masked_log_softmax_mask)),
         (idx, "gather", "f64", "262144", "1D gather", compiled(lambda a, i: jnp.take(a, i), gather_base, gather_idx)),
         (idx, "scatter", "f64", "262144", "1D scatter", compiled(lambda a, i, u: jnp.zeros_like(a).at[i].set(u), gather_base, gather_idx, gather_updates)),
         (idx, "slice", "f64", "4194304 -> 2096128", "static slice materialized output", compiled(lambda a: a[1024 : 4_194_304 - 1024 : 2], slice_base)),

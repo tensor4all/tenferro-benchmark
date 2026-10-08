@@ -224,6 +224,8 @@ end
 
 function elementwise_cases(fx::Fixtures)
     cases = Vector{Tuple{String,String,String,String,String,Function,Union{Function,Nothing}}}()
+    masked_log_softmax_input = tensor_f64((1024, 64), 1)
+    masked_log_softmax_mask = [mod(row + 1024 * col, 3) == 0 for row in 0:1023, col in 0:63]
     # (suite, benchmark, dtype, shape, notes, julia_base_fn, strided_fn_or_nothing)
     # Each strided_fn is a zero-arg closure that allocates its own `dst`
     # inside the timed call, then fills it with a fused `@strided @.` write
@@ -328,6 +330,16 @@ function elementwise_cases(fx::Fixtures)
         () -> prod(fx.prod_axis; dims = 1), nothing))
     push!(cases, ("cpu/elementwise_reduction", "reduce_prod_axis1", "f64", "2048x2048", "axis reduction",
         () -> prod(fx.prod_axis; dims = 2), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "reduce_sum_squares_axis0", "f64", "2048x2048", "uncovered public API; sum of squares reduction",
+        () -> sum(fx.matrix_axis .^ 2; dims = 1), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "where_select", "f64", "33554432", "uncovered public API; broadcasted boolean selection",
+        () -> ifelse.(fx.cond_fast, fx.x_fast, fx.y_fast), nothing))
+    push!(cases, ("cpu/elementwise_reduction", "masked_log_softmax_axis1", "f64", "1024x64", "uncovered public API; boolean-masked log-softmax",
+        () -> begin
+            masked = ifelse.(masked_log_softmax_mask, masked_log_softmax_input, -Inf)
+            shifted = masked .- maximum(masked; dims = 2)
+            shifted .- log.(sum(exp.(shifted); dims = 2))
+        end, nothing))
     return cases
 end
 
@@ -744,7 +756,7 @@ function main()
             "pow", "expm1", "log1p", "chain_log1p_exp_mul", "reduce_sum_all", "reduce_prod_all",
             "reduce_max_axis0", "reduce_min_axis1", "reduce_max_all", "reduce_min_all",
             "reduce_max_axis1", "reduce_min_axis0", "reduce_sum_axis0", "reduce_sum_axis1",
-            "reduce_prod_axis0", "reduce_prod_axis1",
+            "reduce_prod_axis0", "reduce_prod_axis1", "reduce_sum_squares_axis0", "masked_log_softmax_axis1", "where_select",
         )
         if any(name -> selected("cpu/elementwise_reduction", name), elementwise_names)
             fx = build_elementwise_fixtures()
