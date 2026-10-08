@@ -32,7 +32,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RUNPOD_IMAGE: nvidia/cuda:12.8.1-devel-ubuntu22.04
+  RUNPOD_IMAGE: runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
   CUDA_HOME: /usr/local/cuda-12.8
   CUDA_PATH: /usr/local/cuda-12.8
   LD_LIBRARY_PATH: /usr/local/cuda-12.8/lib64
@@ -44,10 +44,10 @@ jobs:
   start-runpod:
     name: Start ephemeral RunPod runner
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 70
     outputs:
       pod_id: ${{ steps.create_pod.outputs.pod_id }}
-      runner_label: ${{ steps.runner_label.outputs.label }}
+      runner_label: ${{ steps.create_pod.outputs.runner_label }}
     steps:
       - name: Checkout trusted benchmark harness
         uses: actions/checkout@v4
@@ -63,89 +63,57 @@ jobs:
           owner: ${{ github.repository_owner }}
           permission-organization-self-hosted-runners: write
 
-      - name: Mint single-use JIT runner configuration
-        id: runner_config
+      - name: Validate RunPod configuration
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          RUNNER_GROUP_ID: ${{ vars.RUNPOD_RUNNER_GROUP_ID || '4' }}
-        run: |
-          set -euo pipefail
-          [[ "$RUNNER_GROUP_ID" =~ ^[1-9][0-9]*$ ]]
-          label="runpod-benchmark-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          echo "label=${label}" >> "$GITHUB_OUTPUT"
-          gh api --method POST \
-            "orgs/${GITHUB_REPOSITORY_OWNER}/actions/runners/generate-jitconfig" \
-            --input - > /tmp/jit-response.json <<JSON
-          {"name":"${label}","runner_group_id":${RUNNER_GROUP_ID},"labels":["self-hosted","${label}"],"work_folder":"_work"}
-          JSON
-          jq -e -r '.encoded_jit_config' /tmp/jit-response.json > /tmp/jit-config
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: python3 -m scripts.ci.runpod_contract --config scripts/ci/runpod_config.json
 
-      - name: Prepare runner label
-        id: runner_label
-        run: |
-          set -euo pipefail
-          label="runpod-benchmark-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          echo "label=${label}" >> "$GITHUB_OUTPUT"
-
-      - name: Provision RunPod GPU
+      - name: Provision compatible RunPod GPU
         id: create_pod
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
           RUNPOD_GPU_TYPE: ${{ inputs.gpu_type }}
+          PROVISION_GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PROVISION_ORG: ${{ github.repository_owner }}
+          PROVISION_RUNNER_GROUP_ID: ${{ vars.RUNPOD_RUNNER_GROUP_ID || '4' }}
+          PROVISION_RUNNER_LABEL: runpod-benchmark-${{ github.run_id }}-${{ github.run_attempt }}
+          PYTHONUNBUFFERED: "1"
         run: |
           set -euo pipefail
-          # The JIT value is read from the protected temporary file rather than
-          # echoed into logs or committed outputs.
-          runner_jit_config="$(cat /tmp/jit-config)"
-          export RUNNER_JIT_CONFIG="${runner_jit_config}"
           cat > /tmp/runpod-startup.sh <<'STARTUP'
           set -euo pipefail
           export DEBIAN_FRONTEND=noninteractive
           export RUNNER_ALLOW_RUNASROOT=1
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl tar gzip python3 git
+          apt-get install -y --no-install-recommends ca-certificates curl tar gzip python3 python3-pip git
           nvidia-smi
-          python3 -c 'import ctypes; ctypes.CDLL("libcuda.so.1")'
+          cat > /tmp/cuda_smoke_test.py <<'SMOKE'
+          STARTUP
+          cat scripts/ci/cuda_smoke_test.py >> /tmp/runpod-startup.sh
+          cat >> /tmp/runpod-startup.sh <<'STARTUP'
+          SMOKE
+          env -u RUNNER_JIT_CONFIG python3 /tmp/cuda_smoke_test.py \
+            --min-runtime-version 12.8 --full-runtime-version 12.8 --min-vram-gb 8
           cd /tmp
-          version=2.335.1
-          sha256=4ef2f25285f0ae4477f1fe1e346db76d2f3ebf03824e2ddd1973a2819bf6c8cf
+          version=2.337.0
+          sha256=70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613
           tarball="actions-runner-linux-x64-${version}.tar.gz"
           curl -fsSL -o "${tarball}" "https://github.com/actions/runner/releases/download/v${version}/${tarball}"
-          # Keep the checksum check explicit; update version and checksum together.
           echo "${sha256}  ${tarball}" | sha256sum -c -
-          rm -rf actions-runner && mkdir actions-runner && cd actions-runner
+          mkdir -p actions-runner
+          cd actions-runner
           tar xzf "../${tarball}"
           ./bin/installdependencies.sh
           ./run.sh --jitconfig "${RUNNER_JIT_CONFIG}"
           STARTUP
-          RUNNER_JIT_CONFIG="${runner_jit_config}" \
-          RUNNER_LABEL="${{ steps.runner_config.outputs.label }}" \
-          python3 scripts/ci/runpod_provision.py \
+          python3 -m scripts.ci.runpod_provision \
             --config scripts/ci/runpod_config.json \
             --startup-script /tmp/runpod-startup.sh \
-            --image "${RUNPOD_IMAGE}"
-
-      - name: Wait for RunPod runner registration
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          RUNNER_LABEL: ${{ steps.runner_label.outputs.label }}
-        run: |
-          set -euo pipefail
-          for attempt in $(seq 1 60); do
-            echo "Waiting for RunPod runner (${attempt}/60)."
-            if gh api --paginate "orgs/${GITHUB_REPOSITORY_OWNER}/actions/runners" \
-              --jq '.runners[] | select(.status == "online") | .labels[].name' \
-              | grep -Fxq "$RUNNER_LABEL"; then
-              echo "RunPod runner is online."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "::error::RunPod runner did not register within 10 minutes; inspect the pod's container and system logs."
-          exit 1
+            --image-name "$RUNPOD_IMAGE" \
+            --response-file /tmp/runpod-response.json
 
       - name: Delete pod after startup failure
-        if: ${{ failure() && steps.create_pod.outputs.pod_id != '' }}
+        if: ${{ (failure() || cancelled()) && steps.create_pod.outputs.pod_id != '' }}
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
           POD_ID: ${{ steps.create_pod.outputs.pod_id }}

@@ -18,17 +18,44 @@ set the repository Actions variable `RUNPOD_RUNNER_GROUP_ID` to its numeric ID.
 
 The pod receives only the single-use JIT runner configuration. The workflow is
 manual-dispatch only for now; it does not add RunPod credentials to pull
-request jobs. It uses the NVIDIA CUDA 12.8.1 development image and its default
-entrypoint, installs the benchmark toolchain and Python environment, and checks
-CUDA execution before collection.
-The unique per-run label sends the benchmark job to the newly created RunPod
-runner, rather than the existing `ubuntu-gpu` runner in the same group.
+request jobs. It uses the same RunPod image and provisioning modules as
+`tenferro-rs`, adapted for this repository. Imported modules and tests are
+covered by `scripts/ci/LICENSE-tenferro-MIT`.
 
-The configured GPU candidates mirror tenferro-rs's reviewed GPU tiers, including
-RTX A-series, RTX 30/40/50-series, L4/L40/L40S, V100, and A100. RunPod selects by
-availability; this is not price-ordered provisioning. The optional `gpu_type`
-dispatch input restricts a run to one exact RunPod GPU type ID for diagnostics.
-Record the actual GPU from the run metadata when comparing results.
+Provisioning runs on a GitHub-hosted runner:
+
+1. Validate the reviewed GPU/CUDA allowlist against RunPod's live OpenAPI.
+2. Order available candidates by live Secure Cloud price, falling back to the
+   reviewed tier order when pricing is unavailable. Try one GPU type at a time.
+3. Mint a fresh JIT configuration and unique runner label for every attempt.
+4. Before registering the runner, prove NVRTC compilation, PTX loading, kernel
+   launch, device synchronization, readback, and at least 8 GB VRAM.
+5. Observe both the GitHub runner registry and RunPod's GraphQL runtime state.
+   Delete rejected pods before trying another candidate. Stop if deletion
+   cannot be confirmed.
+
+The limits are six provisioning attempts, 420 seconds per startup, and early
+termination after two consecutive created pods fail to register. Capacity
+failures do not count as paid startup failures. Every attempt records GPU,
+price, startup duration, and rejection reason in the Actions logs. Successful
+provisioning publishes the accepted per-attempt label, preventing stale runners
+from receiving the benchmark job. CUDA 12.8 or newer is required by this harness.
+
+The optional `gpu_type` input restricts diagnostics to one reviewed GPU ID.
+The accepted GPU is recorded in benchmark metadata; comparisons must use the
+actual device, rather than treating all RunPod runs as the same hardware.
+
+The benchmark job installs the full CUDA toolkit and Python environment, then
+runs the selected suites sequentially. Rust is still rebuilt on the accepted
+pod before sampling, outside the timed operation. Unlike tenferro-rs's archived
+test execution, this workflow does not yet move compilation to a hosted job.
+
+Provisioning regression tests use injected transports and clocks and never
+create paid resources:
+
+```bash
+uv run python -m unittest discover -s scripts/ci/tests -p 'test_*.py'
+```
 
 Run a first GPU benchmark from GitHub Actions, or with:
 
