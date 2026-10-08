@@ -2,7 +2,7 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 4
+manifest_version: 5
 suite_id: cpu/perf_issues
 source: data/instances/perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -227,10 +227,16 @@ coverage:
   - followup_fft_ifft_mkl-dfti
   - followup_metadata_transpose_view_metadata
   - followup_metadata_transpose_view_julia-base
+  - followup_metadata_transpose_view_metadata-host-dyn
+  - followup_metadata_transpose_view_metadata-host-static
   - followup_metadata_slice_view_metadata
   - followup_metadata_slice_view_julia-base
+  - followup_metadata_slice_view_metadata-host-dyn
+  - followup_metadata_slice_view_metadata-host-static
   - followup_metadata_reshape_view_metadata
   - followup_metadata_reshape_view_julia-base
+  - followup_metadata_reshape_view_metadata-host-dyn
+  - followup_metadata_reshape_view_metadata-host-static
   full:
   - decode_proj_f32_eager-shared_in1024_out1024_len8
   - decode_proj_f32_eager-per-call_in1024_out1024_len8
@@ -465,7 +471,13 @@ coverage:
   - followup_fft_ifft_mkl-dfti
   - followup_metadata_transpose_view_metadata
   - followup_metadata_transpose_view_julia-base
+  - followup_metadata_transpose_view_metadata-host-dyn
+  - followup_metadata_transpose_view_metadata-host-static
   - followup_metadata_slice_view_metadata
   - followup_metadata_slice_view_julia-base
+  - followup_metadata_slice_view_metadata-host-dyn
+  - followup_metadata_slice_view_metadata-host-static
   - followup_metadata_reshape_view_metadata
   - followup_metadata_reshape_view_julia-base
+  - followup_metadata_reshape_view_metadata-host-dyn
+  - followup_metadata_reshape_view_metadata-host-static

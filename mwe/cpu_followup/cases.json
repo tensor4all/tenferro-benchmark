@@ -57,7 +57,9 @@
       }
     ],
     "paths": [
-      "metadata"
+      "metadata",
+      "metadata-host-dyn",
+      "metadata-host-static"
     ],
     "fixture": {
       "input_shape": [
@@ -126,7 +128,9 @@
       }
     ],
     "paths": [
-      "metadata"
+      "metadata",
+      "metadata-host-dyn",
+      "metadata-host-static"
     ],
     "fixture": {
       "input_shape": [
@@ -195,7 +199,9 @@
       }
     ],
     "paths": [
-      "metadata"
+      "metadata",
+      "metadata-host-dyn",
+      "metadata-host-static"
     ],
     "fixture": {
       "input_shape": [

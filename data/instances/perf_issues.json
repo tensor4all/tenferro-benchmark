@@ -6482,6 +6482,72 @@
   "execution_path": "julia-base"
  },
  {
+  "id": "followup_metadata_transpose_view_metadata-host-dyn",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "metadata-host-dyn",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.transpose_view",
+   "rust_path": "metadata-host-dyn",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "metadata-host-dyn",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.transpose_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "execution_path": "metadata-host-dyn"
+ },
+ {
+  "id": "followup_metadata_transpose_view_metadata-host-static",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "metadata-host-static",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.transpose_view",
+   "rust_path": "metadata-host-static",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "metadata-host-static",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.transpose_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "execution_path": "metadata-host-static"
+ },
+ {
   "id": "followup_metadata_slice_view_metadata",
   "issues": [
    "#2040"
@@ -6547,6 +6613,70 @@
   "execution_path": "julia-base"
  },
  {
+  "id": "followup_metadata_slice_view_metadata-host-dyn",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "metadata-host-dyn",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.slice_view",
+   "rust_path": "metadata-host-dyn",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "metadata-host-dyn",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.slice_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "execution_path": "metadata-host-dyn"
+ },
+ {
+  "id": "followup_metadata_slice_view_metadata-host-static",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "metadata-host-static",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.slice_view",
+   "rust_path": "metadata-host-static",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "metadata-host-static",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.slice_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "execution_path": "metadata-host-static"
+ },
+ {
   "id": "followup_metadata_reshape_view_metadata",
   "issues": [
    "#2040"
@@ -6610,5 +6740,69 @@
   "intent": "tenferro-rs #2040: metadata.reshape_view, fixed public-API fixture {'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
   "reference_for": "followup_metadata_reshape_view_metadata",
   "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_metadata_reshape_view_metadata-host-dyn",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "metadata-host-dyn",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.reshape_view",
+   "rust_path": "metadata-host-dyn",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     1024
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "metadata-host-dyn",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.reshape_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "execution_path": "metadata-host-dyn"
+ },
+ {
+  "id": "followup_metadata_reshape_view_metadata-host-static",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "metadata-host-static",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.reshape_view",
+   "rust_path": "metadata-host-static",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     1024
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "metadata-host-static",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.reshape_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "execution_path": "metadata-host-static"
  }
 ]

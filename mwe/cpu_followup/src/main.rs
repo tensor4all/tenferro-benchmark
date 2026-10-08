@@ -691,6 +691,7 @@ fn metadata(case: &Value, runs: usize, target: u128) -> Result<Value> {
     Ok(row)
 }
 
+mod metadata_host;
 mod permutation;
 fn main() -> Result<()> {
     let args: Vec<_> = std::env::args().collect();
@@ -715,7 +716,8 @@ fn main() -> Result<()> {
         "structural" => structural(case, path, threads, runs, target)?,
         "complex" | "linalg" => complex_or_linalg(case, path, threads, runs, target)?,
         "fft" => fft(case, path, threads, runs, target)?,
-        "metadata" => metadata(case, runs, target)?,
+        "metadata" if path == "metadata" => metadata(case, runs, target)?,
+        "metadata" => metadata_host::run(case, path, runs, target)?,
         "perm" => permutation::run(case, path, threads, runs, target)?,
         _ => unreachable!(),
     };

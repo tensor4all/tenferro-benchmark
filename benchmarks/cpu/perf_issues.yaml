@@ -271,7 +271,13 @@ problems:
   - followup_fft_ifft_mkl-dfti
   - followup_metadata_transpose_view_metadata
   - followup_metadata_transpose_view_julia-base
+  - followup_metadata_transpose_view_metadata-host-dyn
+  - followup_metadata_transpose_view_metadata-host-static
   - followup_metadata_slice_view_metadata
   - followup_metadata_slice_view_julia-base
+  - followup_metadata_slice_view_metadata-host-dyn
+  - followup_metadata_slice_view_metadata-host-static
   - followup_metadata_reshape_view_metadata
   - followup_metadata_reshape_view_julia-base
+  - followup_metadata_reshape_view_metadata-host-dyn
+  - followup_metadata_reshape_view_metadata-host-static

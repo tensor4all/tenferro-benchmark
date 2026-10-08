@@ -1,0 +1,71 @@
+{
+  "suite_id": "cpu/metadata_host",
+  "library_commit": "b3f47296244ff7b7c55ac0a75f782cb0835418c1",
+  "harness_commit": "1415ab1b1decc2bf93da6e31938909bd03d7e4e4",
+  "declared_utc": "2026-10-08T11:32:09.670918+00:00",
+  "threads": [
+    1
+  ],
+  "cases": [
+    "metadata.reshape_view",
+    "metadata.slice_view",
+    "metadata.transpose_view"
+  ],
+  "arms": [
+    "julia-base",
+    "metadata",
+    "metadata-host-dyn",
+    "metadata-host-static"
+  ],
+  "runs": 15,
+  "warmups": 3,
+  "target_ns": 50000000,
+  "memory_cap_bytes": 536870912,
+  "max_operations": 2000000,
+  "order": [
+    [
+      "julia-base",
+      "metadata",
+      "metadata-host-dyn",
+      "metadata-host-static"
+    ],
+    [
+      "metadata-host-static",
+      "metadata-host-dyn",
+      "metadata",
+      "julia-base"
+    ],
+    [
+      "metadata-host-static",
+      "metadata-host-dyn",
+      "metadata",
+      "julia-base"
+    ],
+    [
+      "julia-base",
+      "metadata",
+      "metadata-host-dyn",
+      "metadata-host-static"
+    ]
+  ],
+  "aa_order": [
+    "AB",
+    "BA",
+    "BA",
+    "AB"
+  ],
+  "thresholds": {
+    "relative_ratio": 1.2,
+    "max_cov": 0.2,
+    "max_aa_pair_deviation": 0.1
+  },
+  "scope": "pure metadata API calls plus intrinsic output descriptor allocation; no session; setup, input views, owner allocation and destruction untimed; all outputs retained",
+  "lifetime_contract": {
+    "metadata": "consumes owned dtype-erased DynRank TensorValue",
+    "host": "borrows typed Host view; each separately retained owner outlives input/output views",
+    "static": "Rank<1> slice; Rank<2> transpose; Rank<1> reshape input returns DynRank"
+  },
+  "affinity": "no external pinning",
+  "aa_control": "each Rust arm independently, same representation on both sides",
+  "statistic": "median of four paired round-median ratios; every AA pair must pass the predeclared bound"
+}
