@@ -1,0 +1,1758 @@
+Removing Python virtualenv before benchmark: .venv
+Preparing CPU Python benchmark environment
+Using CPython 3.12.3 interpreter at: /usr/bin/python3
+Creating virtual environment at: .venv
+Resolved 86 packages in 1ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 81 packages in 1.66s
+ + asttokens==3.0.1
+ + attrs==26.1.0
+ + certifi==2026.2.25
+ + charset-normalizer==3.4.4
+ + comm==0.2.3
+ + cuda-bindings==13.2.0
+ + cuda-pathfinder==1.5.4
+ + cuda-toolkit==13.0.2
+ + debugpy==1.8.20
+ + decorator==5.2.1
+ + einsum-benchmark==0.1.7
+ + executing==2.2.1
+ + filelock==3.29.0
+ + fsspec==2026.4.0
+ + idna==3.11
+ + ipykernel==7.2.0
+ + ipython==9.10.0
+ + ipython-pygments-lexers==1.1.1
+ + ipywidgets==8.1.8
+ + jax==0.10.1
+ + jaxlib==0.10.1
+ + jedi==0.19.2
+ + jinja2==3.1.6
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + jupyter-client==8.8.0
+ + jupyter-core==5.9.1
+ + jupyterlab-widgets==3.0.16
+ + markupsafe==3.0.3
+ + matplotlib-inline==0.2.1
+ + ml-dtypes==0.5.4
+ + mpmath==1.3.0
+ + nest-asyncio==1.6.0
+ + networkx==3.6.1
+ + numpy==2.4.2
+ + nvidia-cublas==13.1.1.3
+ + nvidia-cuda-cupti==13.0.85
+ + nvidia-cuda-nvrtc==13.0.88
+ + nvidia-cuda-runtime==13.0.96
+ + nvidia-cudnn-cu13==9.20.0.48
+ + nvidia-cufft==12.0.0.61
+ + nvidia-cufile==1.15.1.6
+ + nvidia-curand==10.4.0.35
+ + nvidia-cusolver==12.0.4.66
+ + nvidia-cusparse==12.6.3.3
+ + nvidia-cusparselt-cu13==0.8.1
+ + nvidia-nccl-cu13==2.29.7
+ + nvidia-nvjitlink==13.0.88
+ + nvidia-nvshmem-cu13==3.4.5
+ + nvidia-nvtx==13.0.85
+ + opt-einsum==3.4.0
+ + packaging==26.0
+ + parso==0.8.6
+ + pexpect==4.9.0
+ + platformdirs==4.9.2
+ + pooch==1.9.0
+ + prompt-toolkit==3.0.52
+ + psutil==7.2.2
+ + ptyprocess==0.7.0
+ + pure-eval==0.2.3
+ + pygments==2.19.2
+ + python-dateutil==2.9.0.post0
+ + pyyaml==6.0.3
+ + pyzmq==27.1.0
+ + referencing==0.37.0
+ + requests==2.32.5
+ + rpds-py==0.30.0
+ + scipy==1.17.1
+ + setuptools==81.0.0
+ + six==1.17.0
+ + stack-data==0.6.3
+ + sympy==1.14.0
+ + torch==2.12.0
+ + tornado==6.5.4
+ + tqdm==4.67.3
+ + traitlets==5.14.3
+ + triton==3.7.0
+ + typing-extensions==4.15.0
+ + urllib3==2.6.3
+ + wcwidth==0.6.0
+ + widgetsnbextension==4.0.15
+Resolved 10 packages in 252ms
+Prepared 10 packages in 0.53ms
+Uninstalled 10 packages in 273ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 10 packages in 796ms
+ - filelock==3.29.0
+ + filelock==3.32.3
+ - fsspec==2026.4.0
+ + fsspec==2026.7.0
+ ~ jinja2==3.1.6
+ ~ markupsafe==3.0.3
+ ~ mpmath==1.3.0
+ ~ networkx==3.6.1
+ - setuptools==81.0.0
+ + setuptools==78.1.0
+ ~ sympy==1.14.0
+ - torch==2.12.0
+ + torch==2.12.0+cpu
+ - typing-extensions==4.15.0
+ + typing-extensions==4.16.0
+Running publication-gate benchmarks
+  features: system-mkl
+  threads:  1
+  profile:  full
+  suite:    all
+  output:   /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_044146/publication_gate_system-mkl_t1_full_all_20261008_044146.csv
+  OMP_NUM_THREADS=1
+  OMP_THREAD_LIMIT=1
+  OMP_DYNAMIC=FALSE
+  RAYON_NUM_THREADS=1
+  OPENBLAS_NUM_THREADS=1
+  GOTO_NUM_THREADS=1
+  MKL_NUM_THREADS=1
+  VECLIB_MAXIMUM_THREADS=1
+  VECLIB_NUM_THREADS=1
+  NUMEXPR_NUM_THREADS=1
+  BLIS_NUM_THREADS=1
+  PJRT_NPROC=1
+  XLA_FLAGS=--xla_cpu_multi_thread_eigen=false --xla_cpu_experimental_ynn_fusion_type= intra_op_parallelism_threads=1
+  JULIA_NUM_THREADS=1
+    Finished `release` profile [optimized] target(s) in 0.13s
+     Running `target/compatibility-mkl/release/publication_gate`
+publication_gate: requested_threads=1 backend_threads=1 scope_rayon_threads=1 global_rayon_threads=1
+Wrote /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_044146/publication_gate_system-mkl_t1_full_all_20261008_044146.csv
+CPU ops results saved to: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_044146/cpu_ops_t1_20261008_044146.csv
+Linalg JVP/VJP rows: 240
+Linalg JVP/VJP markdown saved to: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_044146/linalg_jvp_vjp_t1_20261008_044146.md
+[setup_extern_deps] tenferro-rs already exists at extern/tenferro-rs; reusing current checkout
+[setup_extern_deps] strided-rs already exists at extern/strided-rs; reusing current checkout
+[setup_extern_deps] OPENBLAS_ROOT=/opt/openblas
+[setup_extern_deps] MKLROOT=/opt/intel/oneapi/mkl/latest
+[setup_extern_deps] TENFERRO_RS_DIR=/workspaces/tenferro-benchmark/extern/tenferro-rs
+[setup_extern_deps] STRIDED_RS_DIR=/workspaces/tenferro-benchmark/extern/strided-rs
+[setup_extern_deps] TENFERRO_CPU_FEATURES=system-mkl
+Instantiating Julia project (OMEinsum.jl)...
+┌ Warning: The active manifest file has dependencies that were resolved with a different julia version (1.12.6). Unexpected behavior may occur.
+└ @ /workspaces/tenferro-benchmark/Manifest.toml:0
+============================================
+ CPU einsum benchmark suite
+============================================
+Project dir:  /workspaces/tenferro-benchmark
+Threads:      4
+Timestamp:    20261008_053424
+Suite:        cpu/einsum
+Suite file:   benchmarks/cpu/einsum.yaml
+Instances:    24 from benchmarks/cpu/einsum.yaml
+Target:       amd-cpu
+Run dir:      /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424
+Features:     system-mkl
+CPU backend:  blas
+tenferro-rs:  5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+  OMP_NUM_THREADS=4
+  OMP_THREAD_LIMIT=4
+  OMP_DYNAMIC=FALSE
+  RAYON_NUM_THREADS=4
+  OPENBLAS_NUM_THREADS=4
+  GOTO_NUM_THREADS=4
+  MKL_NUM_THREADS=4
+  VECLIB_MAXIMUM_THREADS=4
+  VECLIB_NUM_THREADS=4
+  NUMEXPR_NUM_THREADS=4
+  BLIS_NUM_THREADS=4
+  PJRT_NPROC=4
+  XLA_FLAGS=--xla_cpu_multi_thread_eigen=true --xla_cpu_experimental_ynn_fusion_type= intra_op_parallelism_threads=4
+  JULIA_NUM_THREADS=4
+
+============================================
+ Rust benchmark (threads=4)
+============================================
+  OMP_NUM_THREADS=4
+  OMP_THREAD_LIMIT=4
+  OMP_DYNAMIC=FALSE
+  RAYON_NUM_THREADS=4
+  OPENBLAS_NUM_THREADS=4
+  GOTO_NUM_THREADS=4
+  MKL_NUM_THREADS=4
+  VECLIB_MAXIMUM_THREADS=4
+  VECLIB_NUM_THREADS=4
+  NUMEXPR_NUM_THREADS=4
+  BLIS_NUM_THREADS=4
+  PJRT_NPROC=4
+  XLA_FLAGS=--xla_cpu_multi_thread_eigen=true --xla_cpu_experimental_ynn_fusion_type= intra_op_parallelism_threads=4
+  JULIA_NUM_THREADS=4
+  OPENBLAS_ROOT=/opt/openblas
+  MKLROOT=/opt/intel/oneapi/mkl/latest
+  tenferro features=system-mkl
+  TENFERRO_CPU_BACKEND_KIND=blas
+
+============================================
+ Rust: tenferro trace/eager
+============================================
+Building tenferro benchmark (system-mkl, release)...
+    Finished `release` profile [optimized] target(s) in 0.17s
+Running tenferro trace benchmark...
+    Finished `release` profile [optimized] target(s) in 0.14s
+     Running `target/compatibility-mkl/release/tenferro-einsum-benchmark`
+Warning: skip /workspaces/tenferro-benchmark/data/instances/gpu_perf_issues.json (parse failed: invalid type: map, expected a string at line 2 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/gpu_permutation_mac_patterns.json (parse failed: missing field `name` at line 75 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/gpu_permutation_patterns.json (parse failed: missing field `name` at line 112 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/perf_issues.json (parse failed: invalid type: map, expected a string at line 2 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/permutation_patterns.json (parse failed: missing field `name` at line 127 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/session_matrix.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/small_work.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+tenferro-trace benchmark suite
+==================================
+Loaded 24 instances from /workspaces/tenferro-benchmark/data/instances
+Backend: tenferro-trace
+TENFERRO_CPU_BACKEND_KIND=blas
+TENFERRO_CPU_PROVIDER=default
+TENFERRO_OPT_DOT_DECOMPOSER=0
+RAYON_NUM_THREADS=4, OMP_NUM_THREADS=4
+Timing: median ± IQR of 15 runs (3 warmup), graph compiled once, executed through Runtime::run_compiled
+
+Strategy: opt_flops
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms) Compile (ms)
+------------------------------------------------------------------------------------------------------------------------
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        5.336      0.817        0.106
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.973      0.117        0.083
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.172      0.177        0.104
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.193      0.010        0.096
+  [5/24] bin_elementwise_mul_2048x2048...
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        3.237      0.203        0.069
+  [6/24] bin_elementwise_mul_512x512...
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.092      0.031        0.073
+  [7/24] bin_matmul_1024...
+bin_matmul_1024                                           2       9.03        20.00       28.080      0.669        0.076
+  [8/24] bin_matmul_256...
+bin_matmul_256                                            2       7.22        16.00        0.646      0.005        0.076
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.043      0.016        0.080
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.139      0.101        0.092
+  [11/24] bin_omeinsum_matmul_10x10...
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.056      0.006        0.097
+  [12/24] bin_outer_product_4096...
+bin_outer_product_4096                                    2       7.22        24.00       11.289      5.566        0.048
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       19.830      0.517        0.088
+  [14/24] gm_queen5_5_3.wcsp...
+PathAnalysis: instance=gm_queen5_5_3.wcsp strategy=opt_flops steps=159 dot=13 outer=29 broadcast_mul=117 max_rank=17 max_intermediate_elements=129140163 total_intermediate_elements=592127821
+PathWarning: instance=gm_queen5_5_3.wcsp strategy=opt_flops large_intermediate=true; compare path strategies before adding kernel-level optimizations
+gm_queen5_5_3.wcsp                                      160       9.75        26.94     1883.194     18.585        3.841
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       14.103      1.650        1.832
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       32.334      6.084        0.697
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       15.228      2.173        1.791
+  [18/24] nary_matmul_chain_64...
+nary_matmul_chain_64                                      3       5.24        12.00        0.066      0.024        0.086
+  [19/24] str_matrix_chain_multiplication_100...
+str_matrix_chain_multiplication_100                     100       8.48        17.26        5.220      0.317        1.972
+  [20/24] str_mps_varying_inner_product_200...
+str_mps_varying_inner_product_200                       200       8.31        15.48       15.989      4.644        6.426
+  [21/24] str_nw_mera_closed_120...
+str_nw_mera_closed_120                                  120      10.66        25.02      571.352     10.271        3.178
+  [22/24] str_nw_mera_open_26...
+str_nw_mera_open_26                                      26      10.49        25.36      598.579      4.306        3.445
+  [23/24] tensornetwork_permutation_focus_step409_316...
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      142.288      5.471        9.039
+  [24/24] tensornetwork_permutation_light_415...
+tensornetwork_permutation_light_415                     415       9.65        24.00      139.924      6.792       13.536
+
+Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms) Compile (ms)
+------------------------------------------------------------------------------------------------------------------------
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+  -> bin_batched_matmul_b32_m128_n128_k128 strategy=opt_size: reusing previous measurement for identical path
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        5.336      0.817        0.106
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+  -> bin_batched_matmul_b32_m64_n64_k64 strategy=opt_size: reusing previous measurement for identical path
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.973      0.117        0.083
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_compact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.172      0.177        0.104
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_noncompact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.193      0.010        0.096
+  [5/24] bin_elementwise_mul_2048x2048...
+  -> bin_elementwise_mul_2048x2048 strategy=opt_size: reusing previous measurement for identical path
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        3.237      0.203        0.069
+  [6/24] bin_elementwise_mul_512x512...
+  -> bin_elementwise_mul_512x512 strategy=opt_size: reusing previous measurement for identical path
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.092      0.031        0.073
+  [7/24] bin_matmul_1024...
+  -> bin_matmul_1024 strategy=opt_size: reusing previous measurement for identical path
+bin_matmul_1024                                           2       9.03        20.00       28.080      0.669        0.076
+  [8/24] bin_matmul_256...
+  -> bin_matmul_256 strategy=opt_size: reusing previous measurement for identical path
+bin_matmul_256                                            2       7.22        16.00        0.646      0.005        0.076
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+  -> bin_omeinsum_batched_matmul_8x8_batch_4 strategy=opt_size: reusing previous measurement for identical path
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.043      0.016        0.080
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+  -> bin_omeinsum_high_d_12x12_contract_4_batch_4 strategy=opt_size: reusing previous measurement for identical path
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.139      0.101        0.092
+  [11/24] bin_omeinsum_matmul_10x10...
+  -> bin_omeinsum_matmul_10x10 strategy=opt_size: reusing previous measurement for identical path
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.056      0.006        0.097
+  [12/24] bin_outer_product_4096...
+  -> bin_outer_product_4096 strategy=opt_size: reusing previous measurement for identical path
+bin_outer_product_4096                                    2       7.22        24.00       11.289      5.566        0.048
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+  -> bin_permuted_r4_abcd_dbef_acef_d32 strategy=opt_size: reusing previous measurement for identical path
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       19.830      0.517        0.088
+  [14/24] gm_queen5_5_3.wcsp...
+gm_queen5_5_3.wcsp                                      160      10.33        25.36      701.870      8.029        3.541
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       15.318      2.300        2.433
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       36.430      5.499        0.693
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       15.968      2.777        2.488
+  [18/24] nary_matmul_chain_64...
+  -> nary_matmul_chain_64 strategy=opt_size: reusing previous measurement for identical path
+nary_matmul_chain_64                                      3       5.24        12.00        0.066      0.024        0.086
+  [19/24] str_matrix_chain_multiplication_100...
+str_matrix_chain_multiplication_100                     100       8.48        17.26        5.373      0.455        1.861
+  [20/24] str_mps_varying_inner_product_200...
+str_mps_varying_inner_product_200                       200       8.31        15.48       16.067      2.413        6.567
+  [21/24] str_nw_mera_closed_120...
+str_nw_mera_closed_120                                  120      10.67        24.91      461.765      5.849        3.382
+  [22/24] str_nw_mera_open_26...
+str_nw_mera_open_26                                      26      10.49        25.36      583.995      3.814        0.903
+  [23/24] tensornetwork_permutation_focus_step409_316...
+  -> tensornetwork_permutation_focus_step409_316 strategy=opt_size: reusing previous measurement for identical path
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      142.288      5.471        9.039
+  [24/24] tensornetwork_permutation_light_415...
+  -> tensornetwork_permutation_light_415 strategy=opt_size: reusing previous measurement for identical path
+tensornetwork_permutation_light_415                     415       9.65        24.00      139.924      6.792       13.536
+
+tenferro trace results saved to: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/tenferro_trace_t4_20261008_053424.log
+
+Running tenferro eager benchmark...
+    Finished `release` profile [optimized] target(s) in 0.13s
+     Running `target/compatibility-mkl/release/tenferro-einsum-benchmark`
+Warning: skip /workspaces/tenferro-benchmark/data/instances/gpu_perf_issues.json (parse failed: invalid type: map, expected a string at line 2 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/gpu_permutation_mac_patterns.json (parse failed: missing field `name` at line 75 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/gpu_permutation_patterns.json (parse failed: missing field `name` at line 112 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/perf_issues.json (parse failed: invalid type: map, expected a string at line 2 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/permutation_patterns.json (parse failed: missing field `name` at line 127 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/session_matrix.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/small_work.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+tenferro-eager benchmark suite
+==================================
+Loaded 24 instances from /workspaces/tenferro-benchmark/data/instances
+Backend: tenferro-eager
+TENFERRO_CPU_BACKEND_KIND=blas
+TENFERRO_CPU_PROVIDER=default
+TENFERRO_OPT_DOT_DECOMPOSER=0
+RAYON_NUM_THREADS=4, OMP_NUM_THREADS=4
+Timing: median ± IQR of 15 runs (3 warmup), precomputed path, eager binary contractions in one shared CPU execution scope
+
+Strategy: opt_flops
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms) Compile (ms)
+------------------------------------------------------------------------------------------------------------------------
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        2.098      0.012        0.000
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.558      0.013        0.000
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.139      0.073        0.000
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.088      0.004        0.000
+  [5/24] bin_elementwise_mul_2048x2048...
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        3.125      0.606        0.000
+  [6/24] bin_elementwise_mul_512x512...
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.046      0.013        0.000
+  [7/24] bin_matmul_1024...
+bin_matmul_1024                                           2       9.03        20.00       17.526      0.065        0.000
+  [8/24] bin_matmul_256...
+bin_matmul_256                                            2       7.22        16.00        0.322      0.008        0.000
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.016      0.001        0.000
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.063      0.002        0.000
+  [11/24] bin_omeinsum_matmul_10x10...
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.016      0.001        0.000
+  [12/24] bin_outer_product_4096...
+bin_outer_product_4096                                    2       7.22        24.00       10.359      0.476        0.000
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       19.187      0.337        0.000
+  [14/24] gm_queen5_5_3.wcsp...
+PathAnalysis: instance=gm_queen5_5_3.wcsp strategy=opt_flops steps=159 dot=13 outer=29 broadcast_mul=117 max_rank=17 max_intermediate_elements=129140163 total_intermediate_elements=592127821
+PathWarning: instance=gm_queen5_5_3.wcsp strategy=opt_flops large_intermediate=true; compare path strategies before adding kernel-level optimizations
+gm_queen5_5_3.wcsp                                      160       9.75        26.94     1871.317     20.567        0.000
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       21.766      1.049        0.000
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       49.351      4.432        0.000
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       22.535      2.141        0.000
+  [18/24] nary_matmul_chain_64...
+nary_matmul_chain_64                                      3       5.24        12.00        0.032      0.002        0.000
+  [19/24] str_matrix_chain_multiplication_100...
+str_matrix_chain_multiplication_100                     100       8.48        17.26        4.974      0.873        0.000
+  [20/24] str_mps_varying_inner_product_200...
+str_mps_varying_inner_product_200                       200       8.31        15.48       15.559      1.342        0.000
+  [21/24] str_nw_mera_closed_120...
+str_nw_mera_closed_120                                  120      10.66        25.02      521.686     14.381        0.000
+  [22/24] str_nw_mera_open_26...
+str_nw_mera_open_26                                      26      10.49        25.36      453.522      7.202        0.000
+  [23/24] tensornetwork_permutation_focus_step409_316...
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      184.822      9.267        0.000
+  [24/24] tensornetwork_permutation_light_415...
+tensornetwork_permutation_light_415                     415       9.65        24.00      184.155      6.678        0.000
+
+Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms) Compile (ms)
+------------------------------------------------------------------------------------------------------------------------
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+  -> bin_batched_matmul_b32_m128_n128_k128 strategy=opt_size: reusing previous measurement for identical path
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        2.098      0.012        0.000
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+  -> bin_batched_matmul_b32_m64_n64_k64 strategy=opt_size: reusing previous measurement for identical path
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.558      0.013        0.000
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_compact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.139      0.073        0.000
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_noncompact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.088      0.004        0.000
+  [5/24] bin_elementwise_mul_2048x2048...
+  -> bin_elementwise_mul_2048x2048 strategy=opt_size: reusing previous measurement for identical path
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        3.125      0.606        0.000
+  [6/24] bin_elementwise_mul_512x512...
+  -> bin_elementwise_mul_512x512 strategy=opt_size: reusing previous measurement for identical path
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.046      0.013        0.000
+  [7/24] bin_matmul_1024...
+  -> bin_matmul_1024 strategy=opt_size: reusing previous measurement for identical path
+bin_matmul_1024                                           2       9.03        20.00       17.526      0.065        0.000
+  [8/24] bin_matmul_256...
+  -> bin_matmul_256 strategy=opt_size: reusing previous measurement for identical path
+bin_matmul_256                                            2       7.22        16.00        0.322      0.008        0.000
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+  -> bin_omeinsum_batched_matmul_8x8_batch_4 strategy=opt_size: reusing previous measurement for identical path
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.016      0.001        0.000
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+  -> bin_omeinsum_high_d_12x12_contract_4_batch_4 strategy=opt_size: reusing previous measurement for identical path
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.063      0.002        0.000
+  [11/24] bin_omeinsum_matmul_10x10...
+  -> bin_omeinsum_matmul_10x10 strategy=opt_size: reusing previous measurement for identical path
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.016      0.001        0.000
+  [12/24] bin_outer_product_4096...
+  -> bin_outer_product_4096 strategy=opt_size: reusing previous measurement for identical path
+bin_outer_product_4096                                    2       7.22        24.00       10.359      0.476        0.000
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+  -> bin_permuted_r4_abcd_dbef_acef_d32 strategy=opt_size: reusing previous measurement for identical path
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       19.187      0.337        0.000
+  [14/24] gm_queen5_5_3.wcsp...
+gm_queen5_5_3.wcsp                                      160      10.33        25.36      820.139      9.067        0.000
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       21.135      2.440        0.000
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       44.406      2.326        0.000
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       22.272      3.487        0.000
+  [18/24] nary_matmul_chain_64...
+  -> nary_matmul_chain_64 strategy=opt_size: reusing previous measurement for identical path
+nary_matmul_chain_64                                      3       5.24        12.00        0.032      0.002        0.000
+  [19/24] str_matrix_chain_multiplication_100...
+str_matrix_chain_multiplication_100                     100       8.48        17.26        5.080      0.043        0.000
+  [20/24] str_mps_varying_inner_product_200...
+str_mps_varying_inner_product_200                       200       8.31        15.48       16.288      2.914        0.000
+  [21/24] str_nw_mera_closed_120...
+str_nw_mera_closed_120                                  120      10.67        24.91      445.002      8.336        0.000
+  [22/24] str_nw_mera_open_26...
+str_nw_mera_open_26                                      26      10.49        25.36      446.992      6.155        0.000
+  [23/24] tensornetwork_permutation_focus_step409_316...
+  -> tensornetwork_permutation_focus_step409_316 strategy=opt_size: reusing previous measurement for identical path
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      184.822      9.267        0.000
+  [24/24] tensornetwork_permutation_light_415...
+  -> tensornetwork_permutation_light_415 strategy=opt_size: reusing previous measurement for identical path
+tensornetwork_permutation_light_415                     415       9.65        24.00      184.155      6.678        0.000
+
+tenferro eager results saved to: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/tenferro_eager_t4_20261008_053424.log
+
+============================================
+ Rust benchmark complete
+============================================
+Results:
+  /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/tenferro_trace_t4_20261008_053424.log
+  /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/tenferro_eager_t4_20261008_053424.log
+Removing Python virtualenv before benchmark: .venv
+Preparing CPU Python benchmark environment
+Using CPython 3.12.3 interpreter at: /usr/bin/python3
+Creating virtual environment at: .venv
+Resolved 86 packages in 0.96ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 81 packages in 1.67s
+ + asttokens==3.0.1
+ + attrs==26.1.0
+ + certifi==2026.2.25
+ + charset-normalizer==3.4.4
+ + comm==0.2.3
+ + cuda-bindings==13.2.0
+ + cuda-pathfinder==1.5.4
+ + cuda-toolkit==13.0.2
+ + debugpy==1.8.20
+ + decorator==5.2.1
+ + einsum-benchmark==0.1.7
+ + executing==2.2.1
+ + filelock==3.29.0
+ + fsspec==2026.4.0
+ + idna==3.11
+ + ipykernel==7.2.0
+ + ipython==9.10.0
+ + ipython-pygments-lexers==1.1.1
+ + ipywidgets==8.1.8
+ + jax==0.10.1
+ + jaxlib==0.10.1
+ + jedi==0.19.2
+ + jinja2==3.1.6
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + jupyter-client==8.8.0
+ + jupyter-core==5.9.1
+ + jupyterlab-widgets==3.0.16
+ + markupsafe==3.0.3
+ + matplotlib-inline==0.2.1
+ + ml-dtypes==0.5.4
+ + mpmath==1.3.0
+ + nest-asyncio==1.6.0
+ + networkx==3.6.1
+ + numpy==2.4.2
+ + nvidia-cublas==13.1.1.3
+ + nvidia-cuda-cupti==13.0.85
+ + nvidia-cuda-nvrtc==13.0.88
+ + nvidia-cuda-runtime==13.0.96
+ + nvidia-cudnn-cu13==9.20.0.48
+ + nvidia-cufft==12.0.0.61
+ + nvidia-cufile==1.15.1.6
+ + nvidia-curand==10.4.0.35
+ + nvidia-cusolver==12.0.4.66
+ + nvidia-cusparse==12.6.3.3
+ + nvidia-cusparselt-cu13==0.8.1
+ + nvidia-nccl-cu13==2.29.7
+ + nvidia-nvjitlink==13.0.88
+ + nvidia-nvshmem-cu13==3.4.5
+ + nvidia-nvtx==13.0.85
+ + opt-einsum==3.4.0
+ + packaging==26.0
+ + parso==0.8.6
+ + pexpect==4.9.0
+ + platformdirs==4.9.2
+ + pooch==1.9.0
+ + prompt-toolkit==3.0.52
+ + psutil==7.2.2
+ + ptyprocess==0.7.0
+ + pure-eval==0.2.3
+ + pygments==2.19.2
+ + python-dateutil==2.9.0.post0
+ + pyyaml==6.0.3
+ + pyzmq==27.1.0
+ + referencing==0.37.0
+ + requests==2.32.5
+ + rpds-py==0.30.0
+ + scipy==1.17.1
+ + setuptools==81.0.0
+ + six==1.17.0
+ + stack-data==0.6.3
+ + sympy==1.14.0
+ + torch==2.12.0
+ + tornado==6.5.4
+ + tqdm==4.67.3
+ + traitlets==5.14.3
+ + triton==3.7.0
+ + typing-extensions==4.15.0
+ + urllib3==2.6.3
+ + wcwidth==0.6.0
+ + widgetsnbextension==4.0.15
+Resolved 10 packages in 345ms
+Prepared 10 packages in 0.39ms
+Uninstalled 10 packages in 282ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 10 packages in 799ms
+ - filelock==3.29.0
+ + filelock==3.32.3
+ - fsspec==2026.4.0
+ + fsspec==2026.7.0
+ ~ jinja2==3.1.6
+ ~ markupsafe==3.0.3
+ ~ mpmath==1.3.0
+ ~ networkx==3.6.1
+ - setuptools==81.0.0
+ + setuptools==78.1.0
+ ~ sympy==1.14.0
+ - torch==2.12.0
+ + torch==2.12.0+cpu
+ - typing-extensions==4.15.0
+ + typing-extensions==4.16.0
+============================================
+ Python benchmark: pytorch-cpu + jax-cpu (threads=4)
+============================================
+  OMP_NUM_THREADS=4
+  OMP_THREAD_LIMIT=4
+  OMP_DYNAMIC=FALSE
+  RAYON_NUM_THREADS=4
+  OPENBLAS_NUM_THREADS=4
+  GOTO_NUM_THREADS=4
+  MKL_NUM_THREADS=4
+  VECLIB_MAXIMUM_THREADS=4
+  VECLIB_NUM_THREADS=4
+  NUMEXPR_NUM_THREADS=4
+  BLIS_NUM_THREADS=4
+  PJRT_NPROC=4
+  XLA_FLAGS=--xla_cpu_multi_thread_eigen=true --xla_cpu_experimental_ynn_fusion_type= intra_op_parallelism_threads=4
+  JULIA_NUM_THREADS=4
+
+============================================
+ Python: pytorch-cpu
+============================================
+Running pytorch-cpu benchmark...
+Warning: skip gpu_perf_issues.json (missing field 'name')
+Warning: skip gpu_permutation_mac_patterns.json (missing field 'name')
+Warning: skip gpu_permutation_patterns.json (missing field 'name')
+Warning: skip perf_issues.json (missing field 'name')
+Warning: skip permutation_patterns.json (missing field 'name')
+Warning: skip session_matrix.json (missing field 'name')
+Warning: skip small_work.json (missing field 'name')
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+  [5/24] bin_elementwise_mul_2048x2048...
+  [6/24] bin_elementwise_mul_512x512...
+  [7/24] bin_matmul_1024...
+  [8/24] bin_matmul_256...
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+  [11/24] bin_omeinsum_matmul_10x10...
+  [12/24] bin_outer_product_4096...
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+  [14/24] gm_queen5_5_3.wcsp...
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+  [18/24] nary_matmul_chain_64...
+  [19/24] str_matrix_chain_multiplication_100...
+  [20/24] str_mps_varying_inner_product_200...
+  [21/24] str_nw_mera_closed_120...
+  [22/24] str_nw_mera_open_26...
+  [23/24] tensornetwork_permutation_focus_step409_316...
+  [24/24] tensornetwork_permutation_light_415...
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+  -> bin_batched_matmul_b32_m128_n128_k128 strategy=opt_size: reusing previous measurement for identical path
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+  -> bin_batched_matmul_b32_m64_n64_k64 strategy=opt_size: reusing previous measurement for identical path
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_compact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_noncompact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+  [5/24] bin_elementwise_mul_2048x2048...
+  -> bin_elementwise_mul_2048x2048 strategy=opt_size: reusing previous measurement for identical path
+  [6/24] bin_elementwise_mul_512x512...
+  -> bin_elementwise_mul_512x512 strategy=opt_size: reusing previous measurement for identical path
+  [7/24] bin_matmul_1024...
+  -> bin_matmul_1024 strategy=opt_size: reusing previous measurement for identical path
+  [8/24] bin_matmul_256...
+  -> bin_matmul_256 strategy=opt_size: reusing previous measurement for identical path
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+  -> bin_omeinsum_batched_matmul_8x8_batch_4 strategy=opt_size: reusing previous measurement for identical path
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+  -> bin_omeinsum_high_d_12x12_contract_4_batch_4 strategy=opt_size: reusing previous measurement for identical path
+  [11/24] bin_omeinsum_matmul_10x10...
+  -> bin_omeinsum_matmul_10x10 strategy=opt_size: reusing previous measurement for identical path
+  [12/24] bin_outer_product_4096...
+  -> bin_outer_product_4096 strategy=opt_size: reusing previous measurement for identical path
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+  -> bin_permuted_r4_abcd_dbef_acef_d32 strategy=opt_size: reusing previous measurement for identical path
+  [14/24] gm_queen5_5_3.wcsp...
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+  [18/24] nary_matmul_chain_64...
+  -> nary_matmul_chain_64 strategy=opt_size: reusing previous measurement for identical path
+  [19/24] str_matrix_chain_multiplication_100...
+  [20/24] str_mps_varying_inner_product_200...
+  [21/24] str_nw_mera_closed_120...
+  [22/24] str_nw_mera_open_26...
+  [23/24] tensornetwork_permutation_focus_step409_316...
+  -> tensornetwork_permutation_focus_step409_316 strategy=opt_size: reusing previous measurement for identical path
+  [24/24] tensornetwork_permutation_light_415...
+  -> tensornetwork_permutation_light_415 strategy=opt_size: reusing previous measurement for identical path
+pytorch-cpu einsum benchmark suite
+==================================
+Loaded 24 instances from /workspaces/tenferro-benchmark/data/instances
+Backend: pytorch-cpu
+OMP_NUM_THREADS=4
+OMP_THREAD_LIMIT=4
+OMP_DYNAMIC=FALSE
+RAYON_NUM_THREADS=4
+OPENBLAS_NUM_THREADS=4
+GOTO_NUM_THREADS=4
+MKL_NUM_THREADS=4
+VECLIB_MAXIMUM_THREADS=4
+VECLIB_NUM_THREADS=4
+NUMEXPR_NUM_THREADS=4
+BLIS_NUM_THREADS=4
+PJRT_NPROC=4
+XLA_FLAGS=--xla_cpu_multi_thread_eigen=true --xla_cpu_experimental_ynn_fusion_type= intra_op_parallelism_threads=4
+TORCH_NUM_THREADS=4
+TORCH_NUM_INTEROP_THREADS=4
+Timing: median ± IQR of 15 runs (3 warmup), path precomputed
+
+Strategy: opt_flops
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        1.156      0.004
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.187      0.003
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.057      0.002
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.057      0.002
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        3.146      0.254
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.042      0.003
+bin_matmul_1024                                           2       9.03        20.00       25.707      0.127
+bin_matmul_256                                            2       7.22        16.00        0.712      0.005
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.024      0.001
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.111      0.001
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.023      0.001
+bin_outer_product_4096                                    2       7.22        24.00        8.632      0.148
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       20.217      0.103
+gm_queen5_5_3.wcsp                                      160       9.75        26.94     1686.025     10.116
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96        8.017      0.276
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       19.719      0.265
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89        8.701      0.070
+nary_matmul_chain_64                                      3       5.24        12.00        0.047      0.001
+str_matrix_chain_multiplication_100                     100       8.48        17.26        5.760      0.044
+str_mps_varying_inner_product_200                       200       8.31        15.48       14.009      0.091
+str_nw_mera_closed_120                                  120      10.66        25.02      559.056      1.791
+str_nw_mera_open_26                                      26      10.49        25.36      355.086      1.786
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      234.708      0.795
+tensornetwork_permutation_light_415                     415       9.65        24.00      228.366      0.985
+
+Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        1.156      0.004
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.187      0.003
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.057      0.002
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.057      0.002
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        3.146      0.254
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.042      0.003
+bin_matmul_1024                                           2       9.03        20.00       25.707      0.127
+bin_matmul_256                                            2       7.22        16.00        0.712      0.005
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.024      0.001
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.111      0.001
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.023      0.001
+bin_outer_product_4096                                    2       7.22        24.00        8.632      0.148
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       20.217      0.103
+gm_queen5_5_3.wcsp                                      160      10.33        25.36      777.598      6.752
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96        8.843      0.177
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       20.311      0.080
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89        9.557      0.106
+nary_matmul_chain_64                                      3       5.24        12.00        0.047      0.001
+str_matrix_chain_multiplication_100                     100       8.48        17.26        5.739      0.055
+str_mps_varying_inner_product_200                       200       8.31        15.48       13.993      0.140
+str_nw_mera_closed_120                                  120      10.67        24.91      457.249      2.970
+str_nw_mera_open_26                                      26      10.49        25.36      355.250      1.833
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      234.708      0.795
+tensornetwork_permutation_light_415                     415       9.65        24.00      228.366      0.985
+
+pytorch-cpu results saved to: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/pytorch_cpu_t4_20261008_053424.log
+
+============================================
+ Python: jax-cpu
+============================================
+Running jax-cpu benchmark...
+Warning: skip gpu_perf_issues.json (missing field 'name')
+Warning: skip gpu_permutation_mac_patterns.json (missing field 'name')
+Warning: skip gpu_permutation_patterns.json (missing field 'name')
+Warning: skip perf_issues.json (missing field 'name')
+Warning: skip permutation_patterns.json (missing field 'name')
+Warning: skip session_matrix.json (missing field 'name')
+Warning: skip small_work.json (missing field 'name')
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+  [5/24] bin_elementwise_mul_2048x2048...
+  [6/24] bin_elementwise_mul_512x512...
+  [7/24] bin_matmul_1024...
+  [8/24] bin_matmul_256...
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+  [11/24] bin_omeinsum_matmul_10x10...
+  [12/24] bin_outer_product_4096...
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+  [14/24] gm_queen5_5_3.wcsp...
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+  [18/24] nary_matmul_chain_64...
+  [19/24] str_matrix_chain_multiplication_100...
+  [20/24] str_mps_varying_inner_product_200...
+  [21/24] str_nw_mera_closed_120...
+  [22/24] str_nw_mera_open_26...
+  [23/24] tensornetwork_permutation_focus_step409_316...
+  [24/24] tensornetwork_permutation_light_415...
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+  -> bin_batched_matmul_b32_m128_n128_k128 strategy=opt_size: reusing previous measurement for identical path
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+  -> bin_batched_matmul_b32_m64_n64_k64 strategy=opt_size: reusing previous measurement for identical path
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_compact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_noncompact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+  [5/24] bin_elementwise_mul_2048x2048...
+  -> bin_elementwise_mul_2048x2048 strategy=opt_size: reusing previous measurement for identical path
+  [6/24] bin_elementwise_mul_512x512...
+  -> bin_elementwise_mul_512x512 strategy=opt_size: reusing previous measurement for identical path
+  [7/24] bin_matmul_1024...
+  -> bin_matmul_1024 strategy=opt_size: reusing previous measurement for identical path
+  [8/24] bin_matmul_256...
+  -> bin_matmul_256 strategy=opt_size: reusing previous measurement for identical path
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+  -> bin_omeinsum_batched_matmul_8x8_batch_4 strategy=opt_size: reusing previous measurement for identical path
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+  -> bin_omeinsum_high_d_12x12_contract_4_batch_4 strategy=opt_size: reusing previous measurement for identical path
+  [11/24] bin_omeinsum_matmul_10x10...
+  -> bin_omeinsum_matmul_10x10 strategy=opt_size: reusing previous measurement for identical path
+  [12/24] bin_outer_product_4096...
+  -> bin_outer_product_4096 strategy=opt_size: reusing previous measurement for identical path
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+  -> bin_permuted_r4_abcd_dbef_acef_d32 strategy=opt_size: reusing previous measurement for identical path
+  [14/24] gm_queen5_5_3.wcsp...
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+  [18/24] nary_matmul_chain_64...
+  -> nary_matmul_chain_64 strategy=opt_size: reusing previous measurement for identical path
+  [19/24] str_matrix_chain_multiplication_100...
+  [20/24] str_mps_varying_inner_product_200...
+  [21/24] str_nw_mera_closed_120...
+  [22/24] str_nw_mera_open_26...
+  [23/24] tensornetwork_permutation_focus_step409_316...
+  -> tensornetwork_permutation_focus_step409_316 strategy=opt_size: reusing previous measurement for identical path
+  [24/24] tensornetwork_permutation_light_415...
+  -> tensornetwork_permutation_light_415 strategy=opt_size: reusing previous measurement for identical path
+jax-cpu einsum benchmark suite
+==================================
+Loaded 24 instances from /workspaces/tenferro-benchmark/data/instances
+Backend: jax-cpu
+OMP_NUM_THREADS=4
+OMP_THREAD_LIMIT=4
+OMP_DYNAMIC=FALSE
+RAYON_NUM_THREADS=4
+OPENBLAS_NUM_THREADS=4
+GOTO_NUM_THREADS=4
+MKL_NUM_THREADS=4
+VECLIB_MAXIMUM_THREADS=4
+VECLIB_NUM_THREADS=4
+NUMEXPR_NUM_THREADS=4
+BLIS_NUM_THREADS=4
+PJRT_NPROC=4
+XLA_FLAGS=--xla_cpu_multi_thread_eigen=true --xla_cpu_experimental_ynn_fusion_type= intra_op_parallelism_threads=4
+JAX_DEFAULT_BACKEND=cpu
+JAX_DOT_BACKEND=xla_cpu
+Timing: median ± IQR of 15 runs (3 warmup), path precomputed
+
+Strategy: opt_flops
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        1.462      0.060
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.691      0.021
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.303      0.072
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.280      0.088
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        5.125      0.339
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.204      0.078
+bin_matmul_1024                                           2       9.03        20.00       16.242      0.625
+bin_matmul_256                                            2       7.22        16.00        0.472      0.050
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.133      0.008
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.180      0.057
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.097      0.015
+bin_outer_product_4096                                    2       7.22        24.00       10.395      0.208
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       18.428      1.013
+gm_queen5_5_3.wcsp                                      160       9.75        26.94     1494.468     49.425
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       14.823      0.767
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       31.113      3.536
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       15.979      2.602
+nary_matmul_chain_64                                      3       5.24        12.00        0.114      0.023
+str_matrix_chain_multiplication_100                     100       8.48        17.26        5.737      0.213
+str_mps_varying_inner_product_200                       200       8.31        15.48       17.653      0.664
+str_nw_mera_closed_120                                  120      10.66        25.02      501.404      4.278
+str_nw_mera_open_26                                      26      10.49        25.36      398.911      7.203
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      205.838      4.333
+tensornetwork_permutation_light_415                     415       9.65        24.00      218.839      3.603
+
+Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        1.462      0.060
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.691      0.021
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.303      0.072
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        0.280      0.088
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        5.125      0.339
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.204      0.078
+bin_matmul_1024                                           2       9.03        20.00       16.242      0.625
+bin_matmul_256                                            2       7.22        16.00        0.472      0.050
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.133      0.008
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.180      0.057
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.097      0.015
+bin_outer_product_4096                                    2       7.22        24.00       10.395      0.208
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       18.428      1.013
+gm_queen5_5_3.wcsp                                      160      10.33        25.36      641.971     11.748
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       15.073      1.663
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       32.371      2.677
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       14.571      0.891
+nary_matmul_chain_64                                      3       5.24        12.00        0.114      0.023
+str_matrix_chain_multiplication_100                     100       8.48        17.26        6.515      0.396
+str_mps_varying_inner_product_200                       200       8.31        15.48       16.297      0.885
+str_nw_mera_closed_120                                  120      10.67        24.91      430.970     14.292
+str_nw_mera_open_26                                      26      10.49        25.36      413.274     14.026
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      205.838      4.333
+tensornetwork_permutation_light_415                     415       9.65        24.00      218.839      3.603
+
+jax-cpu results saved to: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/jax_cpu_t4_20261008_053424.log
+
+============================================
+ Python benchmark complete
+============================================
+Results:
+  /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/pytorch_cpu_t4_20261008_053424.log
+  /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/jax_cpu_t4_20261008_053424.log
+
+Running OMEinsum.jl einsum benchmark (threads=4)...
+Warning: skip gpu_perf_issues.json (missing field 'name')
+Warning: skip gpu_permutation_mac_patterns.json (missing field 'name')
+Warning: skip gpu_permutation_patterns.json (missing field 'name')
+Warning: skip perf_issues.json (missing field 'name')
+Warning: skip permutation_patterns.json (missing field 'name')
+Warning: skip session_matrix.json (missing field 'name')
+Warning: skip small_work.json (missing field 'name')
+omeinsum-jl einsum benchmark suite
+==================================
+Loaded 24 instances from /workspaces/tenferro-benchmark/data/instances
+Backend: omeinsum-jl
+JULIA_NUM_THREADS=4
+OMP_NUM_THREADS=4
+OPENBLAS_NUM_THREADS=4
+BLAS.get_num_threads()=4
+Timing: median ± IQR of 15 runs (3 warmup), path precomputed (OMEinsum's own optimizer is not used)
+
+Mode: omeinsum_path / Strategy: opt_flops
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        5.514      5.856
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.532      0.317
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.500      1.517
+  [5/24] bin_elementwise_mul_2048x2048...
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        5.171      5.319
+  [6/24] bin_elementwise_mul_512x512...
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        9.641      0.241
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.095      0.307
+  [7/24] bin_matmul_1024...
+bin_matmul_1024                                           2       9.03        20.00       31.283      8.470
+  [8/24] bin_matmul_256...
+bin_matmul_256                                            2       7.22        16.00        0.531      0.004
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.012      0.001
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+  [11/24] bin_omeinsum_matmul_10x10...
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.038      0.001
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.020      0.001
+  [12/24] bin_outer_product_4096...
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+bin_outer_product_4096                                    2       7.22        24.00      236.050      3.601
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       22.307      5.293
+  [14/24] gm_queen5_5_3.wcsp...
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+gm_queen5_5_3.wcsp                                      160       9.75        26.94     5507.456     45.829
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       17.815      4.619
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       56.072      6.914
+  [18/24] nary_matmul_chain_64...
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       33.554     16.101
+  [19/24] str_matrix_chain_multiplication_100...
+nary_matmul_chain_64                                      3       5.24        12.00        0.071      0.027
+  [20/24] str_mps_varying_inner_product_200...
+str_matrix_chain_multiplication_100                     100       8.48        17.26        8.881      0.743
+str_mps_varying_inner_product_200                       200       8.31        15.48       21.768      2.104
+  [21/24] str_nw_mera_closed_120...
+  [22/24] str_nw_mera_open_26...
+str_nw_mera_closed_120                                  120      10.66        25.02      630.384     11.938
+  [23/24] tensornetwork_permutation_focus_step409_316...
+str_nw_mera_open_26                                      26      10.49        25.36      696.408     37.167
+  [24/24] tensornetwork_permutation_light_415...
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      330.805     28.403
+tensornetwork_permutation_light_415                     415       9.65        24.00      337.892      8.323
+
+Mode: omeinsum_path / Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00        5.514      5.856
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.532      0.317
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        0.500      1.517
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        5.171      5.319
+bin_elementwise_mul_2048x2048                             2       6.62        22.00        9.641      0.241
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.095      0.307
+bin_matmul_1024                                           2       9.03        20.00       31.283      8.470
+bin_matmul_256                                            2       7.22        16.00        0.531      0.004
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.012      0.001
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.038      0.001
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.020      0.001
+bin_outer_product_4096                                    2       7.22        24.00      236.050      3.601
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00       22.307      5.293
+  [1/24] bin_batched_matmul_b32_m128_n128_k128...
+  -> bin_batched_matmul_b32_m128_n128_k128 strategy=opt_size: reusing previous measurement for identical path
+  [2/24] bin_batched_matmul_b32_m64_n64_k64...
+  -> bin_batched_matmul_b32_m64_n64_k64 strategy=opt_size: reusing previous measurement for identical path
+  [3/24] bin_batched_outer_product_compact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_compact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+  [4/24] bin_batched_outer_product_noncompact_j16_k16_o64_t64...
+  -> bin_batched_outer_product_noncompact_j16_k16_o64_t64 strategy=opt_size: reusing previous measurement for identical path
+  [5/24] bin_elementwise_mul_2048x2048...
+  -> bin_elementwise_mul_2048x2048 strategy=opt_size: reusing previous measurement for identical path
+  [6/24] bin_elementwise_mul_512x512...
+  -> bin_elementwise_mul_512x512 strategy=opt_size: reusing previous measurement for identical path
+  [7/24] bin_matmul_1024...
+  -> bin_matmul_1024 strategy=opt_size: reusing previous measurement for identical path
+  [8/24] bin_matmul_256...
+  -> bin_matmul_256 strategy=opt_size: reusing previous measurement for identical path
+  [9/24] bin_omeinsum_batched_matmul_8x8_batch_4...
+  -> bin_omeinsum_batched_matmul_8x8_batch_4 strategy=opt_size: reusing previous measurement for identical path
+  [10/24] bin_omeinsum_high_d_12x12_contract_4_batch_4...
+  -> bin_omeinsum_high_d_12x12_contract_4_batch_4 strategy=opt_size: reusing previous measurement for identical path
+  [11/24] bin_omeinsum_matmul_10x10...
+  -> bin_omeinsum_matmul_10x10 strategy=opt_size: reusing previous measurement for identical path
+  [12/24] bin_outer_product_4096...
+  -> bin_outer_product_4096 strategy=opt_size: reusing previous measurement for identical path
+  [13/24] bin_permuted_r4_abcd_dbef_acef_d32...
+  -> bin_permuted_r4_abcd_dbef_acef_d32 strategy=opt_size: reusing previous measurement for identical path
+  [14/24] gm_queen5_5_3.wcsp...
+  [15/24] lm_batch_likelihood_brackets_4_4d...
+gm_queen5_5_3.wcsp                                      160      10.33        25.36     1952.444     17.190
+  [16/24] lm_batch_likelihood_sentence_3_12d...
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       36.189     10.632
+  [17/24] lm_batch_likelihood_sentence_4_4d...
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86       59.792      7.669
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       25.270     11.051
+nary_matmul_chain_64                                      3       5.24        12.00        0.071      0.027
+  [18/24] nary_matmul_chain_64...
+  -> nary_matmul_chain_64 strategy=opt_size: reusing previous measurement for identical path
+  [19/24] str_matrix_chain_multiplication_100...
+  [20/24] str_mps_varying_inner_product_200...
+str_matrix_chain_multiplication_100                     100       8.48        17.26        8.863      0.559
+str_mps_varying_inner_product_200                       200       8.31        15.48       18.255      7.422
+  [21/24] str_nw_mera_closed_120...
+  [22/24] str_nw_mera_open_26...
+str_nw_mera_closed_120                                  120      10.67        24.91      503.279     16.666
+str_nw_mera_open_26                                      26      10.49        25.36      666.321     42.274
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      330.805     28.403
+tensornetwork_permutation_light_415                     415       9.65        24.00      337.892      8.323
+  [23/24] tensornetwork_permutation_focus_step409_316...
+  -> tensornetwork_permutation_focus_step409_316 strategy=opt_size: reusing previous measurement for identical path
+  [24/24] tensornetwork_permutation_light_415...
+  -> tensornetwork_permutation_light_415 strategy=opt_size: reusing previous measurement for identical path
+
+Running CPU ops benchmarks (linalg JVP/VJP on tenferro-trace)...
+Removing Python virtualenv before benchmark: .venv
+Preparing CPU Python benchmark environment
+Using CPython 3.12.3 interpreter at: /usr/bin/python3
+Creating virtual environment at: .venv
+Resolved 86 packages in 0.99ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 81 packages in 1.70s
+ + asttokens==3.0.1
+ + attrs==26.1.0
+ + certifi==2026.2.25
+ + charset-normalizer==3.4.4
+ + comm==0.2.3
+ + cuda-bindings==13.2.0
+ + cuda-pathfinder==1.5.4
+ + cuda-toolkit==13.0.2
+ + debugpy==1.8.20
+ + decorator==5.2.1
+ + einsum-benchmark==0.1.7
+ + executing==2.2.1
+ + filelock==3.29.0
+ + fsspec==2026.4.0
+ + idna==3.11
+ + ipykernel==7.2.0
+ + ipython==9.10.0
+ + ipython-pygments-lexers==1.1.1
+ + ipywidgets==8.1.8
+ + jax==0.10.1
+ + jaxlib==0.10.1
+ + jedi==0.19.2
+ + jinja2==3.1.6
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + jupyter-client==8.8.0
+ + jupyter-core==5.9.1
+ + jupyterlab-widgets==3.0.16
+ + markupsafe==3.0.3
+ + matplotlib-inline==0.2.1
+ + ml-dtypes==0.5.4
+ + mpmath==1.3.0
+ + nest-asyncio==1.6.0
+ + networkx==3.6.1
+ + numpy==2.4.2
+ + nvidia-cublas==13.1.1.3
+ + nvidia-cuda-cupti==13.0.85
+ + nvidia-cuda-nvrtc==13.0.88
+ + nvidia-cuda-runtime==13.0.96
+ + nvidia-cudnn-cu13==9.20.0.48
+ + nvidia-cufft==12.0.0.61
+ + nvidia-cufile==1.15.1.6
+ + nvidia-curand==10.4.0.35
+ + nvidia-cusolver==12.0.4.66
+ + nvidia-cusparse==12.6.3.3
+ + nvidia-cusparselt-cu13==0.8.1
+ + nvidia-nccl-cu13==2.29.7
+ + nvidia-nvjitlink==13.0.88
+ + nvidia-nvshmem-cu13==3.4.5
+ + nvidia-nvtx==13.0.85
+ + opt-einsum==3.4.0
+ + packaging==26.0
+ + parso==0.8.6
+ + pexpect==4.9.0
+ + platformdirs==4.9.2
+ + pooch==1.9.0
+ + prompt-toolkit==3.0.52
+ + psutil==7.2.2
+ + ptyprocess==0.7.0
+ + pure-eval==0.2.3
+ + pygments==2.19.2
+ + python-dateutil==2.9.0.post0
+ + pyyaml==6.0.3
+ + pyzmq==27.1.0
+ + referencing==0.37.0
+ + requests==2.32.5
+ + rpds-py==0.30.0
+ + scipy==1.17.1
+ + setuptools==81.0.0
+ + six==1.17.0
+ + stack-data==0.6.3
+ + sympy==1.14.0
+ + torch==2.12.0
+ + tornado==6.5.4
+ + tqdm==4.67.3
+ + traitlets==5.14.3
+ + triton==3.7.0
+ + typing-extensions==4.15.0
+ + urllib3==2.6.3
+ + wcwidth==0.6.0
+ + widgetsnbextension==4.0.15
+Resolved 10 packages in 300ms
+Prepared 10 packages in 0.45ms
+Uninstalled 10 packages in 280ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 10 packages in 795ms
+ - filelock==3.29.0
+ + filelock==3.32.3
+ - fsspec==2026.4.0
+ + fsspec==2026.7.0
+ ~ jinja2==3.1.6
+ ~ markupsafe==3.0.3
+ ~ mpmath==1.3.0
+ ~ networkx==3.6.1
+ - setuptools==81.0.0
+ + setuptools==78.1.0
+ ~ sympy==1.14.0
+ - torch==2.12.0
+ + torch==2.12.0+cpu
+ - typing-extensions==4.15.0
+ + typing-extensions==4.16.0
+Running publication-gate benchmarks
+  features: system-mkl
+  threads:  4
+  profile:  full
+  suite:    all
+  output:   /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/publication_gate_system-mkl_t4_full_all_20261008_053424.csv
+  OMP_NUM_THREADS=4
+  OMP_THREAD_LIMIT=4
+  OMP_DYNAMIC=FALSE
+  RAYON_NUM_THREADS=4
+  OPENBLAS_NUM_THREADS=4
+  GOTO_NUM_THREADS=4
+  MKL_NUM_THREADS=4
+  VECLIB_MAXIMUM_THREADS=4
+  VECLIB_NUM_THREADS=4
+  NUMEXPR_NUM_THREADS=4
+  BLIS_NUM_THREADS=4
+  PJRT_NPROC=4
+  XLA_FLAGS=--xla_cpu_multi_thread_eigen=true --xla_cpu_experimental_ynn_fusion_type= intra_op_parallelism_threads=4
+  JULIA_NUM_THREADS=4
+    Finished `release` profile [optimized] target(s) in 0.17s
+     Running `target/compatibility-mkl/release/publication_gate`
+publication_gate: requested_threads=4 backend_threads=4 scope_rayon_threads=4 global_rayon_threads=4
+Wrote /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/publication_gate_system-mkl_t4_full_all_20261008_053424.csv
+CPU ops results saved to: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/cpu_ops_t4_20261008_053424.csv
+Linalg JVP/VJP rows: 240
+Linalg JVP/VJP markdown saved to: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/linalg_jvp_vjp_t4_20261008_053424.md
+Formatting einsum results as markdown...
+#### Strategy: opt_flops
+
+Median ± IQR (ms). JULIA_NUM_THREADS=4, OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
+
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) | OMEinsum.jl OpenBLAS (ms) |
+|---|---:|---:|---:|---:|---:|
+| bin_batched_matmul_b32_m128_n128_k128 | 5.336 ± 0.817 | 2.098 ± 0.012 | **1.156 ± 0.004** | 1.462 ± 0.060 | 5.514 ± 5.856 |
+| bin_batched_matmul_b32_m64_n64_k64 | 0.973 ± 0.117 | 0.558 ± 0.013 | **0.187 ± 0.003** | 0.691 ± 0.021 | 0.532 ± 0.317 |
+| bin_batched_outer_product_compact_j16_k16_o64_t64 | 0.172 ± 0.177 | 0.139 ± 0.073 | **0.057 ± 0.002** | 0.303 ± 0.072 | 0.500 ± 1.517 |
+| bin_batched_outer_product_noncompact_j16_k16_o64_t64 | 0.193 ± 0.010 | 0.088 ± 0.004 | **0.057 ± 0.002** | 0.280 ± 0.088 | 5.171 ± 5.319 |
+| bin_elementwise_mul_2048x2048 | 3.237 ± 0.203 | **3.125 ± 0.606** | 3.146 ± 0.254 | 5.125 ± 0.339 | 9.641 ± 0.241 |
+| bin_elementwise_mul_512x512 | 0.092 ± 0.031 | 0.046 ± 0.013 | **0.042 ± 0.003** | 0.204 ± 0.078 | 0.095 ± 0.307 |
+| bin_matmul_1024 | 28.080 ± 0.669 | 17.526 ± 0.065 | 25.707 ± 0.127 | **16.242 ± 0.625** | 31.283 ± 8.470 |
+| bin_matmul_256 | 0.646 ± 0.005 | **0.322 ± 0.008** | 0.712 ± 0.005 | 0.472 ± 0.050 | 0.531 ± 0.004 |
+| bin_omeinsum_batched_matmul_8x8_batch_4 | 0.043 ± 0.016 | 0.016 ± 0.001 | 0.024 ± 0.001 | 0.133 ± 0.008 | **0.012 ± 0.001** |
+| bin_omeinsum_high_d_12x12_contract_4_batch_4 | 0.139 ± 0.101 | 0.063 ± 0.002 | 0.111 ± 0.001 | 0.180 ± 0.057 | **0.038 ± 0.001** |
+| bin_omeinsum_matmul_10x10 | 0.056 ± 0.006 | **0.016 ± 0.001** | 0.023 ± 0.001 | 0.097 ± 0.015 | 0.020 ± 0.001 |
+| bin_outer_product_4096 | 11.289 ± 5.566 | 10.359 ± 0.476 | **8.632 ± 0.148** | 10.395 ± 0.208 | 236.050 ± 3.601 |
+| bin_permuted_r4_abcd_dbef_acef_d32 | 19.830 ± 0.517 | 19.187 ± 0.337 | 20.217 ± 0.103 | **18.428 ± 1.013** | 22.307 ± 5.293 |
+| gm_queen5_5_3.wcsp | 1883.194 ± 18.585 | 1871.317 ± 20.567 | 1686.025 ± 10.116 | **1494.468 ± 49.425** | 5507.456 ± 45.829 |
+| lm_batch_likelihood_brackets_4_4d | 14.103 ± 1.650 | 21.766 ± 1.049 | **8.017 ± 0.276** | 14.823 ± 0.767 | 17.815 ± 4.619 |
+| lm_batch_likelihood_sentence_3_12d | 32.334 ± 6.084 | 49.351 ± 4.432 | **19.719 ± 0.265** | 31.113 ± 3.536 | 56.072 ± 6.914 |
+| lm_batch_likelihood_sentence_4_4d | 15.228 ± 2.173 | 22.535 ± 2.141 | **8.701 ± 0.070** | 15.979 ± 2.602 | 33.554 ± 16.101 |
+| nary_matmul_chain_64 | 0.066 ± 0.024 | **0.032 ± 0.002** | 0.047 ± 0.001 | 0.114 ± 0.023 | 0.071 ± 0.027 |
+| str_matrix_chain_multiplication_100 | 5.220 ± 0.317 | **4.974 ± 0.873** | 5.760 ± 0.044 | 5.737 ± 0.213 | 8.881 ± 0.743 |
+| str_mps_varying_inner_product_200 | 15.989 ± 4.644 | 15.559 ± 1.342 | **14.009 ± 0.091** | 17.653 ± 0.664 | 21.768 ± 2.104 |
+| str_nw_mera_closed_120 | 571.352 ± 10.271 | 521.686 ± 14.381 | 559.056 ± 1.791 | **501.404 ± 4.278** | 630.384 ± 11.938 |
+| str_nw_mera_open_26 | 598.579 ± 4.306 | 453.522 ± 7.202 | **355.086 ± 1.786** | 398.911 ± 7.203 | 696.408 ± 37.167 |
+| tensornetwork_permutation_focus_step409_316 | **142.288 ± 5.471** | 184.822 ± 9.267 | 234.708 ± 0.795 | 205.838 ± 4.333 | 330.805 ± 28.403 |
+| tensornetwork_permutation_light_415 | **139.924 ± 6.792** | 184.155 ± 6.678 | 228.366 ± 0.985 | 218.839 ± 3.603 | 337.892 ± 8.323 |
+
+#### Strategy: opt_size
+
+Median ± IQR (ms). JULIA_NUM_THREADS=4, OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
+
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) | OMEinsum.jl OpenBLAS (ms) |
+|---|---:|---:|---:|---:|---:|
+| bin_batched_matmul_b32_m128_n128_k128 | 5.336 ± 0.817 | 2.098 ± 0.012 | **1.156 ± 0.004** | 1.462 ± 0.060 | 5.514 ± 5.856 |
+| bin_batched_matmul_b32_m64_n64_k64 | 0.973 ± 0.117 | 0.558 ± 0.013 | **0.187 ± 0.003** | 0.691 ± 0.021 | 0.532 ± 0.317 |
+| bin_batched_outer_product_compact_j16_k16_o64_t64 | 0.172 ± 0.177 | 0.139 ± 0.073 | **0.057 ± 0.002** | 0.303 ± 0.072 | 0.500 ± 1.517 |
+| bin_batched_outer_product_noncompact_j16_k16_o64_t64 | 0.193 ± 0.010 | 0.088 ± 0.004 | **0.057 ± 0.002** | 0.280 ± 0.088 | 5.171 ± 5.319 |
+| bin_elementwise_mul_2048x2048 | 3.237 ± 0.203 | **3.125 ± 0.606** | 3.146 ± 0.254 | 5.125 ± 0.339 | 9.641 ± 0.241 |
+| bin_elementwise_mul_512x512 | 0.092 ± 0.031 | 0.046 ± 0.013 | **0.042 ± 0.003** | 0.204 ± 0.078 | 0.095 ± 0.307 |
+| bin_matmul_1024 | 28.080 ± 0.669 | 17.526 ± 0.065 | 25.707 ± 0.127 | **16.242 ± 0.625** | 31.283 ± 8.470 |
+| bin_matmul_256 | 0.646 ± 0.005 | **0.322 ± 0.008** | 0.712 ± 0.005 | 0.472 ± 0.050 | 0.531 ± 0.004 |
+| bin_omeinsum_batched_matmul_8x8_batch_4 | 0.043 ± 0.016 | 0.016 ± 0.001 | 0.024 ± 0.001 | 0.133 ± 0.008 | **0.012 ± 0.001** |
+| bin_omeinsum_high_d_12x12_contract_4_batch_4 | 0.139 ± 0.101 | 0.063 ± 0.002 | 0.111 ± 0.001 | 0.180 ± 0.057 | **0.038 ± 0.001** |
+| bin_omeinsum_matmul_10x10 | 0.056 ± 0.006 | **0.016 ± 0.001** | 0.023 ± 0.001 | 0.097 ± 0.015 | 0.020 ± 0.001 |
+| bin_outer_product_4096 | 11.289 ± 5.566 | 10.359 ± 0.476 | **8.632 ± 0.148** | 10.395 ± 0.208 | 236.050 ± 3.601 |
+| bin_permuted_r4_abcd_dbef_acef_d32 | 19.830 ± 0.517 | 19.187 ± 0.337 | 20.217 ± 0.103 | **18.428 ± 1.013** | 22.307 ± 5.293 |
+| gm_queen5_5_3.wcsp | 701.870 ± 8.029 | 820.139 ± 9.067 | 777.598 ± 6.752 | **641.971 ± 11.748** | 1952.444 ± 17.190 |
+| lm_batch_likelihood_brackets_4_4d | 15.318 ± 2.300 | 21.135 ± 2.440 | **8.843 ± 0.177** | 15.073 ± 1.663 | 36.189 ± 10.632 |
+| lm_batch_likelihood_sentence_3_12d | 36.430 ± 5.499 | 44.406 ± 2.326 | **20.311 ± 0.080** | 32.371 ± 2.677 | 59.792 ± 7.669 |
+| lm_batch_likelihood_sentence_4_4d | 15.968 ± 2.777 | 22.272 ± 3.487 | **9.557 ± 0.106** | 14.571 ± 0.891 | 25.270 ± 11.051 |
+| nary_matmul_chain_64 | 0.066 ± 0.024 | **0.032 ± 0.002** | 0.047 ± 0.001 | 0.114 ± 0.023 | 0.071 ± 0.027 |
+| str_matrix_chain_multiplication_100 | 5.373 ± 0.455 | **5.080 ± 0.043** | 5.739 ± 0.055 | 6.515 ± 0.396 | 8.863 ± 0.559 |
+| str_mps_varying_inner_product_200 | 16.067 ± 2.413 | 16.288 ± 2.914 | **13.993 ± 0.140** | 16.297 ± 0.885 | 18.255 ± 7.422 |
+| str_nw_mera_closed_120 | 461.765 ± 5.849 | 445.002 ± 8.336 | 457.249 ± 2.970 | **430.970 ± 14.292** | 503.279 ± 16.666 |
+| str_nw_mera_open_26 | 583.995 ± 3.814 | 446.992 ± 6.155 | **355.250 ± 1.833** | 413.274 ± 14.026 | 666.321 ± 42.274 |
+| tensornetwork_permutation_focus_step409_316 | **142.288 ± 5.471** | 184.822 ± 9.267 | 234.708 ± 0.795 | 205.838 ± 4.333 | 330.805 ± 28.403 |
+| tensornetwork_permutation_light_415 | **139.924 ± 6.792** | 184.155 ± 6.678 | 228.366 ± 0.985 | 218.839 ± 3.603 | 337.892 ± 8.323 |
+
+Formatting CPU ops results as markdown...
+## CPU Benchmark Items
+
+Small rows use time/memory-bounded batches, normalized per operation. Tenferro eager/trace share a CPU execution scope outside timing. Eager primal rows reuse a borrowed session entered before sampling; eager backward rows without a borrowed-session API are unsupported. Raw JSONL records contain batch durations and operation counts.
+
+Median ± IQR (ms). Missing backends are shown as `-`.
+
+| suite | benchmark | dtype | threads | shape | tenferro-rs direct API (ms) | tenferro-rs eager mode (ms) | tenferro-rs trace mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) | Julia (Base/LinearAlgebra) (ms) | Julia (Strided.jl) (ms) |
+|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| batched | `batched_eigh` | f64 | 4 | `16x16xbatch1024 (native batch layout)` | - | 20.313 ± 0.022 | 20.315 ± 0.036 | 21.490 ± 0.079 | 14.120 ± 0.200 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `16x16xbatch16 (native batch layout)` | - | 0.305 ± 0.001 | 0.306 ± 0.001 | 0.324 ± 0.001 | 0.311 ± 0.016 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `16x16xbatch256 (native batch layout)` | - | 5.083 ± 0.014 | 5.072 ± 0.005 | 5.366 ± 0.015 | 3.230 ± 0.679 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `16x16xbatch64 (native batch layout)` | - | 1.242 ± 0.002 | 1.244 ± 0.002 | 1.333 ± 0.009 | 0.653 ± 0.118 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `2x2xbatch1024 (native batch layout)` | - | 0.606 ± 0.002 | 0.603 ± 0.002 | 0.403 ± 0.003 | 0.355 ± 0.014 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.016 ± 0.000 | 0.018 ± 0.000 | 0.013 ± 0.000 | 0.014 ± 0.000 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `2x2xbatch256 (native batch layout)` | - | 0.157 ± 0.000 | 0.157 ± 0.000 | 0.105 ± 0.001 | 0.094 ± 0.003 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.044 ± 0.000 | 0.046 ± 0.000 | 0.031 ± 0.000 | 0.026 ± 0.001 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `4x4xbatch1024 (native batch layout)` | - | 2.210 ± 0.005 | 2.207 ± 0.007 | 2.055 ± 0.004 | 1.520 ± 0.245 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.041 ± 0.000 | 0.042 ± 0.000 | 0.039 ± 0.000 | 0.041 ± 0.000 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `4x4xbatch256 (native batch layout)` | - | 0.557 ± 0.001 | 0.558 ± 0.002 | 0.517 ± 0.002 | 0.545 ± 0.018 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.144 ± 0.000 | 0.145 ± 0.000 | 0.134 ± 0.000 | 0.139 ± 0.006 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `8x8xbatch1024 (native batch layout)` | - | 6.230 ± 0.012 | 6.234 ± 0.020 | 6.230 ± 0.011 | 3.408 ± 0.391 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `8x8xbatch16 (native batch layout)` | - | 0.102 ± 0.000 | 0.104 ± 0.000 | 0.103 ± 0.000 | 0.120 ± 0.004 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `8x8xbatch256 (native batch layout)` | - | 1.564 ± 0.005 | 1.559 ± 0.005 | 1.571 ± 0.009 | 0.834 ± 0.161 | - | - |
+| batched | `batched_eigh` | f64 | 4 | `8x8xbatch64 (native batch layout)` | - | 0.394 ± 0.001 | 0.394 ± 0.000 | 0.397 ± 0.001 | 0.460 ± 0.019 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `16x16xbatch1024 (native batch layout)` | - | 0.238 ± 0.001 | 0.308 ± 0.009 | 0.436 ± 0.025 | 1.376 ± 0.293 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `16x16xbatch16 (native batch layout)` | - | 0.010 ± 0.000 | 0.017 ± 0.000 | 0.018 ± 0.001 | 0.118 ± 0.001 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `16x16xbatch256 (native batch layout)` | - | 0.063 ± 0.001 | 0.108 ± 0.001 | 0.114 ± 0.020 | 0.262 ± 0.052 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `16x16xbatch64 (native batch layout)` | - | 0.021 ± 0.000 | 0.037 ± 0.000 | 0.035 ± 0.005 | 0.127 ± 0.002 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `2x2xbatch1024 (native batch layout)` | - | 0.066 ± 0.001 | 0.075 ± 0.001 | 0.034 ± 0.000 | 0.123 ± 0.001 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.007 ± 0.000 | 0.012 ± 0.000 | 0.012 ± 0.000 | 0.116 ± 0.002 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `2x2xbatch256 (native batch layout)` | - | 0.022 ± 0.000 | 0.027 ± 0.000 | 0.017 ± 0.000 | 0.119 ± 0.001 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.010 ± 0.000 | 0.015 ± 0.000 | 0.013 ± 0.000 | 0.117 ± 0.001 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch1024 (native batch layout)` | - | 0.071 ± 0.000 | 0.087 ± 0.000 | 0.063 ± 0.007 | 0.216 ± 0.008 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.007 ± 0.000 | 0.012 ± 0.000 | 0.014 ± 0.000 | 0.119 ± 0.001 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch256 (native batch layout)` | - | 0.023 ± 0.000 | 0.030 ± 0.000 | 0.041 ± 0.000 | 0.119 ± 0.001 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.010 ± 0.000 | 0.016 ± 0.000 | 0.019 ± 0.000 | 0.118 ± 0.001 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `8x8xbatch1024 (native batch layout)` | - | 0.093 ± 0.001 | 0.137 ± 0.001 | 0.105 ± 0.010 | 0.417 ± 0.048 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `8x8xbatch16 (native batch layout)` | - | 0.007 ± 0.000 | 0.013 ± 0.000 | 0.014 ± 0.000 | 0.119 ± 0.001 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `8x8xbatch256 (native batch layout)` | - | 0.028 ± 0.000 | 0.044 ± 0.000 | 0.035 ± 0.006 | 0.127 ± 0.001 | - | - |
+| batched | `batched_matmul_ikb_kjb_ijb` | f64 | 4 | `8x8xbatch64 (native batch layout)` | - | 0.012 ± 0.000 | 0.019 ± 0.000 | 0.017 ± 0.000 | 0.119 ± 0.001 | - | - |
+| batched | `batched_qr` | f64 | 4 | `16x16xbatch1024 (native batch layout)` | - | 4.248 ± 0.017 | 4.247 ± 0.009 | 4.382 ± 0.033 | 3.485 ± 0.124 | - | - |
+| batched | `batched_qr` | f64 | 4 | `16x16xbatch16 (native batch layout)` | - | 0.072 ± 0.000 | 0.074 ± 0.001 | 0.075 ± 0.000 | 0.112 ± 0.001 | - | - |
+| batched | `batched_qr` | f64 | 4 | `16x16xbatch256 (native batch layout)` | - | 1.062 ± 0.005 | 1.067 ± 0.002 | 1.107 ± 0.006 | 0.913 ± 0.063 | - | - |
+| batched | `batched_qr` | f64 | 4 | `16x16xbatch64 (native batch layout)` | - | 0.270 ± 0.001 | 0.270 ± 0.001 | 0.296 ± 0.035 | 0.292 ± 0.005 | - | - |
+| batched | `batched_qr` | f64 | 4 | `2x2xbatch1024 (native batch layout)` | - | 0.197 ± 0.001 | 0.197 ± 0.001 | 0.167 ± 0.001 | 0.266 ± 0.009 | - | - |
+| batched | `batched_qr` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.009 ± 0.000 | 0.012 ± 0.000 | 0.008 ± 0.000 | 0.012 ± 0.000 | - | - |
+| batched | `batched_qr` | f64 | 4 | `2x2xbatch256 (native batch layout)` | - | 0.054 ± 0.000 | 0.056 ± 0.000 | 0.046 ± 0.000 | 0.070 ± 0.004 | - | - |
+| batched | `batched_qr` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.018 ± 0.000 | 0.021 ± 0.000 | 0.016 ± 0.000 | 0.024 ± 0.000 | - | - |
+| batched | `batched_qr` | f64 | 4 | `4x4xbatch1024 (native batch layout)` | - | 0.574 ± 0.002 | 0.600 ± 0.002 | 0.496 ± 0.003 | 0.823 ± 0.048 | - | - |
+| batched | `batched_qr` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.015 ± 0.000 | 0.017 ± 0.000 | 0.014 ± 0.000 | 0.020 ± 0.000 | - | - |
+| batched | `batched_qr` | f64 | 4 | `4x4xbatch256 (native batch layout)` | - | 0.148 ± 0.000 | 0.150 ± 0.001 | 0.129 ± 0.001 | 0.204 ± 0.012 | - | - |
+| batched | `batched_qr` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.042 ± 0.000 | 0.046 ± 0.000 | 0.037 ± 0.000 | 0.055 ± 0.002 | - | - |
+| batched | `batched_qr` | f64 | 4 | `8x8xbatch1024 (native batch layout)` | - | 1.376 ± 0.006 | 1.346 ± 0.002 | 1.287 ± 0.007 | 1.062 ± 0.104 | - | - |
+| batched | `batched_qr` | f64 | 4 | `8x8xbatch16 (native batch layout)` | - | 0.028 ± 0.000 | 0.029 ± 0.000 | 0.027 ± 0.000 | 0.042 ± 0.003 | - | - |
+| batched | `batched_qr` | f64 | 4 | `8x8xbatch256 (native batch layout)` | - | 0.340 ± 0.001 | 0.346 ± 0.003 | 0.333 ± 0.001 | 0.565 ± 0.017 | - | - |
+| batched | `batched_qr` | f64 | 4 | `8x8xbatch64 (native batch layout)` | - | 0.090 ± 0.000 | 0.091 ± 0.000 | 0.088 ± 0.000 | 0.152 ± 0.006 | - | - |
+| batched | `batched_solve` | f64 | 4 | `16x16xbatch1024 (native batch layout),rhs=1` | - | 1.343 ± 0.005 | 1.398 ± 0.008 | 0.691 ± 0.006 | 1.835 ± 0.144 | - | - |
+| batched | `batched_solve` | f64 | 4 | `16x16xbatch16 (native batch layout),rhs=1` | - | 0.030 ± 0.000 | 0.030 ± 0.000 | 0.029 ± 0.001 | 0.050 ± 0.003 | - | - |
+| batched | `batched_solve` | f64 | 4 | `16x16xbatch256 (native batch layout),rhs=1` | - | 0.339 ± 0.000 | 0.345 ± 0.002 | 0.195 ± 0.008 | 0.525 ± 0.040 | - | - |
+| batched | `batched_solve` | f64 | 4 | `16x16xbatch64 (native batch layout),rhs=1` | - | 0.089 ± 0.000 | 0.089 ± 0.000 | 0.072 ± 0.004 | 0.158 ± 0.014 | - | - |
+| batched | `batched_solve` | f64 | 4 | `2x2xbatch1024 (native batch layout),rhs=1` | - | 0.086 ± 0.000 | 0.064 ± 0.000 | 0.070 ± 0.009 | 0.256 ± 0.007 | - | - |
+| batched | `batched_solve` | f64 | 4 | `2x2xbatch16 (native batch layout),rhs=1` | - | 0.010 ± 0.000 | 0.011 ± 0.000 | 0.016 ± 0.000 | 0.012 ± 0.000 | - | - |
+| batched | `batched_solve` | f64 | 4 | `2x2xbatch256 (native batch layout),rhs=1` | - | 0.028 ± 0.000 | 0.024 ± 0.000 | 0.029 ± 0.000 | 0.069 ± 0.002 | - | - |
+| batched | `batched_solve` | f64 | 4 | `2x2xbatch64 (native batch layout),rhs=1` | - | 0.013 ± 0.000 | 0.014 ± 0.000 | 0.019 ± 0.000 | 0.022 ± 0.002 | - | - |
+| batched | `batched_solve` | f64 | 4 | `4x4xbatch1024 (native batch layout),rhs=1` | - | 0.147 ± 0.000 | 0.105 ± 0.000 | 0.098 ± 0.003 | 0.389 ± 0.010 | - | - |
+| batched | `batched_solve` | f64 | 4 | `4x4xbatch16 (native batch layout),rhs=1` | - | 0.010 ± 0.000 | 0.012 ± 0.000 | 0.017 ± 0.000 | 0.015 ± 0.000 | - | - |
+| batched | `batched_solve` | f64 | 4 | `4x4xbatch256 (native batch layout),rhs=1` | - | 0.043 ± 0.000 | 0.034 ± 0.000 | 0.036 ± 0.000 | 0.101 ± 0.004 | - | - |
+| batched | `batched_solve` | f64 | 4 | `4x4xbatch64 (native batch layout),rhs=1` | - | 0.017 ± 0.000 | 0.016 ± 0.000 | 0.021 ± 0.000 | 0.031 ± 0.001 | - | - |
+| batched | `batched_solve` | f64 | 4 | `8x8xbatch1024 (native batch layout),rhs=1` | - | 0.466 ± 0.002 | 0.429 ± 0.001 | 0.266 ± 0.001 | 0.806 ± 0.039 | - | - |
+| batched | `batched_solve` | f64 | 4 | `8x8xbatch16 (native batch layout),rhs=1` | - | 0.015 ± 0.000 | 0.016 ± 0.000 | 0.021 ± 0.000 | 0.021 ± 0.003 | - | - |
+| batched | `batched_solve` | f64 | 4 | `8x8xbatch256 (native batch layout),rhs=1` | - | 0.118 ± 0.000 | 0.110 ± 0.000 | 0.090 ± 0.003 | 0.212 ± 0.012 | - | - |
+| batched | `batched_solve` | f64 | 4 | `8x8xbatch64 (native batch layout),rhs=1` | - | 0.036 ± 0.000 | 0.035 ± 0.000 | 0.033 ± 0.000 | 0.059 ± 0.003 | - | - |
+| batched | `batched_svd` | f64 | 4 | `16x16xbatch1024 (native batch layout)` | - | 43.820 ± 0.031 | 43.840 ± 0.127 | 47.367 ± 0.130 | 23.766 ± 10.673 | - | - |
+| batched | `batched_svd` | f64 | 4 | `16x16xbatch16 (native batch layout)` | - | 0.675 ± 0.002 | 0.682 ± 0.003 | 0.727 ± 0.005 | 0.340 ± 0.052 | - | - |
+| batched | `batched_svd` | f64 | 4 | `16x16xbatch256 (native batch layout)` | - | 10.935 ± 0.008 | 11.014 ± 0.024 | 11.909 ± 0.023 | 5.096 ± 0.626 | - | - |
+| batched | `batched_svd` | f64 | 4 | `16x16xbatch64 (native batch layout)` | - | 2.731 ± 0.004 | 2.735 ± 0.004 | 2.969 ± 0.008 | 0.919 ± 0.158 | - | - |
+| batched | `batched_svd` | f64 | 4 | `2x2xbatch1024 (native batch layout)` | - | 1.307 ± 0.003 | 1.317 ± 0.003 | 1.052 ± 0.002 | 1.322 ± 0.032 | - | - |
+| batched | `batched_svd` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | 0.027 ± 0.000 | 0.030 ± 0.000 | 0.024 ± 0.000 | 0.029 ± 0.000 | - | - |
+| batched | `batched_svd` | f64 | 4 | `2x2xbatch256 (native batch layout)` | - | 0.332 ± 0.000 | 0.336 ± 0.001 | 0.269 ± 0.001 | 0.336 ± 0.017 | - | - |
+| batched | `batched_svd` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | 0.089 ± 0.000 | 0.092 ± 0.000 | 0.074 ± 0.000 | 0.087 ± 0.001 | - | - |
+| batched | `batched_svd` | f64 | 4 | `4x4xbatch1024 (native batch layout)` | - | 4.699 ± 0.011 | 4.722 ± 0.011 | 4.209 ± 0.014 | 1.735 ± 0.245 | - | - |
+| batched | `batched_svd` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | 0.080 ± 0.000 | 0.083 ± 0.000 | 0.073 ± 0.000 | 0.073 ± 0.000 | - | - |
+| batched | `batched_svd` | f64 | 4 | `4x4xbatch256 (native batch layout)` | - | 1.181 ± 0.001 | 1.189 ± 0.001 | 1.057 ± 0.002 | 1.065 ± 0.036 | - | - |
+| batched | `batched_svd` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | 0.300 ± 0.000 | 0.303 ± 0.000 | 0.269 ± 0.001 | 0.270 ± 0.006 | - | - |
+| batched | `batched_svd` | f64 | 4 | `8x8xbatch1024 (native batch layout)` | - | 15.292 ± 0.019 | 15.292 ± 0.055 | 14.464 ± 0.027 | 5.079 ± 1.443 | - | - |
+| batched | `batched_svd` | f64 | 4 | `8x8xbatch16 (native batch layout)` | - | 0.243 ± 0.001 | 0.248 ± 0.001 | 0.231 ± 0.001 | 0.213 ± 0.009 | - | - |
+| batched | `batched_svd` | f64 | 4 | `8x8xbatch256 (native batch layout)` | - | 3.819 ± 0.005 | 3.850 ± 0.008 | 3.636 ± 0.013 | 1.069 ± 0.098 | - | - |
+| batched | `batched_svd` | f64 | 4 | `8x8xbatch64 (native batch layout)` | - | 0.959 ± 0.003 | 0.961 ± 0.003 | 0.911 ± 0.003 | 0.587 ± 0.067 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `16x16xbatch1024 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 1.122 ± 0.013 | 7.643 ± 0.046 | 3.150 ± 0.553 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `16x16xbatch16 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.062 ± 0.000 | 0.204 ± 0.001 | 0.045 ± 0.003 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `16x16xbatch256 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.370 ± 0.002 | 1.941 ± 0.004 | 0.721 ± 0.086 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `16x16xbatch64 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.127 ± 0.000 | 0.549 ± 0.002 | 0.157 ± 0.010 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `2x2xbatch1024 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.231 ± 0.001 | 0.151 ± 0.000 | 0.024 ± 0.002 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `2x2xbatch16 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.040 ± 0.000 | 0.084 ± 0.000 | 0.009 ± 0.000 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `2x2xbatch256 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.087 ± 0.000 | 0.101 ± 0.001 | 0.017 ± 0.001 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `2x2xbatch64 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.050 ± 0.000 | 0.087 ± 0.000 | 0.012 ± 0.000 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `4x4xbatch1024 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.280 ± 0.004 | 0.215 ± 0.004 | 0.665 ± 0.058 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `4x4xbatch16 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.041 ± 0.000 | 0.088 ± 0.001 | 0.016 ± 0.002 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `4x4xbatch256 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.099 ± 0.000 | 0.174 ± 0.002 | 0.170 ± 0.007 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `4x4xbatch64 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.052 ± 0.001 | 0.105 ± 0.001 | 0.047 ± 0.002 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `8x8xbatch1024 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.476 ± 0.002 | 5.518 ± 0.034 | 1.353 ± 0.208 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `8x8xbatch16 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.044 ± 0.000 | 0.172 ± 0.001 | 0.024 ± 0.004 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `8x8xbatch256 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.153 ± 0.001 | 1.443 ± 0.010 | 0.270 ± 0.008 | - | - |
+| batched | `grad_sum_batched_matmul_backward` | f64 | 4 | `8x8xbatch64 (native batch layout)` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.067 ± 0.001 | 0.429 ± 0.001 | 0.073 ± 0.003 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `16x16xbatch1024 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 2.240 ± 0.021 | 1.341 ± 0.020 | 3.669 ± 0.434 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `16x16xbatch16 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.076 ± 0.000 | 0.099 ± 0.001 | 0.080 ± 0.005 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `16x16xbatch256 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.619 ± 0.002 | 0.441 ± 0.006 | 0.927 ± 0.162 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `16x16xbatch64 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.182 ± 0.000 | 0.211 ± 0.002 | 0.268 ± 0.017 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `2x2xbatch1024 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.223 ± 0.001 | 0.164 ± 0.001 | 0.534 ± 0.018 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `2x2xbatch16 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.044 ± 0.000 | 0.061 ± 0.001 | 0.021 ± 0.000 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `2x2xbatch256 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.087 ± 0.000 | 0.088 ± 0.002 | 0.136 ± 0.003 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `2x2xbatch64 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.053 ± 0.000 | 0.066 ± 0.000 | 0.043 ± 0.002 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `4x4xbatch1024 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.303 ± 0.001 | 0.258 ± 0.002 | 0.817 ± 0.038 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `4x4xbatch16 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.046 ± 0.000 | 0.063 ± 0.000 | 0.023 ± 0.003 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `4x4xbatch256 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.106 ± 0.001 | 0.110 ± 0.000 | 0.210 ± 0.007 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `4x4xbatch64 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.058 ± 0.000 | 0.072 ± 0.001 | 0.060 ± 0.002 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `8x8xbatch1024 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 1.045 ± 0.002 | 0.666 ± 0.010 | 1.695 ± 0.237 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `8x8xbatch16 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.057 ± 0.000 | 0.072 ± 0.001 | 0.036 ± 0.002 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `8x8xbatch256 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.292 ± 0.001 | 0.267 ± 0.002 | 0.384 ± 0.014 | - | - |
+| batched | `grad_sum_batched_solve_backward` | f64 | 4 | `8x8xbatch64 (native batch layout),rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.102 ± 0.000 | 0.113 ± 0.001 | 0.106 ± 0.005 | - | - |
+| large | `eigh` | f64 | 4 | `1024x1024` | - | 90.456 ± 0.288 | 89.951 ± 0.274 | 93.152 ± 2.203 | 112.289 ± 6.261 | - | - |
+| large | `eigh` | f64 | 4 | `128x128` | - | 0.801 ± 0.004 | 0.801 ± 0.010 | 0.879 ± 0.014 | 1.481 ± 0.068 | - | - |
+| large | `eigh` | f64 | 4 | `256x256` | - | 3.670 ± 0.005 | 3.665 ± 0.035 | 3.859 ± 0.150 | 5.964 ± 0.499 | - | - |
+| large | `eigh` | f64 | 4 | `512x512` | - | 16.318 ± 0.081 | 16.293 ± 0.107 | 17.235 ± 0.358 | 24.346 ± 0.306 | - | - |
+| large | `eigh` | f64 | 4 | `64x64` | - | 0.217 ± 0.000 | 0.219 ± 0.001 | 0.238 ± 0.002 | 0.383 ± 0.008 | - | - |
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `1024x1024` | - | - | 110.595 ± 1.190 | 158.889 ± 0.821 | 142.499 ± 2.814 | - | - |
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `256x256` | - | - | 4.346 ± 0.042 | 4.765 ± 0.018 | 7.224 ± 0.444 | - | - |
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `512x512` | - | - | 19.898 ± 0.698 | 25.879 ± 0.099 | 30.225 ± 0.888 | - | - |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `1024x1024` | - | - | 110.256 ± 0.489 | 112.010 ± 1.240 | 141.547 ± 1.556 | - | - |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | - | - | 4.343 ± 0.053 | 4.113 ± 0.017 | 6.640 ± 0.531 | - | - |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `512x512` | - | - | 20.180 ± 0.389 | 19.726 ± 0.056 | 29.945 ± 1.244 | - | - |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `1024x1024` | - | - | 81.038 ± 0.600 | 180.950 ± 0.557 | 70.229 ± 3.164 | - | - |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `256x256` | - | - | 1.911 ± 0.025 | 4.312 ± 0.052 | 1.852 ± 0.325 | - | - |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `512x512` | - | - | 12.071 ± 1.972 | 30.860 ± 0.381 | 10.272 ± 1.694 | - | - |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `1024x1024` | - | - | 79.189 ± 0.214 | 92.926 ± 0.252 | 68.551 ± 1.687 | - | - |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `256x256` | - | - | 2.167 ± 0.024 | 2.125 ± 0.016 | 1.753 ± 0.087 | - | - |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `512x512` | - | - | 11.894 ± 0.095 | 14.338 ± 0.081 | 10.084 ± 0.540 | - | - |
+| large | `grad_sum_matmul` | f64 | 4 | `1024x1024` | - | 16.928 ± 0.137 | 16.718 ± 0.361 | 21.150 ± 0.199 | 16.143 ± 0.184 | - | - |
+| large | `grad_sum_matmul` | f64 | 4 | `128x128` | - | 0.075 ± 0.001 | 0.072 ± 0.000 | 0.076 ± 0.010 | 0.091 ± 0.013 | - | - |
+| large | `grad_sum_matmul` | f64 | 4 | `256x256` | - | 0.364 ± 0.003 | 0.354 ± 0.008 | 0.367 ± 0.037 | 0.405 ± 0.029 | - | - |
+| large | `grad_sum_matmul` | f64 | 4 | `512x512` | - | 2.594 ± 0.055 | 2.464 ± 0.057 | 4.255 ± 0.293 | 2.637 ± 0.221 | - | - |
+| large | `grad_sum_matmul` | f64 | 4 | `64x64` | - | 0.030 ± 0.000 | 0.027 ± 0.000 | 0.022 ± 0.002 | 0.030 ± 0.003 | - | - |
+| large | `grad_sum_matmul_backward` | f64 | 4 | `1024x1024` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 52.029 ± 0.484 | 57.790 ± 0.072 | 48.312 ± 1.548 | - | - |
+| large | `grad_sum_matmul_backward` | f64 | 4 | `128x128` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.231 ± 0.007 | 0.216 ± 0.008 | 0.184 ± 0.023 | - | - |
+| large | `grad_sum_matmul_backward` | f64 | 4 | `256x256` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 1.091 ± 0.006 | 1.033 ± 0.031 | 1.057 ± 0.219 | - | - |
+| large | `grad_sum_matmul_backward` | f64 | 4 | `512x512` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 7.223 ± 0.064 | 9.424 ± 0.188 | 6.895 ± 0.331 | - | - |
+| large | `grad_sum_matmul_backward` | f64 | 4 | `64x64` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.080 ± 0.000 | 0.080 ± 0.002 | 0.065 ± 0.002 | - | - |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `1024x1024` | - | - | 113.904 ± 0.650 | 131.511 ± 0.602 | 112.847 ± 0.720 | - | - |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `256x256` | - | - | 3.322 ± 0.030 | 3.344 ± 0.594 | 3.794 ± 0.308 | - | - |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `512x512` | - | - | 22.380 ± 0.604 | 25.576 ± 0.157 | 19.457 ± 1.904 | - | - |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `1024x1024` | - | - | 111.495 ± 0.286 | 126.004 ± 0.331 | 114.857 ± 2.341 | - | - |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `256x256` | - | - | 3.191 ± 0.047 | 3.534 ± 0.046 | 3.846 ± 0.345 | - | - |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `512x512` | - | - | 20.052 ± 0.347 | 25.700 ± 0.527 | 20.776 ± 2.378 | - | - |
+| large | `grad_sum_solve_backward` | f64 | 4 | `1024x1024,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 9.094 ± 0.106 | 11.418 ± 2.027 | 9.588 ± 0.765 | - | - |
+| large | `grad_sum_solve_backward` | f64 | 4 | `128x128,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.168 ± 0.002 | 0.206 ± 0.001 | 0.155 ± 0.001 | - | - |
+| large | `grad_sum_solve_backward` | f64 | 4 | `256x256,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.381 ± 0.015 | 0.459 ± 0.019 | 0.627 ± 0.075 | - | - |
+| large | `grad_sum_solve_backward` | f64 | 4 | `512x512,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 1.524 ± 0.016 | 2.492 ± 0.190 | 2.535 ± 0.261 | - | - |
+| large | `grad_sum_solve_backward` | f64 | 4 | `64x64,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.072 ± 0.000 | 0.089 ± 0.001 | 0.053 ± 0.002 | - | - |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `1024x1024,rhs=1` | - | - | 8.244 ± 1.917 | 11.528 ± 0.113 | 9.718 ± 0.888 | - | - |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `256x256,rhs=1` | - | - | 0.350 ± 0.002 | 0.624 ± 0.019 | 0.446 ± 0.013 | - | - |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `512x512,rhs=1` | - | - | 1.491 ± 0.079 | 3.028 ± 0.098 | 2.864 ± 0.761 | - | - |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `1024x1024,rhs=1` | - | - | 7.920 ± 0.100 | 18.763 ± 0.164 | 9.293 ± 0.231 | - | - |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `256x256,rhs=1` | - | - | 0.347 ± 0.009 | 0.701 ± 0.018 | 0.450 ± 0.020 | - | - |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `512x512,rhs=1` | - | - | 1.437 ± 0.006 | 3.944 ± 0.017 | 2.570 ± 0.497 | - | - |
+| large | `grad_sum_svd_s_backward` | f64 | 4 | `1024x1024` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 265.586 ± 4.853 | 306.521 ± 4.105 | 361.237 ± 6.286 | - | - |
+| large | `grad_sum_svd_s_backward` | f64 | 4 | `128x128` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 2.255 ± 0.047 | 2.591 ± 0.029 | 2.707 ± 0.078 | - | - |
+| large | `grad_sum_svd_s_backward` | f64 | 4 | `256x256` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 10.753 ± 0.041 | 12.119 ± 0.061 | 12.847 ± 0.799 | - | - |
+| large | `grad_sum_svd_s_backward` | f64 | 4 | `512x512` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 51.535 ± 0.476 | 69.670 ± 2.524 | 75.418 ± 1.222 | - | - |
+| large | `grad_sum_svd_s_backward` | f64 | 4 | `64x64` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.603 ± 0.004 | 0.659 ± 0.006 | 0.635 ± 0.065 | - | - |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `1024x1024` | - | - | 265.149 ± 2.585 | 344.704 ± 1.889 | 354.826 ± 6.893 | - | - |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `256x256` | - | - | 10.761 ± 0.090 | 12.931 ± 0.063 | 12.295 ± 0.613 | - | - |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `512x512` | - | - | 50.354 ± 1.528 | 68.240 ± 0.589 | 75.044 ± 1.311 | - | - |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `1024x1024` | - | - | 266.303 ± 5.420 | 280.895 ± 4.921 | 360.760 ± 4.876 | - | - |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `256x256` | - | - | 10.735 ± 0.024 | 12.043 ± 0.043 | 12.622 ± 1.063 | - | - |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `512x512` | - | - | 50.639 ± 0.336 | 68.901 ± 1.123 | 75.148 ± 0.982 | - | - |
+| large | `matmul` | f64 | 4 | `1024x1024` | - | 14.772 ± 0.045 | 16.309 ± 0.058 | 17.586 ± 0.085 | 15.938 ± 0.087 | - | - |
+| large | `matmul` | f64 | 4 | `128x128` | - | 0.062 ± 0.001 | 0.066 ± 0.000 | 0.081 ± 0.008 | 0.077 ± 0.014 | - | - |
+| large | `matmul` | f64 | 4 | `256x256` | - | 0.319 ± 0.005 | 0.352 ± 0.002 | 0.386 ± 0.029 | 0.385 ± 0.057 | - | - |
+| large | `matmul` | f64 | 4 | `512x512` | - | 2.175 ± 0.012 | 2.361 ± 0.045 | 3.003 ± 0.376 | 2.449 ± 0.267 | - | - |
+| large | `matmul_rect` | f64 | 4 | `1024x256 * 256x1024` | - | 3.668 ± 0.007 | 3.885 ± 0.043 | 4.721 ± 0.356 | 4.407 ± 0.155 | - | - |
+| large | `matmul_rect` | f64 | 4 | `256x1024 * 1024x256` | - | 1.073 ± 0.004 | 1.241 ± 0.020 | 1.562 ± 0.368 | 1.493 ± 0.235 | - | - |
+| large | `qr` | f64 | 4 | `1024x1024` | - | 45.073 ± 0.465 | 44.836 ± 0.214 | 52.003 ± 0.354 | 59.527 ± 7.731 | - | - |
+| large | `qr` | f64 | 4 | `128x128` | - | 0.420 ± 0.002 | 0.423 ± 0.006 | 0.412 ± 0.003 | 0.683 ± 0.075 | - | - |
+| large | `qr` | f64 | 4 | `256x256` | - | 1.570 ± 0.007 | 1.580 ± 0.038 | 1.734 ± 0.027 | 3.460 ± 0.349 | - | - |
+| large | `qr` | f64 | 4 | `512x512` | - | 8.984 ± 0.029 | 9.086 ± 0.018 | 10.307 ± 0.169 | 12.304 ± 0.660 | - | - |
+| large | `qr` | f64 | 4 | `64x64` | - | 0.107 ± 0.000 | 0.108 ± 0.001 | 0.114 ± 0.002 | 0.099 ± 0.006 | - | - |
+| large | `solve` | f64 | 4 | `1024x1024,rhs=1` | - | 6.948 ± 0.091 | 7.140 ± 0.025 | 9.780 ± 1.760 | 10.195 ± 0.803 | - | - |
+| large | `solve` | f64 | 4 | `1024x1024,rhs=16` | - | 7.937 ± 0.055 | 8.122 ± 0.021 | 10.693 ± 1.943 | 9.494 ± 0.319 | - | - |
+| large | `solve` | f64 | 4 | `1024x1024,rhs=64` | - | 8.703 ± 0.058 | 9.029 ± 0.100 | 12.180 ± 1.530 | 10.494 ± 1.066 | - | - |
+| large | `solve` | f64 | 4 | `128x128,rhs=1` | - | 0.109 ± 0.000 | 0.115 ± 0.000 | 0.141 ± 0.001 | 0.138 ± 0.008 | - | - |
+| large | `solve` | f64 | 4 | `128x128,rhs=16` | - | 0.132 ± 0.002 | 0.138 ± 0.001 | 0.164 ± 0.001 | 0.217 ± 0.044 | - | - |
+| large | `solve` | f64 | 4 | `128x128,rhs=64` | - | 0.165 ± 0.004 | 0.174 ± 0.002 | 0.206 ± 0.002 | 0.369 ± 0.155 | - | - |
+| large | `solve` | f64 | 4 | `256x256,rhs=1` | - | 0.250 ± 0.001 | 0.268 ± 0.002 | 0.353 ± 0.032 | 0.555 ± 0.137 | - | - |
+| large | `solve` | f64 | 4 | `256x256,rhs=16` | - | 0.312 ± 0.004 | 0.332 ± 0.011 | 0.379 ± 0.070 | 0.805 ± 0.313 | - | - |
+| large | `solve` | f64 | 4 | `256x256,rhs=64` | - | 0.409 ± 0.002 | 0.428 ± 0.007 | 0.486 ± 0.008 | 0.822 ± 0.232 | - | - |
+| large | `solve` | f64 | 4 | `512x512,rhs=1` | - | 1.263 ± 0.004 | 1.327 ± 0.012 | 1.737 ± 0.199 | 2.228 ± 0.469 | - | - |
+| large | `solve` | f64 | 4 | `512x512,rhs=16` | - | 1.461 ± 0.033 | 1.585 ± 0.005 | 1.822 ± 0.019 | 2.445 ± 0.209 | - | - |
+| large | `solve` | f64 | 4 | `512x512,rhs=64` | - | 1.725 ± 0.014 | 1.853 ± 0.013 | 2.179 ± 0.044 | 2.884 ± 0.444 | - | - |
+| large | `solve` | f64 | 4 | `64x64,rhs=1` | - | 0.034 ± 0.000 | 0.037 ± 0.000 | 0.041 ± 0.000 | 0.043 ± 0.007 | - | - |
+| large | `solve` | f64 | 4 | `64x64,rhs=16` | - | 0.041 ± 0.000 | 0.045 ± 0.001 | 0.058 ± 0.001 | 0.064 ± 0.003 | - | - |
+| large | `solve` | f64 | 4 | `64x64,rhs=64` | - | 0.053 ± 0.001 | 0.056 ± 0.001 | 0.067 ± 0.000 | 0.149 ± 0.059 | - | - |
+| large | `svd` | f64 | 4 | `1024x1024` | - | 236.986 ± 2.403 | 224.274 ± 1.977 | 261.231 ± 6.794 | 306.170 ± 3.753 | - | - |
+| large | `svd` | f64 | 4 | `128x128` | - | 2.135 ± 0.011 | 2.145 ± 0.008 | 2.293 ± 0.012 | 2.743 ± 0.151 | - | - |
+| large | `svd` | f64 | 4 | `256x256` | - | 10.099 ± 0.036 | 10.072 ± 0.091 | 11.274 ± 0.063 | 12.331 ± 0.279 | - | - |
+| large | `svd` | f64 | 4 | `512x512` | - | 46.421 ± 0.274 | 47.088 ± 0.485 | 50.423 ± 0.178 | 68.531 ± 0.241 | - | - |
+| large | `svd` | f64 | 4 | `64x64` | - | 0.538 ± 0.002 | 0.544 ± 0.004 | 0.567 ± 0.005 | 0.604 ± 0.042 | - | - |
+| small | `eigh` | f64 | 4 | `16x16` | - | 0.025 ± 0.000 | 0.027 ± 0.000 | 0.026 ± 0.000 | 0.036 ± 0.000 | - | - |
+| small | `eigh` | f64 | 4 | `2x2` | - | 0.006 ± 0.000 | 0.009 ± 0.000 | 0.006 ± 0.000 | 0.008 ± 0.000 | - | - |
+| small | `eigh` | f64 | 4 | `32x32` | - | 0.082 ± 0.000 | 0.083 ± 0.000 | 0.088 ± 0.000 | 0.106 ± 0.006 | - | - |
+| small | `eigh` | f64 | 4 | `4x4` | - | 0.008 ± 0.000 | 0.010 ± 0.000 | 0.008 ± 0.000 | 0.010 ± 0.000 | - | - |
+| small | `eigh` | f64 | 4 | `8x8` | - | 0.012 ± 0.000 | 0.014 ± 0.000 | 0.012 ± 0.000 | 0.015 ± 0.000 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 4 | `16x16` | - | 0.005 ± 0.000 | 0.011 ± 0.000 | 0.012 ± 0.000 | 0.118 ± 0.001 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 4 | `2x2` | - | 0.003 ± 0.000 | 0.010 ± 0.000 | 0.011 ± 0.000 | 0.115 ± 0.001 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 4 | `32x32` | - | 0.008 ± 0.000 | 0.014 ± 0.000 | 0.016 ± 0.000 | 0.120 ± 0.002 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 4 | `4x4` | - | 0.003 ± 0.000 | 0.010 ± 0.000 | 0.011 ± 0.000 | 0.118 ± 0.002 | - | - |
+| small | `einsum_ij_jk_ik` | f64 | 4 | `8x8` | - | 0.004 ± 0.000 | 0.010 ± 0.000 | 0.012 ± 0.000 | 0.120 ± 0.001 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `16x16` | - | - | 0.066 ± 0.000 | 0.123 ± 0.002 | 0.034 ± 0.001 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `2x2` | - | - | 0.046 ± 0.000 | 0.095 ± 0.002 | 0.009 ± 0.000 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `32x32` | - | - | 0.130 ± 0.000 | 0.202 ± 0.003 | 0.103 ± 0.001 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `4x4` | - | - | 0.048 ± 0.000 | 0.097 ± 0.002 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `8x8` | - | - | 0.052 ± 0.000 | 0.104 ± 0.002 | 0.013 ± 0.000 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `16x16` | - | - | 0.067 ± 0.000 | 0.106 ± 0.002 | 0.034 ± 0.001 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `2x2` | - | - | 0.047 ± 0.000 | 0.083 ± 0.002 | 0.010 ± 0.000 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `32x32` | - | - | 0.131 ± 0.000 | 0.176 ± 0.003 | 0.105 ± 0.001 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `4x4` | - | - | 0.048 ± 0.000 | 0.084 ± 0.001 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `8x8` | - | - | 0.052 ± 0.000 | 0.088 ± 0.001 | 0.013 ± 0.001 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `16x16` | - | - | 0.055 ± 0.000 | 0.179 ± 0.005 | 0.017 ± 0.001 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `2x2` | - | - | 0.049 ± 0.000 | 0.163 ± 0.005 | 0.011 ± 0.000 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `32x32` | - | - | 0.088 ± 0.001 | 0.220 ± 0.004 | 0.030 ± 0.005 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `4x4` | - | - | 0.049 ± 0.000 | 0.162 ± 0.003 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `8x8` | - | - | 0.050 ± 0.000 | 0.163 ± 0.003 | 0.018 ± 0.004 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `16x16` | - | - | 0.055 ± 0.000 | 0.140 ± 0.001 | 0.015 ± 0.001 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `2x2` | - | - | 0.049 ± 0.000 | 0.127 ± 0.001 | 0.011 ± 0.000 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `32x32` | - | - | 0.094 ± 0.000 | 0.169 ± 0.005 | 0.030 ± 0.005 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `4x4` | - | - | 0.049 ± 0.000 | 0.129 ± 0.001 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `8x8` | - | - | 0.050 ± 0.000 | 0.130 ± 0.001 | 0.016 ± 0.000 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 4 | `16x16` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.033 ± 0.000 | 0.037 ± 0.000 | 0.015 ± 0.001 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 4 | `2x2` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.030 ± 0.000 | 0.033 ± 0.000 | 0.009 ± 0.000 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 4 | `32x32` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.046 ± 0.000 | 0.049 ± 0.000 | 0.016 ± 0.001 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 4 | `4x4` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.030 ± 0.000 | 0.034 ± 0.000 | 0.010 ± 0.000 | - | - |
+| small | `grad_sum_matmul_backward` | f64 | 4 | `8x8` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.030 ± 0.000 | 0.034 ± 0.000 | 0.012 ± 0.001 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `16x16` | - | - | 0.090 ± 0.000 | 0.128 ± 0.002 | 0.015 ± 0.001 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `2x2` | - | - | 0.081 ± 0.000 | 0.113 ± 0.002 | 0.011 ± 0.000 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `32x32` | - | - | 0.121 ± 0.001 | 0.160 ± 0.005 | 0.041 ± 0.001 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `4x4` | - | - | 0.082 ± 0.000 | 0.112 ± 0.002 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `8x8` | - | - | 0.084 ± 0.000 | 0.115 ± 0.002 | 0.016 ± 0.002 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `16x16` | - | - | 0.093 ± 0.000 | 0.132 ± 0.001 | 0.015 ± 0.001 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `2x2` | - | - | 0.082 ± 0.000 | 0.118 ± 0.001 | 0.010 ± 0.000 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `32x32` | - | - | 0.123 ± 0.000 | 0.162 ± 0.004 | 0.041 ± 0.002 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `4x4` | - | - | 0.084 ± 0.000 | 0.118 ± 0.001 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `8x8` | - | - | 0.085 ± 0.000 | 0.119 ± 0.002 | 0.014 ± 0.002 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 4 | `16x16,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.040 ± 0.000 | 0.056 ± 0.000 | 0.017 ± 0.001 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 4 | `2x2,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.037 ± 0.000 | 0.051 ± 0.000 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 4 | `32x32,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.048 ± 0.000 | 0.064 ± 0.000 | 0.020 ± 0.002 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 4 | `4x4,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.037 ± 0.000 | 0.053 ± 0.000 | 0.013 ± 0.000 | - | - |
+| small | `grad_sum_solve_backward` | f64 | 4 | `8x8,rhs=1` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.039 ± 0.000 | 0.053 ± 0.000 | 0.014 ± 0.000 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `16x16,rhs=1` | - | - | 0.030 ± 0.000 | 0.263 ± 0.002 | 0.014 ± 0.000 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `2x2,rhs=1` | - | - | 0.029 ± 0.000 | 0.255 ± 0.001 | 0.011 ± 0.000 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `32x32,rhs=1` | - | - | 0.038 ± 0.000 | 0.278 ± 0.003 | 0.017 ± 0.003 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `4x4,rhs=1` | - | - | 0.028 ± 0.000 | 0.256 ± 0.001 | 0.011 ± 0.000 | - | - |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `8x8,rhs=1` | - | - | 0.029 ± 0.000 | 0.256 ± 0.002 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `16x16,rhs=1` | - | - | 0.030 ± 0.000 | 0.115 ± 0.002 | 0.016 ± 0.000 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `2x2,rhs=1` | - | - | 0.028 ± 0.000 | 0.111 ± 0.001 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `32x32,rhs=1` | - | - | 0.037 ± 0.000 | 0.132 ± 0.001 | 0.017 ± 0.001 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `4x4,rhs=1` | - | - | 0.028 ± 0.000 | 0.110 ± 0.001 | 0.012 ± 0.000 | - | - |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `8x8,rhs=1` | - | - | 0.028 ± 0.000 | 0.112 ± 0.001 | 0.013 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 4 | `16x16` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.068 ± 0.000 | 0.085 ± 0.000 | 0.060 ± 0.002 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 4 | `2x2` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.026 ± 0.000 | 0.038 ± 0.000 | 0.010 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 4 | `32x32` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.182 ± 0.000 | 0.212 ± 0.002 | 0.178 ± 0.005 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 4 | `4x4` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.029 ± 0.000 | 0.042 ± 0.000 | 0.014 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_backward` | f64 | 4 | `8x8` | - | unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled | 0.040 ± 0.000 | 0.053 ± 0.000 | 0.021 ± 0.002 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `16x16` | - | - | 0.069 ± 0.000 | 0.206 ± 0.004 | 0.057 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `2x2` | - | - | 0.027 ± 0.000 | 0.144 ± 0.001 | 0.011 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `32x32` | - | - | 0.183 ± 0.001 | 0.354 ± 0.003 | 0.163 ± 0.002 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `4x4` | - | - | 0.030 ± 0.000 | 0.149 ± 0.001 | 0.014 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `8x8` | - | - | 0.041 ± 0.000 | 0.165 ± 0.003 | 0.018 ± 0.001 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `16x16` | - | - | 0.069 ± 0.000 | 0.141 ± 0.001 | 0.057 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `2x2` | - | - | 0.026 ± 0.000 | 0.090 ± 0.002 | 0.011 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `32x32` | - | - | 0.182 ± 0.000 | 0.272 ± 0.003 | 0.176 ± 0.003 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `4x4` | - | - | 0.030 ± 0.000 | 0.094 ± 0.001 | 0.015 ± 0.000 | - | - |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `8x8` | - | - | 0.041 ± 0.000 | 0.104 ± 0.001 | 0.018 ± 0.002 | - | - |
+| small | `matmul` | f64 | 4 | `16x16` | - | 0.005 ± 0.000 | 0.009 ± 0.000 | 0.003 ± 0.000 | 0.008 ± 0.001 | - | - |
+| small | `matmul` | f64 | 4 | `2x2` | - | 0.003 ± 0.000 | 0.009 ± 0.000 | 0.002 ± 0.000 | 0.006 ± 0.000 | - | - |
+| small | `matmul` | f64 | 4 | `32x32` | - | 0.008 ± 0.000 | 0.013 ± 0.000 | 0.007 ± 0.000 | 0.009 ± 0.000 | - | - |
+| small | `matmul` | f64 | 4 | `4x4` | - | 0.003 ± 0.000 | 0.009 ± 0.000 | 0.002 ± 0.000 | 0.007 ± 0.000 | - | - |
+| small | `matmul` | f64 | 4 | `64x64` | - | 0.027 ± 0.001 | 0.023 ± 0.000 | 0.022 ± 0.002 | 0.023 ± 0.002 | - | - |
+| small | `matmul` | f64 | 4 | `8x8` | - | 0.004 ± 0.000 | 0.009 ± 0.000 | 0.002 ± 0.000 | 0.008 ± 0.002 | - | - |
+| small | `qr` | f64 | 4 | `16x16` | - | 0.010 ± 0.000 | 0.012 ± 0.000 | 0.011 ± 0.000 | 0.015 ± 0.000 | - | - |
+| small | `qr` | f64 | 4 | `2x2` | - | 0.006 ± 0.000 | 0.008 ± 0.000 | 0.005 ± 0.000 | 0.009 ± 0.000 | - | - |
+| small | `qr` | f64 | 4 | `32x32` | - | 0.022 ± 0.000 | 0.024 ± 0.000 | 0.025 ± 0.000 | 0.029 ± 0.003 | - | - |
+| small | `qr` | f64 | 4 | `4x4` | - | 0.007 ± 0.000 | 0.009 ± 0.000 | 0.006 ± 0.000 | 0.009 ± 0.000 | - | - |
+| small | `qr` | f64 | 4 | `8x8` | - | 0.007 ± 0.000 | 0.009 ± 0.000 | 0.007 ± 0.000 | 0.011 ± 0.000 | - | - |
+| small | `solve` | f64 | 4 | `16x16,rhs=1` | - | 0.008 ± 0.000 | 0.011 ± 0.000 | 0.015 ± 0.000 | 0.010 ± 0.000 | - | - |
+| small | `solve` | f64 | 4 | `16x16,rhs=4` | - | 0.009 ± 0.000 | 0.012 ± 0.000 | 0.016 ± 0.000 | 0.011 ± 0.000 | - | - |
+| small | `solve` | f64 | 4 | `2x2,rhs=1` | - | 0.006 ± 0.000 | 0.010 ± 0.000 | 0.013 ± 0.000 | 0.007 ± 0.000 | - | - |
+| small | `solve` | f64 | 4 | `2x2,rhs=4` | - | 0.006 ± 0.000 | 0.010 ± 0.000 | 0.014 ± 0.000 | 0.008 ± 0.000 | - | - |
+| small | `solve` | f64 | 4 | `32x32,rhs=1` | - | 0.014 ± 0.000 | 0.018 ± 0.000 | 0.022 ± 0.000 | 0.014 ± 0.001 | - | - |
+| small | `solve` | f64 | 4 | `32x32,rhs=4` | - | 0.018 ± 0.000 | 0.020 ± 0.000 | 0.025 ± 0.000 | 0.017 ± 0.001 | - | - |
+| small | `solve` | f64 | 4 | `4x4,rhs=1` | - | 0.006 ± 0.000 | 0.010 ± 0.000 | 0.013 ± 0.000 | 0.008 ± 0.000 | - | - |
+| small | `solve` | f64 | 4 | `4x4,rhs=4` | - | 0.006 ± 0.000 | 0.010 ± 0.000 | 0.013 ± 0.000 | 0.008 ± 0.000 | - | - |
+| small | `solve` | f64 | 4 | `8x8,rhs=1` | - | 0.006 ± 0.000 | 0.010 ± 0.000 | 0.013 ± 0.000 | 0.008 ± 0.000 | - | - |
+| small | `solve` | f64 | 4 | `8x8,rhs=4` | - | 0.007 ± 0.000 | 0.011 ± 0.000 | 0.014 ± 0.000 | 0.009 ± 0.000 | - | - |
+| small | `svd` | f64 | 4 | `16x16` | - | 0.048 ± 0.000 | 0.050 ± 0.000 | 0.052 ± 0.000 | 0.058 ± 0.000 | - | - |
+| small | `svd` | f64 | 4 | `2x2` | - | 0.008 ± 0.000 | 0.011 ± 0.000 | 0.008 ± 0.000 | 0.012 ± 0.000 | - | - |
+| small | `svd` | f64 | 4 | `32x32` | - | 0.157 ± 0.001 | 0.160 ± 0.000 | 0.172 ± 0.001 | 0.166 ± 0.010 | - | - |
+| small | `svd` | f64 | 4 | `4x4` | - | 0.011 ± 0.000 | 0.014 ± 0.000 | 0.011 ± 0.000 | 0.014 ± 0.000 | - | - |
+| small | `svd` | f64 | 4 | `8x8` | - | 0.020 ± 0.000 | 0.023 ± 0.000 | 0.020 ± 0.000 | 0.022 ± 0.000 | - | - |
+
+## Cross-Backend Spread Audit
+
+Rows with a successful cell more than 10x faster than the slowest successful cell are flagged for operation-specific review. This cross-backend spread check is a warning, not a correctness verdict.
+
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`16x16xbatch16 (native batch layout)`): `tenferro-eager` is 12.1x faster than the slowest successful cell (`jax-cpu`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch16 (native batch layout)`): `tenferro-eager` is 16.9x faster than the slowest successful cell (`jax-cpu`, 0.116 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`2x2xbatch64 (native batch layout)`): `tenferro-eager` is 11.7x faster than the slowest successful cell (`jax-cpu`, 0.117 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch16 (native batch layout)`): `tenferro-eager` is 16.7x faster than the slowest successful cell (`jax-cpu`, 0.119 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch16 (native batch layout)`): `tenferro-trace` is 10.1x faster than the slowest successful cell (`jax-cpu`, 0.119 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`4x4xbatch64 (native batch layout)`): `tenferro-eager` is 11.7x faster than the slowest successful cell (`jax-cpu`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`8x8xbatch16 (native batch layout)`): `tenferro-eager` is 15.9x faster than the slowest successful cell (`jax-cpu`, 0.119 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/batched_matmul_ikb_kjb_ijb` (f64, threads=4, shape=`8x8xbatch64 (native batch layout)`): `tenferro-eager` is 10.3x faster than the slowest successful cell (`jax-cpu`, 0.119 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `batched/grad_sum_batched_matmul_backward` (f64, threads=4, shape=`8x8xbatch1024 (native batch layout)`): `tenferro-trace` is 11.6x faster than the slowest successful cell (`pytorch-cpu`, 5.518 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`16x16`): `tenferro-eager` is 23.9x faster than the slowest successful cell (`jax-cpu`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`16x16`): `tenferro-trace` is 10.7x faster than the slowest successful cell (`jax-cpu`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`2x2`): `pytorch-cpu` is 10.2x faster than the slowest successful cell (`jax-cpu`, 0.115 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`2x2`): `tenferro-eager` is 34.4x faster than the slowest successful cell (`jax-cpu`, 0.115 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`2x2`): `tenferro-trace` is 11.4x faster than the slowest successful cell (`jax-cpu`, 0.115 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`32x32`): `tenferro-eager` is 15.2x faster than the slowest successful cell (`jax-cpu`, 0.120 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`4x4`): `pytorch-cpu` is 10.5x faster than the slowest successful cell (`jax-cpu`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`4x4`): `tenferro-eager` is 35.0x faster than the slowest successful cell (`jax-cpu`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`4x4`): `tenferro-trace` is 11.4x faster than the slowest successful cell (`jax-cpu`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`8x8`): `pytorch-cpu` is 10.4x faster than the slowest successful cell (`jax-cpu`, 0.120 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`8x8`): `tenferro-eager` is 31.7x faster than the slowest successful cell (`jax-cpu`, 0.120 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/einsum_ij_jk_ik` (f64, threads=4, shape=`8x8`): `tenferro-trace` is 11.7x faster than the slowest successful cell (`jax-cpu`, 0.120 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_eigh_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 10.0x faster than the slowest successful cell (`pytorch-cpu`, 0.095 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`16x16`): `jax-cpu` is 10.7x faster than the slowest successful cell (`pytorch-cpu`, 0.179 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 14.7x faster than the slowest successful cell (`pytorch-cpu`, 0.163 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_jvp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 13.7x faster than the slowest successful cell (`pytorch-cpu`, 0.162 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 11.6x faster than the slowest successful cell (`pytorch-cpu`, 0.127 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_lu_vjp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 10.8x faster than the slowest successful cell (`pytorch-cpu`, 0.129 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 10.6x faster than the slowest successful cell (`pytorch-cpu`, 0.113 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_qr_vjp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 11.5x faster than the slowest successful cell (`pytorch-cpu`, 0.118 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`16x16,rhs=1`): `jax-cpu` is 18.8x faster than the slowest successful cell (`pytorch-cpu`, 0.263 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`2x2,rhs=1`): `jax-cpu` is 23.4x faster than the slowest successful cell (`pytorch-cpu`, 0.255 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`32x32,rhs=1`): `jax-cpu` is 16.1x faster than the slowest successful cell (`pytorch-cpu`, 0.278 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`4x4,rhs=1`): `jax-cpu` is 23.4x faster than the slowest successful cell (`pytorch-cpu`, 0.256 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_solve_jvp` (f64, threads=4, shape=`8x8,rhs=1`): `jax-cpu` is 21.7x faster than the slowest successful cell (`pytorch-cpu`, 0.256 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_svd_s_jvp` (f64, threads=4, shape=`2x2`): `jax-cpu` is 13.5x faster than the slowest successful cell (`pytorch-cpu`, 0.144 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+- `small/grad_sum_svd_s_jvp` (f64, threads=4, shape=`4x4`): `jax-cpu` is 10.6x faster than the slowest successful cell (`pytorch-cpu`, 0.149 ms). Audit fixture semantics, synchronization, labels, and operation-specific bandwidth/FLOP bounds.
+
+## Physical Bound Audit
+
+This independent check derives minimum logical bytes from dtype and shape for materializing public API operations, plus conservative operation FLOPs for reductions, Frobenius norms, matrix products, triangular solves, and recognized dense linalg families. Decorated shapes (`->`, `rhs=`, and `+`) are parsed explicitly. Operations whose touched region cannot be inferred conservatively from the reported shape are left unmodeled. It assumes at most 100 GB/s and 50 GFLOP/s per requested CPU thread, capped at 1000 GB/s and 3200 GFLOP/s. A cell more than 10x faster than the resulting lower bound is flagged. These deliberately generous ceilings are a sanity screen, not a performance gate.
+
+No cell exceeded the conservative physical bound by more than 10x.
+## Linalg JVP/VJP Benchmark Items
+
+Median ± IQR (ms). Missing backends are shown as `-`.
+
+tenferro-rs JVP/VJP use trace-mode `AdContext`; PyTorch uses `torch.func.jvp` /
+`vjp`; JAX uses `jax.jvp` / `jax.vjp`.
+
+| suite | benchmark | dtype | threads | shape | tenferro-rs trace mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU) (ms) |
+|---|---|---:|---:|---|---:|---:|---:|
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `1024x1024` | 110.595 ± 1.190 | 158.889 ± 0.821 | 142.499 ± 2.814 |
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `256x256` | 4.346 ± 0.042 | 4.765 ± 0.018 | 7.224 ± 0.444 |
+| large | `grad_sum_eigh_jvp` | f64 | 4 | `512x512` | 19.898 ± 0.698 | 25.879 ± 0.099 | 30.225 ± 0.888 |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `1024x1024` | 110.256 ± 0.489 | 112.010 ± 1.240 | 141.547 ± 1.556 |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `256x256` | 4.343 ± 0.053 | 4.113 ± 0.017 | 6.640 ± 0.531 |
+| large | `grad_sum_eigh_vjp` | f64 | 4 | `512x512` | 20.180 ± 0.389 | 19.726 ± 0.056 | 29.945 ± 1.244 |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `1024x1024` | 81.038 ± 0.600 | 180.950 ± 0.557 | 70.229 ± 3.164 |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `256x256` | 1.911 ± 0.025 | 4.312 ± 0.052 | 1.852 ± 0.325 |
+| large | `grad_sum_lu_jvp` | f64 | 4 | `512x512` | 12.071 ± 1.972 | 30.860 ± 0.381 | 10.272 ± 1.694 |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `1024x1024` | 79.189 ± 0.214 | 92.926 ± 0.252 | 68.551 ± 1.687 |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `256x256` | 2.167 ± 0.024 | 2.125 ± 0.016 | 1.753 ± 0.087 |
+| large | `grad_sum_lu_vjp` | f64 | 4 | `512x512` | 11.894 ± 0.095 | 14.338 ± 0.081 | 10.084 ± 0.540 |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `1024x1024` | 113.904 ± 0.650 | 131.511 ± 0.602 | 112.847 ± 0.720 |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `256x256` | 3.322 ± 0.030 | 3.344 ± 0.594 | 3.794 ± 0.308 |
+| large | `grad_sum_qr_jvp` | f64 | 4 | `512x512` | 22.380 ± 0.604 | 25.576 ± 0.157 | 19.457 ± 1.904 |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `1024x1024` | 111.495 ± 0.286 | 126.004 ± 0.331 | 114.857 ± 2.341 |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `256x256` | 3.191 ± 0.047 | 3.534 ± 0.046 | 3.846 ± 0.345 |
+| large | `grad_sum_qr_vjp` | f64 | 4 | `512x512` | 20.052 ± 0.347 | 25.700 ± 0.527 | 20.776 ± 2.378 |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `1024x1024,rhs=1` | 8.244 ± 1.917 | 11.528 ± 0.113 | 9.718 ± 0.888 |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `256x256,rhs=1` | 0.350 ± 0.002 | 0.624 ± 0.019 | 0.446 ± 0.013 |
+| large | `grad_sum_solve_jvp` | f64 | 4 | `512x512,rhs=1` | 1.491 ± 0.079 | 3.028 ± 0.098 | 2.864 ± 0.761 |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `1024x1024,rhs=1` | 7.920 ± 0.100 | 18.763 ± 0.164 | 9.293 ± 0.231 |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `256x256,rhs=1` | 0.347 ± 0.009 | 0.701 ± 0.018 | 0.450 ± 0.020 |
+| large | `grad_sum_solve_vjp` | f64 | 4 | `512x512,rhs=1` | 1.437 ± 0.006 | 3.944 ± 0.017 | 2.570 ± 0.497 |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `1024x1024` | 265.149 ± 2.585 | 344.704 ± 1.889 | 354.826 ± 6.893 |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `256x256` | 10.761 ± 0.090 | 12.931 ± 0.063 | 12.295 ± 0.613 |
+| large | `grad_sum_svd_s_jvp` | f64 | 4 | `512x512` | 50.354 ± 1.528 | 68.240 ± 0.589 | 75.044 ± 1.311 |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `1024x1024` | 266.303 ± 5.420 | 280.895 ± 4.921 | 360.760 ± 4.876 |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `256x256` | 10.735 ± 0.024 | 12.043 ± 0.043 | 12.622 ± 1.063 |
+| large | `grad_sum_svd_s_vjp` | f64 | 4 | `512x512` | 50.639 ± 0.336 | 68.901 ± 1.123 | 75.148 ± 0.982 |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `16x16` | 0.066 ± 0.000 | 0.123 ± 0.002 | 0.034 ± 0.001 |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `2x2` | 0.046 ± 0.000 | 0.095 ± 0.002 | 0.009 ± 0.000 |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `32x32` | 0.130 ± 0.000 | 0.202 ± 0.003 | 0.103 ± 0.001 |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `4x4` | 0.048 ± 0.000 | 0.097 ± 0.002 | 0.012 ± 0.000 |
+| small | `grad_sum_eigh_jvp` | f64 | 4 | `8x8` | 0.052 ± 0.000 | 0.104 ± 0.002 | 0.013 ± 0.000 |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `16x16` | 0.067 ± 0.000 | 0.106 ± 0.002 | 0.034 ± 0.001 |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `2x2` | 0.047 ± 0.000 | 0.083 ± 0.002 | 0.010 ± 0.000 |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `32x32` | 0.131 ± 0.000 | 0.176 ± 0.003 | 0.105 ± 0.001 |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `4x4` | 0.048 ± 0.000 | 0.084 ± 0.001 | 0.012 ± 0.000 |
+| small | `grad_sum_eigh_vjp` | f64 | 4 | `8x8` | 0.052 ± 0.000 | 0.088 ± 0.001 | 0.013 ± 0.001 |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `16x16` | 0.055 ± 0.000 | 0.179 ± 0.005 | 0.017 ± 0.001 |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `2x2` | 0.049 ± 0.000 | 0.163 ± 0.005 | 0.011 ± 0.000 |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `32x32` | 0.088 ± 0.001 | 0.220 ± 0.004 | 0.030 ± 0.005 |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `4x4` | 0.049 ± 0.000 | 0.162 ± 0.003 | 0.012 ± 0.000 |
+| small | `grad_sum_lu_jvp` | f64 | 4 | `8x8` | 0.050 ± 0.000 | 0.163 ± 0.003 | 0.018 ± 0.004 |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `16x16` | 0.055 ± 0.000 | 0.140 ± 0.001 | 0.015 ± 0.001 |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `2x2` | 0.049 ± 0.000 | 0.127 ± 0.001 | 0.011 ± 0.000 |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `32x32` | 0.094 ± 0.000 | 0.169 ± 0.005 | 0.030 ± 0.005 |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `4x4` | 0.049 ± 0.000 | 0.129 ± 0.001 | 0.012 ± 0.000 |
+| small | `grad_sum_lu_vjp` | f64 | 4 | `8x8` | 0.050 ± 0.000 | 0.130 ± 0.001 | 0.016 ± 0.000 |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `16x16` | 0.090 ± 0.000 | 0.128 ± 0.002 | 0.015 ± 0.001 |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `2x2` | 0.081 ± 0.000 | 0.113 ± 0.002 | 0.011 ± 0.000 |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `32x32` | 0.121 ± 0.001 | 0.160 ± 0.005 | 0.041 ± 0.001 |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `4x4` | 0.082 ± 0.000 | 0.112 ± 0.002 | 0.012 ± 0.000 |
+| small | `grad_sum_qr_jvp` | f64 | 4 | `8x8` | 0.084 ± 0.000 | 0.115 ± 0.002 | 0.016 ± 0.002 |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `16x16` | 0.093 ± 0.000 | 0.132 ± 0.001 | 0.015 ± 0.001 |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `2x2` | 0.082 ± 0.000 | 0.118 ± 0.001 | 0.010 ± 0.000 |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `32x32` | 0.123 ± 0.000 | 0.162 ± 0.004 | 0.041 ± 0.002 |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `4x4` | 0.084 ± 0.000 | 0.118 ± 0.001 | 0.012 ± 0.000 |
+| small | `grad_sum_qr_vjp` | f64 | 4 | `8x8` | 0.085 ± 0.000 | 0.119 ± 0.002 | 0.014 ± 0.002 |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `16x16,rhs=1` | 0.030 ± 0.000 | 0.263 ± 0.002 | 0.014 ± 0.000 |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `2x2,rhs=1` | 0.029 ± 0.000 | 0.255 ± 0.001 | 0.011 ± 0.000 |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `32x32,rhs=1` | 0.038 ± 0.000 | 0.278 ± 0.003 | 0.017 ± 0.003 |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `4x4,rhs=1` | 0.028 ± 0.000 | 0.256 ± 0.001 | 0.011 ± 0.000 |
+| small | `grad_sum_solve_jvp` | f64 | 4 | `8x8,rhs=1` | 0.029 ± 0.000 | 0.256 ± 0.002 | 0.012 ± 0.000 |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `16x16,rhs=1` | 0.030 ± 0.000 | 0.115 ± 0.002 | 0.016 ± 0.000 |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `2x2,rhs=1` | 0.028 ± 0.000 | 0.111 ± 0.001 | 0.012 ± 0.000 |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `32x32,rhs=1` | 0.037 ± 0.000 | 0.132 ± 0.001 | 0.017 ± 0.001 |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `4x4,rhs=1` | 0.028 ± 0.000 | 0.110 ± 0.001 | 0.012 ± 0.000 |
+| small | `grad_sum_solve_vjp` | f64 | 4 | `8x8,rhs=1` | 0.028 ± 0.000 | 0.112 ± 0.001 | 0.013 ± 0.000 |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `16x16` | 0.069 ± 0.000 | 0.206 ± 0.004 | 0.057 ± 0.000 |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `2x2` | 0.027 ± 0.000 | 0.144 ± 0.001 | 0.011 ± 0.000 |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `32x32` | 0.183 ± 0.001 | 0.354 ± 0.003 | 0.163 ± 0.002 |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `4x4` | 0.030 ± 0.000 | 0.149 ± 0.001 | 0.014 ± 0.000 |
+| small | `grad_sum_svd_s_jvp` | f64 | 4 | `8x8` | 0.041 ± 0.000 | 0.165 ± 0.003 | 0.018 ± 0.001 |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `16x16` | 0.069 ± 0.000 | 0.141 ± 0.001 | 0.057 ± 0.000 |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `2x2` | 0.026 ± 0.000 | 0.090 ± 0.002 | 0.011 ± 0.000 |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `32x32` | 0.182 ± 0.000 | 0.272 ± 0.003 | 0.176 ± 0.003 |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `4x4` | 0.030 ± 0.000 | 0.094 ± 0.001 | 0.015 ± 0.000 |
+| small | `grad_sum_svd_s_vjp` | f64 | 4 | `8x8` | 0.041 ± 0.000 | 0.104 ± 0.001 | 0.018 ± 0.002 |
+
+## Loss Definitions
+
+- `grad_sum_eigh`: loss = sum(eigenvalues); w.r.t. SPD input matrix A
+- `grad_sum_lu`: loss = sum(L) + sum(U); w.r.t. input matrix A
+- `grad_sum_qr`: loss = sum(Q) + sum(R); w.r.t. input matrix A
+- `grad_sum_solve`: loss = sum(solve(A, b)); w.r.t. input matrix A (rhs fixed)
+- `grad_sum_svd_s`: loss = sum(singular values); w.r.t. input matrix A
+
+============================================
+ Benchmark complete
+============================================
+Results:
+  /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/tenferro_trace_t4_20261008_053424.log
+  /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/tenferro_eager_t4_20261008_053424.log
+  /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/pytorch_cpu_t4_20261008_053424.log
+  /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/jax_cpu_t4_20261008_053424.log
+  /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/julia_omeinsum_t4_20261008_053424.log
+  Markdown: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/einsum_table_t4_20261008_053424.md
+  Run YAML: /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/run.yaml
+  Report:   /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/report.md
+  Latest:   /workspaces/tenferro-benchmark/result/amd-cpu/cpu/einsum.md
+  Report:   /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/cpu_ops_report.md
+  Latest:   /workspaces/tenferro-benchmark/result/amd-cpu/cpu/cpu_ops.md
+  Report:   /workspaces/tenferro-benchmark/data/results/amd-cpu/cpu/einsum/20261008_053424/linalg_jvp_vjp_report.md
+  Latest:   /workspaces/tenferro-benchmark/result/amd-cpu/cpu/linalg_jvp_vjp.md
+  Latest:   /workspaces/tenferro-benchmark/result/amd-cpu/cpu/fft.md
+  Latest:   /workspaces/tenferro-benchmark/result/amd-cpu/cpu/public_api.md
+  Latest:   /workspaces/tenferro-benchmark/result/amd-cpu/cpu/permutation.md

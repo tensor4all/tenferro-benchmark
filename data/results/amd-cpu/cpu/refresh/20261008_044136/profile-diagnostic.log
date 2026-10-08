@@ -1,0 +1,38 @@
+   Compiling tenferro-einsum-benchmark v0.1.0 (/workspaces/tenferro-benchmark)
+    Finished `release` profile [optimized] target(s) in 1.80s
+     Running `target/compatibility-mkl/release/tenferro-einsum-benchmark`
+Warning: skip /workspaces/tenferro-benchmark/data/instances/gpu_perf_issues.json (parse failed: invalid type: map, expected a string at line 2 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/gpu_permutation_mac_patterns.json (parse failed: missing field `name` at line 75 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/gpu_permutation_patterns.json (parse failed: missing field `name` at line 112 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/perf_issues.json (parse failed: invalid type: map, expected a string at line 2 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/permutation_patterns.json (parse failed: missing field `name` at line 127 column 1)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/session_matrix.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+Warning: skip /workspaces/tenferro-benchmark/data/instances/small_work.json (parse failed: invalid type: map, expected a string at line 2 column 2)
+tenferro-eager benchmark suite
+==================================
+Loaded 1 instances from /workspaces/tenferro-benchmark/data/instances
+Backend: tenferro-eager
+TENFERRO_CPU_BACKEND_KIND=blas
+TENFERRO_CPU_PROVIDER=default
+TENFERRO_OPT_DOT_DECOMPOSER=0
+RAYON_NUM_THREADS=1, OMP_NUM_THREADS=1
+Timing: median ± IQR of 2 runs (0 warmup), precomputed path, eager binary contractions in one shared CPU execution scope
+
+Strategy: opt_flops
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms) Compile (ms)
+------------------------------------------------------------------------------------------------------------------------
+  [1/1] bin_matmul_256...
+Breakdown: backend=tenferro-eager instance=bin_matmul_256 strategy=opt_flops section=eager.input_create median_ms=0.484162 iqr_ms=0.080241
+Breakdown: backend=tenferro-eager instance=bin_matmul_256 strategy=opt_flops section=eager.total median_ms=1.055017 iqr_ms=0.005010
+Breakdown: backend=tenferro-eager instance=bin_matmul_256 strategy=opt_flops section=eager.operand_handles median_ms=0.000250 iqr_ms=0.000020
+Breakdown: backend=tenferro-eager instance=bin_matmul_256 strategy=opt_flops section=eager.binary_setup median_ms=0.000201 iqr_ms=0.000010
+Breakdown: backend=tenferro-eager instance=bin_matmul_256 strategy=opt_flops section=eager.einsum_call median_ms=1.054436 iqr_ms=0.004940
+Breakdown: backend=tenferro-eager instance=bin_matmul_256 strategy=opt_flops section=eager.output_take median_ms=0.000050 iqr_ms=0.000000
+  [1/1] bin_matmul_256...
+  -> bin_matmul_256 strategy=opt_size: reusing previous measurement for identical path
+bin_matmul_256                                            2       7.22        16.00        1.075      0.018        0.000
+
+Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms) Compile (ms)
+------------------------------------------------------------------------------------------------------------------------
+bin_matmul_256                                            2       7.22        16.00        1.075      0.018        0.000

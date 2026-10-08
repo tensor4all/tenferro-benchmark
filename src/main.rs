@@ -710,6 +710,24 @@ fn run_instance_eager_in_scope(
     let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
     let prepared = prepare_eager_path(instance, path_meta)?;
 
+    // Input wrapping enters its own session; profile it before borrowing one.
+    if profile_bench_breakdown_enabled() {
+        let mut input_create = Vec::with_capacity(bench_runs());
+        for _ in 0..bench_runs() {
+            let started = Instant::now();
+            let operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
+            input_create.push(started.elapsed());
+            black_box(&operands);
+        }
+        print_breakdown(
+            "tenferro-eager",
+            instance,
+            strategy_name,
+            "eager.input_create",
+            input_create,
+        );
+    }
+
     ctx.with_eager_session(|session| -> Result<_, tenferro_ad::Error> {
         for _ in 0..bench_warmups().max(1) {
             let mut operands = source_operands.to_vec();
@@ -760,28 +778,6 @@ fn run_instance_eager_in_scope(
         let (median, iqr) = duration_stats(durations);
 
         if profile_bench_breakdown_enabled() {
-            let mut input_create = Vec::with_capacity(bench_runs());
-            for _ in 0..bench_runs() {
-                let started = Instant::now();
-                let operands =
-                    create_eager_operands(&instance.shapes_colmajor, &ctx).map_err(|err| {
-                        tenferro_ad::Error::runtime_state(
-                            "benchmark_einsum",
-                            tenferro_runtime::ErrorPhase::Execution,
-                            err,
-                        )
-                    })?;
-                input_create.push(started.elapsed());
-                black_box(&operands);
-            }
-            print_breakdown(
-                "tenferro-eager",
-                instance,
-                strategy_name,
-                "eager.input_create",
-                input_create,
-            );
-
             let mut total = Vec::with_capacity(bench_runs());
             let mut operand_handles = Vec::with_capacity(bench_runs());
             let mut binary_setup = Vec::with_capacity(bench_runs());

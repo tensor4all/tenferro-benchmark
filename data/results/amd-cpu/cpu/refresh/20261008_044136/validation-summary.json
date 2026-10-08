@@ -1,0 +1,150 @@
+{
+  "runs": {
+    "einsum": [
+      "20261008_044146",
+      "20261008_053424"
+    ],
+    "fft": [
+      "20261008_060740"
+    ],
+    "public_api": [
+      "20261008_060822"
+    ],
+    "small_work": [
+      "20261008_062614"
+    ],
+    "session_matrix": [
+      "20261008_062752"
+    ],
+    "route_contract": [
+      "20261008_062904"
+    ],
+    "permutation": [
+      "20261008_062910"
+    ],
+    "perf_issues": [
+      "20261008_063605"
+    ]
+  },
+  "csv": {
+    "data/results/amd-cpu/cpu/einsum/20261008_044146/publication_gate_system-mkl_t1_full_all_20261008_044146.csv": {
+      "rows": 518,
+      "status": {
+        "ok": 456,
+        "unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled": 62
+      }
+    },
+    "data/results/amd-cpu/cpu/einsum/20261008_044146/cpu_ops_t1_20261008_044146.csv": {
+      "rows": 1116,
+      "status": {
+        "ok": 1054,
+        "unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled": 62
+      }
+    },
+    "data/results/amd-cpu/cpu/einsum/20261008_053424/publication_gate_system-mkl_t4_full_all_20261008_053424.csv": {
+      "rows": 518,
+      "status": {
+        "ok": 456,
+        "unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled": 62
+      }
+    },
+    "data/results/amd-cpu/cpu/einsum/20261008_053424/cpu_ops_t4_20261008_053424.csv": {
+      "rows": 1116,
+      "status": {
+        "ok": 1054,
+        "unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled": 62
+      }
+    },
+    "data/results/amd-cpu/cpu/fft/20261008_060740/cpu_fft_t4_20261008_060740.csv": {
+      "rows": 96,
+      "status": {
+        "skipped": 48,
+        "ok": 48
+      }
+    },
+    "data/results/amd-cpu/cpu/fft/20261008_060740/cpu_fft_t1_20261008_060740.csv": {
+      "rows": 96,
+      "status": {
+        "skipped": 48,
+        "ok": 48
+      }
+    },
+    "data/results/amd-cpu/cpu/public_api/20261008_060822/cpu_public_api_t4_20261008_060822.csv": {
+      "rows": 1327,
+      "status": {
+        "ok": 1283,
+        "unsupported": 44
+      }
+    },
+    "data/results/amd-cpu/cpu/public_api/20261008_060822/cpu_public_api_t1_20261008_060822.csv": {
+      "rows": 1327,
+      "status": {
+        "ok": 1283,
+        "unsupported": 44
+      }
+    }
+  },
+  "coverage": {
+    "data/results/amd-cpu/cpu/small_work/20261008_062614/case_status.json": {
+      "expected": 332,
+      "selected": 332,
+      "executed": 332,
+      "unsupported": 0,
+      "failed": 0,
+      "missing": 0,
+      "noisy": 45
+    },
+    "data/results/amd-cpu/cpu/session_matrix/20261008_062752/case_status.json": {
+      "expected": 176,
+      "selected": 176,
+      "executed": 170,
+      "unsupported": 6,
+      "failed": 0,
+      "missing": 0,
+      "noisy": 22
+    },
+    "data/results/amd-cpu/cpu/perf_issues/20261008_063605/case_status.json": {
+      "expected": 306,
+      "selected": 306,
+      "executed": 306,
+      "unsupported": 0,
+      "failed": 0,
+      "missing": 0,
+      "noisy": 32
+    }
+  },
+  "route": {
+    "data/results/amd-cpu/cpu/route_contract/20261008_062904/route_contract.json": {
+      "PASS": 45,
+      "UNSUPPORTED": 3
+    }
+  },
+  "validation": {
+    "rust_tests_passed": 49,
+    "python_tests_passed": 67,
+    "shell_checks": "passed; see final-checks.sh and final-checks.log",
+    "run_metadata_checked": 21,
+    "tenferro_commit": "5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102",
+    "cpu": "AMD Ryzen 9 9955HX",
+    "devcontainer_image": "sha256:11ef47b0995495aa1b5a65f002f2edba09f80b4e3781d0e4d262902e8dc7073c",
+    "collection_exit_status": 0,
+    "threads": [
+      1,
+      4
+    ],
+    "affinity": "unpinned",
+    "source_provenance": {
+      "einsum_t1": "8c38c55",
+      "cpu_ops_t1_and_followups": "2cd0fd6",
+      "postcollection_change": "optional eager input_create profiler moved before borrowed-session entry; standard operation timings unchanged"
+    },
+    "recovery": "CPU ops t1 rerun after restoring consumed descriptors outside each sample; original einsum t1 retained with einsum_run.yaml metadata",
+    "host_julia": "SIGSTOP authorized; original PIDs no longer existed at completion",
+    "not_a_speedup_claim": "Historical latest reports used different hardware; noisy rows retained and explicit diagnostics separate from steady-state cases",
+    "devcontainer_files_sha256": {
+      ".devcontainer/Dockerfile": "82c7ff1a64b503c095134675baf20275e71734db3e497a2e718b43356e1ac6d2",
+      ".devcontainer/devcontainer.json": "7f99a510c98efe469ca144e2a29415133070e74556a6e23fb91f827450d52c4b"
+    },
+    "eager_zero_warmup_profile_diagnostic": "passed; excluded from publication timing data"
+  }
+}

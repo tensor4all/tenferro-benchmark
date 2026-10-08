@@ -1,0 +1,362 @@
+   Compiling tenferro-einsum-benchmark v0.1.0 (/workspaces/tenferro-benchmark)
+warning: constant `CBLAS_COL_MAJOR` is never used
+  --> src/bin/cpu_matmul_diagnostic.rs:21:7
+   |
+21 | const CBLAS_COL_MAJOR: i32 = 102;
+   |       ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `CBLAS_NO_TRANS` is never used
+  --> src/bin/cpu_matmul_diagnostic.rs:22:7
+   |
+22 | const CBLAS_NO_TRANS: i32 = 111;
+   |       ^^^^^^^^^^^^^^
+
+warning: `tenferro-einsum-benchmark` (bin "cpu_matmul_diagnostic" test) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.39s
+     Running unittests src/lib.rs (target/compatibility-mkl/debug/deps/tenferro_einsum_benchmark-2b0595d661e472f1)
+
+running 4 tests
+test tensornetwork::tests::maps_integer_labels_to_ascii_einsum ... ok
+test thread_enforcement::tests::backend_thread_mismatch_is_reported ... ok
+test thread_enforcement::tests::matching_and_unset_variables_do_not_conflict ... ok
+test thread_enforcement::tests::different_or_invalid_values_conflict ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/benchmark_cpu_fft.rs (target/compatibility-mkl/debug/deps/benchmark_cpu_fft-7dcc378d8103ec12)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/benchmark_cpu_public_api.rs (target/compatibility-mkl/debug/deps/benchmark_cpu_public_api-e9f77df11a8e3116)
+
+running 8 tests
+test tests::attribution_csv_has_stable_stage_identity ... ok
+test tests::execution_filter_defaults_to_both_and_accepts_explicit_paths ... ok
+test tests::spd_fixture_is_dense_symmetric_and_strictly_diagonally_dominant ... ok
+test tests::batch_family_hpd_inputs_are_hermitian_per_item ... ok
+test tests::execution_filter_rejects_unknown_values ... ok
+test tests::batch_family_cases_cover_every_family_shape_and_dtype ... ok
+test tests::batch_family_rows_execute_and_solve_their_systems ... ok
+test tests::batched_prepared_lu_rows_solve_their_systems ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src/bin/benchmark_cpu_session.rs (target/compatibility-mkl/debug/deps/benchmark_cpu_session-d374c2b1500cc3df)
+
+running 2 tests
+test batch_route::tests::unknown_or_unavailable_policies_are_explicit ... ok
+test batch_route::tests::layouts_share_logical_values_and_the_check_rejects_wrong_output ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/benchmark_permutation.rs (target/compatibility-mkl/debug/deps/benchmark_permutation-30d0caa0fd87c440)
+
+running 2 tests
+test tests::bundled_patterns_are_valid ... ok
+test tests::tenferro_rs_matches_odometer_reference ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 28.66s
+
+     Running unittests src/bin/cpu_matmul_diagnostic.rs (target/compatibility-mkl/debug/deps/cpu_matmul_diagnostic-1408003d814e8f9b)
+
+running 2 tests
+test tests::matmul_config_matches_colmajor_einsum_labels ... ok
+test tests::positive_env_usize_rejects_zero_and_invalid_values ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/cpu_route_diagnostic.rs (target/compatibility-mkl/debug/deps/cpu_route_diagnostic-9dd083ecbc7f956b)
+
+running 2 tests
+test batch_route::tests::unknown_or_unavailable_policies_are_explicit ... ok
+test batch_route::tests::layouts_share_logical_values_and_the_check_rejects_wrong_output ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/perf_issue_case.rs (target/compatibility-mkl/debug/deps/perf_issue_case-6e6eaf578a9fe744)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/publication_gate.rs (target/compatibility-mkl/debug/deps/publication_gate-d46fd9335dbae0b9)
+
+running 4 tests
+test timing_tests::batch_reservation_counts_matrix_and_batch_dimensions ... ok
+test timing_tests::eager_runtime_is_reused_across_samples ... ok
+test timing_tests::primal_uses_borrowed_session_and_backward_is_explicitly_unsupported ... ok
+test timing_tests::shared_benchmark_primal_and_both_gradients_match_scalar_references ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running unittests src/bin/small_work_case.rs (target/compatibility-mkl/debug/deps/small_work_case-6badf07d8b434f70)
+
+running 21 tests
+test tests::calibration_uses_each_batch_duration ... ok
+test tests::check_tensor_rejects_equal_element_count_with_wrong_shape ... ok
+test tests::check_tensor_accepts_valid_values ... ok
+test tests::check_tensor_rejects_nonfinite_values ... ok
+test tests::dependent_chain_invokes_the_requested_number_of_adds ... ok
+test tests::einsum_selector_rejects_unsupported_work_and_keeps_matrix_shape ... ok
+test tests::check_active_ad_rejects_nonfinite_expected_gradient ... ok
+test tests::concrete_solve_matches_known_solution_and_residual_without_mutation ... ok
+test tests::gather_preserves_repeated_index_order_and_inputs ... ok
+test tests::complex_prepared_einsum_executes_and_revalidates_rebound_inputs ... ok
+test tests::reduce_sum_checks_scalar_result_and_preserves_input ... ok
+test tests::complex_einsum_matches_both_components_in_fresh_and_shared_sessions ... ok
+test tests::borrowed_broadcast_uses_stride_zero_and_compact_physical_storage ... ok
+test tests::compiled_einsum_rebinds_both_inputs_without_stale_results ... ok
+test tests::complex_eager_and_compiled_einsum_keep_complex_inputs ... ok
+test tests::einsum_results_and_gradients_match_independent_reference ... ok
+test tests::complex_einsum_ad_matches_hermitian_and_directional_oracles ... ok
+test tests::requested_binary_sizes_cover_real_complex_prepare_and_ordinary ... ok
+test tests::borrowed_einsum_layouts_match_reference_in_fresh_and_shared_sessions ... ok
+test tests::complex_borrowed_layouts_preserve_components_and_physical_storage ... ok
+test tests::generic_einsum_reference_and_dot_general_config_match_issue_cases ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+     Running unittests src/main.rs (target/compatibility-mkl/debug/deps/tenferro_einsum_benchmark-7ca29a606f3c07a8)
+
+running 4 tests
+test tests::strategy_cache_key_uses_instance_name_and_exact_path ... ok
+test tests::path_analysis_classifies_binary_dot ... ok
+test tests::path_analysis_classifies_broadcast_multiply ... ok
+test tests::path_analysis_classifies_outer_product ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests examples/rootcause_graph.rs (target/compatibility-mkl/debug/examples/rootcause_graph-1075cc49da9bb84c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+.....gemm_f64_mm256_t1: failed
+......................................bdot_f64_b1024_m4n4k4_direct_alloc_auto [faer] t=4: failed boom
+bdot_f64_b1024_m4n4k4_direct_into_auto [faer] t=4: failed boom
+bdot_f64_b1024_m4n4k4_direct_alloc_auto [faer] t=4: unsupported x
+bdot_f64_b1024_m4n4k4_direct_into_auto [faer] t=4: unsupported x
+......add_f64_concrete_shared: passed
+.add_f64_concrete_shared: failed
+..............1 entries from 2 calls -> /tmp/tmptot2v9r1/corpus.json
+...
+----------------------------------------------------------------------
+Ran 67 tests in 8.773s
+
+OK
+/tmp/tmptlc26gkk/result/amd-cpu/cpu/small_work.md
+built cpu_route_diagnostic for tenferro-rs 46a258e5c4231d92761347533ad3d35e92950e94 (dirty=false) in /tmp/tmp.ztF2Mr4h8p/target/tenferro-rev/46a258e5c423/release
+built cpu_route_diagnostic for tenferro-rs 46a258e5c4231d92761347533ad3d35e92950e94 (dirty=false) in /tmp/tmp.ztF2Mr4h8p/target/tenferro-rev/46a258e5c423/release
+revision build checkout preservation OK
+WARNING: julia not found on PATH; skipping omeinsum-jl column.
+WARNING: no linalg JVP/VJP rows in /tmp/tmp.hbhjO6odkh/data/results/amd-cpu/cpu/einsum/20261008_063901/cpu_ops_t1_20261008_063901.csv; skipping linalg_jvp_vjp report.
+WARNING: julia not found on PATH; skipping omeinsum-jl column.
+WARNING: no linalg JVP/VJP rows in /tmp/tmp.hbhjO6odkh/data/results/amd-cpu/cpu/einsum/20261008_063902/cpu_ops_t4_20261008_063902.csv; skipping linalg_jvp_vjp report.
+WARNING: julia not found on PATH; skipping omeinsum-jl column.
+WARNING: no linalg JVP/VJP rows in /tmp/tmp.hbhjO6odkh/data/results/amd-cpu/cpu/einsum/20261008_063904/cpu_ops_t1_20261008_063904.csv; skipping linalg_jvp_vjp report.
+WARNING: julia not found on PATH; skipping omeinsum-jl column.
+WARNING: no linalg JVP/VJP rows in /tmp/tmp.hbhjO6odkh/data/results/amd-cpu/cpu/einsum/20261008_063905/cpu_ops_t4_20261008_063905.csv; skipping linalg_jvp_vjp report.
+Removing Python virtualenv before benchmark: .venv
+Preparing CPU Python benchmark environment
+Using CPython 3.12.3 interpreter at: /usr/bin/python3
+Creating virtual environment at: .venv
+Resolved 86 packages in 1ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 81 packages in 1.54s
+ + asttokens==3.0.1
+ + attrs==26.1.0
+ + certifi==2026.2.25
+ + charset-normalizer==3.4.4
+ + comm==0.2.3
+ + cuda-bindings==13.2.0
+ + cuda-pathfinder==1.5.4
+ + cuda-toolkit==13.0.2
+ + debugpy==1.8.20
+ + decorator==5.2.1
+ + einsum-benchmark==0.1.7
+ + executing==2.2.1
+ + filelock==3.29.0
+ + fsspec==2026.4.0
+ + idna==3.11
+ + ipykernel==7.2.0
+ + ipython==9.10.0
+ + ipython-pygments-lexers==1.1.1
+ + ipywidgets==8.1.8
+ + jax==0.10.1
+ + jaxlib==0.10.1
+ + jedi==0.19.2
+ + jinja2==3.1.6
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + jupyter-client==8.8.0
+ + jupyter-core==5.9.1
+ + jupyterlab-widgets==3.0.16
+ + markupsafe==3.0.3
+ + matplotlib-inline==0.2.1
+ + ml-dtypes==0.5.4
+ + mpmath==1.3.0
+ + nest-asyncio==1.6.0
+ + networkx==3.6.1
+ + numpy==2.4.2
+ + nvidia-cublas==13.1.1.3
+ + nvidia-cuda-cupti==13.0.85
+ + nvidia-cuda-nvrtc==13.0.88
+ + nvidia-cuda-runtime==13.0.96
+ + nvidia-cudnn-cu13==9.20.0.48
+ + nvidia-cufft==12.0.0.61
+ + nvidia-cufile==1.15.1.6
+ + nvidia-curand==10.4.0.35
+ + nvidia-cusolver==12.0.4.66
+ + nvidia-cusparse==12.6.3.3
+ + nvidia-cusparselt-cu13==0.8.1
+ + nvidia-nccl-cu13==2.29.7
+ + nvidia-nvjitlink==13.0.88
+ + nvidia-nvshmem-cu13==3.4.5
+ + nvidia-nvtx==13.0.85
+ + opt-einsum==3.4.0
+ + packaging==26.0
+ + parso==0.8.6
+ + pexpect==4.9.0
+ + platformdirs==4.9.2
+ + pooch==1.9.0
+ + prompt-toolkit==3.0.52
+ + psutil==7.2.2
+ + ptyprocess==0.7.0
+ + pure-eval==0.2.3
+ + pygments==2.19.2
+ + python-dateutil==2.9.0.post0
+ + pyyaml==6.0.3
+ + pyzmq==27.1.0
+ + referencing==0.37.0
+ + requests==2.32.5
+ + rpds-py==0.30.0
+ + scipy==1.17.1
+ + setuptools==81.0.0
+ + six==1.17.0
+ + stack-data==0.6.3
+ + sympy==1.14.0
+ + torch==2.12.0
+ + tornado==6.5.4
+ + tqdm==4.67.3
+ + traitlets==5.14.3
+ + triton==3.7.0
+ + typing-extensions==4.15.0
+ + urllib3==2.6.3
+ + wcwidth==0.6.0
+ + widgetsnbextension==4.0.15
+Resolved 10 packages in 349ms
+Prepared 10 packages in 0.40ms
+Uninstalled 10 packages in 281ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 10 packages in 788ms
+ - filelock==3.29.0
+ + filelock==3.32.3
+ - fsspec==2026.4.0
+ + fsspec==2026.7.0
+ ~ jinja2==3.1.6
+ ~ markupsafe==3.0.3
+ ~ mpmath==1.3.0
+ ~ networkx==3.6.1
+ - setuptools==81.0.0
+ + setuptools==78.1.0
+ ~ sympy==1.14.0
+ - torch==2.12.0
+ + torch==2.12.0+cpu
+ - typing-extensions==4.15.0
+ + typing-extensions==4.16.0
+Running publication-gate benchmarks
+  features: cpu-faer
+  threads:  1
+  profile:  quick
+  suite:    small
+  output:   /tmp/tmp.ok2TxNSYkd/results/publication_gate_cpu-faer_t1_quick_small_linalg_ad_test.csv
+  OMP_NUM_THREADS=1
+  OMP_THREAD_LIMIT=1
+  OMP_DYNAMIC=FALSE
+  RAYON_NUM_THREADS=1
+  OPENBLAS_NUM_THREADS=1
+  GOTO_NUM_THREADS=1
+  MKL_NUM_THREADS=1
+  VECLIB_MAXIMUM_THREADS=1
+  VECLIB_NUM_THREADS=1
+  NUMEXPR_NUM_THREADS=1
+  BLIS_NUM_THREADS=1
+  PJRT_NPROC=1
+  XLA_FLAGS=--xla_cpu_multi_thread_eigen=false --xla_cpu_experimental_ynn_fusion_type= intra_op_parallelism_threads=1
+  JULIA_NUM_THREADS=1
+   Compiling syn v2.0.119
+   Compiling syn v3.0.6
+   Compiling tenferro-einsum-benchmark v0.1.0 (/workspaces/tenferro-benchmark)
+   Compiling thiserror-impl v2.0.21
+   Compiling serde_derive v1.0.229
+   Compiling thiserror v2.0.21
+   Compiling tenferro-tensor-core v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-tensor-core)
+   Compiling thiserror-impl v1.0.69
+   Compiling equator-macro v0.4.2
+   Compiling equator-macro v0.2.1
+   Compiling tenferro-internal-extension-macros v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-internal-extension-macros)
+   Compiling tenferro-tensor v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-tensor)
+   Compiling equator v0.2.2
+   Compiling equator v0.4.2
+   Compiling nano-gemm v0.2.2
+   Compiling spindle v0.2.6
+   Compiling thiserror v1.0.69
+   Compiling strided-view v0.4.5 (https://github.com/tensor4all/strided-rs.git?rev=c12d96fa4cfef622bc1f15fd9940fd418fb686ac#c12d96fa)
+   Compiling private-gemm-x86 v0.1.22
+   Compiling strided-perm v0.4.5 (https://github.com/tensor4all/strided-rs.git?rev=c12d96fa4cfef622bc1f15fd9940fd418fb686ac#c12d96fa)
+   Compiling serde v1.0.229
+   Compiling strided-basic v0.4.5 (https://github.com/tensor4all/strided-rs.git?rev=c12d96fa4cfef622bc1f15fd9940fd418fb686ac#c12d96fa)
+   Compiling faer v0.24.4
+   Compiling omeco v0.2.6
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling tenferro-internal-ops v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-internal-ops)
+   Compiling strided-fused v0.4.5 (https://github.com/tensor4all/strided-rs.git?rev=c12d96fa4cfef622bc1f15fd9940fd418fb686ac#c12d96fa)
+   Compiling tenferro-cpu-basic v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-cpu-basic)
+   Compiling strided-kernel v0.4.5 (https://github.com/tensor4all/strided-rs.git?rev=c12d96fa4cfef622bc1f15fd9940fd418fb686ac#c12d96fa)
+   Compiling tenferro-internal-cpu-kernels v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-internal-cpu-kernels)
+   Compiling tenferro-cpu-fused v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-cpu-fused)
+   Compiling tenferro-runtime v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-runtime)
+   Compiling tenferro-cpu v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-cpu)
+   Compiling tlinalg v0.1.0 (https://github.com/tensor4all/tlinalg-rs.git?rev=2734716b5b224a67672aef075df6eb90a6ea5ed7#2734716b)
+   Compiling tenferro-ad v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-ad)
+   Compiling tenferro-einsum v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-einsum)
+   Compiling tenferro-fft v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-fft)
+   Compiling tenferro-linalg v0.7.1 (/workspaces/tenferro-benchmark/extern/tenferro-rs/crates/tenferro-linalg)
+    Finished `release` profile [optimized] target(s) in 1m 23s
+     Running `target/compatibility-mkl/release/publication_gate`
+publication_gate: requested_threads=1 backend_threads=1 scope_rayon_threads=1 global_rayon_threads=1
+Wrote /tmp/tmp.ok2TxNSYkd/results/publication_gate_cpu-faer_t1_quick_small_linalg_ad_test.csv
+CPU ops results saved to: /tmp/tmp.ok2TxNSYkd/results/cpu_ops_t1_linalg_ad_test.csv
+Linalg JVP/VJP rows: 90
+Linalg JVP/VJP markdown saved to: /tmp/tmp.ok2TxNSYkd/results/linalg_jvp_vjp_t1_linalg_ad_test.md
+cpu_ops linalg JVP/VJP integration test passed
+Uninstalled 5 packages in 239ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 5 packages in 962ms
+linalg ad results formatter test passed
+[clean_extern_deps] removing extern/tenferro-rs
+[setup_extern_deps] cloning tenferro-rs into extern/tenferro-rs
+Cloning into '/tmp/tmp.uWAR7CS6EU/project/extern/tenferro-rs'...
+done.
+[setup_extern_deps] tenferro-rs commit 44921e6
+[setup_extern_deps] tenferro-rs already exists at extern/tenferro-rs; reusing current checkout
+[setup_extern_deps] tenferro-rs already exists at extern/tenferro-rs; reusing current checkout
+[setup_extern_deps] tenferro-rs already exists at extern/tenferro-rs; reusing current checkout
+[setup_extern_deps] tenferro-rs already exists at extern/tenferro-rs; reusing current checkout
+[setup_extern_deps] updating tenferro-rs to main
+[setup_extern_deps] tenferro-rs commit 44921e6
+[setup_extern_deps] cloning tenferro-rs into extern/tenferro-rs
+Cloning into '/tmp/tmp.uWAR7CS6EU/project-with-sibling/extern/tenferro-rs'...
+done.
+[setup_extern_deps] tenferro-rs commit 44921e6
