@@ -15,8 +15,10 @@ def compare(samples: list[dict]) -> dict:
         return {'verdict': 'INCONCLUSIVE', 'reasons': ['Expected all six runs in the predeclared pair order']}
     if len({s.get('run_id') for s in samples}) != 6:
         reasons.append('Runs must be distinct')
-    if len({s.get('tested_ref') for s in samples}) != 1 or not samples[0].get('tested_ref'):
-        reasons.append('Both arms must execute the same frozen source')
+    for arm in ('baseline', 'candidate'):
+        refs = {s.get('tested_ref') for s in samples if s.get('arm') == arm}
+        if len(refs) != 1 or not next(iter(refs), None):
+            reasons.append(f'{arm} must execute one frozen source ref')
     costs = []
     for sample in samples:
         if sample.get('phase') != 'confirmation':

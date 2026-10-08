@@ -118,3 +118,20 @@
   83.584s/83.900s. Preserve threshold shapes and every acceptance identity while
   investigating the CPU Gram oracle, which currently recomputes both ordered
   column pairs. No diagnostic is retroactively promoted to confirmation.
+
+- The next candidate changes only the full-SVD host oracle plus CI preparation
+  and telemetry. Baseline source remains 3f10f960af05efa4fc5705aac3dafbac1ae2269e;
+  candidate source must be one exact committed ref, recorded before any primary
+  measurement. Numerical library code, threshold sizes, tolerances, all 285
+  CUDA cases, three PJRT cases and tutorial remain. The comparison helper now
+  requires one frozen ref per arm instead of the same ref across both arms,
+  allowing the explicitly recorded test-oracle change. No primary runs have
+  started, and no acceptance thresholds or prior pilot classifications change.
+
+- Freeze source candidate 829a4b1aa2f89521730216251fee978d60fba081 (tenferro-rs
+  fix/runpod-ci-cost-breakdown) before GPU diagnostics. It contains unchanged
+  library kernels plus the host Gram checker and post-deletion telemetry.
+  The first oracle diagnostic runs trusted root main workflow 3f10f960 with
+  its original production image/preparation and serial workload. This isolates
+  the host checker before combining it with staged runtime preparation.
+  Numerical/debug assertions and the ci build profile remain unchanged.
