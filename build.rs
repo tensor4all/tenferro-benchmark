@@ -95,6 +95,12 @@ fn configure_openblas() {
 
     println!("cargo:rustc-link-search=native={}", lib_dir.display());
     println!("cargo:rustc-link-lib=dylib=openblas");
+    // Apply the native provider to every final artifact. `rustc-link-lib` is
+    // attached to this package's library and its dependents; it does not reach
+    // sibling binary targets that link the library, so binaries such as
+    // benchmark_cpu_fft would otherwise leave tenferro-cpu's cblas references
+    // undefined. The MKL path below already uses rustc-link-arg for this reason.
+    println!("cargo:rustc-link-arg=-lopenblas");
     println!("cargo:rustc-link-arg-bin=publication_gate=-lopenblas");
     println!("cargo:include={}", include_dir.display());
     println!("cargo:rerun-if-env-changed=OPENBLAS_ROOT");
