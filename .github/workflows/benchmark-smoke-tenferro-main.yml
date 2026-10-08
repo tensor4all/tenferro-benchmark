@@ -1,0 +1,106 @@
+name: benchmark-smoke-tenferro-main
+
+on:
+  schedule:
+    # 01:17 JST (16:17 UTC) every day; earlier than the full nightly suites.
+    - cron: "17 16 * * *"
+  workflow_dispatch:
+
+# Smoke-test the benchmark harness against the latest tenferro-rs main.
+# This answers "can we clone tenferro-rs main and run a tiny benchmark?"
+# It is not a regression detector; use the full nightly suites for that.
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-smoke-tenferro-main
+  cancel-in-progress: false
+
+jobs:
+  mac-cpu-smoke:
+    if: github.repository == 'tensor4all/tenferro-benchmark'
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Pull latest tenferro-rs main
+        run: |
+          cd extern/tenferro-rs
+          git fetch origin main
+          git checkout origin/main
+          echo "tenferro-rs commit: $(git rev-parse HEAD)"
+
+      - name: Prepare environment
+        run: |
+          uv sync --frozen || uv sync
+          ./scripts/setup_extern_deps.sh
+
+      - name: Run minimal einsum smoke test
+        env:
+          BENCHMARK_TARGET_PROFILE: mac-cpu
+          BENCHMARK_ALLOW_BUSY_HOST: "1"
+          BENCH_INSTANCE: bin_matmul_256
+          BENCH_WARMUPS: "1"
+          BENCH_RUNS: "1"
+        run: ./scripts/run_all_rust.sh 1
+
+  linux-cpu-smoke:
+    if: github.repository == 'tensor4all/tenferro-benchmark'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev libomp-dev cmake
+
+      - name: Pull latest tenferro-rs main
+        run: |
+          cd extern/tenferro-rs
+          git fetch origin main
+          git checkout origin/main
+          echo "tenferro-rs commit: $(git rev-parse HEAD)"
+
+      - name: Prepare environment
+        run: |
+          uv sync --frozen || uv sync
+          ./scripts/setup_extern_deps.sh
+
+      - name: Run minimal einsum smoke test
+        env:
+          BENCHMARK_TARGET_PROFILE: amd-cpu
+          TENFERRO_CPU_FEATURES: system-openblas
+          TENFERRO_CPU_BACKEND_KIND: blas
+          OPENBLAS_ROOT: /usr
+          BENCHMARK_ALLOW_BUSY_HOST: "1"
+          BENCH_INSTANCE: bin_matmul_256
+          BENCH_WARMUPS: "1"
+          BENCH_RUNS: "1"
+        run: ./scripts/run_all_rust.sh 1
