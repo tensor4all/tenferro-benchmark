@@ -187,3 +187,163 @@ Raw samples, protocol scripts, provider probes and source snapshots are kept und
 git-ignored by policy. Files of interest: `fin{1,2,3}-{rust,torch}.{csv,jsonl}`,
 `eighAB-{beforeA,beforeB,afterA,afterB,afterC}.{csv,stderr}`, `sym-floor.{csv,stderr}`,
 `eigh_ab.sh`, `gemm_probe.c`, `sym_probe.c`, `syev_compare.c`, `getrf_probe.c`.
+
+## Post-fix multi-thread (1T/4T) provider survey
+
+The 1T survey above remains valid: with one thread the domain is a single CPU,
+so worker affinity and provider threading are identical before and after the
+change below. This section records the multi-thread case, which is what exposed
+the problem and what changed.
+
+**Change measured:** tenferro-rs `67fdd861` (*fix(cpu): confine workers to the
+domain CPU set*, PR #1847). Before it, each Rayon worker was pinned to one CPU;
+BLAS/LAPACK provider threads inherit the creating thread's mask, so an MKL
+provider team was confined to that single CPU. After it, every worker is
+confined to the *whole* domain CPU set, which provider threads inherit.
+
+**Protocol (declared before the run):** suite `cpu/large_ad`, profile `full`,
+`PUBLICATION_GATE_TENFERRO_MODE=both`, 15 samples / 3 warmups, one paired
+repetition, runs strictly sequential. 1T uses `taskset -c 10`; 4T uses
+`taskset -c 10-13` with `RAYON_NUM_THREADS` and the lane's provider thread count
+set to 4. Lanes: `system-openblas` (Linux default), `system-mkl`, `cpu-faer`;
+PyTorch reference from the wheel at the same thread counts. Every run exited 0
+and produced a stable row count (142 tenferro rows, 86 torch rows).
+
+Measured on the same EPYC 7713P host as the 1T survey, with other users'
+background load present; treat small ratios as indicative and the >2x ratios as
+structural.
+
+## Tenferro (median over repetitions)
+
+| lane | op | phase | shape | backend | 1T ms | 4T ms | 1T/4T |
+|---|---|---|---|---|---:|---:|---:|
+| openblas | matmul | primal | 1024x1024 | system-openblas | 46.7190 | 15.4292 | 3.03x |
+| openblas | matmul | primal | 1024x1024 | tenferro-trace | 43.6013 | 13.4306 | 3.25x |
+| openblas | solve | primal | 1024x1024,rhs=1 | system-openblas | 19.9311 | 9.0047 | 2.21x |
+| openblas | solve | primal | 1024x1024,rhs=1 | tenferro-trace | 20.4275 | 9.8173 | 2.08x |
+| openblas | svd | primal | 512x512 | system-openblas | 76.3302 | 61.7716 | 1.24x |
+| openblas | svd | primal | 512x512 | tenferro-trace | 74.1779 | 61.0661 | 1.21x |
+| openblas | qr | primal | 1024x1024 | system-openblas | 108.7955 | 60.4444 | 1.80x |
+| openblas | qr | primal | 1024x1024 | tenferro-trace | 104.4175 | 60.7791 | 1.72x |
+| openblas | eigh | primal | 512x512 | system-openblas | 33.8549 | 25.4732 | 1.33x |
+| openblas | eigh | primal | 512x512 | tenferro-trace | 32.0955 | 24.9880 | 1.28x |
+| openblas | grad_sum_matmul | backward | 1024x1024 | system-openblas | 134.8579 | 47.7888 | 2.82x |
+| openblas | grad_sum_matmul | backward | 1024x1024 | tenferro-trace | 131.5840 | 46.0072 | 2.86x |
+| openblas | grad_sum_solve | backward | 512x512,rhs=1 | system-openblas | 4.3164 | 6.2420 | 0.69x |
+| openblas | grad_sum_solve | backward | 512x512,rhs=1 | tenferro-trace | 4.0845 | 3.9638 | 1.03x |
+| mkl | matmul | primal | 1024x1024 | system-mkl | 45.3613 | 14.3271 | 3.17x |
+| mkl | matmul | primal | 1024x1024 | tenferro-trace | 42.5349 | 14.1502 | 3.01x |
+| mkl | solve | primal | 1024x1024,rhs=1 | system-mkl | 21.1182 | 8.1394 | 2.59x |
+| mkl | solve | primal | 1024x1024,rhs=1 | tenferro-trace | 23.1322 | 9.0823 | 2.55x |
+| mkl | svd | primal | 512x512 | system-mkl | 77.8446 | 49.6160 | 1.57x |
+| mkl | svd | primal | 512x512 | tenferro-trace | 76.2904 | 48.6871 | 1.57x |
+| mkl | qr | primal | 1024x1024 | system-mkl | 110.6092 | 44.3276 | 2.50x |
+| mkl | qr | primal | 1024x1024 | tenferro-trace | 106.4600 | 44.6143 | 2.39x |
+| mkl | eigh | primal | 512x512 | system-mkl | 39.8198 | 18.0857 | 2.20x |
+| mkl | eigh | primal | 512x512 | tenferro-trace | 39.5824 | 17.6730 | 2.24x |
+| mkl | grad_sum_matmul | backward | 1024x1024 | system-mkl | 134.3094 | 49.7724 | 2.70x |
+| mkl | grad_sum_matmul | backward | 1024x1024 | tenferro-trace | 135.4312 | 45.2106 | 3.00x |
+| mkl | grad_sum_solve | backward | 512x512,rhs=1 | system-mkl | 4.3443 | 4.4488 | 0.98x |
+| mkl | grad_sum_solve | backward | 512x512,rhs=1 | tenferro-trace | 4.0255 | 2.5872 | 1.56x |
+| faer | matmul | primal | 1024x1024 | cpu-faer | 46.0752 | 16.2134 | 2.84x |
+| faer | matmul | primal | 1024x1024 | tenferro-trace | 43.3313 | 12.9339 | 3.35x |
+| faer | solve | primal | 1024x1024,rhs=1 | cpu-faer | 23.4754 | 16.1267 | 1.46x |
+| faer | solve | primal | 1024x1024,rhs=1 | tenferro-trace | 21.2965 | 12.1594 | 1.75x |
+| faer | svd | primal | 512x512 | cpu-faer | 67.1881 | 46.6861 | 1.44x |
+| faer | svd | primal | 512x512 | tenferro-trace | 73.1089 | 47.0378 | 1.55x |
+| faer | qr | primal | 1024x1024 | cpu-faer | 99.7632 | 52.6982 | 1.89x |
+| faer | qr | primal | 1024x1024 | tenferro-trace | 83.3347 | 35.5487 | 2.34x |
+| faer | eigh | primal | 512x512 | cpu-faer | 31.9801 | 22.6534 | 1.41x |
+| faer | eigh | primal | 512x512 | tenferro-trace | 34.6162 | 20.5102 | 1.69x |
+| faer | grad_sum_matmul | backward | 1024x1024 | cpu-faer | 153.7467 | 48.9755 | 3.14x |
+| faer | grad_sum_matmul | backward | 1024x1024 | tenferro-trace | 164.3217 | 46.8266 | 3.51x |
+| faer | grad_sum_solve | backward | 512x512,rhs=1 | cpu-faer | 4.1583 | 4.0788 | 1.02x |
+| faer | grad_sum_solve | backward | 512x512,rhs=1 | tenferro-trace | 4.0327 | 3.2117 | 1.26x |
+
+## Provider-matched torch reference (median over repetitions)
+
+| op | phase | shape | 1T ms | 4T ms | 1T/4T |
+|---|---|---|---:|---:|---:|
+| matmul | primal | 1024x1024 | 47.8838 | 21.3867 | 2.24x |
+| solve | primal | 1024x1024,rhs=1 | 30.6087 | 11.2586 | 2.72x |
+| svd | primal | 512x512 | 80.8440 | 63.4895 | 1.27x |
+| qr | primal | 1024x1024 | 116.4051 | 53.8617 | 2.16x |
+| eigh | primal | 512x512 | 38.2568 | 21.4116 | 1.79x |
+| grad_sum_matmul | backward | 1024x1024 | 138.5150 | 55.1711 | 2.51x |
+| grad_sum_solve | backward | 512x512,rhs=1 | 4.6684 | 2.8643 | 1.63x |
+
+## Run validity
+
+- all runs exited 0 with a stable row count
+
+### Affinity guard (4T, one run per lane)
+
+`scripts/cpu_provider_affinity_check.py` records `Cpus_allowed_list` per thread
+while a run executes. A provider thread count does not prove where the threads
+may run, so this is the regression observable for the failure above.
+
+| lane | run status | tenferro worker masks | provider thread masks |
+|---|---|---|---|
+| `system-openblas` | exit 0 | ['10-13'] | no provider threads observed |
+| `system-mkl` | exit 0 | ['10-13'] | {'openmp_worker': ['10-13']} |
+| `cpu-faer` | exit 0 | ['10-13'] | no provider threads observed |
+
+Before the fix the same probe showed `openmp_worker` at `cpus=10` (one CPU,
+inherited from the worker pinned to CPU 10). It now reports `10-13`, i.e. the
+whole admitted domain.
+
+### Controlled before/after (same binary, MKL, 4T)
+
+A dedicated A/B run toggles only the worker mask (per-worker single CPU vs
+domain set) with the same binary and interleaved execution, so it isolates the
+cause from build, harness and drift:
+
+| operation | per-worker single CPU | domain CPU set |
+|---|---:|---:|
+| `dgemm` 1024x1024 | 48.0 ms | 13.3 ms |
+| `solve` 1024x1024 rhs=1 | 136.5 ms | 6.6 ms |
+| `svd` 512x512 | 116.2 ms | 30.5 ms |
+| `qr` 1024x1024 | 321.8 ms | 86.1 ms |
+| `eigh` 512x512 | 84.0 ms | 18.4 ms |
+| elementwise/transpose (native) | 8.8 / 21.8 ms | 8.8 / 21.9 ms |
+
+The native rows show the change costs nothing outside the provider path; a
+separate paired run at 4 workers over 16 CPUs across two CCXs kept every
+faer-backed row within +-4% with mixed signs, and 2 ms affinity sampling showed
+0-0.2 worker migrations/s without a provider.
+
+### Provider pairs measured here
+
+| lane | tenferro side | PyTorch side |
+|---|---|---|
+| `system-openblas` | system OpenBLAS 0.3.26 (`/opt/openblas`, DYNAMIC_ARCH/Zen, MAX_THREADS=64) | wheel-bundled Intel MKL 2024.2 |
+| `system-mkl` | system oneAPI MKL (`MKLROOT`) | wheel-bundled Intel MKL 2024.2 |
+| `cpu-faer` | faer (no system BLAS) | wheel-bundled Intel MKL 2024.2 |
+
+The `system-mkl` lane therefore compares two different MKL builds, and no lane
+makes both sides use the same library except the provider-matched OpenBLAS image.
+See [CPU provider pairs](../../../README.md#cpu-provider-pairs).
+
+### Reproduce
+
+```sh
+# tenferro lanes (Linux default is system-openblas; use system-mkl / cpu-faer for the others)
+cargo build -j 16 --release --features system-openblas --bin publication_gate
+export PUBLICATION_GATE_PROFILE=full PUBLICATION_GATE_SUITE=large \
+       PUBLICATION_GATE_TENFERRO_MODE=both BENCH_RUNS=15 BENCH_WARMUPS=3
+taskset -c 10-13 env RAYON_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 \
+  LD_LIBRARY_PATH=/opt/openblas/lib ./target/release/publication_gate > run-4t.csv
+
+# PyTorch reference at the same thread count
+.venv/bin/python scripts/benchmark_cpu_ops_python.py --backend pytorch-cpu \
+  --num-threads 4 --runs 15 --warmups 3 --output run-4t-torch.csv
+
+# affinity guard: which CPUs were worker and provider threads actually allowed to use
+python3 scripts/cpu_provider_affinity_check.py --output guard-4t.json -- \
+  taskset -c 10-13 env RAYON_NUM_THREADS=4 MKL_NUM_THREADS=4 \
+  LD_LIBRARY_PATH=/opt/intel/oneapi/mkl/latest/lib \
+  ./target/release/publication_gate
+```
+
+Raw CSVs, the guard JSON, the campaign driver and the summarizer are kept under
+`data/results/amd-cpu/cpu/large-ad/postfix4t/` (local, git-ignored).
