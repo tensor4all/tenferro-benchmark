@@ -162,3 +162,27 @@ The tenferro FFT executor uses cached RustFFT 6.4.1 plans. The system-MKL
 build setting governs BLAS/LAPACK linkage; it does not make tenferro FFT use
 MKL. FFT comparison is cached RustFFT execution through the public tenferro
 API versus cached native oneMKL DFTI, two separately named implementations.
+
+For the maintainer's #2040 follow-up, `metadata-host-dyn` and
+`metadata-host-static` construct borrowed `TypedTensorView<f64, R, Host>` outputs.
+Each batch prepares separate owners and their `as_view()` inputs before timing,
+retains every owner and output view through the timer, then destroys outputs
+before owners. The original `metadata` arm consumes an owned `TensorValue`.
+These have different lifetime contracts and must retain separate labels.
+`Rank<1>` slicing and `Rank<2>` transpose preserve rank; static-input reshape
+returns `DynRank`. Validation checks every logical output element and that its
+address aliases the expected owner's storage, outside timing. No session is
+required for any metadata arm.
+
+Run the balanced, A/A-controlled 1-thread comparison at the explicitly pinned
+`b3f47296244ff7b7c55ac0a75f782cb0835418c1` (not a moving latest checkout):
+
+```bash
+python3 mwe/cpu_followup/collect_metadata_host.py \
+  --output data/results/amd-cpu/cpu/metadata_host/<timestamp>
+```
+
+The collector runs all processes sequentially inside the MKL devcontainer,
+with 3 warmups, 15 samples, 4 balanced comparison rounds and 4 balanced A/A
+pairs per Rust arm. It declares the 1.2 ratio, 10% per-pair A/A and 20% CoV gates
+before collection. Reports distinguish noise-gated conclusions from raw ratios.

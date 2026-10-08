@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 4
+MANIFEST_VERSION = 5
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -421,6 +421,20 @@ def cpu_followup_cases():
                 row["execution_path"] = ("jax-compiled" if arm == "jax" else
                                          "mkl-dfti-cached" if arm == "mkl-dfti" else arm)
                 rows.append(row)
+            if issue == 2040:
+                original = rows[-2]
+                for typed_path in c["paths"][1:]:
+                    import copy
+                    typed = copy.deepcopy(original)
+                    typed["id"] = "followup_" + cid.replace(".", "_") + "_" + typed_path
+                    typed["params"]["rust_path"] = typed_path
+                    typed["params"]["arm"] = typed_path
+                    typed["arm"] = typed_path
+                    typed["execution_path"] = typed_path
+                    typed["intent"] = (f"tenferro-rs #2040: {cid}; borrowed TypedTensorView<f64, R, Host>; "
+                        "separate owners and all outputs retained; as_view untimed; same Julia reference fixture. "
+                        "Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.")
+                    rows.append(typed)
     return rows
 
 def generate_gpu_cases():
