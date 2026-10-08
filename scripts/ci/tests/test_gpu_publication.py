@@ -36,7 +36,7 @@ class PublicationTests(unittest.TestCase):
     def test_complete_run_publishes_report_and_raw_data(self):
         self.build()
         site = self.root / 'site'
-        self.assertEqual(publish_bundle(self.bundle, site, set()), 1)
+        self.assertEqual(publish_bundle(self.bundle, site, {}), 1)
         self.assertEqual((site / 'result/nvidia-gpu/gpu/dense.md').read_text(), 'new measured report')
         self.assertTrue((site / 'raw/nvidia-gpu/gpu/dense' / self.timestamp / 'records.jsonl').exists())
 
@@ -67,14 +67,35 @@ class PublicationTests(unittest.TestCase):
         self.build()
         (self.bundle / 'result/nvidia-gpu/gpu/dense.md').write_text('unverified report')
         with self.assertRaises(ValueError):
-            publish_bundle(self.bundle, self.root / 'site', set())
+            publish_bundle(self.bundle, self.root / 'site', {})
 
     def test_older_bundle_cannot_overwrite_newer_suite(self):
         self.build()
         site = self.root / 'site'
-        seen = set()
+        seen = {}
         publish_bundle(self.bundle, site, seen)
         self.assertEqual(publish_bundle(self.bundle, site, seen), 0)
 
     def test_old_unchecked_snapshot_is_not_published(self):
-        self.assertEqual(publish_bundle(self.root, self.root / 'site', set()), 0)
+        self.assertEqual(publish_bundle(self.root, self.root / 'site', {}), 0)
+
+    def test_rerun_with_newer_measurements_replaces_older_suite(self):
+        self.build()
+        site = self.root / 'site'
+        seen = {}
+        publish_bundle(self.bundle, site, seen)
+        receipt = self.bundle / 'publication.json'
+        # A workflow rerun retains its old creation date but samples at a new timestamp.
+        import shutil
+        newer = '20261009_120000'
+        old_run = self.bundle / 'data/results/nvidia-gpu/gpu/dense' / self.timestamp
+        new_run = old_run.with_name(newer)
+        shutil.copytree(old_run, new_run)
+        manifest = json.loads(receipt.read_text())
+        manifest['timestamp'] = newer
+        entry = manifest['suites'][0]
+        entry['files'] = {path.replace(self.timestamp, newer): digest
+                          for path, digest in entry['files'].items()}
+        receipt.write_text(json.dumps(manifest))
+        self.assertEqual(publish_bundle(self.bundle, site, seen), 1)
+        self.assertEqual(seen['gpu/dense'], newer)

@@ -15,7 +15,7 @@ else:
     from check_gpu_run import digest, validate_records
 
 
-def publish_bundle(bundle: Path, site: Path, seen: set[str]) -> int:
+def publish_bundle(bundle: Path, site: Path, seen: dict[str, str]) -> int:
     receipt = bundle / 'publication.json'
     if not receipt.exists():
         return 0  # Older artifacts were not checked for failed/missing measurements.
@@ -28,7 +28,7 @@ def publish_bundle(bundle: Path, site: Path, seen: set[str]) -> int:
         suite = entry['suite_id']
         if not re.fullmatch(r'gpu/[a-z0-9][a-z0-9_.-]*', suite):
             raise ValueError('Invalid publication suite')
-        if suite in seen:
+        if seen.get(suite, '') >= timestamp:
             continue
         run_relative = Path('data/results/nvidia-gpu') / suite / timestamp
         report_relative = Path('result/nvidia-gpu') / f'{suite}.md'
@@ -48,7 +48,7 @@ def publish_bundle(bundle: Path, site: Path, seen: set[str]) -> int:
         shutil.copy2(bundle / report_relative, destination)
         shutil.copytree(bundle / run_relative, site / 'raw/nvidia-gpu' / suite / timestamp,
                         dirs_exist_ok=True)
-        seen.add(suite)
+        seen[suite] = timestamp
         count += 1
         print(f'Published {suite}: {timestamp}')
     return count
@@ -64,7 +64,7 @@ def main() -> None:
         '--branch', 'main', '--status', 'success', '--limit', '100',
         '--json', 'databaseId,createdAt',
     ], text=True))
-    seen = set()
+    seen = {}
     # Explicit sorting avoids relying on the CLI's presentation order.
     for run in sorted(runs, key=lambda run: (run['createdAt'], run['databaseId']), reverse=True):
         run_id = str(run['databaseId'])
