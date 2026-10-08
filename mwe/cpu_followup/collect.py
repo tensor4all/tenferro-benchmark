@@ -23,14 +23,14 @@ def arm(case,path,threads,runs,name):
  # The external host guard runs before Docker and cannot see the newly started own arm.
  guard=subprocess.run(['bash','-lc','source scripts/benchmark_host_idle.sh; assert_benchmark_host_idle'],cwd=ROOT,capture_output=True,text=True)
  if guard.returncode:raise RuntimeError(guard.stderr)
- start=time.time();r=subprocess.run(command,cwd=ROOT,text=True,capture_output=True)
+ started=datetime.datetime.now(datetime.timezone.utc).isoformat();start=time.time();r=subprocess.run(command,cwd=ROOT,text=True,capture_output=True)
  (out/(name+'.stderr')).write_text(r.stderr)
  if r.returncode:
   row=dict(status='failed',command=command,returncode=r.returncode,stderr=r.stderr)
  else:
   try:row=json.loads(r.stdout.strip().splitlines()[-1]);row['status']='ok'
   except Exception:row=dict(status='failed',stdout=r.stdout,stderr=r.stderr)
- row['command']=command;row['wall_seconds']=time.time()-start
+ row['command']=command;row['started_utc']=started;row['library_commit']=lib;row['harness_commit']=harness;row['wall_seconds']=time.time()-start
  dest.write_text(json.dumps(row,indent=2)+'\n');print(name,row['status'],round(row['wall_seconds'],1),flush=True)
  return row
 
@@ -59,6 +59,7 @@ def verify(x,y):
  return True,'matched aggregates and 130 deterministic probes; metadata descriptors exact'
 
 def reference(c):
+ if c['category']=='linalg':return 'pytorch'  # MKL-matched primary linalg comparison
  if c['category']=='perm':return 'strided-rs'
  if c['category']=='metadata' or c['source_reference']=='julia-base':return 'julia-base'
  if c['id']=='index.dynamic_update_slice':return 'jax'
