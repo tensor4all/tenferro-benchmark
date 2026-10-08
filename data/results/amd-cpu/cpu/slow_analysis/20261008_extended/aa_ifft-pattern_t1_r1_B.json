@@ -1,0 +1,113 @@
+{
+  "calibration": {
+    "elapsed_ns": 5048638,
+    "iterations": 1,
+    "target_ns": 2000000
+  },
+  "correctness_status": "passed",
+  "provider": "Blas",
+  "samples": [
+    {
+      "elapsed_ns": 4921157,
+      "iterations": 1,
+      "sample_index": 0
+    },
+    {
+      "elapsed_ns": 4859983,
+      "iterations": 1,
+      "sample_index": 1
+    },
+    {
+      "elapsed_ns": 4853130,
+      "iterations": 1,
+      "sample_index": 2
+    },
+    {
+      "elapsed_ns": 4878948,
+      "iterations": 1,
+      "sample_index": 3
+    },
+    {
+      "elapsed_ns": 4835336,
+      "iterations": 1,
+      "sample_index": 4
+    },
+    {
+      "elapsed_ns": 4848552,
+      "iterations": 1,
+      "sample_index": 5
+    },
+    {
+      "elapsed_ns": 4917571,
+      "iterations": 1,
+      "sample_index": 6
+    },
+    {
+      "elapsed_ns": 4913083,
+      "iterations": 1,
+      "sample_index": 7
+    },
+    {
+      "elapsed_ns": 4834264,
+      "iterations": 1,
+      "sample_index": 8
+    },
+    {
+      "elapsed_ns": 4897844,
+      "iterations": 1,
+      "sample_index": 9
+    },
+    {
+      "elapsed_ns": 4904377,
+      "iterations": 1,
+      "sample_index": 10
+    },
+    {
+      "elapsed_ns": 4897013,
+      "iterations": 1,
+      "sample_index": 11
+    },
+    {
+      "elapsed_ns": 4856176,
+      "iterations": 1,
+      "sample_index": 12
+    },
+    {
+      "elapsed_ns": 4924134,
+      "iterations": 1,
+      "sample_index": 13
+    },
+    {
+      "elapsed_ns": 4910458,
+      "iterations": 1,
+      "sample_index": 14
+    }
+  ],
+  "scope": {
+    "outside_timer": [
+      "fixture construction",
+      "runtime/backend construction",
+      "session entry",
+      "FFT plans and scratch priming",
+      "correctness validation",
+      "retention vector allocation",
+      "output destruction"
+    ],
+    "timer": [
+      "ifft-pattern",
+      "intrinsic output allocation"
+    ]
+  },
+  "threads_requested": 1,
+  "phase": "aa",
+  "operation": "ifft-pattern",
+  "threads": 1,
+  "round": 1,
+  "arm": "B",
+  "implementation": "rust",
+  "command": [
+    "/workspaces/tenferro-benchmark/target/compatibility-mkl/release/examples/cpu_gap_mwe",
+    "ifft-pattern",
+    "1"
+  ]
+}

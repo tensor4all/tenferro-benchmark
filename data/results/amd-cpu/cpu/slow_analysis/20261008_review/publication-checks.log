@@ -1,0 +1,24 @@
+.gemm_f64_mm256_t1: failed
+...............
+----------------------------------------------------------------------
+Ran 16 tests in 1.776s
+
+OK
+   Compiling tenferro-einsum-benchmark v0.1.0 (/workspaces/tenferro-benchmark)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.51s
+     Running unittests src/bin/perf_issue_case.rs (target/compatibility-mkl/debug/deps/perf_issue_case-6e6eaf578a9fe744)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling tenferro-einsum-benchmark v0.1.0 (/workspaces/tenferro-benchmark)
+    Finished `release` profile [optimized] target(s) in 4.05s
+WARNING: julia not found on PATH; skipping omeinsum-jl column.
+WARNING: no linalg JVP/VJP rows in /tmp/tmp.7dl0wCYjD7/data/results/amd-cpu/cpu/einsum/20261008_072530/cpu_ops_t1_20261008_072530.csv; skipping linalg_jvp_vjp report.
+WARNING: julia not found on PATH; skipping omeinsum-jl column.
+WARNING: no linalg JVP/VJP rows in /tmp/tmp.7dl0wCYjD7/data/results/amd-cpu/cpu/einsum/20261008_072531/cpu_ops_t4_20261008_072531.csv; skipping linalg_jvp_vjp report.
+WARNING: julia not found on PATH; skipping omeinsum-jl column.
+WARNING: no linalg JVP/VJP rows in /tmp/tmp.7dl0wCYjD7/data/results/amd-cpu/cpu/einsum/20261008_072532/cpu_ops_t1_20261008_072532.csv; skipping linalg_jvp_vjp report.
+WARNING: julia not found on PATH; skipping omeinsum-jl column.
+WARNING: no linalg JVP/VJP rows in /tmp/tmp.7dl0wCYjD7/data/results/amd-cpu/cpu/einsum/20261008_072534/cpu_ops_t4_20261008_072534.csv; skipping linalg_jvp_vjp report.

@@ -1,0 +1,58 @@
+confirmation_config_version: 1
+status: declared
+declared_before_candidate_results: '2026-10-08T07:23:22.332300+00:00'
+library:
+  baseline_commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+  candidate_commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+harness_commit: 578d84e42aa1f745e00ac2a4416938112f0f6b48
+build:
+  profile: release
+  features:
+  - system-mkl
+host:
+  target_profile: amd-cpu
+  hostname: 14099c68ff8e
+  affinity: none (thread env only)
+  provider: MKL; versions independently recorded
+threads:
+- 1
+- 4
+cases:
+  suite_id: cpu/perf_issues
+  manifest_version: new MWE cases pending issue assignment
+  coverage: explicit
+  case_ids:
+  - gelu
+timing:
+  scope: many_operations_single_interval; session/setup/cleanup outside
+  cache_pool_state: warm, validated and primed
+  target_interval_ns: 10000000
+repetitions:
+  warmups: 3
+  runs: 15
+  rounds: 4
+statistic: median_of_round_ratios
+thresholds:
+  relative: 0.2
+  absolute_ns: 500
+noise:
+  max_cov: 0.2
+  max_aa_relative_spread: 0.1
+  host_idle_guard: enabled, never bypassed
+comparison:
+  baseline: PyTorch Python
+  candidate: tenferro-rs borrowed-session public API
+  kind: cross-implementation; not historical revision regression
+  threshold_basis: 20% practical gap and 500ns minimum; A/A gate independently checks
+    stability
+  aa_ratios:
+    gelu@t1:
+    - 1.0040412038034887
+    - 1.0091001798794668
+    - 1.025908383194846
+    - 0.9642423545230621
+    gelu@t4:
+    - 0.9623179569950856
+    - 1.0559054664752276
+    - 1.027794111753503
+    - 0.9493943327078507

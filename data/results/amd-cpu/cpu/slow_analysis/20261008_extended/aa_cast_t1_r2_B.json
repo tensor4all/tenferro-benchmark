@@ -1,0 +1,113 @@
+{
+  "calibration": {
+    "elapsed_ns": 34250754,
+    "iterations": 1,
+    "target_ns": 2000000
+  },
+  "correctness_status": "passed",
+  "provider": "Blas",
+  "samples": [
+    {
+      "elapsed_ns": 34202162,
+      "iterations": 1,
+      "sample_index": 0
+    },
+    {
+      "elapsed_ns": 34442054,
+      "iterations": 1,
+      "sample_index": 1
+    },
+    {
+      "elapsed_ns": 34538575,
+      "iterations": 1,
+      "sample_index": 2
+    },
+    {
+      "elapsed_ns": 34880538,
+      "iterations": 1,
+      "sample_index": 3
+    },
+    {
+      "elapsed_ns": 34715518,
+      "iterations": 1,
+      "sample_index": 4
+    },
+    {
+      "elapsed_ns": 34886670,
+      "iterations": 1,
+      "sample_index": 5
+    },
+    {
+      "elapsed_ns": 34600382,
+      "iterations": 1,
+      "sample_index": 6
+    },
+    {
+      "elapsed_ns": 35696844,
+      "iterations": 1,
+      "sample_index": 7
+    },
+    {
+      "elapsed_ns": 34633714,
+      "iterations": 1,
+      "sample_index": 8
+    },
+    {
+      "elapsed_ns": 34793134,
+      "iterations": 1,
+      "sample_index": 9
+    },
+    {
+      "elapsed_ns": 34604419,
+      "iterations": 1,
+      "sample_index": 10
+    },
+    {
+      "elapsed_ns": 34770131,
+      "iterations": 1,
+      "sample_index": 11
+    },
+    {
+      "elapsed_ns": 34554996,
+      "iterations": 1,
+      "sample_index": 12
+    },
+    {
+      "elapsed_ns": 34921776,
+      "iterations": 1,
+      "sample_index": 13
+    },
+    {
+      "elapsed_ns": 34510772,
+      "iterations": 1,
+      "sample_index": 14
+    }
+  ],
+  "scope": {
+    "outside_timer": [
+      "fixture construction",
+      "runtime/backend construction",
+      "session entry",
+      "FFT plans and scratch priming",
+      "correctness validation",
+      "retention vector allocation",
+      "output destruction"
+    ],
+    "timer": [
+      "cast",
+      "intrinsic output allocation"
+    ]
+  },
+  "threads_requested": 1,
+  "phase": "aa",
+  "operation": "cast",
+  "threads": 1,
+  "round": 2,
+  "arm": "B",
+  "implementation": "rust",
+  "command": [
+    "/workspaces/tenferro-benchmark/target/compatibility-mkl/release/examples/cpu_gap_mwe",
+    "cast",
+    "1"
+  ]
+}

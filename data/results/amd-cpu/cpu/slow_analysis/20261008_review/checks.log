@@ -1,0 +1,125 @@
+    Checking tenferro-einsum-benchmark v0.1.0 (/workspaces/tenferro-benchmark)
+warning: unused imports: `Complex32` and `Complex64`
+ --> examples/_issue_2029_compile_check.rs:3:19
+  |
+3 | use num_complex::{Complex32, Complex64};
+  |                   ^^^^^^^^^  ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Complex32` and `Complex64`
+ --> examples/_issue_2028_compile_check.rs:3:19
+  |
+3 | use num_complex::{Complex32, Complex64};
+  |                   ^^^^^^^^^  ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `EagerRuntime` and `EagerTensor`
+ --> examples/_issue_2029_compile_check.rs:6:19
+  |
+6 | use tenferro_ad::{EagerRuntime, EagerTensor};
+  |                   ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `with_cpu_exec_session`
+ --> examples/_issue_2029_compile_check.rs:7:20
+  |
+7 | use tenferro_cpu::{with_cpu_exec_session, CpuBackend};
+  |                    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FftExecutor` and `FftNorm`
+ --> examples/_issue_2029_compile_check.rs:8:20
+  |
+8 | use tenferro_fft::{FftExecutor, FftNorm};
+  |                    ^^^^^^^^^^^  ^^^^^^^
+
+warning: unused imports: `EagerSessionLinalgExt` and `TensorLinalgExt`
+ --> examples/_issue_2029_compile_check.rs:9:23
+  |
+9 | use tenferro_linalg::{EagerSessionLinalgExt, TensorLinalgExt};
+  |                       ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^
+
+warning: unused imports: `EagerRuntime` and `EagerTensor`
+ --> examples/_issue_2028_compile_check.rs:6:19
+  |
+6 | use tenferro_ad::{EagerRuntime, EagerTensor};
+  |                   ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `FftExecutor` and `FftNorm`
+ --> examples/_issue_2028_compile_check.rs:8:20
+  |
+8 | use tenferro_fft::{FftExecutor, FftNorm};
+  |                    ^^^^^^^^^^^  ^^^^^^^
+
+warning: unused imports: `Complex32` and `Complex64`
+ --> examples/_issue_2027_compile_check.rs:3:19
+  |
+3 | use num_complex::{Complex32, Complex64};
+  |                   ^^^^^^^^^  ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `with_cpu_exec_session`
+ --> examples/_issue_2027_compile_check.rs:7:20
+  |
+7 | use tenferro_cpu::{with_cpu_exec_session, CpuBackend};
+  |                    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FftExecutor` and `FftNorm`
+ --> examples/_issue_2027_compile_check.rs:8:20
+  |
+8 | use tenferro_fft::{FftExecutor, FftNorm};
+  |                    ^^^^^^^^^^^  ^^^^^^^
+
+warning: unused import: `TensorLinalgExt`
+ --> examples/_issue_2027_compile_check.rs:9:46
+  |
+9 | use tenferro_linalg::{EagerSessionLinalgExt, TensorLinalgExt};
+  |                                              ^^^^^^^^^^^^^^^
+
+warning: unused import: `BackendSessionHost`
+  --> examples/_issue_2027_compile_check.rs:10:23
+   |
+10 | use tenferro_tensor::{BackendSessionHost, Tensor};
+   |                       ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EagerSessionLinalgExt`
+ --> examples/_issue_2028_compile_check.rs:9:23
+  |
+9 | use tenferro_linalg::{EagerSessionLinalgExt, TensorLinalgExt};
+  |                       ^^^^^^^^^^^^^^^^^^^^^
+
+warning: `tenferro-einsum-benchmark` (example "_issue_2029_compile_check") generated 5 warnings (run `cargo fix --example "_issue_2029_compile_check" -p tenferro-einsum-benchmark` to apply 5 suggestions)
+warning: `tenferro-einsum-benchmark` (example "_issue_2028_compile_check") generated 4 warnings (run `cargo fix --example "_issue_2028_compile_check" -p tenferro-einsum-benchmark` to apply 3 suggestions)
+warning: variable does not need to be mutable
+  --> examples/_issue_2027_compile_check.rs:60:9
+   |
+60 |     let mut backend = CpuBackend::with_threads(threads)?;
+   |         ----^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `tenferro-einsum-benchmark` (example "_issue_2027_compile_check") generated 6 warnings (run `cargo fix --example "_issue_2027_compile_check" -p tenferro-einsum-benchmark` to apply 6 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.29s
+.gemm_f64_mm256_t1: failed
+...............
+----------------------------------------------------------------------
+Ran 16 tests in 1.805s
+
+OK
+   Compiling tenferro-einsum-benchmark v0.1.0 (/workspaces/tenferro-benchmark)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.86s
+     Running unittests src/bin/perf_issue_case.rs (target/compatibility-mkl/debug/deps/perf_issue_case-6e6eaf578a9fe744)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+lstsq_f64_eager-shared_m768_n384_rhs16 validated
+lstsq_f64_pytorch_m768_n384_rhs16 validated
+triangular_f64_concrete-shared_n4096_rhs64 validated
+triangular_f64_pytorch_n4096_rhs64 validated
+reshape_f64_concrete-shared_n33554432_to8192x4096 validated
+reshape_f64_pytorch_n33554432_to8192x4096 validated

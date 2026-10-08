@@ -1,0 +1,113 @@
+{
+  "calibration": {
+    "elapsed_ns": 4854532,
+    "iterations": 1,
+    "target_ns": 2000000
+  },
+  "correctness_status": "passed",
+  "provider": "Blas",
+  "samples": [
+    {
+      "elapsed_ns": 4974909,
+      "iterations": 1,
+      "sample_index": 0
+    },
+    {
+      "elapsed_ns": 4932850,
+      "iterations": 1,
+      "sample_index": 1
+    },
+    {
+      "elapsed_ns": 4928191,
+      "iterations": 1,
+      "sample_index": 2
+    },
+    {
+      "elapsed_ns": 4841778,
+      "iterations": 1,
+      "sample_index": 3
+    },
+    {
+      "elapsed_ns": 4881163,
+      "iterations": 1,
+      "sample_index": 4
+    },
+    {
+      "elapsed_ns": 4872937,
+      "iterations": 1,
+      "sample_index": 5
+    },
+    {
+      "elapsed_ns": 4907913,
+      "iterations": 1,
+      "sample_index": 6
+    },
+    {
+      "elapsed_ns": 5034802,
+      "iterations": 1,
+      "sample_index": 7
+    },
+    {
+      "elapsed_ns": 4987483,
+      "iterations": 1,
+      "sample_index": 8
+    },
+    {
+      "elapsed_ns": 4941306,
+      "iterations": 1,
+      "sample_index": 9
+    },
+    {
+      "elapsed_ns": 4920788,
+      "iterations": 1,
+      "sample_index": 10
+    },
+    {
+      "elapsed_ns": 4964028,
+      "iterations": 1,
+      "sample_index": 11
+    },
+    {
+      "elapsed_ns": 5110213,
+      "iterations": 1,
+      "sample_index": 12
+    },
+    {
+      "elapsed_ns": 5158124,
+      "iterations": 1,
+      "sample_index": 13
+    },
+    {
+      "elapsed_ns": 5185395,
+      "iterations": 1,
+      "sample_index": 14
+    }
+  ],
+  "scope": {
+    "outside_timer": [
+      "fixture construction",
+      "runtime/backend construction",
+      "session entry",
+      "FFT plans and scratch priming",
+      "correctness validation",
+      "retention vector allocation",
+      "output destruction"
+    ],
+    "timer": [
+      "ifft",
+      "intrinsic output allocation"
+    ]
+  },
+  "threads_requested": 1,
+  "phase": "aa",
+  "operation": "ifft",
+  "threads": 1,
+  "round": 0,
+  "arm": "A",
+  "implementation": "rust",
+  "command": [
+    "/workspaces/tenferro-benchmark/target/compatibility-mkl/release/examples/cpu_gap_mwe",
+    "ifft",
+    "1"
+  ]
+}

@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running unittests src/bin/perf_issue_case.rs (target/compatibility-mkl/debug/deps/perf_issue_case-6e6eaf578a9fe744)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+.gemm_f64_mm256_t1: failed
+.............
+----------------------------------------------------------------------
+Ran 14 tests in 0.271s
+
+OK
+   Compiling tenferro-einsum-benchmark v0.1.0 (/workspaces/tenferro-benchmark)
+    Finished `release` profile [optimized] target(s) in 4.01s
