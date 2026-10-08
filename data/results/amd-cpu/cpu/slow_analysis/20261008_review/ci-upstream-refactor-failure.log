@@ -1,0 +1,15 @@
+validate	Cargo check	﻿2026-10-08T07:31:35.8538554Z ##[group]Run cargo check --all-targets
+validate	Cargo check	2026-10-08T07:31:35.8539026Z ^[[36;1mcargo check --all-targets^[[0m
+validate	Cargo check	2026-10-08T07:31:35.8593033Z shell: /usr/bin/bash -e {0}
+validate	Cargo check	2026-10-08T07:31:35.8593254Z env:
+validate	Cargo check	2026-10-08T07:31:35.8593421Z   OPENBLAS_ROOT: /usr
+validate	Cargo check	2026-10-08T07:31:35.8593617Z   CARGO_HOME: /home/runner/.cargo
+validate	Cargo check	2026-10-08T07:31:35.8593831Z   CARGO_INCREMENTAL: 0
+validate	Cargo check	2026-10-08T07:31:35.8594017Z   CARGO_TERM_COLOR: always
+validate	Cargo check	2026-10-08T07:31:35.8594244Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+validate	Cargo check	2026-10-08T07:31:35.8594494Z ##[endgroup]
+validate	Cargo check	2026-10-08T07:31:35.8912169Z ^[[1m^[[92m    Updating^[[0m crates.io index
+validate	Cargo check	2026-10-08T07:31:35.8951999Z ^[[1m^[[91merror^[[0m: no matching package named `tenferro-cpu-tprims` found
+validate	Cargo check	2026-10-08T07:31:35.8952902Z location searched: /home/runner/work/tenferro-benchmark/tenferro-benchmark/extern/tenferro-rs/ext/tenferro-cpu-tprims
+validate	Cargo check	2026-10-08T07:31:35.8953993Z required by package `tenferro-einsum-benchmark v0.1.0 (/home/runner/work/tenferro-benchmark/tenferro-benchmark)`
+validate	Cargo check	2026-10-08T07:31:35.8977605Z ##[error]Process completed with exit code 101.

@@ -1,6 +1,7 @@
 # Ryzen CPU slowdown observations and issue triage
 
 - Source tenferro-rs: `5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102`; Ryzen 9 9955HX; Linux MKL devcontainer; unpinned 1T/4T.
+- Upstream main advanced after collection to `b3f47296244ff7b7c55ac0a75f782cb0835418c1` (#2026). That revision removes the optional tenferro-cpu-tprims crate expected by this harness; latest-main compatibility is not established by these results. PR CI validates the measured compatible revision above.
 - Issue search: all 1,173 pre-existing open/closed issues, plus focused operation searches, 2026-10-08.
 - Inventory: 1585 rows with tenferro median above the fastest recorded external comparator; 377 operation/path groups. This includes flagged diagnostics, not 1585 confirmed defects.
 - Full inventory and per-row source/provenance: `data/results/amd-cpu/cpu/slow_analysis/20261008_review/slow-observations.csv`.
