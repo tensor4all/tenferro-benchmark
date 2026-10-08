@@ -142,3 +142,14 @@
   that inventory contract; GPU case count stays 285, host cases increase by two.
   Diagnostic 37796517303 is dispatched from trusted root main. Freeze this
   corrected source for the next oracle diagnostic; primary runs remain pending.
+
+- Oracle diagnostic 37796517303 passed host CUDA partition 1020/1020 and PJRT
+  host 52/52, then CUDA GPU 285/285, PJRT GPU 3/3 and tutorial. RTX 2000 Ada
+  ($0.24/hour) pod gqboewsbdlklbz started 15:01:23.043Z and deletion HTTP 204
+  was confirmed at 15:16:43.295467Z: 920.252467s, estimated $0.06135 at the
+  reported hourly rate. The tall/wide SVD cases took 8.624s/8.665s; full CUDA
+  nextest 219.148s. Startup/queue was 242.957s and runtime setup 294s, exposing
+  preparation as the dominant remaining cost on this node. The single result
+  is about 21.9% below the earlier A40 production observation, but GPU/network
+  placement differs; it is a diagnostic, not primary confirmation or a causal
+  production savings claim. Pod was removed; no primary comparisons have run.
