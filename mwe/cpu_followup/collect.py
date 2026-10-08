@@ -3,22 +3,22 @@ import argparse, datetime, json, os, shlex, statistics, subprocess, time
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 CASES=json.loads(Path(__file__).with_name('cases.json').read_text())
-p=argparse.ArgumentParser();p.add_argument('--container',default='14099c68ff8e');p.add_argument('--output',required=True);p.add_argument('--phase',choices=['scan','confirm'],default='scan');p.add_argument('--case',action='append');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--container',default='14099c68ff8e');p.add_argument('--output',required=True);p.add_argument('--phase',choices=['scan','confirm'],default='scan');p.add_argument('--case',action='append');p.add_argument('--target-ns',type=int,default=10000000);p.add_argument('--balanced-aa',action='store_true');a=p.parse_args()
 out=Path(a.output);out.mkdir(parents=True,exist_ok=True)
 lib=subprocess.check_output(['git','-C',str(ROOT/'extern/tenferro-rs'),'rev-parse','HEAD'],text=True).strip()
 harness=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
 declaration=out/'declaration.json'
 if not declaration.exists():
- declaration.write_text(json.dumps(dict(status='declared',declared_before_candidate_results=datetime.datetime.now(datetime.timezone.utc).isoformat(),library_commit=lib,harness_commit=harness,threads=[1,4],suite_id='cpu/followup_12x',cases=[c['id'] for c in CASES],scope='setup untimed; borrowed direct/eager session; pure metadata; prepared trace internal session explicitly diagnostic',provider='tenferro MKL / PyTorch wheel MKL; JAX XLA; Julia own BLAS; strided-rs Rayon',affinity='no runner pinning; public CpuBackend internal managed placement retained',scan_runs=3,confirmation_runs=15,warmups=3,confirmation_rounds=4,order=['AB','BA','BA','AB'],statistic='median of paired round median ratios',thresholds={'relative':.2,'absolute_ns':0},noise={'max_cov':.2,'max_aa_relative_spread':.1,'host_idle_guard':'enabled'},batch_target_ns=10000000,retained_memory_limit_bytes=536870912),indent=2)+'\n')
+ declaration.write_text(json.dumps(dict(status='declared',declared_before_candidate_results=datetime.datetime.now(datetime.timezone.utc).isoformat(),library_commit=lib,harness_commit=harness,threads=[1,4],suite_id='cpu/followup_12x',cases=[c['id'] for c in CASES],scope='setup untimed; borrowed direct/eager session; pure metadata; prepared trace internal session explicitly diagnostic',provider='tenferro MKL / PyTorch wheel MKL; JAX XLA; Julia own BLAS; strided-rs Rayon',affinity='no runner pinning; public CpuBackend internal managed placement retained',scan_runs=3,confirmation_runs=15,warmups=3,confirmation_rounds=4,order=['AB','BA','BA','AB'],statistic='median of paired round median ratios',thresholds={'relative':.2,'absolute_ns':0},noise={'max_cov':.2,'max_aa_relative_spread':.1,'host_idle_guard':'enabled'},batch_target_ns=a.target_ns,aa_order=['AB','BA','BA','AB'] if a.balanced_aa else ['AB']*4,selected_case_filter=a.case,noise_round_gate=.1 if a.balanced_aa else None,retained_payload_budget_bytes=536870912),indent=2)+'\n')
 config=json.loads(declaration.read_text());assert config['library_commit']==lib and config['harness_commit']==harness, 'Source changed during campaign'
 
 def arm(case,path,threads,runs,name):
  dest=out/(name+'.json')
  if dest.exists():return json.loads(dest.read_text())
  if path=='julia-base':cmd=['/home/vscode/.juliaup/bin/julia','--project=.','mwe/cpu_followup/reference.jl',case['id'],str(threads),str(runs)]
- elif path in ('pytorch','jax'):cmd=['.venv/bin/python','mwe/cpu_followup/reference.py',case['id'],path,str(threads),str(runs)]
+ elif path in ('pytorch','jax','mkl-dfti'):cmd=['.venv/bin/python','mwe/cpu_followup/reference.py',case['id'],path,str(threads),str(runs)]
  else:cmd=['target/followup-b3f47296/release/cpu-followup-mwe',case['id'],path,str(threads),str(runs)]
- shell='set -e; source scripts/thread_env.sh; configure_cpu_thread_env '+str(threads)+'; source scripts/benchmark_host_idle.sh; assert_benchmark_host_idle; export LD_LIBRARY_PATH="$MKLROOT/lib:/opt/intel/oneapi/compiler/2026.1/lib:${LD_LIBRARY_PATH:-}"; '+shlex.join(cmd)
+ shell='set -e; source scripts/thread_env.sh; configure_cpu_thread_env '+str(threads)+'; source scripts/benchmark_host_idle.sh; assert_benchmark_host_idle; export CPU_FOLLOWUP_TARGET_NS='+str(config['batch_target_ns'])+'; export LD_LIBRARY_PATH="$MKLROOT/lib:/opt/intel/oneapi/compiler/2026.1/lib:${LD_LIBRARY_PATH:-}"; '+shlex.join(cmd)
  command=['docker','exec','-u','vscode','-w','/workspaces/tenferro-benchmark',a.container,'bash','-lc',shell]
  # The external host guard runs before Docker and cannot see the newly started own arm.
  guard=subprocess.run(['bash','-lc','source scripts/benchmark_host_idle.sh; assert_benchmark_host_idle'],cwd=ROOT,capture_output=True,text=True)
@@ -41,6 +41,7 @@ def timing(r):
 from validation import verify
 
 def reference(c):
+ if c['category']=='fft':return 'mkl-dfti'
  if c['category']=='linalg':return 'pytorch'  # MKL-matched primary linalg comparison
  if c['category']=='perm':return 'strided-rs'
  if c['category']=='metadata' or c['source_reference']=='julia-base':return 'julia-base'
@@ -73,9 +74,10 @@ else:
   selected=max(candidates,key=lambda r:r['ratio']);t=selected['threads'];path=selected['path'];refpath=reference(c)
   prefix=f"confirm-{c['id']}-t{t}"
   aa=[]
-  for rnd in range(4):
-   first=arm(c,path,t,15,f'{prefix}-aa{rnd}-A');second=arm(c,path,t,15,f'{prefix}-aa{rnd}-B')
-   aa.append((timing(first),timing(second)))
+  for rnd,order in enumerate(config.get('aa_order',['AB']*4)):
+   arms={}
+   for label in order:arms[label]=arm(c,path,t,15,f'{prefix}-aa{rnd}-{label}')
+   aa.append((timing(arms['A']),timing(arms['B'])))
   paired=[];correct=True;why=[]
   for rnd,order in enumerate(config['order']):
    arms={}
@@ -85,8 +87,9 @@ else:
   valid=all(x and y for x,y in aa+paired)
   if valid:
    ratios=[x['median_ns']/y['median_ns'] for x,y in paired];aa_ratio=statistics.median(x['median_ns']/y['median_ns'] for x,y in aa)
-   cov=max(r['cov'] for pair in aa+paired for r in pair);ratio=statistics.median(ratios)
-   status='confirmed' if correct and ratio>=1.2 and abs(aa_ratio-1)<=.1 and cov<=.2 else 'below-threshold' if correct and abs(aa_ratio-1)<=.1 and cov<=.2 else 'inconclusive'
-   row=dict(case_id=c['id'],threads=t,path=path,reference=refpath,status=status,ratio=ratio,round_ratios=ratios,aa_ratio=aa_ratio,max_cov=cov,correct=correct,validation=why,tenferro_ns=statistics.median(x['median_ns'] for x,y in paired),reference_ns=statistics.median(y['median_ns'] for x,y in paired))
+   aa_spread=max(abs(x['median_ns']/y['median_ns']-1) for x,y in aa);cov=max(r['cov'] for pair in aa+paired for r in pair);ratio=statistics.median(ratios)
+   round_ok=config.get('noise_round_gate') is None or aa_spread<=config['noise_round_gate']
+   status='confirmed' if correct and ratio>=1.2 and abs(aa_ratio-1)<=.1 and cov<=.2 and round_ok else 'below-threshold' if correct and abs(aa_ratio-1)<=.1 and cov<=.2 and round_ok else 'inconclusive'
+   row=dict(case_id=c['id'],threads=t,path=path,reference=refpath,status=status,ratio=ratio,round_ratios=ratios,aa_ratio=aa_ratio,aa_round_max_relative_spread=aa_spread,max_cov=cov,correct=correct,validation=why,tenferro_ns=statistics.median(x['median_ns'] for x,y in paired),reference_ns=statistics.median(y['median_ns'] for x,y in paired))
   else:row=dict(case_id=c['id'],status='failed',threads=t,path=path)
   results.append(row);(out/'confirm.json').write_text(json.dumps(results,indent=2)+'\n');print('VERDICT',json.dumps(row),flush=True)

@@ -684,7 +684,8 @@ fn metadata(case: &Value, runs: usize, target: u128) -> Result<Value> {
     let first = call(setup(1)?.pop().unwrap())?;
     let sig = json!({"kind":"metadata","shape":first.shape(),"strides":first.strides(),"offset":first.offset(),"metadata_only":true});
     drop(first);
-    let mut row = sample(n * 8, runs, target, setup, call)?;
+    let retained_bytes = n * 8 + 2 * std::mem::size_of::<TensorValue>() + 256;
+    let mut row = sample(retained_bytes, runs, target, setup, call)?;
     row["outputs"] = json!([sig]);
     row["scope_note"]=json!("metadata-only on small owned inputs, no session; extent reduced to permit memory-bounded long batches; input copies untimed");
     Ok(row)

@@ -38,6 +38,13 @@ Every batch allocates its input iterator and output-retention storage before
 timing, holds every output until the interval ends, then drops outputs/inputs.
 Python JAX uses dynamic input arguments, compiles and completes an initial
 execution outside timing, and calls native completion inside each batch call.
-Julia specializes the batch on the operation closure type; owned inputs,
+Julia primes the full typed execute_batch! specialization before starting any clock; owned inputs,
 typed retention storage, the type probe and explicit GC are outside timing.
 Signature calculation and all inspection copies are untimed in every arm.
+
+PyTorch CPU FFT is excluded as an operation-only reference: its recorded
+public-source `_exec_fft` calls `_plan_mkl_fft`, which creates and commits a
+new descriptor, inside every operation. The corrected FFT reference explicitly
+calls public oneMKL DFTI with a persistent precommitted descriptor. Its first
+completed transform primes implementation workspace before all sampling;
+output allocation is intrinsic and the handle is freed after sampling.

@@ -12,7 +12,7 @@ if metadata
  call=op=="reshape_view" ? x->reshape(x,32,32) : op=="transpose_view" ? x->PermutedDimsArray(x,(2,1)) : x->view(x,129:2:3968)
  first=call(only(setup(1)))
  sigs=[Dict("kind"=>"metadata","shape"=>collect(size(first)),"strides"=>collect(strides(first)),"offset"=>op=="slice_view" ? 128 : 0,"metadata_only"=>true)]
- bytes=prod(shape)*8
+ bytes=prod(shape)*8+256
 elseif category=="real"
  shape=endswith(op,"_all") ? (8192,4096) : op=="reduce_min_axis1" ? (4096,4096) : (2048,2048)
  x=fixture(shape); axis=endswith(op,"axis0") ? 1 : 2
@@ -42,16 +42,28 @@ if !metadata;sigs=map(signature,first isa Tuple ? collect(first) : [first]);end
 first=nothing
 cap=clamp((512*1024*1024)÷max(bytes,1),1,65536);target=parse(Int,get(ENV,"CPU_FOLLOWUP_TARGET_NS","10000000"))
 # Typed retention storage and all owned inputs allocated before each clock.
+const LAST_OUTPUTS=Ref{Any}(nothing)
+function execute_batch!(outputs::Vector{O},inputs::Vector{I},operation::F) where {O,I,F}
+ for i in eachindex(inputs);outputs[i]=operation(inputs[i]);end
+ nothing
+end
 function batch(n,operation::F) where {F}
- inputs=setup(n); outputs=Vector{typeof(operation(inputs[1]))}(undef,n)
- # The type probe above is explicitly untimed and its output is discarded here.
+ # All types used by the executed loop are explicit; prime its exact
+ # specialization, including output assignment, before the clock.
+ LAST_OUTPUTS[]=nothing
+ raw=setup(n); inputs=convert(Vector{typeof(raw[1])},raw)
+ first=operation(inputs[1]);outputs=Vector{typeof(first)}(undef,n)
+ execute_batch!(Vector{typeof(first)}(undef,1),inputs[1:1],operation)
  GC.gc(false)
  start=time_ns()
- for i in 1:n;outputs[i]=operation(inputs[i]);end
+ execute_batch!(outputs,inputs,operation)
  elapsed=time_ns()-start
- GC.@preserve outputs inputs begin end
+ # An observable escape after the clock prevents result/operation elimination
+ # and retains every output until the next sample's untimed setup.
+ LAST_OUTPUTS[]=outputs
  elapsed
 end
+
 samples=[];count=0;elapsed=0
 if runs>0
  for _ in 1:3;call(only(setup(1)));end

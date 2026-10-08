@@ -67,6 +67,11 @@ A sample is one interval containing many operations, targeting 10 ms, bounded
 by 512 MiB of retained outputs (and retained owned inputs for metadata).
 Intrinsic output allocation and required native completion stay inside.
 JSON contains batch durations, operation counts, signatures and the scope.
+The 512 MiB budget refers to retained tensor payloads; one operation is still
+required when a single output is larger (the 2 GiB rotation). Metadata also
+budgets its owned inputs and descriptor storage. Activation outputs are
+additionally checked element-by-element against scalar f64 formulas, and
+permutation outputs against a full independent odometer oracle.
 The collector checks shape, aggregates and about 130 deterministic output
 probes against the independent implementation; metadata descriptors must
 match exactly. This is a cross-implementation numerical check, not an exhaustive
@@ -106,3 +111,26 @@ Raw campaign evidence belongs under `data/results/amd-cpu/cpu/`; the maintained
 report belongs under `result/amd-cpu/cpu/`. Read the report for confirmed issue
 links and negative/inconclusive dispositions. Never interpret a scan ratio as
 a confirmed defect.
+
+CPU PyTorch FFT is not an operation-only reference: at its recorded source
+revision `_exec_fft` constructs and commits a DFTI descriptor on every call
+([source](https://github.com/pytorch/pytorch/blob/7661cd9c6b841b62b7f411aa52ec51f05457263b/aten/src/ATen/native/mkl/SpectralOps.cpp#L490)).
+The maintained FFT MWE instead uses `reference.py CASE_ID mkl-dfti THREADS RUNS`.
+It calls public oneMKL DFTI through ctypes, prepares/commits one descriptor and
+completes a priming transform before sampling. Only a fresh host output
+allocation (`torch.empty`) and DftiComputeForward/Backward are timed. This is
+a **cached oneMKL reference**, not a PyTorch FFT row. Native completion is
+synchronous. Its explicit thread limit is recorded in the JSON provider field.
+
+Julia primes the exact typed batch-loop specialization, including output
+assignment, before every interval. Each output escapes to an observable root
+after the clock, held until the next untimed setup. This prevents JIT setup
+from selecting a one-operation batch for very short metadata calls and avoids
+dead-result elimination.
+
+For stricter confirmation or noisy cases, `--balanced-aa` uses AB/BA/BA/AB
+for A/A as well as the comparison, and additionally requires **every** A/A
+round ratio within 10% of unity. `--target-ns 50000000` selects a 50 ms batch
+target. These choices are fixed in a new immutable declaration before that
+phase's measurements; the 1.2× reporting and 20% sample-CoV bounds do not change.
+Never overwrite an earlier declaration when changing a phase.

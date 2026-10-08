@@ -7,7 +7,7 @@ case_id, backend, threads = sys.argv[1:4]
 threads=int(threads); runs=int(sys.argv[4]) if len(sys.argv)>4 else 15
 case=next(c for c in json.loads(Path(__file__).with_name('cases.json').read_text()) if c['id']==case_id)
 cat, op=case['category'],case['op']
-if backend=='pytorch':
+if backend in ('pytorch','mkl-dfti'):
  import torch
  torch.set_num_threads(threads);torch.set_num_interop_threads(1)
  api=torch
@@ -114,6 +114,11 @@ elif cat=='fft':
  call=(lambda:getattr(api.fft,op)(x,n=n,norm='backward')) if op=='irfft' else lambda:getattr(api.fft,op)(x,norm='backward')
 else:raise ValueError('unsupported reference category')
 
+if backend=='mkl-dfti':
+ if cat!='fft':raise ValueError('oneMKL DFTI reference only supports FFT cases')
+ from mkl_fft import prepared_fft
+ call,cleanup,provider_metadata=prepared_fft(torch,x,op,n,threads)
+
 # Compiled JAX graphs are separately labelled; compilation and first execution untimed.
 if backend=='jax':
  # Every tensor is a dynamic JIT argument. Capturing fixture arrays as constants
@@ -172,4 +177,8 @@ if runs:
   if elapsed>=target or count==cap:break
   count=min(count*2,cap)
  samples=[dict(sample_index=i,iterations=count,elapsed_ns=batch(count)) for i in range(runs)]
-print(json.dumps(dict(case_id=case_id,path=backend+'-compiled' if backend=='jax' else backend+'-eager',threads=threads,outputs=sigs,samples=samples,calibration=dict(iterations=count,elapsed_ns=elapsed,target_ns=target,memory_cap_bytes=512*1024*1024),scope=dict(outside_timer=['fixtures','conversion','JIT compilation','initialization','validation','retention allocation','output destruction'],inside_timer=['API execution','intrinsic output allocation','native completion']))))
+row=dict(case_id=case_id,path=backend+'-compiled' if backend=='jax' else backend+'-eager',threads=threads,outputs=sigs,samples=samples,calibration=dict(iterations=count,elapsed_ns=elapsed,target_ns=target,memory_cap_bytes=512*1024*1024),scope=dict(outside_timer=['fixtures','conversion','JIT compilation','initialization','validation','retention allocation','output destruction'],inside_timer=['API execution','intrinsic output allocation','native completion']))
+
+if backend=='mkl-dfti':
+ row['path']='mkl-dfti-cached';row['provider']=provider_metadata;cleanup()
+print(json.dumps(row))
