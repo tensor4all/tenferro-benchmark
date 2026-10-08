@@ -18,11 +18,17 @@ set the repository Actions variable `RUNPOD_RUNNER_GROUP_ID` to its numeric ID.
 
 The pod receives only the single-use JIT runner configuration. The workflow is
 manual-dispatch only for now; it does not add RunPod credentials to pull
-request jobs. It uses the same RunPod base image as tenferro-rs, installs CUDA
-12.8 and the benchmark
-toolchain and Python environment, and checks CUDA execution before collection.
+request jobs. It uses the NVIDIA CUDA 12.8.1 development image and its default
+entrypoint, installs the benchmark toolchain and Python environment, and checks
+CUDA execution before collection.
 The unique per-run label sends the benchmark job to the newly created RunPod
 runner, rather than the existing `ubuntu-gpu` runner in the same group.
+
+The configured GPU candidates mirror tenferro-rs's reviewed GPU tiers, including
+RTX A-series, RTX 30/40/50-series, L4/L40/L40S, V100, and A100. RunPod selects by
+availability; this is not price-ordered provisioning. The optional `gpu_type`
+dispatch input restricts a run to one exact RunPod GPU type ID for diagnostics.
+Record the actual GPU from the run metadata when comparing results.
 
 Run a first GPU benchmark from GitHub Actions, or with:
 
