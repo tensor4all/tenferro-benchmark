@@ -11,7 +11,7 @@ python3 -m pip download --only-binary=:all: --no-deps --python-version 312 --pla
   "nvidia-cudnn-cu12==$NVIDIA_CUDNN_CU12_VERSION" "nvidia-cuda-nvcc-cu12==$NVIDIA_CUDA_NVCC_CU12_VERSION"
 headers="$(mktemp -d)"
 trap 'rm -rf "$headers"' EXIT
-for pkg in cuda-cudart-dev-12-8_12.8.90-1_amd64.deb cuda-cccl-12-8_12.8.90-1_amd64.deb cuda-driver-dev-12-8_12.8.90-1_amd64.deb; do
+for pkg in cuda-crt-12-8_12.8.93-1_amd64.deb cuda-cudart-dev-12-8_12.8.90-1_amd64.deb cuda-cccl-12-8_12.8.90-1_amd64.deb cuda-driver-dev-12-8_12.8.90-1_amd64.deb; do
   curl -fsSL --retry 3 -o "$headers/$pkg" "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/$pkg"
   dpkg-deb -x "$headers/$pkg" "$headers/tree"
 done

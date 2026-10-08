@@ -181,3 +181,21 @@
 - Root diagnostic CUDA cache restoration timed out after three minutes, then
   installation took about 75 seconds. This is observed fallback overhead,
   not evidence that an oversized payload caused the timeout.
+
+- The timed-out CUDA cache was 1,150,165,089 compressed bytes. Current
+  runtime seeding follows symlinks with cp -aL, potentially duplicating the
+  lib64/include aliases and target directories; the dedicated publisher does
+  not first install the full compiler toolkit. Payload inspection is still
+  needed before attributing cache size or timeouts to duplicated files.
+
+- A40 candidate diagnostic 37802639485 completed preparation but the live
+  pricing service reported A40 out of stock before pod creation (no GPU
+  charge). Its complete candidate payload is frozen for reuse. Diagnostic
+  37803042945 reuses it on A6000, retaining the full workload and cleanup;
+  this hardware substitution is diagnostic only, not a confirmation sample.
+
+- No primary suite has started. Permit the previously successful RTX 2000
+  Ada model for diagnostics after A40/A6000/4090 stock failures. Both arms
+  now honor the same selected GPU input; freeze one identical model for
+  confirmation. Add the CUDA CRT header package discovered by real NVRTC
+  fixture compilation. Existing candidate payload reuse remains diagnostic.
