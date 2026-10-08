@@ -36,7 +36,7 @@ function signature(o)
  a=o isa Number ? fill(o) : Array(o); xs=vec(a);n=length(xs)
  ids=sort(unique(vcat([0,n-1,n÷2],[mod(i*1597334677,n) for i in 1:127])))
  @assert all(isfinite,xs)
- Dict("shape"=>collect(size(a)),"count"=>n,"sum"=>[sum(real,xs),sum(imag,xs)],"sum_abs"=>sum(abs,xs),"sum_sq"=>sum(abs2,xs),"probes"=>[[i,real(xs[i+1]),imag(xs[i+1])] for i in ids])
+ Dict("shape"=>Int[size(a)...],"count"=>n,"sum"=>[sum(real,xs),sum(imag,xs)],"sum_abs"=>sum(abs,xs),"sum_sq"=>sum(abs2,xs),"probes"=>[[i,real(xs[i+1]),imag(xs[i+1])] for i in ids])
 end
 if !metadata;sigs=map(signature,first isa Tuple ? collect(first) : [first]);end
 first=nothing
