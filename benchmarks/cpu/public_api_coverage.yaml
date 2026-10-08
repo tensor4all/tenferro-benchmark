@@ -1,4 +1,4 @@
-schema_version: 1
+schema_version: 2
 scope:
   description: Operation-level coverage of public tenferro-rs numerical tensor APIs with a meaningful PyTorch CPU counterpart.
   rules:
@@ -8,13 +8,13 @@ scope:
     - Graph construction, compilation, fixture allocation, and plan construction are outside timing.
     - Provider-unsupported APIs remain present as explicit unsupported rows.
     - Thin call-layer spellings are aliases only when they dispatch the same operation; this suite compares operation work, not wrapper-call nanoseconds.
+    - An alias establishes operation (kernel) coverage only. It never establishes latency, wrapper, session-boundary or route coverage; those are claimed only by the `routes` section, and a route counts as covered only when every case it names executed and passed (scripts/route_coverage.py routes).
+    - Every spelling must exist in the tenferro-rs revision under test (scripts/route_coverage.py entrypoints); removed spellings are deleted, not kept as aliases.
 
 coverage:
   - family: elementwise
     tenferro_apis:
-      - TensorElementwise::{add,add_read,sub,sub_read,mul,mul_read,div,div_read}
-      - TensorOpsExt::{add,sub,mul,div}
-      - TypedTensorOpsExt::{add,sub,mul,div}
+      - TensorElementwise::{add_read,sub_read,mul_read,div_read}
     pytorch: torch.{add,sub,mul,div}
     disposition: measured
     benchmarks: cpu/elementwise_reduction::{add,sub,mul,div}
@@ -26,9 +26,7 @@ coverage:
     benchmarks: cpu/output_reuse::{add_into,sub_into,mul_into,div_into}
   - family: unary_elementwise
     tenferro_apis:
-      - TensorElementwise::{neg,neg_read,abs,abs_read,sign,sign_read,conj,conj_read}
-      - TensorOpsExt::{neg,abs,sign,conj}
-      - TypedTensorOpsExt::{neg,abs,sign,conj}
+      - TensorElementwise::{neg_read,abs_read,sign_read,conj_read}
     pytorch: torch.{neg,abs,sign,conj_physical}
     disposition: measured
     benchmarks: cpu/elementwise_reduction::{neg,abs,sign}; cpu/complex/conj
@@ -40,59 +38,49 @@ coverage:
     benchmarks: cpu/output_reuse::{neg_into,conj_into}
   - family: remaining_elementwise
     tenferro_apis:
-      - TensorElementwise::{rem,rem_read,maximum,maximum_read,minimum,minimum_read,compare,compare_read,select,select_read,clamp,clamp_read}
-      - TensorOpsExt::{rem,maximum,minimum,compare,where_select,clamp}
-      - TypedTensorOpsExt::{rem,maximum,minimum,compare,clamp}
-      - TypedTensorMaskOpsExt::where_select
+      - TensorElementwise::{rem,rem_read,maximum_read,minimum_read,compare_read,select_read,clamp_read}
     pytorch: torch.{remainder,maximum,minimum,lt,where,clamp}
     disposition: measured
     benchmarks: cpu/elementwise_reduction::{rem,maximum,minimum,compare_lt,select,clamp}
   - family: analytic
     tenferro_apis:
-      - TensorAnalytic::{exp,exp_read,log,log_read,sin,sin_read,cos,cos_read,tanh,tanh_read,sqrt,sqrt_read,rsqrt,rsqrt_read,pow,pow_read,expm1,expm1_read,log1p,log1p_read}
-      - TensorOpsExt::{exp,log,sin,cos,tanh,sqrt,rsqrt,pow,expm1,log1p}
-      - TypedTensorOpsExt::{exp,log,sin,cos,tanh,sqrt,rsqrt,pow,expm1,log1p}
+      - TensorAnalytic::{exp_read,log_read,sin_read,cos_read,tanh_read,sqrt_read,rsqrt_read,pow_read,expm1_read,log1p_read}
     pytorch: torch.{exp,log,sin,cos,tanh,sqrt,rsqrt,pow,expm1,log1p}
     disposition: measured
     benchmarks: cpu/elementwise_reduction::{exp,log,sin,cos,tanh,sqrt,rsqrt,pow,expm1,log1p}
   - family: reductions
     tenferro_apis:
-      - TensorReduction::{reduce_sum,reduce_sum_read,reduce_prod,reduce_prod_read,reduce_max,reduce_max_read,reduce_min,reduce_min_read}
-      - TensorOpsExt::reduce_sum
-      - TypedTensorOpsExt::reduce_sum
+      - TensorReduction::{reduce_sum_read,reduce_prod_read,reduce_max_read,reduce_min_read}
     pytorch: torch.{sum,prod,max,min}
     disposition: measured
-    benchmarks: cpu/elementwise_reduction::{reduce_sum_all,reduce_prod_all,reduce_max_axis0,reduce_min_axis1}
+    benchmarks: cpu/elementwise_reduction::{reduce_sum_all,reduce_prod_all,reduce_max_all,reduce_min_all,reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1}
 
   - family: structural
     tenferro_apis:
-      - TensorStructural::{transpose,transpose_read,reshape,reshape_read,broadcast_in_dim,broadcast_in_dim_read,cast,convert,extract_diagonal,embed_diagonal,tril,triu}
-      - TensorOpsExt::{convert,cast,reshape,transpose}
-      - TypedTensorOpsExt::{reshape,transpose,broadcast_in_dim}
+      - TensorStructural::{transpose_read,reshape_read,broadcast_in_dim_read,cast,convert,extract_diagonal,embed_diagonal,tril,triu}
     pytorch: Tensor.{transpose,reshape,expand,to,diagonal}; torch.{diag,tril,triu}
     disposition: measured
     benchmarks: cpu/structural_shape::{transpose,reshape,broadcast_in_dim,cast_f64_f32,extract_diagonal,embed_diagonal,tril,triu}
   - family: view_metadata
     tenferro_apis:
       - TensorValue::{transpose_view,reshape_view,slice_view,broadcast_in_dim_view}
-      - TensorOwnedView::{transpose_view,reshape_view,slice_view,broadcast_in_dim_view}
-      - TypedTensorView::{transpose_view,try_reshape,try_slice,try_slice_axis}
-      - TypedTensorViewMut::{transpose_view,try_reshape,try_slice,try_slice_axis}
+      - TypedTensorView::{transpose_view,reshape_view,slice_view,slice_axis_view}
+      - TypedTensorViewMut::{transpose_view,reshape_view,slice_view,slice_axis_view}
     pytorch: Tensor.{transpose,reshape,slicing,expand}
     disposition: measured
     benchmarks: cpu/view_metadata
     reason: Dedicated metadata-only rows compare view creation without mixing it into materialized operation timings; JAX has no public strided-view/aliasing contract.
-  - family: eager_tensor_operation_spellings
+  - family: eager_session_operation_spellings
     tenferro_apis:
-      - EagerTensor::{add,sub,mul,neg,exp,reduce_sum,dot_general,dot_general_with_conj,matmul,transpose,reshape,slice,broadcast_in_dim,convert,cast,pad,reverse,gather,scatter,dynamic_slice,concatenate,extract_diag,embed_diag,tril,triu,reduce_prod,reduce_max,reduce_min}
-      - EagerSliceBuilder
+      - EagerSession::{add,sub,mul,neg,exp,reduce_sum,dot_general,dot_general_with_conj,matmul,transpose,reshape,slice,broadcast_in_dim,convert,cast,pad,reverse,gather,scatter,dynamic_slice,concatenate,extract_diag,embed_diag,tril,triu,reduce_prod,reduce_max,reduce_min}
+      - EagerSliceBuilder::{new,axis,axis_step,take_axis,apply}
     pytorch: corresponding torch/Tensor operations
     disposition: alias
     benchmarks: cpu/public_api operation rows; cpu/cpu_ops matmul rows
-    reason: These immediate call-layer methods dispatch the same measured backend operations. The report labels the concrete column as direct API rather than claiming to measure EagerTensor wrapper overhead.
-  - family: eager_tensor_scalar_scale
+    reason: These borrowed-session eager methods dispatch the same measured backend operations (kernel coverage only). The report labels the concrete column as direct API rather than claiming to measure eager wrapper or session-entry overhead; eager session routes are claimed only in `routes`.
+  - family: eager_session_scalar_scale
     tenferro_apis:
-      - EagerTensor::{scale_real,scale_complex}
+      - EagerSession::{scale_real,scale_complex}
     pytorch: Tensor multiplied by a scalar
     disposition: alias
     benchmarks: cpu/elementwise_reduction/mul; cpu/complex/mul
@@ -100,14 +88,14 @@ coverage:
   - family: contiguous_copy
     tenferro_apis:
       - TensorStructural::to_contiguous_read
-      - TensorViewCanonicalization::to_contiguous
+      - TensorViewCanonicalization::to_contiguous (on an entered execution session; tenferro-rs issue 1946 F6 removed the owner route)
     pytorch: Tensor.contiguous
     disposition: measured
     benchmarks: cpu/permutation materialize rows
   - family: caller_copy
     tenferro_apis:
       - TensorStructural::copy_read_into
-      - TensorViewCanonicalization::copy_into
+      - TensorViewCanonicalization::copy_into (on an entered execution session)
     pytorch: Tensor.copy_
     disposition: measured
     benchmarks: cpu/output_reuse/copy_read_into
@@ -127,9 +115,7 @@ coverage:
 
   - family: dot
     tenferro_apis:
-      - TensorDot::{dot_general,dot_general_read,dot_general_with_conj,dot_general_with_conj_read}
-      - TensorOpsExt::matmul
-      - TypedTensorOpsExt::matmul
+      - TensorDot::{dot_general_read,dot_general_with_conj,dot_general_with_conj_read}
     pytorch: torch.matmul; conjugated torch.matmul
     disposition: measured
     benchmarks: cpu/complex::{dot_general,dot_general_with_conj}; cpu/einsum matmul rows
@@ -141,16 +127,14 @@ coverage:
     benchmarks: cpu/output_reuse::{dot_general_read_into,dot_general_read_into_accum}
   - family: dot_cached
     tenferro_apis:
-      - TensorDot::{dot_general_cached,dot_general_read_cached,dot_general_with_conj_cached,dot_general_with_conj_read_cached,dot_general_read_into_accum_cached}
-      - BackendSession::{dot_general_cached,dot_general_read_cached,dot_general_with_conj_cached,dot_general_with_conj_read_cached,dot_general_read_into_accum_cached}
+      - SessionCachedDot::{dot_general_cached,dot_general_read_cached,dot_general_with_conj_cached,dot_general_with_conj_read_cached,dot_general_read_into_accum_cached}
     pytorch: warmed torch.matmul/torch.addmm with framework-owned caches
     disposition: alias
     benchmarks: cpu/einsum matmul rows; cpu/output_reuse/dot_general_read_into_accum
     reason: PyTorch exposes no equivalent caller-owned GEMM plan object; warmed calls are the closest fair comparison.
   - family: grouped_gemm
     tenferro_apis:
-      - TensorDot::grouped_gemm_cached
-      - BackendSession::grouped_gemm_cached
+      - SessionCachedDot::grouped_gemm_cached
     pytorch: null
     disposition: no_direct_pytorch
     reason: PyTorch has no public heterogeneous grouped-GEMM CPU API.
@@ -166,7 +150,7 @@ coverage:
     benchmarks: cpu/einsum_concrete/einsum_ij_jk_ik
   - family: eager_and_traced_einsum
     tenferro_apis:
-      - EagerEinsumExt::einsum
+      - EagerSessionEinsumExt::{einsum,einsum_notation,einsum_subscripts}
       - TraceContextEinsumExt::{einsum,einsum_subscripts,einsum_with,einsum_subscripts_with}
     pytorch: torch.einsum
     disposition: measured
@@ -175,7 +159,7 @@ coverage:
     tenferro_apis:
       - TensorTensordotExt::tensordot
       - TypedTensorTensordotExt::tensordot
-      - EagerTensorEinsumExt::tensordot
+      - EagerSessionEinsumExt::tensordot
       - TracedTensorEinsumExt::tensordot
     pytorch: torch.tensordot
     disposition: measured
@@ -194,8 +178,8 @@ coverage:
     tenferro_apis:
       - TensorFftExt::{fft,ifft,rfft,irfft}
       - TensorReadFftExt::{fft_read,ifft_read,rfft_read,irfft_read}
-      - FftExecutor::{fft,ifft,rfft,irfft}
-      - EagerTensorFftExt::{fft,ifft,rfft,irfft}
+      - EagerSessionFftExt::{fft,ifft,rfft,irfft}
+      - EagerTensorFftExt::{fft_in_place,ifft_in_place}
       - TracedTensorFftExt::{fft,ifft,rfft,irfft}
     pytorch: torch.fft.{fft,ifft,rfft,irfft}
     disposition: measured
@@ -207,21 +191,39 @@ coverage:
       - TensorLinalgExt::{svd,qr,lu,solve,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
       - TensorReadLinalgExt::{svd_read,qr_read,lu_read,solve_read,cholesky_read,eigh_read,eig_read,triangular_solve_read,slogdet_read,det_read,inv_read,eigvalsh_read,eigvals_read,pinv_read,pinv_with_rtol_read,norm_read}
       - TypedTensorLinalgExt::{svd,qr,lu,solve,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals}
-      - EagerTensorLinalgExt::lstsq
+      - EagerSessionLinalgExt::lstsq
       - TracedTensorLinalgExt::{svd,qr,lu,solve,lstsq,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
     pytorch: torch.linalg equivalents
     disposition: measured
-    benchmarks: cpu/cpu_ops; cpu/linalg_uncovered
+    benchmarks: cpu/cpu_ops; cpu/linalg_uncovered; cpu/linalg_batched::batched_triangular_solve
+  - family: batched_prepared_lu
+    tenferro_apis:
+      - LinalgBackend::{lu_factor,lu_solve_prepared} (doc hidden, on CpuExecSession)
+      - TensorLinalgExt::triangular_solve
+      - TracedTensorLinalgExt::triangular_solve
+    pytorch: torch.linalg.{lu_factor,lu_solve,solve_triangular}
+    disposition: measured
+    benchmarks: cpu/linalg_batched::{batched_lu_factor,batched_lu_solve,batched_triangular_solve}
+    reason: Batch 1024 at n in {2,4,8,16} with one rhs column separates the packed LU factorization from the solve that reuses prepared factors. LinalgOp is not public, so bare LU factor and prepared solve rows are unsupported in trace mode; the traced solve (LuFactor plus LuSolvePrepared) and its backward are measured by cpu/cpu_ops batched_solve and grad_sum_batched_solve_backward. Performance issue tenferro-rs #1884 (batched LU factor/solve 1024x{8,16} does not scale from 1T to 4T) is reported from the 1024x8x8 and 1024x16x16 batched_lu_factor / batched_lu_solve rows at both thread counts.
+  - family: batched_linalg_families
+    tenferro_apis:
+      - TensorLinalgExt::{solve,cholesky,qr,eigh,eigvalsh,svd,svdvals,lu}
+      - TracedTensorLinalgExt::{solve,cholesky,qr,eigh,eigvalsh,svd,lu}
+    pytorch: torch.linalg.{solve,cholesky,qr,eigh,eigvalsh,svd,svdvals,lu}
+    disposition: measured
+    benchmarks: cpu/linalg_batch_families::{batched_solve,batched_cholesky,batched_qr,batched_eigh,batched_eigvalsh,batched_svd,batched_svdvals,batched_lu}
+    reason: Batched [rows, cols, batch] inputs (n in {2,4,8} x batch in {1,3,4,8,1024}, n in {32,128} x batch in {1,8}, tall 64x24) for the families tenferro-rs routes through the batched tlinalg/tlinalg-blas providers (tenferro-rs#1956); they separate the batch fan-out from the single-item and max(rows, cols) > 64 Auto paths (tenferro-rs#2000). svd and eigh also run on c64. TracedTensor has no svdvals, so batched_svdvals is an explicit unsupported trace row; Julia rows are not provided for this suite. Performance issues tenferro-rs #2000 (lanes x item-threads work model) and #1884 (batched LU thread scaling) are reported from these rows at 1T and 4T, with PyTorch as the reference.
   - family: eager_linalg_operation_spellings
     tenferro_apis:
-      - EagerTensorLinalgExt::{svd,qr,lu,solve,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
+      - EagerSessionLinalgExt::{svd,qr,lu,solve,cholesky,eigh,eig,triangular_solve,slogdet,det,inv,eigvalsh,eigvals,pinv,pinv_with_rtol,norm}
+      - EagerTensorLinalgExt::solve
     pytorch: torch.linalg equivalents
     disposition: alias
     benchmarks: cpu/cpu_ops; cpu/linalg_uncovered
-    reason: These immediate call-layer methods dispatch the same measured linalg operations; lstsq and svd_full remain direct EagerTensor measurements because no concrete spelling exists.
+    reason: These borrowed-session eager methods (and the documented tensor-owned no_grad solve exception) dispatch the same measured linalg operations (kernel coverage only); lstsq and svd_full remain eager measurements because no concrete spelling exists.
   - family: full_svd
     tenferro_apis:
-      - EagerTensorLinalgExt::svd_full
+      - EagerSessionLinalgExt::svd_full
       - TracedTensorLinalgExt::svd_full
     pytorch: torch.linalg.svd(full_matrices=True)
     disposition: measured_or_provider_unsupported
@@ -230,7 +232,7 @@ coverage:
     tenferro_apis:
       - TensorLinalgExt::{svd_with_options,qr_with_options,eigh_with_options}
       - TensorReadLinalgExt::{svd_with_options_read,qr_with_options_read,eigh_with_options_read}
-      - EagerTensorLinalgExt::{svd_with_options,qr_with_options,eigh_with_options}
+      - EagerSessionLinalgExt::{svd_with_options,qr_with_options,eigh_with_options}
       - TracedTensorLinalgExt::{svd_with_options,qr_with_options,eigh_with_options}
     pytorch: torch.linalg.{svd,qr,eigh}
     disposition: alias
@@ -240,7 +242,7 @@ coverage:
     tenferro_apis:
       - TensorLinalgExt::{full_piv_lu,full_piv_lu_solve}
       - TensorReadLinalgExt::{full_piv_lu_read,full_piv_lu_solve_read}
-      - EagerTensorLinalgExt::{full_piv_lu,full_piv_lu_solve}
+      - EagerSessionLinalgExt::{full_piv_lu,full_piv_lu_solve}
       - TracedTensorLinalgExt::{full_piv_lu,full_piv_lu_solve}
     pytorch: null
     disposition: no_direct_pytorch
@@ -277,3 +279,87 @@ coverage:
     pytorch: null
     disposition: out_of_scope
     reason: Backend/runtime infrastructure is not a numerical tensor operation with matching PyTorch call semantics.
+
+# Public routes (tenferro-rs issue 1946 B1). Each route is one real public
+# entrypoint with its route dimensions; it is covered only when every listed
+# case executed and passed in the runs given to
+# `scripts/route_coverage.py routes --runs <raw-run-dir>...`. A missing,
+# failed, unsupported or unselected case leaves the route uncovered. Cases are
+# `<suite_id>:<case_id>` or `<suite_id>:<case_id>[<provider>]`.
+routes:
+  - route_id: dot_read_batched_alloc
+    entrypoint: TensorDot::dot_general_read
+    dims: {execution_path: concrete, output: allocating, representation: owned, layout: direct, session_boundary: shared-session, provider: faer, policy: auto, threads: [1, 4]}
+    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_alloc_auto[faer]"]
+  - route_id: dot_read_batched_into
+    entrypoint: TensorDot::dot_general_read_into
+    dims: {execution_path: concrete, output: reused, representation: owned, layout: direct, session_boundary: shared-session, provider: faer, policy: auto, threads: [1, 4]}
+    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_into_auto[faer]"]
+  - route_id: dot_read_batched_canonical_copy
+    entrypoint: TensorDot::dot_general_read
+    dims: {execution_path: concrete, output: allocating, representation: view, layout: canonical-copy, session_boundary: shared-session, provider: faer, policy: auto}
+    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_canonical_alloc_auto[faer]", "cpu/session_matrix:bdot_f64_b1024_m4n4k4_canonical_into_auto[faer]"]
+  - route_id: dot_read_batched_direct_strided
+    entrypoint: TensorDot::dot_general_read
+    dims: {execution_path: concrete, output: allocating, representation: view, layout: direct-strided, session_boundary: shared-session, provider: faer, policy: auto, coverage: full}
+    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_strided_alloc_auto[faer]", "cpu/session_matrix:bdot_f64_b1024_m4n4k4_strided_into_auto[faer]"]
+  - route_id: dot_read_batched_complex
+    entrypoint: TensorDot::dot_general_read
+    dims: {execution_path: concrete, output: allocating, representation: owned, layout: direct, dtype: c64, session_boundary: shared-session, provider: faer, policy: auto, coverage: full}
+    cases: ["cpu/session_matrix:bdot_c64_b1024_m4n4k4_direct_alloc_auto[faer]", "cpu/session_matrix:bdot_c64_b1024_m4n4k4_direct_into_auto[faer]"]
+  - route_id: dot_read_loop_of_independent_calls
+    entrypoint: TensorDot::dot_general_read
+    dims: {execution_path: concrete, output: allocating, representation: owned, layout: direct, session_boundary: shared-session, provider: faer, workload: loop-of-1024-independent-ops}
+    cases: ["cpu/session_matrix:matmul_n4_count1024[faer]"]
+  - route_id: einsum_concrete_batched_alloc
+    entrypoint: TensorEinsumExt::einsum
+    dims: {execution_path: concrete-einsum, output: allocating, representation: owned, layout: direct, session_boundary: shared-session, provider: faer, policy: auto}
+    cases: ["cpu/session_matrix:beinsum_f64_b1024_m4n4k4_direct_alloc_auto[faer]"]
+  - route_id: einsum_concrete_batched_into
+    entrypoint: TensorEinsumIntoExt::einsum_into
+    dims: {execution_path: concrete-einsum, output: reused, representation: owned, layout: direct, session_boundary: shared-session, provider: faer, policy: auto}
+    cases: ["cpu/session_matrix:beinsum_f64_b1024_m4n4k4_direct_into_auto[faer]"]
+  - route_id: einsum_read_views_key_streams
+    entrypoint: TensorReadEinsumExt::einsum_read
+    dims: {execution_path: concrete-einsum, output: allocating, representation: view, layout: direct and direct-strided, session_boundary: shared-session, provider: faer, planning: inside timer}
+    cases: ["cpu/session_matrix:stream_f64_fixed_len32_einsum_alloc[faer]", "cpu/session_matrix:stream_f64_mixed_len32_einsum_alloc[faer]", "cpu/session_matrix:stream_f64_fresh_len32_einsum_alloc[faer]", "cpu/session_matrix:stream_f64_strides_len32_einsum_alloc[faer]"]
+  - route_id: hadamard_dot_vs_einsum
+    entrypoint: TensorEinsumExt::einsum
+    dims: {execution_path: concrete-einsum and concrete, output: allocating, representation: owned, layout: direct, session_boundary: shared-session, provider: faer}
+    cases: ["cpu/session_matrix:hadamard_f64_m64n64_einsum_alloc[faer]", "cpu/session_matrix:hadamard_f64_m64n64_dot_alloc[faer]"]
+  - route_id: einsum_multi_operand
+    entrypoint: TensorEinsumExt::einsum
+    dims: {execution_path: concrete-einsum, output: allocating, representation: owned, layout: direct, session_boundary: shared-session, provider: faer}
+    cases: ["cpu/session_matrix:chain3_f64_n4_einsum_alloc[faer]"]
+  - route_id: batch_policy_backend_override
+    entrypoint: CpuBackend::with_batch_policy
+    dims: {execution_path: concrete, policy: backend default override, coverage: full}
+    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096[faer]", "cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096[faer]"]
+  - route_id: batch_policy_scoped_override
+    entrypoint: with_batch_policy
+    dims: {execution_path: concrete, policy: scoped override, coverage: full}
+    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096[faer]", "cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096[faer]"]
+  - route_id: batch_policy_lane_cost_model
+    entrypoint: CpuBatchThresholds::with_lane_min_work_ns
+    dims: {execution_path: concrete, policy: lane cost model override, coverage: full}
+    cases: ["cpu/session_matrix:bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0[faer]", "cpu/session_matrix:bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0[faer]"]
+  - route_id: einsum_prepared_repeat
+    entrypoint: ConcreteEinsumPlan::execute
+    dims: {execution_path: concrete-prepared, output: allocating, representation: owned, session_boundary: shared-session}
+    cases: ["cpu/small_work:einsum_f64_prepared-repeat_n4_single", "cpu/small_work:einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single"]
+  - route_id: einsum_prepared_into_repeat
+    entrypoint: ConcreteEinsumPlan::execute_into
+    dims: {execution_path: concrete-prepared, output: reused, representation: owned, session_boundary: shared-session}
+    cases: ["cpu/small_work:einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single"]
+  - route_id: eager_session_einsum
+    entrypoint: EagerSessionEinsumExt::einsum_subscripts
+    dims: {execution_path: eager, output: allocating, representation: owned, session_boundary: session-per-call (diagnostic), coverage: full}
+    cases: ["cpu/small_work:einsum_f64_eager-no-ad_n4_single"]
+  - route_id: compiled_trace_einsum
+    entrypoint: Runtime::run_prepared
+    dims: {execution_path: compiled-trace, output: allocating, session_boundary: runtime-internal session (diagnostic), coverage: full}
+    cases: ["cpu/small_work:einsum_f64_compiled-repeat_n4_single"]
+  - route_id: per_call_session_entry
+    entrypoint: BackendSessionHost::with_backend_session
+    dims: {execution_path: concrete, session_boundary: session-per-call (diagnostic), coverage: full}
+    cases: ["cpu/small_work:add_f64_concrete-fresh_size4_dependent10"]

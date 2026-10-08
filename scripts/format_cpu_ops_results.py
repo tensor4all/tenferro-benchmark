@@ -59,6 +59,8 @@ PUBLIC_API_MATERIALIZING_SUITES = {
     "cpu/elementwise_reduction",
     "cpu/einsum_concrete",
     "cpu/indexing_layout",
+    "cpu/linalg_batched",
+    "cpu/linalg_batch_families",
     "cpu/linalg_uncovered",
     "cpu/output_reuse",
     "cpu/structural_shape",
@@ -73,10 +75,25 @@ OUTPUT_SHAPE_REQUIRED_BENCHMARKS = {
 
 REDUCTION_BENCHMARKS = {
     "norm_fro",
+    "reduce_max_all",
     "reduce_max_axis0",
+    "reduce_max_axis1",
+    "reduce_min_all",
+    "reduce_min_axis0",
     "reduce_min_axis1",
     "reduce_prod_all",
+    "reduce_prod_axis0",
+    "reduce_prod_axis1",
     "reduce_sum_all",
+    "reduce_sum_axis0",
+    "reduce_sum_axis1",
+}
+
+# Batched solves labeled `BxNxN,rhs=R` write a `BxNxR` output.
+BATCHED_SOLVE_BENCHMARKS = {
+    "batched_lu_solve",
+    "batched_solve",
+    "batched_triangular_solve",
 }
 
 MATRIX_PRODUCT_BENCHMARKS = {
@@ -201,13 +218,24 @@ def estimated_flops(benchmark: str, workload: WorkloadShape) -> int:
         # One scalar multiply-accumulate per inner dimension is a strict lower
         # estimate for real and complex matrix products.
         return batch * rows**3
-    if benchmark == "triangular_solve" and rows == cols and workload.rhs:
+    if benchmark in {"triangular_solve", "batched_triangular_solve"} and rows == cols and workload.rhs:
         return batch * rows * rows * workload.rhs // 2
-    if benchmark in {"eig", "eigvals", "eigvalsh"} and rows == cols:
-        return batch * rows**3
-    if benchmark in {"cholesky", "det", "inv", "lu", "slogdet", "solve"} and rows == cols:
+    if benchmark == "batched_lu_solve" and rows == cols and workload.rhs:
+        # Forward and backward triangular solves with prepared factors.
+        return batch * rows * rows * workload.rhs
+    if benchmark == "batched_lu_factor" and rows == cols:
         return batch * rows**3 // 3
-    if benchmark in {"lstsq", "pinv", "pinv_with_rtol", "qr", "svd", "svd_full"}:
+    if benchmark in {"eig", "eigvals", "eigvalsh", "eigh", "batched_eigh", "batched_eigvalsh"} and rows == cols:
+        return batch * rows**3
+    if benchmark in {
+        "cholesky", "det", "inv", "lu", "slogdet", "solve",
+        "batched_cholesky", "batched_solve",
+    } and rows == cols:
+        return batch * rows**3 // 3
+    if benchmark in {
+        "lstsq", "pinv", "pinv_with_rtol", "qr", "svd", "svd_full",
+        "batched_qr", "batched_svd", "batched_svdvals", "batched_lu",
+    }:
         return batch * rows * cols * min(rows, cols)
     return 0
 
@@ -238,6 +266,8 @@ def estimated_minimum_bytes(
             logical_elements = legacy_output_elements
     elif benchmark in REDUCTION_BENCHMARKS:
         logical_elements = prod(workload.primary)
+    elif benchmark in BATCHED_SOLVE_BENCHMARKS and workload.rhs and len(workload.primary) >= 2:
+        logical_elements = prod(workload.primary[:-1]) * workload.rhs
     else:
         logical_elements = prod(workload.output)
     return logical_elements * dtype_bytes

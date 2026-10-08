@@ -17,10 +17,10 @@ class SmallWorkSuiteTest(unittest.TestCase):
         with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):
             cases, config = suite.selected_cases()
         self.assertGreater(len(cases), 0)
-        self.assertLess(len(cases), 154)
+        self.assertLess(len(cases), 166)
         self.assertFalse(any(c["api_tier"].endswith(("-fresh", "-setup")) for c in cases))
         with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_INCLUDE_SETUP_DIAGNOSTICS": "1"}):
-            self.assertEqual(len(suite.selected_cases()[0]), 154)
+            self.assertEqual(len(suite.selected_cases()[0]), 166)
         self.assertEqual(len({c['id'] for c in cases}), len(cases))
         self.assertEqual(config['runs'], 15)
         with patch.dict(os.environ, {"BENCH_INSTANCE": cases[0]['id']}):
@@ -28,6 +28,64 @@ class SmallWorkSuiteTest(unittest.TestCase):
         with patch.dict(os.environ, {"BENCH_INSTANCE": "misspelled"}):
             with self.assertRaises(ValueError):
                 suite.selected_cases()
+
+    def test_manifest_quick_is_the_previous_default_and_routes_are_labelled(self):
+        # Migration check: quick keeps exactly the old default filter.
+        def old_diagnostic(c):
+            return (c["api_tier"] in {"eager-no-ad", "eager-ad", "compiled-repeat"}
+                    or c["api_tier"].endswith(("-fresh", "-setup"))
+                    or (c["operation"] == "einsum"
+                        and c["api_tier"] in {"concrete-shared", "borrowed-shared"}))
+        with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_INCLUDE_SETUP_DIAGNOSTICS": "1"}):
+            every = suite.selected_cases()[0]
+        with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_COVERAGE": "quick"}):
+            quick = suite.selected_cases()[0]
+        self.assertEqual([c["id"] for c in quick], [c["id"] for c in every if not old_diagnostic(c)])
+        for case in every:
+            route = suite.route_for(case)
+            self.assertIn(route["measurement_scope"], {"steady_state", "session_entry_diagnostic",
+                                                       "preparation_diagnostic"})
+        self.assertEqual({suite.route_for(c)["measurement_scope"] for c in quick}, {"steady_state"})
+        self.assertNotIn("all 166", (Path(suite.ROOT) / "scripts/run_small_work.sh").read_text())
+
+    def test_collect_writes_case_status(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            binary = Path(tmp) / 'ok'
+            binary.write_text('#!/bin/sh\necho \'{"correctness_status":"passed","samples":'
+                              '[{"elapsed_ns":10,"iterations":1}]}\'\n')
+            binary.chmod(0o755)
+            output = Path(tmp) / 'samples_t1.jsonl'
+            with patch.dict(os.environ, {'BENCH_INSTANCE': 'add_f64_concrete_shared',
+                                         'BENCH_COVERAGE': 'quick', 'BENCH_EFFORT': 'scan'}):
+                self.assertFalse(suite.collect(binary, output, 1))
+            status = json.loads((Path(tmp) / 'case_status_t1.json').read_text())
+            self.assertEqual(status['executed'], ['add_f64_concrete_shared@t1'])
+            self.assertEqual(status['selection_filter'], 'add_f64_concrete_shared')
+            self.assertFalse(status['complete'])  # a filtered run never looks complete
+            self.assertEqual(json.loads(output.read_text())['effort'], 'scan')
+
+    def test_generic_einsum_cases_carry_subscripts_and_issue_intent(self):
+        with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_INCLUDE_SETUP_DIAGNOSTICS": "1"}):
+            cases, _ = suite.selected_cases()
+        generic = [c for c in cases if "operand_shapes" in c]
+        self.assertEqual(len(generic), 12)
+        for issue, subscripts in [("#1897", "abcd,dbef->acef"), ("#1899", "ax,asb->xsb"),
+                                  ("#1904", "ij,jk->ik")]:
+            family = [c for c in generic if c["subscripts"] == subscripts]
+            self.assertEqual({c["api_tier"] for c in family},
+                             {"concrete-shared", "prepared-repeat", "prepared-into-repeat",
+                              "dot-general-into-shared"})
+            self.assertTrue(all(issue in c["intent"] for c in family))
+        with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):
+            default_ids = {c["id"] for c in suite.selected_cases()[0]}
+        # Steady-state generic routes are in the default run; ordinary einsum is a diagnostic.
+        self.assertIn("einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single", default_ids)
+        self.assertIn("einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single", default_ids)
+        self.assertIn("einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single", default_ids)
+        self.assertNotIn("einsum_f64_concrete-shared_ax-asb-xsb_d4s2_single", default_ids)
+        row = dict(generic[1], samples=[])
+        self.assertEqual(suite.shape_label(row), "`abcd,dbef->acef` 4×4×4×4, 4×4×4×4 → 4×4×4×4")
+        self.assertEqual(suite.shape_label({"shape": [2, 2]}), "2×2")
 
     def test_noisy_chain_and_failure_are_retained(self):
         with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):

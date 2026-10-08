@@ -12,8 +12,11 @@ use std::time::{Duration, Instant};
 
 use tenferro_ad::{AdContext, EagerRuntime, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
-use tenferro_einsum::{EagerEinsumExt, TraceContextEinsumExt};
-use tenferro_linalg::{EagerTensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
+use tenferro_einsum_benchmark::thread_enforcement::{
+    enforce_thread_request, verify_backend_threads,
+};
+use tenferro_linalg::{EagerSessionLinalgExt, EagerTensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
     DotGeneralConfig, Error, ErrorPhase, GraphCompiler, Runtime, Tensor, TraceContext, TracedTensor,
@@ -66,6 +69,26 @@ fn large_linalg_jvp_vjp_sizes(profile: Profile) -> &'static [usize] {
     }
 }
 
+/// Extra matmul-only sizes guarding the single small-matmul thread contract
+/// (tenferro-rs #1898 follow-up: a 4-thread run must not be slower than 1T).
+/// The full profile already covers 32 through the ordinary small sizes.
+fn small_matmul_thread_contract_sizes(profile: Profile) -> &'static [usize] {
+    match profile {
+        Profile::Quick => &[32, 64],
+        Profile::Full => &[64],
+    }
+}
+
+/// Extra `(n, batch)` batched-matmul shapes guarding tenferro-rs #1898
+/// (batched small GEMM thread scaling). The full profile already covers
+/// n=4, batch=1024 through the ordinary batched grid.
+fn batched_matmul_thread_contract_shapes(profile: Profile) -> &'static [(usize, usize)] {
+    match profile {
+        Profile::Quick => &[(4, 1024)],
+        Profile::Full => &[],
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum SuiteFilter {
     All,
@@ -92,9 +115,17 @@ mod eager_einsum_tensor {
             std::sync::OnceLock::new();
         let subs = SUBS
             .get_or_init(|| tenferro_einsum::EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2]));
-        inputs
-            .einsum_subscripts(subs)
-            .map_err(|e| runtime_einsum_error(e, ErrorPhase::Execution))
+        // One borrowed eager session per public einsum call.
+        let runtime = inputs
+            .first()
+            .expect("einsum has operands")
+            .runtime()
+            .clone();
+        runtime.with_eager_session(|session| {
+            session
+                .einsum_subscripts(inputs, subs)
+                .map_err(|e| runtime_einsum_error(e, ErrorPhase::Execution))
+        })
     }
 }
 
@@ -112,22 +143,56 @@ fn runtime_einsum_error(error: tenferro_einsum::Error, phase: ErrorPhase) -> Err
 mod eager_linalg_tensor {
     use super::*;
 
+    // Each call enters one eager session, as the pre-#1938 tensor-owned
+    // decompositions did.
     pub fn svd(
         a: &EagerTensor,
     ) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor, EagerTensor)> {
-        a.svd()
+        a.runtime().with_eager_session(|session| session.svd(a))
     }
 
     pub fn qr(a: &EagerTensor) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
-        a.qr()
+        a.runtime().with_eager_session(|session| session.qr(a))
     }
 
     pub fn eigh(a: &EagerTensor) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
-        a.eigh()
+        a.runtime().with_eager_session(|session| session.eigh(a))
     }
 
     pub fn solve(a: &EagerTensor, b: &EagerTensor) -> tenferro_ad::error::Result<EagerTensor> {
         a.solve(b)
+    }
+}
+
+/// Eager primal operations, one borrowed eager session per call.
+///
+/// tenferro-rs #1938 moved these off `EagerTensor` onto `EagerSession`. Before
+/// it, each tensor-owned call entered the eager backend once; entering one
+/// session per call keeps that entry inside the timed region.
+mod eager_session_ops {
+    use super::*;
+
+    pub fn matmul(lhs: &EagerTensor, rhs: &EagerTensor) -> tenferro_ad::error::Result<EagerTensor> {
+        lhs.runtime()
+            .with_eager_session(|session| session.matmul(lhs, rhs))
+    }
+
+    pub fn dot_general(
+        lhs: &EagerTensor,
+        rhs: &EagerTensor,
+        config: DotGeneralConfig,
+    ) -> tenferro_ad::error::Result<EagerTensor> {
+        lhs.runtime()
+            .with_eager_session(|session| session.dot_general(lhs, rhs, config))
+    }
+
+    pub fn reduce_sum(
+        input: &EagerTensor,
+        axes: &[usize],
+    ) -> tenferro_ad::error::Result<EagerTensor> {
+        input
+            .runtime()
+            .with_eager_session(|session| session.reduce_sum(input, Some(axes)))
     }
 }
 
@@ -270,8 +335,47 @@ fn tenferro_mode_includes(mode: &str) -> bool {
     }
 }
 
+fn requested_threads() -> usize {
+    static REQUESTED: OnceLock<usize> = OnceLock::new();
+    *REQUESTED.get_or_init(|| {
+        env::var("RAYON_NUM_THREADS")
+            .unwrap_or_else(|_| "1".into())
+            .trim()
+            .parse()
+            .expect("RAYON_NUM_THREADS must be a positive integer")
+    })
+}
+
+/// Fail before any timing when the thread environment disagrees with the
+/// requested count or when the shared backend or its scope runs a different
+/// number of Rayon workers.
+fn enforce_threads_or_exit() {
+    let requested = requested_threads();
+    let check = enforce_thread_request(requested)
+        .and_then(|()| {
+            verify_backend_threads("CpuBackend", cpu_backend().num_threads(), requested)
+        })
+        .and_then(|()| {
+            let scope_threads = cpu_backend()
+                .with_execution_scope(rayon::current_num_threads)
+                .map_err(|error| format!("enter CpuBackend execution scope: {error}"))?;
+            verify_backend_threads("CpuBackend execution scope", scope_threads, requested)?;
+            eprintln!(
+                "publication_gate: requested_threads={requested} backend_threads={} scope_rayon_threads={scope_threads} global_rayon_threads={}",
+                cpu_backend().num_threads(),
+                rayon::current_num_threads(),
+            );
+            Ok(())
+        });
+    if let Err(error) = check {
+        eprintln!("publication_gate: thread enforcement failed: {error}");
+        std::process::exit(2);
+    }
+}
+
 fn main() {
     let config = BenchConfig::from_env();
+    enforce_threads_or_exit();
     println!("suite,op,phase,dtype,backend,profile,shape,warmups,runs,median_ms,iqr_ms,status");
 
     let rows = cpu_backend()
@@ -335,6 +439,28 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
         Profile::Full => &[2, 4, 8, 16, 32],
     };
 
+    for &n in small_matmul_thread_contract_sizes(config.profile) {
+        rows.push(bench_row(
+            config,
+            "small",
+            "matmul",
+            "primal",
+            "f64",
+            &format!("{n}x{n}"),
+            || {
+                let ctx = cpu_ctx();
+                let a =
+                    eager_from_tensor_in(tensor(&[n, n], data_for_shape(&[n, n], 1)), ctx.clone());
+                let b = eager_from_tensor_in(tensor(&[n, n], data_for_shape(&[n, n], 2)), ctx);
+                Ok((a, b))
+            },
+            |(a, b)| {
+                let out = eager_session_ops::matmul(&a, &b)?;
+                Ok(out)
+            },
+        ));
+    }
+
     for &n in sizes {
         rows.push(bench_row(
             config,
@@ -352,7 +478,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a, b))
             },
             |(a, b)| {
-                let out = a.matmul(&b)?;
+                let out = eager_session_ops::matmul(&a, &b)?;
                 Ok(out)
             },
         ));
@@ -471,8 +597,8 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a, b))
             },
             |(a, b)| {
-                let y = a.matmul(&b)?;
-                let loss = y.reduce_sum(Some(&[0, 1]))?;
+                let y = eager_session_ops::matmul(&a, &b)?;
+                let loss = eager_session_ops::reduce_sum(&y, &[0, 1])?;
                 let gradients = loss.backward()?;
                 Ok((loss, y, gradients))
             },
@@ -494,7 +620,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             },
             |(a,)| {
                 let (u, s, vt) = eager_linalg_tensor::svd(&a)?;
-                let loss = s.reduce_sum(Some(&[0]))?;
+                let loss = eager_session_ops::reduce_sum(&s, &[0])?;
                 let gradients = loss.backward()?;
                 Ok((loss, u, s, vt, gradients))
             },
@@ -515,7 +641,7 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             },
             |(a, b)| {
                 let x = eager_linalg_tensor::solve(&a, &b)?;
-                let loss = x.reduce_sum(Some(&[0, 1]))?;
+                let loss = eager_session_ops::reduce_sum(&x, &[0, 1])?;
                 let gradients = loss.backward()?;
                 Ok((loss, x, gradients))
             },
@@ -544,7 +670,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a, b))
             },
             |(a, b)| {
-                let out = a.matmul(&b)?;
+                let out = eager_session_ops::matmul(&a, &b)?;
                 Ok(out)
             },
         ));
@@ -569,7 +695,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a, b))
             },
             |(a, b)| {
-                let out = a.matmul(&b)?;
+                let out = eager_session_ops::matmul(&a, &b)?;
                 Ok(out)
             },
         ));
@@ -680,8 +806,8 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a, b))
             },
             |(a, b)| {
-                let y = a.matmul(&b)?;
-                let loss = y.reduce_sum(Some(&[0, 1]))?;
+                let y = eager_session_ops::matmul(&a, &b)?;
+                let loss = eager_session_ops::reduce_sum(&y, &[0, 1])?;
                 Ok(loss)
             },
         ));
@@ -702,8 +828,8 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((a, b))
             },
             |(a, b)| {
-                let y = a.matmul(&b)?;
-                let loss = y.reduce_sum(Some(&[0, 1]))?;
+                let y = eager_session_ops::matmul(&a, &b)?;
+                let loss = eager_session_ops::reduce_sum(&y, &[0, 1])?;
                 let gradients = loss.backward()?;
                 Ok((loss, y, gradients))
             },
@@ -724,7 +850,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             },
             |(a,)| {
                 let (u, s, vt) = eager_linalg_tensor::svd(&a)?;
-                let loss = s.reduce_sum(Some(&[0]))?;
+                let loss = eager_session_ops::reduce_sum(&s, &[0])?;
                 let gradients = loss.backward()?;
                 Ok((loss, u, s, vt, gradients))
             },
@@ -744,7 +870,7 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             },
             |(a, b)| {
                 let x = eager_linalg_tensor::solve(&a, &b)?;
-                let loss = x.reduce_sum(Some(&[0, 1]))?;
+                let loss = eager_session_ops::reduce_sum(&x, &[0, 1])?;
                 let gradients = loss.backward()?;
                 Ok((loss, x, gradients))
             },
@@ -761,6 +887,35 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
         Profile::Quick => &[2, 4],
         Profile::Full => &[2, 4, 8, 16],
     };
+
+    for &(n, b) in batched_matmul_thread_contract_shapes(config.profile) {
+        rows.push(bench_row(
+            config,
+            "batched",
+            "batched_matmul_ikb_kjb_ijb",
+            "primal",
+            "f64",
+            &format!("{n}x{n}xbatch{b} (native batch layout)"),
+            || {
+                let ctx = cpu_ctx();
+                let a = eager_from_tensor_in(
+                    tensor(&[n, n, b], data_for_shape(&[n, n, b], 41)),
+                    ctx.clone(),
+                );
+                let rhs =
+                    eager_from_tensor_in(tensor(&[n, n, b], data_for_shape(&[n, n, b], 42)), ctx);
+                Ok((a, rhs, Some(batched_matmul_config())))
+            },
+            |(a, rhs, config)| {
+                let out = eager_session_ops::dot_general(
+                    &a,
+                    &rhs,
+                    config.take().expect("prepared config"),
+                )?;
+                Ok(out)
+            },
+        ));
+    }
 
     for &b in batches {
         for &n in sizes {
@@ -786,7 +941,11 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     Ok((a, rhs, Some(config)))
                 },
                 |(a, rhs, config)| {
-                    let out = a.dot_general(&rhs, config.take().expect("prepared config"))?;
+                    let out = eager_session_ops::dot_general(
+                        &a,
+                        &rhs,
+                        config.take().expect("prepared config"),
+                    )?;
                     Ok(out)
                 },
             ));
@@ -890,8 +1049,12 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     Ok((a, rhs, Some(config)))
                 },
                 |(a, rhs, config)| {
-                    let out = a.dot_general(&rhs, config.take().expect("prepared config"))?;
-                    let loss = out.reduce_sum(Some(&[0, 1, 2]))?;
+                    let out = eager_session_ops::dot_general(
+                        &a,
+                        &rhs,
+                        config.take().expect("prepared config"),
+                    )?;
+                    let loss = eager_session_ops::reduce_sum(&out, &[0, 1, 2])?;
                     let gradients = loss.backward()?;
                     Ok((loss, out, gradients))
                 },
@@ -917,7 +1080,7 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                 },
                 |(a, rhs)| {
                     let x = eager_linalg_tensor::solve(&a, &rhs)?;
-                    let loss = x.reduce_sum(Some(&[0, 1, 2]))?;
+                    let loss = eager_session_ops::reduce_sum(&x, &[0, 1, 2])?;
                     let gradients = loss.backward()?;
                     Ok((loss, x, gradients))
                 },
@@ -931,6 +1094,22 @@ fn run_small_latency_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
         Profile::Quick => &[2, 4, 8],
         Profile::Full => &[2, 4, 8, 16, 32],
     };
+
+    for &n in small_matmul_thread_contract_sizes(config.profile) {
+        rows.push(bench_trace_row(
+            config,
+            "small",
+            "matmul",
+            "primal",
+            "f64",
+            &format!("{n}x{n}"),
+            || {
+                let a = traced_tensor(&[n, n], data_for_shape(&[n, n], 1));
+                let b = traced_tensor(&[n, n], data_for_shape(&[n, n], 2));
+                Ok(vec![traced_tensor::matmul(&a, &b)])
+            },
+        ));
+    }
 
     for &n in sizes {
         rows.push(bench_trace_row(
@@ -1320,6 +1499,22 @@ fn run_batched_small_trace(config: &BenchConfig, rows: &mut Vec<Row>) {
         Profile::Full => &[2, 4, 8, 16],
     };
 
+    for &(n, b) in batched_matmul_thread_contract_shapes(config.profile) {
+        rows.push(bench_trace_row(
+            config,
+            "batched",
+            "batched_matmul_ikb_kjb_ijb",
+            "primal",
+            "f64",
+            &format!("{n}x{n}xbatch{b} (native batch layout)"),
+            || {
+                let a = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 41));
+                let rhs = traced_tensor(&[n, n, b], data_for_shape(&[n, n, b], 42));
+                Ok(vec![a.dot_general(&rhs, batched_matmul_config())?])
+            },
+        ));
+    }
+
     for &b in batches {
         for &n in sizes {
             let shape = format!("{n}x{n}xbatch{b} (native batch layout)");
@@ -1536,11 +1731,11 @@ fn summarize_measurement(
 fn cpu_backend() -> &'static CpuBackend {
     static BACKEND: OnceLock<CpuBackend> = OnceLock::new();
     BACKEND.get_or_init(|| {
-        let threads = env::var("RAYON_NUM_THREADS")
-            .unwrap_or_else(|_| "1".into())
-            .parse()
-            .expect("RAYON_NUM_THREADS must be a positive integer");
-        CpuBackend::with_threads(threads).expect("configure explicit CPU thread count")
+        tenferro_einsum_benchmark::cpu_provider::configure(
+            CpuBackend::with_threads(requested_threads())
+                .expect("configure explicit CPU thread count"),
+        )
+        .expect("install the configured CPU provider")
     })
 }
 
@@ -2038,10 +2233,10 @@ fn batched_spd(n: usize, batch: usize, seed: u64) -> Vec<f64> {
 
 fn batched_matmul_config() -> DotGeneralConfig {
     DotGeneralConfig {
-        lhs_contracting_dims: vec![1],
-        rhs_contracting_dims: vec![0],
-        lhs_batch_dims: vec![2],
-        rhs_batch_dims: vec![2],
+        lhs_contracting_dims: vec![1].into(),
+        rhs_contracting_dims: vec![0].into(),
+        lhs_batch_dims: vec![2].into(),
+        rhs_batch_dims: vec![2].into(),
     }
 }
 
@@ -2122,13 +2317,17 @@ mod timing_tests {
                     };
                     let x = eager_requires_grad_in(tensor(&shape, a.clone()), ctx.clone());
                     let y = eager_requires_grad_in(tensor(&shape, b.clone()), ctx.clone());
-                    let output = x.dot_general(&y, batched_matmul_config()).unwrap();
+                    let output =
+                        eager_session_ops::dot_general(&x, &y, batched_matmul_config()).unwrap();
                     assert_eq!(output.shape(), shape);
                     check(
                         output.to_tensor().unwrap().as_slice::<f64>().unwrap(),
                         &expected,
                     );
-                    output.reduce_sum(None).unwrap().backward().unwrap();
+                    ctx.with_eager_session(|session| session.reduce_sum(&output, None))
+                        .unwrap()
+                        .backward()
+                        .unwrap();
                     check(x.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &da);
                     check(y.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &db);
 

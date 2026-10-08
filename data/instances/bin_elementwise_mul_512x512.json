@@ -1,0 +1,51 @@
+{
+  "name": "bin_elementwise_mul_512x512",
+  "format_string": "ij,ij->ij",
+  "shapes": [
+    [
+      512,
+      512
+    ],
+    [
+      512,
+      512
+    ]
+  ],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 18.0,
+      "log10_flops": 5.4185
+    },
+    "opt_flops": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 18.0,
+      "log10_flops": 5.4185
+    }
+  },
+  "format_string_colmajor": "ji,ji->ji",
+  "shapes_colmajor": [
+    [
+      512,
+      512
+    ],
+    [
+      512,
+      512
+    ]
+  ],
+  "format_string_rowmajor": "ij,ij->ij",
+  "intent": "tenferro-rs #1898: pure Hadamard ab,ab->ab einsum at 512x512. Every index is a batch index, so a dot_general lowering degenerates into one 1x1x1 GEMM per element unless it routes to an elementwise multiply; compare 1T and 4T."
+}

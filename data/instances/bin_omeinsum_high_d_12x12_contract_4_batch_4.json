@@ -1,0 +1,91 @@
+{
+  "name": "bin_omeinsum_high_d_12x12_contract_4_batch_4",
+  "format_string": "abcdefghmnop,efghijklmnop->abcdijklmnop",
+  "shapes": [
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ]
+  ],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 12.0,
+      "log10_flops": 5.1175
+    },
+    "opt_flops": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 12.0,
+      "log10_flops": 5.1175
+    }
+  },
+  "format_string_colmajor": "ponmhgfedcba,ponmlkjihgfe->ponmlkjidcba",
+  "shapes_colmajor": [
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ]
+  ],
+  "format_string_rowmajor": "abcdefghmnop,efghijklmnop->abcdijklmnop",
+  "intent": "tenferro-rs #1865: omeinsum-rs binary scenario high_d_12x12_contract_4_batch_4 (rank 12 x rank 12, 4 contracted and 4 batch modes, every extent 2), originally f32; this suite is f64. Small, batched, materialization-heavy contraction; PyTorch is the reference."
+}

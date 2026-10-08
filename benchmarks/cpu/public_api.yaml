@@ -24,4 +24,6 @@ problems:
     - output_reuse_public_api
     - concrete_einsum_public_api
     - linalg_uncovered_public_api
+    - linalg_batched_public_api
+    - linalg_batch_families_public_api
     - complex_public_api

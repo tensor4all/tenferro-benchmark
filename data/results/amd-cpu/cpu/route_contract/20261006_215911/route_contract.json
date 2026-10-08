@@ -1,0 +1,1910 @@
+{
+  "contract": "allocating and _into twins honor the same batch policy",
+  "verdicts": [
+    {
+      "pair": "bdot_c64_b1024_m4n4k4_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_c64_b1024_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_c64_b1024_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_c64_b1024_m4n4k4_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_c64_b1024_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_c64_b1024_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_c64_b1024_m4n4k4_strided_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_c64_b1024_m4n4k4_strided_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_c64_b1024_m4n4k4_strided_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_c64_b1024_m4n4k4_strided_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_c64_b1024_m4n4k4_strided_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_c64_b1024_m4n4k4_strided_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_canonical_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_canonical_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_canonical_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_canonical_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_canonical_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_canonical_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_backend-outer-min-items-4096",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 4096, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 4096, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_backend-outer-min-items-4096",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 4096, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 4096, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_forced-outer-parallel",
+      "threads": 1,
+      "verdict": "UNSUPPORTED",
+      "reason": "both routes unsupported: dot_general: unsupported operation: batch strategy OuterParallel is not available: the selected CPU domain has one thread, so there are no outer lanes; use CpuBatchStrategy::Auto or another strategy",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-outer-parallel",
+        "status": "unsupported",
+        "provider_calls": 0,
+        "uninitialized_calls": 0,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [],
+        "batch_total": 0,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: OuterParallel, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": "dot_general: unsupported operation: batch strategy OuterParallel is not available: the selected CPU domain has one thread, so there are no outer lanes; use CpuBatchStrategy::Auto or another strategy"
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_forced-outer-parallel",
+        "status": "unsupported",
+        "provider_calls": 0,
+        "uninitialized_calls": 0,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [],
+        "batch_total": 0,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: OuterParallel, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": "dot_general: unsupported operation: batch strategy OuterParallel is not available: the selected CPU domain has one thread, so there are no outer lanes; use CpuBatchStrategy::Auto or another strategy"
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_forced-outer-parallel",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-outer-parallel",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: OuterParallel, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_forced-outer-parallel",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: OuterParallel, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_forced-provider-items",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-provider-items",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: ProviderItems, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_forced-provider-items",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: ProviderItems, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_forced-provider-items",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-provider-items",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: ProviderItems, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_forced-provider-items",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: ProviderItems, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_forced-sequential",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-sequential",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Sequential, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_forced-sequential",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Sequential, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_forced-sequential",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-sequential",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Sequential, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_forced-sequential",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Sequential, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_forced-whole-batch-vendor",
+      "threads": 1,
+      "verdict": "UNSUPPORTED",
+      "reason": "both routes unsupported: dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavailable",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-whole-batch-vendor",
+        "status": "unsupported",
+        "provider_calls": 0,
+        "uninitialized_calls": 0,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [],
+        "batch_total": 0,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: WholeBatchVendor, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": "dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavailable"
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_forced-whole-batch-vendor",
+        "status": "unsupported",
+        "provider_calls": 0,
+        "uninitialized_calls": 0,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [],
+        "batch_total": 0,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: WholeBatchVendor, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": "dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavailable"
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_forced-whole-batch-vendor",
+      "threads": 4,
+      "verdict": "UNSUPPORTED",
+      "reason": "both routes unsupported: dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavailable",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-whole-batch-vendor",
+        "status": "unsupported",
+        "provider_calls": 0,
+        "uninitialized_calls": 0,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [],
+        "batch_total": 0,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: WholeBatchVendor, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": "dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavailable"
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_forced-whole-batch-vendor",
+        "status": "unsupported",
+        "provider_calls": 0,
+        "uninitialized_calls": 0,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [],
+        "batch_total": 0,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: WholeBatchVendor, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": "dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavailable"
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_scoped-outer-min-items-4096",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "scoped:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 4096, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "scoped:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 4096, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_direct_scoped-outer-min-items-4096",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "scoped:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 4096, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "scoped:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 4096, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_strided_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_strided_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_strided_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b1024_m4n4k4_strided_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b1024_m4n4k4_strided_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b1024_m4n4k4_strided_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b16_m64n64k64_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b16_m64n64k64_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          16
+        ],
+        "batch_total": 16,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b16_m64n64k64_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          16
+        ],
+        "batch_total": 16,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b16_m64n64k64_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b16_m64n64k64_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          4,
+          4,
+          4,
+          4
+        ],
+        "batch_total": 16,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b16_m64n64k64_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          4,
+          4,
+          4,
+          4
+        ],
+        "batch_total": 16,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b256_m4n4k4_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b256_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          256
+        ],
+        "batch_total": 256,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b256_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          256
+        ],
+        "batch_total": 256,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b256_m4n4k4_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b256_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          256
+        ],
+        "batch_total": 256,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b256_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          256
+        ],
+        "batch_total": 256,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b320_m4n4k4_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b320_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          320
+        ],
+        "batch_total": 320,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b320_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          320
+        ],
+        "batch_total": 320,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b320_m4n4k4_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b320_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 2,
+        "uninitialized_calls": 2,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 2,
+        "batch_sizes": [
+          160,
+          160
+        ],
+        "batch_total": 320,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b320_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 2,
+        "uninitialized_calls": 0,
+        "initialized_calls": 2,
+        "lane_used": true,
+        "lane_calls": 2,
+        "batch_sizes": [
+          160,
+          160
+        ],
+        "batch_total": 320,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b4096_m4n4k4_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b4096_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          4096
+        ],
+        "batch_total": 4096,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b4096_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          4096
+        ],
+        "batch_total": 4096,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b4096_m4n4k4_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b4096_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          1024,
+          1024,
+          1024,
+          1024
+        ],
+        "batch_total": 4096,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b4096_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          1024,
+          1024,
+          1024,
+          1024
+        ],
+        "batch_total": 4096,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m16n16k16_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m16n16k16_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m16n16k16_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m16n16k16_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m16n16k16_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 2,
+        "uninitialized_calls": 2,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 2,
+        "batch_sizes": [
+          32,
+          32
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m16n16k16_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 2,
+        "uninitialized_calls": 0,
+        "initialized_calls": 2,
+        "lane_used": true,
+        "lane_calls": 2,
+        "batch_sizes": [
+          32,
+          32
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m32n32k32_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m32n32k32_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m32n32k32_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m32n32k32_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m32n32k32_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m32n32k32_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m4n4k4_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m4n4k4_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m4n4k4_direct_backend-lane-min-work-0",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 0 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_into_backend-lane-min-work-0",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 0 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m4n4k4_direct_backend-lane-min-work-0",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 0 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_into_backend-lane-min-work-0",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 0 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m4n4k4_direct_scoped-lane-min-work-0",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_alloc_scoped-lane-min-work-0",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "scoped:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 0 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "scoped:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 0 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m4n4k4_direct_scoped-lane-min-work-0",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_alloc_scoped-lane-min-work-0",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "batch_total": 64,
+        "effective_policy": "scoped:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 0 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "batch_total": 64,
+        "effective_policy": "scoped:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 0 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m64n1k64_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m64n1k64_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m64n1k64_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m64n1k64_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m64n1k64_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 2,
+        "uninitialized_calls": 2,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 2,
+        "batch_sizes": [
+          32,
+          32
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m64n1k64_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 2,
+        "uninitialized_calls": 0,
+        "initialized_calls": 2,
+        "lane_used": true,
+        "lane_calls": 2,
+        "batch_sizes": [
+          32,
+          32
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m8n8k8_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m8n8k8_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m8n8k8_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "bdot_f64_b64_m8n8k8_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "bdot_f64_b64_m8n8k8_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "bdot_f64_b64_m8n8k8_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          64
+        ],
+        "batch_total": 64,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "beinsum_f64_b1024_m4n4k4_direct_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "beinsum_f64_b1024_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "beinsum_f64_b1024_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "beinsum_f64_b1024_m4n4k4_direct_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "beinsum_f64_b1024_m4n4k4_direct_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "beinsum_f64_b1024_m4n4k4_direct_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    },
+    {
+      "pair": "beinsum_f64_b1024_m4n4k4_strided_auto",
+      "threads": 1,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "beinsum_f64_b1024_m4n4k4_strided_alloc_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 1,
+        "initialized_calls": 0,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      },
+      "into": {
+        "case_id": "beinsum_f64_b1024_m4n4k4_strided_into_auto",
+        "status": "observed",
+        "provider_calls": 1,
+        "uninitialized_calls": 0,
+        "initialized_calls": 1,
+        "lane_used": false,
+        "lane_calls": 0,
+        "batch_sizes": [
+          1024
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 1,
+        "reason": null
+      }
+    },
+    {
+      "pair": "beinsum_f64_b1024_m4n4k4_strided_auto",
+      "threads": 4,
+      "verdict": "PASS",
+      "reason": "same lane decision; batches covered exactly once",
+      "allocating": {
+        "case_id": "beinsum_f64_b1024_m4n4k4_strided_alloc_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 4,
+        "initialized_calls": 0,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      },
+      "into": {
+        "case_id": "beinsum_f64_b1024_m4n4k4_strided_into_auto",
+        "status": "observed",
+        "provider_calls": 4,
+        "uninitialized_calls": 0,
+        "initialized_calls": 4,
+        "lane_used": true,
+        "lane_calls": 4,
+        "batch_sizes": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "batch_total": 1024,
+        "effective_policy": "backend:CpuBatchPolicy { strategy: Auto, thresholds: CpuBatchThresholds { vendor_batch_max_item_dim: 16, outer_min_items: 2, outer_min_items_per_lane: 1, lane_item_overhead_ns: 50, lane_muladds_per_ns: 16, lane_min_work_ns: 8000 } }",
+        "worker_count": 4,
+        "reason": null
+      }
+    }
+  ],
+  "counts": {
+    "PASS": 45,
+    "FAIL": 0,
+    "INCOMPLETE": 0,
+    "UNSUPPORTED": 3,
+    "NOT_OBSERVABLE": 0
+  },
+  "lowering_divergences": [],
+  "status": "PASS"
+}

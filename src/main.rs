@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend, CpuBackendKind};
-use tenferro_einsum::{ContractionTree, EagerEinsumExt, EinsumSubscripts, Subscripts};
+use tenferro_einsum::{ContractionTree, EagerSessionEinsumExt, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
 use tenferro_runtime::{Runtime, Tensor};
 use tenferro_tensor::TypedTensor;
@@ -149,9 +149,13 @@ fn cpu_backend_from_env() -> Result<CpuBackend, String> {
         .to_ascii_lowercase()
         .as_str()
     {
-        "default" | "" => Ok(CpuBackend::new()),
-        "blas" => CpuBackend::with_kind(CpuBackendKind::Blas).map_err(|e| e.to_string()),
-        "faer" => CpuBackend::with_kind(CpuBackendKind::Faer).map_err(|e| e.to_string()),
+        "default" | "" => tenferro_einsum_benchmark::cpu_provider::configure(CpuBackend::new()),
+        "blas" => CpuBackend::with_kind(CpuBackendKind::Blas)
+            .map_err(|e| e.to_string())
+            .and_then(tenferro_einsum_benchmark::cpu_provider::configure),
+        "faer" => CpuBackend::with_kind(CpuBackendKind::Faer)
+            .map_err(|e| e.to_string())
+            .and_then(tenferro_einsum_benchmark::cpu_provider::configure),
         other => Err(format!(
             "unknown TENFERRO_CPU_BACKEND_KIND={other:?}; use default, blas, or faer"
         )),
@@ -653,7 +657,16 @@ fn contract_once_eager(
 
         let started = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            input_refs.as_slice().einsum_subscripts(binary_subscripts)
+            // One borrowed eager session per binary contraction.
+            input_refs[0]
+                .runtime()
+                .clone()
+                .with_eager_session(|session| {
+                    session
+                        .einsum_subscripts(&input_refs, binary_subscripts)
+                        .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
+                })
+                .map_err(|e| e.to_string())
         }));
         let result = unwrap_eval_result(result, "panic during eager execution")?;
         if let Some(profile) = profile.as_deref_mut() {
@@ -896,6 +909,10 @@ fn main() {
     );
     println!("Backend: {backend_name}");
     println!("TENFERRO_CPU_BACKEND_KIND={cpu_backend_kind}");
+    println!(
+        "TENFERRO_CPU_PROVIDER={}",
+        tenferro_einsum_benchmark::cpu_provider::describe()
+    );
     println!("TENFERRO_OPT_DOT_DECOMPOSER={dot_decomposer}");
     println!("RAYON_NUM_THREADS={rayon_threads}, OMP_NUM_THREADS={omp_threads}");
     println!(

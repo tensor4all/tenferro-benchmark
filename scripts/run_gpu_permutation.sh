@@ -137,7 +137,7 @@ RUST_MIN_STACK="$RUST_MIN_STACK" \
 LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
 GPU_BENCH_DEVICE="$DEVICE_ORDINAL" \
 BENCH_OUTPUT="$RUST_JSONL" \
-    "$PROJECT_DIR/target/release/benchmark_gpu_permutation"
+    "${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_permutation"
 
 INPUTS=("$RUST_JSONL")
 

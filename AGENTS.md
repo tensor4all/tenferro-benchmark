@@ -76,6 +76,17 @@ When creating a PR that includes benchmark results, add a PR comment listing
 the exact commands used to collect those measurements, including relevant
 environment-variable assignments and thread counts.
 
+## Performance Issues Become Suite Cases
+
+Performance issues of tenferro-rs get their workload added as suite cases,
+with the issue number noted next to the case, when the issue is opened (not
+at fix time). A performance-fix PR reports numbers from those cases. Add the
+cases with their reference arm(s) to `scripts/generate_perf_issue_cases.py`
+(`cpu/perf_issues`, `gpu/perf_issues`), or record the issue number on the
+existing case that already covers the workload. Build the cases only from
+public tenferro-rs APIs. This is the whole requirement: no automated audit,
+registry, lint, scheduled run or mandatory baseline campaign.
+
 ## Target Profiles
 
 Use target profiles to keep latest reports for multiple hardware classes:
@@ -97,6 +108,7 @@ Expected latest report paths:
 - `result/amd-cpu/cpu/cpu_ops.md`
 - `result/amd-cpu/cpu/linalg_jvp_vjp.md`
 - `result/amd-cpu/cpu/permutation.md`
+- `result/amd-cpu/cpu/perf_issues.md`
 - `result/linux-cpu/cpu/linalg_jvp_jvp.md`
 - `result/nvidia-gpu/gpu/dense.md`
 - `result/nvidia-gpu/gpu/einsum.md`
@@ -105,6 +117,7 @@ Expected latest report paths:
 - `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`
 - `result/nvidia-gpu/gpu/linalg_ad_latency.md`
 - `result/nvidia-gpu/gpu/permutation.md`
+- `result/nvidia-gpu/gpu/perf_issues.md`
 
 Raw runs are written under:
 
@@ -130,6 +143,12 @@ provider. For fair CPU comparisons, run tenferro-rs with `system-mkl` inside the
 devcontainer rather than the default `system-openblas` path. Record the detected
 PyTorch provider in `run.yaml` using `torch.__config__.show()` and linked
 library inspection.
+
+tprims provider comparisons (`--features tprims`, tenferro-rs #1953) compare a
+default build with a `--features tprims` build of the same commits and pin to
+idle cores of one L3 domain as described in
+[docs/tprims-provider.md](docs/tprims-provider.md); they are an exception to
+the devcontainer suites' no-pinning convention and say so in the result.
 
 ## macOS CPU Workflow
 
@@ -456,6 +475,27 @@ bash tests/test_setup_extern_tenferro_checkout.sh
 cmake -S cpp -B build/cpp-plan-test
 cmake --build build/cpp-plan-test --target einsum_plan_test
 ctest --test-dir build/cpp-plan-test --output-on-failure
+```
+
+## Route coverage and regression detection
+
+See `docs/regression-detection.md`. Keep coverage (`BENCH_COVERAGE=quick|full`,
+versioned manifests under `benchmarks/cpu/manifests/`) separate from effort
+(`BENCH_EFFORT=scan|standard|confirm|aa`). A scan only flags suspects; a
+performance claim needs a paired, balanced, A/A-characterized confirmation run
+with a declared `benchmarks/cpu/confirmation.yaml` (never fill its thresholds
+from candidate data). Route-contract diagnostics (`scripts/run_route_diagnostic.sh`)
+are counter runs, never timing. Unsupported, failed, missing and unselected
+cases never count as covered. Regenerate `cpu/session_matrix` cases with
+`scripts/generate_session_matrix_cases.py` and bump its manifest version when
+cases change. Checks:
+
+```bash
+uv run python -m unittest tests/test_session_matrix_suite.py tests/test_route_contract.py \
+  tests/test_route_coverage.py tests/test_regression_detector.py tests/test_small_work_suite.py
+uv run python scripts/route_coverage.py entrypoints
+bash tests/test_paired_timing_guard.sh
+cargo test --bin cpu_route_diagnostic --bin benchmark_cpu_session
 ```
 
 ## Short-operation sampling

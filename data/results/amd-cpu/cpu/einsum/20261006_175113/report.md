@@ -1,0 +1,151 @@
+# Einsum Benchmark Results
+
+- Suite: `cpu/einsum`
+- Target profile: `amd-cpu`
+- Suite file: `benchmarks/cpu/einsum.yaml`
+- Run metadata: `data/results/amd-cpu/cpu/einsum/20261006_175113/run.yaml`
+- Timestamp: `20261006_175113`
+
+Latest run: `./scripts/run_all.sh 4`.
+
+This file is generated from one suite run under `data/results/amd-cpu/cpu/einsum/20261006_175113`.
+
+- tenferro-rs commit: `5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102`
+
+## CPU Information
+
+- Model: `AMD EPYC 7713P 64-Core Processor`
+- Vendor: `AuthenticAMD`
+- Logical CPUs: `64`
+- Sockets: `1`
+- Cores per socket: `64`
+- Threads per core: `1`
+- NUMA nodes: `1`
+- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
+
+## Thread Environment
+
+- OMP_NUM_THREADS: `4`
+- OMP_THREAD_LIMIT: `4`
+- OMP_DYNAMIC: `FALSE`
+- RAYON_NUM_THREADS: `4`
+- OPENBLAS_NUM_THREADS: `4`
+- GOTO_NUM_THREADS: `4`
+- MKL_NUM_THREADS: `4`
+- VECLIB_MAXIMUM_THREADS: `4`
+- VECLIB_NUM_THREADS: `4`
+- NUMEXPR_NUM_THREADS: `4`
+- BLIS_NUM_THREADS: `4`
+- XLA_FLAGS: `--xla_cpu_multi_thread_eigen=true intra_op_parallelism_threads=4`
+
+## Tenferro CPU BLAS Backend
+
+- tenferro-rs features: `system-mkl`
+- TENFERRO_CPU_BACKEND_KIND: `blas`
+- BLAS implementation: `mkl`
+- BLAS version: `2026.0.1`
+- BLAS root: `/opt/intel/oneapi/mkl/latest`
+- BLAS library: `/opt/intel/oneapi/mkl/latest/lib/libmkl_rt.so`
+
+## Python Backend Providers
+
+- PyTorch: BLAS provider `mkl`, version `2.12.0+cpu`, BLAS_INFO `mkl`, LAPACK_INFO `mkl`
+  - linked BLAS/LAPACK libs: `/workspaces/t4a-2010-bench-migrate/.venv/lib/python3.12/site-packages/torch/lib/libgomp.so.1`
+- JAX: dot backend `xla_cpu`, version `0.10.1`, jaxlib `0.10.1`, default backend `cpu`, LAPACK provider `none_detected`
+
+## Julia / OMEinsum.jl Backend
+
+- Julia: version `1.13.1`, OMEinsum.jl `0.9.4`, BLAS provider `LBTConfig([ILP64] libopenblas64_.so)`, probe threads `4`
+
+- `omeinsum-jl` (mode `omeinsum_path` in the log/report) always
+  executes the instance's precomputed `opt_flops`/`opt_size` path via
+  `OMEinsum.DynamicEinCode` pairwise contractions; OMEinsum's own
+  contraction-order optimizer is never invoked, so the comparison
+  against tenferro/PyTorch/JAX (which also use the precomputed path)
+  stays fair.
+- `JULIA_NUM_THREADS` also pins `LinearAlgebra.BLAS.set_num_threads`,
+  matching the BLAS thread pinning used by the other CPU backends.
+- Julia is column-major like tenferro-rs, so the einsum runner uses
+  `format_string_colmajor` / `shapes_colmajor` directly with no
+  PyTorch/JAX-style layout reconstruction.
+- OMEinsum dispatches its pairwise contractions to Julia's own BLAS
+  (libblastrampoline, OpenBLAS by default; the provider that ran is
+  reported above). When that differs from the provider tenferro-rs and
+  PyTorch link against, matmul-shaped rows partly compare BLAS
+  implementations rather than einsum-runtime overhead; read them
+  together with the recorded providers. `docs/einsum-suite.md` records
+  the measured OMEinsum-over-its-own-BLAS overhead.
+
+## Threads: 4
+
+- Source table: `data/results/amd-cpu/cpu/einsum/20261006_175113/einsum_table_t4_20261006_175113.md`
+
+Logs:
+
+- `data/results/amd-cpu/cpu/einsum/20261006_175113/tenferro_trace_t4_20261006_175113.log`
+- `data/results/amd-cpu/cpu/einsum/20261006_175113/tenferro_eager_t4_20261006_175113.log`
+- `data/results/amd-cpu/cpu/einsum/20261006_175113/pytorch_cpu_t4_20261006_175113.log`
+- `data/results/amd-cpu/cpu/einsum/20261006_175113/jax_cpu_t4_20261006_175113.log`
+- `data/results/amd-cpu/cpu/einsum/20261006_175113/julia_omeinsum_t4_20261006_175113.log`
+
+#### Strategy: opt_flops
+
+Median ± IQR (ms). JULIA_NUM_THREADS=4, OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
+
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) | OMEinsum.jl OpenBLAS (ms) |
+|---|---:|---:|---:|---:|---:|
+| bin_batched_matmul_b32_m128_n128_k128 | 5.559 ± 0.885 | 2.176 ± 0.129 | **1.095 ± 0.012** | 2.413 ± 0.042 | 10.321 ± 4.576 |
+| bin_batched_matmul_b32_m64_n64_k64 | 1.037 ± 0.061 | 0.716 ± 0.017 | **0.204 ± 0.005** | 0.827 ± 0.051 | 0.979 ± 2.033 |
+| bin_batched_outer_product_compact_j16_k16_o64_t64 | 0.198 ± 0.015 | 0.154 ± 0.050 | **0.077 ± 0.003** | 0.739 ± 0.046 | 4.411 ± 2.060 |
+| bin_batched_outer_product_noncompact_j16_k16_o64_t64 | 0.214 ± 0.033 | 0.159 ± 0.009 | **0.077 ± 0.002** | 0.732 ± 0.099 | 9.238 ± 5.566 |
+| bin_elementwise_mul_2048x2048 | **5.661 ± 0.317** | 5.730 ± 3.338 | 5.705 ± 0.192 | 6.411 ± 4.371 | 20.465 ± 2.221 |
+| bin_elementwise_mul_512x512 | 0.109 ± 0.020 | **0.068 ± 0.009** | 0.069 ± 0.001 | 0.375 ± 0.007 | 0.171 ± 0.222 |
+| bin_matmul_1024 | 24.339 ± 0.724 | **16.641 ± 1.915** | 26.687 ± 0.678 | 18.177 ± 0.213 | 41.084 ± 24.848 |
+| bin_matmul_256 | 0.808 ± 0.314 | **0.595 ± 0.014** | 0.798 ± 0.005 | 0.675 ± 0.107 | 1.438 ± 1.013 |
+| bin_omeinsum_batched_matmul_8x8_batch_4 | 0.060 ± 0.033 | 0.019 ± 0.001 | 0.035 ± 0.003 | 0.329 ± 0.019 | **0.012 ± 0.001** |
+| bin_omeinsum_high_d_12x12_contract_4_batch_4 | 0.139 ± 0.041 | 0.116 ± 0.003 | 0.149 ± 0.006 | 0.498 ± 0.053 | **0.094 ± 0.047** |
+| bin_omeinsum_matmul_10x10 | 0.073 ± 0.023 | 0.024 ± 0.003 | 0.044 ± 0.004 | 0.297 ± 0.024 | **0.023 ± 0.001** |
+| bin_outer_product_4096 | 21.112 ± 0.260 | 20.435 ± 0.688 | 21.244 ± 1.146 | **20.423 ± 1.098** | 316.952 ± 23.940 |
+| bin_permuted_r4_abcd_dbef_acef_d32 | 21.226 ± 1.147 | 18.634 ± 0.925 | 20.748 ± 0.972 | **16.066 ± 1.555** | 28.480 ± 22.192 |
+| gm_queen5_5_3.wcsp | 2867.575 ± 35.940 | 3273.580 ± 45.883 | **2415.732 ± 41.107** | - | 9602.990 ± 233.917 |
+| lm_batch_likelihood_brackets_4_4d | 24.972 ± 2.303 | 34.699 ± 1.561 | **14.454 ± 0.233** | 27.900 ± 1.603 | 27.834 ± 10.026 |
+| lm_batch_likelihood_sentence_3_12d | 54.996 ± 1.107 | 107.032 ± 1.366 | 48.100 ± 0.695 | **35.724 ± 6.968** | 71.391 ± 5.250 |
+| lm_batch_likelihood_sentence_4_4d | 24.838 ± 3.743 | 39.670 ± 2.145 | **15.603 ± 0.505** | 26.557 ± 1.838 | 50.458 ± 16.027 |
+| nary_matmul_chain_64 | 0.111 ± 0.027 | **0.076 ± 0.007** | 0.087 ± 0.004 | 0.222 ± 0.156 | 0.135 ± 0.039 |
+| str_matrix_chain_multiplication_100 | **5.891 ± 0.023** | 6.266 ± 0.052 | 7.420 ± 0.459 | 17.666 ± 4.710 | 12.433 ± 1.039 |
+| str_mps_varying_inner_product_200 | 30.009 ± 0.362 | 27.753 ± 0.651 | **23.508 ± 1.414** | 46.091 ± 1.012 | 30.764 ± 21.255 |
+| str_nw_mera_closed_120 | 744.877 ± 9.470 | 741.160 ± 14.459 | **662.011 ± 44.542** | 796.134 ± 12.390 | 955.579 ± 47.913 |
+| str_nw_mera_open_26 | 920.790 ± 9.671 | 701.973 ± 21.078 | **418.414 ± 16.599** | 634.842 ± 16.592 | 1101.455 ± 34.651 |
+| tensornetwork_permutation_focus_step409_316 | **202.971 ± 4.650** | 299.070 ± 4.608 | 295.753 ± 9.503 | 273.785 ± 10.494 | 479.599 ± 32.684 |
+| tensornetwork_permutation_light_415 | **191.070 ± 5.570** | 309.172 ± 8.695 | 286.683 ± 7.233 | 322.162 ± 21.202 | 484.023 ± 35.155 |
+
+#### Strategy: opt_size
+
+Median ± IQR (ms). JULIA_NUM_THREADS=4, OMP_NUM_THREADS=4, RAYON_NUM_THREADS=4.
+
+| Instance | tenferro-rs trace mode (ms) | tenferro-rs eager mode (ms) | PyTorch Python (ms) | JAX Python (XLA CPU dot) (ms) | OMEinsum.jl OpenBLAS (ms) |
+|---|---:|---:|---:|---:|---:|
+| bin_batched_matmul_b32_m128_n128_k128 | 5.559 ± 0.885 | 2.176 ± 0.129 | **1.095 ± 0.012** | 2.413 ± 0.042 | 10.321 ± 4.576 |
+| bin_batched_matmul_b32_m64_n64_k64 | 1.037 ± 0.061 | 0.716 ± 0.017 | **0.204 ± 0.005** | 0.827 ± 0.051 | 0.979 ± 2.033 |
+| bin_batched_outer_product_compact_j16_k16_o64_t64 | 0.198 ± 0.015 | 0.154 ± 0.050 | **0.077 ± 0.003** | 0.739 ± 0.046 | 4.411 ± 2.060 |
+| bin_batched_outer_product_noncompact_j16_k16_o64_t64 | 0.214 ± 0.033 | 0.159 ± 0.009 | **0.077 ± 0.002** | 0.732 ± 0.099 | 9.238 ± 5.566 |
+| bin_elementwise_mul_2048x2048 | **5.661 ± 0.317** | 5.730 ± 3.338 | 5.705 ± 0.192 | 6.411 ± 4.371 | 20.465 ± 2.221 |
+| bin_elementwise_mul_512x512 | 0.109 ± 0.020 | **0.068 ± 0.009** | 0.069 ± 0.001 | 0.375 ± 0.007 | 0.171 ± 0.222 |
+| bin_matmul_1024 | 24.339 ± 0.724 | **16.641 ± 1.915** | 26.687 ± 0.678 | 18.177 ± 0.213 | 41.084 ± 24.848 |
+| bin_matmul_256 | 0.808 ± 0.314 | **0.595 ± 0.014** | 0.798 ± 0.005 | 0.675 ± 0.107 | 1.438 ± 1.013 |
+| bin_omeinsum_batched_matmul_8x8_batch_4 | 0.060 ± 0.033 | 0.019 ± 0.001 | 0.035 ± 0.003 | 0.329 ± 0.019 | **0.012 ± 0.001** |
+| bin_omeinsum_high_d_12x12_contract_4_batch_4 | 0.139 ± 0.041 | 0.116 ± 0.003 | 0.149 ± 0.006 | 0.498 ± 0.053 | **0.094 ± 0.047** |
+| bin_omeinsum_matmul_10x10 | 0.073 ± 0.023 | 0.024 ± 0.003 | 0.044 ± 0.004 | 0.297 ± 0.024 | **0.023 ± 0.001** |
+| bin_outer_product_4096 | 21.112 ± 0.260 | 20.435 ± 0.688 | 21.244 ± 1.146 | **20.423 ± 1.098** | 316.952 ± 23.940 |
+| bin_permuted_r4_abcd_dbef_acef_d32 | 21.226 ± 1.147 | 18.634 ± 0.925 | 20.748 ± 0.972 | **16.066 ± 1.555** | 28.480 ± 22.192 |
+| gm_queen5_5_3.wcsp | 958.042 ± 22.345 | 1172.420 ± 18.171 | **851.553 ± 42.629** | - | 3240.219 ± 34.700 |
+| lm_batch_likelihood_brackets_4_4d | 24.116 ± 2.164 | 36.459 ± 1.792 | **14.053 ± 0.351** | 22.639 ± 4.638 | 56.016 ± 19.285 |
+| lm_batch_likelihood_sentence_3_12d | 50.413 ± 3.235 | 111.938 ± 3.640 | **22.410 ± 1.451** | 29.912 ± 4.463 | 74.937 ± 9.084 |
+| lm_batch_likelihood_sentence_4_4d | 30.501 ± 1.684 | 37.385 ± 0.680 | **16.257 ± 1.244** | 21.939 ± 1.354 | 37.873 ± 19.543 |
+| nary_matmul_chain_64 | 0.111 ± 0.027 | **0.076 ± 0.007** | 0.087 ± 0.004 | 0.222 ± 0.156 | 0.135 ± 0.039 |
+| str_matrix_chain_multiplication_100 | 6.363 ± 0.206 | **6.037 ± 0.041** | 7.420 ± 0.516 | 14.974 ± 0.592 | 12.496 ± 0.813 |
+| str_mps_varying_inner_product_200 | 28.223 ± 3.218 | **23.928 ± 0.546** | 25.815 ± 0.530 | 33.829 ± 5.259 | 28.183 ± 3.063 |
+| str_nw_mera_closed_120 | 528.575 ± 29.734 | 568.134 ± 11.607 | **499.537 ± 18.331** | 638.192 ± 27.968 | 703.472 ± 21.615 |
+| str_nw_mera_open_26 | 873.492 ± 39.983 | 680.762 ± 12.452 | **423.420 ± 8.755** | 651.720 ± 33.536 | 1058.613 ± 58.108 |
+| tensornetwork_permutation_focus_step409_316 | **202.971 ± 4.650** | 299.070 ± 4.608 | 295.753 ± 9.503 | 273.785 ± 10.494 | 479.599 ± 32.684 |
+| tensornetwork_permutation_light_415 | **191.070 ± 5.570** | 309.172 ± 8.695 | 286.683 ± 7.233 | 322.162 ± 21.202 | 484.023 ± 35.155 |

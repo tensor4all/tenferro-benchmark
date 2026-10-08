@@ -83,6 +83,23 @@ def sizes_for(profile: str, quick: list[int], full: list[int]) -> list[int]:
     return full if profile == "full" else quick
 
 
+def small_matmul_thread_contract_sizes(profile: str) -> list[int]:
+    """Extra matmul-only sizes for the single small-matmul thread contract.
+
+    Mirrors publication_gate.rs (tenferro-rs #1898 follow-up: 4T must not be
+    slower than 1T). The full profile already covers 32 via the small sizes.
+    """
+    return [64] if profile == "full" else [32, 64]
+
+
+def batched_matmul_thread_contract_shapes(profile: str) -> list[tuple[int, int]]:
+    """Extra (n, batch) batched-matmul shapes guarding tenferro-rs #1898.
+
+    The full profile already covers n=4, batch=1024 via the batched grid.
+    """
+    return [] if profile == "full" else [(4, 1024)]
+
+
 def large_linalg_jvp_vjp_sizes(profile: str) -> list[int]:
     # O(n^3) linalg AD: 256x256 is single-digit ms; 512x512 reaches tens of ms.
     return sizes_for(profile, [256, 512], [256, 512, 1024])
@@ -489,6 +506,19 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
 
     profile = os.environ.get("PUBLICATION_GATE_PROFILE", "quick").lower()
     if suite_enabled("small"):
+        for n in small_matmul_thread_contract_sizes(profile):
+            emit_row(
+                writer,
+                args,
+                "small",
+                "matmul",
+                f"{n}x{n}",
+                PreparedCase(
+                    lambda n=n: (tensor(data((n, n), 1)), tensor(data((n, n), 2))),
+                    lambda inputs: inputs[0] @ inputs[1],
+                ),
+                sync,
+            )
         for n in sizes_for(profile, [2, 4, 8], [2, 4, 8, 16, 32]):
             emit_row(
                 writer,
@@ -782,6 +812,22 @@ def run_pytorch(args, writer: csv.DictWriter) -> None:
     if suite_enabled("batched"):
         batches = sizes_for(profile, [16, 64], [16, 64, 256, 1024])
         sizes = sizes_for(profile, [2, 4], [2, 4, 8, 16])
+        for n, batch in batched_matmul_thread_contract_shapes(profile):
+            emit_row(
+                writer,
+                args,
+                "batched",
+                "batched_matmul_ikb_kjb_ijb",
+                f"{n}x{n}xbatch{batch} (native batch layout)",
+                PreparedCase(
+                    lambda n=n, batch=batch: (
+                        tensor(batched_data((batch, n, n), 41)),
+                        tensor(batched_data((batch, n, n), 42)),
+                    ),
+                    lambda inputs: torch.einsum("bik,bkj->bij", inputs[0], inputs[1]),
+                ),
+                sync,
+            )
         for batch in batches:
             for n in sizes:
                 label = f"{n}x{n}xbatch{batch} (native batch layout)"
@@ -966,6 +1012,19 @@ def run_jax(args, writer: csv.DictWriter) -> None:
     )
 
     if suite_enabled("small"):
+        for n in small_matmul_thread_contract_sizes(profile):
+            emit_row(
+                writer,
+                args,
+                "small",
+                "matmul",
+                f"{n}x{n}",
+                PreparedCase(
+                    lambda n=n: (array(data((n, n), 1)), array(data((n, n), 2))),
+                    lambda inputs: inputs[0] @ inputs[1],
+                ),
+                sync,
+            )
         for n in sizes_for(profile, [2, 4, 8], [2, 4, 8, 16, 32]):
             emit_row(
                 writer,
@@ -1243,6 +1302,22 @@ def run_jax(args, writer: csv.DictWriter) -> None:
     if suite_enabled("batched"):
         batches = sizes_for(profile, [16, 64], [16, 64, 256, 1024])
         sizes = sizes_for(profile, [2, 4], [2, 4, 8, 16])
+        for n, batch in batched_matmul_thread_contract_shapes(profile):
+            emit_row(
+                writer,
+                args,
+                "batched",
+                "batched_matmul_ikb_kjb_ijb",
+                f"{n}x{n}xbatch{batch} (native batch layout)",
+                PreparedCase(
+                    lambda n=n, batch=batch: (
+                        array(batched_data((batch, n, n), 41)),
+                        array(batched_data((batch, n, n), 42)),
+                    ),
+                    lambda inputs: jnp.einsum("bik,bkj->bij", inputs[0], inputs[1]),
+                ),
+                sync,
+            )
         for batch in batches:
             for n in sizes:
                 label = f"{n}x{n}xbatch{batch} (native batch layout)"

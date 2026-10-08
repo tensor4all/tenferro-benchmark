@@ -15,12 +15,17 @@ use num_complex::Complex64;
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuBackendKind, CpuExecSession};
 use tenferro_einsum::{TensorDotAxes, TensorEinsumExt, TensorTensordotExt, TracedTensorEinsumExt};
-use tenferro_linalg::{EagerTensorLinalgExt, TensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_einsum_benchmark::thread_enforcement::{
+    enforce_thread_request, verify_backend_threads,
+};
+use tenferro_linalg::{
+    EagerSessionLinalgExt, LinalgBackend, TensorLinalgExt, TracedTensorLinalgExt,
+};
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
 use tenferro_tensor::{
-    BackendSessionHost, CompareDir, DType, DotGeneralAccumulation, DotGeneralConfig, GatherConfig,
-    PadConfig, ScatterConfig, SliceConfig, Tensor, TensorAnalytic, TensorDot, TensorElementwise,
-    TensorIndexing, TensorRead, TensorReduction, TensorStructural, TensorValue, TensorWrite,
+    BackendSession, BackendSessionHost, CompareDir, DType, DotGeneralAccumulation,
+    DotGeneralConfig, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor, TensorRead,
+    TensorValue, TensorWrite,
 };
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
@@ -162,7 +167,24 @@ fn main() -> BenchResult<()> {
         )?;
     }
 
+    // Bind the process to the requested thread count before any backend or
+    // provider initializes, then prove the direct backend honors it.
+    enforce_thread_request(args.num_threads)?;
+    let _ = REQUESTED_THREADS.set(args.num_threads);
     let mut backend = cpu_backend_from_env()?;
+    let scope_threads = backend.with_execution_scope(rayon::current_num_threads)?;
+    verify_backend_threads(
+        "CpuBackend execution scope",
+        scope_threads,
+        args.num_threads,
+    )?;
+    eprintln!(
+        "benchmark_cpu_public_api: requested_threads={} backend_threads={} scope_rayon_threads={} global_rayon_threads={}",
+        args.num_threads,
+        backend.num_threads(),
+        scope_threads,
+        rayon::current_num_threads(),
+    );
     let mut attribution = args
         .attribution_output
         .as_ref()
@@ -245,7 +267,7 @@ fn parse_args() -> BenchResult<Args> {
 }
 
 fn cases() -> Vec<Case> {
-    vec![
+    let mut cases = vec![
         // Elementwise and reductions (#73).
         elem("add", "f64", "33554432", "binary elementwise", add_f64),
         elem("sub", "f64", "33554432", "binary elementwise", sub_f64),
@@ -328,6 +350,62 @@ fn cases() -> Vec<Case> {
             "4096x4096",
             "axis reduction",
             reduce_min_axis1_f64,
+        ),
+        elem(
+            "reduce_max_all",
+            "f64",
+            "8192x4096",
+            "full reduction",
+            reduce_max_all_f64,
+        ),
+        elem(
+            "reduce_min_all",
+            "f64",
+            "8192x4096",
+            "full reduction",
+            reduce_min_all_f64,
+        ),
+        elem(
+            "reduce_max_axis1",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_max_axis1_f64,
+        ),
+        elem(
+            "reduce_min_axis0",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_min_axis0_f64,
+        ),
+        elem(
+            "reduce_sum_axis0",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_sum_axis0_f64,
+        ),
+        elem(
+            "reduce_sum_axis1",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_sum_axis1_f64,
+        ),
+        elem(
+            "reduce_prod_axis0",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_prod_axis0_f64,
+        ),
+        elem(
+            "reduce_prod_axis1",
+            "f64",
+            "2048x2048",
+            "axis reduction",
+            reduce_prod_axis1_f64,
         ),
         // Indexing/layout (#72).
         idx(
@@ -519,6 +597,91 @@ fn cases() -> Vec<Case> {
             "TensorEinsumExt allocation-returning API",
             einsum_ij_jk_f64,
         ),
+        // Batched prepared LU (tenferro-rs#1878). Batch 1024, one rhs column.
+        bat(
+            "batched_lu_factor",
+            "f64",
+            "1024x2x2,rhs=1",
+            "packed LU factorization only (LinalgBackend::lu_factor)",
+            batched_lu_factor_f64::<2>,
+        ),
+        bat(
+            "batched_lu_factor",
+            "f64",
+            "1024x4x4,rhs=1",
+            "packed LU factorization only (LinalgBackend::lu_factor)",
+            batched_lu_factor_f64::<4>,
+        ),
+        bat(
+            "batched_lu_factor",
+            "f64",
+            "1024x8x8,rhs=1",
+            "packed LU factorization only (LinalgBackend::lu_factor)",
+            batched_lu_factor_f64::<8>,
+        ),
+        bat(
+            "batched_lu_factor",
+            "f64",
+            "1024x16x16,rhs=1",
+            "packed LU factorization only (LinalgBackend::lu_factor)",
+            batched_lu_factor_f64::<16>,
+        ),
+        bat(
+            "batched_lu_solve",
+            "f64",
+            "1024x2x2,rhs=1",
+            "solve with prepared LU factors (LinalgBackend::lu_solve_prepared)",
+            batched_lu_solve_f64::<2>,
+        ),
+        bat(
+            "batched_lu_solve",
+            "f64",
+            "1024x4x4,rhs=1",
+            "solve with prepared LU factors (LinalgBackend::lu_solve_prepared)",
+            batched_lu_solve_f64::<4>,
+        ),
+        bat(
+            "batched_lu_solve",
+            "f64",
+            "1024x8x8,rhs=1",
+            "solve with prepared LU factors (LinalgBackend::lu_solve_prepared)",
+            batched_lu_solve_f64::<8>,
+        ),
+        bat(
+            "batched_lu_solve",
+            "f64",
+            "1024x16x16,rhs=1",
+            "solve with prepared LU factors (LinalgBackend::lu_solve_prepared)",
+            batched_lu_solve_f64::<16>,
+        ),
+        bat(
+            "batched_triangular_solve",
+            "f64",
+            "1024x2x2,rhs=1",
+            "lower-triangular solve (TensorLinalgExt::triangular_solve)",
+            batched_triangular_solve_f64::<2>,
+        ),
+        bat(
+            "batched_triangular_solve",
+            "f64",
+            "1024x4x4,rhs=1",
+            "lower-triangular solve (TensorLinalgExt::triangular_solve)",
+            batched_triangular_solve_f64::<4>,
+        ),
+        bat(
+            "batched_triangular_solve",
+            "f64",
+            "1024x8x8,rhs=1",
+            "lower-triangular solve (TensorLinalgExt::triangular_solve)",
+            batched_triangular_solve_f64::<8>,
+        ),
+        bat(
+            "batched_triangular_solve",
+            "f64",
+            "1024x16x16,rhs=1",
+            "lower-triangular solve (TensorLinalgExt::triangular_solve)",
+            batched_triangular_solve_f64::<16>,
+        ),
         // Uncovered linalg (#71).
         lin("cholesky", "f64", "1536x1536", "SPD input", cholesky_f64),
         lin("eig", "f64", "160x160", "general input", eig_f64),
@@ -621,7 +784,9 @@ fn cases() -> Vec<Case> {
             "complex Frobenius norm",
             norm_c64,
         ),
-    ]
+    ];
+    cases.extend(batch_family_cases());
+    cases
 }
 
 fn elem(
@@ -667,6 +832,23 @@ fn lin(
 ) -> Case {
     Case {
         suite: "cpu/linalg_uncovered",
+        benchmark,
+        dtype,
+        shape,
+        notes,
+        run,
+    }
+}
+
+fn bat(
+    benchmark: &'static str,
+    dtype: &'static str,
+    shape: &'static str,
+    notes: &'static str,
+    run: fn(&mut CpuBackend) -> tenferro_tensor::Result<()>,
+) -> Case {
+    Case {
+        suite: "cpu/linalg_batched",
         benchmark,
         dtype,
         shape,
@@ -874,6 +1056,34 @@ fn emit_trace_case(
         )?;
         return Ok(());
     }
+    if case.suite == "cpu/linalg_batched"
+        && matches!(case.benchmark, "batched_lu_factor" | "batched_lu_solve")
+    {
+        writeln!(
+            writer,
+            "{},{},{},{},\"{}\",tenferro-trace,,,unsupported,\"{}\"",
+            case.suite,
+            case.benchmark,
+            case.dtype,
+            args.num_threads,
+            csv_escape(case.shape),
+            "LinalgOp is not public, so a trace cannot hold a bare LuFactor or LuSolvePrepared; traced solve (LuFactor plus LuSolvePrepared) and its backward are measured by cpu/cpu_ops batched_solve and grad_sum_batched_solve_backward",
+        )?;
+        return Ok(());
+    }
+    if case.suite == BATCH_FAMILY_SUITE && case.benchmark == "batched_svdvals" {
+        writeln!(
+            writer,
+            "{},{},{},{},\"{}\",tenferro-trace,,,unsupported,\"{}\"",
+            case.suite,
+            case.benchmark,
+            case.dtype,
+            args.num_threads,
+            csv_escape(case.shape),
+            "tenferro-rs has no TracedTensor svdvals API; traced singular values come from svd",
+        )?;
+        return Ok(());
+    }
     if case.suite == "cpu/indexing_layout" && case.benchmark == "dynamic_update_slice" {
         writeln!(
             writer,
@@ -928,6 +1138,9 @@ fn emit_trace_case(
 
 type SessionOperation = for<'a, 'b> fn(&'a mut CpuExecSession<'b>) -> tenferro_tensor::Result<()>;
 fn session_operation(case: &Case) -> Option<SessionOperation> {
+    if case.suite == "cpu/linalg_batched" {
+        return batched_session_operation(case);
+    }
     match (case.benchmark, case.dtype) {
         ("norm_fro", "c64") => Some(norm_c64_in_session),
         ("cholesky", "c64") => Some(cholesky_c64_in_session),
@@ -951,6 +1164,31 @@ fn session_operation(case: &Case) -> Option<SessionOperation> {
     }
 }
 
+fn batched_session_operation(case: &Case) -> Option<SessionOperation> {
+    let op: SessionOperation = match (case.benchmark, batched_matrix_size(case)?) {
+        ("batched_lu_factor", 2) => batched_lu_factor_in_session::<2>,
+        ("batched_lu_factor", 4) => batched_lu_factor_in_session::<4>,
+        ("batched_lu_factor", 8) => batched_lu_factor_in_session::<8>,
+        ("batched_lu_factor", 16) => batched_lu_factor_in_session::<16>,
+        ("batched_lu_solve", 2) => batched_lu_solve_in_session::<2>,
+        ("batched_lu_solve", 4) => batched_lu_solve_in_session::<4>,
+        ("batched_lu_solve", 8) => batched_lu_solve_in_session::<8>,
+        ("batched_lu_solve", 16) => batched_lu_solve_in_session::<16>,
+        ("batched_triangular_solve", 2) => batched_triangular_solve_in_session::<2>,
+        ("batched_triangular_solve", 4) => batched_triangular_solve_in_session::<4>,
+        ("batched_triangular_solve", 8) => batched_triangular_solve_in_session::<8>,
+        ("batched_triangular_solve", 16) => batched_triangular_solve_in_session::<16>,
+        _ => return None,
+    };
+    Some(op)
+}
+
+/// Matrix size `n` from a `cpu/linalg_batched` shape label `BxNxN,rhs=R`.
+fn batched_matrix_size(case: &Case) -> Option<usize> {
+    let dims = case.shape.split(',').next()?;
+    dims.split('x').nth(1)?.parse().ok()
+}
+
 fn time_case(
     args: &Args,
     backend: &mut CpuBackend,
@@ -960,11 +1198,19 @@ fn time_case(
     if case.suite == "cpu/view_metadata" {
         return time_view_case(args, case, attribution);
     }
-    let times = if let Some(operation) = session_operation(case) {
+    let times = if case.suite == BATCH_FAMILY_SUITE {
+        let spec = BatchFamilySpec::parse(case)?;
+        backend.with_backend_session(|session| {
+            with_cpu_exec_session(session, |session| {
+                sample_case(args, || batch_family_in_session(&spec, session))
+            })
+            .expect("CpuBackend must expose a CPU execution session")
+        })??
+    } else if let Some(operation) = session_operation(case) {
         backend.with_backend_session(|session| {
             with_cpu_exec_session(session, |session| sample_case(args, || operation(session)))
                 .expect("CpuBackend must expose a CPU execution session")
-        })?
+        })??
     } else {
         sample_case(args, || (case.run)(backend))?
     };
@@ -1134,16 +1380,32 @@ fn median_iqr(times: &[f64]) -> (f64, f64) {
     (median, iqr)
 }
 
+// Thread count requested on the command line, recorded once in `main` after
+// `enforce_thread_request` succeeds. Every backend (direct, trace runtime, and
+// eager runtime) is built from it; `CpuBackend::new()` would instead size its
+// pool from the environment and fall back to every available core.
+static REQUESTED_THREADS: OnceLock<usize> = OnceLock::new();
+
+fn requested_threads() -> usize {
+    *REQUESTED_THREADS
+        .get()
+        .expect("main records the requested thread count before building backends")
+}
+
 fn cpu_backend_from_env() -> BenchResult<CpuBackend> {
-    match env::var("TENFERRO_CPU_BACKEND_KIND")
+    let threads = requested_threads();
+    let backend = match env::var("TENFERRO_CPU_BACKEND_KIND")
         .unwrap_or_else(|_| "default".to_string())
         .as_str()
     {
-        "" | "default" => Ok(CpuBackend::new()),
-        "blas" => Ok(CpuBackend::with_kind(CpuBackendKind::Blas)?),
-        "faer" => Ok(CpuBackend::with_kind(CpuBackendKind::Faer)?),
-        other => Err(format!("unsupported TENFERRO_CPU_BACKEND_KIND={other}").into()),
-    }
+        "" | "default" => CpuBackend::with_threads(threads)?,
+        "blas" => CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Blas)?,
+        "faer" => CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?,
+        other => return Err(format!("unsupported TENFERRO_CPU_BACKEND_KIND={other}").into()),
+    };
+    let backend = tenferro_einsum_benchmark::cpu_provider::configure(backend)?;
+    verify_backend_threads("CpuBackend", backend.num_threads(), threads)?;
+    Ok(backend)
 }
 
 fn csv_escape(value: &str) -> String {
@@ -1300,6 +1562,47 @@ fn well_conditioned(n: usize, seed: u64) -> &'static Tensor {
     })
 }
 
+/// Batch count for `cpu/linalg_batched`; batch is the trailing axis.
+const LU_BATCH: usize = 1024;
+
+/// `[n, n, LU_BATCH]` col-major: `data_f64` over the whole buffer with
+/// `2 + j/n` added to each matrix diagonal, matching `well_conditioned`.
+fn batched_well_conditioned(n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{n}:{seed}"), || {
+        let mut values = data_f64(n * n * LU_BATCH, seed);
+        for batch in 0..LU_BATCH {
+            for j in 0..n {
+                values[batch * n * n + j + j * n] += 2.0 + j as f64 / n as f64;
+            }
+        }
+        Tensor::from_vec_col_major(vec![n, n, LU_BATCH], values).unwrap()
+    })
+}
+
+/// `[n, n, LU_BATCH]` col-major lower-triangular batch: diagonal `2 + row/n`,
+/// strict lower part `0.05 * data_f64` at the same linear index.
+fn batched_lower_triangular(n: usize, seed: u64) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    cached_tensor(&CACHE, format!("{n}:{seed}"), || {
+        let mut values = vec![0.0; n * n * LU_BATCH];
+        for batch in 0..LU_BATCH {
+            let offset = batch * n * n;
+            for col in 0..n {
+                for row in col..n {
+                    let index = offset + row + col * n;
+                    values[index] = if row == col {
+                        2.0 + row as f64 / n as f64
+                    } else {
+                        0.05 * pseudo_value(index, seed)
+                    };
+                }
+            }
+        }
+        Tensor::from_vec_col_major(vec![n, n, LU_BATCH], values).unwrap()
+    })
+}
+
 fn lower_triangular(n: usize, seed: u64) -> &'static Tensor {
     static CACHE: TensorCache = OnceLock::new();
     cached_tensor(&CACHE, format!("{n}:{seed}"), || {
@@ -1364,6 +1667,9 @@ fn traced(tensor: &Tensor) -> BenchResult<TracedTensor> {
 
 fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
     let one = |value| Ok(vec![value]);
+    if case.suite == BATCH_FAMILY_SUITE {
+        return build_batch_family_trace(&BatchFamilySpec::parse(case)?);
+    }
     match (case.suite, case.benchmark) {
         ("cpu/elementwise_reduction", "add") => {
             one(traced(tensor_f64(&[EW_FAST_N], 1))?.add(&traced(tensor_f64(&[EW_FAST_N], 2))?)?)
@@ -1438,6 +1744,30 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         }
         ("cpu/elementwise_reduction", "reduce_min_axis1") => {
             one(traced(tensor_f64(&[4096, 4096], 1))?.reduce_min(Some(&[1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_max_all") => {
+            one(traced(tensor_f64(&[8192, 4096], 1))?.reduce_max(Some(&[0, 1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_min_all") => {
+            one(traced(tensor_f64(&[8192, 4096], 1))?.reduce_min(Some(&[0, 1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_max_axis1") => {
+            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_max(Some(&[1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_min_axis0") => {
+            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_min(Some(&[0]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_sum_axis0") => {
+            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_sum(Some(&[0]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_sum_axis1") => {
+            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_sum(Some(&[1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_prod_axis0") => {
+            one(traced(tensor_f64_constant(&[2048, 2048], 1.000001))?.reduce_prod(Some(&[0]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_prod_axis1") => {
+            one(traced(tensor_f64_constant(&[2048, 2048], 1.000001))?.reduce_prod(Some(&[1]))?)
         }
         ("cpu/indexing_layout", "gather") => {
             const N: usize = 262_144;
@@ -1521,6 +1851,16 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         }
         ("cpu/linalg_uncovered", "eigvals") => one(traced(well_conditioned(192, 1))?.eigvals()?),
         ("cpu/linalg_uncovered", "eigvalsh") => one(traced(spd(512, 1))?.eigvalsh()?),
+        ("cpu/linalg_batched", "batched_triangular_solve") => {
+            let n = batched_matrix_size(case).ok_or("invalid batched shape label")?;
+            one(traced(batched_lower_triangular(n, 1))?.triangular_solve(
+                &traced(tensor_f64(&[n, 1, LU_BATCH], 2))?,
+                true,
+                true,
+                false,
+                false,
+            )?)
+        }
         ("cpu/linalg_uncovered", "triangular_solve") => one(traced(lower_triangular(4096, 1))?
             .triangular_solve(
                 &traced(tensor_f64(&[4096, 64], 2))?,
@@ -1567,10 +1907,10 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         ("cpu/complex", "dot_general") => one(traced(tensor_c64(&[640, 640], 1))?.dot_general(
             &traced(tensor_c64(&[640, 640], 2))?,
             DotGeneralConfig {
-                lhs_contracting_dims: vec![1],
-                rhs_contracting_dims: vec![0],
-                lhs_batch_dims: vec![],
-                rhs_batch_dims: vec![],
+                lhs_contracting_dims: vec![1].into(),
+                rhs_contracting_dims: vec![0].into(),
+                lhs_batch_dims: vec![].into(),
+                rhs_batch_dims: vec![].into(),
             },
         )?),
         ("cpu/complex", "tensordot") => one(traced(tensor_c64(&[640, 640], 1))?.tensordot(
@@ -1604,6 +1944,24 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
     }
 }
 
+/// Run one direct public operation in its own backend session.
+///
+/// Before tenferro-rs #1938 every `CpuBackend` operation method admitted and
+/// entered the backend on each call. Entering one session per call keeps that
+/// per-call entry inside the timed region, and returning the output lets
+/// `consume` retain it on the calling thread (the session callback may run on
+/// a managed worker thread).
+fn direct<R: Send>(
+    b: &mut CpuBackend,
+    op: impl FnOnce(&mut dyn BackendSession) -> tenferro_tensor::Result<R> + Send,
+) -> tenferro_tensor::Result<R> {
+    b.with_backend_session(op)?
+}
+
+fn read(tensor: &Tensor) -> TensorRead<'_> {
+    TensorRead::from_tensor(tensor)
+}
+
 // Elementwise/reduction.
 macro_rules! prepared_config {
     ($type:ty, $value:expr) => {{
@@ -1613,265 +1971,402 @@ macro_rules! prepared_config {
 }
 
 fn add_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.add(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
+    consume(direct(b, |s| {
+        s.add_read(
+            read(tensor_f64(&[EW_FAST_N], 1)),
+            read(tensor_f64(&[EW_FAST_N], 2)),
+        )
+    })?);
     Ok(())
 }
 fn sub_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.sub(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
+    consume(direct(b, |s| {
+        s.sub_read(
+            read(tensor_f64(&[EW_FAST_N], 1)),
+            read(tensor_f64(&[EW_FAST_N], 2)),
+        )
+    })?);
     Ok(())
 }
 fn mul_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.mul(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
+    consume(direct(b, |s| {
+        s.mul_read(
+            read(tensor_f64(&[EW_FAST_N], 1)),
+            read(tensor_f64(&[EW_FAST_N], 2)),
+        )
+    })?);
     Ok(())
 }
 fn div_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.div(
-        tensor_f64(&[EW_FAST_N], 1),
-        tensor_f64_positive(&[EW_FAST_N], 2),
-    )?);
+    consume(direct(b, |s| {
+        s.div_read(
+            read(tensor_f64(&[EW_FAST_N], 1)),
+            read(tensor_f64_positive(&[EW_FAST_N], 2)),
+        )
+    })?);
     Ok(())
 }
 fn rem_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.rem(tensor_f64(&[EW_N], 1), tensor_f64_positive(&[EW_N], 2))?);
+    consume(direct(b, |s| {
+        s.rem(tensor_f64(&[EW_N], 1), tensor_f64_positive(&[EW_N], 2))
+    })?);
     Ok(())
 }
 fn neg_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.neg(tensor_f64(&[EW_FAST_N], 1))?);
+    consume(direct(b, |s| {
+        s.neg_read(read(tensor_f64(&[EW_FAST_N], 1)))
+    })?);
     Ok(())
 }
 fn abs_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.abs(tensor_f64(&[EW_FAST_N], 1))?);
+    consume(direct(b, |s| {
+        s.abs_read(read(tensor_f64(&[EW_FAST_N], 1)))
+    })?);
     Ok(())
 }
 fn sign_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.sign(tensor_f64(&[EW_FAST_N], 1))?);
+    consume(direct(b, |s| {
+        s.sign_read(read(tensor_f64(&[EW_FAST_N], 1)))
+    })?);
     Ok(())
 }
 fn maximum_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.maximum(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
+    consume(direct(b, |s| {
+        s.maximum_read(
+            read(tensor_f64(&[EW_FAST_N], 1)),
+            read(tensor_f64(&[EW_FAST_N], 2)),
+        )
+    })?);
     Ok(())
 }
 fn minimum_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.minimum(tensor_f64(&[EW_FAST_N], 1), tensor_f64(&[EW_FAST_N], 2))?);
+    consume(direct(b, |s| {
+        s.minimum_read(
+            read(tensor_f64(&[EW_FAST_N], 1)),
+            read(tensor_f64(&[EW_FAST_N], 2)),
+        )
+    })?);
     Ok(())
 }
 fn compare_lt_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.compare(
-        tensor_f64(&[EW_FAST_N], 1),
-        tensor_f64(&[EW_FAST_N], 2),
-        &CompareDir::Lt,
-    )?);
+    consume(direct(b, |s| {
+        s.compare_read(
+            read(tensor_f64(&[EW_FAST_N], 1)),
+            read(tensor_f64(&[EW_FAST_N], 2)),
+            &CompareDir::Lt,
+        )
+    })?);
     Ok(())
 }
 fn select_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.select(
-        tensor_bool(&[EW_FAST_N]),
-        tensor_f64(&[EW_FAST_N], 1),
-        tensor_f64(&[EW_FAST_N], 2),
-    )?);
+    consume(direct(b, |s| {
+        s.select_read(
+            read(tensor_bool(&[EW_FAST_N])),
+            read(tensor_f64(&[EW_FAST_N], 1)),
+            read(tensor_f64(&[EW_FAST_N], 2)),
+        )
+    })?);
     Ok(())
 }
 fn clamp_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.clamp(
-        tensor_f64(&[EW_N], 1),
-        tensor_f64_constant(&[EW_N], -0.5),
-        tensor_f64_constant(&[EW_N], 0.5),
-    )?);
+    consume(direct(b, |s| {
+        s.clamp_read(
+            read(tensor_f64(&[EW_N], 1)),
+            read(tensor_f64_constant(&[EW_N], -0.5)),
+            read(tensor_f64_constant(&[EW_N], 0.5)),
+        )
+    })?);
     Ok(())
 }
 fn exp_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.exp(tensor_f64(&[EW_N], 1))?);
+    consume(direct(b, |s| s.exp_read(read(tensor_f64(&[EW_N], 1))))?);
     Ok(())
 }
 fn log_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.log(tensor_f64_positive(&[EW_N], 1))?);
+    consume(direct(b, |s| {
+        s.log_read(read(tensor_f64_positive(&[EW_N], 1)))
+    })?);
     Ok(())
 }
 fn sin_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.sin(tensor_f64(&[EW_N], 1))?);
+    consume(direct(b, |s| s.sin_read(read(tensor_f64(&[EW_N], 1))))?);
     Ok(())
 }
 fn cos_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.cos(tensor_f64(&[EW_N], 1))?);
+    consume(direct(b, |s| s.cos_read(read(tensor_f64(&[EW_N], 1))))?);
     Ok(())
 }
 fn tanh_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.tanh(tensor_f64(&[EW_N], 1))?);
+    consume(direct(b, |s| s.tanh_read(read(tensor_f64(&[EW_N], 1))))?);
     Ok(())
 }
 fn sqrt_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.sqrt(tensor_f64_positive(&[EW_FAST_N], 1))?);
+    consume(direct(b, |s| {
+        s.sqrt_read(read(tensor_f64_positive(&[EW_FAST_N], 1)))
+    })?);
     Ok(())
 }
 fn rsqrt_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.rsqrt(tensor_f64_positive(&[EW_FAST_N], 1))?);
+    consume(direct(b, |s| {
+        s.rsqrt_read(read(tensor_f64_positive(&[EW_FAST_N], 1)))
+    })?);
     Ok(())
 }
 fn pow_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.pow(
-        tensor_f64_positive(&[EW_SLOW_N], 1),
-        tensor_f64_constant(&[EW_SLOW_N], 1.5),
-    )?);
+    consume(direct(b, |s| {
+        s.pow_read(
+            read(tensor_f64_positive(&[EW_SLOW_N], 1)),
+            read(tensor_f64_constant(&[EW_SLOW_N], 1.5)),
+        )
+    })?);
     Ok(())
 }
 fn expm1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.expm1(tensor_f64(&[EW_SLOW_N], 1))?);
+    consume(direct(b, |s| {
+        s.expm1_read(read(tensor_f64(&[EW_SLOW_N], 1)))
+    })?);
     Ok(())
 }
 fn log1p_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.log1p(tensor_f64_positive(&[EW_SLOW_N], 1))?);
+    consume(direct(b, |s| {
+        s.log1p_read(read(tensor_f64_positive(&[EW_SLOW_N], 1)))
+    })?);
     Ok(())
 }
 fn chain_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    let x = b.log1p(tensor_f64_positive(&[EW_SLOW_N], 1))?;
-    let y = b.exp(&x)?;
-    consume(b.mul(&y, tensor_f64(&[EW_SLOW_N], 2))?);
+    let x = direct(b, |s| {
+        s.log1p_read(read(tensor_f64_positive(&[EW_SLOW_N], 1)))
+    })?;
+    let y = direct(b, |s| s.exp_read(read(&x)))?;
+    consume(direct(b, |s| {
+        s.mul_read(read(&y), read(tensor_f64(&[EW_SLOW_N], 2)))
+    })?);
     Ok(())
 }
 fn reduce_sum_all_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reduce_sum(tensor_f64(&[8192, 4096], 1), &[0, 1])?);
+    consume(direct(b, |s| {
+        s.reduce_sum_read(read(tensor_f64(&[8192, 4096], 1)), &[0, 1])
+    })?);
     Ok(())
 }
 fn reduce_prod_all_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reduce_prod(tensor_f64_constant(&[8192, 4096], 1.000001), &[0, 1])?);
+    consume(direct(b, |s| {
+        s.reduce_prod_read(read(tensor_f64_constant(&[8192, 4096], 1.000001)), &[0, 1])
+    })?);
     Ok(())
 }
 fn reduce_max_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reduce_max(tensor_f64(&[2048, 2048], 1), &[0])?);
+    consume(direct(b, |s| {
+        s.reduce_max_read(read(tensor_f64(&[2048, 2048], 1)), &[0])
+    })?);
     Ok(())
 }
 fn reduce_min_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reduce_min(tensor_f64(&[4096, 4096], 1), &[1])?);
+    consume(direct(b, |s| {
+        s.reduce_min_read(read(tensor_f64(&[4096, 4096], 1)), &[1])
+    })?);
+    Ok(())
+}
+fn reduce_max_all_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(direct(b, |s| {
+        s.reduce_max_read(read(tensor_f64(&[8192, 4096], 1)), &[0, 1])
+    })?);
+    Ok(())
+}
+fn reduce_min_all_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(direct(b, |s| {
+        s.reduce_min_read(read(tensor_f64(&[8192, 4096], 1)), &[0, 1])
+    })?);
+    Ok(())
+}
+fn reduce_max_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(direct(b, |s| {
+        s.reduce_max_read(read(tensor_f64(&[2048, 2048], 1)), &[1])
+    })?);
+    Ok(())
+}
+fn reduce_min_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(direct(b, |s| {
+        s.reduce_min_read(read(tensor_f64(&[2048, 2048], 1)), &[0])
+    })?);
+    Ok(())
+}
+fn reduce_sum_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(direct(b, |s| {
+        s.reduce_sum_read(read(tensor_f64(&[2048, 2048], 1)), &[0])
+    })?);
+    Ok(())
+}
+fn reduce_sum_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(direct(b, |s| {
+        s.reduce_sum_read(read(tensor_f64(&[2048, 2048], 1)), &[1])
+    })?);
+    Ok(())
+}
+fn reduce_prod_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(direct(b, |s| {
+        s.reduce_prod_read(read(tensor_f64_constant(&[2048, 2048], 1.000001)), &[0])
+    })?);
+    Ok(())
+}
+fn reduce_prod_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(direct(b, |s| {
+        s.reduce_prod_read(read(tensor_f64_constant(&[2048, 2048], 1.000001)), &[1])
+    })?);
     Ok(())
 }
 
 // Indexing/layout.
 fn gather_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     const N: usize = 262_144;
-    consume(b.gather(
-        tensor_f64(&[N], 1),
-        tensor_i64_indices(&[N], N),
-        prepared_config!(
-            GatherConfig,
-            GatherConfig {
-                offset_dims: vec![],
-                collapsed_slice_dims: vec![0],
-                start_index_map: vec![0],
-                index_vector_dim: 1,
-                slice_sizes: vec![1],
-            }
-        ),
-    )?);
+    consume(direct(b, |s| {
+        s.gather(
+            tensor_f64(&[N], 1),
+            tensor_i64_indices(&[N], N),
+            prepared_config!(
+                GatherConfig,
+                GatherConfig {
+                    offset_dims: vec![],
+                    collapsed_slice_dims: vec![0],
+                    start_index_map: vec![0],
+                    index_vector_dim: 1,
+                    slice_sizes: vec![1],
+                }
+            ),
+        )
+    })?);
     Ok(())
 }
 fn scatter_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     const N: usize = 262_144;
-    consume(b.scatter(
-        tensor_f64_constant(&[N], 0.0),
-        tensor_i64_indices(&[N, 1], N),
-        tensor_f64(&[N], 2),
-        prepared_config!(
-            ScatterConfig,
-            ScatterConfig {
-                update_window_dims: vec![],
-                inserted_window_dims: vec![0],
-                scatter_dims_to_operand_dims: vec![0],
-                index_vector_dim: 1,
-            }
-        ),
-    )?);
+    consume(direct(b, |s| {
+        s.scatter(
+            tensor_f64_constant(&[N], 0.0),
+            tensor_i64_indices(&[N, 1], N),
+            tensor_f64(&[N], 2),
+            prepared_config!(
+                ScatterConfig,
+                ScatterConfig {
+                    update_window_dims: vec![],
+                    inserted_window_dims: vec![0],
+                    scatter_dims_to_operand_dims: vec![0],
+                    index_vector_dim: 1,
+                }
+            ),
+        )
+    })?);
     Ok(())
 }
 fn slice_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     const N: usize = 4_194_304;
-    consume(b.slice(
-        tensor_f64(&[N], 1),
-        prepared_config!(
-            SliceConfig,
-            SliceConfig {
-                starts: vec![1024],
-                limits: vec![N - 1024],
-                strides: vec![2],
-            }
-        ),
-    )?);
+    consume(direct(b, |s| {
+        s.slice(
+            tensor_f64(&[N], 1),
+            prepared_config!(
+                SliceConfig,
+                SliceConfig {
+                    starts: vec![1024],
+                    limits: vec![N - 1024],
+                    strides: vec![2],
+                }
+            ),
+        )
+    })?);
     Ok(())
 }
 fn dynamic_slice_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     const N: usize = 4_194_304;
-    consume(b.dynamic_slice(
-        tensor_f64(&[N], 1),
-        tensor_i64_constant(&[1], 1024),
-        &[N / 2],
-    )?);
+    consume(direct(b, |s| {
+        s.dynamic_slice(
+            tensor_f64(&[N], 1),
+            tensor_i64_constant(&[1], 1024),
+            &[N / 2],
+        )
+    })?);
     Ok(())
 }
 fn dynamic_update_slice_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     const N: usize = 2_097_152;
-    consume(b.dynamic_update_slice(
-        tensor_f64(&[N], 1),
-        tensor_f64(&[N / 2], 2),
-        tensor_i64_constant(&[1], 1024),
-    )?);
+    consume(direct(b, |s| {
+        s.dynamic_update_slice(
+            tensor_f64(&[N], 1),
+            tensor_f64(&[N / 2], 2),
+            tensor_i64_constant(&[1], 1024),
+        )
+    })?);
     Ok(())
 }
 fn pad_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     const N: usize = 2_097_152;
-    consume(b.pad(
-        tensor_f64(&[N], 1),
-        prepared_config!(
-            PadConfig,
-            PadConfig {
-                edge_padding_low: vec![128],
-                edge_padding_high: vec![128],
-                interior_padding: vec![0],
-            }
-        ),
-    )?);
+    consume(direct(b, |s| {
+        s.pad(
+            tensor_f64(&[N], 1),
+            prepared_config!(
+                PadConfig,
+                PadConfig {
+                    edge_padding_low: vec![128],
+                    edge_padding_high: vec![128],
+                    interior_padding: vec![0],
+                }
+            ),
+        )
+    })?);
     Ok(())
 }
 fn concatenate_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     let a = tensor_f64(&[1_048_576], 1);
     let c = tensor_f64(&[1_048_576], 2);
-    consume(b.concatenate(&[a, c], 0)?);
+    consume(direct(b, |s| s.concatenate(&[a, c], 0))?);
     Ok(())
 }
 fn reverse_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reverse(tensor_f64(&[2_097_152], 1), &[0])?);
+    consume(direct(b, |s| s.reverse(tensor_f64(&[2_097_152], 1), &[0]))?);
     Ok(())
 }
 
 // Structural/shape.
 fn transpose_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.transpose(tensor_f64(&[4096, 4096], 1), &[1, 0])?);
+    consume(direct(b, |s| {
+        s.transpose_read(read(tensor_f64(&[4096, 4096], 1)), &[1, 0])
+    })?);
     Ok(())
 }
 fn reshape_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.reshape(tensor_f64(&[33_554_432], 1), &[8192, 4096])?);
+    consume(direct(b, |s| {
+        s.reshape_read(read(tensor_f64(&[33_554_432], 1)), &[8192, 4096])
+    })?);
     Ok(())
 }
 fn broadcast_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.broadcast_in_dim(tensor_f64(&[8192, 1], 1), &[8192, 4096], &[0, 1])?);
+    consume(direct(b, |s| {
+        s.broadcast_in_dim_read(read(tensor_f64(&[8192, 1], 1)), &[8192, 4096], &[0, 1])
+    })?);
     Ok(())
 }
 fn cast_f64_f32(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.cast(tensor_f64(&[33_554_432], 1), DType::F32)?);
+    consume(direct(b, |s| {
+        s.cast(tensor_f64(&[33_554_432], 1), DType::F32)
+    })?);
     Ok(())
 }
 fn extract_diagonal_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.extract_diagonal(tensor_f64(&[8_388_608, 2, 2], 1), 1, 2)?);
+    consume(direct(b, |s| {
+        s.extract_diagonal(tensor_f64(&[8_388_608, 2, 2], 1), 1, 2)
+    })?);
     Ok(())
 }
 fn embed_diagonal_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.embed_diagonal(tensor_f64(&[8192], 1), 0, 1)?);
+    consume(direct(b, |s| {
+        s.embed_diagonal(tensor_f64(&[8192], 1), 0, 1)
+    })?);
     Ok(())
 }
 fn tril_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.tril(tensor_f64(&[4096, 4096], 1), 0)?);
+    consume(direct(b, |s| s.tril(tensor_f64(&[4096, 4096], 1), 0))?);
     Ok(())
 }
 fn triu_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.triu(tensor_f64(&[4096, 4096], 1), 0)?);
+    consume(direct(b, |s| s.triu(tensor_f64(&[4096, 4096], 1), 0))?);
     Ok(())
 }
 
@@ -2001,90 +2496,104 @@ fn with_matrix_out(
 
 fn add_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     with_vector_out(|out| {
-        b.add_into(
-            tensor_f64(&[EW_FAST_N], 1),
-            tensor_f64(&[EW_FAST_N], 2),
-            out,
-        )
+        direct(b, |s| {
+            s.add_into(
+                tensor_f64(&[EW_FAST_N], 1),
+                tensor_f64(&[EW_FAST_N], 2),
+                out,
+            )
+        })
     })
 }
 fn sub_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     with_vector_out(|out| {
-        b.sub_into(
-            tensor_f64(&[EW_FAST_N], 1),
-            tensor_f64(&[EW_FAST_N], 2),
-            out,
-        )
+        direct(b, |s| {
+            s.sub_into(
+                tensor_f64(&[EW_FAST_N], 1),
+                tensor_f64(&[EW_FAST_N], 2),
+                out,
+            )
+        })
     })
 }
 fn mul_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     with_vector_out(|out| {
-        b.mul_into(
-            tensor_f64(&[EW_FAST_N], 1),
-            tensor_f64(&[EW_FAST_N], 2),
-            out,
-        )
+        direct(b, |s| {
+            s.mul_into(
+                tensor_f64(&[EW_FAST_N], 1),
+                tensor_f64(&[EW_FAST_N], 2),
+                out,
+            )
+        })
     })
 }
 fn div_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     with_vector_out(|out| {
-        b.div_into(
-            tensor_f64(&[EW_FAST_N], 1),
-            tensor_f64_positive(&[EW_FAST_N], 2),
-            out,
-        )
+        direct(b, |s| {
+            s.div_into(
+                tensor_f64(&[EW_FAST_N], 1),
+                tensor_f64_positive(&[EW_FAST_N], 2),
+                out,
+            )
+        })
     })
 }
 fn neg_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_vector_out(|out| b.neg_into(tensor_f64(&[EW_FAST_N], 1), out))
+    with_vector_out(|out| direct(b, |s| s.neg_into(tensor_f64(&[EW_FAST_N], 1), out)))
 }
 fn conj_into_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    with_complex_out(|out| b.conj_into(tensor_c64(&[16_777_216], 1), out))
+    with_complex_out(|out| direct(b, |s| s.conj_into(tensor_c64(&[16_777_216], 1), out)))
 }
 fn copy_read_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     with_vector_out(|out| {
-        b.copy_read_into(TensorRead::from_tensor(tensor_f64(&[EW_FAST_N], 1)), out)
+        direct(b, |s| {
+            s.copy_read_into(TensorRead::from_tensor(tensor_f64(&[EW_FAST_N], 1)), out)
+        })
     })
 }
 
 fn dot_config() -> DotGeneralConfig {
     DotGeneralConfig {
-        lhs_contracting_dims: vec![1],
-        rhs_contracting_dims: vec![0],
-        lhs_batch_dims: vec![],
-        rhs_batch_dims: vec![],
+        lhs_contracting_dims: vec![1].into(),
+        rhs_contracting_dims: vec![0].into(),
+        lhs_batch_dims: vec![].into(),
+        rhs_batch_dims: vec![].into(),
     }
 }
 
 fn dot_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     with_matrix_out(|out| {
-        b.dot_general_read_into(
-            TensorRead::from_tensor(tensor_f64(&[1024, 1024], 1)),
-            TensorRead::from_tensor(tensor_f64(&[1024, 1024], 2)),
-            &dot_config(),
-            out,
-        )
+        direct(b, |s| {
+            s.dot_general_read_into(
+                TensorRead::from_tensor(tensor_f64(&[1024, 1024], 1)),
+                TensorRead::from_tensor(tensor_f64(&[1024, 1024], 2)),
+                &dot_config(),
+                out,
+            )
+        })
     })
 }
 
 fn dot_into_accum_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     with_matrix_out(|out| {
-        b.dot_general_read_into_accum(
-            TensorRead::from_tensor(tensor_f64(&[1024, 1024], 1)),
-            TensorRead::from_tensor(tensor_f64(&[1024, 1024], 2)),
-            &dot_config(),
-            DotGeneralAccumulation::add_to(DType::F64)?,
-            out,
-        )
+        direct(b, |s| {
+            s.dot_general_read_into_accum(
+                TensorRead::from_tensor(tensor_f64(&[1024, 1024], 1)),
+                TensorRead::from_tensor(tensor_f64(&[1024, 1024], 2)),
+                &dot_config(),
+                DotGeneralAccumulation::add_to(DType::F64)?,
+                out,
+            )
+        })
     })
 }
 
 fn einsum_ij_jk_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(
+    consume(direct(b, |s| {
         [tensor_f64(&[1024, 1024], 1), tensor_f64(&[1024, 1024], 2)]
-            .einsum("ij,jk->ik", b)
-            .map_err(|error| error.into_tensor_error("einsum"))?,
-    );
+            .einsum("ij,jk->ik", s)
+            .map_err(|error| error.into_tensor_error("einsum"))
+    })?);
     Ok(())
 }
 
@@ -2135,6 +2644,75 @@ fn triangular_solve_f64_in_session(
 ) -> tenferro_tensor::Result<()> {
     consume(lower_triangular(4096, 1).triangular_solve(
         tensor_f64(&[4096, 64], 2),
+        true,
+        true,
+        false,
+        false,
+        session,
+    )?);
+    Ok(())
+}
+
+fn batched_lu_factor_f64<const N: usize>(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_cpu_linalg(b, batched_lu_factor_in_session::<N>)
+}
+fn batched_lu_factor_in_session<const N: usize>(
+    session: &mut CpuExecSession<'_>,
+) -> tenferro_tensor::Result<()> {
+    consume_many(LinalgBackend::lu_factor(
+        session,
+        batched_well_conditioned(N, 1),
+    )?);
+    Ok(())
+}
+
+/// Packed LU factors and pivots of `batched_well_conditioned(n, 1)`, built on
+/// the first (untimed warmup) call and reused by every timed solve.
+fn batched_lu_factors(
+    session: &mut CpuExecSession<'_>,
+    n: usize,
+) -> tenferro_tensor::Result<&'static (Tensor, Tensor)> {
+    static CACHE: OnceLock<Mutex<HashMap<usize, &'static (Tensor, Tensor)>>> = OnceLock::new();
+    let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+    if let Some(factors) = cache.lock().unwrap().get(&n) {
+        return Ok(factors);
+    }
+    let mut outputs = LinalgBackend::lu_factor(session, batched_well_conditioned(n, 1))?;
+    outputs.truncate(2);
+    let pivots = outputs.pop().expect("lu_factor returns pivots");
+    let packed = outputs.pop().expect("lu_factor returns packed LU");
+    let factors: &'static (Tensor, Tensor) = Box::leak(Box::new((packed, pivots)));
+    cache.lock().unwrap().insert(n, factors);
+    Ok(factors)
+}
+
+fn batched_lu_solve_f64<const N: usize>(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_cpu_linalg(b, batched_lu_solve_in_session::<N>)
+}
+fn batched_lu_solve_in_session<const N: usize>(
+    session: &mut CpuExecSession<'_>,
+) -> tenferro_tensor::Result<()> {
+    let (packed, pivots) = batched_lu_factors(session, N)?;
+    consume(LinalgBackend::lu_solve_prepared(
+        session,
+        batched_well_conditioned(N, 1),
+        packed,
+        pivots,
+        tensor_f64(&[N, 1, LU_BATCH], 2),
+        false,
+        false,
+    )?);
+    Ok(())
+}
+
+fn batched_triangular_solve_f64<const N: usize>(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    with_cpu_linalg(b, batched_triangular_solve_in_session::<N>)
+}
+fn batched_triangular_solve_in_session<const N: usize>(
+    session: &mut CpuExecSession<'_>,
+) -> tenferro_tensor::Result<()> {
+    consume(batched_lower_triangular(N, 1).triangular_solve(
+        tensor_f64(&[N, 1, LU_BATCH], 2),
         true,
         true,
         false,
@@ -2207,17 +2785,7 @@ thread_local! {
 
 fn eager_cpu_context() -> Arc<EagerRuntime> {
     EagerRuntime::with_cpu_backend(
-        match env::var("TENFERRO_CPU_BACKEND_KIND")
-            .unwrap_or_else(|_| "default".to_string())
-            .as_str()
-        {
-            "" | "default" => CpuBackend::new(),
-            "blas" => CpuBackend::with_kind(CpuBackendKind::Blas)
-                .expect("configured BLAS CPU backend should initialize"),
-            "faer" => CpuBackend::with_kind(CpuBackendKind::Faer)
-                .expect("configured faer CPU backend should initialize"),
-            other => panic!("unsupported TENFERRO_CPU_BACKEND_KIND={other}"),
-        },
+        cpu_backend_from_env().expect("configured CPU backend should initialize"),
     )
     .expect("configured eager CPU runtime should initialize")
 }
@@ -2253,8 +2821,10 @@ fn lstsq_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
             *fixture = Some((a, rhs));
         }
         let (a, rhs) = fixture.as_ref().expect("lstsq fixture initialized");
+        // One eager session per call, as the pre-#1938 tensor-owned `lstsq` entered.
         let output = a
-            .lstsq(rhs)
+            .runtime()
+            .with_eager_session(|session| session.lstsq(a, rhs))
             .map_err(|error| eager_linalg_error("lstsq", error))?;
         EAGER_OUTPUTS.with(|outputs| outputs.borrow_mut().push(output));
         Ok(())
@@ -2276,8 +2846,10 @@ fn svd_full_f64(_b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
             );
         }
         let input = fixture.as_ref().expect("full SVD fixture initialized");
+        // One eager session per call, as the pre-#1938 tensor-owned `svd_full` entered.
         let (u, s, vt) = input
-            .svd_full()
+            .runtime()
+            .with_eager_session(|session| session.svd_full(input))
             .map_err(|error| eager_linalg_error("svd_full", error))?;
         EAGER_OUTPUTS.with(|outputs| outputs.borrow_mut().extend([u, s, vt]));
         Ok(())
@@ -2294,68 +2866,88 @@ fn norm_f64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Res
 
 // Complex.
 fn conj_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.conj(tensor_c64(&[16_777_216], 1))?);
+    consume(direct(b, |s| {
+        s.conj_read(read(tensor_c64(&[16_777_216], 1)))
+    })?);
     Ok(())
 }
 fn mul_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.mul(tensor_c64(&[8_388_608], 1), tensor_c64(&[8_388_608], 2))?);
+    consume(direct(b, |s| {
+        s.mul_read(
+            read(tensor_c64(&[8_388_608], 1)),
+            read(tensor_c64(&[8_388_608], 2)),
+        )
+    })?);
     Ok(())
 }
 fn div_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.div(
-        tensor_c64(&[8_388_608], 1),
-        tensor_c64_constant(&[8_388_608], Complex64::new(1.5, 0.25)),
-    )?);
+    consume(direct(b, |s| {
+        s.div_read(
+            read(tensor_c64(&[8_388_608], 1)),
+            read(tensor_c64_constant(&[8_388_608], Complex64::new(1.5, 0.25))),
+        )
+    })?);
     Ok(())
 }
 fn exp_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.exp(tensor_c64(&[4_194_304], 1))?);
+    consume(direct(b, |s| {
+        s.exp_read(read(tensor_c64(&[4_194_304], 1)))
+    })?);
     Ok(())
 }
 fn log_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.log(tensor_c64_constant(&[4_194_304], Complex64::new(1.5, 0.25)))?);
+    consume(direct(b, |s| {
+        s.log_read(read(tensor_c64_constant(
+            &[4_194_304],
+            Complex64::new(1.5, 0.25),
+        )))
+    })?);
     Ok(())
 }
 fn dot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.dot_general(
-        tensor_c64(&[640, 640], 1),
-        tensor_c64(&[640, 640], 2),
-        prepared_config!(
-            DotGeneralConfig,
-            DotGeneralConfig {
-                lhs_contracting_dims: vec![1],
-                rhs_contracting_dims: vec![0],
-                lhs_batch_dims: vec![],
-                rhs_batch_dims: vec![],
-            }
-        ),
-    )?);
+    consume(direct(b, |s| {
+        s.dot_general_read(
+            read(tensor_c64(&[640, 640], 1)),
+            read(tensor_c64(&[640, 640], 2)),
+            prepared_config!(
+                DotGeneralConfig,
+                DotGeneralConfig {
+                    lhs_contracting_dims: vec![1].into(),
+                    rhs_contracting_dims: vec![0].into(),
+                    lhs_batch_dims: vec![].into(),
+                    rhs_batch_dims: vec![].into(),
+                }
+            ),
+        )
+    })?);
     Ok(())
 }
 fn dot_with_conj_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(b.dot_general_with_conj(
-        tensor_c64(&[640, 640], 1),
-        tensor_c64(&[640, 640], 2),
-        prepared_config!(
-            DotGeneralConfig,
-            DotGeneralConfig {
-                lhs_contracting_dims: vec![1],
-                rhs_contracting_dims: vec![0],
-                lhs_batch_dims: vec![],
-                rhs_batch_dims: vec![],
-            }
-        ),
-        true,
-        false,
-    )?);
+    consume(direct(b, |s| {
+        s.dot_general_with_conj(
+            tensor_c64(&[640, 640], 1),
+            tensor_c64(&[640, 640], 2),
+            prepared_config!(
+                DotGeneralConfig,
+                DotGeneralConfig {
+                    lhs_contracting_dims: vec![1].into(),
+                    rhs_contracting_dims: vec![0].into(),
+                    lhs_batch_dims: vec![].into(),
+                    rhs_batch_dims: vec![].into(),
+                }
+            ),
+            true,
+            false,
+        )
+    })?);
     Ok(())
 }
 fn tensordot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
-    consume(
+    consume(direct(b, |s| {
         tensor_c64(&[640, 640], 1)
-            .tensordot(tensor_c64(&[640, 640], 2), TensorDotAxes::Count(1), b)
-            .map_err(|err| err.into_tensor_error("tensordot"))?,
-    );
+            .tensordot(tensor_c64(&[640, 640], 2), TensorDotAxes::Count(1), s)
+            .map_err(|err| err.into_tensor_error("tensordot"))
+    })?);
     Ok(())
 }
 fn svd_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
@@ -2415,6 +3007,324 @@ fn norm_c64_in_session(session: &mut CpuExecSession<'_>) -> tenferro_tensor::Res
     Ok(())
 }
 
+/// Route-level CPU linalg batch cases (tenferro-rs #1956, #2000).
+///
+/// Every family the tlinalg extraction made batched, measured through the public tensor routes on
+/// tenferro's column-major `[rows, cols, batch]` layout (batch trailing). Shape labels are
+/// `BxMxN` (`,rhs=1` for solve), the same convention as `cpu/linalg_batched`. Small matrices with
+/// several items exercise the batch fan-out; `n = 32/128` and the tall `64x24` case exercise the
+/// single-item and the `max(rows, cols) > 64` Auto paths.
+const BATCH_FAMILY_SUITE: &str = "cpu/linalg_batch_families";
+
+/// Square `(batch, n)` shapes for every family.
+const BATCH_FAMILY_SQUARE: &[(usize, usize)] = &[
+    (1, 2),
+    (3, 2),
+    (4, 2),
+    (8, 2),
+    (1024, 2),
+    (1, 4),
+    (3, 4),
+    (4, 4),
+    (8, 4),
+    (1024, 4),
+    (1, 8),
+    (3, 8),
+    (4, 8),
+    (8, 8),
+    (1024, 8),
+    (1, 32),
+    (8, 32),
+    (1, 128),
+    (8, 128),
+];
+
+/// Families that also take the tall `64x24` single matrix.
+const BATCH_FAMILY_TALL: &[&str] = &["batched_svd", "batched_svdvals", "batched_qr", "batched_lu"];
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum BatchFamily {
+    Solve,
+    Cholesky,
+    Qr,
+    Eigh,
+    Eigvalsh,
+    Svd,
+    Svdvals,
+    Lu,
+}
+
+impl BatchFamily {
+    const ALL: [(&'static str, BatchFamily, &'static str); 8] = [
+        (
+            "batched_solve",
+            Self::Solve,
+            "general solve, one rhs column (TensorLinalgExt::solve)",
+        ),
+        (
+            "batched_cholesky",
+            Self::Cholesky,
+            "SPD Cholesky (TensorLinalgExt::cholesky)",
+        ),
+        ("batched_qr", Self::Qr, "thin QR (TensorLinalgExt::qr)"),
+        (
+            "batched_eigh",
+            Self::Eigh,
+            "symmetric/Hermitian eigendecomposition (TensorLinalgExt::eigh)",
+        ),
+        (
+            "batched_eigvalsh",
+            Self::Eigvalsh,
+            "symmetric eigenvalues only (TensorLinalgExt::eigvalsh)",
+        ),
+        ("batched_svd", Self::Svd, "thin SVD (TensorLinalgExt::svd)"),
+        (
+            "batched_svdvals",
+            Self::Svdvals,
+            "singular values only (TensorLinalgExt::svdvals)",
+        ),
+        (
+            "batched_lu",
+            Self::Lu,
+            "partial-pivot LU, P L U and pivots (TensorLinalgExt::lu)",
+        ),
+    ];
+
+    fn from_benchmark(benchmark: &str) -> Option<Self> {
+        Self::ALL
+            .iter()
+            .find(|(name, _, _)| *name == benchmark)
+            .map(|(_, family, _)| *family)
+    }
+
+    /// Whether the input is a Hermitian positive-definite batch.
+    fn needs_hpd(self) -> bool {
+        matches!(self, Self::Cholesky | Self::Eigh | Self::Eigvalsh)
+    }
+}
+
+/// The case list: every family on f64, `svd` and `eigh` on c64 too.
+fn batch_family_cases() -> Vec<Case> {
+    let mut cases = Vec::new();
+    for &(benchmark, family, notes) in &BatchFamily::ALL {
+        let mut shapes: Vec<String> = BATCH_FAMILY_SQUARE
+            .iter()
+            .map(|&(batch, n)| format!("{batch}x{n}x{n}"))
+            .collect();
+        if BATCH_FAMILY_TALL.contains(&benchmark) {
+            shapes.push("1x64x24".to_string());
+        }
+        let dtypes: &[&'static str] = if matches!(family, BatchFamily::Svd | BatchFamily::Eigh) {
+            &["f64", "c64"]
+        } else {
+            &["f64"]
+        };
+        for &dtype in dtypes {
+            for shape in &shapes {
+                let shape = if family == BatchFamily::Solve {
+                    format!("{shape},rhs=1")
+                } else {
+                    shape.clone()
+                };
+                cases.push(Case {
+                    suite: BATCH_FAMILY_SUITE,
+                    benchmark,
+                    dtype,
+                    // The runner's case labels are `'static`; this suite's are generated once per
+                    // process, like the leaked fixtures.
+                    shape: Box::leak(shape.into_boxed_str()),
+                    notes,
+                    run: batch_family_direct,
+                });
+            }
+        }
+    }
+    cases
+}
+
+/// `Case::run` for this suite: never called, because `time_case` dispatches on the parsed shape.
+fn batch_family_direct(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    Err(tenferro_tensor::Error::invalid_argument(
+        "cpu/linalg_batch_families",
+        "case",
+        "batch family cases are dispatched by time_case from their shape label",
+    ))
+}
+
+#[derive(Clone, Copy, Debug)]
+struct BatchFamilySpec {
+    family: BatchFamily,
+    complex: bool,
+    batch: usize,
+    rows: usize,
+    cols: usize,
+}
+
+impl BatchFamilySpec {
+    fn parse(case: &Case) -> BenchResult<Self> {
+        let family = BatchFamily::from_benchmark(case.benchmark)
+            .ok_or_else(|| format!("unknown batch family {}", case.benchmark))?;
+        let dims = case.shape.split(',').next().unwrap_or_default();
+        let parsed: Vec<usize> = dims
+            .split('x')
+            .map(str::parse)
+            .collect::<Result<_, _>>()
+            .map_err(|_| format!("invalid batch family shape {}", case.shape))?;
+        let [batch, rows, cols] = parsed[..] else {
+            return Err(format!("invalid batch family shape {}", case.shape).into());
+        };
+        Ok(Self {
+            family,
+            complex: case.dtype == "c64",
+            batch,
+            rows,
+            cols,
+        })
+    }
+
+    fn input(&self) -> &'static Tensor {
+        batch_family_input(
+            self.family.needs_hpd(),
+            self.complex,
+            self.batch,
+            self.rows,
+            self.cols,
+        )
+    }
+
+    fn rhs(&self) -> &'static Tensor {
+        tensor_f64(&[self.rows, 1, self.batch], 2)
+    }
+}
+
+/// `[rows, cols, batch]` column-major input, items contiguous in batch order.
+///
+/// General inputs are `data_f64` / `data_c64` over the whole buffer with `2 + j/n` (`3 + j/n` for
+/// complex) added to each square item's diagonal, matching `batched_well_conditioned`. Hermitian
+/// positive-definite inputs follow `spd` per item: `(0.125 / n) (S + Sᴴ) + diag(2 + j/n)` with `S`
+/// the item's slice of the same buffer.
+fn batch_family_input(
+    hpd: bool,
+    complex: bool,
+    batch: usize,
+    rows: usize,
+    cols: usize,
+) -> &'static Tensor {
+    static CACHE: TensorCache = OnceLock::new();
+    let key = format!("{hpd}:{complex}:{batch}:{rows}:{cols}");
+    cached_tensor(&CACHE, key, || {
+        let item = rows * cols;
+        let shape = vec![rows, cols, batch];
+        let square = rows == cols;
+        if complex {
+            let source = data_c64(item * batch, 1);
+            let mut values = source.clone();
+            for b in 0..batch {
+                let off = b * item;
+                if hpd {
+                    let n = rows;
+                    let scale = 0.125 / n as f64;
+                    for col in 0..n {
+                        for row in 0..n {
+                            values[off + row + col * n] = (source[off + row + col * n]
+                                + source[off + col + row * n].conj())
+                                * scale;
+                        }
+                        values[off + col + col * n] +=
+                            Complex64::new(2.0 + col as f64 / n as f64, 0.0);
+                    }
+                } else if square {
+                    for j in 0..rows {
+                        values[off + j + j * rows] +=
+                            Complex64::new(3.0 + j as f64 / rows as f64, 0.0);
+                    }
+                }
+            }
+            Tensor::from_vec_col_major(shape, values).unwrap()
+        } else {
+            let source = data_f64(item * batch, 1);
+            let mut values = source.clone();
+            for b in 0..batch {
+                let off = b * item;
+                if hpd {
+                    let n = rows;
+                    let scale = 0.125 / n as f64;
+                    for col in 0..n {
+                        for row in 0..n {
+                            values[off + row + col * n] =
+                                scale * (source[off + row + col * n] + source[off + col + row * n]);
+                        }
+                        values[off + col + col * n] += 2.0 + col as f64 / n as f64;
+                    }
+                } else if square {
+                    for j in 0..rows {
+                        values[off + j + j * rows] += 2.0 + j as f64 / rows as f64;
+                    }
+                }
+            }
+            Tensor::from_vec_col_major(shape, values).unwrap()
+        }
+    })
+}
+
+fn batch_family_in_session(
+    spec: &BatchFamilySpec,
+    session: &mut CpuExecSession<'_>,
+) -> tenferro_tensor::Result<()> {
+    let input = spec.input();
+    match spec.family {
+        BatchFamily::Solve => consume(input.solve(spec.rhs(), session)?),
+        BatchFamily::Cholesky => consume(input.cholesky(session)?),
+        BatchFamily::Qr => {
+            let (q, r) = input.qr(session)?;
+            consume_many([q, r]);
+        }
+        BatchFamily::Eigh => {
+            let (values, vectors) = input.eigh(session)?;
+            consume_many([values, vectors]);
+        }
+        BatchFamily::Eigvalsh => consume(input.eigvalsh(session)?),
+        BatchFamily::Svd => {
+            let (u, s, vt) = input.svd(session)?;
+            consume_many([u, s, vt]);
+        }
+        BatchFamily::Svdvals => consume(input.svdvals(session)?),
+        BatchFamily::Lu => {
+            let (p, l, u, pivots) = input.lu(session)?;
+            consume_many([p, l, u, pivots]);
+        }
+    }
+    Ok(())
+}
+
+fn build_batch_family_trace(spec: &BatchFamilySpec) -> BenchResult<Vec<TracedTensor>> {
+    let input = traced(spec.input())?;
+    Ok(match spec.family {
+        BatchFamily::Solve => vec![input.solve(&traced(spec.rhs())?)?],
+        BatchFamily::Cholesky => vec![input.cholesky()?],
+        BatchFamily::Qr => {
+            let (q, r) = input.qr()?;
+            vec![q, r]
+        }
+        BatchFamily::Eigh => {
+            let (values, vectors) = input.eigh()?;
+            vec![values, vectors]
+        }
+        BatchFamily::Eigvalsh => vec![input.eigvalsh()?],
+        BatchFamily::Svd => {
+            let (u, s, vt) = input.svd()?;
+            vec![u, s, vt]
+        }
+        BatchFamily::Svdvals => {
+            return Err("tenferro-rs has no TracedTensor svdvals API (unsupported)".into())
+        }
+        BatchFamily::Lu => {
+            let (p, l, u, pivots) = input.lu()?;
+            vec![p, l, u, pivots]
+        }
+    })
+}
+
 fn with_cpu_linalg<R>(
     backend: &mut CpuBackend,
     f: impl for<'a> FnOnce(&'a mut CpuExecSession<'a>) -> tenferro_tensor::Result<R> + Send,
@@ -2424,12 +3334,146 @@ where
 {
     backend.with_backend_session(|session| {
         with_cpu_exec_session(session, f).expect("CpuBackend must expose a CPU execution session")
-    })
+    })?
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn batched_matvec_residual(a: &Tensor, x: &Tensor, b: &Tensor, n: usize) -> f64 {
+        let (a, x, b) = (
+            a.as_slice::<f64>().unwrap(),
+            x.as_slice::<f64>().unwrap(),
+            b.as_slice::<f64>().unwrap(),
+        );
+        let mut worst: f64 = 0.0;
+        for batch in 0..LU_BATCH {
+            for row in 0..n {
+                let ax: f64 = (0..n)
+                    .map(|col| a[batch * n * n + row + col * n] * x[batch * n + col])
+                    .sum();
+                worst = worst.max((ax - b[batch * n + row]).abs());
+            }
+        }
+        worst
+    }
+
+    #[test]
+    fn batched_prepared_lu_rows_solve_their_systems() {
+        let mut backend = CpuBackend::with_threads(1).unwrap();
+        for n in [2, 4, 8, 16] {
+            let a = batched_well_conditioned(n, 1);
+            let lower = batched_lower_triangular(n, 1);
+            let rhs = tensor_f64(&[n, 1, LU_BATCH], 2);
+            let (lu_x, tri_x) = with_cpu_linalg(&mut backend, |session| {
+                let (packed, pivots) = batched_lu_factors(session, n)?;
+                assert_eq!(packed.shape(), &[n, n, LU_BATCH]);
+                let lu_x = LinalgBackend::lu_solve_prepared(
+                    session, a, packed, pivots, rhs, false, false,
+                )?;
+                let tri_x = lower.triangular_solve(rhs, true, true, false, false, session)?;
+                Ok((lu_x, tri_x))
+            })
+            .unwrap();
+            assert_eq!(lu_x.shape(), &[n, 1, LU_BATCH]);
+            assert!(
+                batched_matvec_residual(a, &lu_x, rhs, n) < 1e-12,
+                "lu n={n}"
+            );
+            assert!(
+                batched_matvec_residual(lower, &tri_x, rhs, n) < 1e-12,
+                "tri n={n}"
+            );
+        }
+    }
+
+    #[test]
+    fn batch_family_cases_cover_every_family_shape_and_dtype() {
+        let cases = batch_family_cases();
+        // 8 f64 families x 19 square shapes, + 4 tall rows, + c64 svd/eigh (19 each, + svd tall).
+        assert_eq!(cases.len(), 8 * 19 + 4 + 19 * 2 + 1);
+        let mut seen = std::collections::HashSet::new();
+        for case in &cases {
+            assert!(
+                seen.insert((case.benchmark, case.dtype, case.shape)),
+                "duplicate {case:?}",
+                case = (case.benchmark, case.dtype, case.shape)
+            );
+            let spec = BatchFamilySpec::parse(case).unwrap();
+            if spec.family.needs_hpd() || spec.family == BatchFamily::Solve {
+                assert_eq!(spec.rows, spec.cols);
+            }
+            assert_eq!(
+                case.shape.ends_with(",rhs=1"),
+                spec.family == BatchFamily::Solve
+            );
+        }
+    }
+
+    #[test]
+    fn batch_family_rows_execute_and_solve_their_systems() {
+        let mut backend = CpuBackend::with_threads(2).unwrap();
+        for case in batch_family_cases()
+            .iter()
+            .filter(|case| matches!(case.shape.split(',').next(), Some("3x4x4" | "1x64x24")))
+        {
+            let spec = BatchFamilySpec::parse(case).unwrap();
+            with_cpu_linalg(&mut backend, |session| {
+                batch_family_in_session(&spec, session)
+            })
+            .unwrap_or_else(|error| {
+                panic!("{} {} {}: {error}", case.benchmark, case.dtype, case.shape)
+            });
+            clear_outputs();
+        }
+        // Residual of the batched solve, item by item.
+        let spec = BatchFamilySpec {
+            family: BatchFamily::Solve,
+            complex: false,
+            batch: 3,
+            rows: 4,
+            cols: 4,
+        };
+        let x = with_cpu_linalg(&mut backend, |session| {
+            spec.input().solve(spec.rhs(), session)
+        })
+        .unwrap();
+        let (a, x, b) = (
+            spec.input().as_slice::<f64>().unwrap(),
+            x.as_slice::<f64>().unwrap(),
+            spec.rhs().as_slice::<f64>().unwrap(),
+        );
+        for item in 0..3 {
+            for row in 0..4 {
+                let ax: f64 = (0..4)
+                    .map(|col| a[item * 16 + row + col * 4] * x[item * 4 + col])
+                    .sum();
+                assert!((ax - b[item * 4 + row]).abs() < 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn batch_family_hpd_inputs_are_hermitian_per_item() {
+        for complex in [false, true] {
+            let tensor = batch_family_input(true, complex, 3, 4, 4);
+            for item in 0..3 {
+                for col in 0..4 {
+                    for row in 0..4 {
+                        let (i, j) = (item * 16 + row + col * 4, item * 16 + col + row * 4);
+                        if complex {
+                            let v = tensor.as_slice::<Complex64>().unwrap();
+                            assert_eq!(v[i], v[j].conj());
+                        } else {
+                            let v = tensor.as_slice::<f64>().unwrap();
+                            assert_eq!(v[i], v[j]);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn spd_fixture_is_dense_symmetric_and_strictly_diagonally_dominant() {

@@ -1,0 +1,56 @@
+# Confirmation-mode declaration for paired baseline/candidate CPU timing
+# (tenferro-rs #1946 B5). PLACEHOLDER: every `null` below is a required input.
+#
+# Fill all values and set `status: declared` BEFORE collecting or looking at
+# any candidate result. The thresholds must not be derived from the candidate
+# data or from the source audit; take them from the A/A noise characterization
+# (scripts/run_paired_timing.sh --aa) and from what size of change matters.
+# scripts/bench_selection.py and scripts/detect_regressions.py refuse to run
+# confirm mode while any required field is null or status != declared.
+# Commit the filled file (or keep it next to the raw runs) so the declaration
+# is part of the record; never edit it after candidate results exist.
+confirmation_config_version: 1
+status: placeholder
+declared_before_candidate_results: null   # ISO-8601 time the values were fixed
+
+library:
+  baseline_commit: null        # e.g. full tenferro-rs SHA of the baseline
+  candidate_commit: null       # full tenferro-rs SHA of the candidate
+harness_commit: null           # tenferro-benchmark SHA used for BOTH arms
+
+build:
+  profile: release
+  features: null               # e.g. cpu-faer (must match TENFERRO_CPU_FEATURES)
+
+host:
+  target_profile: null         # amd-cpu | mac-cpu
+  hostname: null
+  affinity: null               # e.g. "none (thread env only, no taskset)"
+  provider: null               # e.g. faer
+
+threads: null                  # e.g. [1, 4]
+
+cases:
+  suite_id: cpu/session_matrix
+  manifest_version: null       # must equal benchmarks/cpu/manifests/session_matrix.yaml
+  coverage: null               # quick | full
+  case_ids: null               # optional explicit subset (passed as BENCH_INSTANCE); null = the whole coverage list
+
+timing:
+  scope: null                  # e.g. many_operations_single_interval (session/inputs outside)
+  cache_pool_state: null       # e.g. "warm: one validated untimed call per process"
+
+repetitions:
+  warmups: null                # untimed samples per process
+  runs: null                   # timed samples per process and arm
+  rounds: null                 # paired processes per arm, run in balanced ABBA order
+
+statistic: null                # median_of_round_ratios
+thresholds:
+  relative: null               # REGRESSION needs statistic > 1 + relative
+  absolute_ns: null            # ...and a per-operation median difference > absolute_ns
+
+noise:
+  max_cov: null                # any arm/round CoV above this -> INCONCLUSIVE
+  max_aa_relative_spread: null # |A/A statistic - 1| above this -> INCONCLUSIVE
+  host_idle_guard: null        # e.g. "benchmark_host_idle.sh enabled, never bypassed"

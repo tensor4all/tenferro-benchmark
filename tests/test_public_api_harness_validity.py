@@ -318,5 +318,52 @@ class PlausibilityReportTests(unittest.TestCase):
         )
 
 
+def lcg_value(index: int, seed: int) -> float:
+    x = (index * 6_364_136_223_846_793_005 + seed * 1_442_695_040_888_963_407) % (1 << 64)
+    return ((x % 2048) - 1024.0) / 1024.0
+
+
+class BatchFamilyFixtureTests(unittest.TestCase):
+    """cpu/linalg_batch_families: PyTorch and JAX mirror the Rust case list and fixtures."""
+
+    def test_pytorch_and_jax_cases_and_fixtures_agree_with_the_rust_layout(self) -> None:
+        import jax
+        import numpy as np
+
+        jax.config.update("jax_enable_x64", True)
+        jax.config.update("jax_platform_name", "cpu")
+        torch_module = load_module(
+            "benchmark_cpu_public_api_python",
+            ROOT / "scripts" / "benchmark_cpu_public_api_python.py",
+        )
+        jax_module = load_module(
+            "benchmark_cpu_public_api_jax",
+            ROOT / "scripts" / "benchmark_cpu_public_api_jax.py",
+        )
+        torch_cases = [case[:4] for case in torch_module.batch_family_cases()]
+        jax_cases = [case[:4] for case in jax_module.batch_family_cases()]
+        # Same rows as the Rust runner: 8 f64 families x 19 square shapes, 4 tall rows, c64 svd and
+        # eigh (19 each) plus the c64 tall svd.
+        self.assertEqual(len(torch_cases), 8 * 19 + 4 + 19 * 2 + 1)
+        self.assertEqual(len(set(torch_cases)), len(torch_cases))
+        self.assertEqual(torch_cases, jax_cases)
+
+        n, batch = 4, 3
+        hpd = torch_module.batch_family_input(True, False, batch, n, n).get()
+        for item in range(batch):
+            off = item * n * n
+            for col in range(n):
+                for row in range(n):
+                    expected = (0.125 / n) * (
+                        lcg_value(off + row + col * n, 1) + lcg_value(off + col + row * n, 1)
+                    ) + ((2.0 + col / n) if row == col else 0.0)
+                    self.assertEqual(hpd[item, row, col].item(), expected)
+        for args in [(True, False, 3, 4, 4), (True, True, 3, 4, 4), (False, True, 8, 8, 8), (False, False, 1, 64, 24)]:
+            np.testing.assert_array_equal(
+                torch_module.batch_family_input(*args).get().numpy(),
+                np.asarray(jax_module.batch_family_input(*args).get()),
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

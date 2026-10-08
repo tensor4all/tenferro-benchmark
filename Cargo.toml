@@ -14,6 +14,11 @@ tenferro-runtime  = { path = "extern/tenferro-rs/crates/tenferro-runtime", defau
 tenferro-tensor   = { path = "extern/tenferro-rs/crates/tenferro-tensor", default-features = false }
 tenferro-gpu      = { path = "extern/tenferro-rs/crates/tenferro-gpu", default-features = false, optional = true }
 tenferro-cpu      = { path = "extern/tenferro-rs/crates/tenferro-cpu", default-features = false, optional = true }
+# Optional tprims providers (feature `tprims`): the unpublished standalone
+# ext crate of extern/tenferro-rs. Like every path dependency, its manifest must
+# exist in the checkout even when the feature is off, so this needs an
+# extern/tenferro-rs that contains ext/tenferro-cpu-tprims (tenferro-rs #1955).
+tenferro-cpu-tprims = { path = "extern/tenferro-rs/ext/tenferro-cpu-tprims", optional = true }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -26,11 +31,24 @@ hptt = { version = "0.4.1", optional = true }
 # extern/tenferro-rs/crates/tenferro-gpu/src/cubecl/ffi/cutensor.rs's dlopen
 # style. Optional, only pulled in by the `cuda` feature.
 libloading = { version = "0.8", optional = true }
+# cudarc reference arms of the gpu/perf_issues transfer cases (tenferro-rs
+# #2009): pageable and pinned memcpy on the same device. Same version and
+# feature set as tenferro-rs's workspace pin, so Cargo resolves one copy.
+cudarc = { version = "0.19", optional = true, default-features = false, features = ["driver", "runtime", "nvrtc", "dynamic-loading", "cuda-12080"] }
 # Non-optional: benchmark_permutation always reports the actual size of
 # tenferro's global rayon pool (rayon::current_num_threads(), sized from
 # RAYON_NUM_THREADS at process start) as its `threads` field, regardless of
 # any Cargo feature.
 rayon = "1"
+# Reference arms of the cpu/perf_issues decode-projection cases (tenferro-rs
+# #1992/#2003/#1995): the identical GEMM through faer directly into a
+# preallocated output, and a plain host sgemm. faer matches tenferro-rs's own
+# faer requirement so Cargo resolves one copy.
+faer = { version = "0.24", default-features = false, features = ["std", "rayon"] }
+matrixmultiply = { version = "0.3", features = ["threading"] }
+# f64 erf reference for the cpu/perf_issues erf / exact-gelu checks (tenferro-rs
+# #1975, #2010 PR-B1); the same crate tenferro-cpu evaluates erf with.
+libm = "0.2"
 # Optional path deps on extern/strided-rs (see scripts/setup_extern_deps.sh,
 # which clones it alongside extern/tenferro-rs), gated by the `strided-rs`
 # feature below. Cargo resolves every path dependency's manifest to build the
@@ -62,6 +80,12 @@ hptt = ["dep:hptt"]
 # copy_into_col_major_par) so 4-thread runs exercise strided-perm's rayon
 # path, matching this repo's other rayon-backed backends.
 strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel"]
+# Measure tprims instead of tenferro's built-in GEMM and dot_general: every CPU
+# backend built through `cpu_provider::configure` installs the tprims providers
+# (tensor4all/tprims-rs phase 1e). Compare a default build with a
+# `--features tprims` build of the same commit; `TPRIMS_SHAPE_LOG=<file>`
+# additionally logs every provider call's shapes (see src/cpu_provider.rs).
+tprims = ["cpu-faer", "dep:tenferro-cpu-tprims"]
 cpu-faer = [
     "tenferro-ad/cpu-faer",
     "tenferro-einsum/autodiff",
@@ -152,6 +176,7 @@ cuda = [
     "dep:tenferro-cpu",
     "tenferro-cpu?/cpu-faer",
     "dep:libloading",
+    "dep:cudarc",
 ]
 webgpu = [
     "dep:tenferro-gpu",
@@ -182,6 +207,11 @@ path = "src/bin/benchmark_gpu_rust.rs"
 required-features = ["cuda"]
 
 [[bin]]
+name = "benchmark_gpu_perf_issues"
+path = "src/bin/benchmark_gpu_perf_issues.rs"
+required-features = ["cuda"]
+
+[[bin]]
 name = "benchmark_gpu_linalg_ad"
 path = "src/bin/benchmark_gpu_linalg_ad.rs"
 required-features = ["cuda"]
@@ -195,8 +225,3 @@ required-features = ["cuda"]
 name = "benchmark_gpu_permutation_webgpu"
 path = "src/bin/benchmark_gpu_permutation_webgpu.rs"
 required-features = ["webgpu"]
-
-[[example]]
-name = "svd_backward_panic_mwe"
-path = "examples/svd_backward_panic_mwe.rs"
-required-features = ["cpu-faer"]

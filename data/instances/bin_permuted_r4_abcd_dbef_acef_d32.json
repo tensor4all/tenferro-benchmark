@@ -1,0 +1,59 @@
+{
+  "name": "bin_permuted_r4_abcd_dbef_acef_d32",
+  "format_string": "abcd,dbef->acef",
+  "shapes": [
+    [
+      32,
+      32,
+      32,
+      32
+    ],
+    [
+      32,
+      32,
+      32,
+      32
+    ]
+  ],
+  "dtype": "float64",
+  "num_tensors": 2,
+  "paths": {
+    "opt_size": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 20.0,
+      "log10_flops": 9.3319
+    },
+    "opt_flops": {
+      "path": [
+        [
+          0,
+          1
+        ]
+      ],
+      "log2_size": 20.0,
+      "log10_flops": 9.3319
+    }
+  },
+  "format_string_colmajor": "dcba,febd->feca",
+  "shapes_colmajor": [
+    [
+      32,
+      32,
+      32,
+      32
+    ],
+    [
+      32,
+      32,
+      32,
+      32
+    ]
+  ],
+  "format_string_rowmajor": "abcd,dbef->acef",
+  "intent": "tenferro-rs #1863: representative standard contraction (permuted rank-4 abcd,dbef->acef at extent 32, 2 GFLOP) for the t1 vs t4/t8 thread-scaling question; the reference is the same row at 1 thread (run_all.sh 1 / 4, optionally 8)."
+}

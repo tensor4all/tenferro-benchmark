@@ -2,9 +2,9 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/linalg_jvp_vjp`
-- Suite file: `/workspace/benchmarks/gpu/linalg_jvp_vjp.yaml`
-- Timestamp: `2026-09-18T15:05:34.258416+00:00`
-- tenferro-rs commit: `cf971d0f18d0357133da97dae66802e26bd56e2f`
+- Suite file: `/workspaces/t4a-2010-bench-gpu/benchmarks/gpu/linalg_jvp_vjp.yaml`
+- Timestamp: `2026-10-06T19:47:20.990197+00:00`
+- tenferro-rs commit: `5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102`
 
 ## GPU Information
 
@@ -15,7 +15,7 @@
 - Driver version: `580.126.09`
 - CUDA version: `13.0`
 - CUDA runtime: `12.9`
-- cuDNN version: `92000`
+- cuDNN version: `92700`
 
 ## CPU Information
 
@@ -38,26 +38,26 @@ Timed runs include the host API call and backend-native device synchronization w
 
 | suite | benchmark | dtype | shape | tenferro-rs CUDA trace | PyTorch CUDA |
 |---|---|---:|---|---:|---:|
-| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 3.423 ± 0.100 | 3.037 ± 0.019 |
-| large | `grad_sum_eigh_jvp` | f64 | `512x512` | 6.750 ± 0.173 | 6.436 ± 0.009 |
-| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 3.539 ± 0.109 | 3.207 ± 0.025 |
-| large | `grad_sum_eigh_vjp` | f64 | `512x512` | 6.775 ± 0.101 | 6.480 ± 0.113 |
-| large | `grad_sum_lu_jvp` | f64 | `256x256` | 2.802 ± 0.022 | 1.142 ± 0.002 |
-| large | `grad_sum_lu_jvp` | f64 | `512x512` | 2.599 ± 0.010 | 2.435 ± 0.007 |
-| large | `grad_sum_lu_vjp` | f64 | `256x256` | 1.999 ± 0.015 | 0.925 ± 0.087 |
-| large | `grad_sum_lu_vjp` | f64 | `512x512` | 2.761 ± 0.007 | 1.927 ± 0.009 |
-| large | `grad_sum_qr_jvp` | f64 | `256x256` | 3.962 ± 0.024 | 1.484 ± 0.009 |
-| large | `grad_sum_qr_jvp` | f64 | `512x512` | 4.117 ± 0.163 | 3.267 ± 0.014 |
-| large | `grad_sum_qr_vjp` | f64 | `256x256` | 2.496 ± 0.015 | 1.463 ± 0.004 |
-| large | `grad_sum_qr_vjp` | f64 | `512x512` | 4.413 ± 0.047 | 3.225 ± 0.013 |
-| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 3.374 ± 0.082 | 0.939 ± 0.035 |
-| large | `grad_sum_solve_jvp` | f64 | `512x512,rhs=1` | 2.934 ± 0.017 | 1.867 ± 0.005 |
-| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 2.316 ± 0.014 | 1.714 ± 0.014 |
-| large | `grad_sum_solve_vjp` | f64 | `512x512,rhs=1` | 3.082 ± 0.241 | 3.388 ± 0.136 |
-| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 12.181 ± 0.165 | 12.479 ± 0.067 |
-| large | `grad_sum_svd_s_jvp` | f64 | `512x512` | 32.988 ± 0.024 | 33.414 ± 0.021 |
-| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 12.205 ± 0.008 | 12.497 ± 0.043 |
-| large | `grad_sum_svd_s_vjp` | f64 | `512x512` | 33.089 ± 0.147 | 33.476 ± 0.047 |
+| large | `grad_sum_eigh_jvp` | f64 | `256x256` | 3.287 ± 0.033 | 3.116 ± 0.020 |
+| large | `grad_sum_eigh_jvp` | f64 | `512x512` | 6.749 ± 0.054 | 6.565 ± 0.020 |
+| large | `grad_sum_eigh_vjp` | f64 | `256x256` | 3.292 ± 0.021 | 3.269 ± 0.034 |
+| large | `grad_sum_eigh_vjp` | f64 | `512x512` | 6.771 ± 0.032 | 6.538 ± 0.059 |
+| large | `grad_sum_lu_jvp` | f64 | `256x256` | 2.157 ± 0.038 | 1.163 ± 0.003 |
+| large | `grad_sum_lu_jvp` | f64 | `512x512` | 2.495 ± 0.024 | 2.450 ± 0.007 |
+| large | `grad_sum_lu_vjp` | f64 | `256x256` | 1.514 ± 0.025 | 0.926 ± 0.003 |
+| large | `grad_sum_lu_vjp` | f64 | `512x512` | 2.603 ± 0.027 | 1.950 ± 0.005 |
+| large | `grad_sum_qr_jvp` | f64 | `256x256` | 3.138 ± 0.035 | 1.502 ± 0.005 |
+| large | `grad_sum_qr_jvp` | f64 | `512x512` | 4.291 ± 0.046 | 3.292 ± 0.022 |
+| large | `grad_sum_qr_vjp` | f64 | `256x256` | 3.188 ± 0.091 | 1.468 ± 0.010 |
+| large | `grad_sum_qr_vjp` | f64 | `512x512` | 4.129 ± 0.270 | 3.252 ± 0.010 |
+| large | `grad_sum_solve_jvp` | f64 | `256x256,rhs=1` | 2.688 ± 0.023 | 0.984 ± 0.012 |
+| large | `grad_sum_solve_jvp` | f64 | `512x512,rhs=1` | 2.891 ± 0.025 | 1.863 ± 0.015 |
+| large | `grad_sum_solve_vjp` | f64 | `256x256,rhs=1` | 2.692 ± 0.019 | 1.714 ± 0.010 |
+| large | `grad_sum_solve_vjp` | f64 | `512x512,rhs=1` | 2.989 ± 0.020 | 3.298 ± 0.036 |
+| large | `grad_sum_svd_s_jvp` | f64 | `256x256` | 12.080 ± 0.039 | 12.639 ± 0.033 |
+| large | `grad_sum_svd_s_jvp` | f64 | `512x512` | 32.948 ± 0.142 | 33.675 ± 0.087 |
+| large | `grad_sum_svd_s_vjp` | f64 | `256x256` | 12.122 ± 0.095 | 12.705 ± 0.050 |
+| large | `grad_sum_svd_s_vjp` | f64 | `512x512` | 33.070 ± 0.028 | 33.702 ± 0.105 |
 
 ## Loss Definitions
 

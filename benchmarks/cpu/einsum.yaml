@@ -1,7 +1,12 @@
 schema_version: 1
 suite_id: cpu/einsum
 title: CPU Einsum Benchmarks
-description: CPU einsum benchmark suite using shared instance definitions.
+description: >-
+  CPU einsum benchmark suite using shared instance definitions. The
+  bin_omeinsum_* instances carry tenferro-rs #1865 (omeinsum-rs small, batched
+  and materialization-heavy binary scenarios, PyTorch reference) and
+  bin_permuted_r4_abcd_dbef_acef_d32 carries #1863 (thread scaling of a
+  representative standard contraction, read across the 1/4(/8)-thread runs).
 defaults:
   device: {kind: cpu, ordinal: 0}
   run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api}
@@ -23,6 +28,7 @@ problems:
     - bin_batched_outer_product_compact_j16_k16_o64_t64
     - bin_batched_outer_product_noncompact_j16_k16_o64_t64
     - bin_elementwise_mul_2048x2048
+    - bin_elementwise_mul_512x512
     - nary_matmul_chain_64
     - gm_queen5_5_3.wcsp
     - lm_batch_likelihood_brackets_4_4d
@@ -34,3 +40,7 @@ problems:
     - str_nw_mera_open_26
     - tensornetwork_permutation_light_415
     - tensornetwork_permutation_focus_step409_316
+    - bin_omeinsum_matmul_10x10
+    - bin_omeinsum_batched_matmul_8x8_batch_4
+    - bin_omeinsum_high_d_12x12_contract_4_batch_4
+    - bin_permuted_r4_abcd_dbef_acef_d32

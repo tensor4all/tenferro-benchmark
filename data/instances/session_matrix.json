@@ -1,102 +1,2398 @@
 [
   {
     "id": "matmul_n2_count1024",
+    "workload": "loop_matmul",
     "operation": "matmul",
     "shape": [
       2,
       2
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "Per-call fixed cost of independent small public calls in one session."
   },
   {
     "id": "matmul_n4_count1024",
+    "workload": "loop_matmul",
     "operation": "matmul",
     "shape": [
       4,
       4
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "1024 independent small calls in one session; the distinct-workload control for the batch=1024 one-operation cases (tenferro-rs #1946 B2)."
   },
   {
     "id": "matmul_n8_count1024",
+    "workload": "loop_matmul",
     "operation": "matmul",
     "shape": [
       8,
       8
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "Per-call fixed cost of independent small public calls in one session."
   },
   {
     "id": "matmul_n16_count1024",
+    "workload": "loop_matmul",
     "operation": "matmul",
     "shape": [
       16,
       16
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "Per-call fixed cost of independent small public calls in one session."
   },
   {
     "id": "matmul_n32_count1024",
+    "workload": "loop_matmul",
     "operation": "matmul",
     "shape": [
       32,
       32
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "Per-call fixed cost of independent small public calls in one session."
   },
   {
     "id": "solve_n2_count1024",
+    "workload": "loop_solve",
     "operation": "solve",
     "shape": [
       2,
       2
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "TensorLinalgExt::solve",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "Per-call fixed cost of independent small public calls in one session."
   },
   {
     "id": "solve_n4_count1024",
+    "workload": "loop_solve",
     "operation": "solve",
     "shape": [
       4,
       4
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "TensorLinalgExt::solve",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "Per-call fixed cost of independent small public calls in one session."
   },
   {
     "id": "solve_n8_count1024",
+    "workload": "loop_solve",
     "operation": "solve",
     "shape": [
       8,
       8
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "TensorLinalgExt::solve",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "Per-call fixed cost of independent small public calls in one session."
   },
   {
     "id": "solve_n16_count1024",
+    "workload": "loop_solve",
     "operation": "solve",
     "shape": [
       16,
       16
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "TensorLinalgExt::solve",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "Per-call fixed cost of independent small public calls in one session."
   },
   {
     "id": "solve_n32_count1024",
+    "workload": "loop_solve",
     "operation": "solve",
     "shape": [
       32,
       32
     ],
     "dtype": "f64",
-    "operations_per_sample": 1024
+    "operations_per_sample": 1024,
+    "providers": [
+      "blas",
+      "faer",
+      "pytorch"
+    ],
+    "coverage": "quick",
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "TensorLinalgExt::solve",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "not-batched",
+      "workload_shape": "loop-of-1024-independent-ops"
+    },
+    "intent": "Per-call fixed cost of independent small public calls in one session."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "tenferro-rs #1946 F2 reproducer: one batch=1024 4x4x4 f64 batched dot. At 5a4e7fd84 the allocating route skipped the Auto lane split that the _into route took."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "tenferro-rs #1946 F2 reproducer: one batch=1024 4x4x4 f64 batched dot. At 5a4e7fd84 the allocating route skipped the Auto lane split that the _into route took."
+  },
+  {
+    "id": "beinsum_f64_b1024_m4n4k4_direct_alloc_auto",
+    "workload": "batched_einsum",
+    "operation": "einsum",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": "ijb,jkb->ikb",
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "beinsum_f64_b1024_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorEinsumExt::einsum",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Public concrete einsum spelling of the F2 batched contraction (lowering/wrapper divergence from dot_general)."
+  },
+  {
+    "id": "beinsum_f64_b1024_m4n4k4_direct_into_auto",
+    "workload": "batched_einsum",
+    "operation": "einsum_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": "ijb,jkb->ikb",
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "beinsum_f64_b1024_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorEinsumIntoExt::einsum_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Public concrete einsum spelling of the F2 batched contraction (lowering/wrapper divergence from dot_general)."
+  },
+  {
+    "id": "bdot_f64_b64_m4n4k4_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b64_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Below the default Auto lane cost cutoff (no fan-out expected)."
+  },
+  {
+    "id": "bdot_f64_b64_m4n4k4_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b64_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Below the default Auto lane cost cutoff (no fan-out expected)."
+  },
+  {
+    "id": "bdot_f64_b16_m64n64k64_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 16,
+    "m": 64,
+    "n": 64,
+    "k": 64,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b16_m64n64k64_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Larger-matrix control: few items, each above the lane cost cutoff."
+  },
+  {
+    "id": "bdot_f64_b16_m64n64k64_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 16,
+    "m": 64,
+    "n": 64,
+    "k": 64,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b16_m64n64k64_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Larger-matrix control: few items, each above the lane cost cutoff."
+  },
+  {
+    "id": "bdot_f64_b64_m64n1k64_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 64,
+    "n": 1,
+    "k": 64,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b64_m64n1k64_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 2,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Skinny (matrix-vector) batched control."
+  },
+  {
+    "id": "bdot_f64_b64_m64n1k64_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 64,
+    "n": 1,
+    "k": 64,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b64_m64n1k64_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 2,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Skinny (matrix-vector) batched control."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_canonical_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "canonical",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b1024_m4n4k4_canonical_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "canonical-copy",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Canonical-copy layout: batch-innermost storage leaves neither matrix axis unit-stride, so the GEMM input needs canonicalization."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_canonical_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "canonical",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": "bdot_f64_b1024_m4n4k4_canonical_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "view",
+      "layout": "canonical-copy",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Canonical-copy layout: batch-innermost storage leaves neither matrix axis unit-stride, so the GEMM input needs canonicalization."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_strided_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "strided",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_strided_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct-strided",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Direct-strided layout: padded batch stride, GEMM-compatible items."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_strided_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "strided",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_strided_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "view",
+      "layout": "direct-strided",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Direct-strided layout: padded batch stride, GEMM-compatible items."
+  },
+  {
+    "id": "bdot_c64_b1024_m4n4k4_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "c64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_c64_b1024_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Complex F2 batched dot."
+  },
+  {
+    "id": "bdot_c64_b1024_m4n4k4_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "c64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_c64_b1024_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Complex F2 batched dot."
+  },
+  {
+    "id": "bdot_c64_b1024_m4n4k4_strided_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "c64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "strided",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_c64_b1024_m4n4k4_strided_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct-strided",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Complex non-contiguous batched dot."
+  },
+  {
+    "id": "bdot_c64_b1024_m4n4k4_strided_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "c64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "strided",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_c64_b1024_m4n4k4_strided_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "view",
+      "layout": "direct-strided",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Complex non-contiguous batched dot."
+  },
+  {
+    "id": "beinsum_f64_b1024_m4n4k4_strided_alloc_auto",
+    "workload": "batched_einsum",
+    "operation": "einsum",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": "ijb,jkb->ikb",
+    "layout": "strided",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "beinsum_f64_b1024_m4n4k4_strided_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumExt::einsum_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct-strided",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Einsum over non-contiguous (padded-batch) views."
+  },
+  {
+    "id": "beinsum_f64_b1024_m4n4k4_strided_into_auto",
+    "workload": "batched_einsum",
+    "operation": "einsum_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": "ijb,jkb->ikb",
+    "layout": "strided",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "beinsum_f64_b1024_m4n4k4_strided_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumIntoExt::einsum_read_into",
+      "output": "reused",
+      "representation": "view",
+      "layout": "direct-strided",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Einsum over non-contiguous (padded-batch) views."
+  },
+  {
+    "id": "bdot_f64_b256_m4n4k4_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 256,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b256_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto batch-size sweep around the lane cost boundary (default model predicts 1 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b256_m4n4k4_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 256,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b256_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto batch-size sweep around the lane cost boundary (default model predicts 1 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b320_m4n4k4_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 320,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b320_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 2,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto batch-size sweep around the lane cost boundary (default model predicts 2 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b320_m4n4k4_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 320,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b320_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 2,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto batch-size sweep around the lane cost boundary (default model predicts 2 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b4096_m4n4k4_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 4096,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b4096_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto batch-size sweep around the lane cost boundary (default model predicts 4 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b4096_m4n4k4_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 4096,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b4096_m4n4k4_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto batch-size sweep around the lane cost boundary (default model predicts 4 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b64_m8n8k8_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 8,
+    "n": 8,
+    "k": 8,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m8n8k8_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto matrix-size sweep at batch 64 (default model predicts 1 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b64_m8n8k8_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 8,
+    "n": 8,
+    "k": 8,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m8n8k8_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto matrix-size sweep at batch 64 (default model predicts 1 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b64_m16n16k16_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 16,
+    "n": 16,
+    "k": 16,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m16n16k16_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 2,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto matrix-size sweep at batch 64 (default model predicts 2 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b64_m16n16k16_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 16,
+    "n": 16,
+    "k": 16,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m16n16k16_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 2,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto matrix-size sweep at batch 64 (default model predicts 2 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b64_m32n32k32_direct_alloc_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 32,
+    "n": 32,
+    "k": 32,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m32n32k32_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto matrix-size sweep at batch 64 (default model predicts 4 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b64_m32n32k32_direct_into_auto",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 32,
+    "n": 32,
+    "k": 32,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m32n32k32_direct_auto",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Auto matrix-size sweep at batch 64 (default model predicts 4 lanes at 4T)."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "backend",
+      "thresholds": {
+        "outer_min_items": 4096
+      }
+    },
+    "policy_id": "backend-outer-min-items-4096",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_backend-outer-min-items-4096",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto+backend(outer_min_items=4096)",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Threshold override suppressing fan-out; backend default vs scoped precedence."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "backend",
+      "thresholds": {
+        "outer_min_items": 4096
+      }
+    },
+    "policy_id": "backend-outer-min-items-4096",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_backend-outer-min-items-4096",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto+backend(outer_min_items=4096)",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Threshold override suppressing fan-out; backend default vs scoped precedence."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "scoped",
+      "thresholds": {
+        "outer_min_items": 4096
+      }
+    },
+    "policy_id": "scoped-outer-min-items-4096",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_scoped-outer-min-items-4096",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto+scoped(outer_min_items=4096)",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Threshold override suppressing fan-out; backend default vs scoped precedence."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "scoped",
+      "thresholds": {
+        "outer_min_items": 4096
+      }
+    },
+    "policy_id": "scoped-outer-min-items-4096",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_scoped-outer-min-items-4096",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto+scoped(outer_min_items=4096)",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Threshold override suppressing fan-out; backend default vs scoped precedence."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-sequential",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "sequential",
+      "override": "backend",
+      "thresholds": {}
+    },
+    "policy_id": "forced-sequential",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_forced-sequential",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "forced:Sequential",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Forced batch strategy; a provider/route that cannot honor it must fail typed (recorded unsupported), never fall back."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_into_forced-sequential",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "sequential",
+      "override": "backend",
+      "thresholds": {}
+    },
+    "policy_id": "forced-sequential",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_forced-sequential",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "forced:Sequential",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Forced batch strategy; a provider/route that cannot honor it must fail typed (recorded unsupported), never fall back."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-outer-parallel",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "outer_parallel",
+      "override": "backend",
+      "thresholds": {}
+    },
+    "policy_id": "forced-outer-parallel",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_forced-outer-parallel",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "forced:OuterParallel",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Forced batch strategy; a provider/route that cannot honor it must fail typed (recorded unsupported), never fall back."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_into_forced-outer-parallel",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "outer_parallel",
+      "override": "backend",
+      "thresholds": {}
+    },
+    "policy_id": "forced-outer-parallel",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_forced-outer-parallel",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "forced:OuterParallel",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Forced batch strategy; a provider/route that cannot honor it must fail typed (recorded unsupported), never fall back."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-provider-items",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "provider_items",
+      "override": "backend",
+      "thresholds": {}
+    },
+    "policy_id": "forced-provider-items",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_forced-provider-items",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "forced:ProviderItems",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Forced batch strategy; a provider/route that cannot honor it must fail typed (recorded unsupported), never fall back."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_into_forced-provider-items",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "provider_items",
+      "override": "backend",
+      "thresholds": {}
+    },
+    "policy_id": "forced-provider-items",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_forced-provider-items",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "forced:ProviderItems",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Forced batch strategy; a provider/route that cannot honor it must fail typed (recorded unsupported), never fall back."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_alloc_forced-whole-batch-vendor",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "whole_batch_vendor",
+      "override": "backend",
+      "thresholds": {}
+    },
+    "policy_id": "forced-whole-batch-vendor",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_forced-whole-batch-vendor",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "forced:WholeBatchVendor",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Forced batch strategy; a provider/route that cannot honor it must fail typed (recorded unsupported), never fall back."
+  },
+  {
+    "id": "bdot_f64_b1024_m4n4k4_direct_into_forced-whole-batch-vendor",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 1024,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "whole_batch_vendor",
+      "override": "backend",
+      "thresholds": {}
+    },
+    "policy_id": "forced-whole-batch-vendor",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b1024_m4n4k4_direct_forced-whole-batch-vendor",
+    "requires": [],
+    "predicted_auto_lanes_4t": 4,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "forced:WholeBatchVendor",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Forced batch strategy; a provider/route that cannot honor it must fail typed (recorded unsupported), never fall back."
+  },
+  {
+    "id": "bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "backend",
+      "thresholds": {
+        "lane_min_work_ns": 0
+      }
+    },
+    "policy_id": "backend-lane-min-work-0",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m4n4k4_direct_backend-lane-min-work-0",
+    "requires": [
+      "lane_cost_policy"
+    ],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto+backend(lane_min_work_ns=0)",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Lane cost model override (tenferro-rs #1946 F3) below the default cutoff; unsupported where the revision hard-codes the cost model."
+  },
+  {
+    "id": "bdot_f64_b64_m4n4k4_direct_into_backend-lane-min-work-0",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "backend",
+      "thresholds": {
+        "lane_min_work_ns": 0
+      }
+    },
+    "policy_id": "backend-lane-min-work-0",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m4n4k4_direct_backend-lane-min-work-0",
+    "requires": [
+      "lane_cost_policy"
+    ],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto+backend(lane_min_work_ns=0)",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Lane cost model override (tenferro-rs #1946 F3) below the default cutoff; unsupported where the revision hard-codes the cost model."
+  },
+  {
+    "id": "bdot_f64_b64_m4n4k4_direct_alloc_scoped-lane-min-work-0",
+    "workload": "batched_dot",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "scoped",
+      "thresholds": {
+        "lane_min_work_ns": 0
+      }
+    },
+    "policy_id": "scoped-lane-min-work-0",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m4n4k4_direct_scoped-lane-min-work-0",
+    "requires": [
+      "lane_cost_policy"
+    ],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto+scoped(lane_min_work_ns=0)",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Lane cost model override (tenferro-rs #1946 F3) below the default cutoff; unsupported where the revision hard-codes the cost model."
+  },
+  {
+    "id": "bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0",
+    "workload": "batched_dot",
+    "operation": "dot_general_read_into",
+    "dtype": "f64",
+    "batch": 64,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "into",
+    "policy": {
+      "strategy": "auto",
+      "override": "scoped",
+      "thresholds": {
+        "lane_min_work_ns": 0
+      }
+    },
+    "policy_id": "scoped-lane-min-work-0",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": "bdot_f64_b64_m4n4k4_direct_scoped-lane-min-work-0",
+    "requires": [
+      "lane_cost_policy"
+    ],
+    "predicted_auto_lanes_4t": 1,
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read_into",
+      "output": "reused",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto+scoped(lane_min_work_ns=0)",
+      "workload_shape": "one-batched-op"
+    },
+    "intent": "Lane cost model override (tenferro-rs #1946 F3) below the default cutoff; unsupported where the revision hard-codes the cost model."
+  },
+  {
+    "id": "hadamard_f64_m64n64_dot_alloc",
+    "workload": "hadamard",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1,
+    "m": 64,
+    "n": 64,
+    "k": 1,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "requires": [],
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batch-only-contraction"
+    },
+    "intent": "Pure Hadamard (batch-only) contraction; a lowering that runs one 1x1x1 GEMM per element instead of an elementwise multiply shows up here (tenferro-rs #1898). The dot_general and einsum spellings expose wrapper/lowering divergence."
+  },
+  {
+    "id": "hadamard_f64_m64n64_einsum_alloc",
+    "workload": "hadamard",
+    "operation": "einsum",
+    "dtype": "f64",
+    "batch": 1,
+    "m": 64,
+    "n": 64,
+    "k": 1,
+    "subscripts": "ab,ab->ab",
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "requires": [],
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorEinsumExt::einsum",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batch-only-contraction"
+    },
+    "intent": "Pure Hadamard (batch-only) contraction; a lowering that runs one 1x1x1 GEMM per element instead of an elementwise multiply shows up here (tenferro-rs #1898). The dot_general and einsum spellings expose wrapper/lowering divergence."
+  },
+  {
+    "id": "hadamard_f64_m256n256_dot_alloc",
+    "workload": "hadamard",
+    "operation": "dot_general_read",
+    "dtype": "f64",
+    "batch": 1,
+    "m": 256,
+    "n": 256,
+    "k": 1,
+    "subscripts": null,
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": null,
+    "requires": [],
+    "route": {
+      "execution_path": "concrete",
+      "entrypoint": "BackendSession::dot_general_read",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batch-only-contraction"
+    },
+    "intent": "Pure Hadamard (batch-only) contraction; a lowering that runs one 1x1x1 GEMM per element instead of an elementwise multiply shows up here (tenferro-rs #1898). The dot_general and einsum spellings expose wrapper/lowering divergence."
+  },
+  {
+    "id": "hadamard_f64_m256n256_einsum_alloc",
+    "workload": "hadamard",
+    "operation": "einsum",
+    "dtype": "f64",
+    "batch": 1,
+    "m": 256,
+    "n": 256,
+    "k": 1,
+    "subscripts": "ab,ab->ab",
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": null,
+    "requires": [],
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorEinsumExt::einsum",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "one-batch-only-contraction"
+    },
+    "intent": "Pure Hadamard (batch-only) contraction; a lowering that runs one 1x1x1 GEMM per element instead of an elementwise multiply shows up here (tenferro-rs #1898). The dot_general and einsum spellings expose wrapper/lowering divergence."
+  },
+  {
+    "id": "chain3_f64_n4_einsum_alloc",
+    "workload": "chain3",
+    "operation": "einsum",
+    "dtype": "f64",
+    "batch": 1,
+    "m": 4,
+    "n": 4,
+    "k": 4,
+    "subscripts": "ij,jk,kl->il",
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "requires": [],
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorEinsumExt::einsum",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "multi-operand-contraction"
+    },
+    "intent": "Three-operand contraction through the public concrete einsum route: path planning plus two binary contractions per call (tiny fixed-overhead and larger control)."
+  },
+  {
+    "id": "chain3_f64_n64_einsum_alloc",
+    "workload": "chain3",
+    "operation": "einsum",
+    "dtype": "f64",
+    "batch": 1,
+    "m": 64,
+    "n": 64,
+    "k": 64,
+    "subscripts": "ij,jk,kl->il",
+    "layout": "direct",
+    "output": "alloc",
+    "policy": {
+      "strategy": "auto",
+      "override": "none",
+      "thresholds": {}
+    },
+    "policy_id": "auto",
+    "providers": [
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": null,
+    "requires": [],
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorEinsumExt::einsum",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "multi-operand-contraction"
+    },
+    "intent": "Three-operand contraction through the public concrete einsum route: path planning plus two binary contractions per call (tiny fixed-overhead and larger control)."
+  },
+  {
+    "id": "stream_f64_fixed_len32_einsum_alloc",
+    "workload": "stream",
+    "operation": "einsum",
+    "dtype": "f64",
+    "stream": "fixed",
+    "length": 32,
+    "keys": 4,
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumExt::einsum_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:fixed"
+    },
+    "intent": "Contraction-key stream (tenferro-benchmark #107): one sample is the whole 32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride calls expose repeated planning or cache misses; planning is inside the timer."
+  },
+  {
+    "id": "stream_f64_mixed_len32_einsum_alloc",
+    "workload": "stream",
+    "operation": "einsum",
+    "dtype": "f64",
+    "stream": "mixed",
+    "length": 32,
+    "keys": 4,
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumExt::einsum_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:mixed"
+    },
+    "intent": "Contraction-key stream (tenferro-benchmark #107): one sample is the whole 32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride calls expose repeated planning or cache misses; planning is inside the timer."
+  },
+  {
+    "id": "stream_f64_fresh_len32_einsum_alloc",
+    "workload": "stream",
+    "operation": "einsum",
+    "dtype": "f64",
+    "stream": "fresh",
+    "length": 32,
+    "keys": 4,
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumExt::einsum_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:fresh"
+    },
+    "intent": "Contraction-key stream (tenferro-benchmark #107): one sample is the whole 32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride calls expose repeated planning or cache misses; planning is inside the timer."
+  },
+  {
+    "id": "stream_f64_strides_len32_einsum_alloc",
+    "workload": "stream",
+    "operation": "einsum",
+    "dtype": "f64",
+    "stream": "strides",
+    "length": 32,
+    "keys": 4,
+    "providers": [
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "concrete-einsum",
+      "entrypoint": "TensorReadEinsumExt::einsum_read",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct-strided",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:strides"
+    },
+    "intent": "Contraction-key stream (tenferro-benchmark #107): one sample is the whole 32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride calls expose repeated planning or cache misses; planning is inside the timer."
   }
 ]

@@ -6,6 +6,13 @@ description: >-
   and prepared linalg JVP/VJP. Rust uses one shared CPU execution scope.
   Scalar-reference tests cover batched matmul primal and both gradients;
   successful timing rows alone do not certify numerical parity for every operation.
+  The quick profile also carries matmul-only 32x32/64x64 rows (single small-matmul
+  thread contract: 4T must not be slower than 1T) and a 4x4xbatch1024 batched matmul
+  row (tenferro-rs #1898 batched small GEMM thread scaling).
+  The batched_solve and grad_sum_batched_solve_backward rows (eager vs
+  prepared trace, n in {2,4,...} x batch) carry tenferro-rs #1803 C (trace
+  batched solve ~2x eager) and the matmul/solve *_backward rows #1803 B; the
+  #1803 A live-leaf sweep is in cpu/perf_issues.
 defaults:
   device: {kind: cpu, ordinal: 0}
   layout: {tenferro: col_major, framework: row_major_contiguous}
