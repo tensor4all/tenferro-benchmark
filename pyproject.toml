@@ -8,6 +8,7 @@ dependencies = [
     "einsum-benchmark>=0.1.7",
     "jax>=0.10.1",
     "jsonschema>=4.0.0",
+    "markdown>=3.7",
     "opt-einsum>=3.4.0",
     "pyyaml>=6.0",
     "torch>=2.12.0",

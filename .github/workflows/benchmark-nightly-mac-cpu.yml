@@ -1,0 +1,86 @@
+name: benchmark-nightly-mac-cpu
+
+on:
+  schedule:
+    # 02:17 JST (17:17 UTC) every day; picked to avoid the :00/:30 herd.
+    - cron: "17 17 * * *"
+  workflow_dispatch:
+    inputs:
+      tenferro_ref:
+        description: "tenferro-rs ref to benchmark (default: current submodule)"
+        required: false
+        default: ""
+
+# This workflow uses a GitHub-hosted runner, so results are reference-quality
+# indicators only. Canonical regression tracking still requires a stable
+# dedicated self-hosted runner.
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-mac-cpu-canonical
+  cancel-in-progress: false
+
+jobs:
+  mac-cpu:
+    # Restrict to the canonical repository only.
+    if: github.repository == 'tensor4all/tenferro-benchmark'
+    runs-on: macos-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Install Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.10"
+
+      - name: Prepare environment
+        run: |
+          uv sync --frozen || uv sync
+          ./scripts/setup_extern_deps.sh
+
+      - name: Pull latest tenferro-rs main
+        run: |
+          if [[ -d extern/tenferro-rs/.git ]]; then
+            cd extern/tenferro-rs
+            current_branch=$(git rev-parse --abbrev-ref HEAD)
+            if [[ "$current_branch" == "main" ]]; then
+              git pull origin main
+            else
+              echo "tenferro-rs is on '$current_branch'; preserving pinned checkout."
+            fi
+          fi
+
+      - name: Run mac-cpu core suites
+        env:
+          BENCHMARK_TARGET_PROFILE: mac-cpu
+          PUBLICATION_GATE_PROFILE: quick
+          BENCHMARK_ALLOW_BUSY_HOST: "1"
+        run: |
+          # Native macOS execution path per AGENTS.md.
+          # GitHub-hosted runners are shared, so the idle-host guard is bypassed.
+          # Use the quick public-api profile to keep the nightly job within
+          # GitHub-hosted runner time limits; these are reference indicators only.
+          ./scripts/run_all.sh 1 4
+
+      - name: Archive raw results
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-cpu-benchmark-results-${{ github.run_id }}
+          path: |
+            data/results/mac-cpu
+            result/mac-cpu
+          retention-days: 90

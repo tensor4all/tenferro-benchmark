@@ -1,0 +1,104 @@
+name: benchmark-nightly-linux-cpu
+
+on:
+  schedule:
+    # 02:47 JST (17:47 UTC) every day.
+    - cron: "47 17 * * *"
+  workflow_dispatch:
+    inputs:
+      tenferro_ref:
+        description: "tenferro-rs ref to benchmark (default: current submodule)"
+        required: false
+        default: ""
+
+# This workflow uses a GitHub-hosted runner, so results are reference-quality
+# indicators only. Canonical regression tracking still requires a stable
+# dedicated self-hosted runner with MKL.
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-linux-cpu-canonical
+  cancel-in-progress: false
+
+jobs:
+  linux-cpu:
+    if: github.repository == 'tensor4all/tenferro-benchmark'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Install Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.10"
+
+      - name: Install OpenBLAS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev libomp-dev cmake
+
+      - name: Prepare environment
+        run: |
+          uv sync --frozen || uv sync
+          ./scripts/setup_extern_deps.sh
+
+      - name: Pull latest tenferro-rs main
+        run: |
+          if [[ -d extern/tenferro-rs/.git ]]; then
+            cd extern/tenferro-rs
+            current_branch=$(git rev-parse --abbrev-ref HEAD)
+            if [[ "$current_branch" == "main" ]]; then
+              git pull origin main
+            else
+              echo "tenferro-rs is on '$current_branch'; preserving pinned checkout."
+            fi
+          fi
+
+      - name: Run linux-cpu core suites (OpenBLAS)
+        env:
+          BENCHMARK_TARGET_PROFILE: amd-cpu
+          TENFERRO_CPU_FEATURES: system-openblas
+          PUBLICATION_GATE_FEATURES: system-openblas
+          PUBLICATION_GATE_PROFILE: quick
+          TENFERRO_CPU_BACKEND_KIND: blas
+          OPENBLAS_ROOT: /usr
+          BENCHMARK_ALLOW_BUSY_HOST: "1"
+        run: |
+          # GitHub-hosted runner uses system OpenBLAS because MKL is not
+          # pre-installed. Results are reference-quality, not canonical.
+          # Use the quick public-api profile to keep the nightly job within
+          # GitHub-hosted runner time limits.
+          ./scripts/run_all.sh 1 4
+
+      - name: Run cpu/permutation suite
+        env:
+          BENCHMARK_TARGET_PROFILE: amd-cpu
+          TENFERRO_CPU_FEATURES: system-openblas
+          TENFERRO_CPU_BACKEND_KIND: blas
+          OPENBLAS_ROOT: /usr
+          BENCHMARK_ALLOW_BUSY_HOST: "1"
+        run: |
+          ./scripts/run_permutation.sh 1 4
+
+      - name: Archive raw results
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-cpu-benchmark-results-${{ github.run_id }}
+          path: |
+            data/results/amd-cpu
+            result/amd-cpu
+          retention-days: 90
