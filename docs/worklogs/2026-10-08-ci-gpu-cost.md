@@ -91,3 +91,12 @@
   A6000 is also unavailable in the current price feed. Next diagnostic uses
   RTX 4090, ceiling $0.85/hour, to measure complete workload cost rather than
   selecting solely by hourly rate. It remains excluded from confirmation data.
+
+- RTX 4090 diagnostic 37792733020 stopped on no available Secure Cloud offer
+  before pod creation. The next pilot selects RTX A4000 (16 GB, observed
+  $0.25/hour; ceiling $0.35/hour), with no GPU fallback or workload changes.
+- The comparison helper evaluates the predeclared six-run order, complete
+  frozen workload, confirmed cleanup, actual duration/price, within-arm 1.5
+  noise gate, median >=20% reduction and pairwise nonregression. Pilots remain
+  excluded. It supports reviewable arithmetic; measured inputs still require
+  underlying workflow logs and provider timestamps.
