@@ -156,3 +156,8 @@ with gzip.open(root / 'processes.jsonl.gz', 'rt') as stream:
         (root / item['file']).write_text(item['content'])
 PY
 ```
+
+The tenferro FFT executor uses cached RustFFT 6.4.1 plans. The system-MKL
+build setting governs BLAS/LAPACK linkage; it does not make tenferro FFT use
+MKL. FFT comparison is cached RustFFT execution through the public tenferro
+API versus cached native oneMKL DFTI, two separately named implementations.
