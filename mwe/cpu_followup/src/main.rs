@@ -94,7 +94,7 @@ fn sample<I, O>(
         let mut inputs = setup(1)?;
         black_box(op(inputs.pop().unwrap())?);
     }
-    let cap = (512 * 1024 * 1024 / bytes.max(1)).clamp(1, 65536);
+    let cap = (512 * 1024 * 1024 / bytes.max(1)).clamp(1, 2_000_000);
     let mut batch = |n: usize| -> Result<u128> {
         let inputs = setup(n)?;
         let mut iter = inputs.into_iter();
@@ -656,7 +656,7 @@ fn fft(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> R
 fn metadata(case: &Value, runs: usize, target: u128) -> Result<Value> {
     let op = case["op"].as_str().unwrap();
     let shape = if op == "transpose_view" {
-        vec![32, 32]
+        vec![2, 2]
     } else if op == "reshape_view" {
         vec![1024]
     } else {

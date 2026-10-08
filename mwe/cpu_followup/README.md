@@ -134,3 +134,7 @@ round ratio within 10% of unity. `--target-ns 50000000` selects a 50 ms batch
 target. These choices are fixed in a new immutable declaration before that
 phase's measurements; the 1.2× reporting and 20% sample-CoV bounds do not change.
 Never overwrite an earlier declaration when changing a phase.
+
+The transpose metadata repro uses 2×2 owned inputs. Metadata batches may retain
+up to two million operations, still bounded by the 512 MiB input/descriptor
+budget, to give Julia a longer interval for its specialized fixed permutation.

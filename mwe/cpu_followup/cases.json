@@ -199,8 +199,8 @@
     ],
     "fixture": {
       "input_shape": [
-        32,
-        32
+        2,
+        2
       ],
       "dtype": "f64",
       "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",

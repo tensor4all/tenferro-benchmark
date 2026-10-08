@@ -7,7 +7,7 @@ value(i,seed)=Float64(mod(i*1837+seed*335,2048)-1024)/1024
 fixture(shape,seed=1)=reshape([value(i,seed) for i in 0:prod(shape)-1],shape...)
 metadata=category=="metadata"
 if metadata
- shape=op=="slice_view" ? (4096,) : op=="transpose_view" ? (32,32) : (1024,)
+ shape=op=="slice_view" ? (4096,) : op=="transpose_view" ? (2,2) : (1024,)
  setup(n)=[fixture(shape) for _ in 1:n]
  call=op=="reshape_view" ? x->reshape(x,32,32) : op=="transpose_view" ? x->PermutedDimsArray(x,(2,1)) : x->view(x,129:2:3968)
  first=call(only(setup(1)))
@@ -40,7 +40,7 @@ function signature(o)
 end
 if !metadata;sigs=map(signature,first isa Tuple ? collect(first) : [first]);end
 first=nothing
-cap=clamp((512*1024*1024)÷max(bytes,1),1,65536);target=parse(Int,get(ENV,"CPU_FOLLOWUP_TARGET_NS","10000000"))
+cap=clamp((512*1024*1024)÷max(bytes,1),1,metadata ? 2000000 : 65536);target=parse(Int,get(ENV,"CPU_FOLLOWUP_TARGET_NS","10000000"))
 # Typed retention storage and all owned inputs allocated before each clock.
 const LAST_OUTPUTS=Ref{Any}(nothing)
 function execute_batch!(outputs::Vector{O},inputs::Vector{I},operation::F) where {O,I,F}
