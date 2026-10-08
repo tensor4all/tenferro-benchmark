@@ -16,6 +16,11 @@ before timing; stop other benchmarks, compilers and tests.
 ```bash
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash -lc '
+  export BENCHMARK_TARGET_PROFILE=amd-cpu UV_INDEX_STRATEGY=unsafe-best-match
+  source scripts/python_venv.sh
+  reset_benchmark_python_venv "$PWD"
+  prepare_cpu_benchmark_python_venv "$PWD"'
+devcontainer exec --workspace-folder . bash -lc '
   export CARGO_TARGET_DIR="$PWD/target/followup-b3f47296"
   cargo build --release --locked --manifest-path mwe/cpu_followup/Cargo.toml'
 ```

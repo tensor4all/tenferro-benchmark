@@ -420,6 +420,7 @@ except Exception as exc:
         "provider": provider,
         "blas_info": blas_info,
         "lapack_info": lapack_info,
+        "config": config,
         "library": libraries[0] if libraries else None,
         "linked_libraries": deps,
     }
