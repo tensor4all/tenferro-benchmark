@@ -135,3 +135,10 @@
   its original production image/preparation and serial workload. This isolates
   the host checker before combining it with staged runtime preparation.
   Numerical/debug assertions and the ci build profile remain unchanged.
+
+- Diagnostic 37795634794 was cancelled in hosted compilation before allocation
+  after review found two new host checker tests needed explicit archive
+  partition entries. Source 2605c46f45016a2472ebdf7ba75bba533bc6a5fd fixes
+  that inventory contract; GPU case count stays 285, host cases increase by two.
+  Diagnostic 37796517303 is dispatched from trusted root main. Freeze this
+  corrected source for the next oracle diagnostic; primary runs remain pending.
