@@ -32,7 +32,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RUNPOD_IMAGE: runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
+  RUNPOD_IMAGE: runpod/pytorch:1.1.0-cu1281-torch291-ubuntu2404@sha256:07e19c816cce2ac04c04436d6ada7eb15eec2ea2ab2f467f35a4f800ec79e1be
   CUDA_HOME: /usr/local/cuda-12.8
   CUDA_PATH: /usr/local/cuda-12.8
   LD_LIBRARY_PATH: /usr/local/cuda-12.8/lib64
@@ -44,7 +44,7 @@ env:
 jobs:
   prepare-benchmark:
     name: Build GPU benchmark before renting GPU
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     outputs:
       tenferro_commit: ${{ steps.build.outputs.tenferro_commit }}
@@ -60,7 +60,7 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libomp-dev pkg-config libssl-dev
-          curl -fsSL -o /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+          curl -fsSL -o /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
           sudo dpkg -i /tmp/cuda-keyring.deb
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends cuda-toolkit-12-8
@@ -83,7 +83,7 @@ jobs:
 
   prepare-environment:
     name: Prepare runtime before renting GPU
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     outputs:
       sha256: ${{ steps.identity.outputs.sha256 }}
@@ -181,7 +181,7 @@ jobs:
           cat >> /tmp/runpod-startup.sh <<'STARTUP'
           SMOKE
           env -u RUNNER_JIT_CONFIG python3 /tmp/cuda_smoke_test.py \
-            --min-runtime-version 12.8 --full-runtime-version 12.8 --min-vram-gb 8
+            --min-runtime-version 12.8 --full-runtime-version 12.8 --min-vram-gb 8 --skip-nvrtc-install
           cd /tmp
           version=2.337.0
           sha256=70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613

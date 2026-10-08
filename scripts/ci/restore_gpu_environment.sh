@@ -4,7 +4,7 @@ set -euo pipefail
 started=$SECONDS
 runtime_root=/opt/tenferro-benchmark-ci
 source /etc/os-release
-[[ "$ID" == ubuntu && "$VERSION_ID" == 22.04 ]]
+[[ "$ID" == ubuntu && "$VERSION_ID" == 24.04 ]]
 [[ ! -e "$runtime_root" ]]
 python3 scripts/ci/gpu_environment.py verify --backends "$GPU_BENCH_BACKENDS" --sha256 "$GPU_RUNTIME_SHA256"
 zstd -dc _gpu_environment/runtime.tar.zst | python3 scripts/ci/gpu_environment.py check-tar

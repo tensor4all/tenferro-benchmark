@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch, Mock
 
 from scripts.ci.cuda_smoke_test import (
     EXPECTED_OUTPUT,
@@ -7,6 +8,7 @@ from scripts.ci.cuda_smoke_test import (
     SmokeFailure,
     nvrtc_arch_option,
     nvrtc_package,
+    install_nvrtc,
     parse_driver_cuda_version,
     parse_version,
     run_smoke,
@@ -20,6 +22,15 @@ SMI_OUTPUT = (
 
 
 class VersionLogicTests(unittest.TestCase):
+    @patch('scripts.ci.cuda_smoke_test.subprocess.run')
+    @patch('scripts.ci.cuda_smoke_test.Path.read_text', return_value='ID=ubuntu\nVERSION_ID="24.04"\n')
+    def test_nvrtc_installer_uses_pod_ubuntu_release(self, read_text, run):
+        run.return_value = Mock(returncode=1)
+        install_nvrtc((12, 8))
+        command = run.call_args_list[1].args[0]
+        self.assertIn('ubuntu2404/x86_64', command)
+        self.assertNotIn('ubuntu2204', command)
+
     def test_parses_driver_cuda_version_from_nvidia_smi(self) -> None:
         self.assertEqual(parse_driver_cuda_version(SMI_OUTPUT), (12, 4))
 

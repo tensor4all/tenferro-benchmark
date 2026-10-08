@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+from pathlib import Path
 import re
 import subprocess
 import sys
@@ -88,12 +89,19 @@ def install_nvrtc(runtime: tuple[int, int]) -> None:
         capture_output=True,
     )
     if keyring_check.returncode != 0:
+        os_release = Path('/etc/os-release').read_text()
+        ubuntu_version = next((line.split('=', 1)[1].strip('"')
+                               for line in os_release.splitlines()
+                               if line.startswith('VERSION_ID=')), '')
+        if ubuntu_version not in ('22.04', '24.04'):
+            raise SmokeFailure(f'Unsupported Ubuntu release: {ubuntu_version}')
+        ubuntu_repo = 'ubuntu' + ubuntu_version.replace('.', '')
         subprocess.run(
             "tmpdir=$(mktemp -d) && "
             "curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors "
             "-o \"${tmpdir}/cuda-keyring.deb\" "
             "https://developer.download.nvidia.com/compute/cuda/repos/"
-            "ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && "
+            f"{ubuntu_repo}/x86_64/cuda-keyring_1.1-1_all.deb && "
             "dpkg -i \"${tmpdir}/cuda-keyring.deb\" && rm -rf \"${tmpdir}\"",
             shell=True,
             check=True,

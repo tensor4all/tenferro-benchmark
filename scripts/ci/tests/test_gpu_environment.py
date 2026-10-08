@@ -39,7 +39,7 @@ class EnvironmentTests(unittest.TestCase):
             archive = Path(directory) / 'runtime.tar.zst'
             archive.write_bytes(b'runtime')
             sha = digest(archive)
-            expected = {'platform': 'ubuntu-22.04-x86_64'}
+            expected = {'platform': 'ubuntu-24.04-x86_64'}
             manifest = {'identity': expected, 'archive_sha256': sha}
             verify(archive, manifest, expected, sha)
             with self.assertRaises(ValueError):

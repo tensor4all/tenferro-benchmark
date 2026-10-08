@@ -25,7 +25,7 @@ def digest(path: Path) -> str:
 
 
 def identity(backends: str, root: Path = Path('.')) -> dict:
-    return {'schema': 1, 'platform': 'ubuntu-22.04-x86_64', 'prefix': PREFIX,
+    return {'schema': 1, 'platform': 'ubuntu-24.04-x86_64', 'prefix': PREFIX,
             'python': PYTHON_VERSION, 'uv': UV_VERSION, 'cuda': CUDA_VERSION,
             'jax_cuda': 'jax-cuda' in backends.split(','),
             'inputs': {name: digest(root / name) for name in INPUTS}}

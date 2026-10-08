@@ -45,13 +45,13 @@ The optional `gpu_type` input restricts diagnostics to one reviewed GPU ID.
 The accepted GPU is recorded in benchmark metadata; comparisons must use the
 actual device, rather than treating all RunPod runs as the same hardware.
 
-Before renting a GPU, a hosted Ubuntu 22.04 job builds a fresh Rust CUDA
+Before renting a GPU, a hosted Ubuntu 24.04 job builds a fresh Rust CUDA
 benchmark and archives it with both source commits and its SHA-256 digest.
 The accepted pod checks out the exact tenferro-rs commit used for that build
 and verifies the artifact before sampling. Missing, stale, or modified artifacts
 fail rather than silently rebuilding on a paid GPU.
 
-Another hosted Ubuntu 22.04 job prepares a managed Python 3.12.12 interpreter,
+Another hosted Ubuntu 24.04 job prepares a managed Python 3.12.12 interpreter,
 the frozen `uv.lock` environment, CUDA 12.8 shared runtime libraries, and
 cuTENSOR 2.2.0.0. JAX CUDA wheels are included only when `jax-cuda` is requested;
 their versions are also locked (`gpu` extra). The runtime archive is cached by
@@ -60,14 +60,16 @@ writes the shared cache. Both preparation jobs must finish before renting a GPU.
 
 The runtime is created and restored at `/opt/tenferro-benchmark-ci` on both
 hosts. This preserves Python virtualenv interpreter links and script paths;
-it is not an arbitrarily relocatable virtualenv. The accepted pod downloads
+it is not an arbitrarily relocatable virtualenv. The Ubuntu 24.04 RunPod image
+(`runpod/pytorch:1.1.0-cu1281-torch291-ubuntu2404`) is pinned by digest; its
+preinstalled framework is not used for timing. The accepted pod downloads
 the immutable archive, checks its SHA-256 against the hosted job output and
 its dependency identity, checks archive paths, and extracts it. Transfer and
 restore each have a ten-minute limit. A missing or invalid bundle fails;
 there is no compiler or package-install fallback on the paid benchmark job.
 `uv` runs offline without resynchronizing dependencies. The startup probe
-still installs its small NVRTC smoke-test dependency before registering a
-runner, then benchmark preflight checks the restored libraries on the GPU.
+uses the image's CUDA 12.8 NVRTC before registering a runner, then benchmark
+preflight checks the restored libraries on the GPU.
 
 Actions records hosted preparation, transfer, extraction, GPU preflight, and
 measurement as separate steps; scripts also log preparation/compression and

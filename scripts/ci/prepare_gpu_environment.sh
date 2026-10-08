@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
-# Run only on the Ubuntu 22.04 x86_64 GitHub-hosted preparation job.
+# Run only on the Ubuntu 24.04 x86_64 GitHub-hosted preparation job.
 set -euo pipefail
 runtime_root=/opt/tenferro-benchmark-ci
 [[ "$(uname -m)" == x86_64 ]]
 source /etc/os-release
-[[ "$ID" == ubuntu && "$VERSION_ID" == 22.04 ]]
+[[ "$ID" == ubuntu && "$VERSION_ID" == 24.04 ]]
 [[ ! -e "$runtime_root" ]]
 started=$SECONDS
-sudo mkdir -p "$runtime_root" _gpu_environment
+sudo mkdir -p "$runtime_root"
+mkdir -p _gpu_environment
 sudo chown "$(id -u):$(id -g)" "$runtime_root"
 mkdir -p "$runtime_root/bin" "$runtime_root/cuda/lib64" "$runtime_root/cutensor/lib"
 
-curl -fsSL --retry 3 --max-time 120 -o /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+curl -fsSL --retry 3 --max-time 120 -o /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
 sudo dpkg -i /tmp/cuda-keyring.deb
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends zstd \
