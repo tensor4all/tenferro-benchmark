@@ -54,6 +54,20 @@ coverage:
     pytorch: torch.{sum,prod,max,min}
     disposition: measured
     benchmarks: cpu/elementwise_reduction::{reduce_sum_all,reduce_prod_all,reduce_max_all,reduce_min_all,reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1}
+  - family: newly_discovered_session_ops
+    tenferro_apis:
+      - TensorSessionOpsExt::reduce_sum_squares
+      - TypedTensorSessionOpsExt::reduce_sum_squares
+      - TensorSessionOpsExt::masked_log_softmax
+      - TypedTensorSessionOpsExt::masked_log_softmax
+      - TensorSessionOpsExt::where_select
+      - TypedTensorMaskSessionOpsExt::where_select
+    pytorch: torch.sum(x.square(), dim=...); torch.log_softmax(x.masked_fill(~mask, -inf), dim=...)
+    jax: jax.numpy.sum(jax.numpy.square(x), axis=...); jax.nn.log_softmax(x, where=mask, axis=...)
+    julia: sum(x .^ 2; dims=...); masked log-softmax composition
+    disposition: implemented_not_collected
+    benchmarks: cpu/elementwise_reduction::{reduce_sum_squares_axis0,masked_log_softmax_axis1,where_select}
+    reason: Added through the uncovered-public-API path; the audit script fails when a public session method has no benchmark-source evidence.
 
   - family: structural
     tenferro_apis:
@@ -331,18 +345,6 @@ routes:
     entrypoint: TensorEinsumExt::einsum
     dims: {execution_path: concrete-einsum, output: allocating, representation: owned, layout: direct, session_boundary: shared-session, provider: faer}
     cases: ["cpu/session_matrix:chain3_f64_n4_einsum_alloc[faer]"]
-  - route_id: batch_policy_backend_override
-    entrypoint: CpuBackend::with_batch_policy
-    dims: {execution_path: concrete, policy: backend default override, coverage: full}
-    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096[faer]", "cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096[faer]"]
-  - route_id: batch_policy_scoped_override
-    entrypoint: with_batch_policy
-    dims: {execution_path: concrete, policy: scoped override, coverage: full}
-    cases: ["cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096[faer]", "cpu/session_matrix:bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096[faer]"]
-  - route_id: batch_policy_lane_cost_model
-    entrypoint: CpuBatchThresholds::with_lane_min_work_ns
-    dims: {execution_path: concrete, policy: lane cost model override, coverage: full}
-    cases: ["cpu/session_matrix:bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0[faer]", "cpu/session_matrix:bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0[faer]"]
   - route_id: einsum_prepared_repeat
     entrypoint: ConcreteEinsumPlan::execute
     dims: {execution_path: concrete-prepared, output: allocating, representation: owned, session_boundary: shared-session}

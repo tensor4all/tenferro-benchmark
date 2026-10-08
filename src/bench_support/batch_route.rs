@@ -1,15 +1,11 @@
 //! One-operation batched route cases of `cpu/session_matrix` (tenferro-rs
-//! #1946 B2), shared by the timing runner (`benchmark_cpu_session`) and the
-//! mechanism diagnostic (`cpu_route_diagnostic`).
+//! #1946 B2), used by the timing runner (`benchmark_cpu_session`).
 //!
-//! The same case IDs from `data/instances/session_matrix.json` drive both
-//! binaries, so a route-contract failure and a timing row name one workload.
-//! Only public tenferro-rs APIs that exist both at the audit baseline
-//! (5a4e7fd84) and in the #1946 repair are used here, so baseline and
-//! candidate builds run the same harness. The one repair-only knob, the Auto
-//! lane cost model (`CpuBatchThresholds::with_lane_min_work_ns`), is gated by
-//! the `tenferro_lane_cost_policy` cfg that `build.rs` sets after probing the
-//! tenferro-rs source; without it the affected cases report `unsupported`.
+//! The case IDs come from `data/instances/session_matrix.json`, so a timing row
+//! names one workload from that file. Cases run on the compiled CPU backend;
+//! tenferro-rs #2004 removed the batch-policy API that the remaining `policy`
+//! overrides asked for, so those cases report `unsupported` instead of being
+//! measured with the default policy.
 
 // Each including binary uses a different subset.
 #![allow(dead_code)]
@@ -18,10 +14,6 @@ use std::collections::BTreeMap;
 
 use num_complex::Complex64;
 use serde::Deserialize;
-use tenferro_cpu::{
-    with_batch_policy, CpuBackend, CpuBackendKind, CpuBatchPolicy, CpuBatchStrategy,
-    CpuBatchThresholds,
-};
 use tenferro_einsum::{
     TensorEinsumExt, TensorEinsumIntoExt, TensorReadEinsumExt, TensorReadEinsumIntoExt,
 };
@@ -31,9 +23,6 @@ use tenferro_tensor::{
 };
 
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
-
-/// Whether this build can configure the Auto lane cost model.
-pub const LANE_COST_POLICY_API: bool = cfg!(tenferro_lane_cost_policy);
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct PolicySpec {
@@ -88,95 +77,18 @@ pub fn load_cases(path: &str) -> Result<Vec<CaseSpec>, BoxError> {
         .collect()
 }
 
-/// Where a case's batch policy applies.
-#[derive(Clone, Copy, Debug)]
-pub enum PolicyScope {
-    /// No override: the backend's default policy.
-    Default,
-    /// `CpuBackend::with_batch_policy`.
-    Backend(CpuBatchPolicy),
-    /// `tenferro_cpu::with_batch_policy` around the operations.
-    Scoped(CpuBatchPolicy),
-}
-
-impl PolicyScope {
-    pub fn label(&self) -> String {
-        match self {
-            Self::Default => "backend-default".into(),
-            Self::Backend(p) => format!("backend:{p:?}"),
-            Self::Scoped(p) => format!("scoped:{p:?}"),
-        }
-    }
-}
-
-/// Build the requested policy, or explain why this revision cannot express it.
-pub fn build_policy(spec: &PolicySpec) -> Result<PolicyScope, String> {
-    let strategy = match spec.strategy.as_str() {
-        "auto" => CpuBatchStrategy::Auto,
-        "sequential" => CpuBatchStrategy::Sequential,
-        "outer_parallel" => CpuBatchStrategy::OuterParallel,
-        "provider_items" => CpuBatchStrategy::ProviderItems,
-        "whole_batch_vendor" => CpuBatchStrategy::WholeBatchVendor,
-        other => return Err(format!("unknown batch strategy {other}")),
-    };
-    let mut thresholds = CpuBatchThresholds::default();
-    for (knob, &value) in &spec.thresholds {
-        thresholds = match knob.as_str() {
-            "outer_min_items" => thresholds.with_outer_min_items(value),
-            "outer_min_items_per_lane" => thresholds.with_outer_min_items_per_lane(value),
-            "vendor_batch_max_item_dim" => thresholds.with_vendor_batch_max_item_dim(value),
-            "lane_min_work_ns" => lane_min_work_ns(thresholds, value)?,
-            other => return Err(format!("unknown threshold {other}")),
-        };
-    }
-    let policy = CpuBatchPolicy::new(strategy).with_thresholds(thresholds);
+/// tenferro-rs #2004 removed the batch-policy API, so only the default policy is
+/// expressible: a case asking for an override reports `unsupported` rather than
+/// being measured as its default.
+pub fn check_policy_supported(spec: &PolicySpec) -> Result<(), String> {
     match spec.scope.as_str() {
-        "none" => Ok(PolicyScope::Default),
-        "backend" => Ok(PolicyScope::Backend(policy)),
-        "scoped" => Ok(PolicyScope::Scoped(policy)),
+        "none" | "default" => Ok(()),
+        "backend" | "scoped" => Err(
+            "the batch-policy API was removed in tenferro-rs #2004; only the compiled \
+             backend's default policy is expressible"
+                .into(),
+        ),
         other => Err(format!("unknown policy scope {other}")),
-    }
-}
-
-#[cfg(tenferro_lane_cost_policy)]
-fn lane_min_work_ns(t: CpuBatchThresholds, value: usize) -> Result<CpuBatchThresholds, String> {
-    Ok(t.with_lane_min_work_ns(value))
-}
-
-#[cfg(not(tenferro_lane_cost_policy))]
-fn lane_min_work_ns(_: CpuBatchThresholds, _: usize) -> Result<CpuBatchThresholds, String> {
-    Err(
-        "the Auto lane cost model is not configurable at this tenferro-rs revision \
-         (CpuBatchThresholds has no lane_min_work_ns; the cost model is hard-coded)"
-            .into(),
-    )
-}
-
-/// Construct the faer backend a case runs on, with its backend-default policy.
-pub fn backend_for(
-    threads: usize,
-    scope: PolicyScope,
-    bundle: Option<tenferro_cpu::CpuProviderBundle>,
-) -> Result<CpuBackend, BoxError> {
-    let mut backend = CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?;
-    if let Some(bundle) = bundle {
-        backend = backend.with_provider_bundle(bundle)?;
-    }
-    if let PolicyScope::Backend(policy) = scope {
-        backend = backend.with_batch_policy(policy);
-    }
-    Ok(backend)
-}
-
-/// Run `f` under the case's scoped policy, if any, on an entered session.
-pub fn in_policy_scope<R>(
-    session: &mut dyn BackendSession,
-    scope: PolicyScope,
-    f: impl FnOnce(&mut dyn BackendSession) -> R,
-) -> Result<R, BoxError> {
-    match scope {
-        PolicyScope::Scoped(policy) => Ok(with_batch_policy(session, policy, f)?),
-        _ => Ok(f(session)),
     }
 }
 
@@ -587,15 +499,16 @@ mod tests {
     }
 
     #[test]
-    fn unknown_or_unavailable_policies_are_explicit() {
+    fn policy_overrides_are_explicitly_unsupported() {
         let mut policy = PolicySpec {
             strategy: "auto".into(),
             scope: "backend".into(),
             thresholds: BTreeMap::from([("lane_min_work_ns".to_string(), 0)]),
         };
-        assert_eq!(build_policy(&policy).is_ok(), LANE_COST_POLICY_API);
-        policy.thresholds.clear();
-        policy.strategy = "bogus".into();
-        assert!(build_policy(&policy).is_err());
+        assert!(check_policy_supported(&policy).is_err());
+        policy.scope = "none".into();
+        assert!(check_policy_supported(&policy).is_ok());
+        policy.scope = "bogus".into();
+        assert!(check_policy_supported(&policy).is_err());
     }
 }

@@ -27,25 +27,6 @@ source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
 TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export TENFERRO_CPU_FEATURES
-case "${TENFERRO_CPU_BACKEND_KIND:-}" in
-    "")
-        case "$TENFERRO_CPU_FEATURES" in
-            system-openblas|system-accelerate|system-mkl)
-                export TENFERRO_CPU_BACKEND_KIND=blas
-                ;;
-            *)
-                export TENFERRO_CPU_BACKEND_KIND=default
-                ;;
-        esac
-        ;;
-    default|faer|blas)
-        export TENFERRO_CPU_BACKEND_KIND
-        ;;
-    *)
-        echo "ERROR: TENFERRO_CPU_BACKEND_KIND must be default, faer, or blas." >&2
-        exit 1
-        ;;
-esac
 
 default_target_profile() {
     case "$(benchmark_host_os)" in
@@ -142,7 +123,6 @@ echo "Suite:        $SUITE_ID"
 echo "Target:       $BENCHMARK_TARGET_PROFILE"
 echo "Run dir:      $RUN_DIR"
 echo "Features:     $TENFERRO_CPU_FEATURES"
-echo "CPU backend:  $TENFERRO_CPU_BACKEND_KIND"
 echo "FFT lengths:  ${FFT_BENCH_LENGTHS:-1048576}"
 [[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
 echo ""
@@ -157,7 +137,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     collect_run_metadata "$RUN_T_YAML"
 
     assert_benchmark_host_idle
-    cargo run --release --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_fft -- \
+    cargo run --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_fft -- \
         --num-threads "$NUM_THREADS" \
         --lengths "${FFT_BENCH_LENGTHS:-1048576}" \
         --output "$CSV"

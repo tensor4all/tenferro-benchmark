@@ -16,7 +16,7 @@
 #       BENCH_AA_DIR names the A/A directory the detector uses.
 #
 # Environment: BENCHMARK_TARGET_PROFILE (amd-cpu | mac-cpu), TENFERRO_CPU_FEATURES
-# (default cpu-faer). Writes data/results/<profile>/cpu/session_matrix_{aa,paired}/<ts>/
+# (default native). Writes data/results/<profile>/cpu/session_matrix_{aa,paired}/<ts>/
 # with plan.json, one run directory per round and arm, and detector output;
 # the latest report goes to result/<profile>/cpu/session_matrix_{aa,paired}.md.
 # The idle-host guard of run_cpu_session.sh stays enabled; never bypass it for
@@ -28,7 +28,7 @@ cd "$PROJECT_DIR"
 MODE="${1:?mode aa|paired required}"
 shift
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-amd-cpu}"
-export TENFERRO_CPU_FEATURES="${TENFERRO_CPU_FEATURES:-cpu-faer}"
+export TENFERRO_CPU_FEATURES="${TENFERRO_CPU_FEATURES:-native}"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
 TIMESTAMP="$(date -u +%Y%m%d_%H%M%S)"

@@ -8,7 +8,6 @@ for variable in PUBLIC_API_EXECUTION_FILTER PUBLIC_API_ATTRIBUTION_OUTPUT; do
     if output="$(
         env \
             "$variable=diagnostic-value" \
-            TENFERRO_CPU_BACKEND_KIND=invalid \
             bash "$RUNNER" 1 2>&1
     )"; then
         echo "expected $variable to be rejected by the publication runner" >&2

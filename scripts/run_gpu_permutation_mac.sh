@@ -45,7 +45,7 @@ tenferro_rs:
   path: "$tenferro_dir"
   commit: "$tenferro_revision"
   dirty: $tenferro_dirty
-  features: [webgpu, cpu-faer]
+  features: [webgpu, native]
 environment:
   hostname: "$(hostname)"
   os: "$(sw_vers -productName) $(sw_vers -productVersion)"

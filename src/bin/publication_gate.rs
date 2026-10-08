@@ -258,14 +258,14 @@ struct Row {
 fn backend_name() -> &'static str {
     if cfg!(feature = "cuda") {
         "cuda"
-    } else if cfg!(feature = "system-openblas") {
-        "system-openblas"
-    } else if cfg!(feature = "system-accelerate") {
-        "system-accelerate"
-    } else if cfg!(feature = "system-mkl") {
-        "system-mkl"
+    } else if cfg!(feature = "blas-openblas") {
+        "blas-openblas"
+    } else if cfg!(feature = "blas-accelerate") {
+        "blas-accelerate"
+    } else if cfg!(feature = "blas-mkl") {
+        "blas-mkl"
     } else {
-        "cpu-faer"
+        "native"
     }
 }
 
@@ -1775,21 +1775,17 @@ fn summarize_measurement(
 fn cpu_backend() -> &'static CpuBackend {
     static BACKEND: OnceLock<CpuBackend> = OnceLock::new();
     BACKEND.get_or_init(|| {
-        tenferro_einsum_benchmark::cpu_provider::configure(
-            CpuBackend::with_threads(requested_threads())
-                .expect("configure explicit CPU thread count"),
-        )
-        .expect("install the configured CPU provider")
+        CpuBackend::with_threads(requested_threads()).expect("configure explicit CPU thread count")
     })
 }
 
 fn record_cpu_runtime() -> Result<(), Error> {
-    #[cfg(feature = "system-mkl")]
+    #[cfg(feature = "blas-mkl")]
     let provider_threads = {
         extern "C" {
             fn MKL_Get_Max_Threads() -> i32;
         }
-        // SAFETY: system-mkl links the oneMKL C ABI; this argument-free query
+        // SAFETY: blas-mkl links the oneMKL C ABI; this argument-free query
         // only reads the calling thread's effective provider configuration.
         let threads = unsafe { MKL_Get_Max_Threads() };
         assert_eq!(
@@ -1799,7 +1795,7 @@ fn record_cpu_runtime() -> Result<(), Error> {
         );
         Some(threads)
     };
-    #[cfg(not(feature = "system-mkl"))]
+    #[cfg(not(feature = "blas-mkl"))]
     let provider_threads: Option<i32> = None;
     let affinity = std::fs::read_to_string("/proc/thread-self/status")
         .ok()
@@ -1809,12 +1805,12 @@ fn record_cpu_runtime() -> Result<(), Error> {
                 .find(|line| line.starts_with("Cpus_allowed_list:"))
                 .map(str::to_owned)
         });
-    let info = cpu_backend().execution_info();
+    let backend = cpu_backend();
     record_raw(serde_json::json!({
         "record_type": "runtime", "backend": "tenferro", "provider": backend_name(),
-        "thread_budget": info.thread_budget(), "worker_count": info.worker_count(),
+        "thread_budget": backend.num_threads(), "worker_count": backend.num_threads(),
         "provider_max_threads": provider_threads, "scope_worker_affinity": affinity,
-        "execution_info": format!("{info:?}"),
+        "cpu_provider": tenferro_cpu::cpu_provider_id(),
     }))
 }
 

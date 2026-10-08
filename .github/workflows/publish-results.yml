@@ -5,10 +5,15 @@ on:
     # 06:00 JST (21:00 UTC) every day, after nightly benchmark workflows finish.
     - cron: "0 21 * * *"
   workflow_dispatch:
+  workflow_run:
+    workflows: [benchmark-runpod-gpu, benchmark-nightly-mac-cpu, benchmark-nightly-linux-cpu]
+    types: [completed]
+    branches: [main]
 
 # Publish to GitHub Pages.
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -18,7 +23,11 @@ concurrency:
 
 jobs:
   build:
-    if: github.repository == 'tensor4all/tenferro-benchmark'
+    if: >-
+      github.repository == 'tensor4all/tenferro-benchmark' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout benchmark harness
@@ -57,20 +66,29 @@ jobs:
       - name: Merge report trees for Pages
         run: |
           mkdir -p _site/result _site/raw
+          # Preserve maintained reports even when nightly artifacts are unavailable.
+          cp -R result/. _site/result/
+          mkdir -p _site/result/linux-cpu
+          cp -R result/amd-cpu/. _site/result/linux-cpu/
           # mac-cpu artifacts are archived under result/mac-cpu and data/results/mac-cpu.
           if [[ -d "_artifacts/mac-cpu/result/mac-cpu" ]]; then
-            cp -r "_artifacts/mac-cpu/result/mac-cpu" "_site/result/"
+            cp -R "_artifacts/mac-cpu/result/mac-cpu/." "_site/result/mac-cpu/"
           fi
           if [[ -d "_artifacts/mac-cpu/data/results/mac-cpu" ]]; then
             cp -r "_artifacts/mac-cpu/data/results/mac-cpu" "_site/raw/"
           fi
           # The linux nightly benchmarks the amd-cpu target profile; publish it as linux-cpu.
           if [[ -d "_artifacts/linux-cpu/result/amd-cpu" ]]; then
-            cp -r "_artifacts/linux-cpu/result/amd-cpu" "_site/result/linux-cpu"
+            cp -R "_artifacts/linux-cpu/result/amd-cpu/." "_site/result/linux-cpu/"
           fi
           if [[ -d "_artifacts/linux-cpu/data/results/amd-cpu" ]]; then
             cp -r "_artifacts/linux-cpu/data/results/amd-cpu" "_site/raw/linux-cpu"
           fi
+
+      - name: Collect latest successful GPU results by suite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci/collect_gpu_pages_results.py --repository "$GITHUB_REPOSITORY" --site-dir _site
 
       - name: Generate results index
         run: |

@@ -75,7 +75,7 @@ def build_index(reports: list[tuple[str, str, Path]]) -> str:
             lines.append(f"  <h2>{profile}</h2>")
             lines.append("  <ul>")
             for suite_id, filename in sorted(sections[profile]):
-                href = f"{profile}/{suite_id.split('/')[0]}/{filename}"
+                href = f"{profile}/{suite_id.split('/')[0]}/{Path(filename).stem}.html"
                 display = suite_id
                 lines.append(f'    <li><a href="{href}">{display}</a></li>')
             lines.append("  </ul>")
@@ -131,7 +131,8 @@ def main() -> int:
 
     reports = discover_reports(args.result_dir)
     if not reports:
-        print(f"warning: no reports found under {args.result_dir}", file=sys.stderr)
+        print(f"error: no reports found under {args.result_dir}", file=sys.stderr)
+        return 1
 
     for profile, suite_id, report in reports:
         suite_dir = output_dir / profile / suite_id.split("/")[0]

@@ -202,6 +202,17 @@ class TimingBoundaries(unittest.TestCase):
                 self.assertEqual("isolated-call diagnostics" in report, not bool(policy))
                 self.assertEqual("normalized per operation" in report, bool(policy))
 
+    def test_cpu_report_normalizes_historical_backend_labels(self):
+        # Pre-#2004 raw runs under data/results/** spell the tenferro CPU rows
+        # cpu-faer/system-*, so re-formatting them must still map them onto the
+        # eager column alongside the current names.
+        for backend in ("native", "blas-openblas", "blas-accelerate", "blas-mkl",
+                        "cpu-faer", "system-openblas", "system-accelerate", "system-mkl"):
+            with self.subTest(backend=backend):
+                self.assertEqual("tenferro-eager",
+                                 cpu_formatter.normalize_backend({"backend": backend}))
+        self.assertEqual("pytorch-cpu", cpu_formatter.normalize_backend({"backend": "pytorch-cpu"}))
+
     def test_direct_and_eager_are_distinct_even_with_legacy_override(self):
         self.assertIn("tenferro-direct", cpu_formatter.BACKEND_ORDER)
         self.assertNotEqual(

@@ -430,6 +430,10 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
     lstsq_rhs = tensor_f64((768, 16), 2)
     svd_full_a = tensor_f64((768, 384), 1)
     norm2048 = tensor_f64((2048, 2048), 1)
+    masked_log_softmax_input = tensor_f64((1024, 64), 1)
+    masked_log_softmax_mask = LazyTensor(
+        lambda: (torch.arange(1024).unsqueeze(1) + 1024 * torch.arange(64).unsqueeze(0)).remainder(3) == 0
+    )
     z_conj = tensor_c64((16_777_216,), 1)
     z_mul = tensor_c64((8_388_608,), 1)
     z_mul2 = tensor_c64((8_388_608,), 2)
@@ -463,6 +467,7 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/elementwise_reduction", "minimum", "f64", "33554432", "binary elementwise", lambda: torch.minimum(x_fast, y_fast)),
         ("cpu/elementwise_reduction", "compare_lt", "f64", "33554432", "ordered compare", lambda: x_fast < y_fast),
         ("cpu/elementwise_reduction", "select", "f64", "33554432", "ternary select", lambda: torch.where(cond_fast, x_fast, y_fast)),
+        ("cpu/elementwise_reduction", "where_select", "f64", "33554432", "uncovered public API; broadcasted boolean selection", lambda: torch.where(cond_fast, x_fast, y_fast)),
         ("cpu/elementwise_reduction", "clamp", "f64", "8388608", "clamp with tensor bounds", lambda: torch.clamp(x, min=lower, max=upper)),
         ("cpu/elementwise_reduction", "exp", "f64", "8388608", "analytic unary", lambda: torch.exp(x)),
         ("cpu/elementwise_reduction", "log", "f64", "8388608", "analytic unary", lambda: torch.log(xp)),
@@ -487,6 +492,8 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
         ("cpu/elementwise_reduction", "reduce_sum_axis1", "f64", "2048x2048", "axis reduction", lambda: torch.sum(matrix_axis, dim=1)),
         ("cpu/elementwise_reduction", "reduce_prod_axis0", "f64", "2048x2048", "axis reduction", lambda: torch.prod(prod_axis, dim=0)),
         ("cpu/elementwise_reduction", "reduce_prod_axis1", "f64", "2048x2048", "axis reduction", lambda: torch.prod(prod_axis, dim=1)),
+        ("cpu/elementwise_reduction", "reduce_sum_squares_axis0", "f64", "2048x2048", "uncovered public API; sum of squares reduction", lambda: torch.sum(matrix_axis.square(), dim=0)),
+        ("cpu/elementwise_reduction", "masked_log_softmax_axis1", "f64", "1024x64", "uncovered public API; boolean-masked log-softmax", lambda: torch.log_softmax(masked_log_softmax_input.get().masked_fill(~masked_log_softmax_mask.get(), float("-inf")), dim=1)),
         ("cpu/indexing_layout", "gather", "f64", "262144", "1D gather", lambda: torch.gather(base_gather, 0, gather_idx)),
         ("cpu/indexing_layout", "scatter", "f64", "262144", "1D scatter", lambda: torch.zeros_like(base_gather).scatter(0, scatter_idx, updates_gather)),
         ("cpu/indexing_layout", "slice", "f64", "4194304 -> 2096128", "static slice materialized to owned output", lambda: base_slice[1024 : 4_194_304 - 1024 : 2].clone()),

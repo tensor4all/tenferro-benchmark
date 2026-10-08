@@ -12,7 +12,6 @@ source "$SCRIPT_DIR/cpu_blas_provider.sh"
 source "$SCRIPT_DIR/thread_env.sh"
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
 export TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
-export TENFERRO_CPU_BACKEND_KIND="${TENFERRO_CPU_BACKEND_KIND:-blas}"
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-amd-cpu}"
 if [[ "${SKIP_EXTERN_SETUP:-0}" != 1 ]]; then
     source "$SCRIPT_DIR/setup_extern_deps.sh"
@@ -22,7 +21,7 @@ PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
 "$PYTHON" "$SCRIPT_DIR/validate_benchmark_suite.py" benchmarks/cpu/small_work.yaml
 # Build once before sequential timing collection.
-cargo build --release --features "$TENFERRO_CPU_FEATURES" --bin small_work_case
+cargo build --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin small_work_case
 BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/small_work_case"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
 "$PYTHON" -c 'from scripts.benchmark_layout import safe_target_profile; import sys; safe_target_profile(sys.argv[1])' "$BENCHMARK_TARGET_PROFILE"

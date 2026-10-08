@@ -13,7 +13,7 @@ use std::time::Instant;
 
 use num_complex::Complex64;
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuBackendKind, CpuExecSession};
+use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuExecSession};
 use tenferro_einsum::{TensorDotAxes, TensorEinsumExt, TensorTensordotExt, TracedTensorEinsumExt};
 use tenferro_einsum_benchmark::thread_enforcement::{
     enforce_thread_request, verify_backend_threads,
@@ -21,7 +21,7 @@ use tenferro_einsum_benchmark::thread_enforcement::{
 use tenferro_linalg::{
     EagerSessionLinalgExt, LinalgBackend, TensorLinalgExt, TracedTensorLinalgExt,
 };
-use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
+use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor, TensorSessionOpsExt};
 use tenferro_tensor::{
     BackendSession, BackendSessionHost, CompareDir, DType, DotGeneralAccumulation,
     DotGeneralConfig, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor, TensorRead,
@@ -171,7 +171,7 @@ fn main() -> BenchResult<()> {
     // provider initializes, then prove the direct backend honors it.
     enforce_thread_request(args.num_threads)?;
     let _ = REQUESTED_THREADS.set(args.num_threads);
-    let mut backend = cpu_backend_from_env()?;
+    let mut backend = cpu_backend()?;
     let scope_threads = backend.with_execution_scope(rayon::current_num_threads)?;
     verify_backend_threads(
         "CpuBackend execution scope",
@@ -300,6 +300,13 @@ fn cases() -> Vec<Case> {
         ),
         elem("select", "f64", "33554432", "ternary select", select_f64),
         elem(
+            "where_select",
+            "f64",
+            "33554432",
+            "uncovered public API; broadcasted boolean selection",
+            where_select_f64,
+        ),
+        elem(
             "clamp",
             "f64",
             "8388608",
@@ -406,6 +413,20 @@ fn cases() -> Vec<Case> {
             "2048x2048",
             "axis reduction",
             reduce_prod_axis1_f64,
+        ),
+        elem(
+            "reduce_sum_squares_axis0",
+            "f64",
+            "2048x2048",
+            "uncovered public API; sum of squares reduction",
+            reduce_sum_squares_axis0_f64,
+        ),
+        elem(
+            "masked_log_softmax_axis1",
+            "f64",
+            "1024x64",
+            "uncovered public API; boolean-masked log-softmax",
+            masked_log_softmax_axis1_f64,
         ),
         // Indexing/layout (#72).
         idx(
@@ -1198,7 +1219,26 @@ fn time_case(
     if case.suite == "cpu/view_metadata" {
         return time_view_case(args, case, attribution);
     }
-    let times = if case.suite == BATCH_FAMILY_SUITE {
+    let times = if matches!(case.benchmark, "reduce_sum_squares_axis0" | "masked_log_softmax_axis1" | "where_select") {
+        // Fixtures and the entered session exist before sample_case starts any clock.
+        let input = tensor_f64(&[1024, 64], 1);
+        let mask = tensor_bool(&[1024, 64]);
+        let matrix = tensor_f64(&[2048, 2048], 1);
+        let condition = tensor_bool(&[EW_FAST_N]);
+        let on_true = tensor_f64(&[EW_FAST_N], 1);
+        let on_false = tensor_f64(&[EW_FAST_N], 2);
+        backend.with_backend_session(|session| {
+            sample_case(args, || {
+                let output = match case.benchmark {
+                    "reduce_sum_squares_axis0" => matrix.reduce_sum_squares(Some(&[0]), session)?,
+                    "masked_log_softmax_axis1" => input.masked_log_softmax(mask, 1, session)?,
+                    _ => condition.where_select(on_true, on_false, session)?,
+                };
+                consume(output);
+                Ok(())
+            })
+        })??
+    } else if case.suite == BATCH_FAMILY_SUITE {
         let spec = BatchFamilySpec::parse(case)?;
         backend.with_backend_session(|session| {
             with_cpu_exec_session(session, |session| {
@@ -1359,7 +1399,7 @@ fn time_trace_case(
 }
 
 fn cpu_trace_runtime() -> BenchResult<Runtime> {
-    let backend = cpu_backend_from_env()?;
+    let backend = cpu_backend()?;
     let engine_id = tenferro_cpu::runtime_engine_id()?;
     let mut builder = Runtime::builder();
     builder.register_engine(tenferro_cpu::runtime_engine_registration(&backend)?)?;
@@ -1392,18 +1432,11 @@ fn requested_threads() -> usize {
         .expect("main records the requested thread count before building backends")
 }
 
-fn cpu_backend_from_env() -> BenchResult<CpuBackend> {
+fn cpu_backend() -> BenchResult<CpuBackend> {
     let threads = requested_threads();
-    let backend = match env::var("TENFERRO_CPU_BACKEND_KIND")
-        .unwrap_or_else(|_| "default".to_string())
-        .as_str()
-    {
-        "" | "default" => CpuBackend::with_threads(threads)?,
-        "blas" => CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Blas)?,
-        "faer" => CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?,
-        other => return Err(format!("unsupported TENFERRO_CPU_BACKEND_KIND={other}").into()),
-    };
-    let backend = tenferro_einsum_benchmark::cpu_provider::configure(backend)?;
+    // tenferro-rs #2004 made the CPU backend a compile-time choice, so this
+    // build's own backend is what gets measured.
+    let backend = CpuBackend::with_threads(threads)?;
     verify_backend_threads("CpuBackend", backend.num_threads(), threads)?;
     Ok(backend)
 }
@@ -1703,6 +1736,11 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
             &traced(tensor_f64(&[EW_FAST_N], 1))?,
             &traced(tensor_f64(&[EW_FAST_N], 2))?,
         )?),
+        ("cpu/elementwise_reduction", "where_select") => one(TracedTensor::where_select(
+            &traced(tensor_bool(&[EW_FAST_N]))?,
+            &traced(tensor_f64(&[EW_FAST_N], 1))?,
+            &traced(tensor_f64(&[EW_FAST_N], 2))?,
+        )?),
         ("cpu/elementwise_reduction", "clamp") => one(traced(tensor_f64(&[EW_N], 1))?.clamp(
             &traced(tensor_f64_constant(&[EW_N], -0.5))?,
             &traced(tensor_f64_constant(&[EW_N], 0.5))?,
@@ -1768,6 +1806,15 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         }
         ("cpu/elementwise_reduction", "reduce_prod_axis1") => {
             one(traced(tensor_f64_constant(&[2048, 2048], 1.000001))?.reduce_prod(Some(&[1]))?)
+        }
+        ("cpu/elementwise_reduction", "reduce_sum_squares_axis0") => {
+            one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_sum_squares(Some(&[0]))?)
+        }
+        ("cpu/elementwise_reduction", "masked_log_softmax_axis1") => {
+            one(traced(tensor_f64(&[1024, 64], 1))?.masked_log_softmax(
+                &traced(tensor_bool(&[1024, 64]))?,
+                1,
+            )?)
         }
         ("cpu/indexing_layout", "gather") => {
             const N: usize = 262_144;
@@ -2068,6 +2115,15 @@ fn select_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     })?);
     Ok(())
 }
+fn where_select_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    let condition = tensor_bool(&[EW_FAST_N]);
+    let on_true = tensor_f64(&[EW_FAST_N], 1);
+    let on_false = tensor_f64(&[EW_FAST_N], 2);
+    consume(direct(b, |session| {
+        condition.where_select(on_true, on_false, session)
+    })?);
+    Ok(())
+}
 fn clamp_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(direct(b, |s| {
         s.clamp_read(
@@ -2212,6 +2268,20 @@ fn reduce_prod_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
 fn reduce_prod_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
     consume(direct(b, |s| {
         s.reduce_prod_read(read(tensor_f64_constant(&[2048, 2048], 1.000001)), &[1])
+    })?);
+    Ok(())
+}
+fn reduce_sum_squares_axis0_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    consume(direct(b, |s| {
+        s.reduce_sum_squares_read(read(tensor_f64(&[2048, 2048], 1)), &[0])
+    })?);
+    Ok(())
+}
+fn masked_log_softmax_axis1_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+    let input = tensor_f64(&[1024, 64], 1);
+    let mask = tensor_bool(&[1024, 64]);
+    consume(direct(b, |session| {
+        input.masked_log_softmax(mask, 1, session)
     })?);
     Ok(())
 }
@@ -2784,10 +2854,8 @@ thread_local! {
 }
 
 fn eager_cpu_context() -> Arc<EagerRuntime> {
-    EagerRuntime::with_cpu_backend(
-        cpu_backend_from_env().expect("configured CPU backend should initialize"),
-    )
-    .expect("configured eager CPU runtime should initialize")
+    EagerRuntime::with_cpu_backend(cpu_backend().expect("configured CPU backend should initialize"))
+        .expect("configured eager CPU runtime should initialize")
 }
 
 fn eager_linalg_error(op: &'static str, error: tenferro_ad::Error) -> tenferro_tensor::Error {
