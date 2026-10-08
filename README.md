@@ -137,9 +137,9 @@ PUBLICATION_GATE_SUITE=small \
 
 Useful environment variables: `BENCH_INSTANCE` (restrict to one einsum
 instance), `BENCH_RUNS` / `BENCH_WARMUPS` (iteration counts),
-`TENFERRO_CPU_FEATURES` (BLAS provider: `system-openblas`,
-`system-mkl`, `system-accelerate`; **Linux defaults to `system-openblas`**,
-macOS defaults to `system-accelerate`), `RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, and `RUN_PERMUTATION_SUITE=0`
+`TENFERRO_CPU_FEATURES` (`native` or a BLAS provider: `blas-openblas`,
+`blas-mkl`, `blas-accelerate`; **Linux defaults to `blas-openblas`**,
+macOS defaults to `blas-accelerate`), `RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, and `RUN_PERMUTATION_SUITE=0`
 (skip one of the follow-up suites in a multi-thread-count `run_all.sh`
 invocation; HPTT still needs `PERMUTATION_EXTRA_FEATURES=hptt`).
 
@@ -176,12 +176,12 @@ No cross-library equivalents or automatic performance gates are added.
 ```bash
 devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . bash -lc '
-  TENFERRO_CPU_FEATURES=system-mkl TENFERRO_CPU_BACKEND_KIND=blas \
+  TENFERRO_CPU_FEATURES=blas-mkl \
   BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_small_work.sh 1 4'
 
 # Selected case (also overwrites the latest report; run the full suite last):
 devcontainer exec --workspace-folder . bash -lc '
-  TENFERRO_CPU_FEATURES=system-mkl TENFERRO_CPU_BACKEND_KIND=blas \
+  TENFERRO_CPU_FEATURES=blas-mkl \
   BENCH_INSTANCE=add_f64_concrete_fresh ./scripts/run_small_work.sh 1'
 ```
 
@@ -226,7 +226,7 @@ Edit `scripts/generate_perf_issue_cases.py` (it also writes the #1865/#1863
 
 ```bash
 devcontainer exec --workspace-folder . bash -lc '
-  TENFERRO_CPU_FEATURES=system-mkl BENCHMARK_TARGET_PROFILE=amd-cpu \
+  TENFERRO_CPU_FEATURES=blas-mkl BENCHMARK_TARGET_PROFILE=amd-cpu \
   ./scripts/run_perf_issues.sh 1 4'
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_perf_issues.sh'
@@ -379,14 +379,13 @@ print(lib.openblas_get_config().decode())
 print(f"parallel={lib.openblas_get_parallel()}")
 PY'
 devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=system-openblas
-  export PUBLICATION_GATE_FEATURES=system-openblas
-  export TENFERRO_CPU_BACKEND_KIND=blas
+  export TENFERRO_CPU_FEATURES=blas-openblas
+  export PUBLICATION_GATE_FEATURES=blas-openblas
   ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
 ```
 
 For the oneMKL variant (`/opt/intel/oneapi/mkl/latest`), replace both
-`system-openblas` values with `system-mkl`. Verify the OpenBLAS build through
+`blas-openblas` values with `blas-mkl`. Verify the OpenBLAS build through
 the runtime API above instead of relying on `strings`.
 
 ## Measurement Policy
@@ -455,15 +454,15 @@ different mechanism:
 
 | Side | Selection | Linux default |
 |---|---|---|
-| tenferro | `TENFERRO_CPU_FEATURES` (`system-openblas`, `system-mkl`, `cpu-faer`) | OpenBLAS from `OPENBLAS_ROOT` (`/opt/openblas`) |
+| tenferro | `TENFERRO_CPU_FEATURES` (`native`, `blas-openblas`, `blas-mkl`) | OpenBLAS from `OPENBLAS_ROOT` (`/opt/openblas`) |
 | PyTorch CPU | Build-time choice inside the wheel | wheel-bundled Intel MKL |
 
 Consequences to state in a report instead of assuming provider identity:
 
-- A `system-openblas` lane is **tenferro=OpenBLAS vs PyTorch=bundled MKL**, not
+- A `blas-openblas` lane is **tenferro=OpenBLAS vs PyTorch=bundled MKL**, not
   OpenBLAS on both sides. The provider-matched image above is the only supported
   way to align them, and it applies to OpenBLAS only.
-- A `system-mkl` lane compares **different MKL builds**: the system oneAPI MKL
+- A `blas-mkl` lane compares **different MKL builds**: the system oneAPI MKL
   that tenferro links against, and the older MKL inside the wheel (reported by
   `torch.__config__`). Both sides say "MKL" but they are not the same library
   or OpenMP runtime, and replacing the wheel's MKL by preloading the system one
@@ -494,8 +493,6 @@ Consequences to state in a report instead of assuming provider identity:
   strategy, target profile.
 - [PyTorch einsum dispatch notes](docs/pytorch-einsum-dispatch.md): PyTorch
   source investigation notes.
-- [tprims provider comparison](docs/tprims-provider.md): `--features tprims`,
-  acceptance runs, and the shape log that builds tprims-rs corpora.
 
 ## Development Checks
 

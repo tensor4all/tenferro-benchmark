@@ -86,7 +86,7 @@ assert "verify-openblas-pytorch --threads 1" in config["postCreateCommand"]
 dockerfile = (path.parent / "Dockerfile").read_text()
 assert "BENCHMARK_TORCH_WHEEL=" in dockerfile
 assert "UV_NO_SYNC=1" in dockerfile
-assert "system-openblas" in dockerfile
+assert "blas-openblas" in dockerfile
 assert "USE_MKL=0" in dockerfile
 assert "OPENBLAS_TARGET=CORE2" in dockerfile
 assert "COPY --from=pytorch-builder" in dockerfile

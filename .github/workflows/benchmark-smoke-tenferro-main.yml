@@ -98,8 +98,7 @@ jobs:
       - name: Run minimal einsum smoke test
         env:
           BENCHMARK_TARGET_PROFILE: amd-cpu
-          TENFERRO_CPU_FEATURES: system-openblas
-          TENFERRO_CPU_BACKEND_KIND: blas
+          TENFERRO_CPU_FEATURES: blas-openblas
           OPENBLAS_ROOT: /usr
           BENCHMARK_ALLOW_BUSY_HOST: "1"
           BENCH_INSTANCE: bin_matmul_256

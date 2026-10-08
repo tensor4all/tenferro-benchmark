@@ -13,7 +13,7 @@ use std::time::Instant;
 
 use num_complex::Complex64;
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuBackendKind, CpuExecSession};
+use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuExecSession};
 use tenferro_einsum::{TensorDotAxes, TensorEinsumExt, TensorTensordotExt, TracedTensorEinsumExt};
 use tenferro_einsum_benchmark::thread_enforcement::{
     enforce_thread_request, verify_backend_threads,
@@ -171,7 +171,7 @@ fn main() -> BenchResult<()> {
     // provider initializes, then prove the direct backend honors it.
     enforce_thread_request(args.num_threads)?;
     let _ = REQUESTED_THREADS.set(args.num_threads);
-    let mut backend = cpu_backend_from_env()?;
+    let mut backend = cpu_backend()?;
     let scope_threads = backend.with_execution_scope(rayon::current_num_threads)?;
     verify_backend_threads(
         "CpuBackend execution scope",
@@ -1399,7 +1399,7 @@ fn time_trace_case(
 }
 
 fn cpu_trace_runtime() -> BenchResult<Runtime> {
-    let backend = cpu_backend_from_env()?;
+    let backend = cpu_backend()?;
     let engine_id = tenferro_cpu::runtime_engine_id()?;
     let mut builder = Runtime::builder();
     builder.register_engine(tenferro_cpu::runtime_engine_registration(&backend)?)?;
@@ -1432,18 +1432,11 @@ fn requested_threads() -> usize {
         .expect("main records the requested thread count before building backends")
 }
 
-fn cpu_backend_from_env() -> BenchResult<CpuBackend> {
+fn cpu_backend() -> BenchResult<CpuBackend> {
     let threads = requested_threads();
-    let backend = match env::var("TENFERRO_CPU_BACKEND_KIND")
-        .unwrap_or_else(|_| "default".to_string())
-        .as_str()
-    {
-        "" | "default" => CpuBackend::with_threads(threads)?,
-        "blas" => CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Blas)?,
-        "faer" => CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?,
-        other => return Err(format!("unsupported TENFERRO_CPU_BACKEND_KIND={other}").into()),
-    };
-    let backend = tenferro_einsum_benchmark::cpu_provider::configure(backend)?;
+    // tenferro-rs #2004 made the CPU backend a compile-time choice, so this
+    // build's own backend is what gets measured.
+    let backend = CpuBackend::with_threads(threads)?;
     verify_backend_threads("CpuBackend", backend.num_threads(), threads)?;
     Ok(backend)
 }
@@ -2861,10 +2854,8 @@ thread_local! {
 }
 
 fn eager_cpu_context() -> Arc<EagerRuntime> {
-    EagerRuntime::with_cpu_backend(
-        cpu_backend_from_env().expect("configured CPU backend should initialize"),
-    )
-    .expect("configured eager CPU runtime should initialize")
+    EagerRuntime::with_cpu_backend(cpu_backend().expect("configured CPU backend should initialize"))
+        .expect("configured eager CPU runtime should initialize")
 }
 
 fn eager_linalg_error(op: &'static str, error: tenferro_ad::Error) -> tenferro_tensor::Error {

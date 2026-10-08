@@ -14,11 +14,6 @@ tenferro-runtime  = { path = "extern/tenferro-rs/crates/tenferro-runtime", defau
 tenferro-tensor   = { path = "extern/tenferro-rs/crates/tenferro-tensor", default-features = false }
 tenferro-gpu      = { path = "extern/tenferro-rs/crates/tenferro-gpu", default-features = false, optional = true }
 tenferro-cpu      = { path = "extern/tenferro-rs/crates/tenferro-cpu", default-features = false, optional = true }
-# Optional tprims providers (feature `tprims`): the unpublished standalone
-# ext crate of extern/tenferro-rs. Like every path dependency, its manifest must
-# exist in the checkout even when the feature is off, so this needs an
-# extern/tenferro-rs that contains ext/tenferro-cpu-tprims (tenferro-rs #1955).
-tenferro-cpu-tprims = { path = "extern/tenferro-rs/ext/tenferro-cpu-tprims", optional = true }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -60,7 +55,7 @@ strided-perm = { path = "extern/strided-rs/strided-perm", default-features = fal
 strided-view = { path = "extern/strided-rs/strided-view", optional = true }
 
 [features]
-default = ["cpu-faer"]
+default = ["native"]
 # Gates the `hptt` participant in benchmark_permutation (cpu/permutation
 # suite). Builds the vendored HPTT C++ library via the `hptt` crate's cmake
 # build script; requires cmake and a C++ toolchain. Verified with
@@ -80,90 +75,46 @@ hptt = ["dep:hptt"]
 # copy_into_col_major_par) so 4-thread runs exercise strided-perm's rayon
 # path, matching this repo's other rayon-backed backends.
 strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel"]
-# Measure tprims instead of tenferro's built-in GEMM and dot_general: every CPU
-# backend built through `cpu_provider::configure` installs the tprims providers
-# (tensor4all/tprims-rs phase 1e). Compare a default build with a
-# `--features tprims` build of the same commit; `TPRIMS_SHAPE_LOG=<file>`
-# additionally logs every provider call's shapes (see src/cpu_provider.rs).
-tprims = ["cpu-faer", "dep:tenferro-cpu-tprims"]
-cpu-faer = [
-    "tenferro-ad/cpu-faer",
+# CPU backend selection (tenferro-rs #2004): a build compiles exactly one of
+# `native` (tenferro's own faer kernels and thread pool) or `blas` (cpueinsum
+# contractions plus tlinalg linear algebra on a vendor BLAS/LAPACK); enabling
+# both is a build error upstream.
+#
+# The vendor features select upstream's provider-neutral `blas` feature and link
+# the installed vendor library from this build instead (build.rs with
+# OPENBLAS_ROOT / MKLROOT, or the Accelerate framework), so a run measures the
+# same installed provider as the reference Python stacks. Upstream's
+# provider-src features would build and link their own copy of the library,
+# which is not the comparison this harness reports.
+native = [
+    "tenferro-ad/native",
     "tenferro-einsum/autodiff",
-    "tenferro-einsum/cpu-faer",
+    "tenferro-einsum/native",
     "tenferro-fft/autodiff",
-    "tenferro-fft/cpu-faer",
+    "tenferro-fft/native",
     "tenferro-linalg/autodiff",
-    "tenferro-linalg/cpu-faer",
-    "tenferro-runtime/cpu-faer",
+    "tenferro-linalg/native",
+    "tenferro-runtime/native",
     "dep:tenferro-cpu",
-    "tenferro-cpu?/cpu-faer",
+    "tenferro-cpu?/native",
 ]
-system-openblas = [
-    "tenferro-ad/cpu-blas",
-    "tenferro-ad/cpu-faer",
+# Shared base of the three supported BLAS selections below. On its own it has no
+# provider link contract, so it is not a supported standalone selection.
+blas = [
+    "tenferro-ad/blas",
     "tenferro-einsum/autodiff",
-    "tenferro-einsum/cpu-blas",
-    "tenferro-einsum/cpu-faer",
+    "tenferro-einsum/blas",
     "tenferro-fft/autodiff",
-    "tenferro-fft/cpu-blas",
-    "tenferro-fft/cpu-faer",
+    "tenferro-fft/blas",
     "tenferro-linalg/autodiff",
-    "tenferro-linalg/cpu-blas",
-    "tenferro-linalg/cpu-faer",
-    "tenferro-runtime/cpu-blas",
-    "tenferro-runtime/cpu-faer",
+    "tenferro-linalg/blas",
+    "tenferro-runtime/blas",
     "dep:tenferro-cpu",
-    "tenferro-cpu?/cpu-blas",
-    "tenferro-cpu?/cpu-faer",
+    "tenferro-cpu?/blas",
 ]
-system-accelerate = [
-    "tenferro-ad/blas-accelerate",
-    "tenferro-ad/cpu-blas",
-    "tenferro-ad/cpu-faer",
-    "tenferro-einsum/autodiff",
-    "tenferro-einsum/blas-accelerate",
-    "tenferro-einsum/cpu-blas",
-    "tenferro-einsum/cpu-faer",
-    "tenferro-fft/autodiff",
-    "tenferro-fft/blas-accelerate",
-    "tenferro-fft/cpu-blas",
-    "tenferro-fft/cpu-faer",
-    "tenferro-linalg/autodiff",
-    "tenferro-linalg/blas-accelerate",
-    "tenferro-linalg/cpu-blas",
-    "tenferro-linalg/cpu-faer",
-    "tenferro-runtime/blas-accelerate",
-    "tenferro-runtime/cpu-blas",
-    "tenferro-runtime/cpu-faer",
-    "dep:tenferro-cpu",
-    "tenferro-cpu?/blas-accelerate",
-    "tenferro-cpu?/cpu-blas",
-    "tenferro-cpu?/cpu-faer",
-]
-system-mkl = [
-    "tenferro-ad/blas-mkl",
-    "tenferro-ad/cpu-blas",
-    "tenferro-ad/cpu-faer",
-    "tenferro-einsum/autodiff",
-    "tenferro-einsum/blas-mkl",
-    "tenferro-einsum/cpu-blas",
-    "tenferro-einsum/cpu-faer",
-    "tenferro-fft/autodiff",
-    "tenferro-fft/blas-mkl",
-    "tenferro-fft/cpu-blas",
-    "tenferro-fft/cpu-faer",
-    "tenferro-linalg/autodiff",
-    "tenferro-linalg/blas-mkl",
-    "tenferro-linalg/cpu-blas",
-    "tenferro-linalg/cpu-faer",
-    "tenferro-runtime/blas-mkl",
-    "tenferro-runtime/cpu-blas",
-    "tenferro-runtime/cpu-faer",
-    "dep:tenferro-cpu",
-    "tenferro-cpu?/blas-mkl",
-    "tenferro-cpu?/cpu-blas",
-    "tenferro-cpu?/cpu-faer",
-]
+blas-openblas = ["blas"]
+blas-accelerate = ["blas"]
+blas-mkl = ["blas"]
 cuda = [
     "tenferro-fft/cuda",
     "tenferro-ad/cuda",
@@ -174,7 +125,7 @@ cuda = [
     "dep:tenferro-gpu",
     "tenferro-gpu?/cuda",
     "dep:tenferro-cpu",
-    "tenferro-cpu?/cpu-faer",
+    "tenferro-cpu?/native",
     "dep:libloading",
     "dep:cudarc",
 ]
@@ -182,7 +133,7 @@ webgpu = [
     "dep:tenferro-gpu",
     "tenferro-gpu?/webgpu",
     "dep:tenferro-cpu",
-    "tenferro-cpu?/cpu-faer",
+    "tenferro-cpu?/native",
 ]
 
 [[bin]]

@@ -22,10 +22,9 @@ Two modes, never mixed:
 
 Deterministic findings are reported in both modes and are independent of
 timing noise: ``MISSING`` (expected but not executed), ``NUMERICAL_FAILURE``,
-``LIVENESS_FAILURE`` (timeout), ``NEWLY_UNSUPPORTED``, ``ROUTE_CONTRACT_FAILURE``
-(from ``scripts/route_contract.py`` output), ``ROUTE_MISMATCH`` (the two arms
-did not run the same route/provider/threads) and ``CHANGED_BASELINE`` (different
-case manifest or harness, or commits that differ from the declaration).
+``LIVENESS_FAILURE`` (timeout), ``NEWLY_UNSUPPORTED`` and ``CHANGED_BASELINE``
+(different case manifest or harness, or commits that differ from the
+declaration).
 
 Exit status: 2 for any deterministic finding, else 1 for a confirmed
 REGRESSION, else 0.
@@ -47,9 +46,7 @@ import bench_selection  # noqa: E402
 import case_status as cs  # noqa: E402
 
 DETERMINISTIC = ("MISSING", "NUMERICAL_FAILURE", "LIVENESS_FAILURE", "NEWLY_UNSUPPORTED",
-                 "ROUTE_CONTRACT_FAILURE", "ROUTE_MISMATCH", "CHANGED_BASELINE")
-# Row fields that must agree between arms for a timing comparison to be valid.
-ROUTE_FIELDS = ("route", "provider", "worker_count", "execution_mode", "dtype", "workload")
+                 "CHANGED_BASELINE")
 
 
 # --------------------------------------------------------------------------- loading
@@ -97,15 +94,7 @@ def load_run(run_dir: Path) -> dict:
     return {"dir": str(run_dir), "rows": rows, "status": status, "meta": meta}
 
 
-def load_route_contract(path: Path | None) -> dict | None:
-    if path is None:
-        return None
-    path = path / "route_contract.json" if path.is_dir() else path
-    return json.loads(path.read_text())
-
-
-# --------------------------------------------------------------------------- deterministic
-def deterministic(baseline: dict | None, candidate: dict, contract: dict | None) -> list[dict]:
+def deterministic(baseline: dict | None, candidate: dict) -> list[dict]:
     findings = []
     status = candidate["status"]
     if status is None:
@@ -132,20 +121,15 @@ def deterministic(baseline: dict | None, candidate: dict, contract: dict | None)
         if bm.get("harness_commit") != cm.get("harness_commit"):
             findings.append({"kind": "CHANGED_BASELINE", "case": "*",
                              "detail": f"harness {bm.get('harness_commit')} vs {cm.get('harness_commit')}"})
-        for key in set(status["executed"]) & before:
-            b, c = baseline["rows"].get(key), candidate["rows"].get(key)
-            if b is None or c is None:
-                continue
-            diff = [f for f in ROUTE_FIELDS if b.get(f) != c.get(f)]
-            if diff:
-                findings.append({"kind": "ROUTE_MISMATCH", "case": key,
-                                 "detail": ", ".join(f"{f}: {b.get(f)!r} vs {c.get(f)!r}" for f in diff)})
-    if contract is not None:
-        for verdict in contract.get("verdicts", []):
-            if verdict["verdict"] in ("FAIL", "INCOMPLETE"):
-                findings.append({"kind": "ROUTE_CONTRACT_FAILURE",
-                                 "case": f"{verdict['pair']}@t{verdict['threads']}",
-                                 "detail": verdict["reason"]})
+        # Two arms may only be compared when each shared case measured the same
+        # provider on the same number of workers: everything else is a verdict
+        # about a different configuration, not about a code change.
+        for key in sorted(set(baseline["rows"]) & set(candidate["rows"])):
+            before_row, after_row = baseline["rows"][key], candidate["rows"][key]
+            for field in ("provider", "worker_count"):
+                if before_row.get(field) != after_row.get(field):
+                    findings.append({"kind": "CHANGED_BASELINE", "case": key,
+                                     "detail": f"{field} {before_row.get(field)} vs {after_row.get(field)}"})
     return findings
 
 
@@ -241,6 +225,19 @@ def confirm(config: dict, paired: dict, aa: dict | None) -> tuple[list[dict], li
     if len(harnesses) > 1:
         findings.append({"kind": "CHANGED_BASELINE", "case": "*",
                          "detail": f"rounds used different harness revisions {sorted(map(str, harnesses))}"})
+    features = {}
+    for arm in ("baseline", "candidate"):
+        seen = {row.get("cpu_features") for run in paired["arms"].get(arm, {}).values()
+                for row in run["rows"].values()}
+        seen.discard(None)
+        if len(seen) > 1:
+            findings.append({"kind": "CHANGED_BASELINE", "case": arm,
+                             "detail": f"rounds measured different CPU features {sorted(seen)}"})
+        features[arm] = seen
+    if features["baseline"] and features["candidate"] and features["baseline"] != features["candidate"]:
+        findings.append({"kind": "CHANGED_BASELINE", "case": "*",
+                         "detail": f"CPU features {sorted(features['baseline'])} vs "
+                                   f"{sorted(features['candidate'])}"})
     for commit, dirty in harnesses:
         if commit and not str(commit).startswith(str(config["harness_commit"])[:12]):
             findings.append({"kind": "CHANGED_BASELINE", "case": "*",
@@ -373,16 +370,14 @@ def main() -> int:
     c.add_argument("--paired-dir", type=Path, required=True)
     c.add_argument("--aa-dir", type=Path)
     for p in (s, c):
-        p.add_argument("--route-contract", type=Path, help="cpu/route_contract run dir of the candidate")
         p.add_argument("--json", type=Path)
         p.add_argument("--markdown", type=Path)
     args = parser.parse_args()
     if args.mode == "aa":
         return characterize_aa(load_paired(args.aa_dir), args.json, args.markdown)
-    contract = load_route_contract(args.route_contract)
     if args.mode == "scan":
         baseline, candidate = load_run(args.baseline), load_run(args.candidate)
-        det = deterministic(baseline, candidate, contract)
+        det = deterministic(baseline, candidate)
         timing = scan(baseline, candidate)
         confirmed_regression = False
     else:
@@ -398,7 +393,7 @@ def main() -> int:
         if rounds:
             last_candidate = paired["arms"]["candidate"][rounds[-1]]
             last_baseline = paired["arms"].get("baseline", {}).get(rounds[-1])
-            det = deterministic(last_baseline, last_candidate, contract)
+            det = deterministic(last_baseline, last_candidate)
         comparability, timing = confirm(config, paired, aa)
         det += comparability
         confirmed_regression = any(t["verdict"] == "REGRESSION" for t in timing)

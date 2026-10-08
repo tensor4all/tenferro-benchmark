@@ -33,9 +33,8 @@ set -euo pipefail
 #
 # Set RUN_SMALL_WORK_SUITE=1 to run cpu/small_work and cpu/session_matrix
 # sequentially as well. It is included by default in multi-thread-count
-# invocations, followed by the cpu/route_contract counter diagnostics
-# (RUN_ROUTE_DIAGNOSTIC=0 skips them). BENCH_COVERAGE=quick|full and
-# BENCH_EFFORT=scan|standard|confirm apply to these suites.
+# invocations. BENCH_COVERAGE=quick|full and BENCH_EFFORT=scan|standard|confirm
+# apply to these suites.
 #
 # Set RUN_PERMUTATION_SUITE=1 to also run scripts/run_permutation.sh (the
 # cpu/permutation suite) sequentially after everything above completes; see
@@ -79,11 +78,6 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     if [[ "${RUN_SMALL_WORK_SUITE:-1}" == "1" ]]; then
         "$SCRIPT_DIR/run_small_work.sh" "${THREAD_COUNTS[@]}"
         "$SCRIPT_DIR/run_cpu_session.sh" "${THREAD_COUNTS[@]}"
-        # Deterministic route-contract diagnostics (counters, not timing).
-        if [[ "${RUN_ROUTE_DIAGNOSTIC:-1}" == "1" ]]; then
-            "$SCRIPT_DIR/run_route_diagnostic.sh" "${THREAD_COUNTS[@]}" \
-                || echo "WARNING: cpu/route_contract reported a deterministic route-contract failure (exit $?)." >&2
-        fi
     fi
 
     if [[ "${RUN_PERMUTATION_SUITE:-1}" == "1" ]]; then
@@ -117,25 +111,6 @@ source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
 TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export TENFERRO_CPU_FEATURES
-case "${TENFERRO_CPU_BACKEND_KIND:-}" in
-    "")
-        case "$TENFERRO_CPU_FEATURES" in
-            system-openblas|system-accelerate|system-mkl)
-                export TENFERRO_CPU_BACKEND_KIND=blas
-                ;;
-            *)
-                export TENFERRO_CPU_BACKEND_KIND=default
-                ;;
-        esac
-        ;;
-    default|faer|blas)
-        export TENFERRO_CPU_BACKEND_KIND
-        ;;
-    *)
-        echo "ERROR: TENFERRO_CPU_BACKEND_KIND must be default, faer, or blas." >&2
-        exit 1
-        ;;
-esac
 
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
@@ -252,7 +227,6 @@ write_blas_backend_section() {
     echo "## Tenferro CPU BLAS Backend"
     echo ""
     echo "- tenferro-rs features: \`$TENFERRO_CPU_FEATURES\`"
-    echo "- TENFERRO_CPU_BACKEND_KIND: \`${TENFERRO_CPU_BACKEND_KIND:-}\`"
     [[ -n "$implementation" ]] && echo "- BLAS implementation: \`$implementation\`"
     [[ -n "$version" ]] && echo "- BLAS version: \`$version\`"
     [[ -n "$root" ]] && echo "- BLAS root: \`$root\`"
@@ -575,7 +549,6 @@ echo "Instances:    $SUITE_INSTANCE_COUNT from ${CPU_SUITE_FILE#$PROJECT_DIR/}"
 echo "Target:       $BENCHMARK_TARGET_PROFILE"
 echo "Run dir:      $CPU_RUN_DIR"
 echo "Features:     $TENFERRO_CPU_FEATURES"
-echo "CPU backend:  $TENFERRO_CPU_BACKEND_KIND"
 [[ -n "$TENFERRO_COMMIT" ]] && echo "tenferro-rs:  $TENFERRO_COMMIT"
 print_cpu_thread_env
 echo ""

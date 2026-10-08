@@ -1,5 +1,5 @@
 //! Operation-only reproducers: `cargo run --release --no-default-features
-//! --features system-mkl --example cpu_gap_mwe -- ifft 4`.
+//! --features blas-mkl --example cpu_gap_mwe -- ifft 4`.
 use num_complex::{Complex32, Complex64};
 use serde_json::{json, Value};
 use std::{error::Error, hint::black_box, time::Instant};
@@ -62,7 +62,7 @@ pub fn run(
     target_ns: u128,
 ) -> Result<Value> {
     let mut backend = CpuBackend::with_threads(threads)?;
-    let provider = format!("{:?}", backend.kind());
+    let provider = tenferro_einsum_benchmark::compiled_cpu_provider();
     let mut result = match operation {
         "gelu" | "softmax" => {
             let (shape, seed) = if operation == "gelu" {

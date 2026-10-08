@@ -202,7 +202,7 @@ grep -q "Thread Environment" "$TMP/result/amd-cpu/cpu/einsum.md"
 grep -q "OPENBLAS_NUM_THREADS" "$TMP/result/amd-cpu/cpu/einsum.md"
 grep -q "XLA_FLAGS" "$TMP/result/amd-cpu/cpu/einsum.md"
 grep -q "Tenferro CPU BLAS Backend" "$TMP/result/amd-cpu/cpu/einsum.md"
-grep -q "tenferro-rs features: \`system-openblas\`" "$TMP/result/amd-cpu/cpu/einsum.md"
+grep -q "tenferro-rs features: \`blas-openblas\`" "$TMP/result/amd-cpu/cpu/einsum.md"
 grep -q "BLAS implementation: \`openblas\`" "$TMP/result/amd-cpu/cpu/einsum.md"
 
 grep -q "CPU Benchmark Items" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
@@ -222,7 +222,7 @@ grep -q "Thread Environment" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "OPENBLAS_NUM_THREADS" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "XLA_FLAGS" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "Tenferro CPU BLAS Backend" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
-grep -q "tenferro-rs features: \`system-openblas\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
+grep -q "tenferro-rs features: \`blas-openblas\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 grep -q "BLAS implementation: \`openblas\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 
 # Exercise multi-thread aggregation with synthetic runners, never real timing.

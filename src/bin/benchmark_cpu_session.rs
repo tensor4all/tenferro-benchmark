@@ -6,7 +6,7 @@ mod batch_route;
 mod shape_stream;
 
 use std::{error::Error, hint::black_box, time::Instant};
-use tenferro_cpu::{CpuBackend, CpuBackendKind};
+use tenferro_cpu::CpuBackend;
 use tenferro_linalg::TensorLinalgExt;
 use tenferro_runtime::BackendSessionHost;
 use tenferro_tensor::{DotGeneralConfig, Tensor, TensorRead};
@@ -53,7 +53,24 @@ fn run_batched_case(args: &[String]) -> Result<()> {
     let samples: usize = get("--samples", "15").parse()?;
     let target_ns: u128 = get("--target-ns", "1000000").parse()?;
     let instances = get("--instances", "data/instances/session_matrix.json");
+    let provider = get("--provider", "faer");
     tenferro_einsum_benchmark::thread_enforcement::enforce_thread_request(threads)?;
+    // The batched and stream cases are declared for the faer provider in the
+    // case manifest, and tenferro-rs #2004 made the CPU backend a compile-time
+    // choice: a build without faer reports the case unsupported instead of
+    // timing another provider under this case's `[faer]` key.
+    let compiled = tenferro_einsum_benchmark::compiled_cpu_provider();
+    if compiled != provider {
+        println!(
+            "{}",
+            serde_json::json!({"case_id": case_id, "provider": provider,
+                "correctness": "unsupported",
+                "unsupported_reason": format!(
+                    "harness compiled with the {compiled} CPU backend; this case is declared for the {provider} provider"),
+                "samples_ns": []})
+        );
+        return Ok(());
+    }
     if let Some(stream) = shape_stream::load_stream(&instances, &case_id)? {
         return run_stream_case(&stream, threads, warmups, samples);
     }
@@ -64,9 +81,9 @@ fn run_batched_case(args: &[String]) -> Result<()> {
     let mut row = serde_json::json!({
         "case_id": spec.id, "workload": spec.workload, "operation": spec.operation,
         "dtype": spec.dtype, "batch": spec.batch, "m": spec.m, "n": spec.n, "k": spec.k,
-        "layout": spec.layout, "output": spec.output, "provider": "faer",
+        "layout": spec.layout, "output": spec.output,
+        "provider": tenferro_einsum_benchmark::compiled_cpu_provider(),
         "route": spec.route, "pair": spec.pair, "requested_threads": threads,
-        "lane_cost_policy_api": LANE_COST_POLICY_API,
         "timing_scope": "many_operations_single_interval",
         "session_boundary": "one entered backend session around warmup, calibration and samples",
         "outside_timer": ["input generation", "view construction", "backend construction",
@@ -80,27 +97,20 @@ fn run_batched_case(args: &[String]) -> Result<()> {
         row["samples_ns"] = serde_json::json!([]);
         println!("{row}");
     };
-    let scope = match build_policy(&spec.policy) {
-        Ok(scope) => scope,
-        Err(reason) => {
-            emit_unsupported(row, reason);
-            return Ok(());
-        }
-    };
-    let mut backend = backend_for(threads, scope, None)?;
-    let info = backend.execution_info();
+    // tenferro-rs #2004 removed the batch-policy API, so a case that asked for a
+    // policy override is reported unsupported instead of being silently measured
+    // with the default policy.
+    if let Err(reason) = check_policy_supported(&spec.policy) {
+        emit_unsupported(row, reason);
+        return Ok(());
+    }
+    let mut backend = CpuBackend::with_threads(threads)?;
     tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
         "CpuBackend",
-        info.worker_count(),
+        backend.num_threads(),
         threads,
     )?;
-    row["worker_count"] = info.worker_count().into();
-    row["execution_mode"] = format!("{:?}", info.execution_mode()).into();
-    row["effective_policy"] = match scope {
-        PolicyScope::Scoped(p) => format!("scoped:{p:?}"),
-        _ => format!("backend:{:?}", backend.batch_policy()),
-    }
-    .into();
+    row["worker_count"] = backend.num_threads().into();
     let fixture = Fixture::new(&spec)?;
     let reads = fixture.reads()?;
     let owned = fixture.owned();
@@ -111,63 +121,61 @@ fn run_batched_case(args: &[String]) -> Result<()> {
         Unsupported(String),
     }
     let outcome = backend.with_backend_session(|session| -> Result<Outcome> {
-        in_policy_scope(session, scope, |session| -> Result<Outcome> {
-            let into = spec.is_into();
-            let call = |session: &mut dyn tenferro_tensor::BackendSession,
-                        outputs: &mut Vec<tenferro_tensor::Tensor>,
-                        destination: &mut tenferro_tensor::Tensor|
-             -> std::result::Result<(), OpError> {
-                if into {
-                    run_into(session, &spec, &fixture, &reads, &owned, destination)
-                } else {
-                    outputs.push(run_alloc(session, &spec, &fixture, &reads, &owned)?);
-                    Ok(())
-                }
-            };
-            let check = |outputs: &[tenferro_tensor::Tensor],
-                         destination: &tenferro_tensor::Tensor|
-             -> Result<f64> {
-                let mut worst = 0.0_f64;
-                if into {
-                    worst = fixture.check(destination)?;
-                }
-                for output in outputs {
-                    worst = worst.max(fixture.check(output)?);
-                }
-                Ok(worst)
-            };
-            // Explicit lazy initialization and validation before any sample.
-            let mut outputs = Vec::new();
-            match call(session, &mut outputs, &mut destination) {
-                Ok(()) => {}
-                Err(OpError::Unsupported(reason)) => return Ok(Outcome::Unsupported(reason)),
-                Err(OpError::Failed(reason)) => return Err(reason.into()),
+        let into = spec.is_into();
+        let call = |session: &mut dyn tenferro_tensor::BackendSession,
+                    outputs: &mut Vec<tenferro_tensor::Tensor>,
+                    destination: &mut tenferro_tensor::Tensor|
+         -> std::result::Result<(), OpError> {
+            if into {
+                run_into(session, &spec, &fixture, &reads, &owned, destination)
+            } else {
+                outputs.push(run_alloc(session, &spec, &fixture, &reads, &owned)?);
+                Ok(())
             }
-            check(&outputs, &destination)?;
-            outputs.clear();
-            // Calibrate operations per interval toward target_ns (outside stats).
+        };
+        let check = |outputs: &[tenferro_tensor::Tensor],
+                     destination: &tenferro_tensor::Tensor|
+         -> Result<f64> {
+            let mut worst = 0.0_f64;
+            if into {
+                worst = fixture.check(destination)?;
+            }
+            for output in outputs {
+                worst = worst.max(fixture.check(output)?);
+            }
+            Ok(worst)
+        };
+        // Explicit lazy initialization and validation before any sample.
+        let mut outputs = Vec::new();
+        match call(session, &mut outputs, &mut destination) {
+            Ok(()) => {}
+            Err(OpError::Unsupported(reason)) => return Ok(Outcome::Unsupported(reason)),
+            Err(OpError::Failed(reason)) => return Err(reason.into()),
+        }
+        check(&outputs, &destination)?;
+        outputs.clear();
+        // Calibrate operations per interval toward target_ns (outside stats).
+        let start = Instant::now();
+        call(session, &mut outputs, &mut destination).map_err(|e| e.to_string())?;
+        let one = start.elapsed().as_nanos().max(1);
+        outputs.clear();
+        let reps = ((target_ns / one) as usize).clamp(1, max_retained.max(1));
+        outputs.reserve(reps);
+        let mut elapsed = Vec::with_capacity(samples);
+        for sample in 0..warmups + samples {
+            outputs.clear(); // Destruction is outside the clock.
             let start = Instant::now();
-            call(session, &mut outputs, &mut destination).map_err(|e| e.to_string())?;
-            let one = start.elapsed().as_nanos().max(1);
-            outputs.clear();
-            let reps = ((target_ns / one) as usize).clamp(1, max_retained.max(1));
-            outputs.reserve(reps);
-            let mut elapsed = Vec::with_capacity(samples);
-            for sample in 0..warmups + samples {
-                outputs.clear(); // Destruction is outside the clock.
-                let start = Instant::now();
-                for _ in 0..reps {
-                    call(session, &mut outputs, &mut destination).map_err(|e| e.to_string())?;
-                }
-                let ns = start.elapsed().as_nanos();
-                black_box(&outputs);
-                if sample >= warmups {
-                    elapsed.push(ns);
-                }
+            for _ in 0..reps {
+                call(session, &mut outputs, &mut destination).map_err(|e| e.to_string())?;
             }
-            let worst = check(&outputs, &destination)?;
-            Ok(Outcome::Timed(elapsed, reps, worst))
-        })?
+            let ns = start.elapsed().as_nanos();
+            black_box(&outputs);
+            if sample >= warmups {
+                elapsed.push(ns);
+            }
+        }
+        let worst = check(&outputs, &destination)?;
+        Ok(Outcome::Timed(elapsed, reps, worst))
     })??;
     match outcome {
         Outcome::Unsupported(reason) => emit_unsupported(row, reason),
@@ -190,13 +198,10 @@ fn run_stream_case(
     warmups: usize,
     samples: usize,
 ) -> Result<()> {
-    let mut backend = tenferro_einsum_benchmark::cpu_provider::configure(
-        CpuBackend::with_threads_and_kind(threads, CpuBackendKind::Faer)?,
-    )?;
-    let info = backend.execution_info();
+    let mut backend = CpuBackend::with_threads(threads)?;
     tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
         "CpuBackend",
-        info.worker_count(),
+        backend.num_threads(),
         threads,
     )?;
     // Inputs for every call of every pass exist before the session is entered.
@@ -213,9 +218,10 @@ fn run_stream_case(
                 "fresh" => "every call a key unseen in this process".into(),
                 _ => "one key".to_string(),
             },
-            "operation": "einsum", "dtype": "f64", "provider": "faer", "route": spec.route,
-            "requested_threads": threads, "worker_count": info.worker_count(),
-            "execution_mode": format!("{:?}", info.execution_mode()),
+            "operation": "einsum", "dtype": "f64",
+            "provider": tenferro_einsum_benchmark::compiled_cpu_provider(),
+            "route": spec.route,
+            "requested_threads": threads, "worker_count": backend.num_threads(),
             "operations_per_sample": spec.length, "warmups": warmups, "samples_ns": elapsed,
             "correctness": "passed", "max_abs_error": worst,
             "timing_scope": "whole_call_sequence_single_interval",
@@ -251,31 +257,30 @@ fn main() -> Result<()> {
     if n == 0 || count == 0 || samples == 0 || !["matmul", "solve"].contains(&op.as_str()) {
         return Err("invalid case".into());
     }
-    let blas_built = cfg!(any(
-        feature = "system-openblas",
-        feature = "system-accelerate",
-        feature = "system-mkl"
-    ));
-    if provider == "blas" && !blas_built {
-        // A provider this build does not contain is unsupported, not failed.
+    // tenferro-rs #2004 makes the CPU backend a compile-time choice, so a build
+    // contains exactly one provider; the other requested provider is reported
+    // unsupported (not failed, and never measured on the wrong backend).
+    let compiled = tenferro_einsum_benchmark::compiled_cpu_provider();
+    if !["blas", "faer"].contains(&provider.as_str()) {
+        return Err("invalid provider".into());
+    }
+    if provider != compiled {
+        let remedy = if provider == "blas" {
+            "blas-openblas, blas-accelerate, or blas-mkl"
+        } else {
+            "native"
+        };
         println!(
             "{}",
             serde_json::json!({"operation":op,"n":n,"provider":provider,"correctness":"unsupported",
-                "unsupported_reason":"harness built without a system BLAS feature (cpu-blas)",
+                "unsupported_reason":format!(
+                    "harness compiled with the {compiled} CPU backend; rebuild with the {remedy} feature set to measure the {provider} provider"),
                 "samples_ns":[]})
         );
         return Ok(());
     }
-    let kind = match provider.as_str() {
-        "blas" => CpuBackendKind::Blas,
-        "faer" => CpuBackendKind::Faer,
-        _ => return Err("invalid provider".into()),
-    };
-    let mut backend =
-        tenferro_einsum_benchmark::cpu_provider::configure(CpuBackend::with_kind(kind)?)?;
-    let execution_info = backend.execution_info();
-    let execution_mode = format!("{:?}", execution_info.execution_mode());
-    let worker_count = execution_info.worker_count();
+    let mut backend = CpuBackend::new();
+    let worker_count = backend.num_threads();
     let fixtures = (0..count)
         .map(|k| fixture(n, k))
         .collect::<Result<Vec<_>>>()?;
@@ -337,7 +342,7 @@ fn main() -> Result<()> {
     })??;
     println!(
         "{}",
-        serde_json::json!({"operation":op,"n":n,"operations_per_sample":count,"provider":provider,"route":"shared-session","session_count":1,"execution_mode":execution_mode,"worker_count":worker_count,"warmups":warmups,"samples_ns":elapsed_ns,"correctness":"passed"})
+        serde_json::json!({"operation":op,"n":n,"operations_per_sample":count,"provider":provider,"route":"shared-session","session_count":1,"worker_count":worker_count,"warmups":warmups,"samples_ns":elapsed_ns,"correctness":"passed"})
     );
     Ok(())
 }

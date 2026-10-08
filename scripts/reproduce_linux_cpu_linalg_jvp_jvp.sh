@@ -31,11 +31,8 @@ case "$RUN_TARGET_PROFILE" in
 esac
 
 export BENCHMARK_TARGET_PROFILE="$RUN_TARGET_PROFILE"
-export TENFERRO_CPU_FEATURES="${TENFERRO_CPU_FEATURES:-system-openblas}"
+export TENFERRO_CPU_FEATURES="${TENFERRO_CPU_FEATURES:-blas-openblas}"
 export PUBLICATION_GATE_FEATURES="${PUBLICATION_GATE_FEATURES:-$TENFERRO_CPU_FEATURES}"
-if [[ "$TENFERRO_CPU_FEATURES" == "cpu-faer" ]]; then
-    export TENFERRO_CPU_BACKEND_KIND="${TENFERRO_CPU_BACKEND_KIND:-faer}"
-fi
 
 export BENCH_INSTANCE="${BENCH_INSTANCE:-bin_matmul_256}"
 export BENCH_RUNS="${BENCH_RUNS:-15}"
@@ -139,7 +136,6 @@ write_blas_backend_summary() {
     echo "## Tenferro CPU BLAS Backend"
     echo ""
     echo "- tenferro-rs features: \`$TENFERRO_CPU_FEATURES\`"
-    echo "- TENFERRO_CPU_BACKEND_KIND: \`${TENFERRO_CPU_BACKEND_KIND:-}\`"
     [[ -n "$implementation" ]] && echo "- BLAS implementation: \`$implementation\`"
     [[ -n "$version" ]] && echo "- BLAS version: \`$version\`"
     [[ -n "$root" ]] && echo "- BLAS root: \`$root\`"

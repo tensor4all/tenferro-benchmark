@@ -219,7 +219,7 @@ assert_collected_run_metadata() {
     --timestamp "2026-06-03T12:34:56+09:00" \
     --tenferro-dir extern/tenferro-rs \
     --tenferro-commit abcdef1 \
-    --features system-openblas \
+    --features blas-openblas \
     --blas openblas \
     --output "$output" >"$TMP/out" 2>&1; then
     echo "collect_run_metadata.py failed" >&2

@@ -8,18 +8,22 @@
 # Builds the existing real checkout in place, or re-points its symlink at
 # <tenferro-rs-dir> and restores the previous link target afterwards. Writes shell assignments to
 # <out-var-file>: TENFERRO_REV, TENFERRO_DIRTY, TENFERRO_DIR, BIN_DIR.
-# Default bins: benchmark_cpu_session cpu_route_diagnostic (the cross-revision
-# binaries). Honors TENFERRO_CPU_FEATURES (default cpu-faer; system BLAS
-# features need their provider environment, e.g. OPENBLAS_ROOT/MKLROOT) and
-# BENCH_BUILD_PROFILE (default release). The build clears RUSTC_WRAPPER so a
-# compiler cache cannot mix artifacts across tenferro-rs revisions.
+# Default bins: benchmark_cpu_session (the cross-revision binary). Honors
+# TENFERRO_CPU_FEATURES (default native; BLAS features need their provider
+# environment, e.g. OPENBLAS_ROOT/MKLROOT) and BENCH_BUILD_PROFILE (default
+# release). The build clears RUSTC_WRAPPER so a compiler cache cannot mix
+# artifacts across tenferro-rs revisions.
+#
+# Feature names follow tenferro-rs #2004. Revisions before that change used the
+# old harness/feature names (cpu-faer/cpu-blas/system-*); build such a revision
+# with the matching older harness revision instead of this one.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 TENFERRO_DIR="$(cd "${1:?tenferro-rs checkout required}" && pwd -P)"
 OUT_FILE="${2:?output variable file required}"
 shift 2
-BINS=("${@:-benchmark_cpu_session cpu_route_diagnostic}")
+BINS=("${@:-benchmark_cpu_session}")
 # shellcheck disable=SC2206
 BINS=(${BINS[*]})
 if [[ ! -d "$TENFERRO_DIR/crates/tenferro-cpu" ]]; then
@@ -28,7 +32,7 @@ if [[ ! -d "$TENFERRO_DIR/crates/tenferro-cpu" ]]; then
 fi
 # shellcheck source=scripts/cpu_blas_provider.sh
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
-FEATURES="${TENFERRO_CPU_FEATURES:-cpu-faer}"
+FEATURES="${TENFERRO_CPU_FEATURES:-native}"
 ensure_blas_env_for_features "$FEATURES"
 PROFILE="${BENCH_BUILD_PROFILE:-release}"
 LINK="$PROJECT_DIR/extern/tenferro-rs"

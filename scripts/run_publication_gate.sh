@@ -35,25 +35,12 @@ echo "  output:   $LOG"
 print_cpu_thread_env
 
 case "$FEATURES" in
-  cpu-faer)
-    cargo run --release --bin publication_gate --no-default-features --features cpu-faer > "$LOG"
-    ;;
-  system-openblas)
-    cargo run --release --bin publication_gate --no-default-features --features system-openblas > "$LOG"
-    ;;
-  system-accelerate)
-    cargo run --release --bin publication_gate --no-default-features --features system-accelerate > "$LOG"
-    ;;
-  system-mkl)
-    cargo run --release --bin publication_gate --no-default-features --features system-mkl > "$LOG"
-    ;;
-  cuda)
-    cargo run --release --bin publication_gate --no-default-features --features cuda > "$LOG"
-    ;;
+  native|blas-openblas|blas-accelerate|blas-mkl|cuda) ;;
   *)
-    echo "Unsupported PUBLICATION_GATE_FEATURES=$FEATURES (use cpu-faer, system-openblas, system-accelerate, system-mkl, or cuda)" >&2
+    echo "Unsupported PUBLICATION_GATE_FEATURES=$FEATURES (use native, blas-openblas, blas-accelerate, blas-mkl, or cuda)" >&2
     exit 1
     ;;
 esac
+cargo run --release --bin publication_gate --no-default-features --features "$FEATURES" > "$LOG"
 
 echo "Wrote $LOG"

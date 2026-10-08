@@ -23,25 +23,6 @@ source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
 TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export TENFERRO_CPU_FEATURES
-case "${TENFERRO_CPU_BACKEND_KIND:-}" in
-    "")
-        case "$TENFERRO_CPU_FEATURES" in
-            system-openblas|system-accelerate|system-mkl)
-                export TENFERRO_CPU_BACKEND_KIND=blas
-                ;;
-            *)
-                export TENFERRO_CPU_BACKEND_KIND=default
-                ;;
-        esac
-        ;;
-    default|faer|blas)
-        export TENFERRO_CPU_BACKEND_KIND
-        ;;
-    *)
-        echo "ERROR: TENFERRO_CPU_BACKEND_KIND must be default, faer, or blas." >&2
-        exit 1
-        ;;
-esac
 
 # shellcheck source=scripts/thread_env.sh
 source "$SCRIPT_DIR/thread_env.sh"
@@ -60,7 +41,6 @@ print_cpu_thread_env
 [[ -n "${OPENBLAS_ROOT:-}" ]] && echo "  OPENBLAS_ROOT=$OPENBLAS_ROOT"
 [[ -n "${MKLROOT:-}" ]] && echo "  MKLROOT=$MKLROOT"
 echo "  tenferro features=$TENFERRO_CPU_FEATURES"
-echo "  TENFERRO_CPU_BACKEND_KIND=$TENFERRO_CPU_BACKEND_KIND"
 echo ""
 
 RUST_LOGS=()
@@ -81,7 +61,6 @@ for TENFERRO_MODE in trace eager; do
     TENFERRO_LOG="$RESULTS_DIR/tenferro_${TENFERRO_MODE}_t${NUM_THREADS}_${TIMESTAMP}.log"
     echo "Running tenferro ${TENFERRO_MODE} benchmark..."
     TENFERRO_MODE="$TENFERRO_MODE" \
-    TENFERRO_CPU_BACKEND_KIND="$TENFERRO_CPU_BACKEND_KIND" \
         cargo run --release --no-default-features --features "$TENFERRO_CPU_FEATURES" \
         --bin tenferro-einsum-benchmark \
         --manifest-path="$PROJECT_DIR/Cargo.toml" 2>&1 | tee "$TENFERRO_LOG"

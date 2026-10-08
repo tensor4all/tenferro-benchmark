@@ -35,8 +35,6 @@ MANIFEST = ROOT / "benchmarks/cpu/manifests/session_matrix.yaml"
 INSTANCES = ROOT / "data/instances/session_matrix.json"
 SUITE_ID = "cpu/session_matrix"
 BATCHED = {"batched_dot", "batched_einsum", "hadamard", "chain3", "stream"}
-# Workloads the provider-spy diagnostic can run (key streams are timing-only).
-DIAGNOSABLE = BATCHED - {"stream"}
 CASE_TIMEOUT_S = int(os.environ.get("BENCH_CASE_TIMEOUT_S", "900"))
 
 
@@ -125,7 +123,8 @@ def collect(binary, run_dir, threads, coverage=None):
                 reps = ["--warmups", str(effort["warmups"]), "--samples", str(effort["runs"])]
                 if case["workload"] in BATCHED:
                     command = [str(binary), "--case", case_id, "--threads", str(threads),
-                               "--target-ns", str(target_ns), "--instances", str(INSTANCES)] + reps
+                               "--target-ns", str(target_ns), "--instances", str(INSTANCES),
+                               "--provider", provider] + reps
                 elif provider == "pytorch":
                     command = [sys.executable, __file__, "--torch-worker", "--threads", str(threads),
                                "--n", str(case["shape"][0]), "--count", str(case["operations_per_sample"]),
@@ -200,7 +199,7 @@ def report(run_dir, target, latest=True):
              'and initialization are outside timing. Outputs remain alive until timer stop. '
              'Every output is checked after timing (solve uses the residual).', '',
              'tenferro enters exactly one backend session around all warmups and samples. '
-             'Accelerate and faer use the same public operations and session scope. With tenferro-rs PR #1796 or later, managed BLAS and faer sessions both reuse the entered executor context. Earlier BLAS revisions included per-operation entry; consult the recorded tenferro commit. ProviderDefaultExclusive describes admission, not per-operation executor entry. The execution mode and worker count are recorded in each Rust row. 4-thread faer uses tenferro’s '
+             'Accelerate and faer use the same public operations and session scope. With tenferro-rs PR #1796 or later, managed BLAS and faer sessions both reuse the entered executor context. Earlier BLAS revisions included per-operation entry; consult the recorded tenferro commit. ProviderDefaultExclusive describes admission, not per-operation executor entry. The worker count is recorded in each Rust row; tenferro-rs #2004 no longer exposes an execution mode, so a row that records one is historical. 4-thread faer uses tenferro’s '
              'Rayon execution domain (inner kernel parallelism, not an outer parallel loop over matrices). '
              'PyTorch uses a Python loop over the same inputs, with its thread pools initialized before timing. '
              'Its Python dispatch cost is included. These are allocation-returning operations, not batched tensor APIs; '
@@ -222,12 +221,13 @@ def report(run_dir, target, latest=True):
     lines += ['', '## One-operation batched routes (tenferro-rs #1946 B2)', '',
               'One public call per operation; many operations per wall-clock interval (calibrated toward '
               'the suite `min_runtime_ms`, bounded to 64 MiB of retained outputs); one entered backend session '
-              'around warmup, calibration and all samples; policy overrides applied before session entry '
-              '(backend) or around all samples (scoped). Allocating routes include their intrinsic output '
+              'around warmup, calibration and all samples. tenferro-rs #2004 removed the batch-policy API, so '
+              'cases whose manifest policy is an override report `unsupported` instead of being measured with '
+              'the compiled backend default, and the batched and stream cases are declared for the faer '
+              'provider, so a build without it reports them `unsupported` too. Allocating routes include their intrinsic output '
               'allocation; `_into` routes reuse one destination allocated outside timing. Inputs, views, the '
               'first validated call and all numerical checks are outside timing. Route columns come from the '
-              'case manifest; provider-call/lane mechanics are in the separate `cpu/route_contract` diagnostics, '
-              'never in these timings. NOISY (CoV > 10%) is descriptive only.', '',
+              'case manifest, never from timing. NOISY (CoV > 10%) is descriptive only.', '',
               '| Case ID | Route (path / output / repr / layout) | Policy | Dtype | Batch×m×n×k | Threads | Workers | Ops/sample | Median ns/op | IQR ns/op | CoV | Status |',
               '|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|']
     for r in sorted(batched, key=lambda r: (r['case_id'], r['threads'])):
@@ -265,17 +265,11 @@ def main():
     p.add_argument('--report', action='store_true'); p.add_argument('--target-profile', default='mac-cpu')
     p.add_argument('--coverage', choices=bench_selection.COVERAGES)
     p.add_argument('--no-latest', action='store_true', help='write only the raw-run report')
-    p.add_argument('--list-diagnostic-cases', action='store_true',
-                   help='print the selected batched case IDs (comma-separated) for cpu_route_diagnostic')
     p.add_argument('--describe-selection', action='store_true',
                    help='print the resolved coverage/effort/selection as JSON (run metadata)')
     args = p.parse_args()
     if args.torch_worker:
         print(json.dumps(torch_case(args.n, args.count, args.samples, args.threads, args.op, args.warmups)))
-        return
-    if args.list_diagnostic_cases:
-        _, _, _, selected, _, cases = plan(args.coverage)
-        print(",".join(i for i in selected if cases[i]["workload"] in DIAGNOSABLE))
         return
     if args.describe_selection:
         manifest, coverage, expected, selected, raw, _ = plan(args.coverage)

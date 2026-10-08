@@ -180,7 +180,7 @@ echo "Cargo features: $CARGO_FEATURES"
 echo ""
 
 echo "Building benchmark_permutation (features: $CARGO_FEATURES)..."
-cargo build --release --features "$CARGO_FEATURES" --bin benchmark_permutation
+cargo build --release --no-default-features --features "$CARGO_FEATURES" --bin benchmark_permutation
 
 HAVE_JULIA=0
 if command -v julia >/dev/null 2>&1; then

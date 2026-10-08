@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use num_complex::{Complex32, Complex64};
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuBackendKind, CpuExecSession};
+use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuExecSession};
 use tenferro_fft::{
     EagerSessionFftExt, FftExecutor, FftNorm, TensorFftExt, TensorReadFftExt, TracedTensorFftExt,
 };
@@ -275,7 +275,7 @@ fn time_case(
     input: &Tensor,
     n: usize,
 ) -> BenchResult<(f64, f64)> {
-    let mut backend = cpu_backend_from_env()?;
+    let mut backend = CpuBackend::new();
     let mut executor = FftExecutor::default();
 
     Ok(with_cpu_session(&mut backend, |session| {
@@ -326,7 +326,7 @@ fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
 }
 
 fn time_eager_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
-    let runtime = EagerRuntime::with_cpu_backend(cpu_backend_from_env()?)?;
+    let runtime = EagerRuntime::with_cpu_backend(CpuBackend::new())?;
     let input = EagerTensor::from_tensor_in(input.duplicate()?, runtime)?;
     // tenferro-rs #1938 moved eager FFTs onto `EagerSession`. Enter one eager
     // session per call, as the pre-#1938 tensor-owned FFT methods did.
@@ -353,7 +353,7 @@ fn time_eager_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
 }
 
 fn cpu_trace_runtime() -> BenchResult<Runtime> {
-    let backend = cpu_backend_from_env()?;
+    let backend = CpuBackend::new();
     let engine_id = tenferro_cpu::runtime_engine_id()?;
     let mut builder = Runtime::builder();
     builder.register_engine(tenferro_cpu::runtime_engine_registration(&backend)?)?;
@@ -491,18 +491,6 @@ fn median_iqr(times: &[f64]) -> (f64, f64) {
     };
     let iqr = values[(3 * values.len()) / 4] - values[values.len() / 4];
     (median, iqr)
-}
-
-fn cpu_backend_from_env() -> BenchResult<CpuBackend> {
-    match env::var("TENFERRO_CPU_BACKEND_KIND")
-        .unwrap_or_else(|_| "default".to_string())
-        .as_str()
-    {
-        "" | "default" => Ok(CpuBackend::new()),
-        "blas" => Ok(CpuBackend::with_kind(CpuBackendKind::Blas)?),
-        "faer" => Ok(CpuBackend::with_kind(CpuBackendKind::Faer)?),
-        other => Err(format!("unsupported TENFERRO_CPU_BACKEND_KIND={other}").into()),
-    }
 }
 
 fn csv_escape(value: &str) -> String {

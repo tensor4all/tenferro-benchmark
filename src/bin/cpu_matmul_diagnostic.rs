@@ -8,7 +8,7 @@ use std::hint::black_box;
 use std::time::{Duration, Instant};
 
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{CpuBackend, CpuBackendKind};
+use tenferro_cpu::CpuBackend;
 use tenferro_einsum::{ContractionTree, EagerSessionEinsumExt, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, CompiledEinsum};
 use tenferro_runtime::{Runtime, TensorRead};
@@ -167,7 +167,10 @@ fn main() -> Result<(), String> {
         std::env::var("VECLIB_MAXIMUM_THREADS").unwrap_or_else(|_| "unset".into()),
         std::env::var("VECLIB_NUM_THREADS").unwrap_or_else(|_| "unset".into()),
     );
-    println!("tenferro backend kind=blas dot_decomposer={dot_decomposer}");
+    println!(
+        "tenferro cpu provider={} dot_decomposer={dot_decomposer}",
+        tenferro_cpu::cpu_provider_id()
+    );
     println!("einsum labels: ji,kj->ki");
 
     let lhs_data = deterministic_matrix_data(n, 1);
@@ -195,13 +198,12 @@ fn main() -> Result<(), String> {
         Ok(c)
     })?;
 
-    let mut direct_backend = CpuBackend::with_kind(CpuBackendKind::Blas)
-        .map_err(|err| format!("failed to create BLAS backend: {err}"))?;
+    let mut direct_backend = CpuBackend::new();
     // tenferro-rs #1938 removed the owned-tensor `dot_general` spelling; the
     // public session operation is `dot_general_read` over owned-tensor reads,
     // so this row and `tenferro_blas_dot_general_read` now reach the same call.
     // Both keep the pre-#1938 per-call backend entry inside the timed region.
-    measure("tenferro_blas_dot_general", warmups, runs, || {
+    measure("tenferro_dot_general", warmups, runs, || {
         let out = direct_backend
             .with_backend_session(|session| {
                 session.dot_general_read(
@@ -215,9 +217,8 @@ fn main() -> Result<(), String> {
         Ok(out)
     })?;
 
-    let mut read_backend = CpuBackend::with_kind(CpuBackendKind::Blas)
-        .map_err(|err| format!("failed to create BLAS backend: {err}"))?;
-    measure("tenferro_blas_dot_general_read", warmups, runs, || {
+    let mut read_backend = CpuBackend::new();
+    measure("tenferro_dot_general_read", warmups, runs, || {
         let out = read_backend
             .with_backend_session(|session| {
                 session.dot_general_read(
@@ -232,7 +233,7 @@ fn main() -> Result<(), String> {
     })?;
 
     let compiled = compile_trace_program(n)?;
-    let backend = CpuBackend::with_kind(CpuBackendKind::Blas).map_err(|e| e.to_string())?;
+    let backend = CpuBackend::new();
     let mut builder = Runtime::builder();
     builder
         .register_engine(
@@ -255,11 +256,7 @@ fn main() -> Result<(), String> {
             .map_err(|e| e.to_string())
     })?;
 
-    let eager_ctx = EagerRuntime::with_cpu_backend(
-        CpuBackend::with_kind(CpuBackendKind::Blas)
-            .map_err(|err| format!("failed to create BLAS backend: {err}"))?,
-    )
-    .map_err(|e| e.to_string())?;
+    let eager_ctx = EagerRuntime::with_cpu_backend(CpuBackend::new()).map_err(|e| e.to_string())?;
     let eager_lhs = EagerTensor::from_tensor_in(
         lhs.duplicate().map_err(|e| e.to_string())?,
         eager_ctx.clone(),

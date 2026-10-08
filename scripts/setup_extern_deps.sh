@@ -192,11 +192,11 @@ main() {
     TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
     export TENFERRO_CPU_FEATURES
     case "$TENFERRO_CPU_FEATURES" in
-        system-openblas)
+        blas-openblas)
             ensure_openblas_root
             ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
             ;;
-        system-mkl)
+        blas-mkl)
             ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
             ;;
     esac
