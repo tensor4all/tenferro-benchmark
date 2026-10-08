@@ -5,6 +5,7 @@ This is a cross-implementation comparison, not a revision-regression detector.
 The declaration follows the fields in benchmarks/cpu/confirmation.yaml and is
 written after A/A and before collecting the PyTorch candidate measurements.
 """
+import os
 import hashlib
 import json
 from pathlib import Path
@@ -75,7 +76,7 @@ def main():
               "affinity": "none (thread env only)", "provider": "MKL; versions independently recorded"},
         threads=[1, 4], cases={"suite_id": "cpu/perf_issues", "manifest_version": "new MWE cases pending issue assignment",
                               "coverage": "explicit", "case_ids": list(operations)},
-        timing={"scope": "many_operations_single_interval; session/setup/cleanup outside", "cache_pool_state": "warm, validated and primed"},
+        timing={"scope": "many_operations_single_interval; session/setup/cleanup outside", "cache_pool_state": "warm, validated and primed", "target_interval_ns": int(os.environ.get("CPU_GAP_TARGET_NS", "2000000"))},
         repetitions={"warmups": 3, "runs": 15, "rounds": 4}, statistic="median_of_round_ratios",
         thresholds={"relative": 0.20, "absolute_ns": 500},
         noise={"max_cov": 0.20, "max_aa_relative_spread": 0.10, "host_idle_guard": "enabled, never bypassed"},

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """PyTorch reference for examples/cpu_gap_mwe.rs; native layouts, identical values."""
+import os
 import math
 import json
 import sys
@@ -115,16 +116,17 @@ def run(operation, threads, samples=15):
         elapsed = time.perf_counter_ns()-started
         del outputs
         return elapsed
+    target_ns = int(os.environ.get("CPU_GAP_TARGET_NS", "2000000"))
     count = 1
     while True:
         elapsed = batch(count)
-        if elapsed >= 2_000_000 or count == cap:
+        if elapsed >= target_ns or count == cap:
             break
         count = min(count*2, cap)
     rows = [{"sample_index": i, "iterations": count, "elapsed_ns": batch(count)}
             for i in range(samples)]
     return {"samples": rows, "correctness_status": "passed",
-            "calibration": {"iterations": count, "elapsed_ns": elapsed, "target_ns": 2000000},
+            "calibration": {"iterations": count, "elapsed_ns": elapsed, "target_ns": target_ns},
             "provider": "mkl" if torch.backends.mkl.is_available() else "other",
             "torch_config": torch.__config__.show(), "threads_requested": threads,
             "scope": {"timer": [operation, "intrinsic output allocation", "Python dispatch"],

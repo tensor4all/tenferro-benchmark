@@ -335,6 +335,11 @@ fn main() -> Result<()> {
     let args: Vec<_> = std::env::args().collect();
     let op = args.get(1).map(String::as_str).unwrap_or("ifft");
     let threads = args.get(2).map(|s| s.parse()).transpose()?.unwrap_or(1);
-    println!("{}", run(op, threads, 3, 15, 2_000_000)?);
+    let target_ns = std::env::var("CPU_GAP_TARGET_NS")
+        .ok()
+        .map(|s| s.parse())
+        .transpose()?
+        .unwrap_or(2_000_000);
+    println!("{}", run(op, threads, 3, 15, target_ns)?);
     Ok(())
 }
