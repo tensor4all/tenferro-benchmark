@@ -85,3 +85,9 @@
   Python-ABI-specific wheel. Correct the download platform list to include
   manylinux_2_27 and retain manylinux2014 for the NVIDIA wheels. The earlier
   Python-version diagnosis was incorrect; no paid pods were created.
+
+- Slim runtime preparation succeeded in 37792189451. A40 allocation was
+  rejected before creation (no available instance, HTTP 500); no GPU charge.
+  A6000 is also unavailable in the current price feed. Next diagnostic uses
+  RTX 4090, ceiling $0.85/hour, to measure complete workload cost rather than
+  selecting solely by hourly rate. It remains excluded from confirmation data.

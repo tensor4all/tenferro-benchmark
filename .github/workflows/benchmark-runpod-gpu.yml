@@ -147,12 +147,12 @@ jobs:
     - name: Bound this experiment to one inexpensive candidate
       run: "python3 - <<'CONFIG'\nimport json, os\nfrom pathlib import Path\nfrom scripts.ci.runpod_pricing import\
         \ fetch_gpu_offers, http_transport, GRAPHQL_URL\npath=Path('scripts/ci/runpod_config.json')\nconfig=json.loads(path.read_text())\n\
-        arm=os.environ['EXPERIMENT_ARM']\ngpu={'baseline':'NVIDIA A40','candidate':'NVIDIA A40'}[arm]\nceiling={'baseline':0.60,'candidate':0.60}[arm]\n\
-        offers=fetch_gpu_offers([gpu], min_vram_gb=8, transport=http_transport(GRAPHQL_URL))\nif not offers or offers[0].price_per_hr\
-        \ > ceiling:\n    raise SystemExit(f'{gpu} unavailable below ${ceiling}/hr; no pod created')\nconfig['gpu_tiers']=[{'name':'experiment','gpu_type_ids':[gpu]}]\n\
-        config['allowed_cuda_versions']=['13.0','12.9','12.8']\nconfig['max_price_candidates']=1\nconfig['max_provision_attempts']=1\n\
-        config['same_tier_retries']=0\npath.write_text(json.dumps(config))\nprint(f'{arm}: {gpu}, ${offers[0].price_per_hr}/hr')\n\
-        CONFIG\n"
+        arm=os.environ['EXPERIMENT_ARM']\ngpu={'baseline':'NVIDIA A40','candidate':'NVIDIA GeForce RTX 4090'}[arm]\n\
+        ceiling={'baseline':0.60,'candidate':0.85}[arm]\noffers=fetch_gpu_offers([gpu], min_vram_gb=8, transport=http_transport(GRAPHQL_URL))\n\
+        if not offers or offers[0].price_per_hr > ceiling:\n    raise SystemExit(f'{gpu} unavailable below ${ceiling}/hr;\
+        \ no pod created')\nconfig['gpu_tiers']=[{'name':'experiment','gpu_type_ids':[gpu]}]\nconfig['allowed_cuda_versions']=['13.0','12.9','12.8']\n\
+        config['max_price_candidates']=1\nconfig['max_provision_attempts']=1\nconfig['same_tier_retries']=0\npath.write_text(json.dumps(config))\n\
+        print(f'{arm}: {gpu}, ${offers[0].price_per_hr}/hr')\nCONFIG\n"
       env:
         EXPERIMENT_ARM: ${{ inputs.arm }}
     - name: Provision compatible RunPod GPU
