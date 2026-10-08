@@ -19,6 +19,10 @@ def compare(samples: list[dict]) -> dict:
         refs = {s.get('tested_ref') for s in samples if s.get('arm') == arm}
         if len(refs) != 1 or not next(iter(refs), None):
             reasons.append(f'{arm} must execute one frozen source ref')
+    for key in ('gpu_type_id', 'controller_ref'):
+        values = {sample.get(key) for sample in samples}
+        if len(values) != 1 or not next(iter(values), None):
+            reasons.append(f'All runs must share one frozen {key}')
     costs = []
     for sample in samples:
         if sample.get('phase') != 'confirmation':

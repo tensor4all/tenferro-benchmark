@@ -199,3 +199,9 @@
   now honor the same selected GPU input; freeze one identical model for
   confirmation. Add the CUDA CRT header package discovered by real NVRTC
   fixture compilation. Existing candidate payload reuse remains diagnostic.
+
+- Before any primary sample, strengthen the comparison validator to reject
+  mixed or missing GPU models and controller refs, in addition to frozen
+  per-arm source refs. Identical hardware model and controller are required;
+  hourly fees remain secondary and placement variation uses the existing
+  whole-window max/min <=1.5 gate. The Ada run is still diagnostic.

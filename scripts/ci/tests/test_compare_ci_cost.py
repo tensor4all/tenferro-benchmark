@@ -5,6 +5,7 @@ from scripts.ci.compare_ci_cost import compare
 class CompareCiCostTests(unittest.TestCase):
     def samples(self):
         return [dict(arm=arm, run_id=i, tested_ref='frozen-source', phase='confirmation',
+            gpu_type_id='NVIDIA A40', controller_ref='frozen-controller',
             paid_seconds=600 if arm == 'baseline' else 450, price_per_hour=0.5,
             cuda_passed=285, pjrt_passed=3, tutorial_passed=True,
             cleanup_confirmed=True, gpu_job_conclusion='success')
@@ -47,3 +48,12 @@ class CompareCiCostTests(unittest.TestCase):
         result = compare(samples)
         self.assertEqual(result['verdict'], 'FAIL')
         self.assertLess(result['candidate_median_cost'], result['baseline_median_cost'])
+
+    def test_different_gpu_or_controller_is_inconclusive(self):
+        for key in ('gpu_type_id', 'controller_ref'):
+            with self.subTest(key=key):
+                samples = self.samples()
+                samples[1][key] = 'different'
+                self.assertEqual(compare(samples)['verdict'], 'INCONCLUSIVE')
+                del samples[1][key]
+                self.assertEqual(compare(samples)['verdict'], 'INCONCLUSIVE')
