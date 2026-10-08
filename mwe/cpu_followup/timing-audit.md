@@ -48,3 +48,10 @@ new descriptor, inside every operation. The corrected FFT reference explicitly
 calls public oneMKL DFTI with a persistent precommitted descriptor. Its first
 completed transform primes implementation workspace before all sampling;
 output allocation is intrinsic and the handle is freed after sampling.
+
+The final PyTorch materialization repro prepares sliced, transposed, diagonal
+and expanded input views before every sampling phase. Its timed callable is
+only the materializing clone/contiguous API. Earlier follow-up diagonal,
+transpose and broadcast confirmations that included view construction are
+superseded by `20261008_materialize_views`; slice/dynamic-slice scans are
+superseded there as well.

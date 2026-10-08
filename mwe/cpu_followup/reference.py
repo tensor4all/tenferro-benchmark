@@ -63,8 +63,10 @@ elif cat=='index':
   if op=='gather':call=lambda:torch.index_select(x,0,idx)
   elif op=='scatter':
    zeros=torch.zeros_like(x);call=lambda:torch.scatter_add(zeros,0,idx,y)
-  elif op=='slice':call=lambda:x[1024:n-1024:2].clone()
-  elif op=='dynamic_slice':call=lambda:x[1024:1024+n//2].clone()
+  elif op=='slice':
+   prepared_view=x[1024:n-1024:2];call=prepared_view.clone
+  elif op=='dynamic_slice':
+   prepared_view=x[1024:1024+n//2];call=prepared_view.clone
   elif op=='dynamic_update_slice':
    # PyTorch has no one-call allocation-returning equivalent. Do not time a composition.
    raise ValueError('unsupported: PyTorch has no allocation-returning dynamic_update_slice API')
@@ -86,9 +88,12 @@ elif cat=='structural':
  x=wrap(fixture(shape))
  if backend=='pytorch':
   if op=='cast_f64_f32':call=lambda:x.to(torch.float32)
-  elif op=='extract_diagonal':call=lambda:torch.diagonal(x,dim1=1,dim2=2).clone()
-  elif op=='transpose':call=lambda:x.permute(1,0).contiguous()
-  elif op=='broadcast_in_dim':call=lambda:x.expand(8192,4096).clone()
+  elif op=='extract_diagonal':
+   prepared_view=torch.diagonal(x,dim1=1,dim2=2);call=prepared_view.clone
+  elif op=='transpose':
+   prepared_view=x.permute(1,0);call=prepared_view.contiguous
+  elif op=='broadcast_in_dim':
+   prepared_view=x.expand(8192,4096);call=prepared_view.clone
   else:call=lambda:getattr(torch,op)(x)
  else:
   if op=='cast_f64_f32':call=lambda:x.astype(jnp.float32)
