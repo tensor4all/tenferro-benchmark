@@ -34,7 +34,7 @@ measurement, not a single-core numerical benchmark. These observations cannot
 exclude RunPod-host or remote CDN contention; three pairs are limited evidence.
 Any failed gate makes the complete experiment INCONCLUSIVE.
 
-A live-priced reviewed L4 at <= $0.50/hour is selected, with one create
+A live-priced reviewed A6000 at <= $0.60/hour is selected, with one create
 attempt and no candidate escalation. Downloads have three-minute step bounds,
 the paid job has a 20-minute bound, and the existing cleanup always deletes the
 pod. Setup/provision time and failure costs are separate from the primary metric.
@@ -52,3 +52,8 @@ The first two allocation attempts selected A5000 from live pricing but received
 HTTP 500 (no available instances) before any pod was created. No measurements
 or paid time were produced. Selection now targets L4, which successfully
 registered in benchmark run `37779219119`, under the same price limit.
+
+L4 then had no live offer, so its run stopped before provisioning. Before any
+measurements, selection moved to reviewed A6000 (observed $0.53/hour), with a
+$0.60/hour ceiling and the same one-pod and 20-minute measurement bounds.
+The timing and validity protocol remains unchanged.
