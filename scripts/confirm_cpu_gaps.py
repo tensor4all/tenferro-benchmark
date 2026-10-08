@@ -49,12 +49,13 @@ exec "$@"
 
 def main():
     folder = Path(sys.argv[1]).resolve()
+    operations = tuple(sys.argv[2:]) or OPERATIONS
     folder.mkdir(parents=True, exist_ok=True)
     declaration = folder / "confirmation.yaml"
     if declaration.exists():
         raise RuntimeError("Refusing to overwrite an existing confirmation declaration")
     aa = {}
-    for op in OPERATIONS:
+    for op in operations:
         for threads in (1, 4):
             pairs = []
             for round_index in range(4):
@@ -73,7 +74,7 @@ def main():
         host={"target_profile": "amd-cpu", "hostname": subprocess.check_output(["hostname"], text=True).strip(),
               "affinity": "none (thread env only)", "provider": "MKL; versions independently recorded"},
         threads=[1, 4], cases={"suite_id": "cpu/perf_issues", "manifest_version": "new MWE cases pending issue assignment",
-                              "coverage": "explicit", "case_ids": list(OPERATIONS)},
+                              "coverage": "explicit", "case_ids": list(operations)},
         timing={"scope": "many_operations_single_interval; session/setup/cleanup outside", "cache_pool_state": "warm, validated and primed"},
         repetitions={"warmups": 3, "runs": 15, "rounds": 4}, statistic="median_of_round_ratios",
         thresholds={"relative": 0.20, "absolute_ns": 500},
@@ -85,7 +86,7 @@ def main():
     declaration.write_text(yaml.safe_dump(config, sort_keys=False))
     declaration_hash = hashlib.sha256(declaration.read_bytes()).hexdigest()
     results = []
-    for op in OPERATIONS:
+    for op in operations:
         for threads in (1, 4):
             pairs, rust_ns, torch_ns, covs = [], [], [], []
             for round_index in range(4):

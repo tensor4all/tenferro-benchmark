@@ -1,6 +1,6 @@
 //! Operation-only reproducers: `cargo run --release --no-default-features
 //! --features system-mkl --example cpu_gap_mwe -- ifft 4`.
-use num_complex::Complex32;
+use num_complex::{Complex32, Complex64};
 use serde_json::{json, Value};
 use std::{error::Error, hint::black_box, time::Instant};
 use tenferro_ad::{EagerRuntime, EagerTensor};
@@ -60,6 +60,88 @@ pub fn run(
     let mut backend = CpuBackend::with_threads(threads)?;
     let provider = format!("{:?}", backend.kind());
     let mut result = match operation {
+        "cast" | "reshape" => {
+            let n = 33554432;
+            let input =
+                Tensor::from_vec_col_major(vec![n], (0..n).map(|i| (i % 17) as f64).collect())?;
+            backend.with_backend_session(|s| -> Result<Value> {
+                if operation == "cast" {
+                    let output = s.cast(&input, tenferro_tensor::DType::F32)?;
+                    assert!(output
+                        .as_slice::<f32>()?
+                        .iter()
+                        .enumerate()
+                        .all(|(i, &x)| x == (i % 17) as f32));
+                    measure(n * 4, warmups, samples, target_ns, || {
+                        Ok(s.cast(&input, tenferro_tensor::DType::F32)?)
+                    })
+                } else {
+                    let output = s.reshape_read(
+                        tenferro_tensor::TensorRead::from_tensor(&input),
+                        &[8192, 4096],
+                    )?;
+                    assert!(output
+                        .as_slice::<f64>()?
+                        .iter()
+                        .enumerate()
+                        .all(|(i, &x)| x == (i % 17) as f64));
+                    measure(n * 8, warmups, samples, target_ns, || {
+                        Ok(s.reshape_read(
+                            tenferro_tensor::TensorRead::from_tensor(&input),
+                            &[8192, 4096],
+                        )?)
+                    })
+                }
+            })??
+        }
+        "ifft-pattern" => {
+            let n = 1048576;
+            let value = |i: usize, seed: u64| {
+                let x = (i as u64)
+                    .wrapping_mul(6364136223846793005)
+                    .wrapping_add(seed.wrapping_mul(1442695040888963407));
+                ((x % 2048) as f32 - 1024.0) / 1024.0
+            };
+            let block: Vec<_> = (0..2048)
+                .map(|i| Complex32::new(value(i, 17), value(i, 18)))
+                .collect();
+            let input = Tensor::from_vec_col_major(
+                vec![n],
+                block.iter().copied().cycle().take(n).collect(),
+            )?;
+            let expected: Vec<_> = [0usize, 1, 17, 1023]
+                .iter()
+                .map(|&k| {
+                    let y: Complex64 = block
+                        .iter()
+                        .enumerate()
+                        .map(|(i, z)| {
+                            Complex64::new(z.re as f64, z.im as f64)
+                                * Complex64::from_polar(
+                                    1.0,
+                                    2.0 * std::f64::consts::PI * (k * i) as f64 / 2048.0,
+                                )
+                        })
+                        .sum();
+                    (k * 512, y / 2048.0)
+                })
+                .collect();
+            let mut executor = FftExecutor::default();
+            backend.with_backend_session(|s| {
+                with_cpu_exec_session(s, |s| -> Result<Value> {
+                    let output = executor.ifft(&input, None, -1, FftNorm::Backward, s)?;
+                    let got = output.as_slice::<Complex32>()?;
+                    for (i, want) in &expected {
+                        let g = Complex64::new(got[*i].re as f64, got[*i].im as f64);
+                        assert!((g - want).norm() < 1e-5);
+                    }
+                    measure(n * 8, warmups, samples, target_ns, || {
+                        Ok(executor.ifft(&input, None, -1, FftNorm::Backward, s)?)
+                    })
+                })
+                .expect("CPU session")
+            })??
+        }
         "ifft" => {
             let n = 1048576;
             let input = Tensor::from_vec_col_major(vec![n], vec![Complex32::new(1.0, 0.0); n])?;

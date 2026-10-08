@@ -8,6 +8,30 @@ import torch
 
 
 def fixture(operation):
+    if operation in ("cast", "reshape"):
+        n = 33554432
+        raw = (np.arange(n, dtype=np.int64) % 17).astype(np.float64)
+        x = torch.from_numpy(raw)
+        if operation == "cast":
+            def check(y):
+                assert bool((y[:4096].double() == x[:4096]).all())
+            return lambda: x.to(torch.float32), check, n*4
+        def check(y):
+            assert bool((y.flatten()[:4096] == x[:4096]).all())
+        return lambda: x.reshape(4096,8192).clone(), check, n*8
+    if operation == "ifft-pattern":
+        # Exact periodic values used by the maintained FFT suite.
+        i = np.arange(2048, dtype=np.uint64)
+        def values(seed):
+            with np.errstate(over="ignore"):
+                raw = i*np.uint64(6364136223846793005) + np.uint64(seed)*np.uint64(1442695040888963407)
+            return ((raw % 2048).astype(np.float32)-1024)/1024
+        block = values(17)+1j*values(18)
+        x = torch.from_numpy(np.tile(block, 512))
+        expected = torch.from_numpy(np.fft.ifft(block.astype(np.complex128)))
+        def check(y):
+            assert float((y[::512]-expected).abs().max()) < 1e-5
+        return lambda: torch.fft.ifft(x, norm="backward"), check, 1048576*8
     if operation == "ifft":
         n = 1048576
         x = torch.ones(n, dtype=torch.complex64)
