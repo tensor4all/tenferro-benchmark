@@ -32,7 +32,7 @@ env:
   JAX_CUDA12_PJRT_VERSION: 0.10.2
   NVIDIA_CUDNN_CU12_VERSION: 9.23.2.1
   NVIDIA_CUDA_NVCC_CU12_VERSION: 12.9.86
-  RUNPOD_IMAGE: nvidia/cuda:12.8.1-runtime-ubuntu22.04@sha256:4a801ef9232d2b05e69df4eb8aa054dbbe2824e5499e1e6e857320bb01ac41a9
+  RUNPOD_IMAGE: nvidia/cuda:12.8.1-runtime-ubuntu24.04@sha256:ebef3c171eeef0298e4eb2e4be843105edf3b8b0ac45e0b43acee358e8046867
   TENFERRO_REF: 3f10f960af05efa4fc5705aac3dafbac1ae2269e
 jobs:
   prepare-transfer:
