@@ -4,6 +4,8 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 CASES=json.loads(Path(__file__).with_name('cases.json').read_text())
 p=argparse.ArgumentParser();p.add_argument('--container',default='14099c68ff8e');p.add_argument('--output',required=True);p.add_argument('--phase',choices=['scan','confirm'],default='scan');p.add_argument('--case',action='append');p.add_argument('--target-ns',type=int,default=10000000);p.add_argument('--balanced-aa',action='store_true');a=p.parse_args()
+unknown=set(a.case or [])-{c['id'] for c in CASES}
+if unknown:raise SystemExit('Unknown case filters: '+', '.join(sorted(unknown)))
 out=Path(a.output);out.mkdir(parents=True,exist_ok=True)
 lib=subprocess.check_output(['git','-C',str(ROOT/'extern/tenferro-rs'),'rev-parse','HEAD'],text=True).strip()
 harness=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()

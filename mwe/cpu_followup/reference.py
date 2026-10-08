@@ -118,6 +118,7 @@ if backend=='mkl-dfti':
  if cat!='fft':raise ValueError('oneMKL DFTI reference only supports FFT cases')
  from mkl_fft import prepared_fft
  call,cleanup,provider_metadata=prepared_fft(torch,x,op,n,threads)
+ original_input=np.array(numpy(x),copy=True)
 
 # Compiled JAX graphs are separately labelled; compilation and first execution untimed.
 if backend=='jax':
@@ -150,6 +151,7 @@ if backend=='jax':
  compiled=jax.jit(dynamic)
  call=lambda:compiled(*inputs)
 first=ready(call())
+if backend=='mkl-dfti':assert np.array_equal(numpy(x),original_input), 'DFTI changed input during priming'
 outs=first if isinstance(first,tuple) else (first,)
 
 def signature(output):
@@ -180,5 +182,6 @@ if runs:
 row=dict(case_id=case_id,path=backend+'-compiled' if backend=='jax' else backend+'-eager',threads=threads,outputs=sigs,samples=samples,calibration=dict(iterations=count,elapsed_ns=elapsed,target_ns=target,memory_cap_bytes=512*1024*1024),scope=dict(outside_timer=['fixtures','conversion','JIT compilation','initialization','validation','retention allocation','output destruction'],inside_timer=['API execution','intrinsic output allocation','native completion']))
 
 if backend=='mkl-dfti':
- row['path']='mkl-dfti-cached';row['provider']=provider_metadata;cleanup()
+ assert np.array_equal(numpy(x),original_input), 'DFTI changed input during sampling'
+ row['path']='mkl-dfti-cached';row['provider']=provider_metadata;row['input_preserved']=True;cleanup()
 print(json.dumps(row))

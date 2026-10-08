@@ -20,9 +20,9 @@ def prepared_fft(torch, x, operation, n, threads):
     lib.DftiErrorMessage.argtypes=[C.c_long];lib.DftiErrorMessage.restype=C.c_char_p
     for name in ('DftiComputeForward','DftiComputeBackward'):
         f=getattr(lib,name);f.argtypes=[C.c_void_p,C.c_void_p,C.c_void_p];f.restype=C.c_long
-    lib.mkl_set_num_threads_local.argtypes=[C.c_int];lib.mkl_set_num_threads_local.restype=C.c_int
-    lib.mkl_get_max_threads.restype=C.c_int
-    lib.mkl_set_num_threads_local(threads)
+    lib.MKL_Set_Num_Threads_Local.argtypes=[C.c_int];lib.MKL_Set_Num_Threads_Local.restype=C.c_int
+    lib.MKL_Get_Max_Threads.restype=C.c_int
+    lib.MKL_Set_Num_Threads_Local(threads)
     def check(status):
         if status:raise RuntimeError(lib.DftiErrorMessage(status).decode())
     descriptor=C.c_void_p()
@@ -32,6 +32,7 @@ def prepared_fft(torch, x, operation, n, threads):
     check(lib.DftiSetValue(descriptor,C.c_int(11),C.c_int(44)))  # out-of-place
     if real:check(lib.DftiSetValue(descriptor,C.c_int(10),C.c_int(39))) # complex-complex Hermitian storage
     if operation in ('ifft','irfft'):check(lib.DftiSetValue(descriptor,C.c_int(5),C.c_double(1/n)))
+    check(lib.DftiSetValue(descriptor,C.c_int(28),C.c_int(52))) # preserve input
     check(lib.DftiCommitDescriptor(descriptor))
     output_dtype=(torch.float64 if double else torch.float32) if operation=='irfft' else (torch.complex128 if double else torch.complex64)
     output_shape=(n//2+1,) if operation=='rfft' else (n,)
@@ -42,4 +43,4 @@ def prepared_fft(torch, x, operation, n, threads):
         check(compute(descriptor,source,C.c_void_p(output.data_ptr())))
         return output
     def cleanup():check(lib.DftiFreeDescriptor(C.byref(descriptor)))
-    return call,cleanup,dict(library=str(library),provider='oneMKL DFTI',planning='create/configure/commit outside timer; first completed transform outside timer',max_threads=lib.mkl_get_max_threads())
+    return call,cleanup,dict(library=str(library),provider='oneMKL DFTI',planning='create/configure/commit outside timer; first completed transform outside timer',max_threads=lib.MKL_Get_Max_Threads())
