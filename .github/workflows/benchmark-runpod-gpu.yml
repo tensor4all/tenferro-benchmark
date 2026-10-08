@@ -27,8 +27,12 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RUNPOD_IMAGE: runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
-  CUDA_MIN_RUNTIME_VERSION: "12.8"
+  RUNPOD_IMAGE: nvidia/cuda:12.8.1-devel-ubuntu24.04
+  CUDA_HOME: /usr/local/cuda
+  CUDA_PATH: /usr/local/cuda
+  LD_LIBRARY_PATH: /usr/local/cuda/lib64
+  TENFERRO_CPU_FEATURES: none
+  UV_NO_SYNC: "1"
   BENCHMARK_TARGET_PROFILE: nvidia-gpu
 
 jobs:
@@ -58,14 +62,16 @@ jobs:
         id: runner_config
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          RUNNER_GROUP_ID: ${{ vars.RUNPOD_RUNNER_GROUP_ID || '4' }}
         run: |
           set -euo pipefail
+          [[ "$RUNNER_GROUP_ID" =~ ^[1-9][0-9]*$ ]]
           label="runpod-benchmark-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           echo "label=${label}" >> "$GITHUB_OUTPUT"
           gh api --method POST \
             "orgs/${GITHUB_REPOSITORY_OWNER}/actions/runners/generate-jitconfig" \
             --input - > /tmp/jit-response.json <<JSON
-          {"name":"${label}","runner_group_id":1,"labels":["${label}"]}
+          {"name":"${label}","runner_group_id":${RUNNER_GROUP_ID},"labels":["${label}"]}
           JSON
           jq -e -r '.encoded_jit_config' /tmp/jit-response.json > /tmp/jit-config
 
@@ -91,7 +97,7 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           export RUNNER_ALLOW_RUNASROOT=1
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl tar gzip python3
+          apt-get install -y --no-install-recommends ca-certificates curl tar gzip python3 git
           nvidia-smi
           python3 -c 'import ctypes; ctypes.CDLL("libcuda.so.1")'
           cd /tmp
@@ -103,6 +109,7 @@ jobs:
           echo "${sha256}  ${tarball}" | sha256sum -c -
           rm -rf actions-runner && mkdir actions-runner && cd actions-runner
           tar xzf "../${tarball}"
+          ./bin/installdependencies.sh
           ./run.sh --jitconfig "${RUNNER_JIT_CONFIG}"
           STARTUP
           RUNNER_JIT_CONFIG="${runner_jit_config}" \
@@ -121,6 +128,7 @@ jobs:
     timeout-minutes: 360
     env:
       GPU_BENCH_BACKENDS: ${{ inputs.backends }}
+      REQUESTED_SUITE: ${{ inputs.suite }}
     steps:
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
@@ -132,26 +140,50 @@ jobs:
         run: |
           set -euo pipefail
           apt-get update
-          apt-get install -y --no-install-recommends build-essential cmake git libomp-dev
+          apt-get install -y --no-install-recommends build-essential cmake git libomp-dev pkg-config libssl-dev
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
           source "$HOME/.cargo/env"
           curl -LsSf https://astral.sh/uv/install.sh | sh
           export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
           uv sync --python 3.12 --frozen || uv sync --python 3.12
           # The benchmark project requires Python >=3.12 and CUDA-aware
           # framework wheels; the RunPod base image's Python is not the
           # benchmark environment.
           uv pip install --python .venv 'jax[cuda12]'
           ./scripts/setup_extern_deps.sh
+          if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
+            git -C extern/tenferro-rs pull --ff-only
+          fi
+
+      - name: Verify CUDA benchmark environment
+        run: |
+          set -euo pipefail
+          nvidia-smi
+          nvcc --version
+          uv run python - <<'PY'
+          import ctypes
+          import torch
+          ctypes.CDLL("libcuda.so.1")
+          ctypes.CDLL("libnvrtc.so.12")
+          assert torch.cuda.is_available(), "PyTorch CUDA is unavailable"
+          value = torch.ones(16, device="cuda")
+          result = value + value
+          torch.cuda.synchronize()
+          assert result.sum().item() == 32
+          print(f"PyTorch {torch.__version__}, CUDA {torch.version.cuda}")
+          print(torch.cuda.get_device_name(0))
+          PY
 
       - name: Run GPU benchmark suite
         run: |
           set -euo pipefail
           source "$HOME/.cargo/env"
-          if [[ "${{ inputs.suite }}" == all ]]; then
+          if [[ "$REQUESTED_SUITE" == all ]]; then
             ./scripts/run_gpu_suite.sh
           else
-            GPU_BENCH_SUITE="${{ inputs.suite }}" ./scripts/run_gpu_suite.sh
+            GPU_BENCH_SUITE="$REQUESTED_SUITE" ./scripts/run_gpu_suite.sh
           fi
 
       - name: Archive benchmark results
@@ -173,7 +205,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Delete RunPod pod
-        if: needs.start-runpod.outputs.pod_id != '' && inputs.keep_failed_pod != true
+        if: >-
+          needs.start-runpod.outputs.pod_id != '' &&
+          !(inputs.keep_failed_pod == true && needs.run-gpu-benchmark.result == 'failure')
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
           POD_ID: ${{ needs.start-runpod.outputs.pod_id }}

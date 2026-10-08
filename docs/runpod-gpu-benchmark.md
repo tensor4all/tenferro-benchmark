@@ -11,7 +11,38 @@ Configure these repository or organization secrets before dispatching it:
 - `GH_APP_ID` and `GH_APP_PRIVATE_KEY`: a GitHub App allowed to create
   organization JIT runners.
 
+The workflow registers runners in organization runner group `4`
+(`runpod-tenferro`). Allow this repository in that group's repository
+access settings, including public repositories. To use a different group,
+set the repository Actions variable `RUNPOD_RUNNER_GROUP_ID` to its numeric ID.
+
 The pod receives only the single-use JIT runner configuration. The workflow is
 manual-dispatch only for now; it does not add RunPod credentials to pull
-request jobs. `keep_failed_pod=true` is for debugging only and leaves the pod
-billable until it is deleted manually.
+request jobs. It uses the CUDA 12.8.1 development image, installs the benchmark
+toolchain and Python environment, and checks CUDA execution before collection.
+The unique per-run label sends the benchmark job to the newly created RunPod
+runner, rather than the existing `ubuntu-gpu` runner in the same group.
+
+Run a first GPU benchmark from GitHub Actions, or with:
+
+```bash
+gh workflow run benchmark-runpod-gpu.yml --repo tensor4all/tenferro-benchmark \
+  -f suite=benchmarks/gpu/dense.yaml \
+  -f backends=tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda \
+  -f keep_failed_pod=false
+```
+
+`suite=all` runs the standard `run_gpu_suite.sh` suites sequentially: dense,
+einsum, sparse, and tensornetwork. A specific suite YAML or comma-separated list
+can be supplied instead. Standalone GPU runners such as permutation and linalg
+AD latency are not included in `all`.
+
+Download the `runpod-gpu-benchmark-<run_id>` artifact for raw measurements under
+`data/results/nvidia-gpu/` and reports under `result/nvidia-gpu/`. The workflow
+does not commit generated reports. The benchmark entry point rebuilds the Rust
+GPU binary before measurement.
+
+By default the cleanup job deletes the pod, including after benchmark failure
+or cancellation. `keep_failed_pod=true` retains the pod only when the benchmark
+job fails; it is for debugging and leaves the pod billable until manually
+deleted.
