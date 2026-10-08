@@ -1,0 +1,186 @@
+name: benchmark-runpod-gpu
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: GPU suite YAML, or all GPU suites
+        required: true
+        default: all
+        type: string
+      backends:
+        description: Comma-separated GPU backends
+        required: true
+        default: tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda
+        type: string
+      keep_failed_pod:
+        description: Keep the pod for debugging (continues billing)
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-runpod-gpu
+  cancel-in-progress: false
+
+env:
+  RUNPOD_IMAGE: runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
+  CUDA_MIN_RUNTIME_VERSION: "12.8"
+  BENCHMARK_TARGET_PROFILE: nvidia-gpu
+
+jobs:
+  start-runpod:
+    name: Start ephemeral RunPod runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      pod_id: ${{ steps.create_pod.outputs.pod_id }}
+      runner_label: ${{ steps.runner_label.outputs.label }}
+    steps:
+      - name: Checkout trusted benchmark harness
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-organization-self-hosted-runners: write
+
+      - name: Mint single-use JIT runner configuration
+        id: runner_config
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          label="runpod-benchmark-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          echo "label=${label}" >> "$GITHUB_OUTPUT"
+          gh api --method POST \
+            "orgs/${GITHUB_REPOSITORY_OWNER}/actions/runners/generate-jitconfig" \
+            --input - > /tmp/jit-response.json <<JSON
+          {"name":"${label}","runner_group_id":1,"labels":["${label}"]}
+          JSON
+          jq -e -r '.encoded_jit_config' /tmp/jit-response.json > /tmp/jit-config
+
+      - name: Prepare runner label
+        id: runner_label
+        run: |
+          set -euo pipefail
+          label="runpod-benchmark-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          echo "label=${label}" >> "$GITHUB_OUTPUT"
+
+      - name: Provision RunPod GPU
+        id: create_pod
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          set -euo pipefail
+          # The JIT value is read from the protected temporary file rather than
+          # echoed into logs or committed outputs.
+          runner_jit_config="$(cat /tmp/jit-config)"
+          export RUNNER_JIT_CONFIG="${runner_jit_config}"
+          cat > /tmp/runpod-startup.sh <<'STARTUP'
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          export RUNNER_ALLOW_RUNASROOT=1
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl tar gzip python3
+          nvidia-smi
+          python3 -c 'import ctypes; ctypes.CDLL("libcuda.so.1")'
+          cd /tmp
+          version=2.335.1
+          sha256=4ef2f25285f0ae4477f1fe1e346db76d2f3ebf03824e2ddd1973a2819bf6c8cf
+          tarball="actions-runner-linux-x64-${version}.tar.gz"
+          curl -fsSL -o "${tarball}" "https://github.com/actions/runner/releases/download/v${version}/${tarball}"
+          # Keep the checksum check explicit; update version and checksum together.
+          echo "${sha256}  ${tarball}" | sha256sum -c -
+          rm -rf actions-runner && mkdir actions-runner && cd actions-runner
+          tar xzf "../${tarball}"
+          ./run.sh --jitconfig "${RUNNER_JIT_CONFIG}"
+          STARTUP
+          RUNNER_JIT_CONFIG="${runner_jit_config}" \
+          RUNNER_LABEL="${{ steps.runner_config.outputs.label }}" \
+          python3 scripts/ci/runpod_provision.py \
+            --config scripts/ci/runpod_config.json \
+            --startup-script /tmp/runpod-startup.sh \
+            --image "${RUNPOD_IMAGE}"
+
+  run-gpu-benchmark:
+    name: Run GPU benchmark on RunPod
+    needs: start-runpod
+    runs-on:
+      - self-hosted
+      - ${{ needs.start-runpod.outputs.runner_label }}
+    timeout-minutes: 360
+    env:
+      GPU_BENCH_BACKENDS: ${{ inputs.backends }}
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install benchmark toolchain
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential cmake git libomp-dev
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          source "$HOME/.cargo/env"
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+          uv sync --python 3.12 --frozen || uv sync --python 3.12
+          # The benchmark project requires Python >=3.12 and CUDA-aware
+          # framework wheels; the RunPod base image's Python is not the
+          # benchmark environment.
+          uv pip install --python .venv 'jax[cuda12]'
+          ./scripts/setup_extern_deps.sh
+
+      - name: Run GPU benchmark suite
+        run: |
+          set -euo pipefail
+          source "$HOME/.cargo/env"
+          if [[ "${{ inputs.suite }}" == all ]]; then
+            ./scripts/run_gpu_suite.sh
+          else
+            GPU_BENCH_SUITE="${{ inputs.suite }}" ./scripts/run_gpu_suite.sh
+          fi
+
+      - name: Archive benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runpod-gpu-benchmark-${{ github.run_id }}
+          path: |
+            data/results/nvidia-gpu
+            result/nvidia-gpu
+          if-no-files-found: warn
+          retention-days: 30
+
+  cleanup-runpod:
+    name: Delete RunPod pod
+    if: always()
+    needs: [start-runpod, run-gpu-benchmark]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Delete RunPod pod
+        if: needs.start-runpod.outputs.pod_id != '' && inputs.keep_failed_pod != true
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          POD_ID: ${{ needs.start-runpod.outputs.pod_id }}
+        run: |
+          set -euo pipefail
+          status="$(curl -sS -o /tmp/delete.json -w '%{http_code}' \
+            -X DELETE "https://rest.runpod.io/v1/pods/${POD_ID}" \
+            -H "Authorization: Bearer ${RUNPOD_API_KEY}")"
+          cat /tmp/delete.json || true
+          [[ "$status" == 404 || ("$status" -ge 200 && "$status" -lt 300) ]]

@@ -1,0 +1,18 @@
+{
+  "api_url": "https://rest.runpod.io/v1/pods",
+  "cloud_type": "SECURE",
+  "compute_type": "GPU",
+  "allowed_cuda_versions": ["12.8", "12.9", "13.0"],
+  "gpu_type_ids": [
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA RTX 6000 Ada Generation",
+    "NVIDIA L40S",
+    "NVIDIA A40",
+    "NVIDIA L4"
+  ],
+  "gpu_type_priority": "availability",
+  "gpu_count": 1,
+  "container_disk_gb": 80,
+  "volume_gb": 20,
+  "volume_mount_path": "/workspace"
+}
