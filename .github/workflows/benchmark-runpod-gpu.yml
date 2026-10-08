@@ -22,6 +22,7 @@ name: benchmark-runpod-gpu
         type: choice
         options:
         - NVIDIA A40
+        - NVIDIA RTX 6000 Ada Generation
         - NVIDIA RTX 2000 Ada Generation
         - NVIDIA RTX A4000
         - NVIDIA RTX A5000
@@ -168,7 +169,7 @@ jobs:
       run: "python3 - <<'CONFIG'\nimport json, os\nfrom pathlib import Path\nfrom scripts.ci.runpod_pricing import\
         \ fetch_gpu_offers, http_transport, GRAPHQL_URL\npath=Path('scripts/ci/runpod_config.json')\nconfig=json.loads(path.read_text())\n\
         arm=os.environ['EXPERIMENT_ARM']\ngpu=os.environ['CANDIDATE_GPU']\n\
-        ceiling={'NVIDIA RTX 2000 Ada Generation':0.35,'NVIDIA A40':0.60,'NVIDIA RTX A4000':0.35,'NVIDIA RTX A5000':0.35,'NVIDIA RTX A6000':0.65,'NVIDIA\
+        ceiling={'NVIDIA RTX 6000 Ada Generation':1.10,'NVIDIA RTX 2000 Ada Generation':0.35,'NVIDIA A40':0.60,'NVIDIA RTX A4000':0.35,'NVIDIA RTX A5000':0.35,'NVIDIA RTX A6000':0.65,'NVIDIA\
         \ GeForce RTX 4090':0.85}[gpu]\noffers=fetch_gpu_offers([gpu], min_vram_gb=8, transport=http_transport(GRAPHQL_URL))\n\
         if not offers or offers[0].price_per_hr > ceiling:\n    raise SystemExit(f'{gpu} unavailable below ${ceiling}/hr;\
         \ no pod created')\nconfig['gpu_tiers']=[{'name':'experiment','gpu_type_ids':[gpu]}]\nconfig['allowed_cuda_versions']=['13.0','12.9','12.8']\n\
