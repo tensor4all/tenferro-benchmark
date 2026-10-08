@@ -10,6 +10,20 @@ name: benchmark-runpod-gpu
         default: candidate
         required: true
         description: Frozen full-CI cost experiment arm
+      prepared_run_id:
+        type: number
+        default: 0
+        description: Reuse frozen prepared artifacts from a diagnostic run; zero prepares anew
+      candidate_gpu:
+        type: choice
+        options:
+        - NVIDIA A40
+        - NVIDIA RTX A4000
+        - NVIDIA RTX A5000
+        - NVIDIA RTX A6000
+        - NVIDIA GeForce RTX 4090
+        default: NVIDIA A40
+        description: Exact GPU for diagnostic candidate; no fallback
 permissions:
   contents: read
 concurrency:
@@ -116,6 +130,7 @@ jobs:
         compression-level: 0
         if-no-files-found: error
         retention-days: 7
+    if: ${{ inputs.prepared_run_id == 0 }}
   start-runpod:
     name: Start ephemeral RunPod runner
     needs:
@@ -147,14 +162,16 @@ jobs:
     - name: Bound this experiment to one inexpensive candidate
       run: "python3 - <<'CONFIG'\nimport json, os\nfrom pathlib import Path\nfrom scripts.ci.runpod_pricing import\
         \ fetch_gpu_offers, http_transport, GRAPHQL_URL\npath=Path('scripts/ci/runpod_config.json')\nconfig=json.loads(path.read_text())\n\
-        arm=os.environ['EXPERIMENT_ARM']\ngpu={'baseline':'NVIDIA A40','candidate':'NVIDIA RTX A4000'}[arm]\nceiling={'baseline':0.60,'candidate':0.35}[arm]\n\
-        offers=fetch_gpu_offers([gpu], min_vram_gb=8, transport=http_transport(GRAPHQL_URL))\nif not offers or offers[0].price_per_hr\
-        \ > ceiling:\n    raise SystemExit(f'{gpu} unavailable below ${ceiling}/hr; no pod created')\nconfig['gpu_tiers']=[{'name':'experiment','gpu_type_ids':[gpu]}]\n\
-        config['allowed_cuda_versions']=['13.0','12.9','12.8']\nconfig['max_price_candidates']=1\nconfig['max_provision_attempts']=1\n\
-        config['same_tier_retries']=0\npath.write_text(json.dumps(config))\nprint(f'{arm}: {gpu}, ${offers[0].price_per_hr}/hr')\n\
-        CONFIG\n"
+        arm=os.environ['EXPERIMENT_ARM']\ngpu='NVIDIA A40' if arm == 'baseline' else os.environ['CANDIDATE_GPU']\n\
+        ceiling={'NVIDIA A40':0.60,'NVIDIA RTX A4000':0.35,'NVIDIA RTX A5000':0.35,'NVIDIA RTX A6000':0.65,'NVIDIA\
+        \ GeForce RTX 4090':0.85}[gpu]\noffers=fetch_gpu_offers([gpu], min_vram_gb=8, transport=http_transport(GRAPHQL_URL))\n\
+        if not offers or offers[0].price_per_hr > ceiling:\n    raise SystemExit(f'{gpu} unavailable below ${ceiling}/hr;\
+        \ no pod created')\nconfig['gpu_tiers']=[{'name':'experiment','gpu_type_ids':[gpu]}]\nconfig['allowed_cuda_versions']=['13.0','12.9','12.8']\n\
+        config['max_price_candidates']=1\nconfig['max_provision_attempts']=1\nconfig['same_tier_retries']=0\npath.write_text(json.dumps(config))\n\
+        print(f'{arm}: {gpu}, ${offers[0].price_per_hr}/hr')\nCONFIG\n"
       env:
         EXPERIMENT_ARM: ${{ inputs.arm }}
+        CANDIDATE_GPU: ${{ inputs.candidate_gpu }}
     - name: Provision compatible RunPod GPU
       id: create_pod
       env:
@@ -183,6 +200,8 @@ jobs:
       run: "set -euo pipefail\nstatus=\"$(curl -sS -o /tmp/delete-startup.json -w '%{http_code}' \\\n  -X DELETE\
         \ \"https://rest.runpod.io/v1/pods/${POD_ID}\" \\\n  -H \"Authorization: Bearer ${RUNPOD_API_KEY}\")\"\n\
         [[ \"$status\" == 404 || (\"$status\" -ge 200 && \"$status\" -lt 300) ]]\n"
+    if: ${{ !cancelled() && (needs.prepare-transfer.result == 'success' || needs.prepare-transfer.result == 'skipped')
+      }}
   run-ci:
     name: Full frozen GPU CI workload
     needs:
@@ -212,9 +231,11 @@ jobs:
       timeout-minutes: 4
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
-        pattern: ci-cost-${{ github.run_id }}-part*
+        pattern: ci-cost-${{ inputs.prepared_run_id || github.run_id }}-part*
         merge-multiple: true
         path: archive-transfer
+        run-id: ${{ inputs.prepared_run_id || github.run_id }}
+        github-token: ${{ github.token }}
     - name: Reconstruct and verify archive transfer
       timeout-minutes: 1
       run: "set -euo pipefail\ncd archive-transfer\n# Require all five parts even when a download action matched\
@@ -396,6 +417,10 @@ jobs:
         \n"
     - name: GPU test complete
       run: echo "RUNPOD_TENFERRO_GPU_TEST_OK"
+    if: ${{ !cancelled() && needs.start-runpod.result == 'success' }}
+    permissions:
+      contents: read
+      actions: read
   cleanup-runpod:
     name: Delete RunPod pod
     if: always()

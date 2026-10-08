@@ -100,3 +100,10 @@
   noise gate, median >=20% reduction and pairwise nonregression. Pilots remain
   excluded. It supports reviewable arithmetic; measured inputs still require
   underlying workflow logs and provider timestamps.
+
+- A4000 pilot 37793172714 stopped on unavailable stock before creation; no
+  charge. Reuse its already prepared immutable five-part artifact for subsequent
+  diagnostic allocations, removing the hosted preparation delay during which
+  provider stock changes. The exact requested GPU and ceiling remain explicit;
+  one allocation attempt, no fallback, and frozen payload checksums remain.
+  This transport reuse is not a relaxation of primary confirmation validity.
