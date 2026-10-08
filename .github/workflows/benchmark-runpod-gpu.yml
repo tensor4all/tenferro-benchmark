@@ -13,6 +13,11 @@ on:
         required: true
         default: tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda
         type: string
+      prepare_only:
+        description: Prepare binaries and runtime only, without renting a GPU
+        required: false
+        default: false
+        type: boolean
       keep_failed_pod:
         description: Keep the pod for debugging (continues billing)
         required: false
@@ -143,6 +148,7 @@ jobs:
 
   start-runpod:
     name: Start ephemeral RunPod runner
+    if: ${{ !inputs.prepare_only }}
     needs: [prepare-benchmark, prepare-environment]
     runs-on: ubuntu-latest
     timeout-minutes: 70

@@ -97,6 +97,10 @@ gh workflow run benchmark-runpod-gpu.yml --repo tensor4all/tenferro-benchmark \
   -f keep_failed_pod=false
 ```
 
+For hosted preparation/cache diagnostics without renting a GPU, dispatch with
+`-f prepare_only=true`. This still prepares and verifies both artifacts, but
+skips provisioning and measurements. It produces no new benchmark receipt.
+
 `suite=all` runs the standard `run_gpu_suite.sh` suites sequentially: dense,
 einsum, sparse, and tensornetwork. A specific suite YAML or comma-separated list
 can be supplied instead. Standalone GPU runners such as permutation and linalg
