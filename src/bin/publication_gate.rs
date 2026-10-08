@@ -1682,7 +1682,7 @@ fn measure<I, O>(
 
 // Primal fixtures are read-only and reusable. Prepare them before entering
 // the eager session; tensor wrapping itself may enter a backend session.
-fn measure_eager<I: Send, O>(
+fn measure_eager<I: Clone + Send + Sync, O>(
     config: &BenchConfig,
     shape: &str,
     mut setup: impl FnMut() -> Result<I, Error>,
@@ -1696,9 +1696,11 @@ fn measure_eager<I: Send, O>(
         ctx.with_eager_session(|session| {
             let mut times = Vec::with_capacity(samples);
             for _ in 0..samples {
-                let mut outputs = Vec::with_capacity(inputs.len());
+                // Restore consumed descriptors and handles before this sample's timer.
+                let mut sample_inputs = inputs.to_vec();
+                let mut outputs = Vec::with_capacity(sample_inputs.len());
                 let start = Instant::now();
-                for input in &mut *inputs {
+                for input in &mut sample_inputs {
                     outputs.push(execute(session, input)?);
                 }
                 times.push(start.elapsed());
@@ -1816,7 +1818,7 @@ fn record_cpu_runtime() -> Result<(), Error> {
     }))
 }
 
-fn bench_row<I: Send, O>(
+fn bench_row<I: Clone + Send + Sync, O>(
     config: &BenchConfig,
     suite: &'static str,
     op: &'static str,
@@ -2348,6 +2350,29 @@ mod timing_tests {
                 ),))
             },
             |session, (a,)| session.matmul(a, a),
+        );
+        assert_eq!(row.status, "ok");
+        let row = bench_row(
+            &config,
+            "batched",
+            "batched_matmul_ikb_kjb_ijb",
+            "primal",
+            "f64",
+            "2x2xbatch1",
+            || {
+                let a =
+                    eager_from_tensor_in(tensor(&[2, 2, 1], vec![1.0, 0.0, 0.0, 1.0]), cpu_ctx());
+                Ok((a, Some(batched_matmul_config())))
+            },
+            |session, (a, descriptor)| {
+                session.dot_general(
+                    a,
+                    a,
+                    descriptor
+                        .take()
+                        .expect("descriptor restored outside timing"),
+                )
+            },
         );
         assert_eq!(row.status, "ok");
         let row = bench_row(
