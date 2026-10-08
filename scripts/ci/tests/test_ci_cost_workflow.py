@@ -45,3 +45,43 @@ class CiCostWorkflowTests(unittest.TestCase):
         self.assertLess(verification, execution)
         self.assertIn('sha256sum --check sdk.sha256', source)
         self.assertIn('steps.select_cuda_runtime.outputs.runtime_version', source)
+
+    def test_capacity_retry_never_replaces_a_paid_or_other_failure(self):
+        import os
+        import subprocess
+        import tempfile
+        import textwrap
+        source = (Path(__file__).resolve().parents[3] / '.github/workflows/benchmark-runpod-gpu.yml').read_text()
+        start = source.index('        # Capacity retry boundary:')
+        end = source.index('\n    - name:', start)
+        script = textwrap.dedent(source[start:end])
+        stub = '''
+python3() {
+  local number
+  number=$(( $(cat "$COUNT_FILE") + 1 ))
+  echo "$number" > "$COUNT_FILE"
+  echo "$PROVISION_RUNNER_LABEL" >> "$LABEL_FILE"
+  case "$TEST_MODE:$number" in
+    capacity:3|success:1) echo 'Created pod accepted: GPU NVIDIA A40 at $0.59/hr'; return 0 ;;
+    paid:*) echo 'Created pod rejected: GPU NVIDIA A40 at $0.59/hr'; echo 'RunPod HTTP 500: There are no instances currently available'; return 1 ;;
+    other:*) echo 'RunPod HTTP 503: upstream unavailable'; return 1 ;;
+    *) echo 'RunPod HTTP 500: There are no instances currently available'; return 1 ;;
+  esac
+}
+sleep() { return 0; }
+'''
+        for mode, calls, success in [('capacity', 3, True), ('success', 1, True),
+                                     ('paid', 1, False), ('other', 1, False),
+                                     ('exhausted', 3, False)]:
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                count, labels = root / 'count', root / 'labels'
+                count.write_text('0')
+                result = subprocess.run(['bash', '-c', 'set -euo pipefail\n' + stub +
+                                         script.replace('/tmp/runpod-create-', f'{directory}/create-')],
+                                        env=dict(os.environ, COUNT_FILE=str(count), LABEL_FILE=str(labels),
+                                                 TEST_MODE=mode, PROVISION_RUNNER_LABEL='frozen-run',
+                                                 RUNPOD_IMAGE='frozen-image'), capture_output=True, text=True)
+                self.assertEqual(result.returncode == 0, success, result.stdout + result.stderr)
+                self.assertEqual(int(count.read_text()), calls)
+                self.assertEqual(len(set(labels.read_text().splitlines())), calls)

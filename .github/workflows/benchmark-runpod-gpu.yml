@@ -319,11 +319,26 @@ jobs:
         ./bin/installdependencies.sh
         ./run.sh --jitconfig "${RUNNER_JIT_CONFIG}"
         STARTUP
-        python3 -m scripts.ci.runpod_provision \
-          --config scripts/ci/runpod_config.json \
-          --startup-script /tmp/runpod-startup.sh \
-          --image-name "$RUNPOD_IMAGE" \
-          --response-file /tmp/runpod-response.json
+        # Capacity retry boundary: retry only a zero-pod stock race.
+        base_runner_label="$PROVISION_RUNNER_LABEL"
+        for create_attempt in 1 2 3; do
+          export PROVISION_RUNNER_LABEL="${base_runner_label}-create${create_attempt}"
+          create_log="/tmp/runpod-create-${create_attempt}.log"
+          if python3 -m scripts.ci.runpod_provision \
+            --config scripts/ci/runpod_config.json \
+            --startup-script /tmp/runpod-startup.sh \
+            --image-name "$RUNPOD_IMAGE" \
+            --response-file /tmp/runpod-response.json 2>&1 | tee "$create_log"; then
+            break
+          fi
+          if grep -q '^Created pod ' "$create_log" ||
+             ! grep -q 'RunPod HTTP 500.*There are no instances currently available' "$create_log" ||
+             [ "$create_attempt" -eq 3 ]; then
+            exit 1
+          fi
+          echo "Zero-pod capacity race; retrying the same GPU after 15 hosted seconds."
+          sleep 15
+        done
     - name: Delete pod after startup failure
       if: ${{ (failure() || cancelled()) && steps.create_pod.outputs.pod_id != '' }}
       env:
