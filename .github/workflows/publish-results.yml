@@ -5,10 +5,15 @@ on:
     # 06:00 JST (21:00 UTC) every day, after nightly benchmark workflows finish.
     - cron: "0 21 * * *"
   workflow_dispatch:
+  workflow_run:
+    workflows: [benchmark-runpod-gpu, benchmark-nightly-mac-cpu, benchmark-nightly-linux-cpu]
+    types: [completed]
+    branches: [main]
 
 # Publish to GitHub Pages.
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -18,7 +23,11 @@ concurrency:
 
 jobs:
   build:
-    if: github.repository == 'tensor4all/tenferro-benchmark'
+    if: >-
+      github.repository == 'tensor4all/tenferro-benchmark' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout benchmark harness
@@ -75,6 +84,11 @@ jobs:
           if [[ -d "_artifacts/linux-cpu/data/results/amd-cpu" ]]; then
             cp -r "_artifacts/linux-cpu/data/results/amd-cpu" "_site/raw/linux-cpu"
           fi
+
+      - name: Collect latest successful GPU results by suite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci/collect_gpu_pages_results.py --repository "$GITHUB_REPOSITORY" --site-dir _site
 
       - name: Generate results index
         run: |

@@ -7,13 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       tenferro_ref:
-        description: "tenferro-rs ref to benchmark (default: current submodule)"
+        description: "tenferro-rs ref to benchmark (default: latest main; pinned once per run)"
         required: false
         default: ""
 
 # This workflow uses a GitHub-hosted runner, so results are reference-quality
 # indicators only. Canonical regression tracking still requires a stable
-# dedicated self-hosted runner with MKL.
+# dedicated self-hosted runner with MKL. Collection uses the maintained MKL
+# devcontainer to match the PyTorch wheel BLAS provider.
 permissions:
   contents: read
 
@@ -26,8 +27,6 @@ jobs:
     if: github.repository == 'tensor4all/tenferro-benchmark'
     runs-on: ubuntu-latest
     timeout-minutes: 360
-    env:
-      OPENBLAS_ROOT: /usr
     steps:
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
@@ -35,68 +34,40 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install devcontainer CLI
+        run: npm install --global @devcontainers/cli
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          version: "latest"
+      - name: Create current MKL CPU devcontainer
+        run: devcontainer up --workspace-folder . --remove-existing-container
 
-      - name: Install Julia
-        uses: julia-actions/setup-julia@v2
-        with:
-          # Track the latest stable Julia 1.x (matching the release channel used
-          # for the recorded results and the committed Manifest.toml).
-          version: "1"
-
-      - name: Install OpenBLAS
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libopenblas-dev libomp-dev cmake
-
-      - name: Prepare environment
-        run: |
-          uv sync --frozen || uv sync
-          ./scripts/setup_extern_deps.sh
-
-      - name: Pull latest tenferro-rs main
-        run: |
-          if [[ -d extern/tenferro-rs/.git ]]; then
-            cd extern/tenferro-rs
-            current_branch=$(git rev-parse --abbrev-ref HEAD)
-            if [[ "$current_branch" == "main" ]]; then
-              git pull origin main
-            else
-              echo "tenferro-rs is on '$current_branch'; preserving pinned checkout."
-            fi
-          fi
-
-      - name: Run linux-cpu core suites (OpenBLAS)
+      - name: Run sequential Linux CPU suites in MKL devcontainer
         env:
-          BENCHMARK_TARGET_PROFILE: amd-cpu
-          TENFERRO_CPU_FEATURES: blas-openblas
-          PUBLICATION_GATE_FEATURES: blas-openblas
-          PUBLICATION_GATE_PROFILE: quick
-          OPENBLAS_ROOT: /usr
-          BENCHMARK_ALLOW_BUSY_HOST: "1"
+          TENFERRO_REF: ${{ inputs.tenferro_ref || 'main' }}
         run: |
-          # GitHub-hosted runner uses system OpenBLAS because MKL is not
-          # pre-installed. Results are reference-quality, not canonical.
-          # Use the quick public-api profile to keep the nightly job within
-          # GitHub-hosted runner time limits.
-          ./scripts/run_all.sh 1 4
+          # shellcheck disable=SC2016
+          collection_script=$(cat <<'SCRIPT'
+            set -euo pipefail
+            trap 'echo "CPU collection failed at line $LINENO: $BASH_COMMAND" >&2' ERR
+            test -d "$MKLROOT"
+            export TENFERRO_CPU_FEATURES=blas-mkl
+            export PUBLICATION_GATE_FEATURES=blas-mkl
+            export BENCHMARK_TARGET_PROFILE=amd-cpu
+            export PUBLICATION_GATE_PROFILE=quick
+            export BENCHMARK_ALLOW_BUSY_HOST=1
+            export PERMUTATION_EXTRA_FEATURES=hptt
+            uv sync --frozen || uv sync
+            TENFERRO_UPDATE=1 ./scripts/setup_extern_deps.sh
+            export TENFERRO_REF="$(git -C extern/tenferro-rs rev-parse HEAD)"
+            export TENFERRO_UPDATE=0
+            # All suites inherit this detached revision and execute sequentially.
+            # run_all already runs permutation once over both thread counts.
+            ./scripts/run_all.sh 1 4
+          SCRIPT
+          )
+          devcontainer exec --workspace-folder . env TENFERRO_REF="$TENFERRO_REF" bash -lc "$collection_script"
 
-      - name: Run cpu/permutation suite
-        env:
-          BENCHMARK_TARGET_PROFILE: amd-cpu
-          TENFERRO_CPU_FEATURES: blas-openblas
-          OPENBLAS_ROOT: /usr
-          BENCHMARK_ALLOW_BUSY_HOST: "1"
-        run: |
-          ./scripts/run_permutation.sh 1 4
-
-      - name: Archive raw results
+      - name: Archive raw results (failed runs are diagnostic only)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: linux-cpu-benchmark-results-${{ github.run_id }}

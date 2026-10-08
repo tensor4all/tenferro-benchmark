@@ -51,7 +51,7 @@ The accepted pod checks out the exact tenferro-rs commit used for that build
 and verifies the artifact before sampling. Missing, stale, or modified artifacts
 fail rather than silently rebuilding on a paid GPU.
 
-The benchmark job installs the full CUDA toolkit and Python environment, then
+The benchmark job installs the full CUDA toolkit, cuTENSOR, and Python environment, then
 runs the selected suites sequentially using the verified binary. Local GPU runs
 continue to rebuild Rust before measurement.
 
@@ -78,8 +78,32 @@ AD latency are not included in `all`.
 
 Download the `runpod-gpu-benchmark-<run_id>` artifact for raw measurements under
 `data/results/nvidia-gpu/` and reports under `result/nvidia-gpu/`. The workflow
-does not commit generated reports. The benchmark entry point rebuilds the Rust
-GPU binary before measurement.
+does not commit generated reports. The hosted build produces a fresh Rust binary
+for every invocation; local benchmark entry points rebuild before measurement.
+
+After successful GPU or CPU nightly runs on `main`, `publish-results.yml`
+automatically deploys the reports to https://tensor4all.org/tenferro-benchmark/.
+It starts with maintained reports in `result/`, overlays successful CPU
+artifacts, then takes the latest validated GPU artifact separately for each
+suite. Running one GPU suite therefore preserves other suites' latest reports.
+Manual publication and the daily schedule remain available.
+
+GPU publication requires every requested problem/backend row to be present,
+with finite measurements and passing verification. Explicit unsupported rows
+remain labeled unsupported; runtime failures, unconfigured backends, missing
+rows, and failed verification block publication. The bundle includes only this
+invocation's raw data and reports, plus a hashed publication manifest. Failed
+runs preserve available diagnostic raw data without a publication manifest.
+Pages rechecks the manifest and measurements without executing artifact code.
+It searches the latest 100 successful main runs; artifacts are retained for
+30 days. When artifacts expire, the maintained repository reports provide the
+fallback. Raw data are published under `raw/nvidia-gpu/gpu/<suite>/<timestamp>/`.
+
+CPU nightlies resolve `tenferro_ref` once per invocation and keep that detached
+revision for all suites. Linux collection runs in the maintained MKL CPU
+devcontainer; macOS uses native execution. Failed CPU artifacts are diagnostic
+only and are not overlaid by Pages. Shared hosted CPU runners remain reference
+indicators rather than canonical regression measurements.
 
 By default the cleanup job deletes the pod, including after benchmark failure
 or cancellation. `keep_failed_pod=true` retains the pod only when the benchmark

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tenferro_ref:
-        description: "tenferro-rs ref to benchmark (default: current submodule)"
+        description: "tenferro-rs ref to benchmark (default: latest main; pinned once per run)"
         required: false
         default: ""
 
@@ -49,22 +49,16 @@ jobs:
           # for the recorded results and the committed Manifest.toml).
           version: "1"
 
-      - name: Prepare environment
+      - name: Prepare environment and pin tenferro-rs revision
+        env:
+          TENFERRO_REF: ${{ inputs.tenferro_ref || 'main' }}
+          TENFERRO_UPDATE: "1"
         run: |
           uv sync --frozen || uv sync
           ./scripts/setup_extern_deps.sh
-
-      - name: Pull latest tenferro-rs main
-        run: |
-          if [[ -d extern/tenferro-rs/.git ]]; then
-            cd extern/tenferro-rs
-            current_branch=$(git rev-parse --abbrev-ref HEAD)
-            if [[ "$current_branch" == "main" ]]; then
-              git pull origin main
-            else
-              echo "tenferro-rs is on '$current_branch'; preserving pinned checkout."
-            fi
-          fi
+          # setup checks out a detached revision. Subsequent suites reuse it.
+          echo "TENFERRO_REF=$(git -C extern/tenferro-rs rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "TENFERRO_UPDATE=0" >> "$GITHUB_ENV"
 
       - name: Run mac-cpu core suites
         env:
@@ -76,9 +70,11 @@ jobs:
           # GitHub-hosted runners are shared, so the idle-host guard is bypassed.
           # Use the quick public-api profile to keep the nightly job within
           # GitHub-hosted runner time limits; these are reference indicators only.
+          trap 'echo "CPU collection failed at line $LINENO: $BASH_COMMAND" >&2' ERR
           ./scripts/run_all.sh 1 4
 
-      - name: Archive raw results
+      - name: Archive raw results (failed runs are diagnostic only)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mac-cpu-benchmark-results-${{ github.run_id }}

@@ -70,8 +70,10 @@ Path(args.output).write_text(
             "blas:",
             f"  implementation: {args.blas}",
             "  version: unknown",
-            "  root: /tmp/openblas",
-            "  library: /tmp/openblas/lib/libopenblas.dylib",
+            *([] if os.environ.get("TEST_EMPTY_BLAS_PATHS") == "1" else [
+                "  root: /tmp/openblas",
+                "  library: /tmp/openblas/lib/libopenblas.dylib",
+            ]),
             "",
         ]
     )
@@ -235,4 +237,20 @@ grep -q "BLAS implementation: \`openblas\`" "$TMP/result/amd-cpu/cpu/cpu_ops.md"
 for report in einsum cpu_ops; do
   grep -q '^## Threads: 1$' "$TMP/result/amd-cpu/cpu/$report.md"
   grep -q '^## Threads: 4$' "$TMP/result/amd-cpu/cpu/$report.md"
+done
+
+# Accelerate does not record optional BLAS root/library paths. Missing optional
+# metadata must not make a report-writing helper return failure under set -e.
+(
+  cd "$TMP"
+  TEST_EMPTY_BLAS_PATHS=1 BENCHMARK_COMMIT=fixture-benchmark \
+    BENCHMARK_HOST_OS=Darwin BENCHMARK_TARGET_PROFILE=mac-cpu \
+    TENFERRO_CPU_FEATURES=blas-accelerate PATH="/usr/bin:/bin" \
+    ./scripts/run_all.sh 1 >>"$TMP/run_all_docs_test.out"
+)
+for report in einsum cpu_ops; do
+  test -s "$TMP/result/mac-cpu/cpu/$report.md"
+  grep -q 'BLAS implementation: `accelerate`' "$TMP/result/mac-cpu/cpu/$report.md"
+  ! grep -q 'BLAS library:' "$TMP/result/mac-cpu/cpu/$report.md"
+  grep -q 'Thread Environment' "$TMP/result/mac-cpu/cpu/$report.md"
 done

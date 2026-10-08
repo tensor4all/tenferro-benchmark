@@ -36,6 +36,7 @@ env:
   CUDA_HOME: /usr/local/cuda-12.8
   CUDA_PATH: /usr/local/cuda-12.8
   LD_LIBRARY_PATH: /usr/local/cuda-12.8/lib64
+  TENFERRO_CUTENSOR_PATH: /usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2
   TENFERRO_CPU_FEATURES: none
   UV_NO_SYNC: "1"
   BENCHMARK_TARGET_PROFILE: nvidia-gpu
@@ -195,6 +196,7 @@ jobs:
           dpkg -i /tmp/cuda-keyring.deb
           apt-get update
           apt-get install -y --no-install-recommends cuda-toolkit-12-8
+          apt-get install -y --no-install-recommends libcutensor2 libcutensor-dev
           export PATH="$CUDA_HOME/bin:$PATH"
           echo "$CUDA_HOME/bin" >> "$GITHUB_PATH"
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
@@ -232,6 +234,8 @@ jobs:
           import torch
           ctypes.CDLL("libcuda.so.1")
           ctypes.CDLL("libnvrtc.so.12")
+          import os
+          ctypes.CDLL(os.environ["TENFERRO_CUTENSOR_PATH"])
           assert torch.cuda.is_available(), "PyTorch CUDA is unavailable"
           value = torch.ones(16, device="cuda")
           result = value + value
@@ -245,11 +249,14 @@ jobs:
         run: |
           set -euo pipefail
           source "$HOME/.cargo/env"
+          GPU_BENCH_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+          export GPU_BENCH_TIMESTAMP
           if [[ "$REQUESTED_SUITE" == all ]]; then
             ./scripts/run_gpu_suite.sh
           else
             GPU_BENCH_SUITE="$REQUESTED_SUITE" ./scripts/run_gpu_suite.sh
           fi
+          uv run python scripts/ci/check_gpu_run.py --timestamp "$GPU_BENCH_TIMESTAMP" --backends "$GPU_BENCH_BACKENDS" --suites "$REQUESTED_SUITE"
 
       - name: Archive benchmark results
         if: always()
@@ -257,10 +264,20 @@ jobs:
         with:
           name: runpod-gpu-benchmark-${{ github.run_id }}
           path: |
+            _benchmark_artifact
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Archive failed-run diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runpod-gpu-diagnostics-${{ github.run_id }}
+          path: |
             data/results/nvidia-gpu
             result/nvidia-gpu
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 7
 
   cleanup-runpod:
     name: Delete RunPod pod

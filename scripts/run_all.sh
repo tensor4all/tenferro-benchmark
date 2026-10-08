@@ -227,10 +227,18 @@ write_blas_backend_section() {
     echo "## Tenferro CPU BLAS Backend"
     echo ""
     echo "- tenferro-rs features: \`$TENFERRO_CPU_FEATURES\`"
-    [[ -n "$implementation" ]] && echo "- BLAS implementation: \`$implementation\`"
-    [[ -n "$version" ]] && echo "- BLAS version: \`$version\`"
-    [[ -n "$root" ]] && echo "- BLAS root: \`$root\`"
-    [[ -n "$library" ]] && echo "- BLAS library: \`$library\`"
+    if [[ -n "$implementation" ]]; then
+        echo "- BLAS implementation: \`$implementation\`"
+    fi
+    if [[ -n "$version" ]]; then
+        echo "- BLAS version: \`$version\`"
+    fi
+    if [[ -n "$root" ]]; then
+        echo "- BLAS root: \`$root\`"
+    fi
+    if [[ -n "$library" ]]; then
+        echo "- BLAS library: \`$library\`"
+    fi
 }
 
 write_python_backend_section() {
