@@ -47,7 +47,7 @@ env:
   NVIDIA_CUDNN_CU12_VERSION: 9.23.2.1
   NVIDIA_CUDA_NVCC_CU12_VERSION: 12.9.86
   RUNPOD_IMAGE: nvidia/cuda:12.8.1-runtime-ubuntu24.04@sha256:ebef3c171eeef0298e4eb2e4be843105edf3b8b0ac45e0b43acee358e8046867
-  TENFERRO_REF: 3f10f960af05efa4fc5705aac3dafbac1ae2269e
+  TENFERRO_REF: ${{ inputs.arm == 'candidate' && '2605c46f45016a2472ebdf7ba75bba533bc6a5fd' || '3f10f960af05efa4fc5705aac3dafbac1ae2269e' }}
 jobs:
   prepare-transfer:
     name: Prepare frozen CI test artifacts
@@ -64,7 +64,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: tensor4all/tenferro-rs
-        ref: 3f10f960af05efa4fc5705aac3dafbac1ae2269e
+        ref: ${{ env.TENFERRO_REF }}
         path: tenferro-rs
         persist-credentials: false
     - name: Download the measured tenferro-rs archive
@@ -72,9 +72,9 @@ jobs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
         repository: tensor4all/tenferro-rs
-        run-id: 37783818267
+        run-id: ${{ inputs.arm == 'candidate' && '37796517303' || '37783818267' }}
         github-token: ${{ github.token }}
-        name: cuda-pjrt-archive-v16-ci-ubuntu22.04-rust1.99.0-cuda12080-ptx12.8-742e9a93cf30af8970b460d6cb4eee56d4977fa18ad4b088de4b8004de8868e4
+        name: ${{ inputs.arm == 'candidate' && 'cuda-pjrt-archive-v16-ci-ubuntu22.04-rust1.99.0-cuda12080-ptx12.8-fc733513889b2fc5b6cbfe56530b6b1402b7f339b3ea2040a1f795d85ac90467' || 'cuda-pjrt-archive-v16-ci-ubuntu22.04-rust1.99.0-cuda12080-ptx12.8-742e9a93cf30af8970b460d6cb4eee56d4977fa18ad4b088de4b8004de8868e4' }}
         path: tenferro-rs
     - uses: dtolnay/rust-toolchain@stable
     - uses: taiki-e/install-action@3ad7ed62b9acd4b43f91777bf240fac23e489eac
@@ -217,7 +217,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: tensor4all/tenferro-rs
-        ref: 3f10f960af05efa4fc5705aac3dafbac1ae2269e
+        ref: ${{ env.TENFERRO_REF }}
         path: tenferro-rs
         persist-credentials: false
     - name: Start archive transfer timing

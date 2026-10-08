@@ -172,3 +172,12 @@
 - Comparison configuration and fixed GPU choice must be frozen before primary
   measurements. Preparation improvement remains necessary: on the RTX 2000
   Ada pilot, startup/queue plus runtime setup accounted for 537 seconds.
+
+- Next diagnostic fixes candidate to source 2605c46f and its complete hosted
+  archives from root run 37796517303, on A40 with staged runtime and slim
+  CUDA 12.8 image. Baseline stays 3f10f960 with archives from 37783818267.
+  Reused preparation artifacts must belong to the selected arm. This remains
+  diagnostic, before freezing the production-representative confirmation suite.
+- Root diagnostic CUDA cache restoration timed out after three minutes, then
+  installation took about 75 seconds. This is observed fallback overhead,
+  not evidence that an oversized payload caused the timeout.

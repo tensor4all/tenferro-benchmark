@@ -7,7 +7,9 @@ class CiCostWorkflowTests(unittest.TestCase):
     def test_frozen_workload_and_serial_cuda_execution(self):
         source = (Path(__file__).resolve().parents[3] / '.github/workflows/benchmark-runpod-gpu.yml').read_text()
         self.assertIn('3f10f960af05efa4fc5705aac3dafbac1ae2269e', source)
-        self.assertIn('run-id: 37783818267', source)
+        self.assertIn("run-id: ${{ inputs.arm == 'candidate' && '37796517303' || '37783818267' }}", source)
+        self.assertIn('2605c46f45016a2472ebdf7ba75bba533bc6a5fd', source)
+        self.assertEqual(source.count('ref: ${{ env.TENFERRO_REF }}'), 2)
         self.assertIn('Run CUDA tests from archive', source)
         self.assertIn('Run CUDA tutorial artifact', source)
         self.assertIn('Run OpenXLA PJRT E2E tests from archive', source)
