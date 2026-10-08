@@ -107,3 +107,14 @@
   provider stock changes. The exact requested GPU and ceiling remain explicit;
   one allocation attempt, no fallback, and frozen payload checksums remain.
   This transport reuse is not a relaxation of primary confirmation validity.
+
+- Slim runtime diagnostic 37793677143 passed all CUDA 285/285, PJRT 3/3 and
+  tutorial on A40 ($0.49/hour), pod 3iabx5zw42ym9r deleted at
+  2026-10-08T14:43:49.059609Z. Paid start 14:35:28.943Z gives 500.116609s
+  and estimated $0.06807143. CUDA took 379.303s; preparation/transfer improved
+  but this diagnostic does not meet 20% against the original single production
+  observation ($0.07859461), and no paired campaign has confirmed savings.
+- Baseline per-case logs reveal the full SVD tall/wide-above-1024 cases took
+  83.584s/83.900s. Preserve threshold shapes and every acceptance identity while
+  investigating the CPU Gram oracle, which currently recomputes both ordered
+  column pairs. No diagnostic is retroactively promoted to confirmation.
