@@ -126,6 +126,7 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 60); do
+            echo "Waiting for RunPod runner (${attempt}/60)."
             if gh api --paginate "orgs/${GITHUB_REPOSITORY_OWNER}/actions/runners" \
               --jq '.runners[] | select(.status == "online") | .labels[].name' \
               | grep -Fxq "$RUNNER_LABEL"; then
