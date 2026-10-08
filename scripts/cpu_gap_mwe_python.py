@@ -15,9 +15,9 @@ def fixture(operation):
         raw = ((np.arange(n, dtype=np.uint64)*2654435761 + seed*97) % 2001).astype(np.float64)
         data = ((raw/1000-1)*0.5).astype(np.float32)*8
         if operation == "gelu":
-            # Pointwise operation preserves the same flat logical values.
-            x = torch.from_numpy(data)
-            expected = np.array([0.5*float(v)*(1+math.erf(float(v)/math.sqrt(2))) for v in data])
+            # Match Rust logical [1024,64] values, using native row-major layout.
+            x = torch.from_numpy(data.reshape(64,1024).T.copy())
+            expected = np.array([0.5*float(v)*(1+math.erf(float(v)/math.sqrt(2))) for v in data]).reshape(64,1024).T
             op = lambda: torch.nn.functional.gelu(x, approximate="none")
         else:
             # Rust column-major [key,query,batch] matches native [batch,query,key].
