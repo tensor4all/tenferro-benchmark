@@ -62,7 +62,7 @@ elif cat=='index':
  if backend=='pytorch':
   if op=='gather':call=lambda:torch.index_select(x,0,idx)
   elif op=='scatter':
-   zeros=torch.zeros_like(x);call=lambda:torch.scatter(zeros,0,idx,y)
+   zeros=torch.zeros_like(x);call=lambda:torch.scatter_add(zeros,0,idx,y)
   elif op=='slice':call=lambda:x[1024:n-1024:2].clone()
   elif op=='dynamic_slice':call=lambda:x[1024:1024+n//2].clone()
   elif op=='dynamic_update_slice':
@@ -74,7 +74,7 @@ elif cat=='index':
  else:
   if op=='gather':call=lambda:jnp.take(x,idx,axis=0)
   elif op=='scatter':
-   zeros=jnp.zeros_like(x);call=lambda:zeros.at[idx].set(y)
+   zeros=jnp.zeros_like(x);call=lambda:zeros.at[idx].add(y)
   elif op=='slice':call=lambda:jax.lax.slice(x,(1024,),(n-1024,),(2,))
   elif op=='dynamic_slice':call=lambda:jax.lax.dynamic_slice(x,(1024,),(n//2,))
   elif op=='dynamic_update_slice':call=lambda:jax.lax.dynamic_update_slice(x,y,(1024,))
@@ -125,7 +125,7 @@ if backend=='jax':
    return jnp.power(x,exponent) if op=='pow' else getattr(jnp,op)(x)
   if cat=='index':
    if op=='gather':return jnp.take(x,idx,axis=0)
-   if op=='scatter':return zeros.at[idx].set(y)
+   if op=='scatter':return zeros.at[idx].add(y)
    if op=='slice':return jax.lax.slice(x,(1024,),(n-1024,),(2,))
    if op=='dynamic_slice':return jax.lax.dynamic_slice(x,(1024,),(n//2,))
    if op=='dynamic_update_slice':return jax.lax.dynamic_update_slice(x,y,(1024,))

@@ -33,7 +33,7 @@ pub fn run(case: &Value, path: &str, threads: usize, runs: usize, target: u128) 
     let mut row = if path == "strided-rs" || path.starts_with("strided-") {
         let array = strided_view::StridedArray::from_parts(source.clone(), &shape, &strides, 0)?;
         let src = array.view().permute(&perm)?;
-        let mut call = || -> Result<_> {
+        let call = || -> Result<_> {
             let mut dst = strided_view::StridedArray::<f64>::col_major(&outshape);
             if threads == 1 {
                 strided_perm::copy_into_col_major(&mut dst.view_mut(), &src)?;
@@ -43,6 +43,11 @@ pub fn run(case: &Value, path: &str, threads: usize, runs: usize, target: u128) 
             Ok(dst)
         };
         let first = call()?;
+        golden(
+            first.data(),
+            &outshape,
+            &perm.iter().map(|&i| strides[i]).collect::<Vec<_>>(),
+        )?;
         let t = Tensor::from_vec_col_major(outshape.clone(), first.data().to_vec())?;
         let sig = signature(&t)?;
         drop(t);
@@ -53,6 +58,14 @@ pub fn run(case: &Value, path: &str, threads: usize, runs: usize, target: u128) 
     } else {
         let mut b = CpuBackend::with_threads(threads)?;
         b.with_backend_session(|s| -> Result<Value> {
+            let initial =
+                s.to_contiguous_read(TensorRead::from_view(TensorView::F64(view.clone())))?;
+            golden(
+                initial.as_slice::<f64>()?,
+                &outshape,
+                &perm.iter().map(|&i| strides[i]).collect::<Vec<_>>(),
+            )?;
+            drop(initial);
             tensor_measure(
                 n * 8,
                 runs,
@@ -72,4 +85,25 @@ pub fn run(case: &Value, path: &str, threads: usize, runs: usize, target: u128) 
         "preselected col-major copy; serial at 1T, parallel at 4T; fresh destination allocation"
     );
     Ok(row)
+}
+
+// Independent untimed odometer oracle; the physical source stores offset+1.
+fn golden(actual: &[f64], shape: &[usize], strides: &[isize]) -> Result<()> {
+    let mut index = vec![0usize; shape.len()];
+    let mut offset = 0isize;
+    for (linear, &value) in actual.iter().enumerate() {
+        if value != offset as f64 + 1. {
+            return Err(format!("permutation oracle mismatch at {linear}").into());
+        }
+        for axis in 0..shape.len() {
+            index[axis] += 1;
+            offset += strides[axis];
+            if index[axis] < shape[axis] {
+                break;
+            }
+            index[axis] = 0;
+            offset -= shape[axis] as isize * strides[axis];
+        }
+    }
+    Ok(())
 }

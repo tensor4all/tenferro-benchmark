@@ -9,7 +9,7 @@ lib=subprocess.check_output(['git','-C',str(ROOT/'extern/tenferro-rs'),'rev-pars
 harness=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
 declaration=out/'declaration.json'
 if not declaration.exists():
- declaration.write_text(json.dumps(dict(status='declared',declared_before_candidate_results=datetime.datetime.now(datetime.timezone.utc).isoformat(),library_commit=lib,harness_commit=harness,threads=[1,4],suite_id='cpu/followup_12x',cases=[c['id'] for c in CASES],scope='setup untimed; borrowed direct/eager session; pure metadata; prepared trace internal session explicitly diagnostic',provider='tenferro MKL / PyTorch wheel MKL; JAX XLA; Julia own BLAS; strided-rs Rayon',affinity='none',scan_runs=3,confirmation_runs=15,warmups=3,confirmation_rounds=4,order=['AB','BA','BA','AB'],statistic='median of paired round median ratios',thresholds={'relative':.2,'absolute_ns':0},noise={'max_cov':.2,'max_aa_relative_spread':.1,'host_idle_guard':'enabled'},batch_target_ns=10000000,retained_memory_limit_bytes=536870912),indent=2)+'\n')
+ declaration.write_text(json.dumps(dict(status='declared',declared_before_candidate_results=datetime.datetime.now(datetime.timezone.utc).isoformat(),library_commit=lib,harness_commit=harness,threads=[1,4],suite_id='cpu/followup_12x',cases=[c['id'] for c in CASES],scope='setup untimed; borrowed direct/eager session; pure metadata; prepared trace internal session explicitly diagnostic',provider='tenferro MKL / PyTorch wheel MKL; JAX XLA; Julia own BLAS; strided-rs Rayon',affinity='no runner pinning; public CpuBackend internal managed placement retained',scan_runs=3,confirmation_runs=15,warmups=3,confirmation_rounds=4,order=['AB','BA','BA','AB'],statistic='median of paired round median ratios',thresholds={'relative':.2,'absolute_ns':0},noise={'max_cov':.2,'max_aa_relative_spread':.1,'host_idle_guard':'enabled'},batch_target_ns=10000000,retained_memory_limit_bytes=536870912),indent=2)+'\n')
 config=json.loads(declaration.read_text());assert config['library_commit']==lib and config['harness_commit']==harness, 'Source changed during campaign'
 
 def arm(case,path,threads,runs,name):
@@ -38,25 +38,7 @@ def timing(r):
  xs=[s['elapsed_ns']/s['iterations'] for s in r.get('samples',[])]
  return dict(median_ns=statistics.median(xs),cov=statistics.pstdev(xs)/statistics.mean(xs)) if xs else None
 
-def verify(x,y):
- if x.get('status')!='ok' or y.get('status')!='ok':return False,'arm failed'
- left,right=x['outputs'],y['outputs']
- if len(left)!=len(right):return False,'output count differs'
- for u,v in zip(left,right):
-  if u.get('kind')=='metadata':
-   if any(u[k]!=v[k] for k in ('shape','strides','offset','metadata_only')):return False,'metadata differs'
-   continue
-  if u['shape']!=v['shape'] or u['count']!=v['count']:return False,'output shape differs'
-  # Probe tolerance follows dtype, with scaled aggregate checks for cancellation.
-  tol=3e-4 if '.fft' in x.get('case_id','') or x.get('case_id','').startswith(('activation.','fft.')) else 1e-9
-  scale=max(u['sum_abs'],v['sum_abs'],1)
-  for aa,bb in zip(u['sum'],v['sum']):
-   if abs(aa-bb)>tol*scale:return False,'aggregate sum differs'
-  for k in ('sum_abs','sum_sq'):
-   if abs(u[k]-v[k])>tol*max(abs(u[k]),abs(v[k]),1):return False,k+' differs'
-  for aa,bb in zip(u['probes'],v['probes']):
-   if aa[0]!=bb[0] or any(abs(c-d)>tol*max(1,abs(c),abs(d)) for c,d in zip(aa[1:],bb[1:])):return False,'probe differs'
- return True,'matched aggregates and 130 deterministic probes; metadata descriptors exact'
+from validation import verify
 
 def reference(c):
  if c['category']=='linalg':return 'pytorch'  # MKL-matched primary linalg comparison

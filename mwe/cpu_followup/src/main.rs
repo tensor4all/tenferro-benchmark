@@ -308,7 +308,10 @@ fn activation(case: &Value, threads: usize, runs: usize, target: u128) -> Result
             };
             let initial = call()?;
             drop(call);
-            let sig = signature(&s.duplicate_value(&initial)?).map_err(ad_error)?;
+            let actual = s.duplicate_value(&initial)?;
+            let scalar_error = validate_activation(&actual, op).map_err(ad_error)?;
+            let sig = signature(&actual).map_err(ad_error)?;
+            drop(actual);
             drop(initial);
             let row = sample(n * 4, runs, target, units, |()| {
                 Ok(match op {
@@ -323,10 +326,37 @@ fn activation(case: &Value, threads: usize, runs: usize, target: u128) -> Result
             .map_err(ad_error)?;
             let mut row = row;
             row["outputs"] = json!([sig]);
+            row["max_scaled_scalar_error"] = json!(scalar_error);
             Ok(row)
         })
         .map_err(Into::into)
 }
+fn validate_activation(actual: &Tensor, op: &str) -> Result<f64> {
+    let mut error = 0f64;
+    for (i, &got) in actual.as_slice::<f32>()?.iter().enumerate() {
+        let x =
+            ((((i as u64 * 2654435761 + 50 * 97) % 2001) as f64 / 1000. - 1.) as f32 * 4.) as f64;
+        let sigmoid = 1. / (1. + (-x).exp());
+        let expected = match op {
+            "erf" => libm::erf(x),
+            "sigmoid" => sigmoid,
+            "silu" => x * sigmoid,
+            "softplus" => x.max(0.) + (-x.abs()).exp().ln_1p(),
+            "gelu_tanh" => {
+                0.5 * x
+                    * (1.
+                        + ((2. / std::f64::consts::PI).sqrt() * (x + 0.044715 * x * x * x)).tanh())
+            }
+            _ => unreachable!(),
+        };
+        error = error.max((got as f64 - expected).abs() / expected.abs().max(1.));
+    }
+    if error > 2e-5 {
+        return Err(format!("scalar activation oracle error {error}").into());
+    }
+    Ok(error)
+}
+
 fn ad_error(e: Box<dyn Error + Send + Sync>) -> tenferro_ad::Error {
     tenferro_ad::Error::runtime_state(
         "cpu_followup",
@@ -689,6 +719,7 @@ fn main() -> Result<()> {
         _ => unreachable!(),
     };
     row["case_id"] = json!(id);
+    row["fixture"] = case["fixture"].clone();
     row["path"] = json!(path);
     row["threads"] = json!(threads);
     row["correctness_status"] = json!("awaiting cross-implementation signature check");

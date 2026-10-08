@@ -58,7 +58,15 @@
     ],
     "paths": [
       "metadata"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1024
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+      "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+    }
   },
   {
     "id": "metadata.slice_view",
@@ -119,7 +127,15 @@
     ],
     "paths": [
       "metadata"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4096
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+      "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+    }
   },
   {
     "id": "metadata.transpose_view",
@@ -180,7 +196,16 @@
     ],
     "paths": [
       "metadata"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        32,
+        32
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+      "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+    }
   },
   {
     "id": "activation.sigmoid",
@@ -241,7 +266,15 @@
     ],
     "paths": [
       "eager-shared"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1024,
+        64
+      ],
+      "dtype": "f32",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "activation.erf",
@@ -302,7 +335,15 @@
     ],
     "paths": [
       "eager-shared"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1024,
+        64
+      ],
+      "dtype": "f32",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "activation.gelu_tanh",
@@ -363,7 +404,15 @@
     ],
     "paths": [
       "eager-shared"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1024,
+        64
+      ],
+      "dtype": "f32",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "activation.silu",
@@ -424,7 +473,15 @@
     ],
     "paths": [
       "eager-shared"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1024,
+        64
+      ],
+      "dtype": "f32",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "index.dynamic_slice",
@@ -509,7 +566,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4194304
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "complex.norm_fro",
@@ -617,7 +681,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2048,
+        1536
+      ],
+      "dtype": "c64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "activation.softplus",
@@ -678,7 +750,15 @@
     ],
     "paths": [
       "eager-shared"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1024,
+        64
+      ],
+      "dtype": "f32",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "index.reverse",
@@ -763,7 +843,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2097152
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "index.gather",
@@ -871,7 +958,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        262144
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "index.concatenate",
@@ -956,7 +1050,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1048576
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.tanh",
@@ -1064,7 +1165,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        8388608
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "structural.extract_diagonal",
@@ -1149,7 +1257,16 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        8388608,
+        2,
+        2
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "index.pad",
@@ -1211,7 +1328,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2097152
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "index.scatter",
@@ -1319,7 +1443,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        262144
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.reduce_max_axis1",
@@ -1381,7 +1512,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2048,
+        2048
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "structural.cast_f64_f32",
@@ -1443,7 +1582,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        33554432
+      ],
+      "dtype": "f64->f32",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "index.slice",
@@ -1551,7 +1697,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4194304
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "fft.ifft",
@@ -1636,7 +1789,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1048576
+      ],
+      "dtype": "c32",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.log1p",
@@ -1744,7 +1904,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4194304
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "perm.reverse_15d_3",
@@ -1805,7 +1972,28 @@
     ],
     "paths": [
       "materialize"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.cos",
@@ -1913,7 +2101,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        8388608
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "structural.triu",
@@ -1975,7 +2170,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4096,
+        4096
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.sin",
@@ -2083,7 +2286,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        8388608
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.exp",
@@ -2191,7 +2401,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        8388608
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "structural.tril",
@@ -2253,7 +2470,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4096,
+        4096
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.expm1",
@@ -2361,7 +2586,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4194304
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.pow",
@@ -2469,7 +2701,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4194304
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.reduce_sum_axis1",
@@ -2577,7 +2816,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2048,
+        2048
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.reduce_prod_axis1",
@@ -2685,7 +2932,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2048,
+        2048
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.reduce_max_axis0",
@@ -2747,7 +3002,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2048,
+        2048
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.reduce_min_axis1",
@@ -2809,7 +3072,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4096,
+        4096
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "structural.transpose",
@@ -2917,7 +3188,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4096,
+        4096
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "perm.reverse_23d_2",
@@ -2955,7 +3234,36 @@
     ],
     "paths": [
       "materialize"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.reduce_min_axis0",
@@ -3017,7 +3325,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2048,
+        2048
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "fft.irfft",
@@ -3102,7 +3418,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        524289
+      ],
+      "dtype": "c32",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "complex.exp",
@@ -3210,7 +3533,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        4194304
+      ],
+      "dtype": "c64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "linalg.slogdet",
@@ -3318,7 +3648,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1024,
+        1024
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "perm.transpose_3d_256_201",
@@ -3379,7 +3717,16 @@
     ],
     "paths": [
       "materialize"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        256,
+        256,
+        256
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.reduce_max_all",
@@ -3441,7 +3788,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        8192,
+        4096
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "index.dynamic_update_slice",
@@ -3479,7 +3834,14 @@
     ],
     "paths": [
       "direct-shared"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2097152
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "fft.rfft",
@@ -3564,7 +3926,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1048576
+      ],
+      "dtype": "f32",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "perm.cyclic_15d_3",
@@ -3602,7 +3971,28 @@
     ],
     "paths": [
       "materialize"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.reduce_min_all",
@@ -3664,7 +4054,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        8192,
+        4096
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "perm.tn_light_415_24d_scattered_to_colmajor",
@@ -3702,7 +4100,37 @@
     ],
     "paths": [
       "materialize"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "structural.broadcast_in_dim",
@@ -3764,7 +4192,15 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        8192,
+        1
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "perm.transpose_3d_256_102",
@@ -3802,7 +4238,16 @@
     ],
     "paths": [
       "materialize"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        256,
+        256,
+        256
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "fft.fft",
@@ -3864,7 +4309,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        1048576
+      ],
+      "dtype": "c64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "real.log",
@@ -3949,7 +4401,14 @@
     "paths": [
       "direct-shared",
       "prepared-trace-call"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        8388608
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "perm.tn_light_415_24d_contiguous_same_perm",
@@ -3987,7 +4446,37 @@
     ],
     "paths": [
       "materialize"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   },
   {
     "id": "perm.rotation_6d_32_32_32_32_16_16",
@@ -4025,6 +4514,18 @@
     ],
     "paths": [
       "materialize"
-    ]
+    ],
+    "fixture": {
+      "input_shape": [
+        32,
+        32,
+        32,
+        32,
+        16,
+        16
+      ],
+      "dtype": "f64",
+      "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+    }
   }
 ]
