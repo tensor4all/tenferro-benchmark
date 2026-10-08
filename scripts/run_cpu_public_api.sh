@@ -277,10 +277,10 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
 done
 
 if command -v uv >/dev/null 2>&1; then
-    uv run python "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" | tee "$TABLE" \
-        || python3 "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" | tee "$TABLE"
+    uv run python "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" > "$TABLE" \
+        || python3 "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" > "$TABLE"
 else
-    python3 "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" | tee "$TABLE"
+    python3 "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" > "$TABLE"
 fi
 
 {

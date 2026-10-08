@@ -91,6 +91,9 @@ jobs:
       - name: Run layout validation test
         run: bash tests/test_suite_result_layout.sh
 
+      - name: Check public API report output without runner stdout
+        run: bash tests/test_public_api_table_output.sh
+
       - name: Cargo check
         run: cargo check --all-targets
 
