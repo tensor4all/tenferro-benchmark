@@ -27,10 +27,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RUNPOD_IMAGE: nvidia/cuda:12.8.1-devel-ubuntu24.04
-  CUDA_HOME: /usr/local/cuda
-  CUDA_PATH: /usr/local/cuda
-  LD_LIBRARY_PATH: /usr/local/cuda/lib64
+  RUNPOD_IMAGE: runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
+  CUDA_HOME: /usr/local/cuda-12.8
+  CUDA_PATH: /usr/local/cuda-12.8
+  LD_LIBRARY_PATH: /usr/local/cuda-12.8/lib64
   TENFERRO_CPU_FEATURES: none
   UV_NO_SYNC: "1"
   BENCHMARK_TARGET_PROFILE: nvidia-gpu
@@ -141,6 +141,14 @@ jobs:
           set -euo pipefail
           apt-get update
           apt-get install -y --no-install-recommends build-essential cmake git libomp-dev pkg-config libssl-dev
+          # Use the same RunPod base image as tenferro-rs; install the modern
+          # toolkit separately rather than using the image's CUDA 11.8.
+          curl -fsSL -o /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+          dpkg -i /tmp/cuda-keyring.deb
+          apt-get update
+          apt-get install -y --no-install-recommends cuda-toolkit-12-8
+          export PATH="$CUDA_HOME/bin:$PATH"
+          echo "$CUDA_HOME/bin" >> "$GITHUB_PATH"
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
           source "$HOME/.cargo/env"
           curl -LsSf https://astral.sh/uv/install.sh | sh

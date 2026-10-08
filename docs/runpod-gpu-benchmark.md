@@ -18,7 +18,8 @@ set the repository Actions variable `RUNPOD_RUNNER_GROUP_ID` to its numeric ID.
 
 The pod receives only the single-use JIT runner configuration. The workflow is
 manual-dispatch only for now; it does not add RunPod credentials to pull
-request jobs. It uses the CUDA 12.8.1 development image, installs the benchmark
+request jobs. It uses the same RunPod base image as tenferro-rs, installs CUDA
+12.8 and the benchmark
 toolchain and Python environment, and checks CUDA execution before collection.
 The unique per-run label sends the benchmark job to the newly created RunPod
 runner, rather than the existing `ubuntu-gpu` runner in the same group.
