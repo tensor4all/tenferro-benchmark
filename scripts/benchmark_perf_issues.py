@@ -63,6 +63,13 @@ def torch_case(case):
 
     p = case["params"]
     kind = case["kind"]
+    if kind == "cpu_gap_mwe":
+        from cpu_gap_mwe_python import fixture
+        op, validate, retained = fixture(p["operation"])
+        def check():
+            validate(op())
+            return 0.0  # assertion checks against the analytical solution
+        return op, check, retained, [p["operation"], "intrinsic output allocation", "Python dispatch"]
     if kind == "decode_projection":
         din, dout, length = p["in"], p["out"], p["len"]
         # Same logical x (in, len) and W (in, out) as the Rust arms; PyTorch's
@@ -198,6 +205,11 @@ def run_torch(case, threads, config, correctness_only):
     row = {"max_rel_error": error, "samples": [],
            "scope": {"timer": timer, "outside_timer": ["input_construction", "torch.set_num_threads", "correctness_check"]},
            "provider": torch.__config__.show().split("\n")[0].strip()}
+    if case["kind"] == "cpu_gap_mwe":
+        # The MWE validates analytically with assertions, rather than returning
+        # a measured maximum error. Never report the sentinel as an exact zero.
+        row["max_rel_error"] = None
+        row["validation_method"] = "analytical solution assertions before sampling"
     if not (error <= tol):
         row.update(correctness_status="failed", error=f"relative error {error:e} exceeds {tol:e}")
         return row
@@ -210,10 +222,10 @@ def run_torch(case, threads, config, correctness_only):
     target_ns = int(config["min_runtime_ms"] * 1_000_000)
 
     def batch(iterations):
-        outputs = []
+        outputs = [None] * iterations
         start = time.perf_counter_ns()
-        for _ in range(iterations):
-            outputs.append(op())
+        for i in range(iterations):
+            outputs[i] = op()
         elapsed = time.perf_counter_ns() - start
         del outputs
         return elapsed

@@ -2742,7 +2742,8 @@
  {
   "id": "activation_gelu_f32_eager-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2030"
   ],
   "kind": "activation",
   "arm": "eager-single-call",
@@ -2760,12 +2761,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2030 tracks the confirmed borrowed-session exact GELU CPU gap."
  },
  {
   "id": "activation_gelu_f32_session-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2030"
   ],
   "kind": "activation",
   "arm": "session-single-call",
@@ -2783,12 +2785,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2030 tracks the confirmed borrowed-session exact GELU CPU gap."
  },
  {
   "id": "activation_gelu_f32_pytorch_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2030"
   ],
   "kind": "activation",
   "arm": "pytorch",
@@ -2806,7 +2809,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2030 tracks the confirmed borrowed-session exact GELU CPU gap.",
   "reference_for": "activation_gelu_f32_eager-single-call_1024x64"
  },
  {
@@ -2906,7 +2909,8 @@
  {
   "id": "softmax_f32_eager-single-call_len64_b8",
   "issues": [
-   "#1976"
+   "#1976",
+   "#2031"
   ],
   "kind": "softmax",
   "arm": "eager-single-call",
@@ -2925,12 +2929,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap."
  },
  {
   "id": "softmax_f32_session-single-call_len64_b8",
   "issues": [
-   "#1976"
+   "#1976",
+   "#2031"
   ],
   "kind": "softmax",
   "arm": "session-single-call",
@@ -2949,12 +2954,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap."
  },
  {
   "id": "softmax_f32_eager-composed_len64_b8",
   "issues": [
-   "#1976"
+   "#1976",
+   "#2031"
   ],
   "kind": "softmax",
   "arm": "eager-composed",
@@ -2973,13 +2979,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap.",
   "reference_for": "softmax_f32_eager-single-call_len64_b8"
  },
  {
   "id": "softmax_f32_pytorch_len64_b8",
   "issues": [
-   "#1976"
+   "#1976",
+   "#2031"
   ],
   "kind": "softmax",
   "arm": "pytorch",
@@ -2998,7 +3005,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap.",
   "reference_for": "softmax_f32_eager-single-call_len64_b8"
  },
  {
@@ -3678,5 +3685,140 @@
   ],
   "intent": "tenferro-rs #2008 (#2010 PR-B1): per-batch row gather out[i, j, b] = x[idx[i, b], j, b] on x [64, 64, 256] f64 with an I64 index [64, 1, 256] (a different row permutation per batch), as one take_along_axis call (eager and concrete session; the composite builds the (index, batch) tuples inside the call). The eager-gather-prebuilt arm calls the existing gather with the tuples built outside timing, isolating the index-construction cost; PyTorch take_along_dim is the external reference.",
   "reference_for": "take_along_axis_rows_f64_eager-single-call_n64_b256"
+ },
+ {
+  "id": "lstsq_f64_eager-shared_m768_n384_rhs16",
+  "issues": [
+   "#2027"
+  ],
+  "kind": "cpu_gap_mwe",
+  "arm": "eager-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "operation": "lstsq",
+   "kind": "cpu_gap_mwe",
+   "arm": "eager-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2027: Full-column-rank f64 least squares; analytical solution is all ones. EagerSession::lstsq borrows one session outside timing; reference is PyTorch unpivoted gels, retaining the full public result."
+ },
+ {
+  "id": "lstsq_f64_pytorch_m768_n384_rhs16",
+  "issues": [
+   "#2027"
+  ],
+  "kind": "cpu_gap_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "operation": "lstsq",
+   "kind": "cpu_gap_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2027: Full-column-rank f64 least squares; analytical solution is all ones. EagerSession::lstsq borrows one session outside timing; reference is PyTorch unpivoted gels, retaining the full public result.",
+  "reference_for": "lstsq_f64_eager-shared_m768_n384_rhs16"
+ },
+ {
+  "id": "triangular_f64_concrete-shared_n4096_rhs64",
+  "issues": [
+   "#2028"
+  ],
+  "kind": "cpu_gap_mwe",
+  "arm": "concrete-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "operation": "triangular",
+   "kind": "cpu_gap_mwe",
+   "arm": "concrete-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2028: Single rank-2 lower-triangular f64 solve, 64 RHS columns, no AD. One CPU execution session surrounds every sample; analytical solution is all ones. Reference: torch.linalg.solve_triangular(upper=False)."
+ },
+ {
+  "id": "triangular_f64_pytorch_n4096_rhs64",
+  "issues": [
+   "#2028"
+  ],
+  "kind": "cpu_gap_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "operation": "triangular",
+   "kind": "cpu_gap_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2028: Single rank-2 lower-triangular f64 solve, 64 RHS columns, no AD. One CPU execution session surrounds every sample; analytical solution is all ones. Reference: torch.linalg.solve_triangular(upper=False).",
+  "reference_for": "triangular_f64_concrete-shared_n4096_rhs64"
+ },
+ {
+  "id": "reshape_f64_concrete-shared_n33554432_to8192x4096",
+  "issues": [
+   "#2029"
+  ],
+  "kind": "cpu_gap_mwe",
+  "arm": "concrete-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "operation": "reshape",
+   "kind": "cpu_gap_mwe",
+   "arm": "concrete-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2029: Materializing reshape_read of a borrowed owned f64 tensor returns a fresh column-major [8192,4096] output. Reference: clone of the matching PyTorch view, prepared outside timing; metadata-only reshape is not the comparator."
+ },
+ {
+  "id": "reshape_f64_pytorch_n33554432_to8192x4096",
+  "issues": [
+   "#2029"
+  ],
+  "kind": "cpu_gap_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "operation": "reshape",
+   "kind": "cpu_gap_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2029: Materializing reshape_read of a borrowed owned f64 tensor returns a fresh column-major [8192,4096] output. Reference: clone of the matching PyTorch view, prepared outside timing; metadata-only reshape is not the comparator.",
+  "reference_for": "reshape_f64_concrete-shared_n33554432_to8192x4096"
  }
 ]

@@ -1,0 +1,90 @@
+confirmation_config_version: 1
+status: declared
+declared_before_candidate_results: '2026-10-08T06:54:01.549236+00:00'
+library:
+  baseline_commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+  candidate_commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+harness_commit: 7950980b9502f302d2a7b38bdbacbb72a91c508c
+build:
+  profile: release
+  features:
+  - system-mkl
+host:
+  target_profile: amd-cpu
+  hostname: 14099c68ff8e
+  affinity: none (thread env only)
+  provider: MKL; versions independently recorded
+threads:
+- 1
+- 4
+cases:
+  suite_id: cpu/perf_issues
+  manifest_version: new MWE cases pending issue assignment
+  coverage: explicit
+  case_ids:
+  - ifft
+  - diagonal
+  - triangular
+  - lstsq
+timing:
+  scope: many_operations_single_interval; session/setup/cleanup outside
+  cache_pool_state: warm, validated and primed
+repetitions:
+  warmups: 3
+  runs: 15
+  rounds: 4
+statistic: median_of_round_ratios
+thresholds:
+  relative: 0.2
+  absolute_ns: 500
+noise:
+  max_cov: 0.2
+  max_aa_relative_spread: 0.1
+  host_idle_guard: enabled, never bypassed
+comparison:
+  baseline: PyTorch Python
+  candidate: tenferro-rs borrowed-session public API
+  kind: cross-implementation; not historical revision regression
+  threshold_basis: 20% practical gap and 500ns minimum; A/A gate independently checks
+    stability
+  aa_ratios:
+    ifft@t1:
+    - 1.008492157780369
+    - 1.0055507569436457
+    - 0.9951190889073502
+    - 1.0042483398671893
+    ifft@t4:
+    - 0.9983731615760477
+    - 1.0003262996500824
+    - 1.0100418919557346
+    - 0.9986362129487949
+    diagonal@t1:
+    - 0.9945913816372565
+    - 0.9792367387122741
+    - 1.0401734305289698
+    - 0.9936283329981743
+    diagonal@t4:
+    - 0.9609307505016427
+    - 1.0519472290539331
+    - 0.9695230508549405
+    - 1.0055645102147288
+    triangular@t1:
+    - 0.9486894492611505
+    - 1.048433327541691
+    - 1.0044075022723615
+    - 0.9990654971643944
+    triangular@t4:
+    - 0.982093645134195
+    - 1.0009596020356661
+    - 0.9932466260227224
+    - 0.9616590728555948
+    lstsq@t1:
+    - 1.0019502208870452
+    - 0.9973794880283805
+    - 0.9986978849828183
+    - 1.0008044519744592
+    lstsq@t4:
+    - 0.9976815296242002
+    - 0.9918934962935182
+    - 0.9943249912098102
+    - 0.9986431416186232

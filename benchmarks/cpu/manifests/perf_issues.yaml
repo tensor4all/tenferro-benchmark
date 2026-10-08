@@ -2,7 +2,7 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 2
+manifest_version: 3
 suite_id: cpu/perf_issues
 source: data/instances/perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -147,6 +147,12 @@ coverage:
   - take_along_axis_rows_f64_session-single-call_n64_b256
   - take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256
   - take_along_axis_rows_f64_pytorch_n64_b256
+  - lstsq_f64_eager-shared_m768_n384_rhs16
+  - lstsq_f64_pytorch_m768_n384_rhs16
+  - triangular_f64_concrete-shared_n4096_rhs64
+  - triangular_f64_pytorch_n4096_rhs64
+  - reshape_f64_concrete-shared_n33554432_to8192x4096
+  - reshape_f64_pytorch_n33554432_to8192x4096
   full:
   - decode_proj_f32_eager-shared_in1024_out1024_len8
   - decode_proj_f32_eager-per-call_in1024_out1024_len8
@@ -301,3 +307,9 @@ coverage:
   - take_along_axis_rows_f64_session-single-call_n64_b256
   - take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256
   - take_along_axis_rows_f64_pytorch_n64_b256
+  - lstsq_f64_eager-shared_m768_n384_rhs16
+  - lstsq_f64_pytorch_m768_n384_rhs16
+  - triangular_f64_concrete-shared_n4096_rhs64
+  - triangular_f64_pytorch_n4096_rhs64
+  - reshape_f64_concrete-shared_n33554432_to8192x4096
+  - reshape_f64_pytorch_n33554432_to8192x4096

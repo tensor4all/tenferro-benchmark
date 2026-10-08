@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 2
+MANIFEST_VERSION = 3
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -231,7 +231,8 @@ def b1_op_cases():
         arms.append(("pytorch", "pytorch-cpu", "eager-single-call"))
         for arm, backend, ref in arms:
             rows.append(case(
-                f"activation_{op}_f32_{arm}_{rows_}x{cols}", ("#1975",), "activation",
+                f"activation_{op}_f32_{arm}_{rows_}x{cols}",
+                ("#1975", "#2030") if op == "gelu" else ("#1975",), "activation",
                 {"op": op, "rows": rows_, "cols": cols}, arm=arm, backend=backend, dtype="f32",
                 reference_for=ref and f"activation_{op}_f32_{ref}_{rows_}x{cols}",
                 intent=(f"tenferro-rs #1975 (#2010 PR-B1): elementwise {op} on a {rows_}x{cols} "
@@ -242,7 +243,8 @@ def b1_op_cases():
                            "primitives (exp, neg, abs, log1p, tanh, maximum, ...). " if op in composed else
                            "No pre-B1 composition exists (it needs erf), so the reference is "
                            "PyTorch only. ")
-                        + "PyTorch is the external reference.")))
+                        + "PyTorch is the external reference."
+                        + (" #2030 tracks the confirmed borrowed-session exact GELU CPU gap." if op == "gelu" else ""))))
     for op in ("softmax", "log_softmax", "masked_softmax"):
         for length in (64, 512):
             batch = 8
@@ -251,7 +253,8 @@ def b1_op_cases():
                                       ("eager-composed", "tenferro-rs", "eager-single-call"),
                                       ("pytorch", "pytorch-cpu", "eager-single-call")):
                 rows.append(case(
-                    f"{op}_f32_{arm}_len{length}_b{batch}", ("#1976",), "softmax",
+                    f"{op}_f32_{arm}_len{length}_b{batch}",
+                    ("#1976", "#2031") if op == "softmax" and length == 64 else ("#1976",), "softmax",
                     {"op": op, "len": length, "batch": batch, "axis": 0}, arm=arm,
                     backend=backend, dtype="f32",
                     reference_for=ref and f"{op}_f32_{ref}_len{length}_b{batch}",
@@ -268,7 +271,9 @@ def b1_op_cases():
                                "(len, len, batch) shape outside timing" if op.startswith("masked")
                                else "")
                             + ") without the all-masked guard; PyTorch is the external "
-                            "reference.")))
+                            "reference."
+                            + (" #2031 tracks the confirmed borrowed-session len64 CPU softmax gap."
+                               if op == "softmax" and length == 64 else ""))))
     for arm, backend, ref in (("eager-single-call", "tenferro-rs", None),
                               ("session-single-call", "tenferro-rs", None),
                               ("eager-composed", "tenferro-rs", "eager-single-call"),
@@ -302,7 +307,33 @@ def b1_op_cases():
 
 
 def generate_cases():
-    return decode_cases() + other_cases() + b1_op_cases()
+    return decode_cases() + other_cases() + b1_op_cases() + cpu_gap_cases()
+
+
+def cpu_gap_cases():
+    """Public borrowed-session MWE and matched PyTorch references."""
+    rows = []
+    for operation, issue, suffix, arm, intent in (
+        ("lstsq", "#2027", "m768_n384_rhs16", "eager-shared",
+         "Full-column-rank f64 least squares; analytical solution is all ones. "
+         "EagerSession::lstsq borrows one session outside timing; reference is "
+         "PyTorch unpivoted gels, retaining the full public result."),
+        ("triangular", "#2028", "n4096_rhs64", "concrete-shared",
+         "Single rank-2 lower-triangular f64 solve, 64 RHS columns, no AD. "
+         "One CPU execution session surrounds every sample; analytical solution is all ones. "
+         "Reference: torch.linalg.solve_triangular(upper=False)."),
+        ("reshape", "#2029", "n33554432_to8192x4096", "concrete-shared",
+         "Materializing reshape_read of a borrowed owned f64 tensor returns a fresh "
+         "column-major [8192,4096] output. Reference: clone of the matching PyTorch "
+         "view, prepared outside timing; metadata-only reshape is not the comparator."),
+    ):
+        target = f"{operation}_f64_{arm}_{suffix}"
+        for name, backend in ((arm, "tenferro-rs"), ("pytorch", "pytorch-cpu")):
+            rows.append(case(f"{operation}_f64_{name}_{suffix}", (issue,), "cpu_gap_mwe",
+                {"operation": operation}, arm=name, backend=backend, dtype="f64",
+                reference_for=target if backend == "pytorch-cpu" else None,
+                profiles=("amd-cpu", "mac-cpu"), intent=f"tenferro-rs {issue}: {intent}"))
+    return rows
 
 
 def generate_gpu_cases():

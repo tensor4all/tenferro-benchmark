@@ -1,0 +1,113 @@
+{
+  "calibration": {
+    "elapsed_ns": 3356800,
+    "iterations": 16,
+    "target_ns": 2000000
+  },
+  "correctness_status": "passed",
+  "provider": "Blas",
+  "samples": [
+    {
+      "elapsed_ns": 3260238,
+      "iterations": 16,
+      "sample_index": 0
+    },
+    {
+      "elapsed_ns": 3098795,
+      "iterations": 16,
+      "sample_index": 1
+    },
+    {
+      "elapsed_ns": 2922243,
+      "iterations": 16,
+      "sample_index": 2
+    },
+    {
+      "elapsed_ns": 2931470,
+      "iterations": 16,
+      "sample_index": 3
+    },
+    {
+      "elapsed_ns": 2928985,
+      "iterations": 16,
+      "sample_index": 4
+    },
+    {
+      "elapsed_ns": 2921631,
+      "iterations": 16,
+      "sample_index": 5
+    },
+    {
+      "elapsed_ns": 3072966,
+      "iterations": 16,
+      "sample_index": 6
+    },
+    {
+      "elapsed_ns": 2951537,
+      "iterations": 16,
+      "sample_index": 7
+    },
+    {
+      "elapsed_ns": 2935077,
+      "iterations": 16,
+      "sample_index": 8
+    },
+    {
+      "elapsed_ns": 2919908,
+      "iterations": 16,
+      "sample_index": 9
+    },
+    {
+      "elapsed_ns": 2925298,
+      "iterations": 16,
+      "sample_index": 10
+    },
+    {
+      "elapsed_ns": 3436911,
+      "iterations": 16,
+      "sample_index": 11
+    },
+    {
+      "elapsed_ns": 2940977,
+      "iterations": 16,
+      "sample_index": 12
+    },
+    {
+      "elapsed_ns": 2899189,
+      "iterations": 16,
+      "sample_index": 13
+    },
+    {
+      "elapsed_ns": 2907203,
+      "iterations": 16,
+      "sample_index": 14
+    }
+  ],
+  "scope": {
+    "outside_timer": [
+      "fixture construction",
+      "runtime/backend construction",
+      "session entry",
+      "FFT plans and scratch priming",
+      "correctness validation",
+      "retention vector allocation",
+      "output destruction"
+    ],
+    "timer": [
+      "softmax",
+      "intrinsic output allocation"
+    ]
+  },
+  "threads_requested": 1,
+  "phase": "paired",
+  "operation": "softmax",
+  "threads": 1,
+  "round": 0,
+  "arm": "A",
+  "implementation": "rust",
+  "command": [
+    "/workspaces/tenferro-benchmark/target/compatibility-mkl/release/examples/cpu_gap_mwe",
+    "softmax",
+    "1"
+  ]
+}

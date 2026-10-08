@@ -31,6 +31,9 @@ use tenferro_tensor::{
     BackendSession, BackendSessionHost, DotGeneralConfig, GatherConfig, Tensor, TensorRead,
 };
 
+#[path = "../../examples/cpu_gap_mwe.rs"]
+mod cpu_gap_mwe;
+
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
 
@@ -1717,6 +1720,47 @@ fn main() -> Result<()> {
     };
     let kind = param_str(&params, "kind")?;
     let outcome = match kind {
+        "cpu_gap_mwe" => {
+            let operation = param_str(&params, "operation")?;
+            let mut row = cpu_gap_mwe::run(
+                operation,
+                threads,
+                timing.warmups,
+                timing.samples,
+                timing.target_ns,
+            )?;
+            let raw_samples = row["samples"].as_array().ok_or("missing MWE samples")?;
+            let samples = raw_samples
+                .iter()
+                .map(|s| Sample {
+                    sample_index: s["sample_index"].as_u64().unwrap() as usize,
+                    elapsed_ns: s["elapsed_ns"].as_u64().unwrap() as u128,
+                    iterations: s["iterations"].as_u64().unwrap() as usize,
+                })
+                .collect();
+            let measurement = Measurement {
+                iterations: row["calibration"]["iterations"].as_u64().unwrap() as usize,
+                calibrated_ns: row["calibration"]["elapsed_ns"].as_u64().unwrap() as u128,
+                samples,
+            };
+            row.as_object_mut().unwrap().remove("samples");
+            // The repro checks every analytical solution entry at tolerance;
+            // it does not compute a reported maximum relative error.
+            row["max_rel_error"] = Value::Null;
+            Ok(CaseOutcome {
+                max_rel_error: 0.0,
+                measurement: Some(measurement),
+                timer: vec!["declared public operation", "intrinsic output allocation"],
+                outside_timer: vec![
+                    "fixtures",
+                    "session entry",
+                    "priming",
+                    "validation",
+                    "output destruction",
+                ],
+                extra: row,
+            })
+        }
         "decode_projection" => decode_projection(&params, &timing, threads),
         "copy_volume" => copy_volume(&params),
         "gemm_mm256" => gemm_mm256(&params, &timing),

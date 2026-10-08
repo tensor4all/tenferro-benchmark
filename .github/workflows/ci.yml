@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OPENBLAS_ROOT: /usr
-      # #2026 removed the runtime CPU provider APIs used by this harness.
-      # Keep validation reproducible until the harness migration is complete.
+      # Validate the recorded compatible revision. Latest upstream main is
+      # exercised separately by benchmark-smoke-tenferro-main / nightly jobs.
       TENFERRO_REF: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
       TENFERRO_UPDATE: "1"
     steps:

@@ -1,0 +1,6 @@
+lstsq_f64_eager-shared_m768_n384_rhs16 validated
+lstsq_f64_pytorch_m768_n384_rhs16 validated
+triangular_f64_concrete-shared_n4096_rhs64 validated
+triangular_f64_pytorch_n4096_rhs64 validated
+reshape_f64_concrete-shared_n33554432_to8192x4096 validated
+reshape_f64_pytorch_n33554432_to8192x4096 validated
