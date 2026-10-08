@@ -33,7 +33,7 @@ name: benchmark-runpod-gpu
 permissions:
   contents: read
 concurrency:
-  group: benchmark-runpod-gpu
+  group: ${{ inputs.prepare_only && format('ci-public-image-prepare-{0}', github.run_id) || 'benchmark-runpod-gpu' }}
   cancel-in-progress: false
 env:
   ORG_NAME: tensor4all
