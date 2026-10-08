@@ -65,7 +65,8 @@ def main():
             except Exception as error:
                 row=dict(correctness_status='failed',samples=[],error=str(error))
             failed |= row['correctness_status']!='passed'
-            stream.write(json.dumps(dict(c,**row,case_id=c['id'],threads=args.threads))+'\n');stream.flush()
+            record=dict(c);record.update(row);record.update(case_id=c['id'],threads=args.threads)
+            stream.write(json.dumps(record)+'\n');stream.flush()
             print(c['id'],row['correctness_status'],flush=True)
     raise SystemExit(int(failed))
 
