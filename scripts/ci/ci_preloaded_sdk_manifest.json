@@ -1,0 +1,38 @@
+{
+  "libcudart.so.12.8.90": {
+    "bytes": 728800,
+    "sha256": "c3a75b33af334a3486d197dbd1584a2985183ba4688d237a2be5f2f679329920"
+  },
+  "libcusolver.so.11.7.3.90": {
+    "bytes": 241587952,
+    "sha256": "6e8b369baedbd20064e35fa3da5b3e0254959b0f81f9b1d6ee595199d5493b61"
+  },
+  "libcusolverMg.so.11.7.3.90": {
+    "bytes": 161223320,
+    "sha256": "98bc1622f7b45e5a4cdb4a525c3a34f67ee29931e2311195312c824a6ebba163"
+  },
+  "libcusparse.so.12.5.8.93": {
+    "bytes": 386594784,
+    "sha256": "10bf811463c0c67bfe6f1016878392687664bc77fbfeed3130f3a0ecf2b0559f"
+  },
+  "libnvJitLink.so.12.8.93": {
+    "bytes": 94101392,
+    "sha256": "0369e6867d44b800437de4e146d72c65afc6c75adf677a15c2ecd8e6a7ac135f"
+  },
+  "libnvrtc-builtins.alt.so.12.8.93": {
+    "bytes": 6309832,
+    "sha256": "9e971f2dcced2628f327ddb037d02c41b834f2c3dbfbff03c9d2c3177f1b9b6d"
+  },
+  "libnvrtc-builtins.so.12.8.93": {
+    "bytes": 6338504,
+    "sha256": "eccaa824230ee7858a94a3055cb01f1cb634df05d313880d0bdcf195161fcb4e"
+  },
+  "libnvrtc.alt.so.12.8.93": {
+    "bytes": 104959760,
+    "sha256": "99b38ede44268a42cd979c37fb9d039ebee8772a774477528e0c1d148755551e"
+  },
+  "libnvrtc.so.12.8.93": {
+    "bytes": 104480432,
+    "sha256": "2bb82d1a34b9fefa46aca357299aed66763d4d6613d015d5a591224c00fa7e5a"
+  }
+}
