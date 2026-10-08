@@ -1,0 +1,90 @@
+name: publish-results
+
+on:
+  schedule:
+    # 06:00 JST (21:00 UTC) every day, after nightly benchmark workflows finish.
+    - cron: "0 21 * * *"
+  workflow_dispatch:
+
+# Publish to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publish-results-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'tensor4all/tenferro-benchmark'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Install Python dependencies
+        run: uv sync --frozen || uv sync
+
+      - name: Download latest mac-cpu results
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: benchmark-nightly-mac-cpu.yml
+          workflow_conclusion: success
+          name_is_regexp: true
+          name: mac-cpu-benchmark-results-.*
+          path: _artifacts/mac-cpu
+          if_no_artifact_found: warn
+
+      - name: Download latest linux-cpu results
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: benchmark-nightly-linux-cpu.yml
+          workflow_conclusion: success
+          name_is_regexp: true
+          name: linux-cpu-benchmark-results-.*
+          path: _artifacts/linux-cpu
+          if_no_artifact_found: warn
+
+      - name: Merge report trees for Pages
+        run: |
+          mkdir -p _site/result _site/raw
+          for profile in mac-cpu linux-cpu; do
+            if [[ -d "_artifacts/$profile/result/$profile" ]]; then
+              cp -r "_artifacts/$profile/result/$profile" "_site/result/"
+            fi
+            if [[ -d "_artifacts/$profile/data/results/$profile" ]]; then
+              cp -r "_artifacts/$profile/data/results/$profile" "_site/raw/"
+            fi
+          done
+
+      - name: Generate results index
+        run: |
+          uv run python scripts/generate_results_index.py \
+            --result-dir _site/result \
+            --output-dir _site
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.repository == 'tensor4all/tenferro-benchmark'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
