@@ -50,7 +50,8 @@ fi
 
 mkl_root="$TMP/mkl"
 mkdir -p "$mkl_root/lib" "$mkl_root/include"
-MKLROOT="$mkl_root" ensure_blas_env_for_features system-mkl
+MKLROOT="$mkl_root"
+ensure_blas_env_for_features system-mkl
 assert_eq "$mkl_root" "$MKLROOT" "mkl root export"
 case ":${LD_LIBRARY_PATH:-}:" in
   *":$mkl_root/lib:"*) ;;

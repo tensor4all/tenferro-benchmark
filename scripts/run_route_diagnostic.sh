@@ -36,6 +36,10 @@ trap 'rm -f "$VARS"' EXIT
 "$SCRIPT_DIR/build_for_tenferro_rev.sh" "$TENFERRO_DIR" "$VARS" cpu_route_diagnostic
 # shellcheck disable=SC1090
 source "$VARS"
+# The build helper runs in a child shell, so its dynamic-library environment
+# does not reach this runner. Configure it again before launching the binary.
+source "$SCRIPT_DIR/cpu_blas_provider.sh"
+ensure_blas_env_for_features "$BUILD_FEATURES"
 
 CASES="$("$PYTHON" "$SCRIPT_DIR/benchmark_cpu_session.py" --list-diagnostic-cases --coverage "$COVERAGE")"
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"

@@ -374,7 +374,7 @@ def format_table(paths: list[Path]) -> str:
 
     if small_sampling_policies:
         if all(policy in {"bounded_batch", "bounded_batch_shared_cpu"} for policy in small_sampling_policies):
-            lines[2:2] = ["Small rows use time/memory-bounded batches, normalized per operation. Tenferro eager/trace share a CPU execution scope outside timing. Raw JSONL records contain batch durations and operation counts.", ""]
+            lines[2:2] = ["Small rows use time/memory-bounded batches, normalized per operation. Tenferro eager/trace share a CPU execution scope outside timing. Eager primal rows reuse a borrowed session entered before sampling; eager backward rows without a borrowed-session API are unsupported. Raw JSONL records contain batch durations and operation counts.", ""]
         else:
             lines[2:2] = ["**Small rows are isolated-call diagnostics, not shared-session throughput. See cpu/session_matrix and cpu/small_work for standard short-operation results.**", ""]
 

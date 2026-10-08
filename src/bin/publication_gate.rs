@@ -10,13 +10,13 @@ use std::panic;
 use std::sync::{Arc, OnceLock};
 use std::time::{Duration, Instant};
 
-use tenferro_ad::{AdContext, EagerRuntime, EagerTensor};
+use tenferro_ad::{AdContext, EagerRuntime, EagerSession, EagerTensor};
 use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
 use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::thread_enforcement::{
     enforce_thread_request, verify_backend_threads,
 };
-use tenferro_linalg::{EagerSessionLinalgExt, EagerTensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_linalg::{EagerSessionLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
     DotGeneralConfig, Error, ErrorPhase, GraphCompiler, Runtime, Tensor, TraceContext, TracedTensor,
@@ -105,30 +105,22 @@ fn eager_requires_grad_in(tensor: Tensor, ctx: Arc<EagerRuntime>) -> EagerTensor
     EagerTensor::requires_grad_in(tensor, ctx).expect("benchmark tensor should be valid")
 }
 
+// Operations use the borrowed session entered outside the sampling clock.
 mod eager_einsum_tensor {
     use super::*;
     pub fn einsum(
+        session: &mut EagerSession<'_>,
         inputs: &[&EagerTensor],
         _subscripts: &str,
     ) -> Result<EagerTensor, tenferro_ad::Error> {
-        static SUBS: std::sync::OnceLock<tenferro_einsum::EinsumSubscripts> =
-            std::sync::OnceLock::new();
+        static SUBS: OnceLock<tenferro_einsum::EinsumSubscripts> = OnceLock::new();
         let subs = SUBS
             .get_or_init(|| tenferro_einsum::EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2]));
-        // One borrowed eager session per public einsum call.
-        let runtime = inputs
-            .first()
-            .expect("einsum has operands")
-            .runtime()
-            .clone();
-        runtime.with_eager_session(|session| {
-            session
-                .einsum_subscripts(inputs, subs)
-                .map_err(|e| runtime_einsum_error(e, ErrorPhase::Execution))
-        })
+        session
+            .einsum_subscripts(inputs, subs)
+            .map_err(|e| runtime_einsum_error(e, ErrorPhase::Execution))
     }
 }
-
 fn runtime_einsum_error(error: tenferro_einsum::Error, phase: ErrorPhase) -> Error {
     let kind = error.kind();
     Error::extension(
@@ -139,60 +131,57 @@ fn runtime_einsum_error(error: tenferro_einsum::Error, phase: ErrorPhase) -> Err
         error,
     )
 }
-
 mod eager_linalg_tensor {
     use super::*;
-
-    // Each call enters one eager session, as the pre-#1938 tensor-owned
-    // decompositions did.
     pub fn svd(
+        session: &mut EagerSession<'_>,
         a: &EagerTensor,
     ) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor, EagerTensor)> {
-        a.runtime().with_eager_session(|session| session.svd(a))
+        session.svd(a)
     }
-
-    pub fn qr(a: &EagerTensor) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
-        a.runtime().with_eager_session(|session| session.qr(a))
+    pub fn qr(
+        session: &mut EagerSession<'_>,
+        a: &EagerTensor,
+    ) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
+        session.qr(a)
     }
-
-    pub fn eigh(a: &EagerTensor) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
-        a.runtime().with_eager_session(|session| session.eigh(a))
+    pub fn eigh(
+        session: &mut EagerSession<'_>,
+        a: &EagerTensor,
+    ) -> tenferro_ad::error::Result<(EagerTensor, EagerTensor)> {
+        session.eigh(a)
     }
-
-    pub fn solve(a: &EagerTensor, b: &EagerTensor) -> tenferro_ad::error::Result<EagerTensor> {
-        a.solve(b)
+    pub fn solve(
+        session: &mut EagerSession<'_>,
+        a: &EagerTensor,
+        b: &EagerTensor,
+    ) -> tenferro_ad::error::Result<EagerTensor> {
+        session.solve(a, b)
     }
 }
-
-/// Eager primal operations, one borrowed eager session per call.
-///
-/// tenferro-rs #1938 moved these off `EagerTensor` onto `EagerSession`. Before
-/// it, each tensor-owned call entered the eager backend once; entering one
-/// session per call keeps that entry inside the timed region.
 mod eager_session_ops {
     use super::*;
-
-    pub fn matmul(lhs: &EagerTensor, rhs: &EagerTensor) -> tenferro_ad::error::Result<EagerTensor> {
-        lhs.runtime()
-            .with_eager_session(|session| session.matmul(lhs, rhs))
+    pub fn matmul(
+        session: &mut EagerSession<'_>,
+        lhs: &EagerTensor,
+        rhs: &EagerTensor,
+    ) -> tenferro_ad::error::Result<EagerTensor> {
+        session.matmul(lhs, rhs)
     }
-
     pub fn dot_general(
+        session: &mut EagerSession<'_>,
         lhs: &EagerTensor,
         rhs: &EagerTensor,
         config: DotGeneralConfig,
     ) -> tenferro_ad::error::Result<EagerTensor> {
-        lhs.runtime()
-            .with_eager_session(|session| session.dot_general(lhs, rhs, config))
+        session.dot_general(lhs, rhs, config)
     }
-
     pub fn reduce_sum(
+        session: &mut EagerSession<'_>,
         input: &EagerTensor,
         axes: &[usize],
     ) -> tenferro_ad::error::Result<EagerTensor> {
-        input
-            .runtime()
-            .with_eager_session(|session| session.reduce_sum(input, Some(axes)))
+        session.reduce_sum(input, Some(axes))
     }
 }
 
@@ -454,8 +443,8 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_from_tensor_in(tensor(&[n, n], data_for_shape(&[n, n], 2)), ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let out = eager_session_ops::matmul(&a, &b)?;
+            |session, (a, b)| {
+                let out = eager_session_ops::matmul(session, &a, &b)?;
                 Ok(out)
             },
         ));
@@ -477,8 +466,8 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_from_tensor_in(b, ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let out = eager_session_ops::matmul(&a, &b)?;
+            |session, (a, b)| {
+                let out = eager_session_ops::matmul(session, &a, &b)?;
                 Ok(out)
             },
         ));
@@ -497,8 +486,8 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_from_tensor_in(tensor(&[n, n], data_for_shape(&[n, n], 2)), ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let out = eager_einsum_tensor::einsum(&[&a, &b], "ij,jk->ik")?;
+            |session, (a, b)| {
+                let out = eager_einsum_tensor::einsum(session, &[&a, &b], "ij,jk->ik")?;
                 Ok(out)
             },
         ));
@@ -515,8 +504,8 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                     eager_from_tensor_in(tensor(&[n, n], well_conditioned_matrix(n, 3)), cpu_ctx());
                 Ok((a,))
             },
-            |(a,)| {
-                let (u, s, vh) = eager_linalg_tensor::svd(&a)?;
+            |session, (a,)| {
+                let (u, s, vh) = eager_linalg_tensor::svd(session, &a)?;
                 Ok((u, s, vh))
             },
         ));
@@ -533,8 +522,8 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                     eager_from_tensor_in(tensor(&[n, n], well_conditioned_matrix(n, 4)), cpu_ctx());
                 Ok((a,))
             },
-            |(a,)| {
-                let (q, r) = eager_linalg_tensor::qr(&a)?;
+            |session, (a,)| {
+                let (q, r) = eager_linalg_tensor::qr(session, &a)?;
                 Ok((q, r))
             },
         ));
@@ -550,8 +539,8 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let a = eager_from_tensor_in(tensor(&[n, n], spd_matrix(n, 5)), cpu_ctx());
                 Ok((a,))
             },
-            |(a,)| {
-                let (w, v) = eager_linalg_tensor::eigh(&a)?;
+            |session, (a,)| {
+                let (w, v) = eager_linalg_tensor::eigh(session, &a)?;
                 Ok((w, v))
             },
         ));
@@ -573,8 +562,8 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                     );
                     Ok((a, b))
                 },
-                |(a, b)| {
-                    let x = eager_linalg_tensor::solve(&a, &b)?;
+                |session, (a, b)| {
+                    let x = eager_linalg_tensor::solve(session, &a, &b)?;
                     Ok(x)
                 },
             ));
@@ -596,9 +585,9 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_requires_grad_in(tensor(&[n, n], data_for_shape(&[n, n], 9)), ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let y = eager_session_ops::matmul(&a, &b)?;
-                let loss = eager_session_ops::reduce_sum(&y, &[0, 1])?;
+            |session, (a, b)| {
+                let y = eager_session_ops::matmul(session, &a, &b)?;
+                let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
                 let gradients = loss.backward()?;
                 Ok((loss, y, gradients))
             },
@@ -618,9 +607,9 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 );
                 Ok((a,))
             },
-            |(a,)| {
-                let (u, s, vt) = eager_linalg_tensor::svd(&a)?;
-                let loss = eager_session_ops::reduce_sum(&s, &[0])?;
+            |session, (a,)| {
+                let (u, s, vt) = eager_linalg_tensor::svd(session, &a)?;
+                let loss = eager_session_ops::reduce_sum(session, &s, &[0])?;
                 let gradients = loss.backward()?;
                 Ok((loss, u, s, vt, gradients))
             },
@@ -639,9 +628,9 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_requires_grad_in(tensor(&[n, 1], data_for_shape(&[n, 1], 12)), ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let x = eager_linalg_tensor::solve(&a, &b)?;
-                let loss = eager_session_ops::reduce_sum(&x, &[0, 1])?;
+            |session, (a, b)| {
+                let x = eager_linalg_tensor::solve(session, &a, &b)?;
+                let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1])?;
                 let gradients = loss.backward()?;
                 Ok((loss, x, gradients))
             },
@@ -669,8 +658,8 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_from_tensor_in(tensor(&[n, n], data_for_shape(&[n, n], 22)), ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let out = eager_session_ops::matmul(&a, &b)?;
+            |session, (a, b)| {
+                let out = eager_session_ops::matmul(session, &a, &b)?;
                 Ok(out)
             },
         ));
@@ -694,8 +683,8 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_from_tensor_in(tensor(&[k, n], data_for_shape(&[k, n], 24)), ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let out = eager_session_ops::matmul(&a, &b)?;
+            |session, (a, b)| {
+                let out = eager_session_ops::matmul(session, &a, &b)?;
                 Ok(out)
             },
         ));
@@ -720,8 +709,8 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 );
                 Ok((a,))
             },
-            |(a,)| {
-                let (u, s, vh) = eager_linalg_tensor::svd(&a)?;
+            |session, (a,)| {
+                let (u, s, vh) = eager_linalg_tensor::svd(session, &a)?;
                 Ok((u, s, vh))
             },
         ));
@@ -739,8 +728,8 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 );
                 Ok((a,))
             },
-            |(a,)| {
-                let (q, r) = eager_linalg_tensor::qr(&a)?;
+            |session, (a,)| {
+                let (q, r) = eager_linalg_tensor::qr(session, &a)?;
                 Ok((q, r))
             },
         ));
@@ -755,8 +744,8 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let a = eager_from_tensor_in(tensor(&[n, n], spd_matrix(n, 27)), cpu_ctx());
                 Ok((a,))
             },
-            |(a,)| {
-                let (w, v) = eager_linalg_tensor::eigh(&a)?;
+            |session, (a,)| {
+                let (w, v) = eager_linalg_tensor::eigh(session, &a)?;
                 Ok((w, v))
             },
         ));
@@ -777,8 +766,8 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                     );
                     Ok((a, b))
                 },
-                |(a, b)| {
-                    let x = eager_linalg_tensor::solve(&a, &b)?;
+                |session, (a, b)| {
+                    let x = eager_linalg_tensor::solve(session, &a, &b)?;
                     Ok(x)
                 },
             ));
@@ -805,9 +794,9 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_requires_grad_in(tensor(&[n, n], data_for_shape(&[n, n], 31)), ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let y = eager_session_ops::matmul(&a, &b)?;
-                let loss = eager_session_ops::reduce_sum(&y, &[0, 1])?;
+            |session, (a, b)| {
+                let y = eager_session_ops::matmul(session, &a, &b)?;
+                let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
                 Ok(loss)
             },
         ));
@@ -827,9 +816,9 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_requires_grad_in(tensor(&[n, n], data_for_shape(&[n, n], 33)), ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let y = eager_session_ops::matmul(&a, &b)?;
-                let loss = eager_session_ops::reduce_sum(&y, &[0, 1])?;
+            |session, (a, b)| {
+                let y = eager_session_ops::matmul(session, &a, &b)?;
+                let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
                 let gradients = loss.backward()?;
                 Ok((loss, y, gradients))
             },
@@ -848,9 +837,9 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 );
                 Ok((a,))
             },
-            |(a,)| {
-                let (u, s, vt) = eager_linalg_tensor::svd(&a)?;
-                let loss = eager_session_ops::reduce_sum(&s, &[0])?;
+            |session, (a,)| {
+                let (u, s, vt) = eager_linalg_tensor::svd(session, &a)?;
+                let loss = eager_session_ops::reduce_sum(session, &s, &[0])?;
                 let gradients = loss.backward()?;
                 Ok((loss, u, s, vt, gradients))
             },
@@ -868,9 +857,9 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 let b = eager_requires_grad_in(tensor(&[n, 1], data_for_shape(&[n, 1], 36)), ctx);
                 Ok((a, b))
             },
-            |(a, b)| {
-                let x = eager_linalg_tensor::solve(&a, &b)?;
-                let loss = eager_session_ops::reduce_sum(&x, &[0, 1])?;
+            |session, (a, b)| {
+                let x = eager_linalg_tensor::solve(session, &a, &b)?;
+                let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1])?;
                 let gradients = loss.backward()?;
                 Ok((loss, x, gradients))
             },
@@ -906,8 +895,9 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     eager_from_tensor_in(tensor(&[n, n, b], data_for_shape(&[n, n, b], 42)), ctx);
                 Ok((a, rhs, Some(batched_matmul_config())))
             },
-            |(a, rhs, config)| {
+            |session, (a, rhs, config)| {
                 let out = eager_session_ops::dot_general(
+                    session,
                     &a,
                     &rhs,
                     config.take().expect("prepared config"),
@@ -940,8 +930,9 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     let config = batched_matmul_config();
                     Ok((a, rhs, Some(config)))
                 },
-                |(a, rhs, config)| {
+                |session, (a, rhs, config)| {
                     let out = eager_session_ops::dot_general(
+                        session,
                         &a,
                         &rhs,
                         config.take().expect("prepared config"),
@@ -963,8 +954,8 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     );
                     Ok((a,))
                 },
-                |(a,)| {
-                    let (u, s, vh) = eager_linalg_tensor::svd(&a)?;
+                |session, (a,)| {
+                    let (u, s, vh) = eager_linalg_tensor::svd(session, &a)?;
                     Ok((u, s, vh))
                 },
             ));
@@ -982,8 +973,8 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     );
                     Ok((a,))
                 },
-                |(a,)| {
-                    let (q, r) = eager_linalg_tensor::qr(&a)?;
+                |session, (a,)| {
+                    let (q, r) = eager_linalg_tensor::qr(session, &a)?;
                     Ok((q, r))
                 },
             ));
@@ -999,8 +990,8 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                         eager_from_tensor_in(tensor(&[n, n, b], batched_spd(n, b, 45)), cpu_ctx());
                     Ok((a,))
                 },
-                |(a,)| {
-                    let (w, v) = eager_linalg_tensor::eigh(&a)?;
+                |session, (a,)| {
+                    let (w, v) = eager_linalg_tensor::eigh(session, &a)?;
                     Ok((w, v))
                 },
             ));
@@ -1023,8 +1014,8 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     );
                     Ok((a, rhs))
                 },
-                |(a, rhs)| {
-                    let x = eager_linalg_tensor::solve(&a, &rhs)?;
+                |session, (a, rhs)| {
+                    let x = eager_linalg_tensor::solve(session, &a, &rhs)?;
                     Ok(x)
                 },
             ));
@@ -1048,13 +1039,14 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     let config = batched_matmul_config();
                     Ok((a, rhs, Some(config)))
                 },
-                |(a, rhs, config)| {
+                |session, (a, rhs, config)| {
                     let out = eager_session_ops::dot_general(
+                        session,
                         &a,
                         &rhs,
                         config.take().expect("prepared config"),
                     )?;
-                    let loss = eager_session_ops::reduce_sum(&out, &[0, 1, 2])?;
+                    let loss = eager_session_ops::reduce_sum(session, &out, &[0, 1, 2])?;
                     let gradients = loss.backward()?;
                     Ok((loss, out, gradients))
                 },
@@ -1078,9 +1070,9 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                     );
                     Ok((a, rhs))
                 },
-                |(a, rhs)| {
-                    let x = eager_linalg_tensor::solve(&a, &rhs)?;
-                    let loss = eager_session_ops::reduce_sum(&x, &[0, 1, 2])?;
+                |session, (a, rhs)| {
+                    let x = eager_linalg_tensor::solve(session, &a, &rhs)?;
+                    let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1, 2])?;
                     let gradients = loss.backward()?;
                     Ok((loss, x, gradients))
                 },
@@ -1688,6 +1680,56 @@ fn measure<I, O>(
     })
 }
 
+// Primal fixtures are read-only and reusable. Prepare them before entering
+// the eager session; tensor wrapping itself may enter a backend session.
+fn measure_eager<I: Send, O>(
+    config: &BenchConfig,
+    shape: &str,
+    mut setup: impl FnMut() -> Result<I, Error>,
+    mut execute: impl FnMut(&mut EagerSession<'_>, &mut I) -> Result<O, Error> + Send,
+) -> Result<Measurement, Error> {
+    let estimated_bytes = retention_estimate(shape);
+    let cap = (RETENTION_BUDGET_BYTES / estimated_bytes).clamp(1, 65_536);
+    let ctx = cpu_ctx();
+    let mut inputs = vec![setup()?];
+    let mut run = |inputs: &mut [I], samples: usize| {
+        ctx.with_eager_session(|session| {
+            let mut times = Vec::with_capacity(samples);
+            for _ in 0..samples {
+                let mut outputs = Vec::with_capacity(inputs.len());
+                let start = Instant::now();
+                for input in &mut *inputs {
+                    outputs.push(execute(session, input)?);
+                }
+                times.push(start.elapsed());
+                black_box(&outputs);
+                // Output destruction is outside the clock, while fixtures persist.
+            }
+            Ok::<_, Error>(times)
+        })
+    };
+    run(&mut inputs, config.warmups.max(1))?;
+    let calibration_ns = loop {
+        let elapsed = run(&mut inputs, 1)?[0].as_nanos();
+        if elapsed >= SAMPLE_TARGET_NS || inputs.len() == cap {
+            break elapsed;
+        }
+        let next = (inputs.len() * 2).min(cap);
+        while inputs.len() < next {
+            inputs.push(setup()?);
+        }
+    };
+    let operations = inputs.len();
+    // One borrowed session encloses all measured batches, outside their clocks.
+    let times = run(&mut inputs, config.runs)?;
+    Ok(Measurement {
+        operations,
+        estimated_bytes,
+        calibration_ns,
+        times,
+    })
+}
+
 fn record_raw(record: serde_json::Value) -> Result<(), Error> {
     if let Ok(path) = env::var("CPU_OPS_RAW_SAMPLES") {
         let mut file = std::fs::OpenOptions::new()
@@ -1719,7 +1761,7 @@ fn summarize_measurement(
         "target_ns": SAMPLE_TARGET_NS, "calibration_ns": measured.calibration_ns,
         "estimated_retained_bytes_per_operation": measured.estimated_bytes,
         "retention_budget_bytes": RETENTION_BUDGET_BYTES,
-        "execution_scope": "shared_cpu", "output_policy": "allocation_returning_retained_until_stop",
+        "execution_scope": "shared_cpu", "eager_session_policy": "borrowed_session_outside_timing_for_primal", "output_policy": "allocation_returning_retained_until_stop",
     }))?;
     let (median, iqr) = median_iqr_ms(measured.times);
     Ok((
@@ -1774,22 +1816,27 @@ fn record_cpu_runtime() -> Result<(), Error> {
     }))
 }
 
-fn bench_row<I, O>(
+fn bench_row<I: Send, O>(
     config: &BenchConfig,
     suite: &'static str,
     op: &'static str,
     phase: &'static str,
     dtype: &'static str,
     shape: &str,
-    mut setup: impl FnMut() -> tenferro_ad::error::Result<I>,
-    mut execute: impl FnMut(&mut I) -> tenferro_ad::error::Result<O>,
+    mut setup: impl FnMut() -> tenferro_ad::error::Result<I> + Send,
+    mut execute: impl FnMut(&mut EagerSession<'_>, &mut I) -> tenferro_ad::error::Result<O> + Send,
 ) -> Row {
     if !benchmark_filter_matches(op, phase) {
         return filtered_row(suite, op, phase, dtype, shape);
     }
 
+    if phase == "backward" {
+        return Row { suite, op, phase, dtype, shape: shape.to_string(), backend: config.backend,
+            median_ms: None, iqr_ms: None,
+            status: "unsupported: eager backward has no borrowed-session API; setup-inclusive timings disabled".into() };
+    }
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-        let measured = measure(config, shape, &mut setup, &mut execute)?;
+        let measured = measure_eager(config, shape, &mut setup, &mut execute)?;
         summarize_measurement(measured, suite, op, phase, shape, "tenferro-eager")
     }));
 
@@ -2267,10 +2314,56 @@ fn csv_escape(value: &str) -> String {
 #[cfg(test)]
 mod timing_tests {
     use super::*;
+    // These tests share the benchmark runtime and its live gradient slots.
+    static EAGER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
     #[test]
     fn eager_runtime_is_reused_across_samples() {
         assert!(Arc::ptr_eq(&cpu_ctx(), &cpu_ctx()));
+    }
+
+    #[test]
+    fn primal_uses_borrowed_session_and_backward_is_explicitly_unsupported() {
+        let _guard = EAGER_TEST_LOCK.lock().unwrap();
+        let config = BenchConfig {
+            profile: Profile::Quick,
+            suite: SuiteFilter::Small,
+            runs: 1,
+            warmups: 0,
+            backend: backend_name(),
+            include_eager: true,
+            include_trace: false,
+        };
+        let row = bench_row(
+            &config,
+            "small",
+            "matmul",
+            "primal",
+            "f64",
+            "2x2",
+            || {
+                Ok((eager_from_tensor_in(
+                    tensor(&[2, 2], vec![1.0, 0.0, 0.0, 1.0]),
+                    cpu_ctx(),
+                ),))
+            },
+            |session, (a,)| session.matmul(a, a),
+        );
+        assert_eq!(row.status, "ok");
+        let row = bench_row(
+            &config,
+            "small",
+            "grad_sum_matmul",
+            "backward",
+            "f64",
+            "2x2",
+            || -> Result<(), Error> { panic!("unsupported operation must not prepare inputs") },
+            |_session, _input| -> Result<(), Error> {
+                panic!("unsupported operation must not execute")
+            },
+        );
+        assert!(row.status.starts_with("unsupported:"));
+        assert!(row.median_ms.is_none());
     }
 
     #[test]
@@ -2285,6 +2378,7 @@ mod timing_tests {
 
     #[test]
     fn shared_benchmark_primal_and_both_gradients_match_scalar_references() {
+        let _guard = EAGER_TEST_LOCK.lock().unwrap();
         let ctx = cpu_ctx();
         let runtime = cpu_runtime_with_extensions().unwrap();
         cpu_backend()
@@ -2317,8 +2411,11 @@ mod timing_tests {
                     };
                     let x = eager_requires_grad_in(tensor(&shape, a.clone()), ctx.clone());
                     let y = eager_requires_grad_in(tensor(&shape, b.clone()), ctx.clone());
-                    let output =
-                        eager_session_ops::dot_general(&x, &y, batched_matmul_config()).unwrap();
+                    let output = ctx
+                        .with_eager_session(|session| {
+                            eager_session_ops::dot_general(session, &x, &y, batched_matmul_config())
+                        })
+                        .unwrap();
                     assert_eq!(output.shape(), shape);
                     check(
                         output.to_tensor().unwrap().as_slice::<f64>().unwrap(),

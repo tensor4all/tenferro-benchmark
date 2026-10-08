@@ -35,7 +35,12 @@ if [[ -n "${BENCH_SESSION_BINARY:-}" ]]; then
     BINARY="$BENCH_SESSION_BINARY"
 else
     if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
-        git -C extern/tenferro-rs pull --ff-only
+        # The public checkout may use an SSH remote on the host without any
+        # SSH credentials being forwarded into the CPU devcontainer. Rewrite
+        # only this pull to HTTPS; preserve the checkout's configured remote.
+        git -C extern/tenferro-rs \
+            -c url.https://github.com/tensor4all/tenferro-rs.git.insteadOf=git@github.com:tensor4all/tenferro-rs.git \
+            pull --ff-only
     fi
     cargo build --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_session
     BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_cpu_session"

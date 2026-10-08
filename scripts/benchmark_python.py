@@ -179,6 +179,7 @@ def configure_thread_env(num_threads: int) -> None:
             "PJRT_NPROC": value,
             "XLA_FLAGS": (
                 f"--xla_cpu_multi_thread_eigen={xla_multi_thread} "
+                "--xla_cpu_experimental_ynn_fusion_type= "
                 f"intra_op_parallelism_threads={value}"
             ),
         }
