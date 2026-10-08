@@ -1,0 +1,2414 @@
+[
+  {
+    "case_id": "metadata.reshape_view",
+    "threads": 1,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 319.0830993652344,
+      "cov": 0.009032875332591733
+    },
+    "ref": {
+      "median_ns": 1412.0,
+      "cov": 0.47791766012925513
+    },
+    "ratio": 0.22597953212835295
+  },
+  {
+    "case_id": "metadata.reshape_view",
+    "threads": 4,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 320.4773254394531,
+      "cov": 0.0007979800569733113
+    },
+    "ref": {
+      "median_ns": 1603.0,
+      "cov": 0.3711375547708274
+    },
+    "ratio": 0.1999234718898647
+  },
+  {
+    "case_id": "metadata.slice_view",
+    "threads": 1,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 256.3951416015625,
+      "cov": 0.012426668950190019
+    },
+    "ref": {
+      "median_ns": 1834.0,
+      "cov": 0.4599637048728358
+    },
+    "ratio": 0.13980105867042666
+  },
+  {
+    "case_id": "metadata.slice_view",
+    "threads": 4,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 267.6070556640625,
+      "cov": 0.004180500540078485
+    },
+    "ref": {
+      "median_ns": 1513.0,
+      "cov": 0.3895641521629553
+    },
+    "ratio": 0.1768718147151768
+  },
+  {
+    "case_id": "metadata.transpose_view",
+    "threads": 1,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 199.12184143066406,
+      "cov": 0.0030955071829439026
+    },
+    "ref": {
+      "median_ns": 2655.0,
+      "cov": 0.2646753160391052
+    },
+    "ratio": 0.07499881033170021
+  },
+  {
+    "case_id": "metadata.transpose_view",
+    "threads": 4,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 191.6861114501953,
+      "cov": 0.004367661821197486
+    },
+    "ref": {
+      "median_ns": 3847.0,
+      "cov": 0.28739526640944135
+    },
+    "ratio": 0.049827426943123296
+  },
+  {
+    "case_id": "activation.sigmoid",
+    "threads": 1,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 387061.53125,
+      "cov": 0.022928628904536986
+    },
+    "ref": {
+      "median_ns": 75297.54296875,
+      "cov": 0.002349108784646844
+    },
+    "ratio": 5.14042711075763
+  },
+  {
+    "case_id": "activation.sigmoid",
+    "threads": 4,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 376048.625,
+      "cov": 0.04728788331673533
+    },
+    "ref": {
+      "median_ns": 57910.55078125,
+      "cov": 0.09210982405426964
+    },
+    "ratio": 6.49361161181971
+  },
+  {
+    "case_id": "activation.erf",
+    "threads": 1,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1141752.0625,
+      "cov": 0.004022528442468779
+    },
+    "ref": {
+      "median_ns": 148139.984375,
+      "cov": 0.012427335120550208
+    },
+    "ratio": 7.707251133561489
+  },
+  {
+    "case_id": "activation.erf",
+    "threads": 4,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 648529.71875,
+      "cov": 0.02733322563976168
+    },
+    "ref": {
+      "median_ns": 51128.91796875,
+      "cov": 0.008237307378482562
+    },
+    "ratio": 12.684205817662354
+  },
+  {
+    "case_id": "activation.gelu_tanh",
+    "threads": 1,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1108395.5,
+      "cov": 0.0023215484149599007
+    },
+    "ref": {
+      "median_ns": 167338.640625,
+      "cov": 0.006161166293063174
+    },
+    "ratio": 6.623667407959141
+  },
+  {
+    "case_id": "activation.gelu_tanh",
+    "threads": 4,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 691856.875,
+      "cov": 0.0043701607344407934
+    },
+    "ref": {
+      "median_ns": 58198.59375,
+      "cov": 0.009243694606547464
+    },
+    "ratio": 11.887862410764864
+  },
+  {
+    "case_id": "activation.silu",
+    "threads": 1,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 391313.59375,
+      "cov": 0.028374377958717962
+    },
+    "ref": {
+      "median_ns": 74421.67578125,
+      "cov": 0.003260110604530399
+    },
+    "ratio": 5.258059424786409
+  },
+  {
+    "case_id": "activation.silu",
+    "threads": 4,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 292820.65625,
+      "cov": 0.06101381757912651
+    },
+    "ref": {
+      "median_ns": 46763.43359375,
+      "cov": 0.011789411741982964
+    },
+    "ratio": 6.261744139530761
+  },
+  {
+    "case_id": "index.dynamic_slice",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 3920350.75,
+      "cov": 0.003948383119532996
+    },
+    "ref": {
+      "median_ns": 3775630.75,
+      "cov": 0.0058652689538514794
+    },
+    "ratio": 1.0383300194278797
+  },
+  {
+    "case_id": "index.dynamic_slice",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.dynamic_slice",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1501424.875,
+      "cov": 0.03183830170207957
+    },
+    "ref": {
+      "median_ns": 1292806.5,
+      "cov": 0.03108432441783131
+    },
+    "ratio": 1.1613686000186416
+  },
+  {
+    "case_id": "index.dynamic_slice",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "complex.norm_fro",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 33664981.0,
+      "cov": 0.0011556932724569868
+    },
+    "ref": {
+      "median_ns": 4217973.5,
+      "cov": 0.040276290009231996
+    },
+    "ratio": 7.9813163833295775
+  },
+  {
+    "case_id": "complex.norm_fro",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "complex.norm_fro",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 19505963.0,
+      "cov": 0.00543990761567677
+    },
+    "ref": {
+      "median_ns": 2332983.625,
+      "cov": 0.04623978747193799
+    },
+    "ratio": 8.360951526181415
+  },
+  {
+    "case_id": "complex.norm_fro",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "activation.softplus",
+    "threads": 1,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 648748.25,
+      "cov": 0.017207629605371748
+    },
+    "ref": {
+      "median_ns": 152628.765625,
+      "cov": 0.008182722700773238
+    },
+    "ratio": 4.250497914619428
+  },
+  {
+    "case_id": "activation.softplus",
+    "threads": 4,
+    "path": "eager-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 458146.59375,
+      "cov": 0.02396667829486053
+    },
+    "ref": {
+      "median_ns": 97804.0625,
+      "cov": 0.02714968508509287
+    },
+    "ratio": 4.684330916724446
+  },
+  {
+    "case_id": "index.reverse",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 3997481.0,
+      "cov": 0.012005217784326111
+    },
+    "ref": {
+      "median_ns": 3685511.25,
+      "cov": 0.06420457795335091
+    },
+    "ratio": 1.0846476184274298
+  },
+  {
+    "case_id": "index.reverse",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.reverse",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1405451.6875,
+      "cov": 0.06882452933929942
+    },
+    "ref": {
+      "median_ns": 1405871.1875,
+      "cov": 0.017331785651444963
+    },
+    "ratio": 0.9997016085088521
+  },
+  {
+    "case_id": "index.reverse",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.gather",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 863387.375,
+      "cov": 0.0030777955536270577
+    },
+    "ref": {
+      "median_ns": 726921.6875,
+      "cov": 0.016093253255878355
+    },
+    "ratio": 1.187730934221164
+  },
+  {
+    "case_id": "index.gather",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.gather",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 492170.34375,
+      "cov": 0.014401440316643857
+    },
+    "ref": {
+      "median_ns": 255578.046875,
+      "cov": 0.02753622419180123
+    },
+    "ratio": 1.9257144726155384
+  },
+  {
+    "case_id": "index.gather",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.concatenate",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 4035377.5,
+      "cov": 0.005394332319443262
+    },
+    "ref": {
+      "median_ns": 3636293.5,
+      "cov": 0.10004779895317406
+    },
+    "ratio": 1.1097502168073066
+  },
+  {
+    "case_id": "index.concatenate",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.concatenate",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1402194.3125,
+      "cov": 0.033116349029889365
+    },
+    "ref": {
+      "median_ns": 1295033.125,
+      "cov": 0.026865186172182323
+    },
+    "ratio": 1.0827478351181172
+  },
+  {
+    "case_id": "index.concatenate",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.tanh",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 112605561.0,
+      "cov": 0.0010962862212879803
+    },
+    "ref": {
+      "median_ns": 20649627.0,
+      "cov": 0.010253034591335227
+    },
+    "ratio": 5.453152301491935
+  },
+  {
+    "case_id": "real.tanh",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.tanh",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 27964950.0,
+      "cov": 0.024570835377074014
+    },
+    "ref": {
+      "median_ns": 6421870.5,
+      "cov": 0.017234287166651617
+    },
+    "ratio": 4.354642467486692
+  },
+  {
+    "case_id": "real.tanh",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.extract_diagonal",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 32292757.0,
+      "cov": 0.0032247200826500517
+    },
+    "ref": {
+      "median_ns": 33725044.0,
+      "cov": 0.0010639761343866415
+    },
+    "ratio": 0.9575304631181504
+  },
+  {
+    "case_id": "structural.extract_diagonal",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.extract_diagonal",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 31061769.0,
+      "cov": 0.00910332171686625
+    },
+    "ref": {
+      "median_ns": 13431337.0,
+      "cov": 0.005172445494609842
+    },
+    "ratio": 2.312634177818634
+  },
+  {
+    "case_id": "structural.extract_diagonal",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.pad",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 4794636.75,
+      "cov": 0.005998072948625992
+    },
+    "ref": {
+      "median_ns": 4402358.25,
+      "cov": 0.0246565580196252
+    },
+    "ratio": 1.0891064465278355
+  },
+  {
+    "case_id": "index.pad",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.pad",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1890318.875,
+      "cov": 0.022141101248336976
+    },
+    "ref": {
+      "median_ns": 1760360.5,
+      "cov": 0.07575345388983486
+    },
+    "ratio": 1.0738248642820605
+  },
+  {
+    "case_id": "index.pad",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_axis1",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 2074483.125,
+      "cov": 0.018159868712184047
+    },
+    "ref": {
+      "median_ns": 828704.5625,
+      "cov": 0.0259935061462968
+    },
+    "ratio": 2.50328430525565
+  },
+  {
+    "case_id": "real.reduce_max_axis1",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_axis1",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 552281.65625,
+      "cov": 0.019442061999903882
+    },
+    "ref": {
+      "median_ns": 814426.4375,
+      "cov": 0.01843797383699497
+    },
+    "ratio": 0.6781234385579483
+  },
+  {
+    "case_id": "real.reduce_max_axis1",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.cast_f64_f32",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 33587395.0,
+      "cov": 0.007411670870547966
+    },
+    "ref": {
+      "median_ns": 34509380.0,
+      "cov": 0.002045094340766915
+    },
+    "ratio": 0.9732830610112381
+  },
+  {
+    "case_id": "structural.cast_f64_f32",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.cast_f64_f32",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 13453238.0,
+      "cov": 0.023147964997878644
+    },
+    "ref": {
+      "median_ns": 12643454.0,
+      "cov": 0.0034006724412716754
+    },
+    "ratio": 1.06404768823456
+  },
+  {
+    "case_id": "structural.cast_f64_f32",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.slice",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 4860588.5,
+      "cov": 0.003309297039180984
+    },
+    "ref": {
+      "median_ns": 4688674.75,
+      "cov": 0.006213143320681199
+    },
+    "ratio": 1.0366657444089078
+  },
+  {
+    "case_id": "index.slice",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.slice",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1462801.5,
+      "cov": 0.028816688234019654
+    },
+    "ref": {
+      "median_ns": 1538112.0,
+      "cov": 0.055748383721528946
+    },
+    "ratio": 0.9510370506179003
+  },
+  {
+    "case_id": "index.slice",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.ifft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 8279998.5,
+      "cov": 0.003442592672120805
+    },
+    "ref": {
+      "median_ns": 9905258.0,
+      "cov": 0.031358889718889595
+    },
+    "ratio": 0.8359195187041064
+  },
+  {
+    "case_id": "fft.ifft",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.ifft",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 5165314.5,
+      "cov": 0.02774421455407359
+    },
+    "ref": {
+      "median_ns": 3282327.0,
+      "cov": 0.0020607916890290627
+    },
+    "ratio": 1.5736745607613136
+  },
+  {
+    "case_id": "fft.ifft",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.log1p",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 40447089.0,
+      "cov": 0.003813776213886744
+    },
+    "ref": {
+      "median_ns": 15996727.0,
+      "cov": 0.00395760890192382
+    },
+    "ratio": 2.5284602906582077
+  },
+  {
+    "case_id": "real.log1p",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.log1p",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 10981865.0,
+      "cov": 0.012060310408190323
+    },
+    "ref": {
+      "median_ns": 4356765.0,
+      "cov": 0.0010440844375954421
+    },
+    "ratio": 2.5206466265681073
+  },
+  {
+    "case_id": "real.log1p",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "perm.reverse_15d_3",
+    "threads": 1,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 172739244.0,
+      "cov": 0.0037993938971946314
+    },
+    "ref": {
+      "median_ns": 67075302.0,
+      "cov": 0.0011662680881745135
+    },
+    "ratio": 2.57530326140015
+  },
+  {
+    "case_id": "perm.reverse_15d_3",
+    "threads": 4,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 58404888.0,
+      "cov": 0.0456113829303819
+    },
+    "ref": {
+      "median_ns": 36408315.0,
+      "cov": 0.0007240743105372032
+    },
+    "ratio": 1.604163444531833
+  },
+  {
+    "case_id": "real.cos",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 116439790.0,
+      "cov": 0.0011304514081629411
+    },
+    "ref": {
+      "median_ns": 46577571.0,
+      "cov": 0.002064327396394933
+    },
+    "ratio": 2.499911169691524
+  },
+  {
+    "case_id": "real.cos",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.cos",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 31178780.0,
+      "cov": 0.004133953836574072
+    },
+    "ref": {
+      "median_ns": 12358808.0,
+      "cov": 0.003494196363490259
+    },
+    "ratio": 2.5227983151773214
+  },
+  {
+    "case_id": "real.cos",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.triu",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 34205549.0,
+      "cov": 0.011710267417632557
+    },
+    "ref": {
+      "median_ns": 39281294.0,
+      "cov": 0.006027494200527444
+    },
+    "ratio": 0.8707846793438119
+  },
+  {
+    "case_id": "structural.triu",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.triu",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 10888499.0,
+      "cov": 0.015150419018012371
+    },
+    "ref": {
+      "median_ns": 12221539.0,
+      "cov": 0.003970107910056972
+    },
+    "ratio": 0.8909269937280403
+  },
+  {
+    "case_id": "structural.triu",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.sin",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 115323388.0,
+      "cov": 0.00040178065859819987
+    },
+    "ref": {
+      "median_ns": 49123604.0,
+      "cov": 0.002675810806779882
+    },
+    "ratio": 2.347616595883315
+  },
+  {
+    "case_id": "real.sin",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.sin",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 30414210.0,
+      "cov": 0.0039652802156003985
+    },
+    "ref": {
+      "median_ns": 12847508.0,
+      "cov": 0.005307534301907602
+    },
+    "ratio": 2.367323686430084
+  },
+  {
+    "case_id": "real.sin",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.exp",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 49791722.0,
+      "cov": 0.001383421802555311
+    },
+    "ref": {
+      "median_ns": 21870085.0,
+      "cov": 0.0008662292944778859
+    },
+    "ratio": 2.2767045487020283
+  },
+  {
+    "case_id": "real.exp",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.exp",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 13455493.0,
+      "cov": 0.04086948880026234
+    },
+    "ref": {
+      "median_ns": 6845137.5,
+      "cov": 0.0343695635427338
+    },
+    "ratio": 1.965700908126389
+  },
+  {
+    "case_id": "real.exp",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.tril",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 34972883.0,
+      "cov": 0.0020655772816176045
+    },
+    "ref": {
+      "median_ns": 40319379.0,
+      "cov": 0.007694268247377459
+    },
+    "ratio": 0.8673963703657241
+  },
+  {
+    "case_id": "structural.tril",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.tril",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 12601916.0,
+      "cov": 0.04184894571864679
+    },
+    "ref": {
+      "median_ns": 12941976.0,
+      "cov": 0.006411253603475155
+    },
+    "ratio": 0.9737242597266446
+  },
+  {
+    "case_id": "structural.tril",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.expm1",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 31813986.0,
+      "cov": 0.0013311912924644158
+    },
+    "ref": {
+      "median_ns": 13848512.0,
+      "cov": 0.0006431837546673674
+    },
+    "ratio": 2.2972855134183368
+  },
+  {
+    "case_id": "real.expm1",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.expm1",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 8782464.5,
+      "cov": 0.009194009156721639
+    },
+    "ref": {
+      "median_ns": 4388276.75,
+      "cov": 0.057441809709063776
+    },
+    "ratio": 2.0013469979987017
+  },
+  {
+    "case_id": "real.expm1",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.pow",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 64563082.0,
+      "cov": 0.000667951555079395
+    },
+    "ref": {
+      "median_ns": 30994834.0,
+      "cov": 0.0023965851871444004
+    },
+    "ratio": 2.0830271909183318
+  },
+  {
+    "case_id": "real.pow",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.pow",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 16540040.0,
+      "cov": 0.002085506757354794
+    },
+    "ref": {
+      "median_ns": 8124891.5,
+      "cov": 0.004513010021234029
+    },
+    "ratio": 2.035724415519887
+  },
+  {
+    "case_id": "real.pow",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_sum_axis1",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 976637.4375,
+      "cov": 0.012263377027483913
+    },
+    "ref": {
+      "median_ns": 494834.125,
+      "cov": 0.0001385937648715766
+    },
+    "ratio": 1.9736663018137643
+  },
+  {
+    "case_id": "real.reduce_sum_axis1",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_sum_axis1",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 293137.5,
+      "cov": 0.02961992401629745
+    },
+    "ref": {
+      "median_ns": 125346.6875,
+      "cov": 0.0021576210630907923
+    },
+    "ratio": 2.3386138544746147
+  },
+  {
+    "case_id": "real.reduce_sum_axis1",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_prod_axis1",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 954264.75,
+      "cov": 0.008324247404506971
+    },
+    "ref": {
+      "median_ns": 528354.40625,
+      "cov": 0.012821972309720894
+    },
+    "ratio": 1.806107299781793
+  },
+  {
+    "case_id": "real.reduce_prod_axis1",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_prod_axis1",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 279843.265625,
+      "cov": 0.06839739203106757
+    },
+    "ref": {
+      "median_ns": 129625.6875,
+      "cov": 0.016195289095839716
+    },
+    "ratio": 2.158856558619988
+  },
+  {
+    "case_id": "real.reduce_prod_axis1",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_axis0",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 2322531.375,
+      "cov": 0.0012768759991674788
+    },
+    "ref": {
+      "median_ns": 1304131.5,
+      "cov": 0.005501928487590514
+    },
+    "ratio": 1.780902750221124
+  },
+  {
+    "case_id": "real.reduce_max_axis0",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_axis0",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 595609.78125,
+      "cov": 0.07483499721239266
+    },
+    "ref": {
+      "median_ns": 1272480.6875,
+      "cov": 0.01232925133376384
+    },
+    "ratio": 0.4680698002734914
+  },
+  {
+    "case_id": "real.reduce_max_axis0",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_axis1",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 8297546.5,
+      "cov": 0.0007452740442475033
+    },
+    "ref": {
+      "median_ns": 4957524.0,
+      "cov": 0.05189937923376152
+    },
+    "ratio": 1.6737279537123775
+  },
+  {
+    "case_id": "real.reduce_min_axis1",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_axis1",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 2581552.75,
+      "cov": 0.00794247205120161
+    },
+    "ref": {
+      "median_ns": 4989464.0,
+      "cov": 0.014244965958902909
+    },
+    "ratio": 0.5174008170015857
+  },
+  {
+    "case_id": "real.reduce_min_axis1",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.transpose",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 86855802.0,
+      "cov": 0.011794199348012884
+    },
+    "ref": {
+      "median_ns": 44366759.0,
+      "cov": 0.001998798863394938
+    },
+    "ratio": 1.9576774133986212
+  },
+  {
+    "case_id": "structural.transpose",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.transpose",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 22661495.0,
+      "cov": 0.06575609885457129
+    },
+    "ref": {
+      "median_ns": 44619795.0,
+      "cov": 0.0022215804811027955
+    },
+    "ratio": 0.5078798546698836
+  },
+  {
+    "case_id": "structural.transpose",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "perm.reverse_23d_2",
+    "threads": 1,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 65368879.0,
+      "cov": 0.017390198153000254
+    },
+    "ref": {
+      "median_ns": 38666877.0,
+      "cov": 0.02368163839154451
+    },
+    "ratio": 1.6905652608044865
+  },
+  {
+    "case_id": "perm.reverse_23d_2",
+    "threads": 4,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 19169921.0,
+      "cov": 0.01413556720136829
+    },
+    "ref": {
+      "median_ns": 27038204.0,
+      "cov": 0.0030651276864625604
+    },
+    "ratio": 0.7089938740013945
+  },
+  {
+    "case_id": "real.reduce_min_axis0",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 2119972.5,
+      "cov": 0.002320645577359946
+    },
+    "ref": {
+      "median_ns": 1414017.125,
+      "cov": 0.010471847590237685
+    },
+    "ratio": 1.4992551805198258
+  },
+  {
+    "case_id": "real.reduce_min_axis0",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_axis0",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 548660.125,
+      "cov": 0.0023344460333712394
+    },
+    "ref": {
+      "median_ns": 1441322.375,
+      "cov": 0.018917644111026203
+    },
+    "ratio": 0.38066440549082575
+  },
+  {
+    "case_id": "real.reduce_min_axis0",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.irfft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 8478617.5,
+      "cov": 0.03195825119556902
+    },
+    "ref": {
+      "median_ns": 17906903.0,
+      "cov": 0.0008344557061903612
+    },
+    "ratio": 0.4734831869028385
+  },
+  {
+    "case_id": "fft.irfft",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.irfft",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 5155486.5,
+      "cov": 0.004966428234534043
+    },
+    "ref": {
+      "median_ns": 3800901.0,
+      "cov": 0.009341677958670377
+    },
+    "ratio": 1.3563853675746882
+  },
+  {
+    "case_id": "fft.irfft",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "complex.exp",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 97704897.0,
+      "cov": 0.000754627543322667
+    },
+    "ref": {
+      "median_ns": 62249336.0,
+      "cov": 0.020663829817813263
+    },
+    "ratio": 1.5695733204286708
+  },
+  {
+    "case_id": "complex.exp",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "complex.exp",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 25180637.0,
+      "cov": 0.005166020886939926
+    },
+    "ref": {
+      "median_ns": 60920294.0,
+      "cov": 0.002931456899492525
+    },
+    "ratio": 0.41333741757713777
+  },
+  {
+    "case_id": "complex.exp",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "linalg.slogdet",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 34701412.0,
+      "cov": 0.0020134228987506034
+    },
+    "ref": {
+      "median_ns": 27216189.0,
+      "cov": 0.0007219357418009237
+    },
+    "ratio": 1.2750283296460059
+  },
+  {
+    "case_id": "linalg.slogdet",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "linalg.slogdet",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 16097666.0,
+      "cov": 0.00808910456476065
+    },
+    "ref": {
+      "median_ns": 7189651.0,
+      "cov": 0.035923055459679276
+    },
+    "ratio": 2.239005203451461
+  },
+  {
+    "case_id": "linalg.slogdet",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "perm.transpose_3d_256_201",
+    "threads": 1,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 78200728.0,
+      "cov": 0.002027671313497747
+    },
+    "ref": {
+      "median_ns": 52757095.0,
+      "cov": 0.0028395700805913006
+    },
+    "ratio": 1.4822788859015077
+  },
+  {
+    "case_id": "perm.transpose_3d_256_201",
+    "threads": 4,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 21100436.0,
+      "cov": 0.009282603453858127
+    },
+    "ref": {
+      "median_ns": 14989841.0,
+      "cov": 0.018391474060462744
+    },
+    "ratio": 1.407649087138416
+  },
+  {
+    "case_id": "real.reduce_max_all",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 18307748.0,
+      "cov": 0.00037593158742428394
+    },
+    "ref": {
+      "median_ns": 12268558.0,
+      "cov": 0.02550829532100051
+    },
+    "ratio": 1.492249374376353
+  },
+  {
+    "case_id": "real.reduce_max_all",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_all",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 5478224.0,
+      "cov": 0.017774313722119305
+    },
+    "ref": {
+      "median_ns": 11801619.0,
+      "cov": 0.02133115722706993
+    },
+    "ratio": 0.4641925823906025
+  },
+  {
+    "case_id": "real.reduce_max_all",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.dynamic_update_slice",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 4815020.25,
+      "cov": 0.004082502650816365
+    },
+    "ref": {
+      "median_ns": 3480450.0,
+      "cov": 0.08248131265806641
+    },
+    "ratio": 1.3834476145326036
+  },
+  {
+    "case_id": "index.dynamic_update_slice",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "jax",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1610142.625,
+      "cov": 0.029847668327131448
+    },
+    "ref": {
+      "median_ns": 1665148.75,
+      "cov": 0.05798623600529467
+    },
+    "ratio": 0.9669662395026271
+  },
+  {
+    "case_id": "fft.rfft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 7875347.0,
+      "cov": 0.0030506191734510847
+    },
+    "ref": {
+      "median_ns": 17306553.0,
+      "cov": 0.0018783349891869927
+    },
+    "ratio": 0.4550500033137737
+  },
+  {
+    "case_id": "fft.rfft",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.rfft",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 4657533.75,
+      "cov": 0.005285360508738333
+    },
+    "ref": {
+      "median_ns": 3883193.5,
+      "cov": 0.002117320357180547
+    },
+    "ratio": 1.199408103150152
+  },
+  {
+    "case_id": "fft.rfft",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "perm.cyclic_15d_3",
+    "threads": 1,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 42395367.0,
+      "cov": 0.0008101830813602228
+    },
+    "ref": {
+      "median_ns": 31535191.0,
+      "cov": 0.0015858237639214208
+    },
+    "ratio": 1.3443827563942772
+  },
+  {
+    "case_id": "perm.cyclic_15d_3",
+    "threads": 4,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 14862392.0,
+      "cov": 0.1295887687789643
+    },
+    "ref": {
+      "median_ns": 30931254.0,
+      "cov": 0.0029307506671597057
+    },
+    "ratio": 0.480497557583666
+  },
+  {
+    "case_id": "real.reduce_min_all",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 16401990.0,
+      "cov": 0.0013752664264234924
+    },
+    "ref": {
+      "median_ns": 12872906.0,
+      "cov": 0.015055304189384833
+    },
+    "ratio": 1.2741481993265547
+  },
+  {
+    "case_id": "real.reduce_min_all",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_all",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 5577876.5,
+      "cov": 0.13652376899876786
+    },
+    "ref": {
+      "median_ns": 12757629.0,
+      "cov": 0.009352203342407262
+    },
+    "ratio": 0.4372188985900123
+  },
+  {
+    "case_id": "real.reduce_min_all",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "perm.tn_light_415_24d_scattered_to_colmajor",
+    "threads": 1,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 49228512.0,
+      "cov": 0.005725130845660673
+    },
+    "ref": {
+      "median_ns": 38167147.0,
+      "cov": 0.001038874945694142
+    },
+    "ratio": 1.2898137762301174
+  },
+  {
+    "case_id": "perm.tn_light_415_24d_scattered_to_colmajor",
+    "threads": 4,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 14796677.0,
+      "cov": 0.004112675686656283
+    },
+    "ref": {
+      "median_ns": 12955411.0,
+      "cov": 0.03493999746438677
+    },
+    "ratio": 1.1421233182027186
+  },
+  {
+    "case_id": "structural.broadcast_in_dim",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 62453460.0,
+      "cov": 0.010959627525352164
+    },
+    "ref": {
+      "median_ns": 59178104.0,
+      "cov": 0.0022394414455581516
+    },
+    "ratio": 1.0553474305293729
+  },
+  {
+    "case_id": "structural.broadcast_in_dim",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "structural.broadcast_in_dim",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 23959388.0,
+      "cov": 0.008988164638596127
+    },
+    "ref": {
+      "median_ns": 18744971.0,
+      "cov": 0.04557045957749501
+    },
+    "ratio": 1.2781768507403932
+  },
+  {
+    "case_id": "structural.broadcast_in_dim",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "perm.transpose_3d_256_102",
+    "threads": 1,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 56806078.0,
+      "cov": 0.0012281763249885587
+    },
+    "ref": {
+      "median_ns": 42874349.0,
+      "cov": 0.0019104918354280417
+    },
+    "ratio": 1.3249432195460273
+  },
+  {
+    "case_id": "perm.transpose_3d_256_102",
+    "threads": 4,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 15925643.0,
+      "cov": 0.007696268004968153
+    },
+    "ref": {
+      "median_ns": 13347209.0,
+      "cov": 0.005155994877340138
+    },
+    "ratio": 1.1931815108312158
+  },
+  {
+    "case_id": "fft.fft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 18956289.0,
+      "cov": 0.0012462504214885923
+    },
+    "ref": {
+      "median_ns": 15751465.0,
+      "cov": 0.008276550192016353
+    },
+    "ratio": 1.20346196369671
+  },
+  {
+    "case_id": "fft.fft",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.fft",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 9248822.5,
+      "cov": 0.005256839880562508
+    },
+    "ref": {
+      "median_ns": 15506113.0,
+      "cov": 0.005072784904262502
+    },
+    "ratio": 0.5964629885000838
+  },
+  {
+    "case_id": "fft.fft",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.log",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 46414594.0,
+      "cov": 0.00047112262187826447
+    },
+    "ref": {
+      "median_ns": 39760477.0,
+      "cov": 0.002478416556917818
+    },
+    "ratio": 1.1673550596488065
+  },
+  {
+    "case_id": "real.log",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.log",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 13352318.0,
+      "cov": 0.014277075080566344
+    },
+    "ref": {
+      "median_ns": 10870446.0,
+      "cov": 0.021453043648861587
+    },
+    "ratio": 1.228313723282375
+  },
+  {
+    "case_id": "real.log",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "perm.tn_light_415_24d_contiguous_same_perm",
+    "threads": 1,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 46460261.0,
+      "cov": 0.0057957799150240305
+    },
+    "ref": {
+      "median_ns": 36506270.0,
+      "cov": 0.0017128254359622419
+    },
+    "ratio": 1.2726652435321384
+  },
+  {
+    "case_id": "perm.tn_light_415_24d_contiguous_same_perm",
+    "threads": 4,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 15190048.0,
+      "cov": 0.012886961882263962
+    },
+    "ref": {
+      "median_ns": 11970677.0,
+      "cov": 0.029931707275220914
+    },
+    "ratio": 1.2689380892993771
+  },
+  {
+    "case_id": "perm.rotation_6d_32_32_32_32_16_16",
+    "threads": 1,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 791239515.0,
+      "cov": 0.0005124236840051396
+    },
+    "ref": {
+      "median_ns": 638252148.0,
+      "cov": 0.00026399473693428723
+    },
+    "ratio": 1.2396973789738033
+  },
+  {
+    "case_id": "perm.rotation_6d_32_32_32_32_16_16",
+    "threads": 4,
+    "path": "materialize",
+    "reference": "strided-rs",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 218030162.0,
+      "cov": 0.00044963972977256643
+    },
+    "ref": {
+      "median_ns": 244236651.0,
+      "cov": 0.0017636126198695996
+    },
+    "ratio": 0.8927004243928975
+  },
+  {
+    "case_id": "index.scatter",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1294195.125,
+      "cov": 0.008027516135529721
+    },
+    "ref": {
+      "median_ns": 786734.8125,
+      "cov": 0.03704816019085087
+    },
+    "ratio": 1.6450207928227403
+  },
+  {
+    "case_id": "index.scatter",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.scatter",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1336522.25,
+      "cov": 0.007512941916513045
+    },
+    "ref": {
+      "median_ns": 735217.8125,
+      "cov": 0.059499754744478016
+    },
+    "ratio": 1.8178589083082097
+  },
+  {
+    "case_id": "index.scatter",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  }
+]

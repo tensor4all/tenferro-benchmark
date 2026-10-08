@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 3
+MANIFEST_VERSION = 4
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -245,6 +245,16 @@ def b1_op_cases():
                            "PyTorch only. ")
                         + "PyTorch is the external reference."
                         + (" #2030 tracks the confirmed borrowed-session exact GELU CPU gap." if op == "gelu" else ""))))
+    for row in rows:
+        if row["params"]["op"] == "gelu":
+            continue  # Exact GELU belongs to the existing #2030 report.
+        row["issues"].append("#2032")
+        row["intent"] += " #2032 tracks this confirmed current-main activation workload."
+        if row["arm"] in ("eager-single-call", "pytorch"):
+            row["followup_mwe"] = dict(case_id="activation." + row["params"]["op"],
+                                      rust_path="eager-shared", reference_path="pytorch",
+                                      path="eager-shared" if row["arm"] == "eager-single-call" else "pytorch")
+            row["execution_path"] = row["followup_mwe"]["path"]
     for op in ("softmax", "log_softmax", "masked_softmax"):
         for length in (64, 512):
             batch = 8
@@ -307,7 +317,7 @@ def b1_op_cases():
 
 
 def generate_cases():
-    return decode_cases() + other_cases() + b1_op_cases() + cpu_gap_cases()
+    return decode_cases() + other_cases() + b1_op_cases() + cpu_gap_cases() + cpu_followup_cases()
 
 
 def cpu_gap_cases():
@@ -335,6 +345,83 @@ def cpu_gap_cases():
                 profiles=("amd-cpu", "mac-cpu"), intent=f"tenferro-rs {issue}: {intent}"))
     return rows
 
+
+
+def cpu_followup_cases():
+    """Confirmed current-main public operations and their independent references.
+
+    The standalone crate avoids the legacy root runner's provider-feature paths.
+    Exact activation workloads already exist in b1_op_cases; annotate them there.
+    """
+    catalog = {c["id"]: c for c in json.loads(
+        (ROOT / "mwe/cpu_followup/cases.json").read_text())}
+    groups = {2021: ['structural.broadcast_in_dim'],
+     2033: ['real.tanh',
+            'real.log1p',
+            'real.cos',
+            'real.sin',
+            'real.exp',
+            'real.expm1',
+            'real.pow',
+            'complex.exp',
+            'real.log'],
+     2034: ['real.reduce_max_axis1',
+            'real.reduce_prod_axis1',
+            'real.reduce_sum_axis1',
+            'real.reduce_max_axis0',
+            'real.reduce_min_axis1',
+            'real.reduce_min_axis0',
+            'real.reduce_max_all',
+            'real.reduce_min_all'],
+     2035: ['complex.norm_fro'],
+     2036: ['index.gather', 'index.scatter', 'index.dynamic_update_slice'],
+     2037: ['perm.reverse_15d_3',
+            'structural.transpose',
+            'perm.reverse_23d_2',
+            'perm.transpose_3d_256_201',
+            'perm.cyclic_15d_3',
+            'perm.transpose_3d_256_102',
+            'perm.tn_light_415_24d_scattered_to_colmajor',
+            'perm.tn_light_415_24d_contiguous_same_perm',
+            'perm.rotation_6d_32_32_32_32_16_16'],
+     2038: ['structural.extract_diagonal'],
+     2039: ['fft.irfft', 'fft.rfft', 'fft.fft', 'fft.ifft'],
+     2040: ['metadata.transpose_view', 'metadata.slice_view', 'metadata.reshape_view']}
+    rows = []
+    for issue, ids in groups.items():
+        for cid in ids:
+            c = catalog[cid]
+            path = c["paths"][0]
+            if c["category"] == "fft":
+                reference = "mkl-dfti"
+            elif c["category"] == "perm":
+                reference = "strided-rs"
+            elif c["category"] == "metadata" or c["source_reference"] == "julia-base":
+                reference = "julia-base"
+            elif cid == "index.dynamic_update_slice" or c["source_reference"] == "jax-cpu":
+                reference = "jax"
+            else:
+                reference = "pytorch"
+            params = dict(case_id=cid, rust_path=path, reference_path=reference,
+                          fixture=c["fixture"])
+            target = "followup_" + cid.replace(".", "_") + "_" + path
+            for arm in (path, reference):
+                backend = "tenferro-rs" if arm == path else {
+                    "pytorch": "pytorch-cpu", "jax": "jax-cpu",
+                    "julia-base": "julia-base", "strided-rs": "strided-rs",
+                    "mkl-dfti": "mkl-dfti"}[arm]
+                row = case("followup_" + cid.replace(".", "_") + "_" + arm,
+                           (f"#{issue}",), "cpu_followup_mwe", params,
+                           arm=arm, backend=backend, dtype=c["dtype"],
+                           reference_for=target if arm != path else None,
+                           intent=f"tenferro-rs #{issue}: {cid}, fixed public-API fixture "
+                                  f"{c['fixture']}; setup untimed, outputs retained, "
+                                  "borrowed session except pure metadata. Paired reference "
+                                  "path is separately labelled; trace is scope-ineligible.")
+                row["execution_path"] = ("jax-compiled" if arm == "jax" else
+                                         "mkl-dfti-cached" if arm == "mkl-dfti" else arm)
+                rows.append(row)
+    return rows
 
 def generate_gpu_cases():
     """gpu/perf_issues (CUDA): run by benchmark_gpu_perf_issues on the local device."""

@@ -188,6 +188,7 @@
         "provider": { "$ref": "#/$defs/provider_name" },
         "dot_backend": { "$ref": "#/$defs/xla_backend_name" },
         "lapack_provider": { "$ref": "#/$defs/provider_name" },
+        "config": { "type": "string", "minLength": 1 },
         "blas_info": { "type": ["string", "null"], "minLength": 1 },
         "lapack_info": { "type": ["string", "null"], "minLength": 1 },
         "library": { "type": ["string", "null"], "minLength": 1 },

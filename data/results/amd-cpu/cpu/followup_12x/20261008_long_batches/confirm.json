@@ -1,0 +1,106 @@
+[
+  {
+    "case_id": "metadata.transpose_view",
+    "threads": 1,
+    "path": "metadata",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 305.2872390628714,
+    "round_ratios": [
+      298.4644908664902,
+      312.10998725925253,
+      329.30048317358376,
+      259.76790401487096
+    ],
+    "aa_ratio": 0.9923649370518478,
+    "aa_round_max_relative_spread": 0.0447967812729676,
+    "max_cov": 0.15539172770450044,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 213.60968589782715,
+    "reference_ns": 0.6868088952785072
+  },
+  {
+    "case_id": "index.scatter",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "status": "confirmed",
+    "ratio": 1.6888135525170638,
+    "round_ratios": [
+      1.6882393691167539,
+      1.7474716978500615,
+      1.6893877359173737,
+      1.637857807877182
+    ],
+    "aa_ratio": 1.003033422107222,
+    "aa_round_max_relative_spread": 0.00896661341734517,
+    "max_cov": 0.11152195345759279,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 1035847.015625,
+    "reference_ns": 609441.3046875
+  },
+  {
+    "case_id": "linalg.slogdet",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "status": "inconclusive",
+    "ratio": 1.326706826414184,
+    "round_ratios": [
+      1.8907039221005357,
+      1.1501455574711201,
+      1.4315663852935059,
+      1.221847267534862
+    ],
+    "aa_ratio": 0.8735007170211881,
+    "aa_round_max_relative_spread": 0.5604482215638815,
+    "max_cov": 0.3089164449865053,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 9255664.1875,
+    "reference_ns": 6908239.75
+  },
+  {
+    "case_id": "index.dynamic_update_slice",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "jax",
+    "status": "confirmed",
+    "ratio": 1.3685880302137388,
+    "round_ratios": [
+      1.5091177690028756,
+      1.3019908825899884,
+      1.382395973168174,
+      1.3547800872593034
+    ],
+    "aa_ratio": 1.0137238568022635,
+    "aa_round_max_relative_spread": 0.03146683135203965,
+    "max_cov": 0.16383267998350512,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 4873182.65625,
+    "reference_ns": 3575654.96875
+  }
+]

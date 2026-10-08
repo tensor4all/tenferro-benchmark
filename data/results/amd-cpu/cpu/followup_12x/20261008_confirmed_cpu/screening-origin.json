@@ -1,0 +1,6 @@
+{
+  "cpu_wheel_scan": "../20261008_cpu_wheel/scan.json",
+  "additive_scatter_scan": "../20261008_scatter_add/scan.json",
+  "confirmation_source": "b42c417",
+  "screening_only": "Earlier CUDA-wheel and fixture/JIT/serialization diagnostics are superseded and are not performance evidence."
+}

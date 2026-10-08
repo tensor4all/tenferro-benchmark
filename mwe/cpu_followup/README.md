@@ -9,7 +9,8 @@ screening evidence only. The current reproducers use the public APIs of
 started), after its CPU provider feature/API changes.
 
 Use the Linux CPU devcontainer, which supplies oneMKL and the MKL-backed PyTorch
-wheel. No CUDA or CPU affinity is used. First inspect/pull `extern/tenferro-rs`
+wheel. No CUDA or external taskset/numactl pinning is used; the public CPU backend
+retains its internal managed placement. First inspect/pull `extern/tenferro-rs`
 when it is on main. Preserve a deliberately pinned checkout. Build sequentially
 before timing; stop other benchmarks, compilers and tests.
 
@@ -138,3 +139,20 @@ Never overwrite an earlier declaration when changing a phase.
 The transpose metadata repro uses 2×2 owned inputs. Metadata batches may retain
 up to two million operations, still bounded by the 512 MiB input/descriptor
 budget, to give Julia a longer interval for its specialized fixed permutation.
+
+Archived per-process files are losslessly packed in each campaign's
+`processes.jsonl.gz` to keep the PR reviewable. Every line stores the original
+filename and its exact content, including commands, batch durations/counts,
+source revisions and validation signatures. Restore them locally with:
+
+```bash
+python3 - CAMPAIGN_DIRECTORY <<'PY'
+import gzip, json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+with gzip.open(root / 'processes.jsonl.gz', 'rt') as stream:
+    for line in stream:
+        item = json.loads(line)
+        (root / item['file']).write_text(item['content'])
+PY
+```

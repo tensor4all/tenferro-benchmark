@@ -2390,7 +2390,8 @@
  {
   "id": "activation_erf_f32_eager-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "eager-single-call",
@@ -2408,12 +2409,20 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "followup_mwe": {
+   "case_id": "activation.erf",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "eager-shared"
+  },
+  "execution_path": "eager-shared"
  },
  {
   "id": "activation_erf_f32_session-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "session-single-call",
@@ -2431,12 +2440,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_erf_f32_pytorch_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "pytorch",
@@ -2454,13 +2464,21 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference.",
-  "reference_for": "activation_erf_f32_eager-single-call_1024x64"
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "reference_for": "activation_erf_f32_eager-single-call_1024x64",
+  "followup_mwe": {
+   "case_id": "activation.erf",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "pytorch"
+  },
+  "execution_path": "pytorch"
  },
  {
   "id": "activation_sigmoid_f32_eager-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "eager-single-call",
@@ -2478,12 +2496,20 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "followup_mwe": {
+   "case_id": "activation.sigmoid",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "eager-shared"
+  },
+  "execution_path": "eager-shared"
  },
  {
   "id": "activation_sigmoid_f32_session-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "session-single-call",
@@ -2501,12 +2527,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_sigmoid_f32_eager-composed_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "eager-composed",
@@ -2524,13 +2551,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_sigmoid_f32_eager-single-call_1024x64"
  },
  {
   "id": "activation_sigmoid_f32_pytorch_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "pytorch",
@@ -2548,13 +2576,21 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
-  "reference_for": "activation_sigmoid_f32_eager-single-call_1024x64"
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "reference_for": "activation_sigmoid_f32_eager-single-call_1024x64",
+  "followup_mwe": {
+   "case_id": "activation.sigmoid",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "pytorch"
+  },
+  "execution_path": "pytorch"
  },
  {
   "id": "activation_silu_f32_eager-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "eager-single-call",
@@ -2572,12 +2608,20 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "followup_mwe": {
+   "case_id": "activation.silu",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "eager-shared"
+  },
+  "execution_path": "eager-shared"
  },
  {
   "id": "activation_silu_f32_session-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "session-single-call",
@@ -2595,12 +2639,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_silu_f32_eager-composed_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "eager-composed",
@@ -2618,13 +2663,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_silu_f32_eager-single-call_1024x64"
  },
  {
   "id": "activation_silu_f32_pytorch_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "pytorch",
@@ -2642,13 +2688,21 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
-  "reference_for": "activation_silu_f32_eager-single-call_1024x64"
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "reference_for": "activation_silu_f32_eager-single-call_1024x64",
+  "followup_mwe": {
+   "case_id": "activation.silu",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "pytorch"
+  },
+  "execution_path": "pytorch"
  },
  {
   "id": "activation_softplus_f32_eager-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "eager-single-call",
@@ -2666,12 +2720,20 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "followup_mwe": {
+   "case_id": "activation.softplus",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "eager-shared"
+  },
+  "execution_path": "eager-shared"
  },
  {
   "id": "activation_softplus_f32_session-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "session-single-call",
@@ -2689,12 +2751,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_softplus_f32_eager-composed_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "eager-composed",
@@ -2712,13 +2775,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_softplus_f32_eager-single-call_1024x64"
  },
  {
   "id": "activation_softplus_f32_pytorch_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "pytorch",
@@ -2736,8 +2800,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
-  "reference_for": "activation_softplus_f32_eager-single-call_1024x64"
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "reference_for": "activation_softplus_f32_eager-single-call_1024x64",
+  "followup_mwe": {
+   "case_id": "activation.softplus",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "pytorch"
+  },
+  "execution_path": "pytorch"
  },
  {
   "id": "activation_gelu_f32_eager-single-call_1024x64",
@@ -2815,7 +2886,8 @@
  {
   "id": "activation_gelu_tanh_f32_eager-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "eager-single-call",
@@ -2833,12 +2905,20 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "followup_mwe": {
+   "case_id": "activation.gelu_tanh",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "eager-shared"
+  },
+  "execution_path": "eager-shared"
  },
  {
   "id": "activation_gelu_tanh_f32_session-single-call_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "session-single-call",
@@ -2856,12 +2936,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_gelu_tanh_f32_eager-composed_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "eager-composed",
@@ -2879,13 +2960,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_gelu_tanh_f32_eager-single-call_1024x64"
  },
  {
   "id": "activation_gelu_tanh_f32_pytorch_1024x64",
   "issues": [
-   "#1975"
+   "#1975",
+   "#2032"
   ],
   "kind": "activation",
   "arm": "pytorch",
@@ -2903,8 +2985,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference.",
-  "reference_for": "activation_gelu_tanh_f32_eager-single-call_1024x64"
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "reference_for": "activation_gelu_tanh_f32_eager-single-call_1024x64",
+  "followup_mwe": {
+   "case_id": "activation.gelu_tanh",
+   "rust_path": "eager-shared",
+   "reference_path": "pytorch",
+   "path": "pytorch"
+  },
+  "execution_path": "pytorch"
  },
  {
   "id": "softmax_f32_eager-single-call_len64_b8",
@@ -3820,5 +3909,2706 @@
   ],
   "intent": "tenferro-rs #2029: Materializing reshape_read of a borrowed owned f64 tensor returns a fresh column-major [8192,4096] output. Reference: clone of the matching PyTorch view, prepared outside timing; metadata-only reshape is not the comparator.",
   "reference_for": "reshape_f64_concrete-shared_n33554432_to8192x4096"
+ },
+ {
+  "id": "followup_structural_broadcast_in_dim_direct-shared",
+  "issues": [
+   "#2021"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "structural.broadcast_in_dim",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     8192,
+     1
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2021: structural.broadcast_in_dim, fixed public-API fixture {'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_structural_broadcast_in_dim_pytorch",
+  "issues": [
+   "#2021"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "structural.broadcast_in_dim",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     8192,
+     1
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2021: structural.broadcast_in_dim, fixed public-API fixture {'input_shape': [8192, 1], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_structural_broadcast_in_dim_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_real_tanh_direct-shared",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.tanh",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.tanh, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_tanh_jax",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "jax",
+  "backend": "jax-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.tanh",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "jax",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.tanh, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_tanh_direct-shared",
+  "execution_path": "jax-compiled"
+ },
+ {
+  "id": "followup_real_log1p_direct-shared",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.log1p",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     4194304
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.log1p, fixed public-API fixture {'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_log1p_pytorch",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.log1p",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     4194304
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.log1p, fixed public-API fixture {'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_log1p_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_real_cos_direct-shared",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.cos",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.cos, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_cos_pytorch",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.cos",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.cos, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_cos_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_real_sin_direct-shared",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.sin",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.sin, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_sin_pytorch",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.sin",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.sin, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_sin_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_real_exp_direct-shared",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.exp",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.exp, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_exp_jax",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "jax",
+  "backend": "jax-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.exp",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "jax",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.exp, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_exp_direct-shared",
+  "execution_path": "jax-compiled"
+ },
+ {
+  "id": "followup_real_expm1_direct-shared",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.expm1",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     4194304
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.expm1, fixed public-API fixture {'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_expm1_jax",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "jax",
+  "backend": "jax-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.expm1",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     4194304
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "jax",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.expm1, fixed public-API fixture {'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_expm1_direct-shared",
+  "execution_path": "jax-compiled"
+ },
+ {
+  "id": "followup_real_pow_direct-shared",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.pow",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     4194304
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.pow, fixed public-API fixture {'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_pow_pytorch",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.pow",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     4194304
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.pow, fixed public-API fixture {'input_shape': [4194304], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_pow_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_complex_exp_direct-shared",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "case_id": "complex.exp",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     4194304
+    ],
+    "dtype": "c64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: complex.exp, fixed public-API fixture {'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_complex_exp_julia-base",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "c64",
+  "params": {
+   "case_id": "complex.exp",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     4194304
+    ],
+    "dtype": "c64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: complex.exp, fixed public-API fixture {'input_shape': [4194304], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_complex_exp_direct-shared",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_real_log_direct-shared",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.log",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.log, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_log_pytorch",
+  "issues": [
+   "#2033"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.log",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     8388608
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2033: real.log, fixed public-API fixture {'input_shape': [8388608], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_log_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_real_reduce_max_axis1_direct-shared",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_max_axis1",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_max_axis1, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_reduce_max_axis1_julia-base",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_max_axis1",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_max_axis1, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_reduce_max_axis1_direct-shared",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_real_reduce_prod_axis1_direct-shared",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_prod_axis1",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_prod_axis1, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_reduce_prod_axis1_pytorch",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_prod_axis1",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_prod_axis1, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_reduce_prod_axis1_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_real_reduce_sum_axis1_direct-shared",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_sum_axis1",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_sum_axis1, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_reduce_sum_axis1_pytorch",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_sum_axis1",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_sum_axis1, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_reduce_sum_axis1_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_real_reduce_max_axis0_direct-shared",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_max_axis0",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_max_axis0, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_reduce_max_axis0_julia-base",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_max_axis0",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_max_axis0, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_reduce_max_axis0_direct-shared",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_real_reduce_min_axis1_direct-shared",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_min_axis1",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     4096,
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_min_axis1, fixed public-API fixture {'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_reduce_min_axis1_julia-base",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_min_axis1",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     4096,
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_min_axis1, fixed public-API fixture {'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_reduce_min_axis1_direct-shared",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_real_reduce_min_axis0_direct-shared",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_min_axis0",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_min_axis0, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_reduce_min_axis0_julia-base",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_min_axis0",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2048,
+     2048
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_min_axis0, fixed public-API fixture {'input_shape': [2048, 2048], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_reduce_min_axis0_direct-shared",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_real_reduce_max_all_direct-shared",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_max_all",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     8192,
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_max_all, fixed public-API fixture {'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_reduce_max_all_julia-base",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_max_all",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     8192,
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_max_all, fixed public-API fixture {'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_reduce_max_all_direct-shared",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_real_reduce_min_all_direct-shared",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_min_all",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     8192,
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_min_all, fixed public-API fixture {'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_real_reduce_min_all_julia-base",
+  "issues": [
+   "#2034"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "case_id": "real.reduce_min_all",
+   "rust_path": "direct-shared",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     8192,
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2034: real.reduce_min_all, fixed public-API fixture {'input_shape': [8192, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_real_reduce_min_all_direct-shared",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_complex_norm_fro_direct-shared",
+  "issues": [
+   "#2035"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "case_id": "complex.norm_fro",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     2048,
+     1536
+    ],
+    "dtype": "c64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2035: complex.norm_fro, fixed public-API fixture {'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_complex_norm_fro_jax",
+  "issues": [
+   "#2035"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "jax",
+  "backend": "jax-cpu",
+  "dtype": "c64",
+  "params": {
+   "case_id": "complex.norm_fro",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     2048,
+     1536
+    ],
+    "dtype": "c64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "jax",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2035: complex.norm_fro, fixed public-API fixture {'input_shape': [2048, 1536], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_complex_norm_fro_direct-shared",
+  "execution_path": "jax-compiled"
+ },
+ {
+  "id": "followup_index_gather_direct-shared",
+  "issues": [
+   "#2036"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "index.gather",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     262144
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2036: index.gather, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_index_gather_jax",
+  "issues": [
+   "#2036"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "jax",
+  "backend": "jax-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "index.gather",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     262144
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "jax",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2036: index.gather, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_index_gather_direct-shared",
+  "execution_path": "jax-compiled"
+ },
+ {
+  "id": "followup_index_scatter_direct-shared",
+  "issues": [
+   "#2036"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "index.scatter",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     262144
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2036: index.scatter, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_index_scatter_pytorch",
+  "issues": [
+   "#2036"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "index.scatter",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     262144
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2036: index.scatter, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_index_scatter_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_index_dynamic_update_slice_direct-shared",
+  "issues": [
+   "#2036"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "index.dynamic_update_slice",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     2097152
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2036: index.dynamic_update_slice, fixed public-API fixture {'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_index_dynamic_update_slice_jax",
+  "issues": [
+   "#2036"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "jax",
+  "backend": "jax-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "index.dynamic_update_slice",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     2097152
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "jax",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2036: index.dynamic_update_slice, fixed public-API fixture {'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_index_dynamic_update_slice_direct-shared",
+  "execution_path": "jax-compiled"
+ },
+ {
+  "id": "followup_perm_reverse_15d_3_materialize",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "materialize",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.reverse_15d_3",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "materialize",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.reverse_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "materialize"
+ },
+ {
+  "id": "followup_perm_reverse_15d_3_strided-rs",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "strided-rs",
+  "backend": "strided-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.reverse_15d_3",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "strided-rs",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.reverse_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_perm_reverse_15d_3_materialize",
+  "execution_path": "strided-rs"
+ },
+ {
+  "id": "followup_structural_transpose_direct-shared",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "structural.transpose",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     4096,
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: structural.transpose, fixed public-API fixture {'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_structural_transpose_pytorch",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "structural.transpose",
+   "rust_path": "direct-shared",
+   "reference_path": "pytorch",
+   "fixture": {
+    "input_shape": [
+     4096,
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: structural.transpose, fixed public-API fixture {'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_structural_transpose_direct-shared",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "followup_perm_reverse_23d_2_materialize",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "materialize",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.reverse_23d_2",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "materialize",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.reverse_23d_2, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "materialize"
+ },
+ {
+  "id": "followup_perm_reverse_23d_2_strided-rs",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "strided-rs",
+  "backend": "strided-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.reverse_23d_2",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "strided-rs",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.reverse_23d_2, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_perm_reverse_23d_2_materialize",
+  "execution_path": "strided-rs"
+ },
+ {
+  "id": "followup_perm_transpose_3d_256_201_materialize",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "materialize",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.transpose_3d_256_201",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     256,
+     256,
+     256
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "materialize",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.transpose_3d_256_201, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "materialize"
+ },
+ {
+  "id": "followup_perm_transpose_3d_256_201_strided-rs",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "strided-rs",
+  "backend": "strided-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.transpose_3d_256_201",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     256,
+     256,
+     256
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "strided-rs",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.transpose_3d_256_201, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_perm_transpose_3d_256_201_materialize",
+  "execution_path": "strided-rs"
+ },
+ {
+  "id": "followup_perm_cyclic_15d_3_materialize",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "materialize",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.cyclic_15d_3",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "materialize",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.cyclic_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "materialize"
+ },
+ {
+  "id": "followup_perm_cyclic_15d_3_strided-rs",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "strided-rs",
+  "backend": "strided-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.cyclic_15d_3",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3,
+     3
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "strided-rs",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.cyclic_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_perm_cyclic_15d_3_materialize",
+  "execution_path": "strided-rs"
+ },
+ {
+  "id": "followup_perm_transpose_3d_256_102_materialize",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "materialize",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.transpose_3d_256_102",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     256,
+     256,
+     256
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "materialize",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.transpose_3d_256_102, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "materialize"
+ },
+ {
+  "id": "followup_perm_transpose_3d_256_102_strided-rs",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "strided-rs",
+  "backend": "strided-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.transpose_3d_256_102",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     256,
+     256,
+     256
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "strided-rs",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.transpose_3d_256_102, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_perm_transpose_3d_256_102_materialize",
+  "execution_path": "strided-rs"
+ },
+ {
+  "id": "followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "materialize",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.tn_light_415_24d_scattered_to_colmajor",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "materialize",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_scattered_to_colmajor, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "materialize"
+ },
+ {
+  "id": "followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "strided-rs",
+  "backend": "strided-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.tn_light_415_24d_scattered_to_colmajor",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "strided-rs",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_scattered_to_colmajor, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize",
+  "execution_path": "strided-rs"
+ },
+ {
+  "id": "followup_perm_tn_light_415_24d_contiguous_same_perm_materialize",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "materialize",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.tn_light_415_24d_contiguous_same_perm",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "materialize",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_contiguous_same_perm, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "materialize"
+ },
+ {
+  "id": "followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "strided-rs",
+  "backend": "strided-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.tn_light_415_24d_contiguous_same_perm",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "strided-rs",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_contiguous_same_perm, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_perm_tn_light_415_24d_contiguous_same_perm_materialize",
+  "execution_path": "strided-rs"
+ },
+ {
+  "id": "followup_perm_rotation_6d_32_32_32_32_16_16_materialize",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "materialize",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.rotation_6d_32_32_32_32_16_16",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     32,
+     32,
+     32,
+     32,
+     16,
+     16
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "materialize",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.rotation_6d_32_32_32_32_16_16, fixed public-API fixture {'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "materialize"
+ },
+ {
+  "id": "followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs",
+  "issues": [
+   "#2037"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "strided-rs",
+  "backend": "strided-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "perm.rotation_6d_32_32_32_32_16_16",
+   "rust_path": "materialize",
+   "reference_path": "strided-rs",
+   "fixture": {
+    "input_shape": [
+     32,
+     32,
+     32,
+     32,
+     16,
+     16
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "strided-rs",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2037: perm.rotation_6d_32_32_32_32_16_16, fixed public-API fixture {'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_perm_rotation_6d_32_32_32_32_16_16_materialize",
+  "execution_path": "strided-rs"
+ },
+ {
+  "id": "followup_structural_extract_diagonal_direct-shared",
+  "issues": [
+   "#2038"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "structural.extract_diagonal",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     8388608,
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2038: structural.extract_diagonal, fixed public-API fixture {'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_structural_extract_diagonal_jax",
+  "issues": [
+   "#2038"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "jax",
+  "backend": "jax-cpu",
+  "dtype": "f64",
+  "params": {
+   "case_id": "structural.extract_diagonal",
+   "rust_path": "direct-shared",
+   "reference_path": "jax",
+   "fixture": {
+    "input_shape": [
+     8388608,
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "jax",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2038: structural.extract_diagonal, fixed public-API fixture {'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_structural_extract_diagonal_direct-shared",
+  "execution_path": "jax-compiled"
+ },
+ {
+  "id": "followup_fft_irfft_direct-shared",
+  "issues": [
+   "#2039"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "c32",
+  "params": {
+   "case_id": "fft.irfft",
+   "rust_path": "direct-shared",
+   "reference_path": "mkl-dfti",
+   "fixture": {
+    "input_shape": [
+     524289
+    ],
+    "dtype": "c32",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "c32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2039: fft.irfft, fixed public-API fixture {'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_fft_irfft_mkl-dfti",
+  "issues": [
+   "#2039"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "mkl-dfti",
+  "backend": "mkl-dfti",
+  "dtype": "c32",
+  "params": {
+   "case_id": "fft.irfft",
+   "rust_path": "direct-shared",
+   "reference_path": "mkl-dfti",
+   "fixture": {
+    "input_shape": [
+     524289
+    ],
+    "dtype": "c32",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "mkl-dfti",
+   "dtype": "c32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2039: fft.irfft, fixed public-API fixture {'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_fft_irfft_direct-shared",
+  "execution_path": "mkl-dfti-cached"
+ },
+ {
+  "id": "followup_fft_rfft_direct-shared",
+  "issues": [
+   "#2039"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "case_id": "fft.rfft",
+   "rust_path": "direct-shared",
+   "reference_path": "mkl-dfti",
+   "fixture": {
+    "input_shape": [
+     1048576
+    ],
+    "dtype": "f32",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2039: fft.rfft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_fft_rfft_mkl-dfti",
+  "issues": [
+   "#2039"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "mkl-dfti",
+  "backend": "mkl-dfti",
+  "dtype": "f32",
+  "params": {
+   "case_id": "fft.rfft",
+   "rust_path": "direct-shared",
+   "reference_path": "mkl-dfti",
+   "fixture": {
+    "input_shape": [
+     1048576
+    ],
+    "dtype": "f32",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "mkl-dfti",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2039: fft.rfft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_fft_rfft_direct-shared",
+  "execution_path": "mkl-dfti-cached"
+ },
+ {
+  "id": "followup_fft_fft_direct-shared",
+  "issues": [
+   "#2039"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "case_id": "fft.fft",
+   "rust_path": "direct-shared",
+   "reference_path": "mkl-dfti",
+   "fixture": {
+    "input_shape": [
+     1048576
+    ],
+    "dtype": "c64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2039: fft.fft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_fft_fft_mkl-dfti",
+  "issues": [
+   "#2039"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "mkl-dfti",
+  "backend": "mkl-dfti",
+  "dtype": "c64",
+  "params": {
+   "case_id": "fft.fft",
+   "rust_path": "direct-shared",
+   "reference_path": "mkl-dfti",
+   "fixture": {
+    "input_shape": [
+     1048576
+    ],
+    "dtype": "c64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "mkl-dfti",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2039: fft.fft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_fft_fft_direct-shared",
+  "execution_path": "mkl-dfti-cached"
+ },
+ {
+  "id": "followup_fft_ifft_direct-shared",
+  "issues": [
+   "#2039"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "direct-shared",
+  "backend": "tenferro-rs",
+  "dtype": "c32",
+  "params": {
+   "case_id": "fft.ifft",
+   "rust_path": "direct-shared",
+   "reference_path": "mkl-dfti",
+   "fixture": {
+    "input_shape": [
+     1048576
+    ],
+    "dtype": "c32",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "direct-shared",
+   "dtype": "c32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2039: fft.ifft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "direct-shared"
+ },
+ {
+  "id": "followup_fft_ifft_mkl-dfti",
+  "issues": [
+   "#2039"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "mkl-dfti",
+  "backend": "mkl-dfti",
+  "dtype": "c32",
+  "params": {
+   "case_id": "fft.ifft",
+   "rust_path": "direct-shared",
+   "reference_path": "mkl-dfti",
+   "fixture": {
+    "input_shape": [
+     1048576
+    ],
+    "dtype": "c32",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "mkl-dfti",
+   "dtype": "c32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2039: fft.ifft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_fft_ifft_direct-shared",
+  "execution_path": "mkl-dfti-cached"
+ },
+ {
+  "id": "followup_metadata_transpose_view_metadata",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "metadata",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.transpose_view",
+   "rust_path": "metadata",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "metadata",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.transpose_view, fixed public-API fixture {'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "metadata"
+ },
+ {
+  "id": "followup_metadata_transpose_view_julia-base",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.transpose_view",
+   "rust_path": "metadata",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     2,
+     2
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.transpose_view, fixed public-API fixture {'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_metadata_transpose_view_metadata",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_metadata_slice_view_metadata",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "metadata",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.slice_view",
+   "rust_path": "metadata",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "metadata",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.slice_view, fixed public-API fixture {'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "metadata"
+ },
+ {
+  "id": "followup_metadata_slice_view_julia-base",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.slice_view",
+   "rust_path": "metadata",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     4096
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.slice_view, fixed public-API fixture {'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_metadata_slice_view_metadata",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "followup_metadata_reshape_view_metadata",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "metadata",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.reshape_view",
+   "rust_path": "metadata",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     1024
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "metadata",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.reshape_view, fixed public-API fixture {'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "execution_path": "metadata"
+ },
+ {
+  "id": "followup_metadata_reshape_view_julia-base",
+  "issues": [
+   "#2040"
+  ],
+  "kind": "cpu_followup_mwe",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "case_id": "metadata.reshape_view",
+   "rust_path": "metadata",
+   "reference_path": "julia-base",
+   "fixture": {
+    "input_shape": [
+     1024
+    ],
+    "dtype": "f64",
+    "layout": "native column-major for Rust/Julia; equivalent logical values in Python native layout",
+    "extent_policy": "smaller pure-metadata repro; does not confirm original large-input timings"
+   },
+   "kind": "cpu_followup_mwe",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2040: metadata.reshape_view, fixed public-API fixture {'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "reference_for": "followup_metadata_reshape_view_metadata",
+  "execution_path": "julia-base"
  }
 ]

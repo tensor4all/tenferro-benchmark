@@ -88,3 +88,35 @@ jobs:
 
       - name: Cargo check
         run: cargo check --all-targets
+
+  followup-mwe:
+    if: github.repository == 'tensor4all/tenferro-benchmark'
+    runs-on: ubuntu-latest
+    env:
+      OPENBLAS_ROOT: /usr
+      TENFERRO_REF: b3f47296244ff7b7c55ac0a75f782cb0835418c1
+      TENFERRO_UPDATE: "1"
+      STRIDED_RS_REF: 12ff2de906f4d894a4329f7dbf195b0f874f846e
+      STRIDED_RS_UPDATE: "1"
+      CARGO_TARGET_DIR: target/followup-ci
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install correctness-check provider
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev cmake build-essential
+      - name: Setup the recorded latest-main API revision
+        run: ./scripts/setup_extern_deps.sh
+      - name: Build independent public-API MWE
+        run: >-
+          cargo build --release --locked --manifest-path mwe/cpu_followup/Cargo.toml
+          --no-default-features --features system-openblas
+      - name: Check scalar and permutation oracles without timing collection
+        run: |
+          target/followup-ci/release/cpu-followup-mwe activation.gelu_tanh eager-shared 1 0
+          target/followup-ci/release/cpu-followup-mwe metadata.transpose_view metadata 1 0
+          target/followup-ci/release/cpu-followup-mwe perm.reverse_23d_2 materialize 1 0

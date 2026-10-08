@@ -1,0 +1,660 @@
+[
+  {
+    "case_id": "metadata.reshape_view",
+    "threads": 1,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 305.1939697265625,
+      "cov": 0.0020295195997205666
+    },
+    "ref": {
+      "median_ns": 7.3190558615263575,
+      "cov": 0.06578473943341764
+    },
+    "ratio": 41.698543569103954
+  },
+  {
+    "case_id": "metadata.reshape_view",
+    "threads": 4,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 292.30917571707045,
+      "cov": 0.00024227878347902372
+    },
+    "ref": {
+      "median_ns": 8.71507474429583,
+      "cov": 0.1460099227711691
+    },
+    "ratio": 33.54063898400779
+  },
+  {
+    "case_id": "metadata.slice_view",
+    "threads": 1,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 270.18512668225185,
+      "cov": 0.008876985548147476
+    },
+    "ref": {
+      "median_ns": 2.3740772637795278,
+      "cov": 0.039471341401542404
+    },
+    "ratio": 113.80637471424055
+  },
+  {
+    "case_id": "metadata.slice_view",
+    "threads": 4,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 275.9392809755481,
+      "cov": 0.01143539101493092
+    },
+    "ref": {
+      "median_ns": 2.626107283464567,
+      "cov": 0.13554998335265997
+    },
+    "ratio": 105.07540294070063
+  },
+  {
+    "case_id": "metadata.transpose_view",
+    "threads": 1,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 195.34807504873294,
+      "cov": 0.003314760378390324
+    },
+    "ref": {
+      "median_ns": 0.5404248623131392,
+      "cov": 0.03102518682443154
+    },
+    "ratio": 361.47129540376716
+  },
+  {
+    "case_id": "metadata.transpose_view",
+    "threads": 4,
+    "path": "metadata",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 205.53414786967417,
+      "cov": 0.01130176517725244
+    },
+    "ref": {
+      "median_ns": 0.5364909520062943,
+      "cov": 0.04178429371665367
+    },
+    "ratio": 383.1083210276821
+  },
+  {
+    "case_id": "real.reduce_max_axis1",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 2081147.75,
+      "cov": 0.003123830281262791
+    },
+    "ref": {
+      "median_ns": 788526.875,
+      "cov": 0.005379935087983192
+    },
+    "ratio": 2.6392857567473524
+  },
+  {
+    "case_id": "real.reduce_max_axis1",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_axis1",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 574848.71875,
+      "cov": 0.03302403290548066
+    },
+    "ref": {
+      "median_ns": 788695.375,
+      "cov": 0.009554433131702848
+    },
+    "ratio": 0.7288602633811565
+  },
+  {
+    "case_id": "real.reduce_max_axis1",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_axis0",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 2314262.75,
+      "cov": 0.0016235738157770315
+    },
+    "ref": {
+      "median_ns": 1303041.625,
+      "cov": 0.008812068283758438
+    },
+    "ratio": 1.776046678478134
+  },
+  {
+    "case_id": "real.reduce_max_axis0",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_axis0",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 627276.78125,
+      "cov": 0.02489096927216154
+    },
+    "ref": {
+      "median_ns": 1314370.625,
+      "cov": 0.010122332427725663
+    },
+    "ratio": 0.47724497894191753
+  },
+  {
+    "case_id": "real.reduce_max_axis0",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_axis1",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 8324436.0,
+      "cov": 0.0019546568549601608
+    },
+    "ref": {
+      "median_ns": 4845246.0,
+      "cov": 0.013374743001222492
+    },
+    "ratio": 1.7180626123007996
+  },
+  {
+    "case_id": "real.reduce_min_axis1",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_axis1",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 2686056.5,
+      "cov": 0.21189821504136144
+    },
+    "ref": {
+      "median_ns": 4795622.75,
+      "cov": 0.012526370898620314
+    },
+    "ratio": 0.5601058798880708
+  },
+  {
+    "case_id": "real.reduce_min_axis1",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_axis0",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 2119694.125,
+      "cov": 0.0039489849846373725
+    },
+    "ref": {
+      "median_ns": 1441426.0,
+      "cov": 0.01485390724215721
+    },
+    "ratio": 1.4705535525236815
+  },
+  {
+    "case_id": "real.reduce_min_axis0",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_axis0",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 546553.90625,
+      "cov": 0.017402822548057292
+    },
+    "ref": {
+      "median_ns": 1462808.75,
+      "cov": 0.017789922691450008
+    },
+    "ratio": 0.3736331945307273
+  },
+  {
+    "case_id": "real.reduce_min_axis0",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "complex.exp",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 97388875.0,
+      "cov": 0.0016156539738919381
+    },
+    "ref": {
+      "median_ns": 60204765.0,
+      "cov": 0.0033545404870703793
+    },
+    "ratio": 1.617627358897589
+  },
+  {
+    "case_id": "complex.exp",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "complex.exp",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 25982101.0,
+      "cov": 0.02501233603058373
+    },
+    "ref": {
+      "median_ns": 60769709.0,
+      "cov": 0.005023444115217591
+    },
+    "ratio": 0.42755019610181116
+  },
+  {
+    "case_id": "complex.exp",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_all",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 18282166.0,
+      "cov": 0.0019274891709970174
+    },
+    "ref": {
+      "median_ns": 12540858.0,
+      "cov": 0.012198490553544482
+    },
+    "ratio": 1.457808229708047
+  },
+  {
+    "case_id": "real.reduce_max_all",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_max_all",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 5519009.5,
+      "cov": 0.004316218415843286
+    },
+    "ref": {
+      "median_ns": 12141447.0,
+      "cov": 0.011428937292304781
+    },
+    "ratio": 0.45455945242770485
+  },
+  {
+    "case_id": "real.reduce_max_all",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_all",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 16385536.0,
+      "cov": 0.0002579386031427265
+    },
+    "ref": {
+      "median_ns": 12470846.0,
+      "cov": 0.009384229526932825
+    },
+    "ratio": 1.313907332349385
+  },
+  {
+    "case_id": "real.reduce_min_all",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "real.reduce_min_all",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 5530706.5,
+      "cov": 0.028767703787324225
+    },
+    "ref": {
+      "median_ns": 12374245.0,
+      "cov": 0.01407962597764397
+    },
+    "ratio": 0.44695304642828715
+  },
+  {
+    "case_id": "real.reduce_min_all",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.ifft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 8748188.5,
+      "cov": 0.004205629540503205
+    },
+    "ref": {
+      "median_ns": 5232866.0,
+      "cov": 0.00041270854887151683
+    },
+    "ratio": 1.6717776644767897
+  },
+  {
+    "case_id": "fft.ifft",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.ifft",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 5251826.5,
+      "cov": 0.005366655626719059
+    },
+    "ref": {
+      "median_ns": 3888147.0,
+      "cov": 0.034720406276255375
+    },
+    "ratio": 1.3507273516150495
+  },
+  {
+    "case_id": "fft.ifft",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.irfft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 8375411.5,
+      "cov": 0.002509233499267633
+    },
+    "ref": {
+      "median_ns": 2569094.0,
+      "cov": 0.022991198191842345
+    },
+    "ratio": 3.2600642483303455
+  },
+  {
+    "case_id": "fft.irfft",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.irfft",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 4874110.5,
+      "cov": 0.034978753662953596
+    },
+    "ref": {
+      "median_ns": 2425273.25,
+      "cov": 0.002280599625277527
+    },
+    "ratio": 2.00971601859708
+  },
+  {
+    "case_id": "fft.irfft",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.rfft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 7878807.0,
+      "cov": 0.0019967193115866025
+    },
+    "ref": {
+      "median_ns": 3067444.5,
+      "cov": 0.018355221712004134
+    },
+    "ratio": 2.5685247116940504
+  },
+  {
+    "case_id": "fft.rfft",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.rfft",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 4652698.75,
+      "cov": 0.005586329210852629
+    },
+    "ref": {
+      "median_ns": 3063554.75,
+      "cov": 0.015501489204123118
+    },
+    "ratio": 1.5187255099651802
+  },
+  {
+    "case_id": "fft.rfft",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.fft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 18901673.0,
+      "cov": 0.006157844560146944
+    },
+    "ref": {
+      "median_ns": 9944400.0,
+      "cov": 0.010893866550530108
+    },
+    "ratio": 1.900735388761514
+  },
+  {
+    "case_id": "fft.fft",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "fft.fft",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 9180076.5,
+      "cov": 0.007175026099262806
+    },
+    "ref": {
+      "median_ns": 13480812.5,
+      "cov": 0.004087422246274573
+    },
+    "ratio": 0.6809735318253258
+  },
+  {
+    "case_id": "fft.fft",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  }
+]

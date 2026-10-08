@@ -1,0 +1,366 @@
+[
+  {
+    "case_id": "metadata.reshape_view",
+    "threads": 1,
+    "path": "metadata",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 38.290267627012454,
+    "round_ratios": [
+      38.30371490088947,
+      38.27682035313544,
+      37.672959512002805,
+      38.72308578577896
+    ],
+    "aa_ratio": 1.0102508624544413,
+    "aa_round_max_relative_spread": 0.04017236251971923,
+    "max_cov": 0.13355731580673977,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 306.6970672607422,
+    "reference_ns": 8.03897718332022
+  },
+  {
+    "case_id": "metadata.slice_view",
+    "threads": 1,
+    "path": "metadata",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 118.99500379044483,
+    "round_ratios": [
+      117.03706838928467,
+      118.70331413293746,
+      119.28669344795219,
+      124.6817478704774
+    ],
+    "aa_ratio": 1.021102596317499,
+    "aa_round_max_relative_spread": 0.07241987623379775,
+    "max_cov": 0.14973014860892433,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 281.94626271561253,
+    "reference_ns": 2.373462106299213
+  },
+  {
+    "case_id": "metadata.transpose_view",
+    "threads": 4,
+    "path": "metadata",
+    "reference": "julia-base",
+    "status": "inconclusive",
+    "ratio": 363.2753049932305,
+    "round_ratios": [
+      368.10002086923004,
+      401.7110356409127,
+      358.450589117231,
+      347.83538449976436
+    ],
+    "aa_ratio": 0.9448778651496815,
+    "aa_round_max_relative_spread": 0.1073170899905227,
+    "max_cov": 0.5952089436908921,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 201.77247807017545,
+    "reference_ns": 0.5545476003147128
+  },
+  {
+    "case_id": "real.reduce_max_axis1",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 2.9741678152589612,
+    "round_ratios": [
+      2.9497976598859155,
+      2.9881836966742434,
+      2.972172146342907,
+      2.976163484175015
+    ],
+    "aa_ratio": 1.0032404512405266,
+    "aa_round_max_relative_spread": 0.006961544235267736,
+    "max_cov": 0.07466904414067327,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 2059208.875,
+    "reference_ns": 692640.84375
+  },
+  {
+    "case_id": "fft.ifft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "status": "confirmed",
+    "ratio": 1.6945053116516524,
+    "round_ratios": [
+      1.7068835154539697,
+      1.717167541329741,
+      1.682127107849335,
+      1.6780120640623504
+    ],
+    "aa_ratio": 1.0001164139470076,
+    "aa_round_max_relative_spread": 0.0032019434329284557,
+    "max_cov": 0.0342170339951032,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 8659500.75,
+    "reference_ns": 5108865.5
+  },
+  {
+    "case_id": "real.reduce_max_axis0",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 1.845602536749337,
+    "round_ratios": [
+      1.8469030497511632,
+      1.8382782954345895,
+      1.8443020237475105,
+      1.847288095510455
+    ],
+    "aa_ratio": 0.9954687533936991,
+    "aa_round_max_relative_spread": 0.015565290046982594,
+    "max_cov": 0.01860832731652175,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 2308952.625,
+    "reference_ns": 1253988.9375
+  },
+  {
+    "case_id": "real.reduce_min_axis1",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 1.7645652667700316,
+    "round_ratios": [
+      1.7532736007569856,
+      1.760569839140156,
+      1.7685606943999068,
+      1.7722185467702594
+    ],
+    "aa_ratio": 1.0040364750032142,
+    "aa_round_max_relative_spread": 0.010918349531196414,
+    "max_cov": 0.020273802309826536,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 8259172.25,
+    "reference_ns": 4690376.625
+  },
+  {
+    "case_id": "real.reduce_min_axis0",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 1.6044521450779736,
+    "round_ratios": [
+      1.5637063678876815,
+      1.5794819371170672,
+      1.62942235303888,
+      1.647839563208246
+    ],
+    "aa_ratio": 0.998134127289782,
+    "aa_round_max_relative_spread": 0.006039043562727553,
+    "max_cov": 0.049114509784556185,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 2109012.5625,
+    "reference_ns": 1314792.0625
+  },
+  {
+    "case_id": "fft.irfft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "status": "confirmed",
+    "ratio": 3.469474532638155,
+    "round_ratios": [
+      3.5008441947777573,
+      3.4646642462940873,
+      3.462637708594933,
+      3.4742848189822224
+    ],
+    "aa_ratio": 0.9998056207945889,
+    "aa_round_max_relative_spread": 0.004621174912691539,
+    "max_cov": 0.0384811945490207,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 8431514.25,
+    "reference_ns": 2428669.875
+  },
+  {
+    "case_id": "complex.exp",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 1.6142860459271533,
+    "round_ratios": [
+      1.616852648255501,
+      1.5251874206564664,
+      1.6117349179476808,
+      1.6168371739066258
+    ],
+    "aa_ratio": 1.0011561139775362,
+    "aa_round_max_relative_spread": 0.006323910949154188,
+    "max_cov": 0.019917108627912072,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 97699618.5,
+    "reference_ns": 60599306.0
+  },
+  {
+    "case_id": "real.reduce_max_all",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 1.5471440187158132,
+    "round_ratios": [
+      1.5940813639500768,
+      1.5376839079228628,
+      1.5250533111145435,
+      1.5566041295087636
+    ],
+    "aa_ratio": 1.0008290843660248,
+    "aa_round_max_relative_spread": 0.0014700086207415364,
+    "max_cov": 0.018555536096435638,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 18311500.0,
+    "reference_ns": 11836092.5
+  },
+  {
+    "case_id": "fft.rfft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "status": "confirmed",
+    "ratio": 2.5955598306387078,
+    "round_ratios": [
+      2.5952375962064105,
+      2.578627631724494,
+      2.600616894681815,
+      2.595882065071005
+    ],
+    "aa_ratio": 1.0050413928930735,
+    "aa_round_max_relative_spread": 0.007114785192630313,
+    "max_cov": 0.042165170296881486,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 7913900.0,
+    "reference_ns": 3052437.625
+  },
+  {
+    "case_id": "real.reduce_min_all",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "julia-base",
+    "status": "confirmed",
+    "ratio": 1.3324102142683443,
+    "round_ratios": [
+      1.3221580651116793,
+      1.3429794795989518,
+      1.324443189656524,
+      1.3403772388801647
+    ],
+    "aa_ratio": 0.9959771127787451,
+    "aa_round_max_relative_spread": 0.012747189282666493,
+    "max_cov": 0.01738696468582184,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 16379979.5,
+    "reference_ns": 12293963.5
+  },
+  {
+    "case_id": "fft.fft",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "mkl-dfti",
+    "status": "confirmed",
+    "ratio": 1.8757505136275543,
+    "round_ratios": [
+      1.8788375754002964,
+      1.8726634518548122,
+      1.861060942811159,
+      1.8976748970180668
+    ],
+    "aa_ratio": 1.0044487160233249,
+    "aa_round_max_relative_spread": 0.0170206394343555,
+    "max_cov": 0.030713353492071386,
+    "correct": true,
+    "validation": [
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+      "matched aggregates and 130 deterministic probes; metadata descriptors exact"
+    ],
+    "tenferro_ns": 18873523.0,
+    "reference_ns": 10034601.5
+  }
+]

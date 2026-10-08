@@ -29,7 +29,7 @@ def execute(case_id,path,threads,runs,target_ns):
 
 
 def run(case,threads,config,correctness_only=False):
-    p=case['params']; cid=p['case_id'];path=case['arm'];target=int(config['min_runtime_ms']*1_000_000)
+    p=case.get('followup_mwe',case['params']); cid=p['case_id'];path=p.get('path',case['arm']);target=int(config['min_runtime_ms']*1_000_000)
     # Two independent completed operations establish correctness before this
     # arm's collection. Fixture creation, validation and processes are untimed.
     rust=execute(cid,p['rust_path'],threads,0,target)
@@ -54,7 +54,7 @@ def main():
     parser.add_argument('--case',action='append')
     args=parser.parse_args()
     cases=json.loads((ROOT/'data/instances/perf_issues.json').read_text())
-    selected=[c for c in cases if c['kind']=='cpu_followup_mwe' and (not args.case or c['params']['case_id'] in args.case)]
+    selected=[c for c in cases if (c['kind']=='cpu_followup_mwe' or 'followup_mwe' in c) and (not args.case or c.get('followup_mwe',c['params'])['case_id'] in args.case)]
     if not selected:raise SystemExit('No registered follow-up cases selected')
     args.output.parent.mkdir(parents=True,exist_ok=True)
     failed=False

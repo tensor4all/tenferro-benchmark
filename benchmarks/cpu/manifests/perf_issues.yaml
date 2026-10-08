@@ -2,7 +2,7 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 3
+manifest_version: 4
 suite_id: cpu/perf_issues
 source: data/instances/perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -153,6 +153,84 @@ coverage:
   - triangular_f64_pytorch_n4096_rhs64
   - reshape_f64_concrete-shared_n33554432_to8192x4096
   - reshape_f64_pytorch_n33554432_to8192x4096
+  - followup_structural_broadcast_in_dim_direct-shared
+  - followup_structural_broadcast_in_dim_pytorch
+  - followup_real_tanh_direct-shared
+  - followup_real_tanh_jax
+  - followup_real_log1p_direct-shared
+  - followup_real_log1p_pytorch
+  - followup_real_cos_direct-shared
+  - followup_real_cos_pytorch
+  - followup_real_sin_direct-shared
+  - followup_real_sin_pytorch
+  - followup_real_exp_direct-shared
+  - followup_real_exp_jax
+  - followup_real_expm1_direct-shared
+  - followup_real_expm1_jax
+  - followup_real_pow_direct-shared
+  - followup_real_pow_pytorch
+  - followup_complex_exp_direct-shared
+  - followup_complex_exp_julia-base
+  - followup_real_log_direct-shared
+  - followup_real_log_pytorch
+  - followup_real_reduce_max_axis1_direct-shared
+  - followup_real_reduce_max_axis1_julia-base
+  - followup_real_reduce_prod_axis1_direct-shared
+  - followup_real_reduce_prod_axis1_pytorch
+  - followup_real_reduce_sum_axis1_direct-shared
+  - followup_real_reduce_sum_axis1_pytorch
+  - followup_real_reduce_max_axis0_direct-shared
+  - followup_real_reduce_max_axis0_julia-base
+  - followup_real_reduce_min_axis1_direct-shared
+  - followup_real_reduce_min_axis1_julia-base
+  - followup_real_reduce_min_axis0_direct-shared
+  - followup_real_reduce_min_axis0_julia-base
+  - followup_real_reduce_max_all_direct-shared
+  - followup_real_reduce_max_all_julia-base
+  - followup_real_reduce_min_all_direct-shared
+  - followup_real_reduce_min_all_julia-base
+  - followup_complex_norm_fro_direct-shared
+  - followup_complex_norm_fro_jax
+  - followup_index_gather_direct-shared
+  - followup_index_gather_jax
+  - followup_index_scatter_direct-shared
+  - followup_index_scatter_pytorch
+  - followup_index_dynamic_update_slice_direct-shared
+  - followup_index_dynamic_update_slice_jax
+  - followup_perm_reverse_15d_3_materialize
+  - followup_perm_reverse_15d_3_strided-rs
+  - followup_structural_transpose_direct-shared
+  - followup_structural_transpose_pytorch
+  - followup_perm_reverse_23d_2_materialize
+  - followup_perm_reverse_23d_2_strided-rs
+  - followup_perm_transpose_3d_256_201_materialize
+  - followup_perm_transpose_3d_256_201_strided-rs
+  - followup_perm_cyclic_15d_3_materialize
+  - followup_perm_cyclic_15d_3_strided-rs
+  - followup_perm_transpose_3d_256_102_materialize
+  - followup_perm_transpose_3d_256_102_strided-rs
+  - followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize
+  - followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs
+  - followup_perm_tn_light_415_24d_contiguous_same_perm_materialize
+  - followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs
+  - followup_perm_rotation_6d_32_32_32_32_16_16_materialize
+  - followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs
+  - followup_structural_extract_diagonal_direct-shared
+  - followup_structural_extract_diagonal_jax
+  - followup_fft_irfft_direct-shared
+  - followup_fft_irfft_mkl-dfti
+  - followup_fft_rfft_direct-shared
+  - followup_fft_rfft_mkl-dfti
+  - followup_fft_fft_direct-shared
+  - followup_fft_fft_mkl-dfti
+  - followup_fft_ifft_direct-shared
+  - followup_fft_ifft_mkl-dfti
+  - followup_metadata_transpose_view_metadata
+  - followup_metadata_transpose_view_julia-base
+  - followup_metadata_slice_view_metadata
+  - followup_metadata_slice_view_julia-base
+  - followup_metadata_reshape_view_metadata
+  - followup_metadata_reshape_view_julia-base
   full:
   - decode_proj_f32_eager-shared_in1024_out1024_len8
   - decode_proj_f32_eager-per-call_in1024_out1024_len8
@@ -313,3 +391,81 @@ coverage:
   - triangular_f64_pytorch_n4096_rhs64
   - reshape_f64_concrete-shared_n33554432_to8192x4096
   - reshape_f64_pytorch_n33554432_to8192x4096
+  - followup_structural_broadcast_in_dim_direct-shared
+  - followup_structural_broadcast_in_dim_pytorch
+  - followup_real_tanh_direct-shared
+  - followup_real_tanh_jax
+  - followup_real_log1p_direct-shared
+  - followup_real_log1p_pytorch
+  - followup_real_cos_direct-shared
+  - followup_real_cos_pytorch
+  - followup_real_sin_direct-shared
+  - followup_real_sin_pytorch
+  - followup_real_exp_direct-shared
+  - followup_real_exp_jax
+  - followup_real_expm1_direct-shared
+  - followup_real_expm1_jax
+  - followup_real_pow_direct-shared
+  - followup_real_pow_pytorch
+  - followup_complex_exp_direct-shared
+  - followup_complex_exp_julia-base
+  - followup_real_log_direct-shared
+  - followup_real_log_pytorch
+  - followup_real_reduce_max_axis1_direct-shared
+  - followup_real_reduce_max_axis1_julia-base
+  - followup_real_reduce_prod_axis1_direct-shared
+  - followup_real_reduce_prod_axis1_pytorch
+  - followup_real_reduce_sum_axis1_direct-shared
+  - followup_real_reduce_sum_axis1_pytorch
+  - followup_real_reduce_max_axis0_direct-shared
+  - followup_real_reduce_max_axis0_julia-base
+  - followup_real_reduce_min_axis1_direct-shared
+  - followup_real_reduce_min_axis1_julia-base
+  - followup_real_reduce_min_axis0_direct-shared
+  - followup_real_reduce_min_axis0_julia-base
+  - followup_real_reduce_max_all_direct-shared
+  - followup_real_reduce_max_all_julia-base
+  - followup_real_reduce_min_all_direct-shared
+  - followup_real_reduce_min_all_julia-base
+  - followup_complex_norm_fro_direct-shared
+  - followup_complex_norm_fro_jax
+  - followup_index_gather_direct-shared
+  - followup_index_gather_jax
+  - followup_index_scatter_direct-shared
+  - followup_index_scatter_pytorch
+  - followup_index_dynamic_update_slice_direct-shared
+  - followup_index_dynamic_update_slice_jax
+  - followup_perm_reverse_15d_3_materialize
+  - followup_perm_reverse_15d_3_strided-rs
+  - followup_structural_transpose_direct-shared
+  - followup_structural_transpose_pytorch
+  - followup_perm_reverse_23d_2_materialize
+  - followup_perm_reverse_23d_2_strided-rs
+  - followup_perm_transpose_3d_256_201_materialize
+  - followup_perm_transpose_3d_256_201_strided-rs
+  - followup_perm_cyclic_15d_3_materialize
+  - followup_perm_cyclic_15d_3_strided-rs
+  - followup_perm_transpose_3d_256_102_materialize
+  - followup_perm_transpose_3d_256_102_strided-rs
+  - followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize
+  - followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs
+  - followup_perm_tn_light_415_24d_contiguous_same_perm_materialize
+  - followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs
+  - followup_perm_rotation_6d_32_32_32_32_16_16_materialize
+  - followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs
+  - followup_structural_extract_diagonal_direct-shared
+  - followup_structural_extract_diagonal_jax
+  - followup_fft_irfft_direct-shared
+  - followup_fft_irfft_mkl-dfti
+  - followup_fft_rfft_direct-shared
+  - followup_fft_rfft_mkl-dfti
+  - followup_fft_fft_direct-shared
+  - followup_fft_fft_mkl-dfti
+  - followup_fft_ifft_direct-shared
+  - followup_fft_ifft_mkl-dfti
+  - followup_metadata_transpose_view_metadata
+  - followup_metadata_transpose_view_julia-base
+  - followup_metadata_slice_view_metadata
+  - followup_metadata_slice_view_julia-base
+  - followup_metadata_reshape_view_metadata
+  - followup_metadata_reshape_view_julia-base

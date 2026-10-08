@@ -1,0 +1,390 @@
+{
+  "checked_before_submission": true,
+  "scope": "full bodies and titles of all open tenferro-rs issues; broad coordination/design issues are related, exact operation owners exclude new reports",
+  "open_issues": [
+    {
+      "number": 2031,
+      "title": "[Performance]: Borrowed-session CPU softmax is ~4x / ~8x slower than PyTorch at 1T / 4T",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2031"
+    },
+    {
+      "number": 2030,
+      "title": "[Performance]: Borrowed-session CPU exact GELU is ~13\u201314x slower than PyTorch for 65536 f32 values",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2030"
+    },
+    {
+      "number": 2029,
+      "title": "[Performance]: Materializing reshape_read uses a serial host copy, ~3.32x slower than PyTorch at 4T",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2029"
+    },
+    {
+      "number": 2028,
+      "title": "[Performance]: Rank-2 CPU triangular_solve is ~1.25x slower than PyTorch MKL at 4 threads",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2028"
+    },
+    {
+      "number": 2027,
+      "title": "[Performance]: Borrowed-session CPU lstsq is ~1.8\u20132.0x slower than PyTorch MKL gels",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2027"
+    },
+    {
+      "number": 2025,
+      "title": "[Bug]: Empty negative-step slice with start == axis_len is spuriously rejected as InvalidSliceBounds",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2025"
+    },
+    {
+      "number": 2024,
+      "title": "ci(coverage): restored rust-cache target can merge stale instrumented objects into the coverage report",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2024"
+    },
+    {
+      "number": 2023,
+      "title": "Closed issue #2012 (COMPLETED) is not fixed on main: fft_in_place still rejects a compact slice with NonCompactDescriptor",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2023"
+    },
+    {
+      "number": 2021,
+      "title": "Concrete-session broadcast_in_dim_read materializes full tensors where eager broadcasts are views",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2021"
+    },
+    {
+      "number": 2020,
+      "title": "scale_real fails on CUDA on the eager (host scalar) and traced (unbroadcast rank-0 mul) surfaces",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2020"
+    },
+    {
+      "number": 2018,
+      "title": "TracedTensor::concatenate of two distinct inputs fails to compile without input specs",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2018"
+    },
+    {
+      "number": 2010,
+      "title": "[Umbrella] Batched burn-down of open issues orthogonal to #2004",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2010"
+    },
+    {
+      "number": 2009,
+      "title": "tenferro-gpu: host-device transfers up to 26x slower than plain cudarc, caused by redundant host copies",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2009"
+    },
+    {
+      "number": 2008,
+      "title": "Batched per-matrix row/column gather and swap (pivoting) with batch-varying indices",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2008"
+    },
+    {
+      "number": 2007,
+      "title": "Support batch dimensions on triangular_solve / solve",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2007"
+    },
+    {
+      "number": 2006,
+      "title": "Add fused CPU layer_norm / rms_norm ops",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2006"
+    },
+    {
+      "number": 2005,
+      "title": "Extension ops: `&mut dyn BackendSession` exposes `dot_general` but not linalg, so tensor-native fused ops cannot solve",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2005"
+    },
+    {
+      "number": 2003,
+      "title": "CPU eager dot_general: ~2.3x a plain host GEMM on decode-shaped projections (per-call overhead + kernel choice)",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2003"
+    },
+    {
+      "number": 2002,
+      "title": "[Performance]: Umbrella \u2014 cut paid RunPod GPU cost: duplicate merge-ref pods, unbounded setup, blind cost telemetry",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2002"
+    },
+    {
+      "number": 2000,
+      "title": "[Feature]: Work-model thread policy for CPU linalg (lanes \u00d7 item threads)",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/2000"
+    },
+    {
+      "number": 1998,
+      "title": "llms.txt: state session reuse as a convention, and fix the per-iteration session in the performance-idioms snippet",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1998"
+    },
+    {
+      "number": 1995,
+      "title": "CPU eager: decode-shaped (small-m) GEMMs and internal layout copies dominate a real 0.8B forward; GEMM providers are shape-dependent",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1995"
+    },
+    {
+      "number": 1992,
+      "title": "CPU eager dot_general: GEMM analysis is recomputed per call (no plan cache) and the BLAS provider cannot execute linalg",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1992"
+    },
+    {
+      "number": 1990,
+      "title": "CPU: fused elementwise region is ~3.7x slower than eager per-op kernels for a long elementwise chain",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1990"
+    },
+    {
+      "number": 1988,
+      "title": "Migrate ext/tenferro-cpu-tprims to the renamed tprims crates and onto strided-rs 0.4.5",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1988"
+    },
+    {
+      "number": 1987,
+      "title": "Flaky: batched LU/triangular-solve tests fail at n=33 on the CI runner (cpu-blas)",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1987"
+    },
+    {
+      "number": 1978,
+      "title": "Add public `F16` / `BF16` (and `I8`) dtypes for inference",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1978"
+    },
+    {
+      "number": 1977,
+      "title": "Add a depthwise causal `conv1d` op",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1977"
+    },
+    {
+      "number": 1976,
+      "title": "Add `argmax` / `reduce_mean` / `softmax` / `log_softmax`",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1976"
+    },
+    {
+      "number": 1974,
+      "title": "Add `cumsum` / `cumprod`",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1974"
+    },
+    {
+      "number": 1971,
+      "title": "crates.io 0.7.1 and git 471c4278 expose different `with_backend_session` signatures under the same version",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1971"
+    },
+    {
+      "number": 1958,
+      "title": "Bump lru dependency to address RUSTSEC-2026-0002 and RUSTSEC-2026-0253",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1958"
+    },
+    {
+      "number": 1956,
+      "title": "[Feature]: Extract CPU linalg into tlinalg while preserving tenferro contracts",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1956"
+    },
+    {
+      "number": 1953,
+      "title": "[Feature]: Provider injection points for an external CPU implementation: pool access for providers and a linalg provider slot",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1953"
+    },
+    {
+      "number": 1945,
+      "title": "[Design]: Explicit-executor CPU kernels and a holdable backend session alongside scoped sessions",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1945"
+    },
+    {
+      "number": 1939,
+      "title": "[Feature]: Re-export faer from tenferro-cpu under cpu-faer for a version-locked direct-call path",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1939"
+    },
+    {
+      "number": 1938,
+      "title": "[Umbrella] Workload-driven redesign of tensor storage and execution without API compatibility",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1938"
+    },
+    {
+      "number": 1937,
+      "title": "[Long-term design] Lightweight TypedTensor and views with Host/Gpu/Dynamic representations",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1937"
+    },
+    {
+      "number": 1930,
+      "title": "GPU gather: accept an index view (TensorRead) instead of only an owned index tensor",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1930"
+    },
+    {
+      "number": 1929,
+      "title": "[Umbrella] Explicit sessions, regression benchmarks, CPU and GPU performance",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1929"
+    },
+    {
+      "number": 1928,
+      "title": "[Performance] Coordinate GPU latency, mixed-shape caches, and backend lifetime",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1928"
+    },
+    {
+      "number": 1927,
+      "title": "[Performance] Coordinate CPU public-path, session, planning, and batched optimizations",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1927"
+    },
+    {
+      "number": 1926,
+      "title": "[Design] Make backend session entry explicit for operations and prohibit hidden entry",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1926"
+    },
+    {
+      "number": 1905,
+      "title": "[Bug]: tenferro-einsum/blas-* (or tenferro-cpu/cpu-blas from any crate) makes every tenferro-linalg call fail with \"CPU linalg provider Blas is not compiled in\"",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1905"
+    },
+    {
+      "number": 1904,
+      "title": "[Performance]: Small-call overhead for FFI-driven callers: ~26 \u00b5s multi-threaded session entry, ~0.25 \u00b5s small-tensor construction, ~0.9 \u00b5s extra per tiny GEMM",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1904"
+    },
+    {
+      "number": 1903,
+      "title": "[Feature]: Let TypedTensor store downstream scalar types (fold HostTensor<T> into TypedTensor<T, R>), with Clone, Index and strided compaction",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1903"
+    },
+    {
+      "number": 1900,
+      "title": "[Performance]: c64 GEMM kernel on Apple NEON/FCMA (gemm-c64 neonfcma cplx_x3x4) trails a planar-complex kernel by ~1.2-1.3x",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1900"
+    },
+    {
+      "number": 1899,
+      "title": "[Performance]: ConcreteEinsumPlan rebuilds its binary-dot plan every execute_into call and never uses GemmAnalysisCache; no public prepared dot_general handle exists",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1899"
+    },
+    {
+      "number": 1895,
+      "title": "[Bug]: concurrent CPU linalg from a foreign Rayon pool's workers panics in the re-entry guard",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1895"
+    },
+    {
+      "number": 1887,
+      "title": "[Performance]: alloc_zero_output costs 97-113 us per call regardless of size (four blocking round trips)",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1887"
+    },
+    {
+      "number": 1885,
+      "title": "Device and CPU execution gaps: transfers, linalg coverage, small-block throughput, session cost",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1885"
+    },
+    {
+      "number": 1884,
+      "title": "perf: batched CPU LU factor and solve do not scale with threads",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1884"
+    },
+    {
+      "number": 1858,
+      "title": "[Feature]: Bring the concrete session surface, eager FFT in-place errors, and session docs to one convention",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1858"
+    },
+    {
+      "number": 1848,
+      "title": "feature: resolve a BLAS/LAPACK symbol from the same provider instance tenferro uses",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1848"
+    },
+    {
+      "number": 1838,
+      "title": "[Feature]: axpby_read_into_accum with a strided or offset destination",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1838"
+    },
+    {
+      "number": 1803,
+      "title": "[Performance] Residual eager backward and batched solve overhead after shared CPU scopes (M5)",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1803"
+    },
+    {
+      "number": 1793,
+      "title": "[Design] Ordinary einsum: shared providers, scalar precision, and canonical AD",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1793"
+    },
+    {
+      "number": 1790,
+      "title": "[Integration] xprec QR + AD across composed and cooperating CPU backends",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1790"
+    },
+    {
+      "number": 1789,
+      "title": "[Prototype] CPU resource ownership for dd-only, mixed, and cooperating backends",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1789"
+    },
+    {
+      "number": 1788,
+      "title": "[Prototype] Downstream xprec QR and first-order AD",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1788"
+    },
+    {
+      "number": 1787,
+      "title": "[Umbrella] Ordinary scalar composition: shared compiled kernels, precision, and QR/AD",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1787"
+    },
+    {
+      "number": 1785,
+      "title": "[Prototype] Composable CPU scalars and conversions with shared compiled kernels",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1785"
+    },
+    {
+      "number": 1695,
+      "title": "[Long-term design] Extract an IR-agnostic AD transform framework into a redesigned tidu-rs",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1695"
+    },
+    {
+      "number": 1660,
+      "title": "Long-term: CPU linalg backend strategy \u2014 pure-Rust BLAS+LAPACK evaluation (faer / gemmkit / fused kernels / SME)",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1660"
+    },
+    {
+      "number": 1658,
+      "title": "RFC: Align the contraction boundary with TAPP \u2014 conformance fixtures, a TAPP/TBLIS backend, and a TAPP C export",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1658"
+    },
+    {
+      "number": 1615,
+      "title": "perf(cpu): add allocation-free borrowed conjugated dot reduction",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1615"
+    },
+    {
+      "number": 1271,
+      "title": "DESIGN: Layered mechanical audit system \u2014 deterministic true-positive detectors + first-class false-positive suppression",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1271"
+    },
+    {
+      "number": 1043,
+      "title": "Epic: no_std + alloc support for the TypedTensor data layer (backends stay std-only)",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1043"
+    },
+    {
+      "number": 1864,
+      "title": "GPU tropical path: keep tensors device-resident + device-side permute (replicate Julia's CuArray data flow)",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1864"
+    },
+    {
+      "number": 1863,
+      "title": "CPU contractions do not scale across threads (t1 \u2248 t8)",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1863"
+    },
+    {
+      "number": 989,
+      "title": "[Feature]: Define graph-level RNG key semantics for future random ops",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/989"
+    },
+    {
+      "number": 974,
+      "title": "Allow einsum extensions to lower fixed-order contractions during graph optimization",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/974"
+    },
+    {
+      "number": 935,
+      "title": "[Feature]: Add PyTorch-style guarded shape specialization for native fusion",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/935"
+    },
+    {
+      "number": 1865,
+      "title": "Profile remaining slow binary benchmark cases",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1865"
+    },
+    {
+      "number": 1866,
+      "title": "Add alpha/beta scaling factors for einsum operations",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1866"
+    },
+    {
+      "number": 1867,
+      "title": "RFC: Distributed Computing Support for Large-Scale Tensor Network Contraction",
+      "url": "https://github.com/tensor4all/tenferro-rs/issues/1867"
+    }
+  ],
+  "additional_existing_owner": {
+    "case_id": "structural.broadcast_in_dim",
+    "issue": 2021
+  }
+}
