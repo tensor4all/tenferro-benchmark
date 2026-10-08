@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import platform
+import shutil
 import tarfile
 from pathlib import Path, PurePosixPath
 
@@ -14,6 +15,8 @@ UV_VERSION = '0.12.21'
 CUDA_VERSION = '12.8'
 INPUTS = ('pyproject.toml', 'uv.lock', 'scripts/ci/gpu_environment.py',
           'scripts/ci/prepare_gpu_environment.sh', 'scripts/ci/restore_gpu_environment.sh')
+PART_BYTES = 1024 ** 3
+MAX_PARTS = 8
 
 
 def digest(path: Path) -> str:
@@ -45,6 +48,59 @@ def verify(archive: Path, manifest: dict, expected: dict, expected_sha: str) -> 
         raise ValueError('GPU runtime requires Linux x86_64')
 
 
+def split_bundle(bundle: Path, destination: Path, part_bytes: int = PART_BYTES) -> int:
+    archive = bundle / 'runtime.tar.zst'
+    if archive.stat().st_size > MAX_PARTS * part_bytes:
+        raise ValueError('Runtime archive exceeds the bounded transfer size')
+    destination.mkdir(parents=True, exist_ok=True)
+    parts = []
+    with archive.open('rb') as source:
+        while True:
+            remaining = part_bytes
+            path = destination / f'runtime.part{len(parts):02d}'
+            hasher = hashlib.sha256()
+            size = 0
+            with path.open('wb') as target:
+                while remaining:
+                    chunk = source.read(min(remaining, 8 * 1024 * 1024))
+                    if not chunk:
+                        break
+                    target.write(chunk)
+                    hasher.update(chunk)
+                    size += len(chunk)
+                    remaining -= len(chunk)
+            if not size:
+                path.unlink()
+                break
+            parts.append({'name': path.name, 'bytes': size, 'sha256': hasher.hexdigest()})
+    if not parts:
+        raise ValueError('Empty runtime archive')
+    shutil.copyfile(bundle / 'runtime.json', destination / 'runtime.json')
+    (destination / 'runtime.parts.json').write_text(json.dumps(parts, indent=2) + '\n')
+    return len(parts)
+
+
+def assemble_bundle(bundle: Path) -> None:
+    parts = json.loads((bundle / 'runtime.parts.json').read_text())
+    if not 1 <= len(parts) <= MAX_PARTS:
+        raise ValueError('Unexpected runtime transfer part count')
+    expected = {f'runtime.part{i:02d}' for i in range(len(parts))}
+    if {p.name for p in bundle.glob('runtime.part[0-9][0-9]')} != expected:
+        raise ValueError('Missing or unexpected runtime transfer parts')
+    archive = bundle / 'runtime.tar.zst'
+    temporary = archive.with_suffix('.partial')
+    with temporary.open('wb') as target:
+        for index, part in enumerate(parts):
+            if part['name'] != f'runtime.part{index:02d}' or not 1 <= part['bytes'] <= PART_BYTES:
+                raise ValueError('Invalid runtime transfer part')
+            path = bundle / part['name']
+            if path.stat().st_size != part['bytes'] or digest(path) != part['sha256']:
+                raise ValueError('Runtime transfer part digest mismatch')
+            with path.open('rb') as source:
+                shutil.copyfileobj(source, target, length=8 * 1024 * 1024)
+    temporary.replace(archive)
+
+
 def check_tar(stream) -> None:
     """Reject archive paths/links that could escape the fixed runtime prefix."""
     for member in stream:
@@ -73,10 +129,11 @@ def check_tar(stream) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', choices=('key', 'manifest', 'verify', 'check-tar'))
+    parser.add_argument('action', choices=('key', 'manifest', 'verify', 'check-tar', 'split', 'assemble'))
     parser.add_argument('--backends', default='')
     parser.add_argument('--bundle', type=Path, default=Path('_gpu_environment'))
     parser.add_argument('--sha256')
+    parser.add_argument('--destination', type=Path, default=Path('_gpu_transfer'))
     args = parser.parse_args()
     expected = identity(args.backends)
     archive = args.bundle / 'runtime.tar.zst'
@@ -89,6 +146,10 @@ def main() -> None:
     elif args.action == 'verify':
         verify(archive, json.loads(manifest.read_text()), expected, args.sha256)
         print('Locked GPU runtime bundle verified')
+    elif args.action == 'split':
+        print(split_bundle(args.bundle, args.destination))
+    elif args.action == 'assemble':
+        assemble_bundle(args.bundle)
     else:
         import sys
         with tarfile.open(fileobj=sys.stdin.buffer, mode='r|') as stream:

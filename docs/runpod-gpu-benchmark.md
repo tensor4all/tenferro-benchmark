@@ -69,7 +69,11 @@ it is not an arbitrarily relocatable virtualenv. The Ubuntu 24.04 RunPod image
 (`runpod/pytorch:1.1.0-cu1281-torch291-ubuntu2404`) is pinned by digest; its
 preinstalled framework is not used for timing. The accepted pod downloads
 the immutable archive, checks its SHA-256 against the hosted job output and
-its dependency identity, checks archive paths, and extracts it. Transfer and
+its dependency identity, checks archive paths, and extracts it. Transfer uses
+up to eight 1GiB parts as separate immutable artifacts; the download action
+fetches up to five concurrently. Restoration checks every part's digest,
+reconstructs the archive, and verifies the hosted archive digest before extraction.
+An archive over 8GiB fails on the hosted job before renting a GPU. Transfer and
 restore each have a ten-minute limit. A missing or invalid bundle fails;
 there is no compiler or package-install fallback on the paid benchmark job.
 `uv` runs offline without resynchronizing dependencies. The startup probe

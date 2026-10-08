@@ -4,11 +4,28 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.ci.gpu_environment import INPUTS, PREFIX, cache_key, check_tar, digest, identity, verify
+from scripts.ci.gpu_environment import INPUTS, PREFIX, assemble_bundle, cache_key, check_tar, digest, identity, split_bundle, verify
 from scripts.collect_gpu_info import _cuda_runtime_version
 
 
 class EnvironmentTests(unittest.TestCase):
+    def test_transfer_reconstructs_exact_archive_and_rejects_missing_or_corrupt_parts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bundle = Path(directory) / 'bundle'
+            transfer = Path(directory) / 'transfer'
+            bundle.mkdir()
+            (bundle / 'runtime.tar.zst').write_bytes(b'123456789')
+            (bundle / 'runtime.json').write_text('{}')
+            self.assertEqual(split_bundle(bundle, transfer, part_bytes=4), 3)
+            assemble_bundle(transfer)
+            self.assertEqual((transfer / 'runtime.tar.zst').read_bytes(), b'123456789')
+            (transfer / 'runtime.part01').write_bytes(b'xxxx')
+            with self.assertRaises(ValueError):
+                assemble_bundle(transfer)
+            (transfer / 'runtime.part01').unlink()
+            with self.assertRaises(ValueError):
+                assemble_bundle(transfer)
+
     @patch('scripts.collect_gpu_info._nvcc_runtime_version', return_value='11.8')
     @patch('scripts.collect_gpu_info.ctypes.CDLL')
     def test_runtime_metadata_uses_library_instead_of_base_image_compiler(self, load, nvcc):

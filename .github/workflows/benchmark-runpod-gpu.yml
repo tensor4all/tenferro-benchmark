@@ -138,10 +138,79 @@ jobs:
         with:
           path: _gpu_environment
           key: ${{ steps.key.outputs.key }}
+      - name: Split runtime into bounded parallel transfer parts
+        id: split
+        run: echo "count=$(python3 scripts/ci/gpu_environment.py split)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
-          name: gpu-runtime-${{ github.run_id }}
-          path: _gpu_environment
+          name: gpu-runtime-${{ github.run_id }}-manifest
+          path: |
+            _gpu_transfer/runtime.json
+            _gpu_transfer/runtime.parts.json
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.split.outputs.count) > 0 }}
+        with:
+          name: gpu-runtime-${{ github.run_id }}-00
+          path: _gpu_transfer/runtime.part00
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.split.outputs.count) > 1 }}
+        with:
+          name: gpu-runtime-${{ github.run_id }}-01
+          path: _gpu_transfer/runtime.part01
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.split.outputs.count) > 2 }}
+        with:
+          name: gpu-runtime-${{ github.run_id }}-02
+          path: _gpu_transfer/runtime.part02
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.split.outputs.count) > 3 }}
+        with:
+          name: gpu-runtime-${{ github.run_id }}-03
+          path: _gpu_transfer/runtime.part03
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.split.outputs.count) > 4 }}
+        with:
+          name: gpu-runtime-${{ github.run_id }}-04
+          path: _gpu_transfer/runtime.part04
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.split.outputs.count) > 5 }}
+        with:
+          name: gpu-runtime-${{ github.run_id }}-05
+          path: _gpu_transfer/runtime.part05
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.split.outputs.count) > 6 }}
+        with:
+          name: gpu-runtime-${{ github.run_id }}-06
+          path: _gpu_transfer/runtime.part06
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: ${{ fromJSON(steps.split.outputs.count) > 7 }}
+        with:
+          name: gpu-runtime-${{ github.run_id }}-07
+          path: _gpu_transfer/runtime.part07
           compression-level: 0
           retention-days: 7
           if-no-files-found: error
@@ -256,7 +325,8 @@ jobs:
         timeout-minutes: 10
         uses: actions/download-artifact@v4
         with:
-          name: gpu-runtime-${{ github.run_id }}
+          pattern: gpu-runtime-${{ github.run_id }}-*
+          merge-multiple: true
           path: _gpu_environment
       - name: Verify and extract prepared runtime
         timeout-minutes: 10
