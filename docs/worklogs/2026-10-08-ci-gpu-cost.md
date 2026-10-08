@@ -52,3 +52,16 @@
 
 - A4500 diagnostic pilot 37787740830 stopped on no in-stock offer before pod
   creation; no GPU cost. A5000 replaces it before any paired measurements.
+
+- A5000 pilot 37788211207 was rejected before pod creation by RunPod HTTP 500;
+  no GPU cost. A40 diagnostic 37788536318 passed CUDA 285/285, PJRT 3/3 and
+  tutorial, with confirmed deletion. It cost an estimated $0.08658 for 636.124s
+  at $0.49/hour. Startup/queue was 152.783s, CUDA cases 378.776s, archive
+  transfer/verification 2s, cuTENSOR setup 41s. The larger pre-seeded PyTorch
+  image is not promoted: compared with the production observation it was
+  about 10% more expensive, without a statistically validated causal claim.
+- Next diagnostic candidate: NVIDIA CUDA runtime image only (2,056.6 MiB
+  compressed layers, digest 4a801ef9232d2b05e69df4eb8aa054dbbe2824e5499e1e6e857320bb01ac41a9),
+  with CI execution tools, cuTENSOR and PJRT wheels staged on the hosted runner.
+  No primary paired measurements have started; the previous diagnostic data
+  remain retained and excluded by the original pilot policy.
