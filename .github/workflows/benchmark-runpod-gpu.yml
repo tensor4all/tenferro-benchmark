@@ -81,9 +81,56 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
+  prepare-environment:
+    name: Prepare runtime before renting GPU
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    outputs:
+      sha256: ${{ steps.identity.outputs.sha256 }}
+    env:
+      GPU_BENCH_BACKENDS: ${{ inputs.backends }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.12.21"
+          enable-cache: false
+      - name: Identify locked runtime environment
+        id: key
+        run: echo "key=$(python3 scripts/ci/gpu_environment.py key --backends "$GPU_BENCH_BACKENDS")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: _gpu_environment
+          key: ${{ steps.key.outputs.key }}
+      - name: Prepare Python and minimal CUDA runtime
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: bash scripts/ci/prepare_gpu_environment.sh
+      - name: Verify runtime archive and export digest
+        id: identity
+        run: |
+          set -euo pipefail
+          sha256=$(python3 -c 'import json; print(json.load(open("_gpu_environment/runtime.json"))["archive_sha256"])')
+          python3 scripts/ci/gpu_environment.py verify --backends "$GPU_BENCH_BACKENDS" --sha256 "$sha256"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/save@v4
+        if: github.ref == 'refs/heads/main' && steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: _gpu_environment
+          key: ${{ steps.key.outputs.key }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gpu-runtime-${{ github.run_id }}
+          path: _gpu_environment
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+
   start-runpod:
     name: Start ephemeral RunPod runner
-    needs: prepare-benchmark
+    needs: [prepare-benchmark, prepare-environment]
     runs-on: ubuntu-latest
     timeout-minutes: 70
     outputs:
@@ -126,7 +173,7 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           export RUNNER_ALLOW_RUNASROOT=1
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates curl tar gzip python3 python3-pip git
+          apt-get install -y --no-install-recommends ca-certificates curl tar gzip zstd python3 python3-pip git
           nvidia-smi
           cat > /tmp/cuda_smoke_test.py <<'SMOKE'
           STARTUP
@@ -167,7 +214,7 @@ jobs:
 
   run-gpu-benchmark:
     name: Run GPU benchmark on RunPod
-    needs: [prepare-benchmark, start-runpod]
+    needs: [prepare-benchmark, prepare-environment, start-runpod]
     runs-on:
       - self-hosted
       - ${{ needs.start-runpod.outputs.runner_label }}
@@ -178,6 +225,7 @@ jobs:
       TENFERRO_REF: ${{ needs.prepare-benchmark.outputs.tenferro_commit }}
       TENFERRO_UPDATE: "1"
       GPU_BENCH_PREBUILT_RUST: "1"
+      GPU_RUNTIME_SHA256: ${{ needs.prepare-environment.outputs.sha256 }}
     steps:
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
@@ -185,35 +233,20 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
-      - name: Install benchmark toolchain
+      - name: Transfer prepared runtime from hosted runner
+        timeout-minutes: 10
+        uses: actions/download-artifact@v4
+        with:
+          name: gpu-runtime-${{ github.run_id }}
+          path: _gpu_environment
+      - name: Verify and extract prepared runtime
+        timeout-minutes: 10
+        run: bash scripts/ci/restore_gpu_environment.sh
+      - name: Pin benchmark dependency to hosted build revision
         run: |
           set -euo pipefail
-          apt-get update
-          apt-get install -y --no-install-recommends build-essential cmake git libomp-dev pkg-config libssl-dev
-          # Use the same RunPod base image as tenferro-rs; install the modern
-          # toolkit separately rather than using the image's CUDA 11.8.
-          curl -fsSL -o /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-          dpkg -i /tmp/cuda-keyring.deb
-          apt-get update
-          apt-get install -y --no-install-recommends cuda-toolkit-12-8
-          apt-get install -y --no-install-recommends libcutensor2 libcutensor-dev
-          export PATH="$CUDA_HOME/bin:$PATH"
-          echo "$CUDA_HOME/bin" >> "$GITHUB_PATH"
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
-          source "$HOME/.cargo/env"
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-          uv sync --python 3.12 --frozen || uv sync --python 3.12
-          # The benchmark project requires Python >=3.12 and CUDA-aware
-          # framework wheels; the RunPod base image's Python is not the
-          # benchmark environment.
-          uv pip install --python .venv 'jax[cuda12]'
           ./scripts/setup_extern_deps.sh
-          if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
-            git -C extern/tenferro-rs pull --ff-only
-          fi
+          test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$TENFERRO_REF"
 
       - uses: actions/download-artifact@v4
         with:
@@ -228,7 +261,7 @@ jobs:
         run: |
           set -euo pipefail
           nvidia-smi
-          nvcc --version
+          cat /opt/tenferro-benchmark-ci/runtime-packages.txt
           uv run python - <<'PY'
           import ctypes
           import torch
@@ -248,7 +281,6 @@ jobs:
       - name: Run GPU benchmark suite
         run: |
           set -euo pipefail
-          source "$HOME/.cargo/env"
           GPU_BENCH_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
           export GPU_BENCH_TIMESTAMP
           if [[ "$REQUESTED_SUITE" == all ]]; then
