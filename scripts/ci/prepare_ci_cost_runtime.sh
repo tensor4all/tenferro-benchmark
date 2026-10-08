@@ -16,6 +16,19 @@ helper_ref=f3b995657adbbcabc636c5377877205d920a35aa
 for helper in install_cuda_runtime_tree.sh seed_cuda_runtime_tree.sh; do
   curl -fsSL --retry 3 -o "$helpers/$helper" "https://raw.githubusercontent.com/tensor4all/tenferro-rs/$helper_ref/scripts/ci/$helper"
 done
-bash "$helpers/install_cuda_runtime_tree.sh" "$CUDA_RUNTIME_VERSION" "$payload/usr/local/cuda-$CUDA_RUNTIME_VERSION"
-python3 scripts/ci/check_cuda_headers.py --cuda-root "$payload/usr/local/cuda-$CUDA_RUNTIME_VERSION"
+for runtime in 12.6 12.8; do
+  sdk_root="$PWD/sdk-tree-$runtime"
+  bash "$helpers/install_cuda_runtime_tree.sh" "$runtime" "$sdk_root"
+  python3 scripts/ci/check_cuda_headers.py --cuda-root "$sdk_root"
+  transfer="$PWD/runtime-sdk-$runtime"
+  mkdir -p "$transfer"
+  tar --zstd -cf "$transfer/sdk.tar.zst" -C "$sdk_root" .
+  (cd "$transfer"; sha256sum sdk.tar.zst > sdk.sha256; split -n 5 -d -a 2 sdk.tar.zst sdk.part; rm sdk.tar.zst)
+  for part in 00 01 02 03 04; do
+    mkdir "$transfer/$part"
+    mv "$transfer/sdk.part$part" "$transfer/$part/"
+  done
+  mv "$transfer/sdk.sha256" "$transfer/00/"
+  rm -rf "$sdk_root"
+done
 tar --zstd -cf tenferro-rs/gpu-ci-runtime.tar.zst -C "$payload" .
