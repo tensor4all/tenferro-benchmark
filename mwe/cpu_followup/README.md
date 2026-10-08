@@ -56,9 +56,10 @@ one-call equivalent is unsupported; for example, dynamic-update-slice uses
 JAX rather than a synthesized PyTorch clone-plus-write operation.
 
 The Rust crate uses its `system-mkl` feature to enable upstream's new `blas`
-features and link installed oneMKL. This is independent of the root harness's
-older feature/path dependencies. It does not establish root harness
-compatibility with the new upstream provider structure. `system-openblas` is
+features and link installed oneMKL. This crate was introduced while the root harness still used older feature/path
+dependencies. The root CPU-provider migration landed separately on main during
+this campaign; recorded measurement commits remain frozen. The independent
+crate provides the single-operation reproducers used in these Issue reports. `system-openblas` is
 available for an explicitly different provider experiment.
 
 All fixtures, sessions, input descriptors, graph construction/compilation,
