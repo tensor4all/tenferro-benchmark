@@ -153,3 +153,22 @@
   is about 21.9% below the earlier A40 production observation, but GPU/network
   placement differs; it is a diagnostic, not primary confirmation or a causal
   production savings claim. Pod was removed; no primary comparisons have run.
+
+## User goal changed to paid GPU time
+
+- The user cleared the cost goal and explicitly replaced it with at least 20%
+  reduction in GPU usage time. The primary window remains pod lastStartedAt
+  through confirmed deletion, including setup, queueing, tests and cleanup.
+  The 920.252s RTX 2000 Ada pilot is longer than the original 577.430s A40
+  observation and does not satisfy the new time goal, despite lower cost.
+- No primary confirmation samples exist. Before any confirmation, update the
+  primary metric to median paid seconds, retain three complete alternating
+  pairs, at least 20% reduction, every pair nonregressing in paid seconds and
+  within-arm max/min paid seconds <=1.5. Keep complete-workload correctness,
+  exact source per arm, recorded hardware and confirmed cleanup requirements.
+  Estimated charges remain visible as secondary data. Cheap but slower
+  candidates fail the time gate. Previous diagnostics and the abandoned cost
+  protocol remain recorded; none are retrospectively reclassified.
+- Comparison configuration and fixed GPU choice must be frozen before primary
+  measurements. Preparation improvement remains necessary: on the RTX 2000
+  Ada pilot, startup/queue plus runtime setup accounted for 537 seconds.

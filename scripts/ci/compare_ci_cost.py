@@ -1,4 +1,4 @@
-"""Evaluate the predeclared complete-workload, three-pair paid CI cost campaign."""
+"""Evaluate the predeclared complete-workload, three-pair paid GPU time campaign."""
 from __future__ import annotations
 
 import argparse
@@ -34,20 +34,23 @@ def compare(samples: list[dict]) -> dict:
         costs.append(seconds * price / 3600)
     if reasons:
         return {'verdict': 'INCONCLUSIVE', 'reasons': reasons}
-    by_arm = {arm: [cost for sample, cost in zip(samples, costs) if sample['arm'] == arm]
+    durations = [sample['paid_seconds'] for sample in samples]
+    by_arm = {arm: [seconds for sample, seconds in zip(samples, durations) if sample['arm'] == arm]
               for arm in ('baseline', 'candidate')}
     for arm, values in by_arm.items():
         if max(values) / min(values) > 1.5:
-            reasons.append(f'{arm} max/min paid cost exceeds 1.5')
-    pairs = [{samples[i]['arm']: costs[i], samples[i + 1]['arm']: costs[i + 1]} for i in range(0, 6, 2)]
+            reasons.append(f'{arm} max/min paid seconds exceeds 1.5')
+    pairs = [{samples[i]['arm']: durations[i], samples[i + 1]['arm']: durations[i + 1]} for i in range(0, 6, 2)]
     baseline = statistics.median(by_arm['baseline'])
     candidate = statistics.median(by_arm['candidate'])
     reduction = 1 - candidate / baseline
     verdict = 'INCONCLUSIVE' if reasons else 'PASS' if reduction >= 0.2 and all(
         pair['candidate'] <= pair['baseline'] for pair in pairs) else 'FAIL'
-    return {'verdict': verdict, 'reasons': reasons, 'baseline_median_cost': baseline,
-            'candidate_median_cost': candidate, 'reduction_fraction': reduction,
-            'pair_costs': pairs, 'samples': samples}
+    return {'verdict': verdict, 'reasons': reasons, 'baseline_median_paid_seconds': baseline,
+            'candidate_median_paid_seconds': candidate,
+            'baseline_median_cost': statistics.median([cost for sample, cost in zip(samples, costs) if sample['arm'] == 'baseline']),
+            'candidate_median_cost': statistics.median([cost for sample, cost in zip(samples, costs) if sample['arm'] == 'candidate']), 'reduction_fraction': reduction,
+            'pair_paid_seconds': pairs, 'samples': samples}
 
 
 def main() -> int:
