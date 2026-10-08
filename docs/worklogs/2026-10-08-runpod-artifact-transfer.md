@@ -44,7 +44,22 @@ pod. Setup/provision time and failure costs are separate from the primary metric
 Local reconstruction tests cover original file boundaries, five equal parts,
 missing/corrupted parts, changed originals, and a wrong transfer manifest.
 The reporting tests cover incomplete samples and the predeclared noise gates.
-Actual paid results and confirmed deletion will be linked here after execution.
+The complete [paid run 37781788409](https://github.com/tensor4all/tenferro-benchmark/actions/runs/37781788409)
+used harness commit `1db9a52` on A6000. All six original-file checks passed.
+The raw report and every host observation are retained in the run artifact
+`artifact-transfer-results-37781788409` (30-day retention). The measured median
+was 42.574 s single versus 9.098 s split (78.63% descriptive reduction).
+The primary verdict is **INCONCLUSIVE**: repeated-arm max/min exceeded the
+predeclared 1.5 threshold on both arms, and three monitored-core observations
+exceeded 20% CPU busy. These failures are retained, with no exclusions or
+relaxed thresholds. This run does not pass the promotion gate, despite every
+paired split observation being shorter than its corresponding single observation.
+
+The cleanup job succeeded under its 2xx/404 deletion contract for pod
+`s40mdpe072i3kn`. Provision/create to cleanup was about 5.92 minutes at
+$0.53/hour, approximately $0.052 of GPU list-price time; this is an estimate,
+not a billing-table reconciliation. The preceding failed attempts created no
+pod. Main workflows and production transport have not been changed.
 No production tenferro-rs change is promoted on the strength of the earlier
 HTTP Range probe.
 
