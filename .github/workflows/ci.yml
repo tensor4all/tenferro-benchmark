@@ -37,7 +37,9 @@ jobs:
       - name: Install Julia
         uses: julia-actions/setup-julia@v2
         with:
-          version: "1.10"
+          # Track the latest stable Julia 1.x (matching the release channel used
+          # for the recorded results and the committed Manifest.toml).
+          version: "1"
 
       - name: Install system dependencies
         run: |

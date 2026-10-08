@@ -57,14 +57,20 @@ jobs:
       - name: Merge report trees for Pages
         run: |
           mkdir -p _site/result _site/raw
-          for profile in mac-cpu linux-cpu; do
-            if [[ -d "_artifacts/$profile/result/$profile" ]]; then
-              cp -r "_artifacts/$profile/result/$profile" "_site/result/"
-            fi
-            if [[ -d "_artifacts/$profile/data/results/$profile" ]]; then
-              cp -r "_artifacts/$profile/data/results/$profile" "_site/raw/"
-            fi
-          done
+          # mac-cpu artifacts are archived under result/mac-cpu and data/results/mac-cpu.
+          if [[ -d "_artifacts/mac-cpu/result/mac-cpu" ]]; then
+            cp -r "_artifacts/mac-cpu/result/mac-cpu" "_site/result/"
+          fi
+          if [[ -d "_artifacts/mac-cpu/data/results/mac-cpu" ]]; then
+            cp -r "_artifacts/mac-cpu/data/results/mac-cpu" "_site/raw/"
+          fi
+          # The linux nightly benchmarks the amd-cpu target profile; publish it as linux-cpu.
+          if [[ -d "_artifacts/linux-cpu/result/amd-cpu" ]]; then
+            cp -r "_artifacts/linux-cpu/result/amd-cpu" "_site/result/linux-cpu"
+          fi
+          if [[ -d "_artifacts/linux-cpu/data/results/amd-cpu" ]]; then
+            cp -r "_artifacts/linux-cpu/data/results/amd-cpu" "_site/raw/linux-cpu"
+          fi
 
       - name: Generate results index
         run: |
