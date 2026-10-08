@@ -18,6 +18,10 @@ fn measure<O>(
     target_ns: u128,
     mut op: impl FnMut() -> Result<O>,
 ) -> Result<Value> {
+    if samples == 0 {
+        return Ok(json!({"samples": [], "calibration": {
+            "iterations": 0, "elapsed_ns": 0, "target_ns": target_ns}}));
+    }
     // Explicit priming also happens when warmups == 0.
     for _ in 0..warmups.max(1) {
         black_box(op()?);
@@ -60,6 +64,71 @@ pub fn run(
     let mut backend = CpuBackend::with_threads(threads)?;
     let provider = format!("{:?}", backend.kind());
     let mut result = match operation {
+        "gelu" | "softmax" => {
+            let (shape, seed) = if operation == "gelu" {
+                (vec![1024, 64], 50u64)
+            } else {
+                (vec![64, 64, 8], 60u64)
+            };
+            let n: usize = shape.iter().product();
+            let data: Vec<f32> = (0..n as u64)
+                .map(|i| {
+                    let v = (i.wrapping_mul(2_654_435_761).wrapping_add(seed * 97) % 2001) as f64;
+                    ((v / 1000.0 - 1.0) * 0.5) as f32 * 8.0
+                })
+                .collect();
+            let mut want: Vec<f64> = data
+                .iter()
+                .map(|&x| {
+                    let x = x as f64;
+                    0.5 * x * (1.0 + libm::erf(x / std::f64::consts::SQRT_2))
+                })
+                .collect();
+            if operation == "softmax" {
+                for (xs, ys) in data.chunks_exact(64).zip(want.chunks_exact_mut(64)) {
+                    let max = xs
+                        .iter()
+                        .map(|&x| x as f64)
+                        .fold(f64::NEG_INFINITY, f64::max);
+                    let sum: f64 = xs.iter().map(|&x| (x as f64 - max).exp()).sum();
+                    for (&x, y) in xs.iter().zip(ys.iter_mut()) {
+                        *y = (x as f64 - max).exp() / sum;
+                    }
+                }
+            }
+            let runtime = EagerRuntime::with_cpu_backend(backend)?;
+            let x = EagerTensor::from_tensor_in(
+                Tensor::from_vec_col_major(shape, data)?,
+                runtime.clone(),
+            )?;
+            runtime.with_eager_session(|s| -> tenferro_ad::Result<Value> {
+                let output = if operation == "gelu" {
+                    s.gelu(&x)?
+                } else {
+                    s.softmax(&x, 0)?
+                };
+                let got = s.duplicate_value(&output)?;
+                assert!(got
+                    .as_slice::<f32>()?
+                    .iter()
+                    .zip(&want)
+                    .all(|(&x, &y)| (x as f64 - y).abs() <= 1e-5 * y.abs().max(1.0)));
+                measure(n * 4, warmups, samples, target_ns, || {
+                    Ok(if operation == "gelu" {
+                        s.gelu(&x)?
+                    } else {
+                        s.softmax(&x, 0)?
+                    })
+                })
+                .map_err(|e| {
+                    tenferro_ad::Error::runtime_state(
+                        "cpu_gap_mwe",
+                        tenferro_runtime::ErrorPhase::Execution,
+                        e.to_string(),
+                    )
+                })
+            })?
+        }
         "cast" | "reshape" => {
             let n = 33554432;
             let input =

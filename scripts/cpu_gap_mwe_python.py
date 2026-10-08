@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """PyTorch reference for examples/cpu_gap_mwe.rs; native layouts, identical values."""
+import math
 import json
 import sys
 import time
@@ -8,6 +9,26 @@ import torch
 
 
 def fixture(operation):
+    if operation in ("gelu", "softmax"):
+        n, seed = (1024*64, 50) if operation == "gelu" else (64*64*8, 60)
+        raw = ((np.arange(n, dtype=np.uint64)*2654435761 + seed*97) % 2001).astype(np.float64)
+        data = ((raw/1000-1)*0.5).astype(np.float32)*8
+        if operation == "gelu":
+            # Pointwise operation preserves the same flat logical values.
+            x = torch.from_numpy(data)
+            expected = np.array([0.5*float(v)*(1+math.erf(float(v)/math.sqrt(2))) for v in data])
+            op = lambda: torch.nn.functional.gelu(x, approximate="none")
+        else:
+            # Rust column-major [key,query,batch] matches native [batch,query,key].
+            x = torch.from_numpy(data.reshape(8,64,64))
+            values = data.astype(np.float64).reshape(-1,64)
+            values = np.exp(values-values.max(axis=1,keepdims=True))
+            expected = (values/values.sum(axis=1,keepdims=True)).reshape(8,64,64)
+            op = lambda: torch.nn.functional.softmax(x, dim=-1)
+        def check(y):
+            got = y.numpy().astype(np.float64)
+            assert bool((np.abs(got-expected) <= 1e-5*np.maximum(1,np.abs(expected))).all())
+        return op, check, n*4
     if operation in ("cast", "reshape"):
         n = 33554432
         raw = (np.arange(n, dtype=np.int64) % 17).astype(np.float64)
