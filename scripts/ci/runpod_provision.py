@@ -8,6 +8,7 @@ job.  The pod receives only the single-use GitHub JIT runner configuration.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 import sys
@@ -48,7 +49,11 @@ def build_payload(
         "interruptible": False,
         "ports": [],
         "dockerEntrypoint": ["bash", "-lc"],
-        "dockerStartCmd": [startup_script],
+        "dockerStartCmd": [
+            "printf %s "
+            + base64.b64encode(startup_script.encode()).decode()
+            + " | base64 -d | bash"
+        ],
         "env": {
             "RUNNER_JIT_CONFIG": jit_config,
             "RUNNER_LABEL": label,
