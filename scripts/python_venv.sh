@@ -18,7 +18,7 @@ prepare_cpu_benchmark_python_venv() {
     fi
 
     case "$(uname -s)" in
-        Linux) ;;
+        Linux|Darwin) ;;
         *) return 0 ;;
     esac
 
@@ -29,11 +29,17 @@ prepare_cpu_benchmark_python_venv() {
     echo "Preparing CPU Python benchmark environment"
     (
         cd "$project_dir"
-        if [[ -n "${BENCHMARK_TORCH_WHEEL:-}" ]]; then
+        if [[ "$(uname -s)" == "Darwin" ]]; then
+            # macOS uses the regular PyPI wheels.  In particular, the Linux
+            # provider-matched wheel used by the OpenBLAS image cannot be
+            # installed on this platform.
+            uv sync --frozen || uv sync || exit 1
+        elif [[ -n "${BENCHMARK_TORCH_WHEEL:-}" ]]; then
             # The OpenBLAS image supplies a source-built wheel. Do not replace
             # it with the lockfile's provider-mismatched binary distribution.
             local wheel
-            wheel="$(realpath -e -- "$BENCHMARK_TORCH_WHEEL")" || exit 1
+            [[ -e "$BENCHMARK_TORCH_WHEEL" ]] || exit 1
+            wheel="$(realpath -- "$BENCHMARK_TORCH_WHEEL")" || exit 1
             uv venv --allow-existing .venv || exit 1
             # Prune wheel-only CUDA dependencies too, while retaining the
             # lockfile versions for the rest of the benchmark environment.

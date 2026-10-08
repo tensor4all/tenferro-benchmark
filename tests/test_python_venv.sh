@@ -60,8 +60,15 @@ if prepare_cpu_benchmark_python_venv "$TMP/project"; then
 fi
 test ! -s "$UV_TEST_LOG"
 
-# The new opt-in must not change macOS or GPU setup.
+# macOS CPU benchmarks also reset the venv, so recreate it from the lockfile.
+unset BENCHMARK_TORCH_WHEEL
+: > "$UV_TEST_LOG"
 TEST_OS=Darwin prepare_cpu_benchmark_python_venv "$TMP/project"
+grep -qx 'sync --frozen' "$UV_TEST_LOG"
+test "$UV_NO_SYNC" = 1
+
+# GPU setup remains unchanged.
+: > "$UV_TEST_LOG"
 BENCHMARK_TARGET_PROFILE=nvidia-gpu prepare_cpu_benchmark_python_venv "$TMP/project"
 test ! -s "$UV_TEST_LOG"
 echo 'Python venv provider selection: PASS'
