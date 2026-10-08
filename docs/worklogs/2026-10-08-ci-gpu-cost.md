@@ -205,3 +205,16 @@
   per-arm source refs. Identical hardware model and controller are required;
   hourly fees remain secondary and placement variation uses the existing
   whole-window max/min <=1.5 gate. The Ada run is still diagnostic.
+
+- Ada diagnostic 37803791301 created pod tq660yyehs42du at $0.24/hour,
+  but runner startup timed out at 420 seconds. Provision logs estimate 424
+  paid seconds (~$0.03); deletion was confirmed before any test execution.
+  No cause is established by these logs, and the failed pilot is retained.
+  Its completed hosted payload can be reused for another diagnostic.
+
+- Public pricing can be queried locally without credentials, avoiding
+  workflow dispatches solely to inspect stock. A40 retry 37805086927 was
+  out of stock before creation. A5000 diagnostic 37805177283 uses the
+  already prepared candidate payload after its live stock became available.
+- Add a hosted-only preparation mode so both arms can have immutable payloads
+  ready before a fixed confirmation campaign, without allocating a GPU.

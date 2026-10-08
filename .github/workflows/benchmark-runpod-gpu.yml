@@ -10,6 +10,10 @@ name: benchmark-runpod-gpu
         default: candidate
         required: true
         description: Frozen full-CI cost experiment arm
+      prepare_only:
+        type: boolean
+        default: false
+        description: Prepare immutable artifacts without allocating a GPU
       prepared_run_id:
         type: number
         default: 0
@@ -201,7 +205,7 @@ jobs:
       run: "set -euo pipefail\nstatus=\"$(curl -sS -o /tmp/delete-startup.json -w '%{http_code}' \\\n  -X DELETE\
         \ \"https://rest.runpod.io/v1/pods/${POD_ID}\" \\\n  -H \"Authorization: Bearer ${RUNPOD_API_KEY}\")\"\n\
         [[ \"$status\" == 404 || (\"$status\" -ge 200 && \"$status\" -lt 300) ]]\n"
-    if: ${{ !cancelled() && (needs.prepare-transfer.result == 'success' || needs.prepare-transfer.result == 'skipped')
+    if: ${{ !cancelled() && !inputs.prepare_only && (needs.prepare-transfer.result == 'success' || needs.prepare-transfer.result == 'skipped')
       }}
   run-ci:
     name: Full frozen GPU CI workload

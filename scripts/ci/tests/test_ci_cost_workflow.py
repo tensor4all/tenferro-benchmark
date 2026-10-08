@@ -16,5 +16,6 @@ class CiCostWorkflowTests(unittest.TestCase):
         self.assertIn("NEXTEST_TEST_THREADS: '1'", source)
         self.assertNotIn('cargo build', source)
         self.assertIn('CI_COST_DELETE_CONFIRMED', source)
+        self.assertIn('!inputs.prepare_only', source)
         self.assertIn("config['max_provision_attempts']=1", source)
         self.assertIn("config['same_tier_retries']=0", source)
