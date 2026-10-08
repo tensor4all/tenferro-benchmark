@@ -18,6 +18,11 @@ on:
         required: false
         default: false
         type: boolean
+      gpu_type:
+        description: Optional RunPod GPU type ID (empty uses configured candidates)
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -86,6 +91,7 @@ jobs:
         id: create_pod
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          RUNPOD_GPU_TYPE: ${{ inputs.gpu_type }}
         run: |
           set -euo pipefail
           # The JIT value is read from the protected temporary file rather than

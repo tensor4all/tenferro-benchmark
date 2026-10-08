@@ -99,6 +99,8 @@ def main() -> int:
         raise RuntimeError("RUNPOD_API_KEY, RUNNER_JIT_CONFIG and RUNNER_LABEL are required")
 
     config = load_config(args.config)
+    if gpu_type := os.environ.get("RUNPOD_GPU_TYPE"):
+        config["gpu_type_ids"] = [gpu_type]
     payload = build_payload(
         config,
         image=args.image,
@@ -119,6 +121,7 @@ def main() -> int:
         with open(summary, "a", encoding="utf-8") as handle:
             handle.write(f"### RunPod benchmark pod\n\n- Pod ID: `{pod_id}`\n- Runner label: `{label}`\n")
     print(f"Created RunPod benchmark pod {pod_id}")
+    print(f"RunPod machine: {result.get('machineId', 'unknown')}")
     return 0
 
 
