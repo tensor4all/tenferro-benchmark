@@ -45,10 +45,15 @@ The optional `gpu_type` input restricts diagnostics to one reviewed GPU ID.
 The accepted GPU is recorded in benchmark metadata; comparisons must use the
 actual device, rather than treating all RunPod runs as the same hardware.
 
+Before renting a GPU, a hosted Ubuntu 22.04 job builds a fresh Rust CUDA
+benchmark and archives it with both source commits and its SHA-256 digest.
+The accepted pod checks out the exact tenferro-rs commit used for that build
+and verifies the artifact before sampling. Missing, stale, or modified artifacts
+fail rather than silently rebuilding on a paid GPU.
+
 The benchmark job installs the full CUDA toolkit and Python environment, then
-runs the selected suites sequentially. Rust is still rebuilt on the accepted
-pod before sampling, outside the timed operation. Unlike tenferro-rs's archived
-test execution, this workflow does not yet move compilation to a hosted job.
+runs the selected suites sequentially using the verified binary. Local GPU runs
+continue to rebuild Rust before measurement.
 
 Provisioning regression tests use injected transports and clocks and never
 create paid resources:

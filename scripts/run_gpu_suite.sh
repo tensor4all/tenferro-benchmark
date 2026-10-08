@@ -142,6 +142,11 @@ build_rust_benchmark_if_needed() {
     if [[ "$RUST_BUILT" != "0" ]]; then
         return 0
     fi
+    if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == "1" ]]; then
+        python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$RUST_BIN"
+        RUST_BUILT=1
+        return 0
+    fi
     echo "  Building benchmark_gpu_rust..."
     CUBECL_DEBUG_LOG=0 \
     CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \

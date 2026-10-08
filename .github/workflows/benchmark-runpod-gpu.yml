@@ -41,8 +41,48 @@ env:
   BENCHMARK_TARGET_PROFILE: nvidia-gpu
 
 jobs:
+  prepare-benchmark:
+    name: Build GPU benchmark before renting GPU
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    outputs:
+      tenferro_commit: ${{ steps.build.outputs.tenferro_commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build fresh CUDA benchmark
+        id: build
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libomp-dev pkg-config libssl-dev
+          curl -fsSL -o /tmp/cuda-keyring.deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+          sudo dpkg -i /tmp/cuda-keyring.deb
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cuda-toolkit-12-8
+          export PATH="$CUDA_HOME/bin:$PATH"
+          ./scripts/setup_extern_deps.sh
+          if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
+            git -C extern/tenferro-rs pull --ff-only
+          fi
+          cargo build --release --features cuda --bin benchmark_gpu_rust
+          python3 scripts/ci/gpu_artifact.py target/release/benchmark_gpu_rust --write
+          echo "tenferro_commit=$(git -C extern/tenferro-rs rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gpu-benchmark-build-${{ github.run_id }}
+          path: |
+            target/release/benchmark_gpu_rust
+            target/release/benchmark_gpu_rust.json
+          retention-days: 7
+          if-no-files-found: error
+
   start-runpod:
     name: Start ephemeral RunPod runner
+    needs: prepare-benchmark
     runs-on: ubuntu-latest
     timeout-minutes: 70
     outputs:
@@ -126,7 +166,7 @@ jobs:
 
   run-gpu-benchmark:
     name: Run GPU benchmark on RunPod
-    needs: start-runpod
+    needs: [prepare-benchmark, start-runpod]
     runs-on:
       - self-hosted
       - ${{ needs.start-runpod.outputs.runner_label }}
@@ -134,6 +174,9 @@ jobs:
     env:
       GPU_BENCH_BACKENDS: ${{ inputs.backends }}
       REQUESTED_SUITE: ${{ inputs.suite }}
+      TENFERRO_REF: ${{ needs.prepare-benchmark.outputs.tenferro_commit }}
+      TENFERRO_UPDATE: "1"
+      GPU_BENCH_PREBUILT_RUST: "1"
     steps:
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
@@ -169,6 +212,15 @@ jobs:
           if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
             git -C extern/tenferro-rs pull --ff-only
           fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: gpu-benchmark-build-${{ github.run_id }}
+          path: target/release
+      - name: Verify hosted benchmark build
+        run: |
+          chmod +x target/release/benchmark_gpu_rust
+          python3 scripts/ci/gpu_artifact.py target/release/benchmark_gpu_rust
 
       - name: Verify CUDA benchmark environment
         run: |
