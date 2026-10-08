@@ -56,6 +56,10 @@ fn main() {
 
     if blas_accelerate {
         println!("cargo:rustc-link-lib=framework=Accelerate");
+        // Sibling binaries that do not use this package's library also need
+        // the provider for tenferro-cpu's CBLAS symbols.
+        println!("cargo:rustc-link-arg=-framework");
+        println!("cargo:rustc-link-arg=Accelerate");
         return;
     }
 

@@ -7,6 +7,15 @@ cd "$ROOT"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# Dynamic MKL sizing must be disabled even when inherited as TRUE.
+(
+  source "$ROOT/scripts/thread_env.sh"
+  MKL_DYNAMIC=TRUE
+  configure_cpu_thread_env 4
+  [[ "$MKL_NUM_THREADS" == 4 && "$MKL_DYNAMIC" == FALSE ]]
+  print_cpu_thread_env | grep -q 'MKL_DYNAMIC=FALSE'
+)
+
 assert_thread_env_metadata() {
   local openblas_root="$TMP/openblas"
   local mkl_root="$TMP/mkl"
@@ -31,6 +40,7 @@ EOF
   OPENBLAS_NUM_THREADS=1 \
   GOTO_NUM_THREADS=1 \
   MKL_NUM_THREADS=1 \
+  MKL_DYNAMIC=FALSE \
   VECLIB_MAXIMUM_THREADS=1 \
   VECLIB_NUM_THREADS=1 \
   NUMEXPR_NUM_THREADS=1 \
@@ -79,6 +89,7 @@ expected = {
     "OPENBLAS_NUM_THREADS": "1",
     "GOTO_NUM_THREADS": "1",
     "MKL_NUM_THREADS": "1",
+    "MKL_DYNAMIC": "FALSE",
     "VECLIB_MAXIMUM_THREADS": "1",
     "VECLIB_NUM_THREADS": "1",
     "NUMEXPR_NUM_THREADS": "1",

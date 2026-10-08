@@ -14,6 +14,8 @@ configure_cpu_thread_env() {
     export OPENBLAS_NUM_THREADS="$threads"
     export GOTO_NUM_THREADS="$threads"
     export MKL_NUM_THREADS="$threads"
+    # MKL dynamic sizing can cap a declared 4T run to a 2-core hosted runner.
+    export MKL_DYNAMIC=FALSE
     export VECLIB_MAXIMUM_THREADS="$threads"
     export VECLIB_NUM_THREADS="$threads"
     export NUMEXPR_NUM_THREADS="$threads"
@@ -34,6 +36,7 @@ print_cpu_thread_env() {
         OPENBLAS_NUM_THREADS \
         GOTO_NUM_THREADS \
         MKL_NUM_THREADS \
+        MKL_DYNAMIC \
         VECLIB_MAXIMUM_THREADS \
         VECLIB_NUM_THREADS \
         NUMEXPR_NUM_THREADS \
