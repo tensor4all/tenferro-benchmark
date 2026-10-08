@@ -48,8 +48,9 @@ def build_payload(
         "volumeMountPath": config["volume_mount_path"],
         "interruptible": False,
         "ports": [],
-        "dockerEntrypoint": ["/bin/bash"],
+        "dockerEntrypoint": [],
         "dockerStartCmd": [
+            "/bin/bash",
             "-lc",
             "printf %s "
             + base64.b64encode(startup_script.encode()).decode()

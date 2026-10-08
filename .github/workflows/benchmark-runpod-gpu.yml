@@ -32,7 +32,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RUNPOD_IMAGE: runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
+  RUNPOD_IMAGE: nvidia/cuda:12.8.1-devel-ubuntu22.04
   CUDA_HOME: /usr/local/cuda-12.8
   CUDA_PATH: /usr/local/cuda-12.8
   LD_LIBRARY_PATH: /usr/local/cuda-12.8/lib64
