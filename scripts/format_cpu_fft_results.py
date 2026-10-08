@@ -68,9 +68,7 @@ def format_table(paths: list[Path]) -> str:
         "",
         "Median ± IQR (ms). Missing backends are shown as `-`.",
         "",
-        "Timing scope: input tensors are created outside the timed region; each timed call creates the FFT output tensor. "
-        "The primary eager comparison is tenferro-rs FftExecutor cached versus warmed PyTorch torch.fft; traced rows reuse one compiled graph and one-shot rows are diagnostic. "
-        "Rows are limited to 1D transforms so tenferro-rs column-major layout and PyTorch row-major layout do not change the measured transform axis.",
+        'Timing audit: PyTorch 2.12 CPU torch.fft creates and commits a DFTI descriptor per call even after warmup ([upstream source](https://github.com/pytorch/pytorch/blob/7661cd9c6b841b62b7f411aa52ec51f05457263b/aten/src/ATen/native/mkl/SpectralOps.cpp#L490)). Its rows include setup and are noncompliant as operation-only performance evidence; warmed execution does not remove that setup. Input tensors are untimed and allocation-returning calls retain output allocation. Traced calls also include internal session work. Use the [cached native oneMKL follow-up](https://github.com/tensor4all/tenferro-benchmark/blob/main/result/amd-cpu/cpu/followup_12x.md) for audited current-main operation evidence. No historical timing values have been edited.',
         "",
         "| suite | benchmark | dtype | threads | shape | "
         + " | ".join(BACKEND_LABELS[b] for b in BACKEND_ORDER)

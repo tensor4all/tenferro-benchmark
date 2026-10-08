@@ -1,0 +1,108 @@
+{
+  "activations": {
+    "url": "https://github.com/tensor4all/tenferro-rs/issues/2032",
+    "number": 2032,
+    "cases": [
+      "activation.gelu_tanh",
+      "activation.erf",
+      "activation.silu",
+      "activation.sigmoid",
+      "activation.softplus"
+    ],
+    "mwe_commit": "59ed19bddc8c61fe6e47639bd22c6e2a0f59de3b"
+  },
+  "analytic": {
+    "url": "https://github.com/tensor4all/tenferro-rs/issues/2033",
+    "number": 2033,
+    "cases": [
+      "real.tanh",
+      "real.log1p",
+      "real.cos",
+      "real.sin",
+      "real.exp",
+      "real.expm1",
+      "real.pow",
+      "complex.exp",
+      "real.log"
+    ],
+    "mwe_commit": "59ed19bddc8c61fe6e47639bd22c6e2a0f59de3b"
+  },
+  "reductions": {
+    "url": "https://github.com/tensor4all/tenferro-rs/issues/2034",
+    "number": 2034,
+    "cases": [
+      "real.reduce_max_axis1",
+      "real.reduce_prod_axis1",
+      "real.reduce_sum_axis1",
+      "real.reduce_max_axis0",
+      "real.reduce_min_axis1",
+      "real.reduce_min_axis0",
+      "real.reduce_max_all",
+      "real.reduce_min_all"
+    ],
+    "mwe_commit": "59ed19bddc8c61fe6e47639bd22c6e2a0f59de3b"
+  },
+  "norm": {
+    "url": "https://github.com/tensor4all/tenferro-rs/issues/2035",
+    "number": 2035,
+    "cases": [
+      "complex.norm_fro"
+    ],
+    "mwe_commit": "59ed19bddc8c61fe6e47639bd22c6e2a0f59de3b"
+  },
+  "indexing": {
+    "url": "https://github.com/tensor4all/tenferro-rs/issues/2036",
+    "number": 2036,
+    "cases": [
+      "index.gather",
+      "index.scatter",
+      "index.dynamic_update_slice"
+    ],
+    "mwe_commit": "59ed19bddc8c61fe6e47639bd22c6e2a0f59de3b"
+  },
+  "permutation": {
+    "url": "https://github.com/tensor4all/tenferro-rs/issues/2037",
+    "number": 2037,
+    "cases": [
+      "perm.reverse_15d_3",
+      "structural.transpose",
+      "perm.reverse_23d_2",
+      "perm.transpose_3d_256_201",
+      "perm.cyclic_15d_3",
+      "perm.transpose_3d_256_102",
+      "perm.tn_light_415_24d_scattered_to_colmajor",
+      "perm.tn_light_415_24d_contiguous_same_perm",
+      "perm.rotation_6d_32_32_32_32_16_16"
+    ],
+    "mwe_commit": "59ed19bddc8c61fe6e47639bd22c6e2a0f59de3b"
+  },
+  "diagonal": {
+    "url": "https://github.com/tensor4all/tenferro-rs/issues/2038",
+    "number": 2038,
+    "cases": [
+      "structural.extract_diagonal"
+    ],
+    "mwe_commit": "59ed19bddc8c61fe6e47639bd22c6e2a0f59de3b"
+  },
+  "fft": {
+    "url": "https://github.com/tensor4all/tenferro-rs/issues/2039",
+    "number": 2039,
+    "cases": [
+      "fft.irfft",
+      "fft.rfft",
+      "fft.fft",
+      "fft.ifft"
+    ],
+    "mwe_commit": "59ed19bddc8c61fe6e47639bd22c6e2a0f59de3b"
+  },
+  "metadata": {
+    "url": "https://github.com/tensor4all/tenferro-rs/issues/2040",
+    "number": 2040,
+    "cases": [
+      "metadata.transpose_view",
+      "metadata.slice_view",
+      "metadata.reshape_view"
+    ],
+    "mwe_commit": "59ed19bddc8c61fe6e47639bd22c6e2a0f59de3b"
+  }
+}

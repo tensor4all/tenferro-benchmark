@@ -258,7 +258,13 @@ def collect(binary, output, threads, correctness_only=False, suite_key="cpu", de
         for case in (all_cases[i] for i in selected):
             row = dict(case, threads=threads, case_id=case["id"], samples=[],
                        case_key=cs.case_key(case["id"], threads), effort=effort["effort"])
-            if case["backend"] == "pytorch-cpu":
+            if case["kind"] == "cpu_followup_mwe" or "followup_mwe" in case:
+                try:
+                    from cpu_followup_cases import run as run_followup
+                    row.update(run_followup(case, threads, config, correctness_only))
+                except Exception as error:
+                    row.update(correctness_status="failed", samples=[], error=repr(error))
+            elif case["backend"] == "pytorch-cpu":
                 try:
                     row.update(run_torch(case, threads, config, correctness_only))
                 except Exception as error:  # a crash is a failed row, never a latency

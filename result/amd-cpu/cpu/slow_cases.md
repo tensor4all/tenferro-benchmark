@@ -1,5 +1,9 @@
 # Ryzen CPU slowdown observations and issue triage
 
+## Confirmed ≥1.2× follow-up
+
+Current public-API MWEs and paired confirmation are in [followup_12x.md](followup_12x.md). This historical observation inventory is screening evidence only; the follow-up report distinguishes confirmed new Issues, existing open owners, scope-ineligible trace paths and inconclusive results.
+
 - Source tenferro-rs: `5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102`; Ryzen 9 9955HX; Linux MKL devcontainer; unpinned 1T/4T.
 - Upstream main advanced after collection to `b3f47296244ff7b7c55ac0a75f782cb0835418c1` (#2026). That revision removes the optional tenferro-cpu-tprims crate expected by this harness; latest-main compatibility is not established by these results. PR CI validates the measured compatible revision above.
 - Issue search: all 1,173 pre-existing open/closed issues, plus focused operation searches, 2026-10-08.

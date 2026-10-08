@@ -90,6 +90,9 @@ expected = {
 missing = {key: value for key, value in expected.items() if env.get(key) != value}
 if missing:
     raise SystemExit(f"missing or mismatched thread env: {missing}; env={env}")
+torch = run.get("python_backends", {}).get("pytorch", {})
+if torch.get("available") and not torch.get("config", "").strip():
+    raise SystemExit("full torch.__config__.show() must be retained for provider inspection")
 jax = run.get("python_backends", {}).get("jax", {})
 if jax.get("available"):
     provider = jax.get("provider")

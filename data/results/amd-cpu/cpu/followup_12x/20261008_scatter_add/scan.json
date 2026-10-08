@@ -1,0 +1,52 @@
+[
+  {
+    "case_id": "index.scatter",
+    "threads": 1,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1294195.125,
+      "cov": 0.008027516135529721
+    },
+    "ref": {
+      "median_ns": 786734.8125,
+      "cov": 0.03704816019085087
+    },
+    "ratio": 1.6450207928227403
+  },
+  {
+    "case_id": "index.scatter",
+    "threads": 1,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  },
+  {
+    "case_id": "index.scatter",
+    "threads": 4,
+    "path": "direct-shared",
+    "reference": "pytorch",
+    "correct": true,
+    "reason": "matched aggregates and 130 deterministic probes; metadata descriptors exact",
+    "status": "screened",
+    "rust": {
+      "median_ns": 1336522.25,
+      "cov": 0.007512941916513045
+    },
+    "ref": {
+      "median_ns": 735217.8125,
+      "cov": 0.059499754744478016
+    },
+    "ratio": 1.8178589083082097
+  },
+  {
+    "case_id": "index.scatter",
+    "threads": 4,
+    "path": "prepared-trace-call",
+    "status": "scope-ineligible",
+    "reason": "no public borrowed trace execution-session API; do not mix internal session setup into operation timing"
+  }
+]

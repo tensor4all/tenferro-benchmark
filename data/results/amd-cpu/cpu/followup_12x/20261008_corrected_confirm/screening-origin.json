@@ -1,0 +1,5 @@
+{
+  "Julia_and_metadata": "../20261008_corrected_refs/scan.json; exact typed-loop priming",
+  "FFT": "../20261008_cached_mkl_fft/scan.json; cached oneMKL public DFTI; input preserved",
+  "supersedes": "all earlier Julia references and PyTorch FFT comparisons for operation-performance evidence"
+}
