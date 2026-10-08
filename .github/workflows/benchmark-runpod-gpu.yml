@@ -269,7 +269,7 @@ jobs:
           cat >> /tmp/runpod-startup.sh <<'STARTUP'
           SMOKE
           env -u RUNNER_JIT_CONFIG python3 /tmp/cuda_smoke_test.py \
-            --min-runtime-version 12.8 --full-runtime-version 12.8 --min-vram-gb 8 --skip-nvrtc-install
+            --min-runtime-version 12.8 --full-runtime-version 12.8 --min-driver-version 13.0 --min-vram-gb 8 --skip-nvrtc-install
           cd /tmp
           version=2.337.0
           sha256=70920811a4f8ad4328818682bca5c6469c1c942fab52448868071d0063816613

@@ -4,9 +4,7 @@
   "cloud_type": "SECURE",
   "compute_type": "GPU",
   "allowed_cuda_versions": [
-    "13.0",
-    "12.9",
-    "12.8"
+    "13.0"
   ],
   "gpu_tiers": [
     {

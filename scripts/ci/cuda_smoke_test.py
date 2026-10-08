@@ -361,6 +361,8 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--min-runtime-version", default="12.6")
     parser.add_argument("--full-runtime-version", default="12.8")
+    parser.add_argument("--min-driver-version", default=None,
+                        help="Additional driver requirement for other benchmark backends")
     parser.add_argument("--min-vram-gb", type=float, default=0.0)
     parser.add_argument(
         "--skip-nvrtc-install",
@@ -382,6 +384,8 @@ def main() -> int:
             )
         driver = parse_driver_cuda_version(smi.stdout)
         print(f"Driver CUDA API: {driver[0]}.{driver[1]}")
+        if args.min_driver_version and driver < parse_version(args.min_driver_version):
+            raise SmokeFailure(f'Driver CUDA API is below backend requirement {args.min_driver_version}')
         runtime = select_runtime_version(
             driver,
             minimum=parse_version(args.min_runtime_version),

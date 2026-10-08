@@ -39,7 +39,10 @@ termination after two consecutive created pods fail to register. Capacity
 failures do not count as paid startup failures. Every attempt records GPU,
 price, startup duration, and rejection reason in the Actions logs. Successful
 provisioning publishes the accepted per-attempt label, preventing stale runners
-from receiving the benchmark job. CUDA 12.8 or newer is required by this harness.
+from receiving the benchmark job. Rust uses CUDA 12.8, while the locked PyTorch
+wheel uses CUDA 13.0. Provisioning requests CUDA 13.0-capable hosts and startup
+rejects older drivers before transferring the runtime. Hosted preparation checks
+the wheel's CUDA version so dependency upgrades cannot bypass this requirement.
 
 The optional `gpu_type` input restricts diagnostics to one reviewed GPU ID.
 The accepted GPU is recorded in benchmark metadata; comparisons must use the

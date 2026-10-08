@@ -1,4 +1,5 @@
 import unittest
+import argparse
 from unittest.mock import patch, Mock
 
 from scripts.ci.cuda_smoke_test import (
@@ -13,7 +14,19 @@ from scripts.ci.cuda_smoke_test import (
     parse_version,
     run_smoke,
     select_runtime_version,
+    main,
 )
+
+
+class BackendDriverTests(unittest.TestCase):
+    @patch('scripts.ci.cuda_smoke_test.CudaBindings')
+    @patch('scripts.ci.cuda_smoke_test.subprocess.run')
+    @patch('scripts.ci.cuda_smoke_test._parse_args')
+    def test_old_host_is_rejected_before_library_loading(self, arguments, smi, bindings):
+        arguments.return_value = argparse.Namespace(min_driver_version='13.0')
+        smi.return_value = Mock(returncode=0, stdout='CUDA Version: 12.8')
+        self.assertEqual(main(), 1)
+        bindings.assert_not_called()
 
 SMI_OUTPUT = (
     "| NVIDIA-SMI 550.127.05    Driver Version: 550.127.05    "
