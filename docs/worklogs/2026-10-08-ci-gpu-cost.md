@@ -9,7 +9,7 @@
   all 285 CUDA GPU cases, all three PJRT GPU cases and the CUDA tutorial. Keep
   nextest serial execution and the existing 200-second per-case timeout.
 - Run complete fresh-pod jobs on A40 (baseline, price ceiling $0.60/hour) and
-  RTX A4500 (candidate, ceiling $0.35/hour). Both use the same pinned CUDA 12.8
+  RTX A5000 (candidate, ceiling $0.35/hour). Both use the same pinned CUDA 12.8
   image, workflow, test payload, toolchain and runtime preparation. No fallback
   GPU is an eligible sample; unavailable capacity fails explicitly without
   changing the selected arm. One provision attempt per trial bounds exploratory
@@ -49,3 +49,6 @@
   not publish operation benchmark tables and does not run PR-controlled
   tenferro workflows with repository secrets. Production deployment and an
   exact main-workflow cost comparison remain separate verification steps.
+
+- A4500 diagnostic pilot 37787740830 stopped on no in-stock offer before pod
+  creation; no GPU cost. A5000 replaces it before any paired measurements.
