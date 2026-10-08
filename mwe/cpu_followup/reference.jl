@@ -42,12 +42,12 @@ if !metadata;sigs=map(signature,first isa Tuple ? collect(first) : [first]);end
 first=nothing
 cap=clamp((512*1024*1024)÷max(bytes,1),1,65536);target=parse(Int,get(ENV,"CPU_FOLLOWUP_TARGET_NS","10000000"))
 # Typed retention storage and all owned inputs allocated before each clock.
-function batch(n)
- inputs=setup(n); outputs=Vector{typeof(call(inputs[1]))}(undef,n)
+function batch(n,operation::F) where {F}
+ inputs=setup(n); outputs=Vector{typeof(operation(inputs[1]))}(undef,n)
  # The type probe above is explicitly untimed and its output is discarded here.
  GC.gc(false)
  start=time_ns()
- for i in 1:n;outputs[i]=call(inputs[i]);end
+ for i in 1:n;outputs[i]=operation(inputs[i]);end
  elapsed=time_ns()-start
  GC.@preserve outputs inputs begin end
  elapsed
@@ -57,10 +57,10 @@ if runs>0
  for _ in 1:3;call(only(setup(1)));end
  count=1
  while true
-  global elapsed=batch(count)
+  global elapsed=batch(count,call)
   (elapsed>=target || count==cap) && break
   global count=min(count*2,cap)
  end
- samples=[Dict("sample_index"=>i-1,"iterations"=>count,"elapsed_ns"=>batch(count)) for i in 1:runs]
+ samples=[Dict("sample_index"=>i-1,"iterations"=>count,"elapsed_ns"=>batch(count,call)) for i in 1:runs]
 end
 println(JSON.json(Dict("case_id"=>id,"path"=>"julia-base","threads"=>threads,"outputs"=>sigs,"samples"=>samples,"calibration"=>Dict("iterations"=>count,"elapsed_ns"=>elapsed,"target_ns"=>target,"memory_cap_bytes"=>512*1024*1024))))

@@ -115,7 +115,35 @@ elif cat=='fft':
 else:raise ValueError('unsupported reference category')
 
 # Compiled JAX graphs are separately labelled; compilation and first execution untimed.
-if backend=='jax':call=jax.jit(call)
+if backend=='jax':
+ # Every tensor is a dynamic JIT argument. Capturing fixture arrays as constants
+ # lets XLA fold the declared operation and invalidates performance comparisons.
+ inputs=tuple(globals().get(k) for k in ('x','y','idx','exponent','zeros'))
+ def dynamic(x,y,idx,exponent,zeros):
+  if cat=='real':
+   if reduction:return getattr(jnp,name)(x,axis=axis)
+   return jnp.power(x,exponent) if op=='pow' else getattr(jnp,op)(x)
+  if cat=='index':
+   if op=='gather':return jnp.take(x,idx,axis=0)
+   if op=='scatter':return zeros.at[idx].set(y)
+   if op=='slice':return jax.lax.slice(x,(1024,),(n-1024,),(2,))
+   if op=='dynamic_slice':return jax.lax.dynamic_slice(x,(1024,),(n//2,))
+   if op=='dynamic_update_slice':return jax.lax.dynamic_update_slice(x,y,(1024,))
+   if op=='pad':return jnp.pad(x,(128,128))
+   if op=='concatenate':return jnp.concatenate((x,y))
+   if op=='reverse':return jnp.flip(x)
+  if cat=='structural':
+   if op=='cast_f64_f32':return x.astype(jnp.float32)
+   if op=='extract_diagonal':return jnp.diagonal(x,axis1=1,axis2=2)
+   if op=='transpose':return jnp.transpose(x)
+   if op=='broadcast_in_dim':return jnp.broadcast_to(x,(8192,4096))
+   return getattr(jnp,op)(x)
+  if cat in ('complex','linalg'):
+   return jnp.linalg.norm(x) if op=='norm_fro' else jnp.linalg.slogdet(x) if op=='slogdet' else getattr(jnp,op)(x)
+  if cat=='fft':return getattr(jnp.fft,op)(x,n=n,norm='backward') if op=='irfft' else getattr(jnp.fft,op)(x,norm='backward')
+  raise ValueError('unsupported dynamic operation')
+ compiled=jax.jit(dynamic)
+ call=lambda:compiled(*inputs)
 first=ready(call())
 outs=first if isinstance(first,tuple) else (first,)
 
