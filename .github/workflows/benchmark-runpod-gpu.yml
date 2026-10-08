@@ -71,7 +71,7 @@ jobs:
           gh api --method POST \
             "orgs/${GITHUB_REPOSITORY_OWNER}/actions/runners/generate-jitconfig" \
             --input - > /tmp/jit-response.json <<JSON
-          {"name":"${label}","runner_group_id":${RUNNER_GROUP_ID},"labels":["${label}"]}
+          {"name":"${label}","runner_group_id":${RUNNER_GROUP_ID},"labels":["self-hosted","${label}"],"work_folder":"_work"}
           JSON
           jq -e -r '.encoded_jit_config' /tmp/jit-response.json > /tmp/jit-config
 
