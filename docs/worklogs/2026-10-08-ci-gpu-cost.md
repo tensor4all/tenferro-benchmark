@@ -75,7 +75,13 @@
   paired campaign is dispatched until distinct baseline/candidate preparation
   is restored and its protocol is recorded.
 
-- Diagnostic 37791565589 failed during hosted wheel preparation: pinned PJRT
-  0.10.2 has no Python 3.10 wheel. No pod was created. Switch the runtime image
+- Diagnostic 37791565589 failed during hosted wheel preparation: the explicitly requested manylinux2014
+  platform excluded the pinned PJRT 0.10.2 manylinux_2_27 wheel. No pod was created. Switch the runtime image
   to Ubuntu 24.04 (digest ebef3c171eeef0298e4eb2e4be843105edf3b8b0ac45e0b43acee358e8046867)
   and stage Python 3.12 wheels; retain pinned PJRT/NVIDIA versions.
+
+- Retry 37791879934 exposed the same platform-filter error before provisioning.
+  PyPI metadata confirms PJRT is a py3-none-manylinux_2_27 wheel, not a
+  Python-ABI-specific wheel. Correct the download platform list to include
+  manylinux_2_27 and retain manylinux2014 for the NVIDIA wheels. The earlier
+  Python-version diagnosis was incorrect; no paid pods were created.

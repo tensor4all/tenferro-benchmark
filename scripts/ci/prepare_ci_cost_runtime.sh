@@ -6,7 +6,7 @@ mkdir -p "$payload/bin" "$payload/wheels" "$payload/opt/tenferro-ci" "$payload/u
 cp "$(rustup which cargo)" "$payload/bin/cargo"
 cp "$(command -v cargo-nextest)" "$payload/bin/cargo-nextest"
 bash tenferro-rs/scripts/ci/install_cutensor.sh "$CUTENSOR_VERSION" "$payload/opt/tenferro-ci/cutensor-$CUTENSOR_VERSION"
-python3 -m pip download --only-binary=:all: --no-deps --python-version 312 --platform manylinux2014_x86_64 --implementation cp --abi cp312 \
+python3 -m pip download --only-binary=:all: --no-deps --python-version 312 --platform manylinux_2_27_x86_64 --platform manylinux2014_x86_64 --implementation cp --abi cp312 \
   --dest "$payload/wheels" "jax-cuda12-pjrt==$JAX_CUDA12_PJRT_VERSION" \
   "nvidia-cudnn-cu12==$NVIDIA_CUDNN_CU12_VERSION" "nvidia-cuda-nvcc-cu12==$NVIDIA_CUDA_NVCC_CU12_VERSION"
 headers="$(mktemp -d)"
