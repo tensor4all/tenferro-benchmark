@@ -119,6 +119,36 @@ jobs:
             --startup-script /tmp/runpod-startup.sh \
             --image "${RUNPOD_IMAGE}"
 
+      - name: Wait for RunPod runner registration
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          RUNNER_LABEL: ${{ steps.runner_label.outputs.label }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            if gh api --paginate "orgs/${GITHUB_REPOSITORY_OWNER}/actions/runners" \
+              --jq '.runners[] | select(.status == "online") | .labels[].name' \
+              | grep -Fxq "$RUNNER_LABEL"; then
+              echo "RunPod runner is online."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::RunPod runner did not register within 10 minutes; inspect the pod's container and system logs."
+          exit 1
+
+      - name: Delete pod after startup failure
+        if: ${{ failure() && steps.create_pod.outputs.pod_id != '' }}
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          POD_ID: ${{ steps.create_pod.outputs.pod_id }}
+        run: |
+          set -euo pipefail
+          status="$(curl -sS -o /tmp/delete-startup.json -w '%{http_code}' \
+            -X DELETE "https://rest.runpod.io/v1/pods/${POD_ID}" \
+            -H "Authorization: Bearer ${RUNPOD_API_KEY}")"
+          [[ "$status" == 404 || ("$status" -ge 200 && "$status" -lt 300) ]]
+
   run-gpu-benchmark:
     name: Run GPU benchmark on RunPod
     needs: start-runpod
