@@ -39,3 +39,12 @@ and polls the same run after observation errors. Free preflight validates artifa
 access before paid dispatch. The metadata fallback is covered locally with a DNS
 failure and preserves the provider start time and price; it never invents them.
 Production CUDA concurrency stays serial until the declared experiment passes.
+
+## Outcome
+
+The single attempt stopped at A/A: 601.490 vs 346.410 seconds (ratio 1.7364).
+Both CUDA stages took 240 seconds; preparation/transfer variability prevented
+a valid whole-lifetime comparison. No candidate was run or promoted. Both full
+workloads and deletions passed, and the second run exercised the startup metadata
+fallback after a real DNS failure. Total estimated GPU cost: $0.1553502778.
+See [the retained result](../../result/nvidia-gpu/ci/runpod-concurrency.md).
