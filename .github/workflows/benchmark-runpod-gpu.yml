@@ -64,7 +64,7 @@ jobs:
         name: bootstrap-frozen-manifest
         path: /tmp/frozen-artifacts.json
     - name: Checkout pinned smoke helper for image validation
-      if: ${{ inputs.prepare_only }}
+      if: ${{ inputs.prepare_only && !inputs.inventory_only }}
       uses: actions/checkout@v5
       with:
         repository: tensor4all/tenferro-rs
@@ -72,7 +72,7 @@ jobs:
         path: source
         persist-credentials: false
     - name: Validate official runner image without a GPU
-      if: ${{ inputs.prepare_only }}
+      if: ${{ inputs.prepare_only && !inputs.inventory_only }}
       timeout-minutes: 10
       run: |
         set -euo pipefail
@@ -116,6 +116,43 @@ jobs:
         ROOT
         IMAGE_CHECK
         docker run --rm --entrypoint bash -v /tmp/runner-image-check.sh:/check.sh:ro -v "${GITHUB_WORKSPACE}/source/scripts/ci/cuda_smoke_test.py:/probe/cuda_smoke_test.py:ro" ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4 /check.sh
+    - name: Read A40 placement inventory without creating Pods
+      if: ${{ inputs.inventory_only }}
+      timeout-minutes: 3
+      run: |
+        python3 - <<'INVENTORY'
+        import json, urllib.request
+        from pathlib import Path
+
+        def query(document):
+            request=urllib.request.Request('https://api.runpod.io/graphql',data=json.dumps({'query':document}).encode(),headers={'Content-Type':'application/json'})
+            with urllib.request.urlopen(request,timeout=30) as response:
+                return json.load(response)
+
+        out={}
+        out['schema']=query('{ __type(name:"GpuType") { fields { name args { name type { name kind ofType { name kind } } } } } }')
+        probe=query('{ gpuTypes(input:{id:"NVIDIA A40"}) { id lowestPrice(input:{gpuCount:1,secureCloud:true,dataCenterId:"US-TX-3"}) { stockStatus uninterruptablePrice } } }')
+        out['probe']=probe
+        if probe.get('errors'):
+            print(json.dumps(probe['errors']))
+        else:
+            with urllib.request.urlopen('https://rest.runpod.io/v1/openapi.json',timeout=30) as response:
+                spec=json.load(response)
+            centers=sorted(spec['components']['schemas']['PodCreateInput']['properties']['dataCenterIds']['items']['enum'])
+            out['offers']={}
+            for center in centers:
+                data=query('{ gpuTypes(input:{id:"NVIDIA A40"}) { id lowestPrice(input:{gpuCount:1,secureCloud:true,dataCenterId:'+json.dumps(center)+'}) { stockStatus uninterruptablePrice } } }')
+                out['offers'][center]=data
+                print(center,json.dumps(data))
+        Path('/tmp/runpod-placement-inventory.json').write_text(json.dumps(out,indent=2)+'\n')
+        INVENTORY
+    - name: Save placement inventory
+      if: ${{ inputs.inventory_only }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: runpod-placement-inventory
+        path: /tmp/runpod-placement-inventory.json
+        if-no-files-found: error
   start-runpod:
     name: Start RunPod org runner
     runs-on: ubuntu-latest
@@ -371,7 +408,7 @@ jobs:
           exit 0
         fi
     needs: verify-artifacts
-    if: ${{ !inputs.prepare_only }}
+    if: ${{ !inputs.prepare_only && !inputs.inventory_only }}
   setup-watchdog:
     name: Monitor paid GPU lifecycle
     needs: start-runpod
@@ -929,3 +966,7 @@ jobs:
         type: boolean
         default: true
         description: Verify frozen artifacts without creating a Pod
+      inventory_only:
+        type: boolean
+        default: false
+        description: Read placement offers only; never allocate a GPU
