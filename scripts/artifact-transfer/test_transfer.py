@@ -19,7 +19,10 @@ class TransferTests(unittest.TestCase):
             "01Z Downloading artifact '1'", "02Z Downloading artifact '2'",
             f'04Z SHA256 digest of downloaded artifact is {b}',
             f'09Z SHA256 digest of downloaded artifact is {a}'])
-        rows=analyze(log)[0]['artifacts']
+        result=analyze(log)[0]
+        self.assertEqual(result['retry_messages'], [])
+        self.assertIn('does not imply no retries', result['retry_visibility'])
+        rows=result['artifacts']
         self.assertEqual([r['seconds_to_digest'] for r in rows],[8,2])
         self.assertNotIn('seconds_to_digest',analyze(log.rsplit('\n',1)[0])[0]['artifacts'][0])
 

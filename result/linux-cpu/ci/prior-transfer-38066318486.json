@@ -13,7 +13,8 @@
         "seconds_to_digest": 0.298171
       }
     ],
-    "retry_messages": []
+    "retry_messages": [],
+    "retry_visibility": "debug-only; absence of messages does not imply no retries"
   },
   {
     "job": "CUDA GPU tests on RunPod",
@@ -65,7 +66,8 @@
         "seconds_to_digest": 126.097923
       }
     ],
-    "retry_messages": []
+    "retry_messages": [],
+    "retry_visibility": "debug-only; absence of messages does not imply no retries"
   },
   {
     "job": "CUDA GPU tests on RunPod",
@@ -117,7 +119,8 @@
         "seconds_to_digest": 27.537803
       }
     ],
-    "retry_messages": []
+    "retry_messages": [],
+    "retry_visibility": "debug-only; absence of messages does not imply no retries"
   },
   {
     "job": "CUDA GPU tests on RunPod",
@@ -169,6 +172,7 @@
         "seconds_to_digest": 7.247578
       }
     ],
-    "retry_messages": []
+    "retry_messages": [],
+    "retry_visibility": "debug-only; absence of messages does not imply no retries"
   }
 ]

@@ -30,8 +30,24 @@ The workload reused the exact ten compressed parts from source run 38056837195. 
 
 ## Prior RunPod transfer diagnosis
 
-In run 38066318486, the common parts finished at 6.80, 6.64, 7.27, 118.80 and 126.10 seconds from their respective requests. SDK parts took 111.61, 6.37, 115.88, 7.25 and 122.23 seconds. The next run used the same immutable artifacts and all parts finished in about 7–8 seconds. No explicit retry messages appeared. Existing logs do not isolate first-byte latency, network throughput and ZIP processing, so the slow-tail cause remains unproven. The CPU raw comparison does not reproduce the RunPod slow tail.
+In run 38066318486, the common parts finished at 6.80, 6.64, 7.27, 118.80 and 126.10 seconds from their respective requests. SDK parts took 111.61, 6.37, 115.88, 7.25 and 122.23 seconds. The next run used the same immutable artifacts and all parts finished in about 7–8 seconds. No explicit retry messages appeared, but the pinned action emits retry details only through `core.debug`; this does not establish that no retry occurred. Existing logs do not isolate first-byte latency, network throughput and ZIP processing, so the slow-tail cause remains unproven. The CPU raw comparison does not reproduce the RunPod slow tail.
 
 [Per-artifact diagnosis, first run](prior-transfer-38066318486.json); [second run](prior-transfer-38067070576.json). The reusable parser joins interleaved completion events by digest, not log order, and leaves missing or ambiguous completions unassigned.
 
 [Predeclared protocol](artifact-transfer-protocol.json); [full evidence](artifact-transfer-result.json.gz), including all observations, logs, jobs, host metadata and exact payload identities.
+
+## Download timeout and log visibility
+
+The executed [pinned Action bundle](https://github.com/actions/download-artifact/blob/3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/dist/index.js#L126391)
+uses `@actions/artifact` 6.2.1. Its transfer loop permits five attempts and waits
+five seconds after an error; intermediate errors are debug-only. Its 30-second
+body-idle timer starts after `client.get(url)` receives the response headers and
+refreshes on data. It is not a 30-second total request deadline. Thus a transfer
+longer than 30 seconds does not by itself prove a timer bug or identify DNS,
+connection establishment, server response, body progress, or retries as the cause.
+The surrounding production step still has its four-minute total limit.
+
+The next useful diagnostic must capture connection/first-byte/body phases and
+attempt counts on the affected RunPod network path. Changing global repository
+debug settings or rerunning the closed performance trials is unnecessary for
+this source finding. No timeout, retry policy or transfer concurrency changed.

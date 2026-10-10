@@ -3,6 +3,8 @@
 The interval starts at the ID-specific download request and ends at that
 artifact's digest log. It includes HTTP setup, network, unzip and hashing;
 these existing logs cannot isolate first-byte latency or unzip CPU time.
+The pinned action hides retry details behind core.debug; an empty message
+list does not establish that no retries occurred.
 """
 import datetime as dt
 import json
@@ -40,7 +42,8 @@ def analyze(log):
                     row['seconds_to_digest'] = (timestamp-dt.datetime.fromisoformat(row['started_at'])).total_seconds()
         if re.search(r'retry|retrying|timed out|timeout|ECONN', message, re.I) and not '\x1b' in message and not '^[' in message:
             group['retries'].append(message)
-    return [{'job':j, 'step':s, 'artifacts':list(g['artifacts'].values()), 'retry_messages':g['retries']}
+    return [{'job':j, 'step':s, 'artifacts':list(g['artifacts'].values()), 'retry_messages':g['retries'],
+             'retry_visibility':'debug-only; absence of messages does not imply no retries'}
             for (j,s),g in groups.items() if g['artifacts']]
 
 

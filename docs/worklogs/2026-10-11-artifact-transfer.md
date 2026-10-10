@@ -40,3 +40,9 @@ predeclared performance gate: observed mean 25.320 vs 23.996 seconds and median
 GPU trial or production format change follows this negative screening. The
 per-artifact parser now makes existing slow-tail evidence reusable without
 adding work to paid Pods. [Full result](../../result/linux-cpu/ci/artifact-transfer-result.md).
+
+Inspection of the exact bundled official downloader established that retry
+messages are debug-only and its 30-second timer covers body inactivity after
+headers, not total request time. The diagnostic explicitly labels retry
+visibility; missing messages never imply zero retries. The RunPod delay remains
+unattributed until connection/first-byte/body phases can be observed there.
