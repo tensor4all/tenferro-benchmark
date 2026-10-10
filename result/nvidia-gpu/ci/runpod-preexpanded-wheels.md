@@ -73,3 +73,24 @@ improvement estimate; the 10% whole-paid-lifetime goal remains unproven.
 [Complete GPU evidence](runpod-preexpanded-wheels-gpu.json.gz) retains the log,
 all case identities, hosted byte/content verification, placement, job steps,
 stage costs and confirmed deletion. No extra candidate allocation was made.
+
+## Post-merge integration validation
+
+PR [#2060](https://github.com/tensor4all/tenferro-rs/pull/2060) merged as
+`8fbd73d5d08e5a91e8f418728711f13a8dbb9043`.
+[Run 38047804467](https://github.com/tensor4all/tenferro-rs/actions/runs/38047804467)
+succeeded using the trusted main workflows, including the producer's
+`--unpack-pjrt-wheels` opt-in and the prepared wheel directory on the Pod.
+All 292 CUDA tests, three PJRT tests and the CUDA tutorial passed. Main also
+contains unrelated CUDA changes from PR #2059, so this workload is distinct
+from the frozen 288-case validation above.
+
+The normal scheduler selected an NVIDIA RTX A4500 with driver 570.195.03.
+Paid lifetime was 396.521 seconds at $0.25/hour, estimated GPU cost
+$0.0275362. Runtime setup was 79 seconds. These are integration diagnostics
+from a different device and workload, not a comparable performance sample.
+Pod deletion returned HTTP 204. The whole-paid-lifetime 10% goal remains
+unproven; the verified improvement is the common-payload byte reduction.
+
+[Complete main integration evidence](runpod-preexpanded-wheels-main.json.gz)
+retains all 295 passed case lines, the run log, job steps and stage costs.
