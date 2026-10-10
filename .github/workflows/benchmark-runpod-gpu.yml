@@ -944,8 +944,7 @@ jobs:
         machine=pod.get('machine') or {}
         record={'pod_id':pod.get('id'),'machine_id':pod.get('machineId'),'data_center_id':machine.get('dataCenterId'),'cpu_type':machine.get('cpuType')}
         print(json.dumps(record))
-        Path('/tmp/runpod-placement.json').write_text(json.dumps(record,indent=2)+'
-        ')
+        Path('/tmp/runpod-placement.json').write_text(json.dumps(record,indent=2))
         PLACEMENT
     - name: Report paid GPU CI cost by stage
       if: always() && steps.delete_pod.outputs.deleted_at != ''
