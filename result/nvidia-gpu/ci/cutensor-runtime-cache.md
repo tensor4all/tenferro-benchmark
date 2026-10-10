@@ -61,3 +61,20 @@ All 360 production CI helper tests and the local fast gate passed. Tests use
 real tar archives for selective installation, stale destination replacement,
 and missing/empty/broken runtime ABI rejection. Production shared-cache
 publication requires the trusted main workflow after merge.
+
+## Production integration
+
+[PR #2062](https://github.com/tensor4all/tenferro-rs/pull/2062) merged as
+`1d34684bed4f91b4b9be7cce703b9fa25dc221a9` after all required checks passed.
+[GPU run 38050321693](https://github.com/tensor4all/tenferro-rs/actions/runs/38050321693)
+passed all 292 CUDA tests, three PJRT tests and the tutorial; Pod deletion
+returned HTTP 204.
+
+The trusted main cache publisher's
+[cuTENSOR job](https://github.com/tensor4all/tenferro-rs/actions/runs/38051050511/job/114210081208)
+successfully saved the runtime-only v3 entry with **237,336,893 bytes**,
+compared with the previously observed v2 entry's 608,291,096 bytes (about
+61% fewer bytes). This confirms the actual hosted cache footprint; no cache
+retention or paid-time improvement is inferred from it.
+
+[Production logs and job metadata](cutensor-runtime-cache-integration.json.gz).
