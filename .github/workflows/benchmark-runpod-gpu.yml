@@ -280,7 +280,8 @@ jobs:
         # Embed the smoke script from the trusted checkout between the
         # startup-script halves so the pod needs no network fetch for it.
         if [ "$EXPERIMENT_ARM" = candidate ]; then
-          curl -fsSL --retry 2 --max-time 30 "$CANDIDATE_SMOKE_URL" >> /tmp/runpod-startup.sh
+          curl -fsSL --retry 2 --max-time 30 "$CANDIDATE_SMOKE_URL" -o /tmp/candidate-smoke.py
+          cat /tmp/candidate-smoke.py >> /tmp/runpod-startup.sh
         else
           cat scripts/ci/cuda_smoke_test.py >> /tmp/runpod-startup.sh
         fi
