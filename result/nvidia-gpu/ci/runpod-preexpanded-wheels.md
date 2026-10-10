@@ -52,3 +52,24 @@ python3 scripts/runpod-preexpanded-wheels/prepare.py \
 Here `input` contains the five merged common artifact parts and checksum from
 run 38034449617; `source` is the candidate checkout. The workflow embeds the
 candidate consumer and runs unchanged CUDA and tutorial commands.
+
+## Hosted and full GPU validation
+
+[Run 38046438056](https://github.com/tensor4all/tenferro-benchmark/actions/runs/38046438056)
+succeeded at harness `b8a6e9fd587229e781ca54544431b61a7663d5f9`. Hosted
+preparation preserved the same complete 79-file/link inventory and produced
+1,080,710,232 common bytes, 9.67711% below the frozen original. The local and
+hosted archive byte counts differ; both use unchanged `tar --zstd` settings
+and independently pass the 5% byte gate and exact decoded-content checks.
+Cargo, nextest and NVCC started in the unchanged public official runner.
+
+The fresh A40 in CA-MTL-1 used driver 570.195.03 and selected CUDA 12.8. All
+288 exact frozen CUDA/PJRT case identities and the CUDA tutorial passed.
+DELETE returned HTTP 204. Paid lifetime was 352.480 seconds at $0.59/hour,
+estimated GPU cost $0.0577676. Runtime setup was 26 seconds and PJRT including
+its setup was four seconds. These are one-run diagnostics, not a paired
+improvement estimate; the 10% whole-paid-lifetime goal remains unproven.
+
+[Complete GPU evidence](runpod-preexpanded-wheels-gpu.json.gz) retains the log,
+all case identities, hosted byte/content verification, placement, job steps,
+stage costs and confirmed deletion. No extra candidate allocation was made.
