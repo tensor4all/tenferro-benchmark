@@ -31,3 +31,12 @@ for a later RunPod validation, not a paid-lifetime or production speedup claim.
 
 [Protocol](../../result/linux-cpu/ci/artifact-transfer-protocol.json).
 Zero GPU Pods are allocated by this workflow; it has no RunPod secrets or API calls.
+
+## Outcome
+
+All raw and ZIP transfers reconstructed identical bytes, but raw failed the
+predeclared performance gate: observed mean 25.320 vs 23.996 seconds and median
+24.648 vs 24.431 seconds. A/A validity passed. Keep production ZIP transport; no
+GPU trial or production format change follows this negative screening. The
+per-artifact parser now makes existing slow-tail evidence reusable without
+adding work to paid Pods. [Full result](../../result/linux-cpu/ci/artifact-transfer-result.md).
