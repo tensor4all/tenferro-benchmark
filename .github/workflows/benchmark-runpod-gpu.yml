@@ -125,18 +125,17 @@ jobs:
         from pathlib import Path
 
         def query(document):
-            request=urllib.request.Request('https://api.runpod.io/graphql',data=json.dumps({'query':document}).encode(),headers={'Content-Type':'application/json'})
+            request=urllib.request.Request('https://api.runpod.io/graphql',data=json.dumps({'query':document}).encode(),headers={'Content-Type':'application/json','Accept':'application/json','User-Agent':'tenferro-ci-runpod-pricing/1'})
             with urllib.request.urlopen(request,timeout=30) as response:
                 return json.load(response)
 
         out={}
-        out['schema']=query('{ __type(name:"GpuType") { fields { name args { name type { name kind ofType { name kind } } } } } }')
         probe=query('{ gpuTypes(input:{id:"NVIDIA A40"}) { id lowestPrice(input:{gpuCount:1,secureCloud:true,dataCenterId:"US-TX-3"}) { stockStatus uninterruptablePrice } } }')
         out['probe']=probe
         if probe.get('errors'):
             print(json.dumps(probe['errors']))
         else:
-            with urllib.request.urlopen('https://rest.runpod.io/v1/openapi.json',timeout=30) as response:
+            with urllib.request.urlopen(urllib.request.Request('https://rest.runpod.io/v1/openapi.json',headers={'User-Agent':'tenferro-ci-runpod-pricing/1','Accept':'application/json'}),timeout=30) as response:
                 spec=json.load(response)
             centers=sorted(spec['components']['schemas']['PodCreateInput']['properties']['dataCenterIds']['items']['enum'])
             out['offers']={}
@@ -203,7 +202,7 @@ jobs:
         RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
       run: |
         python3 - <<'CONFIG'
-        import json
+        import json, os
         from pathlib import Path
         from scripts.ci.runpod_pricing import fetch_gpu_offers, http_transport, GRAPHQL_URL
         p=Path('scripts/ci/runpod_config.json')
@@ -217,6 +216,7 @@ jobs:
         c['max_price_candidates']=1
         c['max_provision_attempts']=1
         c['same_tier_retries']=0
+        c['startup_poll_seconds']=2 if os.environ['EXPERIMENT_ARM']=='candidate' else 10
         p.write_text(json.dumps(c))
         print(f'A40 offered at ${offers[0].price_per_hr}/hr')
         CONFIG
@@ -368,7 +368,17 @@ jobs:
         # incompatible pods immediately, and stops after the bounded
         # attempt budget with an explicit error.
         test -n "${RUNTIME_ARTIFACT_PREFIX}"
-        python3 -m scripts.ci.runpod_provision \
+        python3 -c 'from scripts.ci import runpod_provision
+        original_payload = runpod_provision.build_pod_payload
+
+        def scoped_payload(*args, **kwargs):
+            payload = original_payload(*args, **kwargs)
+            payload["dataCenterIds"] = ["CA-MTL-1"]
+            return payload
+
+        runpod_provision.build_pod_payload = scoped_payload
+        raise SystemExit(runpod_provision.main())
+        ' \
           --config scripts/ci/runpod_config.json \
           --startup-script /tmp/runpod-startup.sh \
           --image-name "${RUNPOD_IMAGE}" \
@@ -920,6 +930,20 @@ jobs:
         repository: tensor4all/tenferro-rs
         ref: ff94aeded9cc98d6c49889c8ef6fca365763d93a
         persist-credentials: false
+    - name: Record placement after deletion
+      if: always() && steps.delete_pod.outputs.deleted_at != ''
+      continue-on-error: true
+      run: |
+        python3 - <<'PLACEMENT'
+        import json
+        from pathlib import Path
+        pod=json.loads(Path('/tmp/runpod-pod.json').read_text())
+        machine=pod.get('machine') or {}
+        record={'pod_id':pod.get('id'),'machine_id':pod.get('machineId'),'data_center_id':machine.get('dataCenterId'),'cpu_type':machine.get('cpuType')}
+        print(json.dumps(record))
+        Path('/tmp/runpod-placement.json').write_text(json.dumps(record,indent=2)+'
+        ')
+        PLACEMENT
     - name: Report paid GPU CI cost by stage
       if: always() && steps.delete_pod.outputs.deleted_at != ''
       continue-on-error: true
@@ -952,6 +976,14 @@ jobs:
         path: /tmp/runpod-stage-cost.json
         if-no-files-found: warn
         retention-days: 30
+    - name: Save placement observations
+      if: always() && steps.delete_pod.outputs.deleted_at != ''
+      continue-on-error: true
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: runpod-placement-${{ github.run_id }}
+        path: /tmp/runpod-placement.json
+        if-no-files-found: warn
 'on':
   workflow_dispatch:
     inputs:
