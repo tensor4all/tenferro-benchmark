@@ -80,6 +80,29 @@ Do not delete a state file to recover an observation: inspect the recorded
 GitHub run first. Source regeneration and statistical thresholds are fixed
 before any approved paid experiment.
 
+## Accepted campaign outcome
+
+The single accepted campaign used harness
+`d0751b61c33fab56b55d5cd2844664b14c7d5a15` and completed all 18 allocations
+in the declared order. All exact numerical cases and mandatory deletions passed.
+The final Pod metadata GET failed during DNS resolution at its two-second
+connection deadline; deletion still returned HTTP 204. Its cost and placement
+artifacts were consequently absent, and the observer stopped as required.
+The verdict is **INCONCLUSIVE**: the missing final observation is neither
+replaced nor omitted to promote the seven complete pairs. No further paid
+campaign is authorized by this record.
+
+[The complete retained result](../../result/nvidia-gpu/ci/public-runner-confirmation.md)
+contains every sample, partial descriptive statistics, missing-evidence diagnosis,
+and the full logs/bound protocol. The observations indicate that runner startup
+and queue time is the main reduction, but do not establish the full primary gate.
+The one-attempt comparison is finished; the 10% performance goal remains unproven.
+
+A concrete follow-up is to persist the accepted Pod metadata during provisioning
+and reuse it if the diagnostic pre-delete read fails. Deletion must remain
+independent of telemetry. This result record does not implement that fallback
+or change the production workflow.
+
 ## Alternatives checked
 
 The complete zstd-10 runtime byte screen failed its declared threshold:
