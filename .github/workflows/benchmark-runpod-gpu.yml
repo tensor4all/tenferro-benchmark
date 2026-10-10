@@ -880,7 +880,7 @@ jobs:
         set -euo pipefail
         get_status="$(
           curl -sS --connect-timeout 2 --max-time 5 \
-            --url "https://rest.runpod.io/v1/pods/${POD_ID}" \
+            --url "https://rest.runpod.io/v1/pods/${POD_ID}?includeMachine=true" \
             --header "Authorization: Bearer ${RUNPOD_API_KEY}" \
             --output /tmp/runpod-pod.json \
             --write-out "%{http_code}"
