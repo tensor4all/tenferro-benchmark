@@ -1,0 +1,98 @@
+{
+  "status": "DECLARED before any raw candidate measurement",
+  "baseline_source": "e20f1fb9e3591135c830126d641645c3ef914e1f",
+  "candidate": "official upload-artifact archive:false, exact same compressed parts",
+  "source_run": 38056837195,
+  "source_artifacts": [
+    {
+      "id": 11672107455,
+      "name": "gpu-runtime-38056837195-cuda12.8-part02",
+      "digest": "sha256:2164111b778a64b74901634422fb99316538b42ff1879dc08cb28d875a86df84",
+      "size_in_bytes": 214889515
+    },
+    {
+      "id": 11672092483,
+      "name": "gpu-runtime-38056837195-common-part00",
+      "digest": "sha256:fbb4690bdde9e3b306d032922e9dd7d09b35b7be29748dc400024d685a8c22db",
+      "size_in_bytes": 216142395
+    },
+    {
+      "id": 11671987646,
+      "name": "gpu-runtime-38056837195-common-part03",
+      "digest": "sha256:d2718ef2d80a66d46f05e64658fc724023687b6d2d7938dce8a808685928b071",
+      "size_in_bytes": 216142192
+    },
+    {
+      "id": 11671867776,
+      "name": "gpu-runtime-38056837195-cuda12.8-part00",
+      "digest": "sha256:e77e7570a045858168a61f49e22108d4460be38ded0a71f9787190c5c083452d",
+      "size_in_bytes": 214889706
+    },
+    {
+      "id": 11671792802,
+      "name": "gpu-runtime-38056837195-common-part01",
+      "digest": "sha256:d4ccb5a5ec08a220f205f7fc638bd28401a4080696cdac1833126c94d9a824c7",
+      "size_in_bytes": 216142193
+    },
+    {
+      "id": 11671787912,
+      "name": "gpu-runtime-38056837195-cuda12.8-part01",
+      "digest": "sha256:2873bb5818e83ef268d5ace4d3c269ea42e0b8c9d2215bd70366559b9c4dea55",
+      "size_in_bytes": 214889516
+    },
+    {
+      "id": 11671628122,
+      "name": "gpu-runtime-38056837195-cuda12.8-part04",
+      "digest": "sha256:de79bf3e76f5bff31d57a781b190b10efd5a6605a315e754c9b73d3f08bbe535",
+      "size_in_bytes": 214889515
+    },
+    {
+      "id": 11671448161,
+      "name": "gpu-runtime-38056837195-common-part02",
+      "digest": "sha256:139379c5d731fa6a288b893589ce5b9748edcd819189cec8344008c5e6d31021",
+      "size_in_bytes": 216142192
+    },
+    {
+      "id": 11671403202,
+      "name": "gpu-runtime-38056837195-cuda12.8-part03",
+      "digest": "sha256:356871510860739e62782906432c4421480fba7c24e51b471bc7cbd450dfdb16",
+      "size_in_bytes": 214889515
+    },
+    {
+      "id": 11671173344,
+      "name": "gpu-runtime-38056837195-common-part04",
+      "digest": "sha256:cef5e4fadacb5307452ce04c7138a54ca20227a15a2a1a075868f4c29b06b95b",
+      "size_in_bytes": 216142192
+    }
+  ],
+  "order": [
+    "A",
+    "A",
+    "B",
+    "A",
+    "B",
+    "A",
+    "A",
+    "B",
+    "A",
+    "B"
+  ],
+  "cases": [
+    "common",
+    "cuda12.8"
+  ],
+  "aa_max_min": 1.15,
+  "min_reduction": 0.2,
+  "per_case_max_median_ratio": 1.1,
+  "attempts": 1,
+  "hardware": "one GitHub-hosted ubuntu-24.04 CPU VM for all samples; lscpu and image captured",
+  "affinity": "default runner affinity, unpinned; measures network workflow wall time, not CPU operation throughput",
+  "timing": "monotonic interval spanning official action download including unzip and hashing, excluding subsequent byte validation; two bundle times summed per sample",
+  "settings": "same five concurrent official-action transfers per bundle; default internal retry policy in both arms; sequential bundles; no explicit retry or cache purge",
+  "correctness": "all ten original compressed parts and both concatenated archive SHA256 identities; ZIP checksum file preserved; raw expected identity from hosted preparation manifest",
+  "statistics": "mean and median sum(common+cuda12.8) reduction at least20%; no per-bundle median regression over10%; A/A ratio at most1.15 separately per bundle",
+  "missing": "any failed/missing sample is INCONCLUSIVE; retain all rows and logs; no replacement; execute complete bounded CPU trial even if A/A later fails",
+  "scope": "screening only; PASS permits proposing a RunPod validation, never proves paid GPU lifetime gain or authorizes production promotion",
+  "need": "two prior serial runs had 248 vs18 seconds common+SDK download; significant paid setup cost and variability",
+  "budget": "zero GPU allocations; one CPU-only workflow; artifacts expire after1day except evidence7days"
+}

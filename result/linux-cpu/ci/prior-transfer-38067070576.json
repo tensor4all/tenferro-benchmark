@@ -1,0 +1,174 @@
+[
+  {
+    "job": "Verify frozen workload artifacts",
+    "step": "Verify cross-repository artifact access",
+    "artifacts": [
+      {
+        "name": "runpod-stage-cost-38056837195-1",
+        "id": 11671972277,
+        "bytes": 640,
+        "digest": "3b0ca5b1d69b432e0b7a08acdca7355e4fa2311923bc38e8c2a6325433d18a63",
+        "started_at": "2026-10-10T16:17:51.235983+00:00",
+        "digest_at": "2026-10-10T16:17:51.637576+00:00",
+        "seconds_to_digest": 0.401593
+      }
+    ],
+    "retry_messages": []
+  },
+  {
+    "job": "CUDA GPU tests on RunPod",
+    "step": "Download staged execution payload",
+    "artifacts": [
+      {
+        "name": "gpu-runtime-38056837195-common-part00",
+        "id": 11672092483,
+        "bytes": 216142395,
+        "digest": "fbb4690bdde9e3b306d032922e9dd7d09b35b7be29748dc400024d685a8c22db",
+        "started_at": "2026-10-10T16:19:06.379268+00:00",
+        "digest_at": "2026-10-10T16:19:14.437641+00:00",
+        "seconds_to_digest": 8.058373
+      },
+      {
+        "name": "gpu-runtime-38056837195-common-part03",
+        "id": 11671987646,
+        "bytes": 216142192,
+        "digest": "d2718ef2d80a66d46f05e64658fc724023687b6d2d7938dce8a808685928b071",
+        "started_at": "2026-10-10T16:19:06.381154+00:00",
+        "digest_at": "2026-10-10T16:19:14.150069+00:00",
+        "seconds_to_digest": 7.768915
+      },
+      {
+        "name": "gpu-runtime-38056837195-common-part01",
+        "id": 11671792802,
+        "bytes": 216142193,
+        "digest": "d4ccb5a5ec08a220f205f7fc638bd28401a4080696cdac1833126c94d9a824c7",
+        "started_at": "2026-10-10T16:19:06.387408+00:00",
+        "digest_at": "2026-10-10T16:19:14.561872+00:00",
+        "seconds_to_digest": 8.174464
+      },
+      {
+        "name": "gpu-runtime-38056837195-common-part02",
+        "id": 11671448161,
+        "bytes": 216142192,
+        "digest": "139379c5d731fa6a288b893589ce5b9748edcd819189cec8344008c5e6d31021",
+        "started_at": "2026-10-10T16:19:06.383554+00:00",
+        "digest_at": "2026-10-10T16:19:13.571722+00:00",
+        "seconds_to_digest": 7.188168
+      },
+      {
+        "name": "gpu-runtime-38056837195-common-part04",
+        "id": 11671173344,
+        "bytes": 216142192,
+        "digest": "cef5e4fadacb5307452ce04c7138a54ca20227a15a2a1a075868f4c29b06b95b",
+        "started_at": "2026-10-10T16:19:06.385542+00:00",
+        "digest_at": "2026-10-10T16:19:14.502309+00:00",
+        "seconds_to_digest": 8.116767
+      }
+    ],
+    "retry_messages": []
+  },
+  {
+    "job": "CUDA GPU tests on RunPod",
+    "step": "Download CUDA/PJRT test archives",
+    "artifacts": [
+      {
+        "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-affada897654f746df3447481d0211bc7c66a63cf3eccbd885b8fd2c890cf8f2-transfer-part03",
+        "id": 11672141911,
+        "bytes": 48715920,
+        "digest": "52f0da77bfd7d6b5c1c633ec4a138be27820f9aec15802a2bcbd125af13f4842",
+        "started_at": "2026-10-10T16:19:20.070963+00:00",
+        "digest_at": "2026-10-10T16:19:22.200079+00:00",
+        "seconds_to_digest": 2.129116
+      },
+      {
+        "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-affada897654f746df3447481d0211bc7c66a63cf3eccbd885b8fd2c890cf8f2-transfer-part01",
+        "id": 11672052638,
+        "bytes": 48715920,
+        "digest": "a097efc2bd95a0ed997be0113639b725e3960020d927d119aba6abae6b36d8a4",
+        "started_at": "2026-10-10T16:19:20.071274+00:00",
+        "digest_at": "2026-10-10T16:19:22.220247+00:00",
+        "seconds_to_digest": 2.148973
+      },
+      {
+        "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-affada897654f746df3447481d0211bc7c66a63cf3eccbd885b8fd2c890cf8f2-transfer-part00",
+        "id": 11671952835,
+        "bytes": 48716300,
+        "digest": "30a918269b0fcb0ecc87f81b4cea8d754e94605cd4c7f008d38d7470393849bc",
+        "started_at": "2026-10-10T16:19:20.071487+00:00",
+        "digest_at": "2026-10-10T16:19:22.275348+00:00",
+        "seconds_to_digest": 2.203861
+      },
+      {
+        "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-affada897654f746df3447481d0211bc7c66a63cf3eccbd885b8fd2c890cf8f2-transfer-part02",
+        "id": 11671682910,
+        "bytes": 48715920,
+        "digest": "a19fffb5e838f92551f323b9fba1e6c97e1a28df400aaa230c8f38c79b98b3be",
+        "started_at": "2026-10-10T16:19:20.072669+00:00",
+        "digest_at": "2026-10-10T16:19:22.212204+00:00",
+        "seconds_to_digest": 2.139535
+      },
+      {
+        "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-affada897654f746df3447481d0211bc7c66a63cf3eccbd885b8fd2c890cf8f2-transfer-part04",
+        "id": 11671038644,
+        "bytes": 48715920,
+        "digest": "7bb6bc78a1cebcfa45402a5940e8ca22c0e510a8814ac68fb88b8e1fad5d8791",
+        "started_at": "2026-10-10T16:19:20.074227+00:00",
+        "digest_at": "2026-10-10T16:19:22.337425+00:00",
+        "seconds_to_digest": 2.263198
+      }
+    ],
+    "retry_messages": []
+  },
+  {
+    "job": "CUDA GPU tests on RunPod",
+    "step": "Transfer selected CUDA SDK",
+    "artifacts": [
+      {
+        "name": "gpu-runtime-38056837195-cuda12.8-part02",
+        "id": 11672107455,
+        "bytes": 214889515,
+        "digest": "2164111b778a64b74901634422fb99316538b42ff1879dc08cb28d875a86df84",
+        "started_at": "2026-10-10T16:19:23.949413+00:00",
+        "digest_at": "2026-10-10T16:19:32.060250+00:00",
+        "seconds_to_digest": 8.110837
+      },
+      {
+        "name": "gpu-runtime-38056837195-cuda12.8-part00",
+        "id": 11671867776,
+        "bytes": 214889706,
+        "digest": "e77e7570a045858168a61f49e22108d4460be38ded0a71f9787190c5c083452d",
+        "started_at": "2026-10-10T16:19:23.950103+00:00",
+        "digest_at": "2026-10-10T16:19:31.409020+00:00",
+        "seconds_to_digest": 7.458917
+      },
+      {
+        "name": "gpu-runtime-38056837195-cuda12.8-part01",
+        "id": 11671787912,
+        "bytes": 214889516,
+        "digest": "2873bb5818e83ef268d5ace4d3c269ea42e0b8c9d2215bd70366559b9c4dea55",
+        "started_at": "2026-10-10T16:19:23.952108+00:00",
+        "digest_at": "2026-10-10T16:19:31.909429+00:00",
+        "seconds_to_digest": 7.957321
+      },
+      {
+        "name": "gpu-runtime-38056837195-cuda12.8-part04",
+        "id": 11671628122,
+        "bytes": 214889515,
+        "digest": "de79bf3e76f5bff31d57a781b190b10efd5a6605a315e754c9b73d3f08bbe535",
+        "started_at": "2026-10-10T16:19:23.954043+00:00",
+        "digest_at": "2026-10-10T16:19:32.120833+00:00",
+        "seconds_to_digest": 8.16679
+      },
+      {
+        "name": "gpu-runtime-38056837195-cuda12.8-part03",
+        "id": 11671403202,
+        "bytes": 214889515,
+        "digest": "356871510860739e62782906432c4421480fba7c24e51b471bc7cbd450dfdb16",
+        "started_at": "2026-10-10T16:19:23.955575+00:00",
+        "digest_at": "2026-10-10T16:19:31.694330+00:00",
+        "seconds_to_digest": 7.738755
+      }
+    ],
+    "retry_messages": []
+  }
+]
