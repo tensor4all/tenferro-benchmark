@@ -408,5 +408,109 @@
     "Validate observer recovery against the same live run handle; never dispatch replacements after observation failures",
     "Confirm the maintained comparison design decision before any paid dispatch"
   ],
-  "unmet_goal": "No prior successful single run or byte-count screen proves the 10% lifetime threshold. A new PASS is required; FAIL or INCONCLUSIVE remains terminal for the one attempt."
+  "unmet_goal": "No prior successful single run or byte-count screen proves the 10% lifetime threshold. A new PASS is required; FAIL or INCONCLUSIVE remains terminal for the one attempt.",
+  "artifact_manifest": [
+    {
+      "id": 11669741431,
+      "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-c82dbcabb501b5207f6bcb67b683e97276189f585a33c38674609ac67a4e1848-transfer-part00",
+      "digest": "sha256:bb511f157df510afc6fecfff020511b4555b75541f26fe9fad4ddae0f2021cd0",
+      "size_in_bytes": 47176204
+    },
+    {
+      "id": 11670021115,
+      "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-c82dbcabb501b5207f6bcb67b683e97276189f585a33c38674609ac67a4e1848-transfer-part01",
+      "digest": "sha256:c3507f9fbb7b3c3a22634ad114678acd2472d6bcc9732d22dc6a5c75570e1b06",
+      "size_in_bytes": 47175824
+    },
+    {
+      "id": 11669766304,
+      "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-c82dbcabb501b5207f6bcb67b683e97276189f585a33c38674609ac67a4e1848-transfer-part02",
+      "digest": "sha256:7ed7c0726ad122539f8fe6024979cce09f62afbe45e35afef437a900b7b6291e",
+      "size_in_bytes": 47175824
+    },
+    {
+      "id": 11669716644,
+      "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-c82dbcabb501b5207f6bcb67b683e97276189f585a33c38674609ac67a4e1848-transfer-part03",
+      "digest": "sha256:9ee104e2e84bed78e6eb4cc963b6a289960f4c158bb48337fd8283d7aba4ccf6",
+      "size_in_bytes": 47175824
+    },
+    {
+      "id": 11669996141,
+      "name": "cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-c82dbcabb501b5207f6bcb67b683e97276189f585a33c38674609ac67a4e1848-transfer-part04",
+      "digest": "sha256:26b182cbfad120e473c85f8fcbab7641efbcfb4ccb31b4f2ec25e949410c7057",
+      "size_in_bytes": 47175824
+    },
+    {
+      "id": 11669429436,
+      "name": "gpu-runtime-38051889375-common-part00",
+      "digest": "sha256:a7aed57b10891ac842b4f843920f7f4bd3281494f627c33afa22be2bcb7f9edf",
+      "size_in_bytes": 216142386
+    },
+    {
+      "id": 11669299514,
+      "name": "gpu-runtime-38051889375-common-part01",
+      "digest": "sha256:b140c3e7e5c49f7f6923549f4f9ebbf19060013a4d76d1a904afb4daf1ab1a56",
+      "size_in_bytes": 216142183
+    },
+    {
+      "id": 11669094920,
+      "name": "gpu-runtime-38051889375-common-part02",
+      "digest": "sha256:e2f29f940046642165d0f1510158bf798d5f4dca9861c704a820e216c7281115",
+      "size_in_bytes": 216142183
+    },
+    {
+      "id": 11669339737,
+      "name": "gpu-runtime-38051889375-common-part03",
+      "digest": "sha256:91474684e626322664355ec8cb737b2f828081b83476fe0a64887e7e012e35e7",
+      "size_in_bytes": 216142183
+    },
+    {
+      "id": 11669084976,
+      "name": "gpu-runtime-38051889375-common-part04",
+      "digest": "sha256:33a297026e3970974a0a722dc82c3bc5859ab97dbbdc50cc42debed5d681935f",
+      "size_in_bytes": 216142183
+    },
+    {
+      "id": 11669669261,
+      "name": "gpu-runtime-38051889375-cuda12.8-part00",
+      "digest": "sha256:abfb859b9126a0e3f01b42f27eb42f77dedb427b21dcb216a33a191b891de4dc",
+      "size_in_bytes": 214889707
+    },
+    {
+      "id": 11670245000,
+      "name": "gpu-runtime-38051889375-cuda12.8-part01",
+      "digest": "sha256:3c6cec0537d1bb4354d66751fad68fb814f18b5d712c98abb8442cd4436ceda1",
+      "size_in_bytes": 214889517
+    },
+    {
+      "id": 11669114848,
+      "name": "gpu-runtime-38051889375-cuda12.8-part02",
+      "digest": "sha256:11ac940141c337d834edd2291580bc1f5380135244b9880d2e266c309b64f81f",
+      "size_in_bytes": 214889517
+    },
+    {
+      "id": 11669079920,
+      "name": "gpu-runtime-38051889375-cuda12.8-part03",
+      "digest": "sha256:db3a52269cb602d16e11bc4969fd4b6b825adbdcd8d783e563d6d420cb4388ba",
+      "size_in_bytes": 214889517
+    },
+    {
+      "id": 11669194817,
+      "name": "gpu-runtime-38051889375-cuda12.8-part04",
+      "digest": "sha256:6dc8e8387ce343fe61d5e20398085951552892cf0898e57eda3687eaf3b2f10c",
+      "size_in_bytes": 214889517
+    }
+  ],
+  "preflight": {
+    "hosted_run": 38054769719,
+    "hosted_conclusion": "success",
+    "native_images": [
+      "baseline",
+      "candidate"
+    ],
+    "native_conclusion": "success",
+    "frozen_artifact_binding_checked_against_live_api": true,
+    "paid_gpu_runs": 0,
+    "evidence": "public-runner-preflight.json.gz"
+  }
 }

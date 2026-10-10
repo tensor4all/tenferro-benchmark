@@ -174,13 +174,17 @@ gh api repos/tensor4all/tenferro-rs/actions/runs/{run_id} > /tmp/frozen-run.json
 gh api repos/tensor4all/tenferro-rs/actions/runs/{run_id}/artifacts > /tmp/frozen-artifacts.json
 python3 - <<'PY'
 import json
+from pathlib import Path
 run=json.load(open('/tmp/frozen-run.json'))
 assert run['head_sha']=={current!r} and run['conclusion']=='success'
 artifacts=json.load(open('/tmp/frozen-artifacts.json'))['artifacts']
+protocol=json.loads(Path('result/nvidia-gpu/ci/public-runner-confirmation-draft.json').read_text())
+frozen={{row['name']:row for row in protocol['artifact_manifest']}}
 for stem in ({f'gpu-runtime-{run_id}-common'!r}, {f'gpu-runtime-{run_id}-cuda12.8'!r}, {archive+'-transfer'!r}):
     for part in range(5):
         found=[x for x in artifacts if x['name']==f'{{stem}}-part{{part:02}}']
         assert len(found)==1 and not found[0]['expired'], (stem,part)
+        assert all(found[0][key]==value for key,value in frozen[found[0]['name']].items()), 'Frozen artifact changed'
         print(found[0]['id'], found[0]['name'], found[0]['digest'])
 PY
 '''

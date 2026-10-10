@@ -59,13 +59,17 @@ jobs:
         gh api repos/tensor4all/tenferro-rs/actions/runs/38051889375/artifacts > /tmp/frozen-artifacts.json
         python3 - <<'PY'
         import json
+        from pathlib import Path
         run=json.load(open('/tmp/frozen-run.json'))
         assert run['head_sha']=='8dafe4202c33078f3be5c4821fc748e79b13c5ce' and run['conclusion']=='success'
         artifacts=json.load(open('/tmp/frozen-artifacts.json'))['artifacts']
+        protocol=json.loads(Path('result/nvidia-gpu/ci/public-runner-confirmation-draft.json').read_text())
+        frozen={row['name']:row for row in protocol['artifact_manifest']}
         for stem in ('gpu-runtime-38051889375-common', 'gpu-runtime-38051889375-cuda12.8', 'cuda-pjrt-archive-v17-ci-ubuntu24.04-rust1.99.0-cuda12080-ptx12.8-c82dbcabb501b5207f6bcb67b683e97276189f585a33c38674609ac67a4e1848-transfer'):
             for part in range(5):
                 found=[x for x in artifacts if x['name']==f'{stem}-part{part:02}']
                 assert len(found)==1 and not found[0]['expired'], (stem,part)
+                assert all(found[0][key]==value for key,value in frozen[found[0]['name']].items()), 'Frozen artifact changed'
                 print(found[0]['id'], found[0]['name'], found[0]['digest'])
         PY
     - name: Verify cross-repository artifact access

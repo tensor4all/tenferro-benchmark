@@ -32,8 +32,53 @@ The proposed model records driver patches and requires between-arm driver
 distribution total variation <=0.25, instead of demanding the same patch on
 all 18 fresh allocations. This is a proposed change to the exhausted comparison
 design, not a reinterpretation of old samples. It needs a maintainer decision
-before paid dispatch. The harness still needs implementation and free preflight;
-this document is a reviewable plan, not an executable or accepted experiment.
+before paid dispatch. The implementation and free preflight are complete below;
+the design remains a draft and paid dispatch stays disabled. After a maintainer
+decision, record that decision and bind the final harness commit in the external
+campaign protocol before starting. No old samples are reused.
+
+## Executable preparation
+
+The generator reads the two exact tenferro-rs revisions. Current main owns the
+common test execution, runtime payload handling, setup watchdog and mandatory
+deletion; only the declared startup and execution-tool preparation differ.
+All 15 transfer artifact IDs and hosted digests are frozen, preventing a later
+artifact replacement from changing inputs between arms. The GPU consumer keeps
+read-only shared-cache access. Every source change remains on this experimental
+branch; production CI is unchanged.
+
+Six estimator tests cover improvement, no improvement, unfavorable cold pulls,
+driver imbalance, missing samples and A/A noise. Shell/workflow checks verify
+unchanged numerical execution, mandatory deletion, the unapproved-design guard,
+and refusal to overwrite an existing campaign state. An observation failure
+continues polling its existing run rather than allocating a replacement.
+
+[Hosted free preflight 38054769719](https://github.com/tensor4all/tenferro-benchmark/actions/runs/38054769719)
+passed artifact access and inventory checks; every GPU lifecycle job was skipped.
+Both declared images passed native checks in disposable local containers with
+the exact current runtime payload: runner, Cargo, nextest, the real NVRTC
+installer/package version, CubeCL header compilation, cuTENSOR loading and PJRT
+components. No runner registered and no GPU was allocated. This is functional
+preflight evidence, not GPU numerical validation or a timing comparison.
+[Full preflight evidence](../../result/nvidia-gpu/ci/public-runner-preflight.json.gz)
+retains logs and the source run/artifact inventory. The final artifact binding
+was additionally compared with the live API after it was added to the protocol.
+
+Reproduce the local harness checks from the branch root:
+
+```bash
+python3 scripts/runpod-public-confirmation/generate.py --tenferro-checkout /path/to/tenferro-rs
+python3 scripts/runpod-public-confirmation/check.py --tenferro-checkout /path/to/tenferro-rs
+python3 scripts/runpod-public-confirmation/test_compare.py
+actionlint .github/workflows/benchmark-runpod-gpu.yml
+```
+
+The workflow defaults to `prepare_only=true`; a draft protocol also rejects
+`prepare_only=false`. The campaign runner consumes an external `protocol.json`
+under `RUNPOD_COMPARISON_DIR` and refuses draft, unbound or pre-existing state.
+Do not delete a state file to recover an observation: inspect the recorded
+GitHub run first. Source regeneration and statistical thresholds are fixed
+before any approved paid experiment.
 
 ## Alternatives checked
 
