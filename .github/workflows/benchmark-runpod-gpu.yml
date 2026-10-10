@@ -377,6 +377,7 @@ jobs:
         def scoped_payload(*args, **kwargs):
             payload = original_payload(*args, **kwargs)
             payload["dataCenterIds"] = ["CA-MTL-1"]
+            payload["allowedCudaVersions"] = ["12.8"]
             return payload
 
         runpod_provision.build_pod_payload = scoped_payload
