@@ -1,0 +1,23 @@
+{
+  "purpose": "Offline byte screen; not acceptance of the 10% whole paid Pod lifetime goal",
+  "baseline_source": "8dafe4202c33078f3be5c4821fc748e79b13c5ce",
+  "artifact_repository": "tensor4all/tenferro-rs",
+  "artifact_run": 38051889375,
+  "cases": ["common", "cuda12.6", "cuda12.8"],
+  "baseline_compression_level": 3,
+  "candidate_compression_level": 10,
+  "compression_threads": 4,
+  "cpu_affinity": [0, 1, 2, 3],
+  "timeout_seconds_per_command": 300,
+  "repetitions": 1,
+  "screen_minimum_combined_byte_reduction": 0.15,
+  "need_evidence": "Run 38051889375: runtime setup 26/320.178 paid seconds, exceeding the existing 5% need threshold. Common/SDK downloads account for 17 seconds. Earlier production run 38047804467 spent 79 seconds in runtime setup. This screen evaluates bytes only; variable transport prevents a timing claim.",
+  "invariants": [
+    "Use every byte of each original uncompressed tar stream, including all files, links, modes and metadata",
+    "Verify the hosted SHA-256 before decompression and identical tar SHA-256 after both recompressions",
+    "Compare each SDK together with the common payload; both supported tiers must pass",
+    "Keep image, runtime library versions, ci profile, 292 CUDA cases, three PJRT cases and tutorial unchanged"
+  ],
+  "timing_policy": "Compression/decompression elapsed seconds are operational diagnostics only. No local CPU or paid-Pod speedup is inferred; no sccache is used. Inputs may be warm.",
+  "stopping_rule": "One complete screen, no selective retries or new compression levels. Retain failure or timeout. Even a passing byte screen requires a separate complete preregistered cloud comparison for the unchanged 10% paid-lifetime target. No paid runs are initiated by this screen."
+}
