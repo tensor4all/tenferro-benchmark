@@ -204,11 +204,14 @@ jobs:
         python3 - <<'CONFIG'
         import json, os
         from pathlib import Path
-        from scripts.ci.runpod_pricing import fetch_gpu_offers, http_transport, GRAPHQL_URL
+        from scripts.ci.runpod_pricing import parse_gpu_offers, http_transport, GRAPHQL_URL
         p=Path('scripts/ci/runpod_config.json')
         c=json.loads(p.read_text())
         gpu='NVIDIA A40'
-        offers=fetch_gpu_offers([gpu], min_vram_gb=8, transport=http_transport(GRAPHQL_URL))
+        query='{ gpuTypes(input:{id:"NVIDIA A40"}) { id memoryInGb secureCloud securePrice lowestPrice(input:{gpuCount:1,secureCloud:true,dataCenterId:"CA-MTL-1"}) { stockStatus uninterruptablePrice } } }'
+        status,body=http_transport(GRAPHQL_URL)(json.dumps({"query":query}).encode())
+        if status != 200: raise SystemExit("Regional pricing unavailable; no Pod created")
+        offers=parse_gpu_offers(body,[gpu],min_vram_gb=8)
         if not offers or offers[0].price_per_hr > 0.60:
             raise SystemExit('A40 unavailable below $0.60/hr; no Pod created')
         c['gpu_tiers']=[{'name':'experiment','gpu_type_ids':[gpu]}]
