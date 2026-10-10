@@ -1,4 +1,4 @@
-# Public runner confirmation: draft decision
+# Public runner confirmation: accepted independent comparison
 
 The whole paid Pod lifetime must fall by at least 10%; setup-only time and
 payload bytes do not complete that goal. Main already contains the official
@@ -31,11 +31,11 @@ maximum time to stay within 1.25 times baseline maximum. A/A spread remains
 The proposed model records driver patches and requires between-arm driver
 distribution total variation <=0.25, instead of demanding the same patch on
 all 18 fresh allocations. This is a proposed change to the exhausted comparison
-design, not a reinterpretation of old samples. It needs a maintainer decision
-before paid dispatch. The implementation and free preflight are complete below;
-the design remains a draft and paid dispatch stays disabled. After a maintainer
-decision, record that decision and bind the final harness commit in the external
-campaign protocol before starting. No old samples are reused.
+design, not a reinterpretation of old samples. The maintainer approved this independent design on 2026-10-10 with `y` and
+`continue`, after its cost limit and historical-baseline scope were explained.
+Bind the final harness commit in the external campaign protocol before starting.
+The thresholds, workload and order are unchanged from the reviewed draft.
+No old samples are reused. This approval does not establish a performance result.
 
 ## Executable preparation
 

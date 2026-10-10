@@ -32,7 +32,7 @@ assert workflow["on"]["workflow_dispatch"]["inputs"]["prepare_only"]["default"] 
 assert workflow["jobs"]["start-runpod"]["if"] == "${{ !inputs.prepare_only }}"
 assert workflow["jobs"]["start-runpod"]["needs"] == "verify-artifacts"
 guard = next(step["run"] for step in workflow["jobs"]["verify-artifacts"]["steps"] if step["name"] == "Keep draft comparisons free")
-for prepare_only, expected in [("true", 0), ("false", 1)]:
+for prepare_only, expected in [("true", 0), ("false", int(protocol["status"].startswith("DRAFT")))]:
     result = subprocess.run(["bash", "-euc", guard], env=dict(os.environ, PREPARE_ONLY=prepare_only), capture_output=True, text=True)
     assert result.returncode == expected, result.stdout + result.stderr
 cleanup = workflow["jobs"]["cleanup-runpod"]
@@ -47,7 +47,7 @@ for step in actual_steps.values():
 assert workflow["jobs"]["setup-watchdog"]["steps"][-1]["run"] == original["jobs"]["setup-watchdog"]["steps"][-1]["run"]
 with tempfile.TemporaryDirectory() as directory:
     root = Path(directory)
-    bound = dict(protocol, harness_commit="0" * 40)
+    bound = dict(protocol, harness_commit="0" * 40, status="DRAFT fixture")
     (root / "protocol.json").write_text(json.dumps(bound))
     command = ["python3", "scripts/runpod-public-confirmation/run-comparison.py"]
     env = dict(os.environ, RUNPOD_COMPARISON_DIR=directory)

@@ -73,7 +73,7 @@
     "setup_seconds": 900,
     "lifetime_seconds": 3600
   },
-  "status": "DRAFT: requires maintainer decision on replacing the exhausted strict-driver design; no paid dispatch authorized by this draft",
+  "status": "ACCEPTED: maintainer approved the independent randomized cloud comparison in conversation on 2026-10-10",
   "goal": "At least 10% lower entire paid Pod lifetime through startup/environment preparation; do not substitute payload bytes or setup-only time",
   "baseline_source": "ff94aeded9cc98d6c49889c8ef6fca365763d93a",
   "candidate_source": "8dafe4202c33078f3be5c4821fc748e79b13c5ce",
@@ -399,8 +399,8 @@
       "tenferro-xla::integration pjrt_execution::pjrt_executes_phase_one_elementwise_from_rust_when_configured"
     ]
   },
-  "driver_policy": "Explicit proposed design change: fresh randomized cloud placements with driver distribution total variation <=0.25 replace the old requirement that every Pod have the identical patch. Old results remain INCONCLUSIVE and are never reused. This does not override the prior retry ceiling without a maintainer decision.",
-  "decision_needed": "Accept this independent randomized cloud comparison, or retain the old strict-driver design and wait for a fixed-driver allocation capability. This draft alone does neither.",
+  "driver_policy": "Accepted independent design change: fresh randomized cloud placements with driver distribution total variation <=0.25 replace the old requirement that every Pod have the identical patch. Old results remain INCONCLUSIVE and are never reused. The maintainer approved this independent design; the old campaign remains closed and INCONCLUSIVE.",
+  "decision_needed": "Resolved: maintainer answered y and continue after the concrete plan and historical-baseline scope were explained.",
   "readiness": [
     "Compile and test a generated harness against both exact source revisions; pin the harness commit before dispatch",
     "Pass a free hosted preflight for artifact access, exact workload inventory, image/runner availability, shell syntax and cleanup wiring",
