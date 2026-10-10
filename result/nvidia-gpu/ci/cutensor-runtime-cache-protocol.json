@@ -1,0 +1,14 @@
+{
+  "baseline": "8fbd73d5d08e5a91e8f418728711f13a8dbb9043",
+  "scope": "Hosted cuTENSOR runtime cache footprint; no paid-Pod timing claim",
+  "need": "Publisher run 38047788138 saved 608291096 bytes, 5.7% of observed 10564514068-byte cache footprint; all three runtime cache misses in run 38047804467. Existing cache discards non-runtime libraries only after restore.",
+  "candidate": "Extract only the existing GPU payload lib/libcutensor.so* family at the owning installer; rotate writer and reader cache key together",
+  "acceptance": {
+    "uncompressed_bytes_reduction_min": 0.5,
+    "compressed_bytes_reduction_min": 0.4,
+    "retained_content": "all file bytes and symlink targets equal existing payload selection",
+    "tests": "cold install, stale destination removal, missing/empty/broken ABI, publisher-reader identity, existing runtime payload tests"
+  },
+  "measurement": "one offline size/content comparison on exact same vendor archive; identical tar --zstd settings; byte counts are deterministic metrics; no elapsed-time or cache-hit-rate claim",
+  "promotion": "only after size/content and local/required CI gates pass; no paid comparison needed for byte-only claim"
+}
