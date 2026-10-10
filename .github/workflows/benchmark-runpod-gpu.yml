@@ -33,7 +33,7 @@ jobs:
   verify-artifacts:
     name: Verify frozen workload artifacts
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 12
     steps:
     - name: Check source run and artifact inventory
       env:
@@ -63,6 +63,59 @@ jobs:
       with:
         name: bootstrap-frozen-manifest
         path: /tmp/frozen-artifacts.json
+    - name: Checkout pinned smoke helper for image validation
+      if: ${{ inputs.prepare_only }}
+      uses: actions/checkout@v5
+      with:
+        repository: tensor4all/tenferro-rs
+        ref: ff94aeded9cc98d6c49889c8ef6fca365763d93a
+        path: source
+        persist-credentials: false
+    - name: Validate official runner image without a GPU
+      if: ${{ inputs.prepare_only }}
+      timeout-minutes: 10
+      run: |
+        set -euo pipefail
+        cat > /tmp/runner-image-check.sh <<'IMAGE_CHECK'
+        set -euo pipefail
+        id
+        RUNNER_JIT_CONFIG=local-placeholder bash -lc '
+        if [ "$(id -u)" -ne 0 ]; then
+          exec sudo -E bash -lc "$BASH_EXECUTION_STRING"
+        fi
+        test "$(id -u)" = 0
+        test "$RUNNER_JIT_CONFIG" = local-placeholder
+        printf "Root re-exec and JIT environment preservation OK\n"
+        '
+        sudo -E bash <<'ROOT'
+        set -euo pipefail
+        export DEBIAN_FRONTEND=noninteractive RUNNER_ALLOW_RUNASROOT=1
+        . /etc/os-release
+        test "$VERSION_ID" = 24.04
+        cd /home/runner
+        ./bin/Runner.Listener --version
+        ./externals/node24/bin/node --version
+        command -v curl tar gzip python3 git jq
+        python3 -c 'import ctypes,json,zipfile,subprocess,urllib.request; print("Python stdlib OK")'
+        python3 - <<'PY'
+        import importlib.util
+        spec=importlib.util.spec_from_file_location('cuda_smoke', '/probe/cuda_smoke_test.py')
+        m=importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        m.install_nvrtc((12,8))
+        import ctypes
+        lib=ctypes.CDLL('/usr/local/cuda-12.8/targets/x86_64-linux/lib/libnvrtc.so.12')
+        major,minor=ctypes.c_int(),ctypes.c_int()
+        assert lib.nvrtcVersion(ctypes.byref(major),ctypes.byref(minor))==0
+        assert (major.value,minor.value)==(12,8)
+        print('NVRTC 12.8 load OK; CUDA launch still requires a GPU')
+        PY
+        apt-get install -y --no-install-recommends git jq zstd binutils libssl3t64
+        command -v git jq zstd nm
+        printf 'OFFICIAL_RUNNER_CHECK_PASSED\n'
+        ROOT
+        IMAGE_CHECK
+        docker run --rm --entrypoint bash -v /tmp/runner-image-check.sh:/check.sh:ro -v "${GITHUB_WORKSPACE}/source/scripts/ci/cuda_smoke_test.py:/probe/cuda_smoke_test.py:ro" ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4 /check.sh
   start-runpod:
     name: Start RunPod org runner
     runs-on: ubuntu-latest
