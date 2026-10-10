@@ -32,3 +32,23 @@ Registry publication remains human-only. No image has been published or paid
 campaign started for this candidate.
 
 [Full protocol, measurements and file inventory](runpod-prepared-runtime-screen.json.gz)
+
+
+## Prepared image native validation
+
+[Hosted validation run 38035993659](https://github.com/tensor4all/tenferro-benchmark/actions/runs/38035993659)
+succeeded at source `8388132a874d2df42a8482e26a452d1a1735ee5d`. It reconstructed
+all three original runtime bundles with their checksums, built the official
+runner image with the execution tools and full prepared payload, compiled
+CubeCL-style JIT headers with both CUDA 12.6 and 12.8, checked each loaded NVRTC
+version and cuTENSOR load, and verified runner/Node/Cargo/nextest and all PJRT
+dependencies. The compressed Docker image is retained as the
+`runpod-prepared-runner-image` artifact for a human publication handoff; the
+build workflow did not log into a registry or publish any image.
+
+The first native check (38035832552) failed because its cuTENSOR load omitted
+the selected SDK from `LD_LIBRARY_PATH`. The validation script now uses the same
+selected-library setting as the actual GPU job, for each CUDA tier separately.
+This CPU validation does not establish GPU numerical correctness, cold image
+pull time or the additional 10% paid-lifetime goal. A new complete cloud
+comparison remains required after the image is made available to RunPod.
