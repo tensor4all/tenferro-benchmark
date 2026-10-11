@@ -83,9 +83,6 @@ coverage:
   - qr_live_buffers_f64_n32_live16
   - qr_live_buffers_f64_n32_live256
   - qr_live_buffers_f64_n32_live1024
-  - raw_scope_entry_f64_empty-idle
-  - raw_scope_entry_f64_empty-behind-queued-gemm
-  - raw_scope_entry_f64_sync-behind-queued-gemm
   - eager_op_f32_add_decode_eager-session
   - eager_op_f32_dot_general_decode_eager-session
   - gather_embedding_f32_vocab8192_eager-gather
@@ -96,8 +93,6 @@ coverage:
   - gather_embedding_f32_vocab248320_cudarc-row-copies
   - reshape_constant_f32_64M_constant
   - reshape_constant_f32_64M_op-output
-  - vendor_handle_cublas_f32_create-destroy
-  - vendor_handle_cublas_f32_reused
   - svd_driver_c64_n64_auto
   - svd_driver_c64_n64_gesvdj
   - svd_driver_c64_n64_gesvd
@@ -227,10 +222,10 @@ coverage:
   - gather_embedding_f32_vocab248320_cudarc-row-copies
   - reshape_constant_f32_64M_constant
   - reshape_constant_f32_64M_op-output
-  - vendor_handle_cublas_f32_create-destroy
-  - vendor_handle_cublas_f32_reused
-  - vendor_churn_f32_cycles8
-  - vendor_churn_f32_cycles64
+  - vendor_handle_cublas_f64_create-destroy
+  - vendor_handle_cublas_f64_reused
+  - vendor_churn_f64_cycles8
+  - vendor_churn_f64_cycles64
   - pool_retention_f64_alloc-free
   - pool_retention_f64_runtime-recreate
   - pool_retention_f64_driver-alloc-after-free

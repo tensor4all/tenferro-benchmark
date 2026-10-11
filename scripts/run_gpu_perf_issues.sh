@@ -22,19 +22,26 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 
 # GPU measurement validity: every other process on the device would distort the
-# numbers. Record the compute-process list and refuse to publish a run while
-# another process holds the device.
-if command -v nvidia-smi >/dev/null 2>&1; then
-    echo "CUDA compute processes before the run:"
+# numbers. The list is recorded, and a non-empty list at measurement time fails
+# the run unless BENCHMARK_ALLOW_BUSY_GPU=1 marks it explicitly diagnostic.
+gpu_compute_apps() {
+    nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader \
+        2>/dev/null | tr -d ' \r' || true
+}
+require_idle_gpu() {
+    local phase="$1"
+    command -v nvidia-smi >/dev/null 2>&1 || return 0
+    echo "CUDA compute processes $phase:"
     nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
-    if [[ -n "$(nvidia-smi --query-compute-apps=pid --format=csv,noheader 2>/dev/null | tr -d ' \n')" ]]; then
+    if [[ -n "$(gpu_compute_apps)" ]]; then
         if [[ "${BENCHMARK_ALLOW_BUSY_GPU:-0}" != "1" ]]; then
-            echo "ERROR: another process is using the CUDA device; stop it or set BENCHMARK_ALLOW_BUSY_GPU=1 for a diagnostic run." >&2
+            echo "ERROR: another process is using the CUDA device $phase; stop it or set BENCHMARK_ALLOW_BUSY_GPU=1 for a diagnostic run." >&2
             exit 1
         fi
         echo "WARNING: BENCHMARK_ALLOW_BUSY_GPU=1; measuring with a busy device." >&2
     fi
-fi
+}
+require_idle_gpu "before the run"
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-nvidia-gpu}"
 if [[ "$BENCHMARK_TARGET_PROFILE" != nvidia-gpu ]]; then
     echo "ERROR: gpu/perf_issues requires BENCHMARK_TARGET_PROFILE=nvidia-gpu." >&2
@@ -52,9 +59,11 @@ BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_perf_issu
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
 RUN_DIR="$PROJECT_DIR/data/results/$BENCHMARK_TARGET_PROFILE/gpu/perf_issues/$TIMESTAMP"
 mkdir -p "$RUN_DIR"
+# The build ran above, so re-check the device right before measuring.
+require_idle_gpu "at measurement time"
 "$PYTHON" "$SCRIPT_DIR/collect_gpu_info.py" --device-ordinal "$DEVICE_ORDINAL" --markdown > "$RUN_DIR/gpu_info.md" || true
 export BENCHMARK_COMMIT="${BENCHMARK_COMMIT:-$(git rev-parse HEAD)}"
-export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE GPU_BENCH_DEVICE BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE PERF_ISSUES_CORRECTNESS_ONLY; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
+export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE GPU_BENCH_DEVICE BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE PERF_ISSUES_CORRECTNESS_ONLY BENCHMARK_ALLOW_BUSY_GPU; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
 "$PYTHON" "$SCRIPT_DIR/collect_run_metadata.py" \
     --suite-id gpu/perf_issues --target-profile "$BENCHMARK_TARGET_PROFILE" \
     --suite-file benchmarks/gpu/perf_issues.yaml --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -68,12 +77,20 @@ metadata = yaml.safe_load(path.read_text())
 metadata['environment'].setdefault('env', {}).update({
     'BENCHMARK_COMMIT': os.environ['BENCHMARK_COMMIT'], 'BENCHMARK_BUILD_PROFILE': 'release',
     'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
-    'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None})
+    'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None,
+    'BENCHMARK_ALLOW_BUSY_GPU': os.environ.get('BENCHMARK_ALLOW_BUSY_GPU') or None})
+
+
+def compute_apps():
+    result = subprocess.run(
+        ['nvidia-smi', '--query-compute-apps=pid,process_name,used_memory',
+         '--format=csv,noheader'],
+        capture_output=True, text=True, check=False)
+    return [line for line in result.stdout.strip().splitlines() if line.strip()]
+
+
 # GPU validity: what else was on the device when the run started.
-compute_apps = subprocess.run(
-    ['nvidia-smi', '--query-compute-apps=pid,process_name,used_memory', '--format=csv,noheader'],
-    capture_output=True, text=True, check=False)
-metadata['environment']['gpu_compute_apps_at_start'] = compute_apps.stdout.strip().splitlines()
+metadata['environment']['gpu_compute_apps_at_start'] = compute_apps()
 sys.path.insert(0, 'scripts')
 import benchmark_perf_issues as suite
 _, _, manifest, coverage, expected, selected, raw = suite.plan('gpu')
@@ -94,9 +111,31 @@ failed=0
 CUBECL_DEBUG_LOG=0 LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
     "$PYTHON" "$SCRIPT_DIR/benchmark_perf_issues.py" --suite gpu --device "$DEVICE_ORDINAL" \
     --binary "$BINARY" --threads 1 --output "$RUN_DIR/samples_t1.jsonl" "${EXTRA[@]}" || failed=1
+# Record the device state after the measurement and refuse to pass off a run
+# that shared the device with another process.
 if command -v nvidia-smi >/dev/null 2>&1; then
     echo "CUDA compute processes after the run:"
     nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
+    "$PYTHON" - "$RUN_DIR/run_t1.yaml" "$RUN_DIR/run.yaml" <<'PY'
+import subprocess
+import sys
+from pathlib import Path
+import yaml
+
+result = subprocess.run(
+    ['nvidia-smi', '--query-compute-apps=pid,process_name,used_memory',
+     '--format=csv,noheader'], capture_output=True, text=True, check=False)
+apps = [line for line in result.stdout.strip().splitlines() if line.strip()]
+for argument in sys.argv[1:]:
+    path = Path(argument)
+    metadata = yaml.safe_load(path.read_text())
+    metadata['environment']['gpu_compute_apps_at_end'] = apps
+    path.write_text(yaml.safe_dump(metadata, sort_keys=False))
+PY
+    if [[ -n "$(gpu_compute_apps)" && "${BENCHMARK_ALLOW_BUSY_GPU:-0}" != "1" ]]; then
+        echo "ERROR: another process appeared on the CUDA device during the run; the report is not a clean measurement." >&2
+        exit 1
+    fi
 fi
 "$PYTHON" "$SCRIPT_DIR/benchmark_perf_issues.py" --suite gpu --report "$RUN_DIR" \
     --target-profile "$BENCHMARK_TARGET_PROFILE"

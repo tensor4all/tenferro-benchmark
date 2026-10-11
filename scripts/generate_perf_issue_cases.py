@@ -525,15 +525,16 @@ def gpu_latency_cases(gpu):
                      ("sync-behind-queued-gemm", None)):
         rows.append(case(
             f"raw_scope_entry_f64_{arm}", ("#2078",), "raw_scope_entry",
-            {"gemm_n": 4096, "queued_gemms": 4, "scopes": 2}, arm=arm,
-            backend="tenferro-cuda", dtype="f64",
+            {"gemm_n": 4096, "queued_gemms": 4}, arm=arm,
+            backend="tenferro-cuda", dtype="f64", scope="session_entry_diagnostic",
             reference_for=ref and f"raw_scope_entry_f64_{ref}", profiles=gpu,
             intent=("tenferro-rs #2078: entering a raw CUDA session "
                     "(CudaExecSession::with_raw) with an empty closure, on an idle device and "
                     "behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue "
                     "measures the second empty scope after the GEMMs, which blocks for the whole "
-                    "device time; the sync arm is the honest explicit barrier it is compared with. "
-                    "A raw scope must return in microseconds and leave queued work in flight.")))
+                    "device time; the sync arm is the explicit barrier it is compared with. Each "
+                    "batch holds one scope, so the per-batch clock is also this call's clock. A raw "
+                    "scope must return in microseconds and leave queued work in flight.")))
     for op, shape in (("add", {"hidden": 1024, "tokens": 8}),
                       ("dot_general", {"in": 1024, "out": 1024, "len": 8})):
         label = f"{shape.get('hidden', shape.get('in'))}x{shape.get('tokens', shape.get('len'))}"
@@ -564,15 +565,17 @@ def gpu_memory_cases(gpu):
     """Workloads of #2080 (gather), #2081 (freed memory), #2082 (reshape), #2083, #1924."""
     rows = []
     for vocab in (8192, 65536, 248320):
-        for arm, ref in (("eager-gather", None), ("cudarc-row-copies", "eager-gather")):
+        for arm, ref, backend in (("eager-gather", None, "tenferro-cuda"),
+                                  ("cudarc-row-copies", "eager-gather", "cudarc")):
             rows.append(case(
                 f"gather_embedding_f32_vocab{vocab}_{arm}", ("#2080",), "gather_table",
                 {"vocab": vocab, "hidden": 1024, "tokens": 8}, arm=arm,
-                backend="tenferro-cuda", dtype="f32",
+                backend=backend, dtype="f32",
                 reference_for=ref and f"gather_embedding_f32_vocab{vocab}_{ref}", profiles=gpu,
                 intent=("tenferro-rs #2080: an embedding lookup (8 token ids, hidden=1024, f32) "
                         "from a [vocab, hidden] table, vs the 8 device-to-device row copies the "
-                        "same selection needs. The issue measures 0.23 / 1.67 / 6.3 ms at vocab "
+                        "same selection needs, into a freshly allocated destination so the two "
+                        "arms have the same output policy. The issue measures 0.23 / 1.67 / 6.3 ms at vocab "
                         "8192 / 65536 / 248320, i.e. time proportional to the table because the "
                         "whole table is permuted first; the row-copy arm shows the O(tokens) cost "
                         "the lookup is expected to have.")))
@@ -591,18 +594,19 @@ def gpu_memory_cases(gpu):
                     "route has to reach. A compact reshape must be a view, not a device copy.")))
     for arm, ref in (("create-destroy", None), ("reused", "create-destroy")):
         rows.append(case(
-            f"vendor_handle_cublas_f32_{arm}", ("#2083",), "vendor_handle",
-            {"arm": arm}, arm=arm, backend="tenferro-cuda", dtype="f32",
-            reference_for=ref and f"vendor_handle_cublas_f32_{ref}", profiles=gpu,
+            f"vendor_handle_cublas_f64_{arm}", ("#2083",), "vendor_handle",
+            {"arm": arm}, arm=arm, backend="tenferro-cuda", dtype="f64",
+            scope="session_entry_diagnostic",
+            reference_for=ref and f"vendor_handle_cublas_f64_{ref}", profiles=gpu,
             intent=("tenferro-rs #2083: the documented raw-session pattern creates and destroys "
                     "a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and "
                     "10 MiB per session on the issue's card); the reused arm keeps one handle. "
                     "Both arms are per-iteration inside the raw scope.")))
     for cycles in (8, 64):
         rows.append(case(
-            f"vendor_churn_f32_cycles{cycles}", ("#1924",), "vendor_churn",
+            f"vendor_churn_f64_cycles{cycles}", ("#1924",), "vendor_churn",
             {"cycles": cycles, "gemm_n": 256}, arm="backend-cycle", backend="tenferro-cuda",
-            dtype="f32", scope="state_diagnostic", profiles=gpu,
+            dtype="f64", scope="state_diagnostic", profiles=gpu,
             intent=("tenferro-rs #1924: creating and dropping a CudaBackend (which dlopens and "
                     "unloads the vendor libraries) N times, reporting the driver free memory "
                     "before and after. The issue measured ~55 MB leaked per cycle; a state "
@@ -613,10 +617,12 @@ def gpu_memory_cases(gpu):
             {"arm": arm, "gib": 1, "count": 8, "probe_gib": 6}, arm=arm,
             backend="tenferro-cuda", dtype="f64", scope="state_diagnostic", profiles=gpu,
             intent=("tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped "
-                    "runtime) is never returned to the driver. One 1 GiB tensor is allocated, its "
-                    "free/upload-verify round trip checked and dropped, eight times; the driver "
-                    "free memory is reported before, after the drops, after recreating the "
-                    "runtime, and after a 6 GiB cuMemAlloc probe. State diagnostic: bytes, not "
+                    "runtime) is never returned to the driver. The issue's sequence: eight 1 GiB "
+                    "tensors alive at the high-water mark (one of them downloaded and compared "
+                    "with its host payload), then all dropped. The driver free memory is reported "
+                    "before, at the high-water mark, after the drops, and after recreating the "
+                    "runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver "
+                    "allocation the issue could not serve. State diagnostic: bytes, not "
                     "nanoseconds. A caller must see the memory back or get an Err, never a panic "
                     "with Ok from alloc_output.")))
     return rows
@@ -679,13 +685,16 @@ def gpu_contraction_cases(gpu):
     for arm, ref in (("distinct-plans", None), ("repeated-plan", "distinct-plans")):
         rows.append(case(
             f"contraction_plan_churn_f64_{arm}", ("#1873", "#1805"), "contraction_plan_churn",
-            {"distinct": 24, "n": 64, "repeats": 8}, arm=arm, backend="tenferro-cuda", dtype="f64",
+            {"distinct": 72, "n": 64}, arm=arm, backend="tenferro-cuda", dtype="f64",
             reference_for=ref and f"contraction_plan_churn_f64_{ref}", profiles=gpu,
             intent=("tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the "
                     "contraction-plan cache, and raw-session resources are dropped when a plan is "
-                    "evicted. `distinct-plans` contracts 24 distinct small shapes and then re-runs "
-                    "the first; `repeated-plan` re-runs one shape. A re-run after churn must not "
-                    "cost more than the repeated shape.")))
+                    "evicted. `distinct-plans` fills the cache with 72 distinct small shapes and "
+                    "then re-runs the first (more than the backend's 64-plan capacity, so the "
+                    "churn really evicts); `repeated-plan` runs the same number of contractions of "
+                    "one shape. The timed operation is the re-run alone, with the churn as its "
+                    "untimed precondition. A re-run after churn must not cost more than the "
+                    "repeated shape.")))
     for arm, ref in (("owned-dst", None), ("borrowed-dst", "owned-dst")):
         rows.append(case(
             f"dot_general_destination_f64_{arm}", ("#1949",), "owned_destination",
@@ -693,10 +702,11 @@ def gpu_contraction_cases(gpu):
             reference_for=ref and f"dot_general_destination_f64_{ref}", profiles=gpu,
             intent=("tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor "
                     "calls, where a vendor write to a memoized address can overtake a queued "
-                    "CubeCL read (the skipped get_resource round trip is what flushes). Two "
-                    "interleaved streams of small contractions, one into an owned destination per "
-                    "call and one into a recycled borrowed destination. The fix must not add a "
-                    "blocking round trip, so the owned arm must stay at or below the borrowed one.")))
+                    "CubeCL read (the skipped get_resource round trip is what flushes). "
+                    "`owned-dst` allocates a fresh destination per call; `borrowed-dst` reuses one "
+                    "borrowed-view destination through the view branch of the operand resolution. "
+                    "The fix must not add a blocking round trip, so the owned arm must stay at or "
+                    "below the borrowed one.")))
     return rows
 
 

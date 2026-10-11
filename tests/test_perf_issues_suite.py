@@ -87,7 +87,12 @@ class PerfIssueSuiteTest(unittest.TestCase):
         script = (ROOT / "scripts/run_gpu_perf_issues.sh").read_text()
         self.assertIn("query-compute-apps", script)
         self.assertIn("BENCHMARK_ALLOW_BUSY_GPU", script)
+        # The guard runs again right before measuring, and the post-run list is
+        # recorded and checked, not just printed.
+        self.assertIn('require_idle_gpu "at measurement time"', script)
         self.assertIn("gpu_compute_apps_at_start", script)
+        self.assertIn("gpu_compute_apps_at_end", script)
+        self.assertIn("not a clean measurement", script)
 
     def test_failed_binary_is_a_failed_row(self):
         with tempfile.TemporaryDirectory() as tmp:

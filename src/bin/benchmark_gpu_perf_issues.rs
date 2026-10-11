@@ -234,12 +234,29 @@ fn device_sync(session: &mut dyn BackendSession) -> Result<()> {
     Ok(())
 }
 
+/// Fold one error term into a running worst case.
+///
+/// `f64::max` returns the non-NaN operand when only one side is NaN, so a plain
+/// `max` fold would silently discard a NaN result and leave a passing zero.
+/// A non-finite term is reported as infinite instead.
+fn worst_of(worst: f64, value: f64) -> f64 {
+    if value.is_finite() {
+        if value > worst {
+            value
+        } else {
+            worst
+        }
+    } else {
+        f64::INFINITY
+    }
+}
+
 fn max_rel(actual: &[f64], expected: &[f64]) -> f64 {
     actual
         .iter()
         .zip(expected)
         .map(|(a, e)| (a - e).abs() / e.abs().max(1.0))
-        .fold(0.0, f64::max)
+        .fold(0.0, worst_of)
 }
 
 fn check_tol(error: f64, tol: f64, what: &str) -> Result<f64> {
@@ -1209,7 +1226,7 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
                 // Both the table and the [tokens, hidden] result are column-major.
                 let expected = table[row + h * vocab] as f64;
                 let scale = expected.abs().max(1.0);
-                worst = worst.max((got[t + h * tokens] as f64 - expected).abs() / scale);
+                worst = worst_of(worst, (got[t + h * tokens] as f64 - expected).abs() / scale);
             }
         }
         let error = check_tol(worst, 1e-6, "embedding gather")?;
@@ -1259,14 +1276,17 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
             for h in 0..hidden.min(64) {
                 let expected = table[row + h * vocab] as f64;
                 let scale = expected.abs().max(1.0);
-                worst = worst.max((back[t * hidden + h] as f64 - expected).abs() / scale);
+                worst = worst_of(worst, (back[t * hidden + h] as f64 - expected).abs() / scale);
             }
         }
         let error = check_tol(worst, 0.0, "cudarc row copies")?;
         let m = measure(timing, bytes, |it| {
             timed(
                 it,
-                &mut || -> Result<()> {
+                // An allocation-returning operation, matching the eager arm's
+                // output policy, so the two are comparable.
+                &mut || -> Result<cudarc::driver::CudaSlice<f32>> {
+                    let mut out = unsafe { stream.alloc::<f32>(tokens * hidden) }?;
                     for (t, id) in ids.iter().enumerate() {
                         let row = *id as usize * hidden;
                         stream.memcpy_dtod(
@@ -1274,7 +1294,7 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
                             &mut out.slice_mut(t * hidden..(t + 1) * hidden),
                         )?;
                     }
-                    Ok(())
+                    Ok(out)
                 },
                 &mut || Ok(stream.synchronize()?),
             )
@@ -1283,7 +1303,7 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
             error,
             m,
             vec![
-                "8 device-to-device row copies (cudarc), the O(tokens) cost of the selection",
+                "8 device-to-device row copies (cudarc) into a freshly allocated destination",
                 "stream.synchronize at the batch edge",
             ],
         )
@@ -1347,7 +1367,7 @@ fn reshape_materialize(params: &Value, timing: &Timing, device: usize) -> Result
     for i in 0..elements.min(64) {
         let expected = factor * data[i] as f64;
         let scale = expected.abs().max(1.0);
-        worst = worst.max((got[i] as f64 - expected).abs() / scale);
+        worst = worst_of(worst, (got[i] as f64 - expected).abs() / scale);
     }
     let error = check_tol(worst, 1e-6, "reshape values")?;
     let m = runtime.with_eager_session(|s| {
@@ -1542,7 +1562,7 @@ fn vendor_handle(params: &Value, timing: &Timing, device: usize) -> Result<CaseO
             "correctness probe",
             "persistent handle creation for the reused arm",
         ],
-        extra: json!({"arm": arm, "gemm_n": n, "handle_bytes": 10 << 20}),
+        extra: json!({"arm": arm, "gemm_n": n}),
     })
 }
 // #1924: vendor-library churn per backend cycle
@@ -1608,114 +1628,71 @@ fn pool_retention(params: &Value, device: usize) -> Result<CaseOutcome> {
     let count = param_usize(params, "count")?;
     let probe_gib = param_usize(params, "probe_gib")?;
     let arm = param_str(params, "arm")?.to_string();
-    // `driver-alloc-after-free` adds the driver-level allocation the issue's
-    // 6 GiB cuMemAlloc could not serve; `alloc-free` reports the memory state only.
-    let probe = arm == "driver-alloc-after-free";
     let elements = gib * (1usize << 30) / 8;
     let ctx = CudaContext::new(device)?;
-    let host_zero = host(vec![elements], vec![0.0; elements])?;
+    // A non-zero deterministic payload, so the round-trip check has teeth.
+    let host_data: Vec<f64> = (0..elements)
+        .map(|i| ((i % 97) as f64) * 0.01 - 0.5)
+        .collect();
+    let host_tensor = host(vec![elements], host_data.clone())?;
     let free_start = device_free_bytes(&ctx)?;
-    let mut allocated = Vec::new();
-    let mut peak_free = free_start;
-    if arm != "runtime-recreate" {
-        let bk = backend(device)?;
-        let rt = bk.runtime().clone();
-        for _ in 0..count {
-            let t = upload_tensor(&rt, &host_zero)?;
-            rt.synchronize()?;
-            peak_free = peak_free.min(device_free_bytes(&ctx)?);
-            allocated.push(t);
-        }
-        let free_while_alive = device_free_bytes(&ctx)?;
-        allocated.clear();
-        drop(bk);
-        let free_after_drop = device_free_bytes(&ctx)?;
-        return finish_pool_retention(
-            arm,
-            count,
-            gib,
-            probe_gib,
-            device,
-            free_start,
-            free_while_alive,
-            free_after_drop,
-            peak_free,
-            probe,
-        );
-    }
-    // runtime-recreate: allocate, drop the runtime entirely, then read again.
-    let free_while_alive;
-    let free_after_drop;
-    {
-        let bk = backend(device)?;
-        let rt = bk.runtime().clone();
-        for _ in 0..count {
-            allocated.push(upload_tensor(&rt, &host_zero)?);
-            rt.synchronize()?;
-            peak_free = peak_free.min(device_free_bytes(&ctx)?);
-        }
-        free_while_alive = device_free_bytes(&ctx)?;
-        drop(allocated);
-        drop(bk);
-        free_after_drop = device_free_bytes(&ctx)?;
-    }
-    let recreated = backend(device)?;
-    let free_after_recreate = device_free_bytes(&ctx)?;
-    drop(recreated);
-    Ok(CaseOutcome {
-        max_rel_error: 0.0,
-        measurement: None,
-        timer: Vec::new(),
-        outside_timer: vec!["everything (a state diagnostic, no timing)"],
-        extra: json!({
-            "arm": arm,
-            "tensors": count,
-            "tensor_gib": gib,
-            "probe_gib": probe_gib,
-            "free_bytes_start": free_start,
-            "free_bytes_while_alive": free_while_alive,
-            "free_bytes_after_drop": free_after_drop,
-            "free_bytes_after_recreate": free_after_recreate,
-            "peak_used_bytes": free_start - peak_free,
-            "retained_bytes_after_drop": free_start as i64 - free_after_recreate as i64,
-        }),
-    })
-}
 
-#[allow(clippy::too_many_arguments)]
-fn finish_pool_retention(
-    arm: String,
-    count: usize,
-    gib: usize,
-    probe_gib: usize,
-    device: usize,
-    free_start: u64,
-    free_while_alive: u64,
-    free_after_drop: u64,
-    peak_free: u64,
-    probe: bool,
-) -> Result<CaseOutcome> {
-    // A plain driver allocation of `probe_gib` from the same process: the issue's
-    // 6 GiB cuMemAlloc that fails once the pool has taken the freed memory.
-    let probe_bytes = probe_gib * (1usize << 30);
-    let probe_status = if !probe {
-        format!("not requested ({arm} arm)")
+    let mut bk = backend(device)?;
+    let rt = bk.runtime().clone();
+    // The issue's sequence: eight 1 GiB tensors alive at the high-water mark,
+    // then all of them dropped.
+    let mut allocated = Vec::with_capacity(count);
+    for _ in 0..count {
+        allocated.push(upload_tensor(&rt, &host_tensor)?);
+    }
+    rt.synchronize()?;
+    // Verify one of them really holds the uploaded payload, outside any timing.
+    let probe = download_tensor(&rt, &allocated[0])?;
+    let got = probe.as_slice::<f64>()?;
+    let mut worst = 0.0f64;
+    for i in 0..8 {
+        worst = worst_of(worst, (got[i] - host_data[i]).abs() / host_data[i].abs().max(1.0));
+    }
+    let error = check_tol(worst, 1e-12, "1 GiB tensor round trip")?;
+    let free_while_alive = device_free_bytes(&ctx)?;
+    allocated.clear();
+    let free_after_drop;
+    let free_after_recreate;
+    if arm == "runtime-recreate" {
+        // Drop the runtime as well. The pool belongs to the process-global
+        // client of the device, so this reading is what a later runtime sees.
+        drop(bk);
+        drop(rt);
+        free_after_drop = device_free_bytes(&ctx)?;
+        let recreated = backend(device)?;
+        free_after_recreate = device_free_bytes(&ctx)?;
+        drop(recreated);
     } else {
-        let probe = (|| -> Result<String> {
-            let probe_ctx = CudaContext::new(device)?;
-            let stream = probe_ctx.new_stream()?;
-            let buf = unsafe { stream.alloc::<u8>(probe_bytes) }?;
-            let len = buf.len();
-            drop(buf);
-            Ok(format!("ok ({len} bytes)"))
-        })();
-        match &probe {
-            Ok(value) => value.clone(),
-            Err(error) => format!("failed: {error}"),
+        drop(bk);
+        drop(rt);
+        free_after_drop = device_free_bytes(&ctx)?;
+        free_after_recreate = free_after_drop;
+    }
+    // `driver-alloc-after-free` adds the synchronous driver allocation the
+    // issue's 6 GiB cuMemAlloc could not serve.
+    let probe_status = if arm == "driver-alloc-after-free" {
+        ctx.bind_to_thread()?;
+        let probe_bytes = probe_gib * (1usize << 30);
+        match unsafe { cudarc::driver::result::malloc_sync(probe_bytes) } {
+            Ok(pointer) => {
+                let freed = unsafe { cudarc::driver::result::free_sync(pointer) };
+                match freed {
+                    Ok(()) => format!("ok ({probe_bytes} bytes)"),
+                    Err(free_error) => format!("allocated, free failed: {free_error}"),
+                }
+            }
+            Err(alloc_error) => format!("failed: {alloc_error}"),
         }
+    } else {
+        format!("not requested ({arm} arm)")
     };
     Ok(CaseOutcome {
-        max_rel_error: 0.0,
+        max_rel_error: error,
         measurement: None,
         timer: Vec::new(),
         outside_timer: vec!["everything (a state diagnostic, no timing)"],
@@ -1728,7 +1705,8 @@ fn finish_pool_retention(
             "free_bytes_start": free_start,
             "free_bytes_while_alive": free_while_alive,
             "free_bytes_after_drop": free_after_drop,
-            "peak_used_bytes": free_start - peak_free,
+            "free_bytes_after_recreate": free_after_recreate,
+            "peak_used_bytes": free_start - free_while_alive,
             "retained_bytes_after_drop": free_start as i64 - free_after_drop as i64,
         }),
     })
@@ -1795,7 +1773,7 @@ fn svd_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
         let mut worst = 0.0f64;
         for (got, want) in rebuilt.iter().zip(&data) {
             let scale = want.norm().max(1.0);
-            worst = worst.max((got - want).norm() / scale);
+            worst = worst_of(worst, (got - want).norm() / scale);
         }
         Ok((check_tol(worst, 1e-8, "svd reconstruction")?, vec![u, sv, vh]))
     })??;
@@ -1943,17 +1921,32 @@ fn eigh_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOut
     })
 }
 
-/// `max_j ||A v_j - w_j v_j|| / ||A||` over the eigenpairs of the first item.
+/// Error of the eigendecomposition of one item: the residual `||A v_j - w_j v_j|| / ||A||`,
+/// the deviation of every returned vector from unit norm, and the pairwise overlap
+/// of the checked columns.
+///
+/// The residual alone accepts `V = 0` (and repeated copies of one valid vector),
+/// because `A 0 - w 0 = 0`; the norm and overlap terms reject those.
 fn eigh_residual_f64(a: &[f64], w: &[f64], v: &[f64], n: usize) -> f64 {
     let mut worst = 0.0f64;
     let norm = a.iter().fold(0.0f64, |m, x| m.max(x.abs())).max(1.0);
     for j in 0..n {
-        let mut residual = 0.0f64;
-        for i in 0..n {
-            let av: f64 = (0..n).map(|p| a[i + p * n] * v[p + j * n]).sum();
-            residual += (av - w[j] * v[i + j * n]).powi(2);
+        let vnorm = (0..n).map(|i| v[i + j * n] * v[i + j * n]).sum::<f64>().sqrt();
+        worst = worst_of(worst, (vnorm - 1.0).abs());
+        let residual = (0..n)
+            .map(|i| {
+                let av: f64 = (0..n).map(|p| a[i + p * n] * v[p + j * n]).sum();
+                (av - w[j] * v[i + j * n]).powi(2)
+            })
+            .sum::<f64>()
+            .sqrt();
+        worst = worst_of(worst, residual / norm);
+    }
+    for j in 0..n.min(3) {
+        for k in (j + 1)..n.min(4) {
+            let dot: f64 = (0..n).map(|i| v[i + j * n] * v[i + k * n]).sum();
+            worst = worst_of(worst, dot.abs());
         }
-        worst = worst.max(residual.sqrt() / norm);
     }
     worst
 }
@@ -1962,12 +1955,27 @@ fn eigh_residual_c64(a: &[Complex64], w: &[f64], v: &[Complex64], n: usize) -> f
     let mut worst = 0.0f64;
     let norm = a.iter().fold(0.0f64, |m, x| m.max(x.norm())).max(1.0);
     for j in 0..n {
-        let mut residual = 0.0f64;
-        for i in 0..n {
-            let av: Complex64 = (0..n).map(|p| a[i + p * n] * v[p + j * n]).sum();
-            residual += (av - v[i + j * n] * w[j]).norm_sqr();
+        let vnorm = (0..n)
+            .map(|i| v[i + j * n].norm_sqr())
+            .sum::<f64>()
+            .sqrt();
+        worst = worst_of(worst, (vnorm - 1.0).abs());
+        let residual = (0..n)
+            .map(|i| {
+                let av: Complex64 = (0..n).map(|p| a[i + p * n] * v[p + j * n]).sum();
+                (av - v[i + j * n] * w[j]).norm_sqr()
+            })
+            .sum::<f64>()
+            .sqrt();
+        worst = worst_of(worst, residual / norm);
+    }
+    for j in 0..n.min(3) {
+        for k in (j + 1)..n.min(4) {
+            let dot: Complex64 = (0..n)
+                .map(|i| v[i + j * n].conj() * v[i + k * n])
+                .sum();
+            worst = worst_of(worst, dot.norm());
         }
-        worst = worst.max(residual.sqrt() / norm);
     }
     worst
 }
@@ -2006,7 +2014,7 @@ fn hadamard_dot_general(params: &Value, timing: &Timing, device: usize) -> Resul
         for i in 0..(rows * cols).min(64) {
             let expected = x[i] as f64 * y[i] as f64;
             let scale = expected.abs().max(1.0);
-            worst = worst.max((got[i] as f64 - expected).abs() / scale);
+            worst = worst_of(worst, (got[i] as f64 - expected).abs() / scale);
         }
         let error = check_tol(worst, 1e-6, "hadamard product")?;
         let m = measure(timing, bytes, |it| {
@@ -2048,11 +2056,12 @@ fn contraction_plan_churn(params: &Value, timing: &Timing, device: usize) -> Res
     let mut bk = backend(device)?;
     let rt = bk.runtime().clone();
     let cfg = matmul_cfg(&[1], &[0]);
-    // Distinct plan keys come from distinct contract dims with the same volume.
-    let shapes: Vec<(usize, usize)> = (0..distinct).map(|i| (n + i, n)).collect();
+    // Distinct contraction-plan keys come from distinct extents; the count must
+    // exceed the backend's plan-cache capacity for the churn to evict anything.
     let mut plan_inputs = Vec::new();
     if arm == "distinct-plans" {
-        for (index, &(m, k)) in shapes.iter().enumerate() {
+        for index in 0..distinct {
+            let (m, k) = (n + index, n);
             let a = upload_tensor(&rt, &host(vec![m, k], values(m * k, 90 + index as u64))?)?;
             let b = upload_tensor(&rt, &host(vec![k, m], values(k * m, 190 + index as u64))?)?;
             plan_inputs.push((a, b));
@@ -2065,28 +2074,33 @@ fn contraction_plan_churn(params: &Value, timing: &Timing, device: usize) -> Res
         }
     }
     rt.synchronize()?;
-    let bytes = plan_inputs[0].0.shape().iter().product::<usize>() * 8 * 2;
+    let bytes = (distinct + 1) * n * n * 8;
     let (error, measurement) = bk.with_backend_session(|s| -> Result<(f64, Measurement)> {
         let first = plan_inputs[0].0.dot_general(&plan_inputs[0].1, cfg.clone(), s)?;
         let got = download_tensor(&rt, &first)?;
         let got = got.as_slice::<f64>()?;
-        let (m, k) = shapes[0];
+        let (m, k) = (n, n);
         let data = values(m * k, 90);
         let rhs = values(k * m, 190);
         let expected: f64 = (0..k).map(|p| data[1 + p * m] * rhs[p + 2 * k]).sum();
         let error = check_tol(max_rel(&[got[1 + 2 * m]], &[expected]), 1e-12, "contraction")?;
+        // The timed operation is the re-run of the first shape alone. The churn
+        // that fills the plan cache is the (untimed) precondition, and the device
+        // is drained before the clock starts so its queued work cannot leak in.
         let m = measure(timing, bytes, |it| {
             let mut elapsed = 0u128;
             for _ in 0..it {
-                let mut outputs = Vec::with_capacity(plan_inputs.len() + 1);
-                let start = Instant::now();
+                let mut churn = Vec::with_capacity(plan_inputs.len());
                 for (a, b) in &plan_inputs {
-                    outputs.push(a.dot_general(b, cfg.clone(), s)?);
+                    churn.push(a.dot_general(b, cfg.clone(), s)?);
                 }
-                outputs.push(plan_inputs[0].0.dot_general(&plan_inputs[0].1, cfg.clone(), s)?);
+                device_sync(s)?;
+                let start = Instant::now();
+                let out = plan_inputs[0].0.dot_general(&plan_inputs[0].1, cfg.clone(), s)?;
                 device_sync(s)?;
                 elapsed += start.elapsed().as_nanos();
-                black_box(&outputs);
+                black_box(&out);
+                black_box(&churn);
             }
             Ok(elapsed)
         })?;
@@ -2097,14 +2111,19 @@ fn contraction_plan_churn(params: &Value, timing: &Timing, device: usize) -> Res
         measurement: Some(measurement),
         timer: vec![
             if arm == "distinct-plans" {
-                "distinct small contractions then a re-run of the first shape"
+                "one re-run of the first contraction after the plan cache was filled by distinct shapes"
             } else {
-                "the same small contraction repeated"
+                "one re-run of the same contraction"
             },
-            "device synchronize at the batch edge",
+            "device synchronize before and after the timed contraction",
         ],
-        outside_timer: vec!["backend construction", "operand construction and upload", "correctness check (download)"],
-        extra: json!({"distinct_plans": distinct, "contractions_per_op": distinct + 1, "n": n}),
+        outside_timer: vec![
+            "backend construction",
+            "operand construction and upload",
+            "the churn that fills (or repeats) the plan cache, and the synchronize after it",
+            "correctness check (download)",
+        ],
+        extra: json!({"distinct_plans": distinct, "n": n}),
     })
 }
 
@@ -2132,6 +2151,7 @@ fn owned_destination(params: &Value, timing: &Timing, device: usize) -> Result<C
         let expected: f64 = (0..n).map(|p| data[1 + p * n] * rhs[p + 2 * n]).sum();
         let error = check_tol(max_rel(&[got[1 + 2 * n]], &[expected]), 1e-12, "dot_general")?;
         let m = if arm == "owned-dst" {
+            // The allocating route: every call returns a freshly owned destination.
             measure(timing, bytes, |it| {
                 timed_in_session(it, s, |s| {
                     Ok(s.dot_general_read(
@@ -2142,13 +2162,19 @@ fn owned_destination(params: &Value, timing: &Timing, device: usize) -> Result<C
                 })
             })?
         } else {
+            // The reused borrowed-view destination: the write goes through the
+            // view branch of the operand resolution, not the owned-tensor one.
             measure(timing, bytes, |it| {
                 timed_in_session(it, s, |s| {
+                    let view = dst
+                        .as_typed_mut::<f64>()
+                        .ok_or("destination is not f64")?
+                        .as_view_mut();
                     s.dot_general_read_into(
                         TensorRead::from_tensor(&a),
                         TensorRead::from_tensor(&b),
                         &cfg,
-                        TensorWrite::from_tensor(&mut dst),
+                        TensorWrite::from_view(tenferro_tensor::TensorViewMut::F64(view)),
                     )?;
                     Ok(())
                 })
@@ -2164,11 +2190,15 @@ fn owned_destination(params: &Value, timing: &Timing, device: usize) -> Result<C
             if arm == "owned-dst" {
                 "dot_general_read into a freshly allocated owned destination"
             } else {
-                "dot_general_read_into a recycled borrowed destination"
+                "dot_general_read_into a recycled borrowed-view destination"
             },
             "device synchronize at the batch edge",
         ],
-        outside_timer: vec!["backend construction", "operand upload", "correctness check (download)"],
+        outside_timer: vec![
+            "backend construction",
+            "operand upload",
+            "correctness check (download)",
+        ],
         extra: json!({"n": n}),
     })
 }

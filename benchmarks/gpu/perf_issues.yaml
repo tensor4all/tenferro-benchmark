@@ -123,10 +123,10 @@ problems:
   - gather_embedding_f32_vocab248320_cudarc-row-copies
   - reshape_constant_f32_64M_constant
   - reshape_constant_f32_64M_op-output
-  - vendor_handle_cublas_f32_create-destroy
-  - vendor_handle_cublas_f32_reused
-  - vendor_churn_f32_cycles8
-  - vendor_churn_f32_cycles64
+  - vendor_handle_cublas_f64_create-destroy
+  - vendor_handle_cublas_f64_reused
+  - vendor_churn_f64_cycles8
+  - vendor_churn_f64_cycles64
   - pool_retention_f64_alloc-free
   - pool_retention_f64_runtime-recreate
   - pool_retention_f64_driver-alloc-after-free
