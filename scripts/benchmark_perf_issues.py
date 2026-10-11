@@ -448,11 +448,15 @@ def report(run_dir, target, suite_key="cpu"):
                              f"{c['first_call_ms']:.3f} | {c['second_call_ms']:.3f} |")
             lines.append("")
     lines += ["", "## Timing boundaries", ""]
+    # Key on the boundary, not just the case: one (kind, arm) can run under two
+    # different boundaries (an upload and a download arm, an f64 and a c64 arm).
     scopes = {}
     for row in rows:
         if row.get("scope"):
-            scopes[(row["kind"], row["arm"])] = row["scope"]
-    for (kind, arm), scope in sorted(scopes.items()):
+            scope = row["scope"]
+            key = (row["kind"], row["arm"], tuple(scope["timer"]), tuple(scope["outside_timer"]))
+            scopes[key] = scope
+    for (kind, arm, _, _), scope in sorted(scopes.items()):
         lines.append(f"- **{kind} / {arm}** — inside: {', '.join(scope['timer']) or '—'}; "
                      f"outside: {', '.join(scope['outside_timer'])}.")
     for row in rows:

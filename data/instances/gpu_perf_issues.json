@@ -1757,7 +1757,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2078: entering a raw CUDA session (CudaExecSession::with_raw) with an empty closure, on an idle device and behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue measures the second empty scope after the GEMMs, which blocks for the whole device time; the sync arm is the explicit barrier it is compared with. Each batch holds one scope, so the per-batch clock is also this call's clock. A raw scope must return in microseconds and leave queued work in flight."
+  "intent": "tenferro-rs #2078: entering a raw CUDA session (CudaExecSession::with_raw) with an empty closure, on an idle device and behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue measures the second empty scope after the GEMMs, which blocks for the whole device time; the sync arm is the explicit barrier it is compared with. The idle arm runs many scopes in one timed interval; the queued arms hold one scope per batch (the retention precondition caps the batch), so their per-op number is that call. A raw scope must return in microseconds and leave queued work in flight."
  },
  {
   "id": "raw_scope_entry_f64_empty-behind-queued-gemm",
@@ -1779,7 +1779,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2078: entering a raw CUDA session (CudaExecSession::with_raw) with an empty closure, on an idle device and behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue measures the second empty scope after the GEMMs, which blocks for the whole device time; the sync arm is the explicit barrier it is compared with. Each batch holds one scope, so the per-batch clock is also this call's clock. A raw scope must return in microseconds and leave queued work in flight.",
+  "intent": "tenferro-rs #2078: entering a raw CUDA session (CudaExecSession::with_raw) with an empty closure, on an idle device and behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue measures the second empty scope after the GEMMs, which blocks for the whole device time; the sync arm is the explicit barrier it is compared with. The idle arm runs many scopes in one timed interval; the queued arms hold one scope per batch (the retention precondition caps the batch), so their per-op number is that call. A raw scope must return in microseconds and leave queued work in flight.",
   "reference_for": "raw_scope_entry_f64_sync-behind-queued-gemm"
  },
  {
@@ -1802,7 +1802,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2078: entering a raw CUDA session (CudaExecSession::with_raw) with an empty closure, on an idle device and behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue measures the second empty scope after the GEMMs, which blocks for the whole device time; the sync arm is the explicit barrier it is compared with. Each batch holds one scope, so the per-batch clock is also this call's clock. A raw scope must return in microseconds and leave queued work in flight."
+  "intent": "tenferro-rs #2078: entering a raw CUDA session (CudaExecSession::with_raw) with an empty closure, on an idle device and behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue measures the second empty scope after the GEMMs, which blocks for the whole device time; the sync arm is the explicit barrier it is compared with. The idle arm runs many scopes in one timed interval; the queued arms hold one scope per batch (the retention precondition caps the batch), so their per-op number is that call. A raw scope must return in microseconds and leave queued work in flight."
  },
  {
   "id": "eager_op_f32_add_decode_eager-session",

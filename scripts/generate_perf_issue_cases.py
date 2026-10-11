@@ -532,9 +532,10 @@ def gpu_latency_cases(gpu):
                     "(CudaExecSession::with_raw) with an empty closure, on an idle device and "
                     "behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue "
                     "measures the second empty scope after the GEMMs, which blocks for the whole "
-                    "device time; the sync arm is the explicit barrier it is compared with. Each "
-                    "batch holds one scope, so the per-batch clock is also this call's clock. A raw "
-                    "scope must return in microseconds and leave queued work in flight.")))
+                    "device time; the sync arm is the explicit barrier it is compared with. The idle "
+                    "arm runs many scopes in one timed interval; the queued arms hold one scope per "
+                    "batch (the retention precondition caps the batch), so their per-op number is that "
+                    "call. A raw scope must return in microseconds and leave queued work in flight.")))
     for op, shape in (("add", {"hidden": 1024, "tokens": 8}),
                       ("dot_general", {"in": 1024, "out": 1024, "len": 8})):
         label = f"{shape.get('hidden', shape.get('in'))}x{shape.get('tokens', shape.get('len'))}"

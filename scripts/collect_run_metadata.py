@@ -627,8 +627,9 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
             "minimum_untimed_priming_runs": 1,
             "short_operation_sampling": (
                 "steady-state GPU cases use one interval over many operations with a device synchronize "
-                "at the batch edge; setup/lifecycle and issue-workflow cases are declared diagnostics "
-                "whose sample is one isolated call"
+                "at the batch edge; session/lifecycle diagnostics batch their calls where the API allows, "
+                "and issue-workflow diagnostics whose per-call precondition cannot be batched sample one "
+                "isolated call"
                 if args.suite_id.startswith("gpu/")
                 else "many operations per interval; shared session where supported; see docs/short-operation-sessions.md"
             ),
