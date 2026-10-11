@@ -368,15 +368,18 @@ def report(run_dir, target, suite_key="cpu"):
     lines += table(steady)
     for scope, title, note in (
             ("session_entry_diagnostic", "Per-call session entry diagnostics (not operation comparisons)",
-             "A session (or eager session) is entered and left for every operation, inside the timer."),
+             "The measured call includes session/scope entry or exit: the eager-per-call arms enter and "
+             "leave an eager session per operation, the raw-scope arms enter and leave a raw CUDA scope "
+             "(or time the explicit barrier they replace), and the vendor arms enter a raw scope per "
+             "operation. Each case's timing note lists its own boundary."),
             ("eager_ad_workflow", "Eager AD workflow diagnostics",
              "Forward + reduction + backward through the eager runtime, including its internal session entries; "
              "gradients accumulate across a batch and are reset outside timing."),
             ("issue_workflow_diagnostic", "Issue-workload diagnostics (not steady-state operation rows)",
              "The workload of the issue needs a per-call precondition that cannot be batched (a cache miss "
              "that reconstructs the contraction plan and its workspace, or a caller-provided destination "
-             "handle built per call), so each sample is one isolated call with its own clock, and its "
-             "precondition is outside it.")):
+             "handle built per call), so a sample is exactly one call: the median is that call's latency, "
+             "not an average over a batch, and the precondition sits outside its clock.")):
         selected = [r for r in rows if r["measurement_scope"] == scope]
         if selected:
             lines += ["", f"## {title}", "", note, ""] + table(selected)

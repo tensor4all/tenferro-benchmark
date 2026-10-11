@@ -152,6 +152,38 @@ fn timed_in_session<O>(
     Ok(elapsed)
 }
 
+/// One isolated call per sample.
+///
+/// For the issue workloads whose precondition cannot be batched (a plan-cache
+/// churn, a destination handle built per call) a single wall-clock interval
+/// over many operations is not available, so the sample *is* one call and the
+/// reported median is a per-call latency, not a per-operation average.
+fn measure_isolated(
+    timing: &Timing,
+    mut op: impl FnMut() -> Result<u128>,
+) -> Result<Measurement> {
+    for _ in 0..timing.warmups.max(1) {
+        black_box(op()?);
+    }
+    op()?;
+    let mut samples = Vec::with_capacity(timing.samples);
+    for sample_index in 0..timing.samples {
+        let elapsed_ns = op()?;
+        if elapsed_ns == 0 {
+            return Err("timed sample elapsed zero nanoseconds".into());
+        }
+        samples.push(Sample {
+            sample_index,
+            elapsed_ns,
+            iterations: 1,
+        });
+    }
+    Ok(Measurement {
+        iterations: 1,
+        samples,
+    })
+}
+
 struct CaseOutcome {
     max_rel_error: f64,
     measurement: Option<Measurement>,
@@ -1648,7 +1680,7 @@ fn pool_retention(params: &Value, device: usize) -> Result<CaseOutcome> {
     let host_tensor = host(vec![elements], host_data.clone())?;
     let free_start = device_free_bytes(&ctx)?;
 
-    let mut bk = backend(device)?;
+    let bk = backend(device)?;
     let rt = bk.runtime().clone();
     // The issue's sequence: eight 1 GiB tensors alive at the high-water mark,
     // then all of them dropped.
@@ -2085,7 +2117,6 @@ fn contraction_plan_churn(params: &Value, timing: &Timing, device: usize) -> Res
         }
     }
     rt.synchronize()?;
-    let bytes = (distinct + 1) * n * n * 8;
     let (error, measurement) = bk.with_backend_session(|s| -> Result<(f64, Measurement)> {
         let first = plan_inputs[0].0.dot_general(&plan_inputs[0].1, cfg.clone(), s)?;
         let got = download_tensor(&rt, &first)?;
@@ -2095,24 +2126,22 @@ fn contraction_plan_churn(params: &Value, timing: &Timing, device: usize) -> Res
         let rhs = values(k * m, 190);
         let expected: f64 = (0..k).map(|p| data[1 + p * m] * rhs[p + 2 * k]).sum();
         let error = check_tol(max_rel(&[got[1 + 2 * m]], &[expected]), 1e-12, "contraction")?;
-        // The timed operation is the re-run of the first shape alone. The churn
-        // that fills the plan cache is the (untimed) precondition, and the device
-        // is drained before the clock starts so its queued work cannot leak in.
-        let m = measure(timing, bytes, |it| {
-            let mut elapsed = 0u128;
-            for _ in 0..it {
-                let mut churn = Vec::with_capacity(plan_inputs.len());
-                for (a, b) in &plan_inputs {
-                    churn.push(a.dot_general(b, cfg.clone(), s)?);
-                }
-                device_sync(s)?;
-                let start = Instant::now();
-                let out = plan_inputs[0].0.dot_general(&plan_inputs[0].1, cfg.clone(), s)?;
-                device_sync(s)?;
-                elapsed += start.elapsed().as_nanos();
-                black_box(&out);
-                black_box(&churn);
+        // The timed operation is the re-run of the first shape alone, one
+        // isolated call per sample. The churn that fills the plan cache is the
+        // (untimed) precondition, and the device is drained before the clock
+        // starts so its queued work cannot leak in.
+        let m = measure_isolated(timing, || {
+            let mut churn = Vec::with_capacity(plan_inputs.len());
+            for (a, b) in &plan_inputs {
+                churn.push(a.dot_general(b, cfg.clone(), s)?);
             }
+            device_sync(s)?;
+            let start = Instant::now();
+            let out = plan_inputs[0].0.dot_general(&plan_inputs[0].1, cfg.clone(), s)?;
+            device_sync(s)?;
+            let elapsed = start.elapsed().as_nanos();
+            black_box(&out);
+            black_box(&churn);
             Ok(elapsed)
         })?;
         Ok((error, m))
@@ -2152,76 +2181,46 @@ fn owned_destination(params: &Value, timing: &Timing, device: usize) -> Result<C
     let host_b = values(n * n, 62);
     let a = upload_tensor(&rt, &host(vec![n, n], host_a.clone())?)?;
     let b = upload_tensor(&rt, &host(vec![n, n], host_b.clone())?)?;
-    // One caller-provided destination per arm, written by every operation.
-    let mut owned_dst = upload_tensor(&rt, &host(vec![n, n], vec![0.0; n * n])?)?;
-    let mut view_dst = upload_tensor(&rt, &host(vec![n, n], vec![0.0; n * n])?)?;
+    // One caller-provided destination, written by every operation.
+    let mut dst = upload_tensor(&rt, &host(vec![n, n], vec![0.0; n * n])?)?;
     rt.synchronize()?;
     let cfg = matmul_cfg(&[1], &[0]);
-    let bytes = n * n * 8;
     let expected: f64 = (0..n).map(|p| host_a[1 + p * n] * host_b[p + 2 * n]).sum();
-    let check_destination = |t: &Tensor| -> Result<f64> {
-        let back = download_tensor(&rt, t)?;
-        let got = back.as_slice::<f64>()?;
-        check_tol(
-            max_rel(&[got[1 + 2 * n]], &[expected]),
-            1e-12,
-            "destination contents",
-        )
-    };
-    let write = |s: &mut dyn BackendSession,
-                 owned_dst: &mut Tensor,
-                 view_dst: &mut Tensor|
-     -> Result<()> {
-        {
-            if owned {
-                // `from_tensor` is the owned-tensor destination route (the
-                // write_device_ptr path the #1949 memo covers).
-                s.dot_general_read_into(
-                    TensorRead::from_tensor(&a),
-                    TensorRead::from_tensor(&b),
-                    &cfg,
-                    TensorWrite::from_tensor(owned_dst),
-                )?;
-            } else {
-                // The borrowed-view destination route resolves the write
-                // through the view branch and must take the resource round trip.
-                let view = view_dst
-                    .as_typed_mut::<f64>()
-                    .ok_or("destination is not f64")?
-                    .as_view_mut();
-                s.dot_general_read_into(
-                    TensorRead::from_tensor(&a),
-                    TensorRead::from_tensor(&b),
-                    &cfg,
-                    TensorWrite::from_view(tenferro_tensor::TensorViewMut::F64(view)),
-                )?;
-            }
-            Ok(())
-        }
+    // `from_tensor` is the owned-tensor destination route (the write_device_ptr
+    // path the #1949 memo covers); `from_view` is the borrowed-view route, which
+    // keeps the resource round trip. Building the handle is untimed.
+    let write = |s: &mut dyn BackendSession, dst: &mut Tensor| -> Result<u128> {
+        let destination = if owned {
+            TensorWrite::from_tensor(dst)
+        } else {
+            let view = dst
+                .as_typed_mut::<f64>()
+                .ok_or("destination is not f64")?
+                .as_view_mut();
+            TensorWrite::from_view(tenferro_tensor::TensorViewMut::F64(view))
+        };
+        let lhs = TensorRead::from_tensor(&a);
+        let rhs = TensorRead::from_tensor(&b);
+        let start = Instant::now();
+        s.dot_general_read_into(lhs, rhs, &cfg, destination)?;
+        device_sync(s)?;
+        Ok(start.elapsed().as_nanos())
     };
     let (error, measurement) = bk.with_backend_session(|s| -> Result<(f64, Measurement)> {
         // Validate the destination the arm actually wrote, outside timing.
-        write(s, &mut owned_dst, &mut view_dst)?;
-        device_sync(s)?;
-        let error = check_destination(if owned { &owned_dst } else { &view_dst })?;
-        // One isolated call per sample: the caller-provided destination handle is
-        // built per call (a metadata-only wrap for the owned route, a strided view
-        // for the borrowed one), which the repository's setup-untimed rule does
-        // not allow to sit inside a batched steady-state interval.
-        let m = measure(timing, bytes, |it| {
-            let mut elapsed = 0u128;
-            for _ in 0..it {
-                let start = Instant::now();
-                write(s, &mut owned_dst, &mut view_dst)?;
-                device_sync(s)?;
-                elapsed += start.elapsed().as_nanos();
-            }
-            Ok(elapsed)
-        })?;
+        write(s, &mut dst)?;
+        let back = download_tensor(&rt, &dst)?;
+        let got = back.as_slice::<f64>()?;
+        let error = check_tol(
+            max_rel(&[got[1 + 2 * n]], &[expected]),
+            1e-12,
+            "destination contents",
+        )?;
+        // The handle cannot be batched, so the sample is one isolated call.
+        let m = measure_isolated(timing, || write(s, &mut dst))?;
         Ok((error, m))
     })??;
-    black_box(&owned_dst);
-    black_box(&view_dst);
+    black_box(&dst);
     Ok(CaseOutcome {
         max_rel_error: error,
         measurement: Some(measurement),
@@ -2231,12 +2230,12 @@ fn owned_destination(params: &Value, timing: &Timing, device: usize) -> Result<C
             } else {
                 "dot_general_read_into a reused borrowed-view destination"
             },
-            "device synchronize after each call",
+            "one isolated call per sample; device synchronize after the call",
         ],
         outside_timer: vec![
             "backend construction",
             "operand and destination upload",
-            "the destination handle the rule keeps out of a batched interval",
+            "the destination handle built per call",
             "correctness check (download)",
         ],
         extra: json!({"n": n}),
