@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # gpu/perf_issues: CUDA workloads of open tenferro-rs performance issues
 # (#2009 transfers, #1887 alloc_zero_output, #1885 small blocks / batched
-# factorizations / live buffers / first-call layouts), each with its reference
+# factorizations / live buffers / first-call layouts, #2078 raw-session entry,
+# #2079 decode-sized eager ops, #2080 embedding gather, #2081 freed device
+# memory, #2082 constant reshape, #2083 per-session cuBLAS handle, #1924
+# vendor churn, #1839/#1849 SVD driver, #1846/#1852/#1923 batched eigh driver,
+# #1898 Hadamard through dot_general, #1873/#1805 contraction-plan churn,
+# #1949 owned vs borrowed dot_general destination), each with its reference
 # arm (see scripts/generate_perf_issue_cases.py). A standalone entry point,
 # like run_gpu_permutation.sh; run it sequentially, never next to another GPU
 # benchmark. Coverage BENCH_COVERAGE=quick|full (versioned manifest
@@ -15,6 +20,21 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
+
+# GPU measurement validity: every other process on the device would distort the
+# numbers. Record the compute-process list and refuse to publish a run while
+# another process holds the device.
+if command -v nvidia-smi >/dev/null 2>&1; then
+    echo "CUDA compute processes before the run:"
+    nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
+    if [[ -n "$(nvidia-smi --query-compute-apps=pid --format=csv,noheader 2>/dev/null | tr -d ' \n')" ]]; then
+        if [[ "${BENCHMARK_ALLOW_BUSY_GPU:-0}" != "1" ]]; then
+            echo "ERROR: another process is using the CUDA device; stop it or set BENCHMARK_ALLOW_BUSY_GPU=1 for a diagnostic run." >&2
+            exit 1
+        fi
+        echo "WARNING: BENCHMARK_ALLOW_BUSY_GPU=1; measuring with a busy device." >&2
+    fi
+fi
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-nvidia-gpu}"
 if [[ "$BENCHMARK_TARGET_PROFILE" != nvidia-gpu ]]; then
     echo "ERROR: gpu/perf_issues requires BENCHMARK_TARGET_PROFILE=nvidia-gpu." >&2
@@ -49,6 +69,11 @@ metadata['environment'].setdefault('env', {}).update({
     'BENCHMARK_COMMIT': os.environ['BENCHMARK_COMMIT'], 'BENCHMARK_BUILD_PROFILE': 'release',
     'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
     'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None})
+# GPU validity: what else was on the device when the run started.
+compute_apps = subprocess.run(
+    ['nvidia-smi', '--query-compute-apps=pid,process_name,used_memory', '--format=csv,noheader'],
+    capture_output=True, text=True, check=False)
+metadata['environment']['gpu_compute_apps_at_start'] = compute_apps.stdout.strip().splitlines()
 sys.path.insert(0, 'scripts')
 import benchmark_perf_issues as suite
 _, _, manifest, coverage, expected, selected, raw = suite.plan('gpu')
@@ -69,6 +94,10 @@ failed=0
 CUBECL_DEBUG_LOG=0 LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
     "$PYTHON" "$SCRIPT_DIR/benchmark_perf_issues.py" --suite gpu --device "$DEVICE_ORDINAL" \
     --binary "$BINARY" --threads 1 --output "$RUN_DIR/samples_t1.jsonl" "${EXTRA[@]}" || failed=1
+if command -v nvidia-smi >/dev/null 2>&1; then
+    echo "CUDA compute processes after the run:"
+    nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
+fi
 "$PYTHON" "$SCRIPT_DIR/benchmark_perf_issues.py" --suite gpu --report "$RUN_DIR" \
     --target-profile "$BENCHMARK_TARGET_PROFILE"
 exit "$failed"

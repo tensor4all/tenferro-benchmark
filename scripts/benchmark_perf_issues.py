@@ -387,6 +387,38 @@ def report(run_dir, target, suite_key="cpu"):
                 lines.append(f"| {c['op']} | {c['output_bytes']} | {c['host_allocations_per_op']:.2f} | "
                              f"{c['host_allocated_bytes_per_op']:.0f} | {c['allocated_bytes_over_output_bytes']:.2f} |")
             lines.append("")
+    states = [r for r in rows if r["measurement_scope"] == "state_diagnostic"]
+    if states:
+        lines += ["", "## State diagnostics (no timing)", "",
+                  "Allocation and lifetime state of the CUDA pool, read from the driver before and after "
+                  "each arm. Bytes, not nanoseconds; a case that keeps memory it no longer needs shows "
+                  "up as a non-zero retained value, and a probe that the driver refuses shows up in "
+                  "`probe_status`.", ""]
+        skip = {"suite_id", "case_id", "kind", "arm", "backend", "dtype", "issues",
+                "measurement_scope", "profiles", "intent", "params", "reference_for", "threads",
+                "case_key", "effort", "correctness_status", "status", "max_rel_error", "samples",
+                "scope", "cov", "error", "per_cycle", "id", "device_ordinal"}
+        for row in states:
+            lines += [f"### {row['case_id']} ({' '.join(row['issues'])})", ""]
+            if row["correctness_status"] != "passed":
+                lines += ["FAILED", ""]
+                continue
+            lines += ["| Field | Value | MiB |", "|---|---:|---:|"]
+            for key, value in row.items():
+                if key in skip or not isinstance(value, (int, float, str, bool)):
+                    continue
+                if isinstance(value, bool) or not isinstance(value, (int, float)):
+                    lines.append(f"| {key} | `{value}` | — |")
+                elif "bytes" in key:
+                    lines.append(f"| {key} | {value} | {float(value) / (1 << 20):.1f} |")
+                else:
+                    lines.append(f"| {key} | {value} | — |")
+            lines.append("")
+            if row.get("per_cycle"):
+                lines += ["| Cycle | Free bytes | Delta bytes |", "|---:|---:|---:|"]
+                for index, cycle in enumerate(row["per_cycle"]):
+                    lines.append(f"| {index} | {cycle['free_bytes']} | {cycle['delta_bytes']} |")
+                lines.append("")
     first_calls = [r for r in rows if r["measurement_scope"] == "first_call_diagnostic"]
     if first_calls:
         lines += ["", "## First-call diagnostics (not steady-state rows)", "",

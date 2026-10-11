@@ -1736,5 +1736,1397 @@
    "nvidia-gpu"
   ],
   "intent": "tenferro-rs #1885 §3.4 addendum: first and second call of a materializing transpose (TensorViewCanonicalization::to_contiguous, or copy_into a compact destination, of a transposed device view) for 22 distinct [r, c] layouts after one warm-up layout, in one cold process. A first-call (NVRTC compile) diagnostic, never a steady-state row; the second call is the warm reference."
+ },
+ {
+  "id": "raw_scope_entry_f64_empty-idle",
+  "issues": [
+   "#2078"
+  ],
+  "kind": "raw_scope_entry",
+  "arm": "empty-idle",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "gemm_n": 4096,
+   "queued_gemms": 4,
+   "scopes": 2,
+   "kind": "raw_scope_entry",
+   "arm": "empty-idle",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2078: entering a raw CUDA session (CudaExecSession::with_raw) with an empty closure, on an idle device and behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue measures the second empty scope after the GEMMs, which blocks for the whole device time; the sync arm is the honest explicit barrier it is compared with. A raw scope must return in microseconds and leave queued work in flight."
+ },
+ {
+  "id": "raw_scope_entry_f64_empty-behind-queued-gemm",
+  "issues": [
+   "#2078"
+  ],
+  "kind": "raw_scope_entry",
+  "arm": "empty-behind-queued-gemm",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "gemm_n": 4096,
+   "queued_gemms": 4,
+   "scopes": 2,
+   "kind": "raw_scope_entry",
+   "arm": "empty-behind-queued-gemm",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2078: entering a raw CUDA session (CudaExecSession::with_raw) with an empty closure, on an idle device and behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue measures the second empty scope after the GEMMs, which blocks for the whole device time; the sync arm is the honest explicit barrier it is compared with. A raw scope must return in microseconds and leave queued work in flight.",
+  "reference_for": "raw_scope_entry_f64_sync-behind-queued-gemm"
+ },
+ {
+  "id": "raw_scope_entry_f64_sync-behind-queued-gemm",
+  "issues": [
+   "#2078"
+  ],
+  "kind": "raw_scope_entry",
+  "arm": "sync-behind-queued-gemm",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "gemm_n": 4096,
+   "queued_gemms": 4,
+   "scopes": 2,
+   "kind": "raw_scope_entry",
+   "arm": "sync-behind-queued-gemm",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2078: entering a raw CUDA session (CudaExecSession::with_raw) with an empty closure, on an idle device and behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue measures the second empty scope after the GEMMs, which blocks for the whole device time; the sync arm is the honest explicit barrier it is compared with. A raw scope must return in microseconds and leave queued work in flight."
+ },
+ {
+  "id": "eager_op_f32_add_decode_eager-session",
+  "issues": [
+   "#2079"
+  ],
+  "kind": "eager_op",
+  "arm": "eager-session",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "hidden": 1024,
+   "tokens": 8,
+   "op": "add",
+   "kind": "eager_op",
+   "arm": "eager-session",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput."
+ },
+ {
+  "id": "eager_op_f32_add_decode_eager-per-call",
+  "issues": [
+   "#2079"
+  ],
+  "kind": "eager_op",
+  "arm": "eager-per-call",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "hidden": 1024,
+   "tokens": 8,
+   "op": "add",
+   "kind": "eager_op",
+   "arm": "eager-per-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput.",
+  "reference_for": "eager_op_f32_add_decode_eager-session"
+ },
+ {
+  "id": "eager_op_f32_dot_general_decode_eager-session",
+  "issues": [
+   "#2079"
+  ],
+  "kind": "eager_op",
+  "arm": "eager-session",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "op": "dot_general",
+   "kind": "eager_op",
+   "arm": "eager-session",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput."
+ },
+ {
+  "id": "eager_op_f32_dot_general_decode_eager-per-call",
+  "issues": [
+   "#2079"
+  ],
+  "kind": "eager_op",
+  "arm": "eager-per-call",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "op": "dot_general",
+   "kind": "eager_op",
+   "arm": "eager-per-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput.",
+  "reference_for": "eager_op_f32_dot_general_decode_eager-session"
+ },
+ {
+  "id": "gather_embedding_f32_vocab8192_eager-gather",
+  "issues": [
+   "#2080"
+  ],
+  "kind": "gather_table",
+  "arm": "eager-gather",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "vocab": 8192,
+   "hidden": 1024,
+   "tokens": 8,
+   "kind": "gather_table",
+   "arm": "eager-gather",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2080: an embedding lookup (8 token ids, hidden=1024, f32) from a [vocab, hidden] table, vs the 8 device-to-device row copies the same selection needs. The issue measures 0.23 / 1.67 / 6.3 ms at vocab 8192 / 65536 / 248320, i.e. time proportional to the table because the whole table is permuted first; the row-copy arm shows the O(tokens) cost the lookup is expected to have."
+ },
+ {
+  "id": "gather_embedding_f32_vocab8192_cudarc-row-copies",
+  "issues": [
+   "#2080"
+  ],
+  "kind": "gather_table",
+  "arm": "cudarc-row-copies",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "vocab": 8192,
+   "hidden": 1024,
+   "tokens": 8,
+   "kind": "gather_table",
+   "arm": "cudarc-row-copies",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2080: an embedding lookup (8 token ids, hidden=1024, f32) from a [vocab, hidden] table, vs the 8 device-to-device row copies the same selection needs. The issue measures 0.23 / 1.67 / 6.3 ms at vocab 8192 / 65536 / 248320, i.e. time proportional to the table because the whole table is permuted first; the row-copy arm shows the O(tokens) cost the lookup is expected to have.",
+  "reference_for": "gather_embedding_f32_vocab8192_eager-gather"
+ },
+ {
+  "id": "gather_embedding_f32_vocab65536_eager-gather",
+  "issues": [
+   "#2080"
+  ],
+  "kind": "gather_table",
+  "arm": "eager-gather",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "vocab": 65536,
+   "hidden": 1024,
+   "tokens": 8,
+   "kind": "gather_table",
+   "arm": "eager-gather",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2080: an embedding lookup (8 token ids, hidden=1024, f32) from a [vocab, hidden] table, vs the 8 device-to-device row copies the same selection needs. The issue measures 0.23 / 1.67 / 6.3 ms at vocab 8192 / 65536 / 248320, i.e. time proportional to the table because the whole table is permuted first; the row-copy arm shows the O(tokens) cost the lookup is expected to have."
+ },
+ {
+  "id": "gather_embedding_f32_vocab65536_cudarc-row-copies",
+  "issues": [
+   "#2080"
+  ],
+  "kind": "gather_table",
+  "arm": "cudarc-row-copies",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "vocab": 65536,
+   "hidden": 1024,
+   "tokens": 8,
+   "kind": "gather_table",
+   "arm": "cudarc-row-copies",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2080: an embedding lookup (8 token ids, hidden=1024, f32) from a [vocab, hidden] table, vs the 8 device-to-device row copies the same selection needs. The issue measures 0.23 / 1.67 / 6.3 ms at vocab 8192 / 65536 / 248320, i.e. time proportional to the table because the whole table is permuted first; the row-copy arm shows the O(tokens) cost the lookup is expected to have.",
+  "reference_for": "gather_embedding_f32_vocab65536_eager-gather"
+ },
+ {
+  "id": "gather_embedding_f32_vocab248320_eager-gather",
+  "issues": [
+   "#2080"
+  ],
+  "kind": "gather_table",
+  "arm": "eager-gather",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "vocab": 248320,
+   "hidden": 1024,
+   "tokens": 8,
+   "kind": "gather_table",
+   "arm": "eager-gather",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2080: an embedding lookup (8 token ids, hidden=1024, f32) from a [vocab, hidden] table, vs the 8 device-to-device row copies the same selection needs. The issue measures 0.23 / 1.67 / 6.3 ms at vocab 8192 / 65536 / 248320, i.e. time proportional to the table because the whole table is permuted first; the row-copy arm shows the O(tokens) cost the lookup is expected to have."
+ },
+ {
+  "id": "gather_embedding_f32_vocab248320_cudarc-row-copies",
+  "issues": [
+   "#2080"
+  ],
+  "kind": "gather_table",
+  "arm": "cudarc-row-copies",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "vocab": 248320,
+   "hidden": 1024,
+   "tokens": 8,
+   "kind": "gather_table",
+   "arm": "cudarc-row-copies",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2080: an embedding lookup (8 token ids, hidden=1024, f32) from a [vocab, hidden] table, vs the 8 device-to-device row copies the same selection needs. The issue measures 0.23 / 1.67 / 6.3 ms at vocab 8192 / 65536 / 248320, i.e. time proportional to the table because the whole table is permuted first; the row-copy arm shows the O(tokens) cost the lookup is expected to have.",
+  "reference_for": "gather_embedding_f32_vocab248320_eager-gather"
+ },
+ {
+  "id": "reshape_constant_f32_64M_constant",
+  "issues": [
+   "#2082"
+  ],
+  "kind": "reshape_materialize",
+  "arm": "constant",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "elements": 67108864,
+   "rows": 65536,
+   "cols": 1024,
+   "kind": "reshape_materialize",
+   "arm": "constant",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2082: reshape of a 256 MiB f32 device tensor from [2^26] to [2^16, 2^10]. The issue measured the reshape of an uploaded constant as a cuTENSOR permute copy plus a new 256 MiB buffer (0.5-0.65 ms) while the reshape of an op output (e.g. add) was a metadata-only view (0.04 ms); `constant` reshapes the uploaded constant and `op-output` reshapes an elementwise result, with the op-output arm as the reference the constant route has to reach. A compact reshape must be a view, not a device copy."
+ },
+ {
+  "id": "reshape_constant_f32_64M_op-output",
+  "issues": [
+   "#2082"
+  ],
+  "kind": "reshape_materialize",
+  "arm": "op-output",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "elements": 67108864,
+   "rows": 65536,
+   "cols": 1024,
+   "kind": "reshape_materialize",
+   "arm": "op-output",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2082: reshape of a 256 MiB f32 device tensor from [2^26] to [2^16, 2^10]. The issue measured the reshape of an uploaded constant as a cuTENSOR permute copy plus a new 256 MiB buffer (0.5-0.65 ms) while the reshape of an op output (e.g. add) was a metadata-only view (0.04 ms); `constant` reshapes the uploaded constant and `op-output` reshapes an elementwise result, with the op-output arm as the reference the constant route has to reach. A compact reshape must be a view, not a device copy.",
+  "reference_for": "reshape_constant_f32_64M_constant"
+ },
+ {
+  "id": "vendor_handle_cublas_f32_create-destroy",
+  "issues": [
+   "#2083"
+  ],
+  "kind": "vendor_handle",
+  "arm": "create-destroy",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "arm": "create-destroy",
+   "kind": "vendor_handle",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2083: the documented raw-session pattern creates and destroys a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and 10 MiB per session on the issue's card); the reused arm keeps one handle. Both arms are per-iteration inside the raw scope."
+ },
+ {
+  "id": "vendor_handle_cublas_f32_reused",
+  "issues": [
+   "#2083"
+  ],
+  "kind": "vendor_handle",
+  "arm": "reused",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "arm": "reused",
+   "kind": "vendor_handle",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2083: the documented raw-session pattern creates and destroys a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and 10 MiB per session on the issue's card); the reused arm keeps one handle. Both arms are per-iteration inside the raw scope.",
+  "reference_for": "vendor_handle_cublas_f32_create-destroy"
+ },
+ {
+  "id": "vendor_churn_f32_cycles8",
+  "issues": [
+   "#1924"
+  ],
+  "kind": "vendor_churn",
+  "arm": "backend-cycle",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "cycles": 8,
+   "gemm_n": 256,
+   "kind": "vendor_churn",
+   "arm": "backend-cycle",
+   "dtype": "f32"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1924: creating and dropping a CudaBackend (which dlopens and unloads the vendor libraries) N times, reporting the driver free memory before and after. The issue measured ~55 MB leaked per cycle; a state diagnostic, not a timing row."
+ },
+ {
+  "id": "vendor_churn_f32_cycles64",
+  "issues": [
+   "#1924"
+  ],
+  "kind": "vendor_churn",
+  "arm": "backend-cycle",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "cycles": 64,
+   "gemm_n": 256,
+   "kind": "vendor_churn",
+   "arm": "backend-cycle",
+   "dtype": "f32"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1924: creating and dropping a CudaBackend (which dlopens and unloads the vendor libraries) N times, reporting the driver free memory before and after. The issue measured ~55 MB leaked per cycle; a state diagnostic, not a timing row."
+ },
+ {
+  "id": "pool_retention_f64_alloc-free",
+  "issues": [
+   "#2081"
+  ],
+  "kind": "pool_retention",
+  "arm": "alloc-free",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "arm": "alloc-free",
+   "gib": 1,
+   "count": 8,
+   "probe_gib": 6,
+   "kind": "pool_retention",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. One 1 GiB tensor is allocated, its free/upload-verify round trip checked and dropped, eight times; the driver free memory is reported before, after the drops, after recreating the runtime, and after a 6 GiB cuMemAlloc probe. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output."
+ },
+ {
+  "id": "pool_retention_f64_runtime-recreate",
+  "issues": [
+   "#2081"
+  ],
+  "kind": "pool_retention",
+  "arm": "runtime-recreate",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "arm": "runtime-recreate",
+   "gib": 1,
+   "count": 8,
+   "probe_gib": 6,
+   "kind": "pool_retention",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. One 1 GiB tensor is allocated, its free/upload-verify round trip checked and dropped, eight times; the driver free memory is reported before, after the drops, after recreating the runtime, and after a 6 GiB cuMemAlloc probe. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output."
+ },
+ {
+  "id": "pool_retention_f64_driver-alloc-after-free",
+  "issues": [
+   "#2081"
+  ],
+  "kind": "pool_retention",
+  "arm": "driver-alloc-after-free",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "arm": "driver-alloc-after-free",
+   "gib": 1,
+   "count": 8,
+   "probe_gib": 6,
+   "kind": "pool_retention",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. One 1 GiB tensor is allocated, its free/upload-verify round trip checked and dropped, eight times; the driver free memory is reported before, after the drops, after recreating the runtime, and after a 6 GiB cuMemAlloc probe. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output."
+ },
+ {
+  "id": "svd_driver_c64_n64_auto",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "auto",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 64,
+   "driver": "auto",
+   "kind": "svd_driver",
+   "arm": "auto",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only."
+ },
+ {
+  "id": "svd_driver_c64_n64_gesvdj",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "gesvdj",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 64,
+   "driver": "gesvdj",
+   "kind": "svd_driver",
+   "arm": "gesvdj",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "reference_for": "svd_driver_c64_n64_auto"
+ },
+ {
+  "id": "svd_driver_c64_n64_gesvd",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "gesvd",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 64,
+   "driver": "gesvd",
+   "kind": "svd_driver",
+   "arm": "gesvd",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "reference_for": "svd_driver_c64_n64_auto"
+ },
+ {
+  "id": "svd_driver_c64_n64_xgesvdp",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "xgesvdp",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 64,
+   "driver": "xgesvdp",
+   "kind": "svd_driver",
+   "arm": "xgesvdp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "reference_for": "svd_driver_c64_n64_auto"
+ },
+ {
+  "id": "svd_driver_c64_n256_auto",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "auto",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 256,
+   "driver": "auto",
+   "kind": "svd_driver",
+   "arm": "auto",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only."
+ },
+ {
+  "id": "svd_driver_c64_n256_gesvdj",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "gesvdj",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 256,
+   "driver": "gesvdj",
+   "kind": "svd_driver",
+   "arm": "gesvdj",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "reference_for": "svd_driver_c64_n256_auto"
+ },
+ {
+  "id": "svd_driver_c64_n256_gesvd",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "gesvd",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 256,
+   "driver": "gesvd",
+   "kind": "svd_driver",
+   "arm": "gesvd",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "reference_for": "svd_driver_c64_n256_auto"
+ },
+ {
+  "id": "svd_driver_c64_n256_xgesvdp",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "xgesvdp",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 256,
+   "driver": "xgesvdp",
+   "kind": "svd_driver",
+   "arm": "xgesvdp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "reference_for": "svd_driver_c64_n256_auto"
+ },
+ {
+  "id": "svd_driver_c64_n1024_auto",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "auto",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 1024,
+   "driver": "auto",
+   "kind": "svd_driver",
+   "arm": "auto",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only."
+ },
+ {
+  "id": "svd_driver_c64_n1024_gesvdj",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "gesvdj",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 1024,
+   "driver": "gesvdj",
+   "kind": "svd_driver",
+   "arm": "gesvdj",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "reference_for": "svd_driver_c64_n1024_auto"
+ },
+ {
+  "id": "svd_driver_c64_n1024_gesvd",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "gesvd",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 1024,
+   "driver": "gesvd",
+   "kind": "svd_driver",
+   "arm": "gesvd",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "reference_for": "svd_driver_c64_n1024_auto"
+ },
+ {
+  "id": "svd_driver_c64_n1024_xgesvdp",
+  "issues": [
+   "#1839",
+   "#1849"
+  ],
+  "kind": "svd_driver",
+  "arm": "xgesvdp",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 1024,
+   "driver": "xgesvdp",
+   "kind": "svd_driver",
+   "arm": "xgesvdp",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "reference_for": "svd_driver_c64_n1024_auto"
+ },
+ {
+  "id": "eigh_batched_f64_n16_auto",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "auto",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "batch": 64,
+   "driver": "auto",
+   "kind": "eigh_driver",
+   "arm": "auto",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+ },
+ {
+  "id": "eigh_batched_f64_n16_syevd",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevd",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "batch": 64,
+   "driver": "syevd",
+   "kind": "eigh_driver",
+   "arm": "syevd",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_f64_n16_auto"
+ },
+ {
+  "id": "eigh_batched_f64_n16_syevj",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevj",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "batch": 64,
+   "driver": "syevj",
+   "kind": "eigh_driver",
+   "arm": "syevj",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_f64_n16_auto"
+ },
+ {
+  "id": "eigh_batched_f64_n32_auto",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "auto",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "batch": 64,
+   "driver": "auto",
+   "kind": "eigh_driver",
+   "arm": "auto",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+ },
+ {
+  "id": "eigh_batched_f64_n32_syevd",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevd",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "batch": 64,
+   "driver": "syevd",
+   "kind": "eigh_driver",
+   "arm": "syevd",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_f64_n32_auto"
+ },
+ {
+  "id": "eigh_batched_f64_n32_syevj",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevj",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "batch": 64,
+   "driver": "syevj",
+   "kind": "eigh_driver",
+   "arm": "syevj",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_f64_n32_auto"
+ },
+ {
+  "id": "eigh_batched_f64_n128_auto",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "auto",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 128,
+   "batch": 64,
+   "driver": "auto",
+   "kind": "eigh_driver",
+   "arm": "auto",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+ },
+ {
+  "id": "eigh_batched_f64_n128_syevd",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevd",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 128,
+   "batch": 64,
+   "driver": "syevd",
+   "kind": "eigh_driver",
+   "arm": "syevd",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_f64_n128_auto"
+ },
+ {
+  "id": "eigh_batched_f64_n128_syevj",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevj",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 128,
+   "batch": 64,
+   "driver": "syevj",
+   "kind": "eigh_driver",
+   "arm": "syevj",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_f64_n128_auto"
+ },
+ {
+  "id": "eigh_batched_c64_n16_auto",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "auto",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 16,
+   "batch": 64,
+   "driver": "auto",
+   "kind": "eigh_driver",
+   "arm": "auto",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+ },
+ {
+  "id": "eigh_batched_c64_n16_syevd",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevd",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 16,
+   "batch": 64,
+   "driver": "syevd",
+   "kind": "eigh_driver",
+   "arm": "syevd",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_c64_n16_auto"
+ },
+ {
+  "id": "eigh_batched_c64_n16_syevj",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevj",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 16,
+   "batch": 64,
+   "driver": "syevj",
+   "kind": "eigh_driver",
+   "arm": "syevj",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_c64_n16_auto"
+ },
+ {
+  "id": "eigh_batched_c64_n32_auto",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "auto",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 32,
+   "batch": 64,
+   "driver": "auto",
+   "kind": "eigh_driver",
+   "arm": "auto",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+ },
+ {
+  "id": "eigh_batched_c64_n32_syevd",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevd",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 32,
+   "batch": 64,
+   "driver": "syevd",
+   "kind": "eigh_driver",
+   "arm": "syevd",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_c64_n32_auto"
+ },
+ {
+  "id": "eigh_batched_c64_n32_syevj",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevj",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 32,
+   "batch": 64,
+   "driver": "syevj",
+   "kind": "eigh_driver",
+   "arm": "syevj",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_c64_n32_auto"
+ },
+ {
+  "id": "eigh_batched_c64_n128_auto",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "auto",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 128,
+   "batch": 64,
+   "driver": "auto",
+   "kind": "eigh_driver",
+   "arm": "auto",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage."
+ },
+ {
+  "id": "eigh_batched_c64_n128_syevd",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevd",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 128,
+   "batch": 64,
+   "driver": "syevd",
+   "kind": "eigh_driver",
+   "arm": "syevd",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_c64_n128_auto"
+ },
+ {
+  "id": "eigh_batched_c64_n128_syevj",
+  "issues": [
+   "#1846",
+   "#1852",
+   "#1923"
+  ],
+  "kind": "eigh_driver",
+  "arm": "syevj",
+  "backend": "tenferro-cuda",
+  "dtype": "c64",
+  "params": {
+   "n": 128,
+   "batch": 64,
+   "driver": "syevj",
+   "kind": "eigh_driver",
+   "arm": "syevj",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1846 / #1852 / #1923: batched Hermitian eigendecomposition of 64 n x n items with an explicit cuSOLVER driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x to 280x faster than the previous per-matrix loop on the issue's card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the row that matters and n=16 / n=128 bracket it. #1923 is the c64 coverage.",
+  "reference_for": "eigh_batched_c64_n128_auto"
+ },
+ {
+  "id": "hadamard_f32_1024x1024_dot-general",
+  "issues": [
+   "#1898"
+  ],
+  "kind": "hadamard_dot_general",
+  "arm": "dot-general",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 1024,
+   "kind": "hadamard_dot_general",
+   "arm": "dot-general",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1898: a pure Hadamard product routed through dot_general (every axis is a batch axis) vs the elementwise multiply. On the CPU backend the former degenerated to one 1x1x1 GEMM per element (23x); the CUDA arm checks whether the same shape routing holds on the device."
+ },
+ {
+  "id": "hadamard_f32_1024x1024_multiply",
+  "issues": [
+   "#1898"
+  ],
+  "kind": "hadamard_dot_general",
+  "arm": "multiply",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "rows": 1024,
+   "cols": 1024,
+   "kind": "hadamard_dot_general",
+   "arm": "multiply",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1898: a pure Hadamard product routed through dot_general (every axis is a batch axis) vs the elementwise multiply. On the CPU backend the former degenerated to one 1x1x1 GEMM per element (23x); the CUDA arm checks whether the same shape routing holds on the device.",
+  "reference_for": "hadamard_f32_1024x1024_dot-general"
+ },
+ {
+  "id": "contraction_plan_churn_f64_distinct-plans",
+  "issues": [
+   "#1873",
+   "#1805"
+  ],
+  "kind": "contraction_plan_churn",
+  "arm": "distinct-plans",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "distinct": 24,
+   "n": 64,
+   "repeats": 8,
+   "kind": "contraction_plan_churn",
+   "arm": "distinct-plans",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` contracts 24 distinct small shapes and then re-runs the first; `repeated-plan` re-runs one shape. A re-run after churn must not cost more than the repeated shape."
+ },
+ {
+  "id": "contraction_plan_churn_f64_repeated-plan",
+  "issues": [
+   "#1873",
+   "#1805"
+  ],
+  "kind": "contraction_plan_churn",
+  "arm": "repeated-plan",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "distinct": 24,
+   "n": 64,
+   "repeats": 8,
+   "kind": "contraction_plan_churn",
+   "arm": "repeated-plan",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` contracts 24 distinct small shapes and then re-runs the first; `repeated-plan` re-runs one shape. A re-run after churn must not cost more than the repeated shape.",
+  "reference_for": "contraction_plan_churn_f64_distinct-plans"
+ },
+ {
+  "id": "dot_general_destination_f64_owned-dst",
+  "issues": [
+   "#1949"
+  ],
+  "kind": "owned_destination",
+  "arm": "owned-dst",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 512,
+   "kind": "owned_destination",
+   "arm": "owned-dst",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor calls, where a vendor write to a memoized address can overtake a queued CubeCL read (the skipped get_resource round trip is what flushes). Two interleaved streams of small contractions, one into an owned destination per call and one into a recycled borrowed destination. The fix must not add a blocking round trip, so the owned arm must stay at or below the borrowed one."
+ },
+ {
+  "id": "dot_general_destination_f64_borrowed-dst",
+  "issues": [
+   "#1949"
+  ],
+  "kind": "owned_destination",
+  "arm": "borrowed-dst",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 512,
+   "kind": "owned_destination",
+   "arm": "borrowed-dst",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor calls, where a vendor write to a memoized address can overtake a queued CubeCL read (the skipped get_resource round trip is what flushes). Two interleaved streams of small contractions, one into an owned destination per call and one into a recycled borrowed destination. The fix must not add a blocking round trip, so the owned arm must stay at or below the borrowed one.",
+  "reference_for": "dot_general_destination_f64_owned-dst"
  }
 ]
