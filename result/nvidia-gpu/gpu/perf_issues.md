@@ -1,7 +1,7 @@
 # GPU Performance-Issue Workloads
 
 - Suite: `gpu/perf_issues`
-- Raw run: `data/results/nvidia-gpu/gpu/perf_issues/20261011_232352`
+- Raw run: `data/results/nvidia-gpu/gpu/perf_issues/20261011_233315`
 
 ## GPU Information
 
@@ -16,10 +16,10 @@
 
 ## run_t1
 
-Full metadata: `data/results/nvidia-gpu/gpu/perf_issues/20261011_232352/run_t1.yaml`
+Full metadata: `data/results/nvidia-gpu/gpu/perf_issues/20261011_233315/run_t1.yaml`
 
 ```yaml
-timestamp: '2026-10-11T23:23:54Z'
+timestamp: '2026-10-11T23:33:17Z'
 tenferro_rs:
   path: /home/shinaoka/tensor4all/.worktrees/tenferro-benchmark-gpu-issues/extern/tenferro-rs
   commit: a3b40ff0b5af0932c2bbf959d7bd2326663b5e9e
@@ -36,7 +36,7 @@ environment:
   cpu: x86_64
   env:
     BENCHMARK_TARGET_PROFILE: nvidia-gpu
-    BENCHMARK_COMMIT: 6b80b18cba0fe696fe814c61ed2ecb7beb76b78f
+    BENCHMARK_COMMIT: 57ffe6c3c62f59ca9a89ea4554e1ccf23903873c
     BENCHMARK_BUILD_PROFILE: release
     RUSTC_VERSION: rustc 1.97.1 (8bab26f4f 2026-07-14)
     BENCH_INSTANCE: null
@@ -48,9 +48,9 @@ environment:
 ## Case status
 
 - Manifest: `gpu/perf_issues` version 2, coverage `full`, effort `standard`
-- Expected 135, selected 135, executed 135, unsupported 0, failed 0, missing 0, noisy 2.
+- Expected 135, selected 135, executed 135, unsupported 0, failed 0, missing 0, noisy 3.
 - Complete: **yes** — only executed cases count as covered; unsupported, failed, missing and unselected cases never do.
-- Noisy: `alloc_zero_f64_alloc-zero-per-callback_0el@t1`, `alloc_zero_f64_host-zero-upload_32768el@t1`
+- Noisy: `transfer_up_f64_tenferro_268435456B@t1`, `alloc_zero_f64_host-zero-upload_32768el@t1`, `qr_live_buffers_f64_n32_live16@t1`
 
 Numerical checks: **135/135 recorded rows passed** (case × thread count).
 
@@ -60,148 +60,148 @@ Each batch is one wall-clock interval over many operations; every output is reta
 
 | Case ID | Issues | Arm | Backend | Dtype | Workload | Threads | Ops/batch | Median ns/op | IQR ns | CoV | Status |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---|
-| transfer_up_f64_tenferro_8B | #2009 | tenferro | tenferro-cuda | f64 | bytes=8, direction=up | 1 | 128 | 20658.5 | 250.6 | 3.6% | ok |
-| transfer_up_f64_cudarc-pageable_8B | #2009 | cudarc-pageable | cudarc | f64 | bytes=8, direction=up | 1 | 512 | 6245.5 | 222.5 | 2.2% | ok |
-| transfer_up_f64_cudarc-pinned_8B | #2009 | cudarc-pinned | cudarc | f64 | bytes=8, direction=up | 1 | 256 | 9976.8 | 131.9 | 1.2% | ok |
-| transfer_up_f64_tenferro_4096B | #2009 | tenferro | tenferro-cuda | f64 | bytes=4096, direction=up | 1 | 128 | 23568.8 | 285.3 | 0.7% | ok |
-| transfer_up_f64_cudarc-pageable_4096B | #2009 | cudarc-pageable | cudarc | f64 | bytes=4096, direction=up | 1 | 512 | 7470.3 | 264.5 | 2.2% | ok |
-| transfer_up_f64_cudarc-pinned_4096B | #2009 | cudarc-pinned | cudarc | f64 | bytes=4096, direction=up | 1 | 32 | 65891.3 | 366.1 | 1.4% | ok |
-| transfer_up_f64_tenferro_65536B | #2009 | tenferro | tenferro-cuda | f64 | bytes=65536, direction=up | 1 | 64 | 34321.9 | 118.9 | 0.2% | ok |
-| transfer_up_f64_cudarc-pageable_65536B | #2009 | cudarc-pageable | cudarc | f64 | bytes=65536, direction=up | 1 | 256 | 13687.2 | 51.9 | 0.3% | ok |
-| transfer_up_f64_cudarc-pinned_65536B | #2009 | cudarc-pinned | cudarc | f64 | bytes=65536, direction=up | 1 | 256 | 12553.2 | 21.3 | 0.6% | ok |
-| transfer_up_f64_tenferro_1048576B | #2009 | tenferro | tenferro-cuda | f64 | bytes=1048576, direction=up | 1 | 8 | 271702.9 | 3107.0 | 1.4% | ok |
-| transfer_up_f64_cudarc-pageable_1048576B | #2009 | cudarc-pageable | cudarc | f64 | bytes=1048576, direction=up | 1 | 32 | 89176.2 | 192.6 | 0.2% | ok |
-| transfer_up_f64_cudarc-pinned_1048576B | #2009 | cudarc-pinned | cudarc | f64 | bytes=1048576, direction=up | 1 | 64 | 50053.9 | 68.3 | 0.2% | ok |
-| transfer_up_f64_tenferro_16777216B | #2009 | tenferro | tenferro-cuda | f64 | bytes=16777216, direction=up | 1 | 2 | 1245240.0 | 3200.0 | 0.4% | ok |
-| transfer_up_f64_cudarc-pageable_16777216B | #2009 | cudarc-pageable | cudarc | f64 | bytes=16777216, direction=up | 1 | 4 | 772828.8 | 15352.9 | 1.3% | ok |
-| transfer_up_f64_cudarc-pinned_16777216B | #2009 | cudarc-pinned | cudarc | f64 | bytes=16777216, direction=up | 1 | 4 | 636470.5 | 133.9 | 0.0% | ok |
-| transfer_up_f64_tenferro_268435456B | #2009 | tenferro | tenferro-cuda | f64 | bytes=268435456, direction=up | 1 | 1 | 21870101.0 | 107122.0 | 1.2% | ok |
-| transfer_up_f64_cudarc-pageable_268435456B | #2009 | cudarc-pageable | cudarc | f64 | bytes=268435456, direction=up | 1 | 1 | 13365465.0 | 60996.5 | 0.8% | ok |
-| transfer_up_f64_cudarc-pinned_268435456B | #2009 | cudarc-pinned | cudarc | f64 | bytes=268435456, direction=up | 1 | 1 | 10014874.0 | 1155.5 | 0.8% | ok |
-| transfer_down_f64_tenferro_8B | #2009 | tenferro | tenferro-cuda | f64 | bytes=8, direction=down | 1 | 128 | 20779.6 | 1746.8 | 5.5% | ok |
-| transfer_down_f64_cudarc-pageable_8B | #2009 | cudarc-pageable | cudarc | f64 | bytes=8, direction=down | 1 | 512 | 7437.2 | 299.7 | 2.7% | ok |
-| transfer_down_f64_cudarc-pinned_8B | #2009 | cudarc-pinned | cudarc | f64 | bytes=8, direction=down | 1 | 256 | 9297.3 | 36.0 | 0.8% | ok |
-| transfer_down_f64_tenferro_4096B | #2009 | tenferro | tenferro-cuda | f64 | bytes=4096, direction=down | 1 | 128 | 27866.5 | 632.9 | 2.4% | ok |
-| transfer_down_f64_cudarc-pageable_4096B | #2009 | cudarc-pageable | cudarc | f64 | bytes=4096, direction=down | 1 | 256 | 8103.6 | 442.1 | 3.2% | ok |
-| transfer_down_f64_cudarc-pinned_4096B | #2009 | cudarc-pinned | cudarc | f64 | bytes=4096, direction=down | 1 | 256 | 9885.2 | 244.3 | 2.1% | ok |
-| transfer_down_f64_tenferro_65536B | #2009 | tenferro | tenferro-cuda | f64 | bytes=65536, direction=down | 1 | 64 | 34327.2 | 185.9 | 0.7% | ok |
-| transfer_down_f64_cudarc-pageable_65536B | #2009 | cudarc-pageable | cudarc | f64 | bytes=65536, direction=down | 1 | 256 | 13765.2 | 88.0 | 0.5% | ok |
-| transfer_down_f64_cudarc-pinned_65536B | #2009 | cudarc-pinned | cudarc | f64 | bytes=65536, direction=down | 1 | 256 | 11929.1 | 100.6 | 0.8% | ok |
-| transfer_down_f64_tenferro_1048576B | #2009 | tenferro | tenferro-cuda | f64 | bytes=1048576, direction=down | 1 | 8 | 611300.0 | 3203.1 | 3.8% | ok |
-| transfer_down_f64_cudarc-pageable_1048576B | #2009 | cudarc-pageable | cudarc | f64 | bytes=1048576, direction=down | 1 | 32 | 95648.3 | 2724.5 | 1.8% | ok |
-| transfer_down_f64_cudarc-pinned_1048576B | #2009 | cudarc-pinned | cudarc | f64 | bytes=1048576, direction=down | 1 | 64 | 49994.2 | 55.3 | 0.1% | ok |
-| transfer_down_f64_tenferro_16777216B | #2009 | tenferro | tenferro-cuda | f64 | bytes=16777216, direction=down | 1 | 2 | 9324168.5 | 397762.5 | 2.6% | ok |
-| transfer_down_f64_cudarc-pageable_16777216B | #2009 | cudarc-pageable | cudarc | f64 | bytes=16777216, direction=down | 1 | 2 | 972203.5 | 80559.5 | 4.4% | ok |
-| transfer_down_f64_cudarc-pinned_16777216B | #2009 | cudarc-pinned | cudarc | f64 | bytes=16777216, direction=down | 1 | 4 | 654128.5 | 118.8 | 0.1% | ok |
-| transfer_down_f64_tenferro_268435456B | #2009 | tenferro | tenferro-cuda | f64 | bytes=268435456, direction=down | 1 | 1 | 145691571.0 | 5565960.0 | 3.2% | ok |
-| transfer_down_f64_cudarc-pageable_268435456B | #2009 | cudarc-pageable | cudarc | f64 | bytes=268435456, direction=down | 1 | 1 | 15529761.0 | 164609.5 | 1.2% | ok |
-| transfer_down_f64_cudarc-pinned_268435456B | #2009 | cudarc-pinned | cudarc | f64 | bytes=268435456, direction=down | 1 | 1 | 10332754.0 | 86152.5 | 1.2% | ok |
-| alloc_zero_f64_alloc-zero-within-callback_0el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=0 | 1 | 2048 | 3781.1 | 15.7 | 5.3% | ok |
-| alloc_zero_f64_alloc-zero-per-callback_0el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=0 | 1 | 128 | 22962.3 | 1626.9 | 11.1% | NOISY |
-| alloc_zero_f64_host-zero-upload_0el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=0 | 1 | 512 | 3987.7 | 64.9 | 2.9% | ok |
-| alloc_zero_f64_alloc-fill-per-callback_0el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=0 | 1 | 128 | 25068.0 | 789.9 | 2.5% | ok |
-| alloc_zero_f64_alloc-zero-within-callback_16el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=16 | 1 | 128 | 19810.9 | 234.5 | 0.9% | ok |
-| alloc_zero_f64_alloc-zero-per-callback_16el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=16 | 1 | 64 | 43365.0 | 3216.3 | 4.1% | ok |
-| alloc_zero_f64_host-zero-upload_16el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=16 | 1 | 512 | 7040.0 | 64.3 | 0.7% | ok |
-| alloc_zero_f64_alloc-fill-per-callback_16el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=16 | 1 | 64 | 37272.3 | 143.6 | 0.3% | ok |
-| alloc_zero_f64_alloc-zero-within-callback_512el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=512 | 1 | 128 | 19944.3 | 1250.7 | 5.4% | ok |
-| alloc_zero_f64_alloc-zero-per-callback_512el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=512 | 1 | 64 | 36943.4 | 315.6 | 2.9% | ok |
-| alloc_zero_f64_host-zero-upload_512el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=512 | 1 | 512 | 6727.0 | 48.0 | 0.7% | ok |
-| alloc_zero_f64_alloc-fill-per-callback_512el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=512 | 1 | 64 | 40144.7 | 212.7 | 0.4% | ok |
-| alloc_zero_f64_alloc-zero-within-callback_32768el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=32768 | 1 | 128 | 21357.9 | 1707.3 | 4.5% | ok |
-| alloc_zero_f64_alloc-zero-per-callback_32768el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=32768 | 1 | 64 | 41778.5 | 3255.5 | 4.7% | ok |
-| alloc_zero_f64_host-zero-upload_32768el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=32768 | 1 | 16 | 61440.2 | 410.0 | 32.6% | NOISY |
-| alloc_zero_f64_alloc-fill-per-callback_32768el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=32768 | 1 | 64 | 43965.1 | 3903.9 | 5.8% | ok |
-| alloc_zero_f64_alloc-zero-within-callback_2097152el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=2097152 | 1 | 64 | 20157.7 | 1678.3 | 5.3% | ok |
-| alloc_zero_f64_alloc-zero-per-callback_2097152el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=2097152 | 1 | 64 | 41378.2 | 2285.7 | 3.7% | ok |
-| alloc_zero_f64_host-zero-upload_2097152el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=2097152 | 1 | 2 | 1088762.0 | 3262.2 | 0.3% | ok |
-| alloc_zero_f64_alloc-fill-per-callback_2097152el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=2097152 | 1 | 32 | 42374.2 | 334.7 | 0.5% | ok |
-| small_blocks_gemm_f64_loop_n8_count256 | #1885 | loop | tenferro-cuda | f64 | n=8, count=256 | 1 | 1 | 6761067.0 | 121452.5 | 1.6% | ok |
-| small_blocks_gemm_f64_batched_n8_count256 | #1885 | batched | tenferro-cuda | f64 | n=8, count=256 | 1 | 128 | 20987.5 | 1678.0 | 5.9% | ok |
-| small_blocks_gemm_f64_loop_n16_count256 | #1885 | loop | tenferro-cuda | f64 | n=16, count=256 | 1 | 1 | 6480031.0 | 306028.5 | 3.1% | ok |
-| small_blocks_gemm_f64_batched_n16_count256 | #1885 | batched | tenferro-cuda | f64 | n=16, count=256 | 1 | 128 | 17899.4 | 1083.8 | 4.1% | ok |
-| small_blocks_gemm_f64_loop_n32_count256 | #1885 | loop | tenferro-cuda | f64 | n=32, count=256 | 1 | 1 | 7476856.0 | 453036.5 | 3.5% | ok |
-| small_blocks_gemm_f64_batched_n32_count256 | #1885 | batched | tenferro-cuda | f64 | n=32, count=256 | 1 | 128 | 20164.3 | 1893.8 | 5.3% | ok |
-| small_blocks_gemm_f64_loop_n64_count256 | #1885 | loop | tenferro-cuda | f64 | n=64, count=256 | 1 | 1 | 6790359.0 | 205440.5 | 2.7% | ok |
-| small_blocks_gemm_f64_batched_n64_count256 | #1885 | batched | tenferro-cuda | f64 | n=64, count=256 | 1 | 64 | 21762.6 | 1013.8 | 3.2% | ok |
-| batched_qr_f64_loop_n32_b16 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=16 | 1 | 1 | 5512217.0 | 272331.5 | 2.8% | ok |
-| batched_qr_f64_batched_n32_b16 | #1885 | batched | tenferro-cuda | f64 | op=qr, n=32, batch=16 | 1 | 1 | 2474881.0 | 7104.5 | 0.2% | ok |
-| batched_qr_f64_loop_n32_b256 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=256 | 1 | 1 | 106828197.0 | 1301738.0 | 0.9% | ok |
-| batched_qr_f64_batched_n32_b256 | #1885 | batched | tenferro-cuda | f64 | op=qr, n=32, batch=256 | 1 | 1 | 36009096.0 | 67386.5 | 0.1% | ok |
-| batched_svd_f64_loop_n32_b16 | #1885 | loop | tenferro-cuda | f64 | op=svd, n=32, batch=16 | 1 | 1 | 17456834.0 | 85647.5 | 0.6% | ok |
-| batched_svd_f64_batched_n32_b16 | #1885 | batched | tenferro-cuda | f64 | op=svd, n=32, batch=16 | 1 | 1 | 14298336.0 | 133113.0 | 0.8% | ok |
-| batched_svd_f64_loop_n32_b256 | #1885 | loop | tenferro-cuda | f64 | op=svd, n=32, batch=256 | 1 | 1 | 301528139.0 | 6317726.5 | 1.2% | ok |
-| batched_svd_f64_batched_n32_b256 | #1885 | batched | tenferro-cuda | f64 | op=svd, n=32, batch=256 | 1 | 1 | 227877317.0 | 753389.5 | 0.5% | ok |
-| qr_live_buffers_f64_n32_live16 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=1, live_buffers=16 | 1 | 8 | 340813.5 | 5692.1 | 2.3% | ok |
-| qr_live_buffers_f64_n32_live256 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=1, live_buffers=256 | 1 | 8 | 386713.4 | 26541.9 | 8.6% | ok |
-| qr_live_buffers_f64_n32_live1024 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=1, live_buffers=1024 | 1 | 8 | 490653.5 | 1420.7 | 0.3% | ok |
-| eager_op_f32_add_decode_eager-session | #2079 | eager-session | tenferro-cuda | f32 | hidden=1024, tokens=8, op=add | 1 | 256 | 11386.5 | 358.2 | 4.7% | ok |
-| eager_op_f32_dot_general_decode_eager-session | #2079 | eager-session | tenferro-cuda | f32 | in=1024, out=1024, len=8, op=dot_general | 1 | 64 | 35998.4 | 3009.2 | 5.5% | ok |
-| gather_embedding_f32_vocab8192_eager-gather | #2080 | eager-gather | tenferro-cuda | f32 | vocab=8192, hidden=1024, tokens=8 | 1 | 32 | 96719.3 | 326.2 | 0.5% | ok |
-| gather_embedding_f32_vocab8192_cudarc-row-copies | #2080 | cudarc-row-copies | cudarc | f32 | vocab=8192, hidden=1024, tokens=8 | 1 | 128 | 24645.2 | 158.3 | 2.6% | ok |
-| gather_embedding_f32_vocab65536_eager-gather | #2080 | eager-gather | tenferro-cuda | f32 | vocab=65536, hidden=1024, tokens=8 | 1 | 4 | 610272.8 | 2091.1 | 0.3% | ok |
-| gather_embedding_f32_vocab65536_cudarc-row-copies | #2080 | cudarc-row-copies | cudarc | f32 | vocab=65536, hidden=1024, tokens=8 | 1 | 128 | 24864.5 | 248.7 | 0.6% | ok |
-| gather_embedding_f32_vocab248320_eager-gather | #2080 | eager-gather | tenferro-cuda | f32 | vocab=248320, hidden=1024, tokens=8 | 1 | 1 | 2264697.0 | 10199.5 | 0.3% | ok |
-| gather_embedding_f32_vocab248320_cudarc-row-copies | #2080 | cudarc-row-copies | cudarc | f32 | vocab=248320, hidden=1024, tokens=8 | 1 | 128 | 26071.4 | 584.6 | 1.4% | ok |
-| reshape_constant_f32_64M_constant | #2082 | constant | tenferro-cuda | f32 | elements=67108864, rows=65536, cols=1024 | 1 | 4 | 594672.5 | 995.0 | 0.1% | ok |
-| reshape_constant_f32_64M_op-output | #2082 | op-output | tenferro-cuda | f32 | elements=67108864, rows=65536, cols=1024 | 1 | 4 | 593220.2 | 592.5 | 0.1% | ok |
-| svd_driver_c64_n64_auto | #1839 #1849 | auto | tenferro-cuda | c64 | n=64, driver=auto | 1 | 1 | 4764212.0 | 12955.0 | 0.2% | ok |
-| svd_driver_c64_n64_gesvdj | #1839 #1849 | gesvdj | tenferro-cuda | c64 | n=64, driver=gesvdj | 1 | 1 | 4721551.0 | 10885.5 | 0.2% | ok |
-| svd_driver_c64_n64_gesvd | #1839 #1849 | gesvd | tenferro-cuda | c64 | n=64, driver=gesvd | 1 | 1 | 6532577.0 | 26845.5 | 0.4% | ok |
-| svd_driver_c64_n64_xgesvdp | #1839 #1849 | xgesvdp | tenferro-cuda | c64 | n=64, driver=xgesvdp | 1 | 1 | 3559741.0 | 9715.5 | 0.3% | ok |
-| svd_driver_c64_n256_auto | #1839 #1849 | auto | tenferro-cuda | c64 | n=256, driver=auto | 1 | 1 | 41399481.0 | 64571.0 | 0.2% | ok |
-| svd_driver_c64_n256_gesvdj | #1839 #1849 | gesvdj | tenferro-cuda | c64 | n=256, driver=gesvdj | 1 | 1 | 41193466.0 | 35940.5 | 0.1% | ok |
-| svd_driver_c64_n256_gesvd | #1839 #1849 | gesvd | tenferro-cuda | c64 | n=256, driver=gesvd | 1 | 1 | 32326819.0 | 55951.5 | 0.2% | ok |
-| svd_driver_c64_n256_xgesvdp | #1839 #1849 | xgesvdp | tenferro-cuda | c64 | n=256, driver=xgesvdp | 1 | 1 | 9357080.0 | 15785.5 | 0.2% | ok |
-| svd_driver_c64_n1024_auto | #1839 #1849 | auto | tenferro-cuda | c64 | n=1024, driver=auto | 1 | 1 | 389169680.0 | 101071.0 | 0.0% | ok |
-| svd_driver_c64_n1024_gesvdj | #1839 #1849 | gesvdj | tenferro-cuda | c64 | n=1024, driver=gesvdj | 1 | 1 | 389190414.0 | 35695.0 | 0.0% | ok |
-| svd_driver_c64_n1024_gesvd | #1839 #1849 | gesvd | tenferro-cuda | c64 | n=1024, driver=gesvd | 1 | 1 | 263149883.0 | 51530.0 | 0.0% | ok |
-| svd_driver_c64_n1024_xgesvdp | #1839 #1849 | xgesvdp | tenferro-cuda | c64 | n=1024, driver=xgesvdp | 1 | 1 | 62237203.0 | 51256.0 | 0.1% | ok |
-| eigh_batched_f64_n16_auto | #1846 #1852 #1923 | auto | tenferro-cuda | f64 | n=16, batch=64, driver=auto | 1 | 8 | 285422.4 | 1015.1 | 0.4% | ok |
-| eigh_batched_f64_n16_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | f64 | n=16, batch=64, driver=syevd | 1 | 8 | 304262.9 | 10204.6 | 2.3% | ok |
-| eigh_batched_f64_n16_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | f64 | n=16, batch=64, driver=syevj | 1 | 16 | 215679.4 | 621.5 | 0.2% | ok |
-| eigh_batched_f64_n32_auto | #1846 #1852 #1923 | auto | tenferro-cuda | f64 | n=32, batch=64, driver=auto | 1 | 8 | 415723.2 | 3370.7 | 0.6% | ok |
-| eigh_batched_f64_n32_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | f64 | n=32, batch=64, driver=syevd | 1 | 8 | 421385.9 | 4630.2 | 0.9% | ok |
-| eigh_batched_f64_n32_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | f64 | n=32, batch=64, driver=syevj | 1 | 8 | 427747.4 | 6173.2 | 1.3% | ok |
-| eigh_batched_f64_n128_auto | #1846 #1852 #1923 | auto | tenferro-cuda | f64 | n=128, batch=64, driver=auto | 1 | 2 | 1953636.0 | 4482.2 | 0.2% | ok |
-| eigh_batched_f64_n128_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | f64 | n=128, batch=64, driver=syevd | 1 | 1 | 2025133.0 | 6765.5 | 0.6% | ok |
-| eigh_batched_f64_n128_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | f64 | n=128, batch=64, driver=syevj | 1 | 1 | 19986260.0 | 164959.0 | 0.6% | ok |
-| eigh_batched_c64_n16_auto | #1846 #1852 #1923 | auto | tenferro-cuda | c64 | n=16, batch=64, driver=auto | 1 | 8 | 330663.6 | 11262.2 | 1.9% | ok |
-| eigh_batched_c64_n16_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | c64 | n=16, batch=64, driver=syevd | 1 | 8 | 334017.4 | 1286.4 | 0.4% | ok |
-| eigh_batched_c64_n16_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | c64 | n=16, batch=64, driver=syevj | 1 | 8 | 270802.0 | 900.7 | 0.3% | ok |
-| eigh_batched_c64_n32_auto | #1846 #1852 #1923 | auto | tenferro-cuda | c64 | n=32, batch=64, driver=auto | 1 | 8 | 493382.9 | 3470.8 | 1.2% | ok |
-| eigh_batched_c64_n32_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | c64 | n=32, batch=64, driver=syevd | 1 | 8 | 487452.6 | 1484.4 | 2.5% | ok |
-| eigh_batched_c64_n32_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | c64 | n=32, batch=64, driver=syevj | 1 | 4 | 663242.2 | 5662.6 | 1.0% | ok |
-| eigh_batched_c64_n128_auto | #1846 #1852 #1923 | auto | tenferro-cuda | c64 | n=128, batch=64, driver=auto | 1 | 1 | 3337067.0 | 48021.5 | 4.8% | ok |
-| eigh_batched_c64_n128_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | c64 | n=128, batch=64, driver=syevd | 1 | 1 | 3321587.0 | 52210.5 | 1.0% | ok |
-| eigh_batched_c64_n128_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | c64 | n=128, batch=64, driver=syevj | 1 | 1 | 49757977.0 | 77207.0 | 0.1% | ok |
-| hadamard_f32_1024x1024_dot-general | #1898 | dot-general | tenferro-cuda | f32 | rows=1024, cols=1024 | 1 | 64 | 54651.1 | 53.3 | 0.1% | ok |
-| hadamard_f32_1024x1024_multiply | #1898 | multiply | tenferro-cuda | f32 | rows=1024, cols=1024 | 1 | 256 | 9018.9 | 522.3 | 4.2% | ok |
+| transfer_up_f64_tenferro_8B | #2009 | tenferro | tenferro-cuda | f64 | bytes=8, direction=up | 1 | 128 | 21989.2 | 70.6 | 0.6% | ok |
+| transfer_up_f64_cudarc-pageable_8B | #2009 | cudarc-pageable | cudarc | f64 | bytes=8, direction=up | 1 | 512 | 6566.7 | 287.0 | 2.8% | ok |
+| transfer_up_f64_cudarc-pinned_8B | #2009 | cudarc-pinned | cudarc | f64 | bytes=8, direction=up | 1 | 256 | 10450.0 | 115.8 | 1.4% | ok |
+| transfer_up_f64_tenferro_4096B | #2009 | tenferro | tenferro-cuda | f64 | bytes=4096, direction=up | 1 | 128 | 24406.7 | 637.1 | 3.1% | ok |
+| transfer_up_f64_cudarc-pageable_4096B | #2009 | cudarc-pageable | cudarc | f64 | bytes=4096, direction=up | 1 | 512 | 7019.6 | 19.7 | 0.4% | ok |
+| transfer_up_f64_cudarc-pinned_4096B | #2009 | cudarc-pinned | cudarc | f64 | bytes=4096, direction=up | 1 | 64 | 58990.8 | 506.4 | 0.9% | ok |
+| transfer_up_f64_tenferro_65536B | #2009 | tenferro | tenferro-cuda | f64 | bytes=65536, direction=up | 1 | 64 | 34274.6 | 689.1 | 2.2% | ok |
+| transfer_up_f64_cudarc-pageable_65536B | #2009 | cudarc-pageable | cudarc | f64 | bytes=65536, direction=up | 1 | 256 | 13653.9 | 657.5 | 4.0% | ok |
+| transfer_up_f64_cudarc-pinned_65536B | #2009 | cudarc-pinned | cudarc | f64 | bytes=65536, direction=up | 1 | 256 | 12528.9 | 124.5 | 0.8% | ok |
+| transfer_up_f64_tenferro_1048576B | #2009 | tenferro | tenferro-cuda | f64 | bytes=1048576, direction=up | 1 | 8 | 254839.0 | 781.8 | 0.2% | ok |
+| transfer_up_f64_cudarc-pageable_1048576B | #2009 | cudarc-pageable | cudarc | f64 | bytes=1048576, direction=up | 1 | 32 | 89213.3 | 4070.8 | 6.1% | ok |
+| transfer_up_f64_cudarc-pinned_1048576B | #2009 | cudarc-pinned | cudarc | f64 | bytes=1048576, direction=up | 1 | 64 | 49749.6 | 180.4 | 0.3% | ok |
+| transfer_up_f64_tenferro_16777216B | #2009 | tenferro | tenferro-cuda | f64 | bytes=16777216, direction=up | 1 | 2 | 1259318.0 | 39791.2 | 2.3% | ok |
+| transfer_up_f64_cudarc-pageable_16777216B | #2009 | cudarc-pageable | cudarc | f64 | bytes=16777216, direction=up | 1 | 4 | 748095.2 | 671.4 | 0.2% | ok |
+| transfer_up_f64_cudarc-pinned_16777216B | #2009 | cudarc-pinned | cudarc | f64 | bytes=16777216, direction=up | 1 | 4 | 636531.5 | 349.9 | 0.0% | ok |
+| transfer_up_f64_tenferro_268435456B | #2009 | tenferro | tenferro-cuda | f64 | bytes=268435456, direction=up | 1 | 1 | 22292292.0 | 2639434.5 | 10.1% | NOISY |
+| transfer_up_f64_cudarc-pageable_268435456B | #2009 | cudarc-pageable | cudarc | f64 | bytes=268435456, direction=up | 1 | 1 | 12936470.0 | 45557.0 | 0.3% | ok |
+| transfer_up_f64_cudarc-pinned_268435456B | #2009 | cudarc-pinned | cudarc | f64 | bytes=268435456, direction=up | 1 | 1 | 10014552.0 | 5415.0 | 0.8% | ok |
+| transfer_down_f64_tenferro_8B | #2009 | tenferro | tenferro-cuda | f64 | bytes=8, direction=down | 1 | 128 | 20833.0 | 81.0 | 0.3% | ok |
+| transfer_down_f64_cudarc-pageable_8B | #2009 | cudarc-pageable | cudarc | f64 | bytes=8, direction=down | 1 | 512 | 7606.1 | 101.3 | 0.9% | ok |
+| transfer_down_f64_cudarc-pinned_8B | #2009 | cudarc-pinned | cudarc | f64 | bytes=8, direction=down | 1 | 256 | 9433.7 | 238.2 | 1.9% | ok |
+| transfer_down_f64_tenferro_4096B | #2009 | tenferro | tenferro-cuda | f64 | bytes=4096, direction=down | 1 | 64 | 28428.0 | 170.3 | 0.4% | ok |
+| transfer_down_f64_cudarc-pageable_4096B | #2009 | cudarc-pageable | cudarc | f64 | bytes=4096, direction=down | 1 | 256 | 8310.5 | 30.6 | 0.3% | ok |
+| transfer_down_f64_cudarc-pinned_4096B | #2009 | cudarc-pinned | cudarc | f64 | bytes=4096, direction=down | 1 | 256 | 9507.6 | 194.9 | 2.0% | ok |
+| transfer_down_f64_tenferro_65536B | #2009 | tenferro | tenferro-cuda | f64 | bytes=65536, direction=down | 1 | 64 | 30875.8 | 2421.3 | 5.0% | ok |
+| transfer_down_f64_cudarc-pageable_65536B | #2009 | cudarc-pageable | cudarc | f64 | bytes=65536, direction=down | 1 | 256 | 13878.1 | 288.8 | 1.4% | ok |
+| transfer_down_f64_cudarc-pinned_65536B | #2009 | cudarc-pinned | cudarc | f64 | bytes=65536, direction=down | 1 | 256 | 11674.2 | 119.9 | 2.6% | ok |
+| transfer_down_f64_tenferro_1048576B | #2009 | tenferro | tenferro-cuda | f64 | bytes=1048576, direction=down | 1 | 4 | 603843.2 | 2013.8 | 0.5% | ok |
+| transfer_down_f64_cudarc-pageable_1048576B | #2009 | cudarc-pageable | cudarc | f64 | bytes=1048576, direction=down | 1 | 32 | 95726.9 | 2085.7 | 1.8% | ok |
+| transfer_down_f64_cudarc-pinned_1048576B | #2009 | cudarc-pinned | cudarc | f64 | bytes=1048576, direction=down | 1 | 64 | 49578.7 | 291.4 | 0.5% | ok |
+| transfer_down_f64_tenferro_16777216B | #2009 | tenferro | tenferro-cuda | f64 | bytes=16777216, direction=down | 1 | 2 | 9077984.0 | 290676.2 | 2.3% | ok |
+| transfer_down_f64_cudarc-pageable_16777216B | #2009 | cudarc-pageable | cudarc | f64 | bytes=16777216, direction=down | 1 | 2 | 1137509.0 | 3055.2 | 0.2% | ok |
+| transfer_down_f64_cudarc-pinned_16777216B | #2009 | cudarc-pinned | cudarc | f64 | bytes=16777216, direction=down | 1 | 4 | 656407.5 | 193.6 | 0.0% | ok |
+| transfer_down_f64_tenferro_268435456B | #2009 | tenferro | tenferro-cuda | f64 | bytes=268435456, direction=down | 1 | 1 | 149113547.0 | 1784709.0 | 1.2% | ok |
+| transfer_down_f64_cudarc-pageable_268435456B | #2009 | cudarc-pageable | cudarc | f64 | bytes=268435456, direction=down | 1 | 1 | 14769537.0 | 23131.5 | 0.3% | ok |
+| transfer_down_f64_cudarc-pinned_268435456B | #2009 | cudarc-pinned | cudarc | f64 | bytes=268435456, direction=down | 1 | 1 | 10316602.0 | 2445.0 | 0.1% | ok |
+| alloc_zero_f64_alloc-zero-within-callback_0el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=0 | 1 | 2048 | 3202.7 | 19.8 | 1.4% | ok |
+| alloc_zero_f64_alloc-zero-per-callback_0el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=0 | 1 | 128 | 23965.2 | 97.5 | 3.6% | ok |
+| alloc_zero_f64_host-zero-upload_0el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=0 | 1 | 1024 | 3969.0 | 71.3 | 1.2% | ok |
+| alloc_zero_f64_alloc-fill-per-callback_0el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=0 | 1 | 128 | 26699.6 | 914.3 | 2.2% | ok |
+| alloc_zero_f64_alloc-zero-within-callback_16el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=16 | 1 | 128 | 19657.3 | 679.6 | 4.4% | ok |
+| alloc_zero_f64_alloc-zero-per-callback_16el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=16 | 1 | 64 | 37169.6 | 727.0 | 3.6% | ok |
+| alloc_zero_f64_host-zero-upload_16el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=16 | 1 | 512 | 6601.0 | 441.0 | 4.9% | ok |
+| alloc_zero_f64_alloc-fill-per-callback_16el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=16 | 1 | 64 | 37468.0 | 124.5 | 0.4% | ok |
+| alloc_zero_f64_alloc-zero-within-callback_512el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=512 | 1 | 128 | 18685.3 | 483.0 | 2.1% | ok |
+| alloc_zero_f64_alloc-zero-per-callback_512el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=512 | 1 | 64 | 41460.8 | 2933.1 | 4.7% | ok |
+| alloc_zero_f64_host-zero-upload_512el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=512 | 1 | 512 | 7260.6 | 440.6 | 3.6% | ok |
+| alloc_zero_f64_alloc-fill-per-callback_512el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=512 | 1 | 64 | 41063.9 | 1606.4 | 3.6% | ok |
+| alloc_zero_f64_alloc-zero-within-callback_32768el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=32768 | 1 | 128 | 21545.1 | 176.4 | 0.6% | ok |
+| alloc_zero_f64_alloc-zero-per-callback_32768el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=32768 | 1 | 64 | 41908.3 | 221.0 | 2.3% | ok |
+| alloc_zero_f64_host-zero-upload_32768el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=32768 | 1 | 16 | 59758.7 | 13180.4 | 35.4% | NOISY |
+| alloc_zero_f64_alloc-fill-per-callback_32768el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=32768 | 1 | 64 | 42917.4 | 1656.8 | 2.4% | ok |
+| alloc_zero_f64_alloc-zero-within-callback_2097152el | #1887 | alloc-zero-within-callback | tenferro-cuda | f64 | elements=2097152 | 1 | 64 | 21356.4 | 211.6 | 0.8% | ok |
+| alloc_zero_f64_alloc-zero-per-callback_2097152el | #1887 | alloc-zero-per-callback | tenferro-cuda | f64 | elements=2097152 | 1 | 32 | 44092.3 | 220.5 | 0.6% | ok |
+| alloc_zero_f64_host-zero-upload_2097152el | #1887 | host-zero-upload | tenferro-cuda | f64 | elements=2097152 | 1 | 2 | 1099943.0 | 50903.8 | 2.9% | ok |
+| alloc_zero_f64_alloc-fill-per-callback_2097152el | #1887 | alloc-fill-per-callback | tenferro-cuda | f64 | elements=2097152 | 1 | 32 | 42112.5 | 328.6 | 0.9% | ok |
+| small_blocks_gemm_f64_loop_n8_count256 | #1885 | loop | tenferro-cuda | f64 | n=8, count=256 | 1 | 1 | 6361223.0 | 39916.5 | 1.8% | ok |
+| small_blocks_gemm_f64_batched_n8_count256 | #1885 | batched | tenferro-cuda | f64 | n=8, count=256 | 1 | 128 | 18367.5 | 205.7 | 0.9% | ok |
+| small_blocks_gemm_f64_loop_n16_count256 | #1885 | loop | tenferro-cuda | f64 | n=16, count=256 | 1 | 1 | 6028863.0 | 23940.5 | 0.3% | ok |
+| small_blocks_gemm_f64_batched_n16_count256 | #1885 | batched | tenferro-cuda | f64 | n=16, count=256 | 1 | 128 | 19445.2 | 2432.5 | 7.5% | ok |
+| small_blocks_gemm_f64_loop_n32_count256 | #1885 | loop | tenferro-cuda | f64 | n=32, count=256 | 1 | 1 | 6883048.0 | 262132.5 | 3.4% | ok |
+| small_blocks_gemm_f64_batched_n32_count256 | #1885 | batched | tenferro-cuda | f64 | n=32, count=256 | 1 | 128 | 18909.6 | 334.7 | 1.6% | ok |
+| small_blocks_gemm_f64_loop_n64_count256 | #1885 | loop | tenferro-cuda | f64 | n=64, count=256 | 1 | 1 | 6843928.0 | 373716.5 | 3.8% | ok |
+| small_blocks_gemm_f64_batched_n64_count256 | #1885 | batched | tenferro-cuda | f64 | n=64, count=256 | 1 | 128 | 22971.9 | 2149.4 | 5.3% | ok |
+| batched_qr_f64_loop_n32_b16 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=16 | 1 | 1 | 5723603.0 | 62716.5 | 1.2% | ok |
+| batched_qr_f64_batched_n32_b16 | #1885 | batched | tenferro-cuda | f64 | op=qr, n=32, batch=16 | 1 | 1 | 2502136.0 | 13830.5 | 0.6% | ok |
+| batched_qr_f64_loop_n32_b256 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=256 | 1 | 1 | 107876773.0 | 1817364.5 | 1.4% | ok |
+| batched_qr_f64_batched_n32_b256 | #1885 | batched | tenferro-cuda | f64 | op=qr, n=32, batch=256 | 1 | 1 | 36019743.0 | 56242.0 | 0.1% | ok |
+| batched_svd_f64_loop_n32_b16 | #1885 | loop | tenferro-cuda | f64 | op=svd, n=32, batch=16 | 1 | 1 | 17472011.0 | 26065.5 | 0.2% | ok |
+| batched_svd_f64_batched_n32_b16 | #1885 | batched | tenferro-cuda | f64 | op=svd, n=32, batch=16 | 1 | 1 | 14307655.0 | 70287.5 | 0.5% | ok |
+| batched_svd_f64_loop_n32_b256 | #1885 | loop | tenferro-cuda | f64 | op=svd, n=32, batch=256 | 1 | 1 | 299583516.0 | 733000.5 | 0.2% | ok |
+| batched_svd_f64_batched_n32_b256 | #1885 | batched | tenferro-cuda | f64 | op=svd, n=32, batch=256 | 1 | 1 | 226378839.0 | 153789.5 | 0.6% | ok |
+| qr_live_buffers_f64_n32_live16 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=1, live_buffers=16 | 1 | 8 | 470403.0 | 62108.8 | 12.7% | NOISY |
+| qr_live_buffers_f64_n32_live256 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=1, live_buffers=256 | 1 | 8 | 397088.4 | 631.9 | 0.2% | ok |
+| qr_live_buffers_f64_n32_live1024 | #1885 | loop | tenferro-cuda | f64 | op=qr, n=32, batch=1, live_buffers=1024 | 1 | 8 | 486313.6 | 1483.1 | 0.3% | ok |
+| eager_op_f32_add_decode_eager-session | #2079 | eager-session | tenferro-cuda | f32 | hidden=1024, tokens=8, op=add | 1 | 256 | 11339.8 | 180.2 | 1.1% | ok |
+| eager_op_f32_dot_general_decode_eager-session | #2079 | eager-session | tenferro-cuda | f32 | in=1024, out=1024, len=8, op=dot_general | 1 | 64 | 33794.6 | 1388.9 | 4.7% | ok |
+| gather_embedding_f32_vocab8192_eager-gather | #2080 | eager-gather | tenferro-cuda | f32 | vocab=8192, hidden=1024, tokens=8 | 1 | 32 | 96473.2 | 385.2 | 0.3% | ok |
+| gather_embedding_f32_vocab8192_cudarc-row-copies | #2080 | cudarc-row-copies | cudarc | f32 | vocab=8192, hidden=1024, tokens=8 | 1 | 128 | 25299.5 | 240.7 | 0.6% | ok |
+| gather_embedding_f32_vocab65536_eager-gather | #2080 | eager-gather | tenferro-cuda | f32 | vocab=65536, hidden=1024, tokens=8 | 1 | 4 | 611971.2 | 3730.1 | 0.6% | ok |
+| gather_embedding_f32_vocab65536_cudarc-row-copies | #2080 | cudarc-row-copies | cudarc | f32 | vocab=65536, hidden=1024, tokens=8 | 1 | 128 | 28218.8 | 470.1 | 1.8% | ok |
+| gather_embedding_f32_vocab248320_eager-gather | #2080 | eager-gather | tenferro-cuda | f32 | vocab=248320, hidden=1024, tokens=8 | 1 | 1 | 2263299.0 | 10365.0 | 0.5% | ok |
+| gather_embedding_f32_vocab248320_cudarc-row-copies | #2080 | cudarc-row-copies | cudarc | f32 | vocab=248320, hidden=1024, tokens=8 | 1 | 128 | 25590.1 | 280.0 | 1.0% | ok |
+| reshape_constant_f32_64M_constant | #2082 | constant | tenferro-cuda | f32 | elements=67108864, rows=65536, cols=1024 | 1 | 4 | 595528.2 | 1593.9 | 0.8% | ok |
+| reshape_constant_f32_64M_op-output | #2082 | op-output | tenferro-cuda | f32 | elements=67108864, rows=65536, cols=1024 | 1 | 4 | 594143.0 | 190.0 | 0.2% | ok |
+| svd_driver_c64_n64_auto | #1839 #1849 | auto | tenferro-cuda | c64 | n=64, driver=auto | 1 | 1 | 4782247.0 | 9765.5 | 0.4% | ok |
+| svd_driver_c64_n64_gesvdj | #1839 #1849 | gesvdj | tenferro-cuda | c64 | n=64, driver=gesvdj | 1 | 1 | 4766325.0 | 5644.5 | 0.1% | ok |
+| svd_driver_c64_n64_gesvd | #1839 #1849 | gesvd | tenferro-cuda | c64 | n=64, driver=gesvd | 1 | 1 | 6605672.0 | 41391.5 | 0.4% | ok |
+| svd_driver_c64_n64_xgesvdp | #1839 #1849 | xgesvdp | tenferro-cuda | c64 | n=64, driver=xgesvdp | 1 | 1 | 3565989.0 | 13210.0 | 0.3% | ok |
+| svd_driver_c64_n256_auto | #1839 #1849 | auto | tenferro-cuda | c64 | n=256, driver=auto | 1 | 1 | 41364075.0 | 8275.5 | 0.0% | ok |
+| svd_driver_c64_n256_gesvdj | #1839 #1849 | gesvdj | tenferro-cuda | c64 | n=256, driver=gesvdj | 1 | 1 | 41344835.0 | 13756.0 | 0.0% | ok |
+| svd_driver_c64_n256_gesvd | #1839 #1849 | gesvd | tenferro-cuda | c64 | n=256, driver=gesvd | 1 | 1 | 32411111.0 | 14665.0 | 0.0% | ok |
+| svd_driver_c64_n256_xgesvdp | #1839 #1849 | xgesvdp | tenferro-cuda | c64 | n=256, driver=xgesvdp | 1 | 1 | 9372687.0 | 16320.5 | 0.2% | ok |
+| svd_driver_c64_n1024_auto | #1839 #1849 | auto | tenferro-cuda | c64 | n=1024, driver=auto | 1 | 1 | 389364024.0 | 171326.5 | 0.0% | ok |
+| svd_driver_c64_n1024_gesvdj | #1839 #1849 | gesvdj | tenferro-cuda | c64 | n=1024, driver=gesvdj | 1 | 1 | 388859935.0 | 27652.5 | 0.0% | ok |
+| svd_driver_c64_n1024_gesvd | #1839 #1849 | gesvd | tenferro-cuda | c64 | n=1024, driver=gesvd | 1 | 1 | 263029377.0 | 65007.0 | 0.0% | ok |
+| svd_driver_c64_n1024_xgesvdp | #1839 #1849 | xgesvdp | tenferro-cuda | c64 | n=1024, driver=xgesvdp | 1 | 1 | 62156167.0 | 21005.5 | 0.0% | ok |
+| eigh_batched_f64_n16_auto | #1846 #1852 #1923 | auto | tenferro-cuda | f64 | n=16, batch=64, driver=auto | 1 | 8 | 308960.8 | 1895.6 | 0.5% | ok |
+| eigh_batched_f64_n16_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | f64 | n=16, batch=64, driver=syevd | 1 | 8 | 306047.0 | 1453.2 | 1.5% | ok |
+| eigh_batched_f64_n16_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | f64 | n=16, batch=64, driver=syevj | 1 | 16 | 216481.7 | 640.3 | 1.4% | ok |
+| eigh_batched_f64_n32_auto | #1846 #1852 #1923 | auto | tenferro-cuda | f64 | n=32, batch=64, driver=auto | 1 | 8 | 458831.6 | 2392.4 | 1.3% | ok |
+| eigh_batched_f64_n32_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | f64 | n=32, batch=64, driver=syevd | 1 | 8 | 464774.2 | 4758.9 | 1.5% | ok |
+| eigh_batched_f64_n32_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | f64 | n=32, batch=64, driver=syevj | 1 | 8 | 426645.6 | 3855.1 | 1.8% | ok |
+| eigh_batched_f64_n128_auto | #1846 #1852 #1923 | auto | tenferro-cuda | f64 | n=128, batch=64, driver=auto | 1 | 1 | 2005272.0 | 11230.0 | 0.6% | ok |
+| eigh_batched_f64_n128_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | f64 | n=128, batch=64, driver=syevd | 1 | 1 | 2009961.0 | 3900.5 | 0.1% | ok |
+| eigh_batched_f64_n128_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | f64 | n=128, batch=64, driver=syevj | 1 | 1 | 19965763.0 | 10065.0 | 0.1% | ok |
+| eigh_batched_c64_n16_auto | #1846 #1852 #1923 | auto | tenferro-cuda | c64 | n=16, batch=64, driver=auto | 1 | 8 | 328865.1 | 1391.9 | 0.3% | ok |
+| eigh_batched_c64_n16_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | c64 | n=16, batch=64, driver=syevd | 1 | 8 | 321029.9 | 805.7 | 0.2% | ok |
+| eigh_batched_c64_n16_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | c64 | n=16, batch=64, driver=syevj | 1 | 8 | 275729.8 | 3702.6 | 1.8% | ok |
+| eigh_batched_c64_n32_auto | #1846 #1852 #1923 | auto | tenferro-cuda | c64 | n=32, batch=64, driver=auto | 1 | 8 | 493638.9 | 2494.4 | 0.4% | ok |
+| eigh_batched_c64_n32_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | c64 | n=32, batch=64, driver=syevd | 1 | 8 | 499969.1 | 8231.4 | 1.6% | ok |
+| eigh_batched_c64_n32_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | c64 | n=32, batch=64, driver=syevj | 1 | 4 | 670905.8 | 1461.5 | 0.2% | ok |
+| eigh_batched_c64_n128_auto | #1846 #1852 #1923 | auto | tenferro-cuda | c64 | n=128, batch=64, driver=auto | 1 | 1 | 3326332.0 | 28206.0 | 0.8% | ok |
+| eigh_batched_c64_n128_syevd | #1846 #1852 #1923 | syevd | tenferro-cuda | c64 | n=128, batch=64, driver=syevd | 1 | 1 | 3339393.0 | 14894.5 | 0.8% | ok |
+| eigh_batched_c64_n128_syevj | #1846 #1852 #1923 | syevj | tenferro-cuda | c64 | n=128, batch=64, driver=syevj | 1 | 1 | 49864662.0 | 26181.0 | 0.1% | ok |
+| hadamard_f32_1024x1024_dot-general | #1898 | dot-general | tenferro-cuda | f32 | rows=1024, cols=1024 | 1 | 64 | 54701.4 | 28.0 | 0.1% | ok |
+| hadamard_f32_1024x1024_multiply | #1898 | multiply | tenferro-cuda | f32 | rows=1024, cols=1024 | 1 | 256 | 7805.8 | 178.0 | 4.1% | ok |
 
 ## Per-call session entry diagnostics (not operation comparisons)
 
-A session (or eager session) is entered and left for every operation, inside the timer.
+The measured call includes session/scope entry or exit: the eager-per-call arms enter and leave an eager session per operation, the raw-scope arms enter and leave a raw CUDA scope (or time the explicit barrier they replace), and the vendor arms enter a raw scope per operation. Each case's timing note lists its own boundary.
 
 | Case ID | Issues | Arm | Backend | Dtype | Workload | Threads | Ops/batch | Median ns/op | IQR ns | CoV | Status |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---|
-| raw_scope_entry_f64_empty-idle | #2078 | empty-idle | tenferro-cuda | f64 | gemm_n=4096, queued_gemms=4 | 1 | 256 | 14932.9 | 478.6 | 2.6% | ok |
-| raw_scope_entry_f64_empty-behind-queued-gemm | #2078 | empty-behind-queued-gemm | tenferro-cuda | f64 | gemm_n=4096, queued_gemms=4 | 1 | 1 | 33001308.0 | 31081.0 | 0.7% | ok |
-| raw_scope_entry_f64_sync-behind-queued-gemm | #2078 | sync-behind-queued-gemm | tenferro-cuda | f64 | gemm_n=4096, queued_gemms=4 | 1 | 1 | 33023079.0 | 31821.0 | 0.5% | ok |
-| eager_op_f32_add_decode_eager-per-call | #2079 | eager-per-call | tenferro-cuda | f32 | hidden=1024, tokens=8, op=add | 1 | 256 | 12041.1 | 730.3 | 4.0% | ok |
-| eager_op_f32_dot_general_decode_eager-per-call | #2079 | eager-per-call | tenferro-cuda | f32 | in=1024, out=1024, len=8, op=dot_general | 1 | 64 | 31726.4 | 191.7 | 0.5% | ok |
-| vendor_handle_cublas_f64_create-destroy | #2083 | create-destroy | tenferro-cuda | f64 |  | 1 | 4 | 488280.0 | 5568.9 | 0.7% | ok |
-| vendor_handle_cublas_f64_reused | #2083 | reused | tenferro-cuda | f64 |  | 1 | 32 | 75186.9 | 843.3 | 1.6% | ok |
+| raw_scope_entry_f64_empty-idle | #2078 | empty-idle | tenferro-cuda | f64 | gemm_n=4096, queued_gemms=4 | 1 | 256 | 14661.6 | 56.8 | 1.5% | ok |
+| raw_scope_entry_f64_empty-behind-queued-gemm | #2078 | empty-behind-queued-gemm | tenferro-cuda | f64 | gemm_n=4096, queued_gemms=4 | 1 | 1 | 32961213.0 | 196376.0 | 0.6% | ok |
+| raw_scope_entry_f64_sync-behind-queued-gemm | #2078 | sync-behind-queued-gemm | tenferro-cuda | f64 | gemm_n=4096, queued_gemms=4 | 1 | 1 | 33019354.0 | 430493.0 | 0.9% | ok |
+| eager_op_f32_add_decode_eager-per-call | #2079 | eager-per-call | tenferro-cuda | f32 | hidden=1024, tokens=8, op=add | 1 | 256 | 11481.5 | 627.5 | 3.7% | ok |
+| eager_op_f32_dot_general_decode_eager-per-call | #2079 | eager-per-call | tenferro-cuda | f32 | in=1024, out=1024, len=8, op=dot_general | 1 | 64 | 32158.3 | 271.7 | 1.4% | ok |
+| vendor_handle_cublas_f64_create-destroy | #2083 | create-destroy | tenferro-cuda | f64 |  | 1 | 4 | 524038.5 | 2262.5 | 0.5% | ok |
+| vendor_handle_cublas_f64_reused | #2083 | reused | tenferro-cuda | f64 |  | 1 | 32 | 74097.9 | 382.0 | 0.4% | ok |
 
 ## Issue-workload diagnostics (not steady-state operation rows)
 
-The workload of the issue needs a per-call precondition that cannot be batched (a cache miss that reconstructs the contraction plan and its workspace, or a caller-provided destination handle built per call), so each sample is one isolated call with its own clock, and its precondition is outside it.
+The workload of the issue needs a per-call precondition that cannot be batched (a cache miss that reconstructs the contraction plan and its workspace, or a caller-provided destination handle built per call), so a sample is exactly one call: the median is that call's latency, not an average over a batch, and the precondition sits outside its clock.
 
 | Case ID | Issues | Arm | Backend | Dtype | Workload | Threads | Ops/batch | Median ns/op | IQR ns | CoV | Status |
 |---|---|---|---|---|---|---:|---:|---:|---:|---:|---|
-| contraction_plan_churn_f64_distinct-plans | #1873 #1805 | distinct-plans | tenferro-cuda | f64 | distinct=72, n=64 | 1 | 32 | 86994.5 | 929.3 | 2.1% | ok |
-| contraction_plan_churn_f64_repeated-plan | #1873 #1805 | repeated-plan | tenferro-cuda | f64 | distinct=72, n=64 | 1 | 64 | 38325.7 | 780.1 | 1.4% | ok |
-| dot_general_destination_f64_owned-dst | #1949 | owned-dst | tenferro-cuda | f64 | n=512 | 1 | 64 | 48695.2 | 153.9 | 0.3% | ok |
-| dot_general_destination_f64_borrowed-dst | #1949 | borrowed-dst | tenferro-cuda | f64 | n=512 | 1 | 64 | 51226.2 | 167.6 | 0.3% | ok |
+| contraction_plan_churn_f64_distinct-plans | #1873 #1805 | distinct-plans | tenferro-cuda | f64 | distinct=72, n=64 | 1 | 1 | 85572.0 | 360.5 | 0.9% | ok |
+| contraction_plan_churn_f64_repeated-plan | #1873 #1805 | repeated-plan | tenferro-cuda | f64 | distinct=72, n=64 | 1 | 1 | 40112.0 | 294.5 | 1.1% | ok |
+| dot_general_destination_f64_owned-dst | #1949 | owned-dst | tenferro-cuda | f64 | n=512 | 1 | 1 | 52531.0 | 550.5 | 1.0% | ok |
+| dot_general_destination_f64_borrowed-dst | #1949 | borrowed-dst | tenferro-cuda | f64 | n=512 | 1 | 1 | 52482.0 | 1490.5 | 2.0% | ok |
 
 ## State diagnostics (no timing)
 
@@ -355,63 +355,63 @@ One cold process; each distinct layout is uploaded outside timing, then its firs
 
 ### first_call_transpose_to-contiguous_f64_layouts_r2-12_c5-7 (#1885)
 
-Median over 22 distinct layouts: first call 0.072 ms, second call 0.035 ms.
+Median over 22 distinct layouts: first call 0.076 ms, second call 0.037 ms.
 
 | Layout | Warm-up layout | First call ms | Second call ms |
 |---|---|---:|---:|
-| [13, 3] -> transpose | yes | 297.934 | 0.079 |
-| [2, 5] -> transpose |  | 0.086 | 0.042 |
-| [2, 7] -> transpose |  | 0.076 | 0.041 |
-| [3, 5] -> transpose |  | 0.080 | 0.039 |
-| [3, 7] -> transpose |  | 0.077 | 0.041 |
-| [4, 5] -> transpose |  | 0.083 | 0.040 |
-| [4, 7] -> transpose |  | 0.069 | 0.034 |
-| [5, 5] -> transpose |  | 0.072 | 0.035 |
-| [5, 7] -> transpose |  | 0.074 | 0.035 |
-| [6, 5] -> transpose |  | 0.073 | 0.035 |
-| [6, 7] -> transpose |  | 0.069 | 0.034 |
-| [7, 5] -> transpose |  | 0.074 | 0.035 |
-| [7, 7] -> transpose |  | 0.067 | 0.033 |
-| [8, 5] -> transpose |  | 0.069 | 0.034 |
-| [8, 7] -> transpose |  | 0.073 | 0.033 |
-| [9, 5] -> transpose |  | 0.066 | 0.032 |
-| [9, 7] -> transpose |  | 0.076 | 0.036 |
-| [10, 5] -> transpose |  | 0.068 | 0.034 |
-| [10, 7] -> transpose |  | 0.068 | 0.033 |
-| [11, 5] -> transpose |  | 0.066 | 0.033 |
-| [11, 7] -> transpose |  | 0.065 | 0.033 |
-| [12, 5] -> transpose |  | 0.070 | 0.038 |
-| [12, 7] -> transpose |  | 0.071 | 0.035 |
+| [13, 3] -> transpose | yes | 292.214 | 0.085 |
+| [2, 5] -> transpose |  | 0.087 | 0.045 |
+| [2, 7] -> transpose |  | 0.085 | 0.043 |
+| [3, 5] -> transpose |  | 0.084 | 0.044 |
+| [3, 7] -> transpose |  | 0.081 | 0.037 |
+| [4, 5] -> transpose |  | 0.073 | 0.038 |
+| [4, 7] -> transpose |  | 0.081 | 0.038 |
+| [5, 5] -> transpose |  | 0.076 | 0.037 |
+| [5, 7] -> transpose |  | 0.075 | 0.037 |
+| [6, 5] -> transpose |  | 0.074 | 0.037 |
+| [6, 7] -> transpose |  | 0.072 | 0.037 |
+| [7, 5] -> transpose |  | 0.078 | 0.038 |
+| [7, 7] -> transpose |  | 0.076 | 0.036 |
+| [8, 5] -> transpose |  | 0.073 | 0.037 |
+| [8, 7] -> transpose |  | 0.079 | 0.037 |
+| [9, 5] -> transpose |  | 0.069 | 0.037 |
+| [9, 7] -> transpose |  | 0.080 | 0.040 |
+| [10, 5] -> transpose |  | 0.081 | 0.038 |
+| [10, 7] -> transpose |  | 0.071 | 0.037 |
+| [11, 5] -> transpose |  | 0.070 | 0.037 |
+| [11, 7] -> transpose |  | 0.069 | 0.037 |
+| [12, 5] -> transpose |  | 0.078 | 0.039 |
+| [12, 7] -> transpose |  | 0.073 | 0.038 |
 
 ### first_call_transpose_copy-into_f64_layouts_r2-12_c5-7 (#1885)
 
-Median over 22 distinct layouts: first call 0.038 ms, second call 0.033 ms.
+Median over 22 distinct layouts: first call 0.042 ms, second call 0.036 ms.
 
 | Layout | Warm-up layout | First call ms | Second call ms |
 |---|---|---:|---:|
-| [13, 3] -> transpose | yes | 46.198 | 0.055 |
-| [2, 5] -> transpose |  | 0.045 | 0.037 |
-| [2, 7] -> transpose |  | 0.039 | 0.033 |
-| [3, 5] -> transpose |  | 0.039 | 0.033 |
-| [3, 7] -> transpose |  | 0.049 | 0.036 |
-| [4, 5] -> transpose |  | 0.040 | 0.036 |
-| [4, 7] -> transpose |  | 0.039 | 0.035 |
-| [5, 5] -> transpose |  | 0.039 | 0.035 |
-| [5, 7] -> transpose |  | 0.050 | 0.042 |
-| [6, 5] -> transpose |  | 0.038 | 0.034 |
-| [6, 7] -> transpose |  | 0.038 | 0.034 |
-| [7, 5] -> transpose |  | 0.039 | 0.034 |
-| [7, 7] -> transpose |  | 0.041 | 0.036 |
-| [8, 5] -> transpose |  | 0.032 | 0.024 |
-| [8, 7] -> transpose |  | 0.030 | 0.025 |
-| [9, 5] -> transpose |  | 0.031 | 0.030 |
-| [9, 7] -> transpose |  | 0.029 | 0.026 |
-| [10, 5] -> transpose |  | 0.029 | 0.025 |
-| [10, 7] -> transpose |  | 0.027 | 0.026 |
-| [11, 5] -> transpose |  | 0.028 | 0.025 |
-| [11, 7] -> transpose |  | 0.030 | 0.026 |
-| [12, 5] -> transpose |  | 0.029 | 0.026 |
-| [12, 7] -> transpose |  | 0.027 | 0.026 |
+| [13, 3] -> transpose | yes | 48.400 | 0.043 |
+| [2, 5] -> transpose |  | 0.038 | 0.031 |
+| [2, 7] -> transpose |  | 0.034 | 0.030 |
+| [3, 5] -> transpose |  | 0.032 | 0.028 |
+| [3, 7] -> transpose |  | 0.034 | 0.030 |
+| [4, 5] -> transpose |  | 0.033 | 0.032 |
+| [4, 7] -> transpose |  | 0.040 | 0.036 |
+| [5, 5] -> transpose |  | 0.041 | 0.036 |
+| [5, 7] -> transpose |  | 0.044 | 0.036 |
+| [6, 5] -> transpose |  | 0.042 | 0.035 |
+| [6, 7] -> transpose |  | 0.043 | 0.037 |
+| [7, 5] -> transpose |  | 0.041 | 0.036 |
+| [7, 7] -> transpose |  | 0.043 | 0.044 |
+| [8, 5] -> transpose |  | 0.043 | 0.037 |
+| [8, 7] -> transpose |  | 0.049 | 0.038 |
+| [9, 5] -> transpose |  | 0.042 | 0.037 |
+| [9, 7] -> transpose |  | 0.042 | 0.036 |
+| [10, 5] -> transpose |  | 0.041 | 0.047 |
+| [10, 7] -> transpose |  | 0.043 | 0.038 |
+| [11, 5] -> transpose |  | 0.042 | 0.036 |
+| [11, 7] -> transpose |  | 0.043 | 0.035 |
+| [12, 5] -> transpose |  | 0.027 | 0.023 |
+| [12, 7] -> transpose |  | 0.028 | 0.023 |
 
 
 ## Timing boundaries
@@ -435,8 +435,8 @@ Median over 22 distinct layouts: first call 0.038 ms, second call 0.033 ms.
 - **gather_table / eager-gather** — inside: one eager gather of 8 indices from a [vocab, hidden] f32 device table, one device synchronize at the batch edge; outside: backend/runtime/context construction, table generation and upload, correctness check (download).
 - **hadamard_dot_general / dot-general** — inside: one dot_general with every axis as a batch axis (pure Hadamard), device synchronize at the batch edge; outside: backend construction, operand upload, correctness check (download).
 - **hadamard_dot_general / multiply** — inside: one elementwise multiply, device synchronize at the batch edge; outside: backend construction, operand upload, correctness check (download).
-- **owned_destination / borrowed-dst** — inside: dot_general_read_into a reused borrowed-view destination, device synchronize after each call; outside: backend construction, operand and destination upload, the destination handle the rule keeps out of a batched interval, correctness check (download).
-- **owned_destination / owned-dst** — inside: dot_general_read_into a reused owned destination, device synchronize after each call; outside: backend construction, operand and destination upload, the destination handle the rule keeps out of a batched interval, correctness check (download).
+- **owned_destination / borrowed-dst** — inside: dot_general_read_into a reused borrowed-view destination, one isolated call per sample; device synchronize after the call; outside: backend construction, operand and destination upload, the destination handle built per call, correctness check (download).
+- **owned_destination / owned-dst** — inside: dot_general_read_into a reused owned destination, one isolated call per sample; device synchronize after the call; outside: backend construction, operand and destination upload, the destination handle built per call, correctness check (download).
 - **pool_retention / alloc-free** — inside: —; outside: everything (a state diagnostic, no timing).
 - **pool_retention / driver-alloc-after-free** — inside: —; outside: everything (a state diagnostic, no timing).
 - **pool_retention / runtime-recreate** — inside: —; outside: everything (a state diagnostic, no timing).
