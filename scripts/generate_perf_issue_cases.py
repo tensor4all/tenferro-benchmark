@@ -454,7 +454,10 @@ def generate_gpu_cases():
                             "256 MiB), upload_tensor + runtime synchronize / download_tensor, vs "
                             "plain cudarc memcpy from pageable and pinned host memory on the same "
                             "device. Every call includes its own synchronize; the transfer is the "
-                            "declared operation.")))
+                            "declared operation. The cudarc arms reuse one preallocated "
+                            "destination while the tenferro arms allocate their output, so the "
+                            "cudarc rows are an output-reuse lower bound for the transport, not an "
+                            "allocation-equivalent comparison.")))
     for elements in (0, 16, 512, 32768, 2 << 20):
         for arm, ref in (("alloc-zero-within-callback", None), ("alloc-zero-per-callback", None),
                          ("host-zero-upload", "alloc-zero-per-callback"),
@@ -510,6 +513,27 @@ def generate_gpu_cases():
     rows += gpu_memory_cases(gpu)
     rows += gpu_linalg_driver_cases(gpu)
     rows += gpu_contraction_cases(gpu)
+    rows += gpu_borrowed_input_cases(gpu)
+    return rows
+
+
+def gpu_borrowed_input_cases(gpu):
+    """#1925: a borrowed read view must reuse the buffer's memoized device address."""
+    rows = []
+    for n in (8, 32):
+        for arm, ref in (("owned-input", None), ("view-input", "owned-input")):
+            rows.append(case(
+                f"borrowed_input_gemm_f64_n{n}_{arm}", ("#1925",), "borrowed_input_gemm",
+                {"n": n}, arm=arm, backend="tenferro-cuda", dtype="f64",
+                scope="issue_workflow_diagnostic",
+                reference_for=ref and f"borrowed_input_gemm_f64_n{n}_{ref}", profiles=gpu,
+                intent=("tenferro-rs #1925: one small in-session dot_general_read with a borrowed "
+                        "transposed input view against the same contraction with owned inputs "
+                        "(the issue measured 36.6 -> 19.7 us at 8x8 with owned operands at "
+                        "18.5 us). A borrowed read view must reuse the buffer's memoized device "
+                        "address rather than resolving a new one, and must not cost a blocking "
+                        "resource round trip per operand. The view is metadata-only and is built "
+                        "outside the clock, so a sample is one isolated call.")))
     return rows
 
 
@@ -804,9 +828,9 @@ def render(cases, *, suite_id=SUITE_ID, manifest_version=MANIFEST_VERSION,
     suite = header + yaml.safe_dump({
         "schema_version": 1,
         "suite_id": suite_id,
-        "title": f"Workloads of open tenferro-rs performance issues ({device.upper()})",
+        "title": f"Workloads of open and resolved tenferro-rs performance issues ({device.upper()})",
         "description": (
-            "One case family per open tenferro-rs performance issue ("
+            "One case family per open or resolved tenferro-rs performance issue ("
             + ", ".join(issues)
             + "), each with its reference arm(s); the issue numbers are recorded per case in "
             + source + ". Workloads are added when an issue is opened; "

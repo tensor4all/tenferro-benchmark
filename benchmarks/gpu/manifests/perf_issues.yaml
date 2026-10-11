@@ -261,3 +261,7 @@ coverage:
   - contraction_plan_churn_f64_repeated-plan
   - dot_general_destination_f64_owned-dst
   - dot_general_destination_f64_borrowed-dst
+  - borrowed_input_gemm_f64_n8_owned-input
+  - borrowed_input_gemm_f64_n8_view-input
+  - borrowed_input_gemm_f64_n32_owned-input
+  - borrowed_input_gemm_f64_n32_view-input

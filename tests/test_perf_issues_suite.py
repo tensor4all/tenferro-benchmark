@@ -46,7 +46,7 @@ class PerfIssueSuiteTest(unittest.TestCase):
                          "#2006", "#1885", "#1975", "#1976", "#2008"} <= cpu)
         self.assertEqual(gpu, {"#2009", "#1887", "#1885", "#2078", "#2079", "#2080", "#2081",
                                "#2082", "#2083", "#1924", "#1839", "#1849", "#1846", "#1852",
-                               "#1923", "#1898", "#1873", "#1805", "#1949"})
+                               "#1923", "#1898", "#1873", "#1805", "#1949", "#1925"})
         einsum = (ROOT / "benchmarks/cpu/einsum.yaml").read_text()
         for name in gen.einsum_instances():
             self.assertIn(name, einsum)
@@ -102,6 +102,8 @@ class PerfIssueSuiteTest(unittest.TestCase):
         # The guard runs again right before measuring, and the post-run list is
         # recorded and checked, not just printed.
         self.assertIn('require_idle_gpu "at measurement time"', script)
+        # The snapshot queries are scoped to the device the suite measures on.
+        self.assertIn('nvidia-smi -i "$DEVICE_ORDINAL"', script)
         self.assertIn("gpu_compute_apps_at_start", script)
         self.assertIn("gpu_compute_apps_at_end", script)
         self.assertIn("not a clean measurement", script)

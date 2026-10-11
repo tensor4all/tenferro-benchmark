@@ -27,7 +27,7 @@ use tenferro_linalg::{EighDriver, EighOptions, SvdDriver, SvdOptions, TensorLina
 use tenferro_runtime::TensorSessionOpsExt;
 use tenferro_tensor::{
     BackendSession, BackendSessionHost, DotGeneralConfig, GatherConfig, Tensor, TensorRead,
-    TensorViewCanonicalization, TensorWrite,
+    TensorView, TensorViewCanonicalization, TensorWrite,
 };
 
 type BoxError = Box<dyn Error + Send + Sync>;
@@ -240,6 +240,24 @@ fn complex_values(n: usize, seed: u64) -> Vec<Complex64> {
         .zip(im)
         .map(|(r, i)| Complex64::new(r, i))
         .collect()
+}
+
+/// Resident set size of this process, for the #1924 vendor-churn observable.
+///
+/// The documented leak is host memory (RSS grew 410 -> 3114 MB over 50
+/// create/drop cycles), so device free bytes alone cannot see it. Linux only,
+/// which is where the CUDA suite runs; an unreadable /proc reports zero.
+fn process_rss_bytes() -> u64 {
+    std::fs::read_to_string("/proc/self/statm")
+        .ok()
+        .and_then(|statm| {
+            statm
+                .split_whitespace()
+                .nth(1)
+                .and_then(|pages| pages.parse::<u64>().ok())
+        })
+        .map(|resident_pages| resident_pages * 4096)
+        .unwrap_or(0)
 }
 
 /// Driver-reported free device bytes, for the state diagnostics (#2081, #1924).
@@ -1537,7 +1555,6 @@ fn vendor_handle(params: &Value, timing: &Timing, device: usize) -> Result<CaseO
     let a = upload_tensor(&rt, &host(vec![n, n], values(n * n, 41))?)?;
     let b = upload_tensor(&rt, &host(vec![n, n], values(n * n, 42))?)?;
     rt.synchronize()?;
-    let bytes = n * n * 8;
     // Correctness: the raw cuBLAS route is verified against tenferro's own matmul
     // before either arm is timed.
     let (_, probe) = bk.with_backend_session(|s| cublas_dgemm_raw(s, &a, &b, n, false, None))??;
@@ -1562,6 +1579,7 @@ fn vendor_handle(params: &Value, timing: &Timing, device: usize) -> Result<CaseO
         None
     };
     let keep = arm == "reused";
+    let bytes = n * n * 8;
     let measurement = bk.with_backend_session(|s| {
         measure(timing, bytes, |it| {
             timed(
@@ -1627,6 +1645,7 @@ fn vendor_churn(params: &Value, device: usize) -> Result<CaseOutcome> {
         check_tol(worst, 1e-12, "churn-cycle gemm")?
     };
     let free_before = device_free_bytes(&ctx)?;
+    let rss_before = process_rss_bytes();
     let mut per_cycle = Vec::new();
     let mut previous = free_before;
     for _ in 0..cycles {
@@ -1643,10 +1662,16 @@ fn vendor_churn(params: &Value, device: usize) -> Result<CaseOutcome> {
         drop(bk);
         drop(rt);
         let free = device_free_bytes(&ctx)?;
-        per_cycle.push(json!({"free_bytes": free, "delta_bytes": free as i64 - previous as i64}));
+        let rss = process_rss_bytes();
+        per_cycle.push(json!({
+            "rss_bytes": rss,
+            "free_bytes": free,
+            "delta_bytes": free as i64 - previous as i64,
+        }));
         previous = free;
     }
     let free_after = device_free_bytes(&ctx)?;
+    let rss_after = process_rss_bytes();
     Ok(CaseOutcome {
         max_rel_error: error,
         measurement: None,
@@ -1654,6 +1679,9 @@ fn vendor_churn(params: &Value, device: usize) -> Result<CaseOutcome> {
         outside_timer: vec!["everything (a state diagnostic, no timing)"],
         extra: json!({
             "cycles": cycles,
+            "rss_bytes_before": rss_before,
+            "rss_bytes_after": rss_after,
+            "rss_growth_bytes": rss_after as i64 - rss_before as i64,
             "free_bytes_before": free_before,
             "free_bytes_after": free_after,
             "retained_bytes_over_cycles": free_before as i64 - free_after as i64,
@@ -2242,6 +2270,81 @@ fn owned_destination(params: &Value, timing: &Timing, device: usize) -> Result<C
     })
 }
 
+// ---------------------------------------------------------------------------
+// #1925: borrowed read views reuse the memoized device address
+// ---------------------------------------------------------------------------
+
+fn borrowed_input_gemm(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
+    let n = param_usize(params, "n")?;
+    let arm = param_str(params, "arm")?;
+    let mut bk = backend(device)?;
+    let rt = bk.runtime().clone();
+    let host_a = values(n * n, 71);
+    let host_b = values(n * n, 72);
+    let a = upload_tensor(&rt, &host(vec![n, n], host_a.clone())?)?;
+    // `b` is the logical right operand. The view arm borrows it as a transposed
+    // view of its own transpose, so both arms contract the same values and only
+    // the operand representation differs.
+    let b = upload_tensor(&rt, &host(vec![n, n], host_b.clone())?)?;
+    let mut b_transposed = vec![0.0f64; n * n];
+    for j in 0..n {
+        for i in 0..n {
+            b_transposed[i + j * n] = host_b[j + i * n];
+        }
+    }
+    let b_t = upload_tensor(&rt, &host(vec![n, n], b_transposed)?)?;
+    rt.synchronize()?;
+    let cfg = matmul_cfg(&[1], &[0]);
+    let expected: f64 = (0..n).map(|p| host_a[1 + p * n] * host_b[p + 2 * n]).sum();
+    let (error, measurement) = bk.with_backend_session(|s| -> Result<(f64, Measurement)> {
+        let reference = a.dot_general(&b, cfg.clone(), s)?;
+        let got = download_tensor(&rt, &reference)?;
+        let got = got.as_slice::<f64>()?;
+        let error = check_tol(
+            max_rel(&[got[1 + 2 * n]], &[expected]),
+            1e-12,
+            "view-operand gemm",
+        )?;
+        // The borrowed view is a transposed view of its own transpose, so the
+        // logical operand matches the owned arm and only the representation
+        // differs. The view is metadata-only and is built outside the clock.
+        let source = b_t.as_typed::<f64>().ok_or("operand is not f64")?.as_view();
+        let m = measure_isolated(timing, || {
+            let rhs = if arm == "view-input" {
+                // A borrowed read view reuses the buffer's memoized device
+                // address (the #1925 fix) instead of resolving a new one.
+                TensorRead::from_view(TensorView::F64(source.transpose_view([1, 0])?))
+            } else {
+                TensorRead::from_tensor(&b)
+            };
+            let lhs = TensorRead::from_tensor(&a);
+            let start = Instant::now();
+            s.dot_general_read(lhs, rhs, &cfg)?;
+            device_sync(s)?;
+            Ok(start.elapsed().as_nanos())
+        })?;
+        Ok((error, m))
+    })??;
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
+        timer: vec![
+            if arm == "view-input" {
+                "one small dot_general_read with a borrowed transposed input view"
+            } else {
+                "one small dot_general_read with owned inputs"
+            },
+            "one isolated call per sample; device synchronize after the call",
+        ],
+        outside_timer: vec![
+            "backend construction",
+            "operand upload",
+            "correctness check (download)",
+        ],
+        extra: json!({"n": n}),
+    })
+}
+
 fn main() -> Result<()> {
     let case_id = arg("--case").ok_or("--case is required")?;
     let params: Value = serde_json::from_str(&arg("--params").ok_or("--params is required")?)?;
@@ -2275,6 +2378,7 @@ fn main() -> Result<()> {
         "hadamard_dot_general" => hadamard_dot_general(&params, &timing, device),
         "contraction_plan_churn" => contraction_plan_churn(&params, &timing, device),
         "owned_destination" => owned_destination(&params, &timing, device),
+        "borrowed_input_gemm" => borrowed_input_gemm(&params, &timing, device),
         _ => Err(format!("unknown case kind {kind}").into()),
     }?;
     let mut output = json!({

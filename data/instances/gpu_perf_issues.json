@@ -19,7 +19,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_up_f64_cudarc-pageable_8B",
@@ -41,7 +41,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_8B"
  },
  {
@@ -64,7 +64,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_8B"
  },
  {
@@ -87,7 +87,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_up_f64_cudarc-pageable_4096B",
@@ -109,7 +109,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_4096B"
  },
  {
@@ -132,7 +132,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_4096B"
  },
  {
@@ -155,7 +155,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_up_f64_cudarc-pageable_65536B",
@@ -177,7 +177,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_65536B"
  },
  {
@@ -200,7 +200,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_65536B"
  },
  {
@@ -223,7 +223,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_up_f64_cudarc-pageable_1048576B",
@@ -245,7 +245,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_1048576B"
  },
  {
@@ -268,7 +268,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_1048576B"
  },
  {
@@ -291,7 +291,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_up_f64_cudarc-pageable_16777216B",
@@ -313,7 +313,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_16777216B"
  },
  {
@@ -336,7 +336,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_16777216B"
  },
  {
@@ -359,7 +359,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_up_f64_cudarc-pageable_268435456B",
@@ -381,7 +381,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_268435456B"
  },
  {
@@ -404,7 +404,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_up_f64_tenferro_268435456B"
  },
  {
@@ -427,7 +427,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_down_f64_cudarc-pageable_8B",
@@ -449,7 +449,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_8B"
  },
  {
@@ -472,7 +472,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_8B"
  },
  {
@@ -495,7 +495,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_down_f64_cudarc-pageable_4096B",
@@ -517,7 +517,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_4096B"
  },
  {
@@ -540,7 +540,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_4096B"
  },
  {
@@ -563,7 +563,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_down_f64_cudarc-pageable_65536B",
@@ -585,7 +585,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_65536B"
  },
  {
@@ -608,7 +608,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_65536B"
  },
  {
@@ -631,7 +631,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_down_f64_cudarc-pageable_1048576B",
@@ -653,7 +653,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_1048576B"
  },
  {
@@ -676,7 +676,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_1048576B"
  },
  {
@@ -699,7 +699,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_down_f64_cudarc-pageable_16777216B",
@@ -721,7 +721,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_16777216B"
  },
  {
@@ -744,7 +744,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_16777216B"
  },
  {
@@ -767,7 +767,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation."
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison."
  },
  {
   "id": "transfer_down_f64_cudarc-pageable_268435456B",
@@ -789,7 +789,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_268435456B"
  },
  {
@@ -812,7 +812,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation.",
+  "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
   "reference_for": "transfer_down_f64_tenferro_268435456B"
  },
  {
@@ -3123,5 +3123,91 @@
   ],
   "intent": "tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor calls, where a vendor write to a memoized address can overtake a queued CubeCL read (the skipped get_resource round trip is what flushes). Both arms write one caller-provided destination that is reused by every call: `owned-dst` through the owned-tensor write route the memo covers, `borrowed-dst` through the borrowed-view route, which keeps the resource round trip. The fix must not add a blocking round trip, so the owned arm must stay at or below the borrowed one. The destination handle is built per call and the precondition cannot be batched, so this is one isolated call per sample: a route-lifetime diagnostic, not a steady-state operation row, and it reports the destination contents it actually wrote.",
   "reference_for": "dot_general_destination_f64_owned-dst"
+ },
+ {
+  "id": "borrowed_input_gemm_f64_n8_owned-input",
+  "issues": [
+   "#1925"
+  ],
+  "kind": "borrowed_input_gemm",
+  "arm": "owned-input",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "kind": "borrowed_input_gemm",
+   "arm": "owned-input",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1925: one small in-session dot_general_read with a borrowed transposed input view against the same contraction with owned inputs (the issue measured 36.6 -> 19.7 us at 8x8 with owned operands at 18.5 us). A borrowed read view must reuse the buffer's memoized device address rather than resolving a new one, and must not cost a blocking resource round trip per operand. The view is metadata-only and is built outside the clock, so a sample is one isolated call."
+ },
+ {
+  "id": "borrowed_input_gemm_f64_n8_view-input",
+  "issues": [
+   "#1925"
+  ],
+  "kind": "borrowed_input_gemm",
+  "arm": "view-input",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "kind": "borrowed_input_gemm",
+   "arm": "view-input",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1925: one small in-session dot_general_read with a borrowed transposed input view against the same contraction with owned inputs (the issue measured 36.6 -> 19.7 us at 8x8 with owned operands at 18.5 us). A borrowed read view must reuse the buffer's memoized device address rather than resolving a new one, and must not cost a blocking resource round trip per operand. The view is metadata-only and is built outside the clock, so a sample is one isolated call.",
+  "reference_for": "borrowed_input_gemm_f64_n8_owned-input"
+ },
+ {
+  "id": "borrowed_input_gemm_f64_n32_owned-input",
+  "issues": [
+   "#1925"
+  ],
+  "kind": "borrowed_input_gemm",
+  "arm": "owned-input",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "kind": "borrowed_input_gemm",
+   "arm": "owned-input",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1925: one small in-session dot_general_read with a borrowed transposed input view against the same contraction with owned inputs (the issue measured 36.6 -> 19.7 us at 8x8 with owned operands at 18.5 us). A borrowed read view must reuse the buffer's memoized device address rather than resolving a new one, and must not cost a blocking resource round trip per operand. The view is metadata-only and is built outside the clock, so a sample is one isolated call."
+ },
+ {
+  "id": "borrowed_input_gemm_f64_n32_view-input",
+  "issues": [
+   "#1925"
+  ],
+  "kind": "borrowed_input_gemm",
+  "arm": "view-input",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "kind": "borrowed_input_gemm",
+   "arm": "view-input",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1925: one small in-session dot_general_read with a borrowed transposed input view against the same contraction with owned inputs (the issue measured 36.6 -> 19.7 us at 8x8 with owned operands at 18.5 us). A borrowed read view must reuse the buffer's memoized device address rather than resolving a new one, and must not cost a blocking resource round trip per operand. The view is metadata-only and is built outside the clock, so a sample is one isolated call.",
+  "reference_for": "borrowed_input_gemm_f64_n32_owned-input"
  }
 ]

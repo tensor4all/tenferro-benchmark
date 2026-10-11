@@ -21,11 +21,16 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 
-# GPU measurement validity: every other process on the device would distort the
-# numbers. The list is recorded, and a non-empty list at measurement time fails
-# the run unless BENCHMARK_ALLOW_BUSY_GPU=1 marks it explicitly diagnostic.
+# GPU measurement validity: a boundary-snapshot idle check. Every other process
+# on the device would distort the numbers, so the list is recorded at the start,
+# at measurement time and at the end, and either recorded snapshot being
+# non-empty fails the run unless BENCHMARK_ALLOW_BUSY_GPU=1 marks it explicitly
+# diagnostic. A process that starts and finishes between snapshots is not
+# observable here.
+DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 gpu_compute_apps() {
-    nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader \
+    nvidia-smi -i "$DEVICE_ORDINAL" \
+        --query-compute-apps=pid,process_name,used_memory --format=csv,noheader \
         2>/dev/null | tr -d ' \r' || true
 }
 # Filled by require_idle_gpu with the snapshot it judged, so the recorded list
@@ -34,8 +39,8 @@ REQUIRE_IDLE_SNAPSHOT=""
 require_idle_gpu() {
     local phase="$1"
     command -v nvidia-smi >/dev/null 2>&1 || return 0
-    echo "CUDA compute processes $phase:"
-    nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
+    echo "CUDA compute processes on device $DEVICE_ORDINAL $phase:"
+    nvidia-smi -i "$DEVICE_ORDINAL" --query-compute-apps=pid,process_name,used_memory --format=csv
     REQUIRE_IDLE_SNAPSHOT="$(gpu_compute_apps)"
     if [[ -n "$REQUIRE_IDLE_SNAPSHOT" ]]; then
         if [[ "${BENCHMARK_ALLOW_BUSY_GPU:-0}" != "1" ]]; then
@@ -51,7 +56,6 @@ if [[ "$BENCHMARK_TARGET_PROFILE" != nvidia-gpu ]]; then
     echo "ERROR: gpu/perf_issues requires BENCHMARK_TARGET_PROFILE=nvidia-gpu." >&2
     exit 1
 fi
-DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 # This suite carries explicit setup/lifecycle diagnostics (raw-session entry,
 # vendor-handle lifetime, issue workflows), so run.yaml declares them.
 export BENCH_INCLUDE_SETUP_DIAGNOSTICS="${BENCH_INCLUDE_SETUP_DIAGNOSTICS:-1}"
@@ -114,8 +118,8 @@ CUBECL_DEBUG_LOG=0 LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBR
 # that shared the device with another process. The recorded and the enforced
 # list are the same reading, and the start snapshot is enforced too.
 if command -v nvidia-smi >/dev/null 2>&1; then
-    echo "CUDA compute processes after the run:"
-    nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
+    echo "CUDA compute processes on device $DEVICE_ORDINAL after the run:"
+    nvidia-smi -i "$DEVICE_ORDINAL" --query-compute-apps=pid,process_name,used_memory --format=csv
     GPU_APPS_AT_END="$(gpu_compute_apps)"
     export BENCH_GPU_APPS_END="$GPU_APPS_AT_END"
     "$PYTHON" - "$RUN_DIR/run_t1.yaml" "$RUN_DIR/run.yaml" <<'PY'
@@ -133,7 +137,7 @@ for argument in sys.argv[1:]:
 PY
     if [[ "${BENCHMARK_ALLOW_BUSY_GPU:-0}" != "1" ]]; then
         if [[ -n "$BENCH_GPU_APPS_START" || -n "$GPU_APPS_AT_END" ]]; then
-            echo "ERROR: another process held or appeared on the CUDA device during the run; the report is not a clean measurement." >&2
+            echo "ERROR: another process was on the CUDA device at the measurement-time or end snapshot; the report is not a clean measurement. (A process that starts and ends between the snapshots is not detected.)" >&2
             exit 1
         fi
     fi
