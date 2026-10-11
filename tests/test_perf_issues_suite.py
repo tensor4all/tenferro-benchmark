@@ -63,6 +63,16 @@ class PerfIssueSuiteTest(unittest.TestCase):
             run_dir.mkdir(parents=True)
             (run_dir / "run_t1.yaml").write_text(
                 "timestamp: '2026-01-01T00:00:00Z'\ntenferro_rs:\n  commit: deadbeef\n")
+            issue_row = {
+                "case_id": "contraction_plan_churn_f64_distinct-plans", "issues": ["#1873", "#1805"],
+                "kind": "contraction_plan_churn", "arm": "distinct-plans",
+                "backend": "tenferro-cuda", "dtype": "f64",
+                "measurement_scope": "issue_workflow_diagnostic", "threads": 1,
+                "correctness_status": "passed", "max_rel_error": 0.0,
+                "params": {"distinct": 72, "n": 64, "kind": "contraction_plan_churn",
+                           "arm": "distinct-plans", "dtype": "f64"},
+                "samples": [{"sample_index": 0, "elapsed_ns": 88917, "iterations": 1}],
+            }
             (run_dir / "samples_t1.jsonl").write_text(json.dumps({
                 "case_id": "pool_retention_f64_alloc-free", "issues": ["#2081"],
                 "kind": "pool_retention", "arm": "alloc-free", "backend": "tenferro-cuda",
@@ -71,7 +81,7 @@ class PerfIssueSuiteTest(unittest.TestCase):
                 "free_bytes_start": 1 << 30, "retained_bytes_after_drop": 1 << 29,
                 "probe_status": "failed: out of memory",
                 "per_cycle": [{"free_bytes": 1 << 30, "delta_bytes": 0}],
-            }) + "\n")
+            }) + "\n" + json.dumps(issue_row) + "\n")
             with patch.object(suite, "ROOT", Path(tmp)):
                 suite.report(run_dir, "nvidia-gpu", "gpu")
             report = Path(tmp) / "result/nvidia-gpu/gpu/perf_issues.md"
@@ -82,6 +92,8 @@ class PerfIssueSuiteTest(unittest.TestCase):
             self.assertIn("| Cycle | Free bytes | Delta bytes |", text)
             # The state row never appears as a steady-state operation row.
             self.assertEqual(text.count("pool_retention_f64_alloc-free"), 1)
+            self.assertIn("## Issue-workload diagnostics (not steady-state operation rows)", text)
+            self.assertEqual(text.count("contraction_plan_churn_f64_distinct-plans"), 1)
 
     def test_gpu_run_script_refuses_a_busy_device(self):
         script = (ROOT / "scripts/run_gpu_perf_issues.sh").read_text()
@@ -93,6 +105,10 @@ class PerfIssueSuiteTest(unittest.TestCase):
         self.assertIn("gpu_compute_apps_at_start", script)
         self.assertIn("gpu_compute_apps_at_end", script)
         self.assertIn("not a clean measurement", script)
+        # The recorded snapshots are the enforced ones, and both are enforced.
+        self.assertIn("BENCH_GPU_APPS_START", script)
+        self.assertIn("BENCH_GPU_APPS_END", script)
+        self.assertIn('if [[ -n "$BENCH_GPU_APPS_START" || -n "$GPU_APPS_AT_END" ]]', script)
 
     def test_failed_binary_is_a_failed_row(self):
         with tempfile.TemporaryDirectory() as tmp:

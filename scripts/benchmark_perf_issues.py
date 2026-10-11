@@ -353,12 +353,15 @@ def report(run_dir, target, suite_key="cpu"):
         return out
 
     steady = [r for r in rows if r["measurement_scope"] == "steady_state"]
+    allocation_policy = ("" if suite_key == "gpu" else
+                         "faer-direct and host-sgemm write into a preallocated output, the tenferro and "
+                         "PyTorch arms allocate their output. ")
     lines += ["## Steady-state operation rows", "",
               "Each batch is one wall-clock interval over many operations; every output is retained until the "
               "clock stops. Median and inclusive IQR are per operation, in nanoseconds; CoV is sample standard "
               "deviation / mean (NOISY means CoV > 10%, a descriptive label only). Setup (inputs, backends, "
-              "runtimes, session entry, tracing/compilation, preparation) is outside timing; faer-direct and "
-              "host-sgemm write into a preallocated output, the tenferro and PyTorch arms allocate their output. "
+              "runtimes, session entry, tracing/compilation, preparation) is outside timing; "
+              + allocation_policy +
               "`reference_for` in the case file names the case each reference arm is compared with. "
               "GPU batches end with one device synchronize (a per-call synchronize where the transfer is the operation); "
               "the Threads column is the host thread setting.", ""]
@@ -368,7 +371,12 @@ def report(run_dir, target, suite_key="cpu"):
              "A session (or eager session) is entered and left for every operation, inside the timer."),
             ("eager_ad_workflow", "Eager AD workflow diagnostics",
              "Forward + reduction + backward through the eager runtime, including its internal session entries; "
-             "gradients accumulate across a batch and are reset outside timing.")):
+             "gradients accumulate across a batch and are reset outside timing."),
+            ("issue_workflow_diagnostic", "Issue-workload diagnostics (not steady-state operation rows)",
+             "The workload of the issue needs a per-call precondition that cannot be batched (a cache miss "
+             "that reconstructs the contraction plan and its workspace, or a caller-provided destination "
+             "handle built per call), so each sample is one isolated call with its own clock, and its "
+             "precondition is outside it.")):
         selected = [r for r in rows if r["measurement_scope"] == scope]
         if selected:
             lines += ["", f"## {title}", "", note, ""] + table(selected)

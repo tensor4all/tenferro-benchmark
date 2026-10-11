@@ -264,8 +264,8 @@ timing. Raw runs go to `data/results/<target_profile>/{cpu,gpu}/perf_issues/<tim
 | #2080 | `gather_embedding_f32_vocab{8192,65536,248320}_*` | `gpu/perf_issues` |
 | #2081 | `pool_retention_f64_*` (allocation-state diagnostic) | `gpu/perf_issues` |
 | #2082 | `reshape_constant_f32_64M_{constant,op-output}` | `gpu/perf_issues` |
-| #2083 | `vendor_handle_cublas_f32_{create-destroy,reused}` | `gpu/perf_issues` |
-| #1924 | `vendor_churn_f32_cycles{8,64}` (allocation-state diagnostic) | `gpu/perf_issues` |
+| #2083 | `vendor_handle_cublas_f64_{create-destroy,reused}` | `gpu/perf_issues` |
+| #1924 | `vendor_churn_f64_cycles{8,64}` (allocation-state diagnostic) | `gpu/perf_issues` |
 | #1839, #1849 | `svd_driver_c64_n{64,256,1024}_{auto,gesvdj,gesvd,xgesvdp}` | `gpu/perf_issues` |
 | #1846, #1852, #1923 | `eigh_batched_{f64,c64}_n{16,32,128}_{auto,syevd,syevj}` | `gpu/perf_issues` |
 | #1898 | `hadamard_f32_1024x1024_{dot-general,multiply}` | `gpu/perf_issues` |

@@ -28,12 +28,16 @@ gpu_compute_apps() {
     nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader \
         2>/dev/null | tr -d ' \r' || true
 }
+# Filled by require_idle_gpu with the snapshot it judged, so the recorded list
+# and the enforced list are the same reading.
+REQUIRE_IDLE_SNAPSHOT=""
 require_idle_gpu() {
     local phase="$1"
     command -v nvidia-smi >/dev/null 2>&1 || return 0
     echo "CUDA compute processes $phase:"
     nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
-    if [[ -n "$(gpu_compute_apps)" ]]; then
+    REQUIRE_IDLE_SNAPSHOT="$(gpu_compute_apps)"
+    if [[ -n "$REQUIRE_IDLE_SNAPSHOT" ]]; then
         if [[ "${BENCHMARK_ALLOW_BUSY_GPU:-0}" != "1" ]]; then
             echo "ERROR: another process is using the CUDA device $phase; stop it or set BENCHMARK_ALLOW_BUSY_GPU=1 for a diagnostic run." >&2
             exit 1
@@ -48,6 +52,9 @@ if [[ "$BENCHMARK_TARGET_PROFILE" != nvidia-gpu ]]; then
     exit 1
 fi
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
+# This suite carries explicit setup/lifecycle diagnostics (raw-session entry,
+# vendor-handle lifetime, issue workflows), so run.yaml declares them.
+export BENCH_INCLUDE_SETUP_DIAGNOSTICS="${BENCH_INCLUDE_SETUP_DIAGNOSTICS:-1}"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
 "$PYTHON" "$SCRIPT_DIR/generate_perf_issue_cases.py" --check
@@ -59,8 +66,10 @@ BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_perf_issu
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
 RUN_DIR="$PROJECT_DIR/data/results/$BENCHMARK_TARGET_PROFILE/gpu/perf_issues/$TIMESTAMP"
 mkdir -p "$RUN_DIR"
-# The build ran above, so re-check the device right before measuring.
+# The build ran above, so re-check the device right before measuring; the
+# snapshot it judged is the one recorded in run.yaml.
 require_idle_gpu "at measurement time"
+export BENCH_GPU_APPS_START="$REQUIRE_IDLE_SNAPSHOT"
 "$PYTHON" "$SCRIPT_DIR/collect_gpu_info.py" --device-ordinal "$DEVICE_ORDINAL" --markdown > "$RUN_DIR/gpu_info.md" || true
 export BENCHMARK_COMMIT="${BENCHMARK_COMMIT:-$(git rev-parse HEAD)}"
 export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE GPU_BENCH_DEVICE BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE PERF_ISSUES_CORRECTNESS_ONLY BENCHMARK_ALLOW_BUSY_GPU; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
@@ -79,18 +88,8 @@ metadata['environment'].setdefault('env', {}).update({
     'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
     'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None,
     'BENCHMARK_ALLOW_BUSY_GPU': os.environ.get('BENCHMARK_ALLOW_BUSY_GPU') or None})
-
-
-def compute_apps():
-    result = subprocess.run(
-        ['nvidia-smi', '--query-compute-apps=pid,process_name,used_memory',
-         '--format=csv,noheader'],
-        capture_output=True, text=True, check=False)
-    return [line for line in result.stdout.strip().splitlines() if line.strip()]
-
-
-# GPU validity: what else was on the device when the run started.
-metadata['environment']['gpu_compute_apps_at_start'] = compute_apps()
+metadata['environment']['gpu_compute_apps_at_start'] = (
+    os.environ.get('BENCH_GPU_APPS_START', '').strip().splitlines())
 sys.path.insert(0, 'scripts')
 import benchmark_perf_issues as suite
 _, _, manifest, coverage, expected, selected, raw = suite.plan('gpu')
@@ -112,29 +111,31 @@ CUBECL_DEBUG_LOG=0 LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBR
     "$PYTHON" "$SCRIPT_DIR/benchmark_perf_issues.py" --suite gpu --device "$DEVICE_ORDINAL" \
     --binary "$BINARY" --threads 1 --output "$RUN_DIR/samples_t1.jsonl" "${EXTRA[@]}" || failed=1
 # Record the device state after the measurement and refuse to pass off a run
-# that shared the device with another process.
+# that shared the device with another process. The recorded and the enforced
+# list are the same reading, and the start snapshot is enforced too.
 if command -v nvidia-smi >/dev/null 2>&1; then
     echo "CUDA compute processes after the run:"
     nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
+    GPU_APPS_AT_END="$(gpu_compute_apps)"
+    export BENCH_GPU_APPS_END="$GPU_APPS_AT_END"
     "$PYTHON" - "$RUN_DIR/run_t1.yaml" "$RUN_DIR/run.yaml" <<'PY'
-import subprocess
+import os
 import sys
 from pathlib import Path
 import yaml
 
-result = subprocess.run(
-    ['nvidia-smi', '--query-compute-apps=pid,process_name,used_memory',
-     '--format=csv,noheader'], capture_output=True, text=True, check=False)
-apps = [line for line in result.stdout.strip().splitlines() if line.strip()]
+apps = os.environ.get('BENCH_GPU_APPS_END', '').strip().splitlines()
 for argument in sys.argv[1:]:
     path = Path(argument)
     metadata = yaml.safe_load(path.read_text())
     metadata['environment']['gpu_compute_apps_at_end'] = apps
     path.write_text(yaml.safe_dump(metadata, sort_keys=False))
 PY
-    if [[ -n "$(gpu_compute_apps)" && "${BENCHMARK_ALLOW_BUSY_GPU:-0}" != "1" ]]; then
-        echo "ERROR: another process appeared on the CUDA device during the run; the report is not a clean measurement." >&2
-        exit 1
+    if [[ "${BENCHMARK_ALLOW_BUSY_GPU:-0}" != "1" ]]; then
+        if [[ -n "$BENCH_GPU_APPS_START" || -n "$GPU_APPS_AT_END" ]]; then
+            echo "ERROR: another process held or appeared on the CUDA device during the run; the report is not a clean measurement." >&2
+            exit 1
+        fi
     fi
 fi
 "$PYTHON" "$SCRIPT_DIR/benchmark_perf_issues.py" --suite gpu --report "$RUN_DIR" \

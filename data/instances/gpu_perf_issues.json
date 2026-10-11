@@ -3051,11 +3051,11 @@
    "arm": "distinct-plans",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "issue_workflow_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` fills the cache with 72 distinct small shapes and then re-runs the first (more than the backend's 64-plan capacity, so the churn really evicts); `repeated-plan` runs the same number of contractions of one shape. The timed operation is the re-run alone, with the churn as its untimed precondition. A re-run after churn must not cost more than the repeated shape."
+  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` fills the cache with 72 distinct small shapes and then re-runs the first (more than the backend's 64-plan capacity, so the churn really evicts); `repeated-plan` runs the same number of contractions of one shape. The timed operation is the re-run alone, with the churn as its untimed precondition. A re-run after churn must not cost more than the repeated shape. A cache miss reconstructs the contraction plan and its workspace inside the call, and the precondition cannot be batched, so this is one isolated call per sample: a cache-miss diagnostic, not a steady-state operation row."
  },
  {
   "id": "contraction_plan_churn_f64_repeated-plan",
@@ -3074,11 +3074,11 @@
    "arm": "repeated-plan",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "issue_workflow_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` fills the cache with 72 distinct small shapes and then re-runs the first (more than the backend's 64-plan capacity, so the churn really evicts); `repeated-plan` runs the same number of contractions of one shape. The timed operation is the re-run alone, with the churn as its untimed precondition. A re-run after churn must not cost more than the repeated shape.",
+  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` fills the cache with 72 distinct small shapes and then re-runs the first (more than the backend's 64-plan capacity, so the churn really evicts); `repeated-plan` runs the same number of contractions of one shape. The timed operation is the re-run alone, with the churn as its untimed precondition. A re-run after churn must not cost more than the repeated shape. A cache miss reconstructs the contraction plan and its workspace inside the call, and the precondition cannot be batched, so this is one isolated call per sample: a cache-miss diagnostic, not a steady-state operation row.",
   "reference_for": "contraction_plan_churn_f64_distinct-plans"
  },
  {
@@ -3096,11 +3096,11 @@
    "arm": "owned-dst",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "issue_workflow_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor calls, where a vendor write to a memoized address can overtake a queued CubeCL read (the skipped get_resource round trip is what flushes). `owned-dst` allocates a fresh destination per call; `borrowed-dst` reuses one borrowed-view destination through the view branch of the operand resolution. The fix must not add a blocking round trip, so the owned arm must stay at or below the borrowed one."
+  "intent": "tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor calls, where a vendor write to a memoized address can overtake a queued CubeCL read (the skipped get_resource round trip is what flushes). Both arms write one caller-provided destination that is reused by every call: `owned-dst` through the owned-tensor write route the memo covers, `borrowed-dst` through the borrowed-view route, which keeps the resource round trip. The fix must not add a blocking round trip, so the owned arm must stay at or below the borrowed one. The destination handle is built per call and the precondition cannot be batched, so this is one isolated call per sample: a route-lifetime diagnostic, not a steady-state operation row, and it reports the destination contents it actually wrote."
  },
  {
   "id": "dot_general_destination_f64_borrowed-dst",
@@ -3117,11 +3117,11 @@
    "arm": "borrowed-dst",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "issue_workflow_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor calls, where a vendor write to a memoized address can overtake a queued CubeCL read (the skipped get_resource round trip is what flushes). `owned-dst` allocates a fresh destination per call; `borrowed-dst` reuses one borrowed-view destination through the view branch of the operand resolution. The fix must not add a blocking round trip, so the owned arm must stay at or below the borrowed one.",
+  "intent": "tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor calls, where a vendor write to a memoized address can overtake a queued CubeCL read (the skipped get_resource round trip is what flushes). Both arms write one caller-provided destination that is reused by every call: `owned-dst` through the owned-tensor write route the memo covers, `borrowed-dst` through the borrowed-view route, which keeps the resource round trip. The fix must not add a blocking round trip, so the owned arm must stay at or below the borrowed one. The destination handle is built per call and the precondition cannot be batched, so this is one isolated call per sample: a route-lifetime diagnostic, not a steady-state operation row, and it reports the destination contents it actually wrote.",
   "reference_for": "dot_general_destination_f64_owned-dst"
  }
 ]

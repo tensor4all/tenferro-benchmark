@@ -53,7 +53,7 @@ GPU_MANIFEST_VERSION = 2
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
-                     "first_call_diagnostic", "state_diagnostic"}
+                     "first_call_diagnostic", "state_diagnostic", "issue_workflow_diagnostic"}
 
 
 def case(cid, issues, kind, params, *, arm, backend="tenferro-rs", dtype, scope="steady_state",
@@ -686,6 +686,7 @@ def gpu_contraction_cases(gpu):
         rows.append(case(
             f"contraction_plan_churn_f64_{arm}", ("#1873", "#1805"), "contraction_plan_churn",
             {"distinct": 72, "n": 64}, arm=arm, backend="tenferro-cuda", dtype="f64",
+            scope="issue_workflow_diagnostic",
             reference_for=ref and f"contraction_plan_churn_f64_{ref}", profiles=gpu,
             intent=("tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the "
                     "contraction-plan cache, and raw-session resources are dropped when a plan is "
@@ -694,19 +695,27 @@ def gpu_contraction_cases(gpu):
                     "churn really evicts); `repeated-plan` runs the same number of contractions of "
                     "one shape. The timed operation is the re-run alone, with the churn as its "
                     "untimed precondition. A re-run after churn must not cost more than the "
-                    "repeated shape.")))
+                    "repeated shape. A cache miss reconstructs the contraction plan and its "
+                    "workspace inside the call, and the precondition cannot be batched, so this "
+                    "is one isolated call per sample: a cache-miss diagnostic, not a steady-state "
+                    "operation row.")))
     for arm, ref in (("owned-dst", None), ("borrowed-dst", "owned-dst")):
         rows.append(case(
             f"dot_general_destination_f64_{arm}", ("#1949",), "owned_destination",
             {"n": 512}, arm=arm, backend="tenferro-cuda", dtype="f64",
+            scope="issue_workflow_diagnostic",
             reference_for=ref and f"dot_general_destination_f64_{ref}", profiles=gpu,
             intent=("tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor "
                     "calls, where a vendor write to a memoized address can overtake a queued "
                     "CubeCL read (the skipped get_resource round trip is what flushes). "
-                    "`owned-dst` allocates a fresh destination per call; `borrowed-dst` reuses one "
-                    "borrowed-view destination through the view branch of the operand resolution. "
-                    "The fix must not add a blocking round trip, so the owned arm must stay at or "
-                    "below the borrowed one.")))
+                    "Both arms write one caller-provided destination that is reused by every "
+                    "call: `owned-dst` through the owned-tensor write route the memo covers, "
+                    "`borrowed-dst` through the borrowed-view route, which keeps the resource "
+                    "round trip. The fix must not add a blocking round trip, so the owned arm "
+                    "must stay at or below the borrowed one. The destination handle is built per "
+                    "call and the precondition cannot be batched, so this is one isolated call "
+                    "per sample: a route-lifetime diagnostic, not a steady-state operation row, "
+                    "and it reports the destination contents it actually wrote.")))
     return rows
 
 
