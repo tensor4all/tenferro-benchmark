@@ -80,7 +80,7 @@ class PerfIssueSuiteTest(unittest.TestCase):
                 "correctness_status": "passed", "samples": [], "max_rel_error": 0.0,
                 "free_bytes_start": 1 << 30, "retained_bytes_after_drop": 1 << 29,
                 "probe_status": "failed: out of memory",
-                "per_cycle": [{"free_bytes": 1 << 30, "delta_bytes": 0}],
+                "per_cycle": [{"rss_bytes": 1 << 20, "free_bytes": 1 << 30, "delta_bytes": 0}],
             }) + "\n" + json.dumps(issue_row) + "\n")
             with patch.object(suite, "ROOT", Path(tmp)):
                 suite.report(run_dir, "nvidia-gpu", "gpu")
@@ -89,7 +89,7 @@ class PerfIssueSuiteTest(unittest.TestCase):
             self.assertIn("## State diagnostics (no timing)", text)
             self.assertIn("pool_retention_f64_alloc-free", text)
             self.assertIn("retained_bytes_after_drop", text)
-            self.assertIn("| Cycle | Free bytes | Delta bytes |", text)
+            self.assertIn("| Cycle | rss_bytes | free_bytes | delta_bytes |", text)
             # The state row never appears as a steady-state operation row.
             self.assertEqual(text.count("pool_retention_f64_alloc-free"), 1)
             self.assertIn("## Issue-workload diagnostics (not steady-state operation rows)", text)

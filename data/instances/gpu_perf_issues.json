@@ -2149,7 +2149,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1924: creating and dropping a CudaBackend (which dlopens and unloads the vendor libraries) N times, reporting the driver free memory before and after. The issue measured ~55 MB leaked per cycle; a state diagnostic, not a timing row."
+  "intent": "tenferro-rs #1924: creating and dropping a CudaBackend (which dlopens and unloads the vendor libraries) N times. The issue measured host RSS growing 410 -> 3114 MB over 50 cycles, so process RSS is recorded before, per cycle and after as the primary observable, with the driver free device bytes kept as supplementary. A state diagnostic, not a timing row."
  },
  {
   "id": "vendor_churn_f64_cycles64",
@@ -2171,7 +2171,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1924: creating and dropping a CudaBackend (which dlopens and unloads the vendor libraries) N times, reporting the driver free memory before and after. The issue measured ~55 MB leaked per cycle; a state diagnostic, not a timing row."
+  "intent": "tenferro-rs #1924: creating and dropping a CudaBackend (which dlopens and unloads the vendor libraries) N times. The issue measured host RSS growing 410 -> 3114 MB over 50 cycles, so process RSS is recorded before, per cycle and after as the primary observable, with the driver free device bytes kept as supplementary. A state diagnostic, not a timing row."
  },
  {
   "id": "pool_retention_f64_alloc-free",

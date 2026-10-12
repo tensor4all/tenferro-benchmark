@@ -2297,31 +2297,45 @@ fn borrowed_input_gemm(params: &Value, timing: &Timing, device: usize) -> Result
     let cfg = matmul_cfg(&[1], &[0]);
     let expected: f64 = (0..n).map(|p| host_a[1 + p * n] * host_b[p + 2 * n]).sum();
     let (error, measurement) = bk.with_backend_session(|s| -> Result<(f64, Measurement)> {
-        let reference = a.dot_general(&b, cfg.clone(), s)?;
-        let got = download_tensor(&rt, &reference)?;
+        // The borrowed view is a transposed view of its own transpose, so the
+        // logical operand matches the owned arm and only the representation
+        // differs. The view is metadata-only and is built outside the clock.
+        let source = b_t.as_typed::<f64>().ok_or("operand is not f64")?.as_view();
+        let operands = || -> Result<(TensorRead<'_>, TensorRead<'_>)> {
+            Ok((
+                TensorRead::from_tensor(&a),
+                if arm == "view-input" {
+                    // A borrowed read view reuses the buffer's memoized device
+                    // address (the #1925 fix) instead of resolving a new one.
+                    TensorRead::from_view(TensorView::F64(source.transpose_view([1, 0])?))
+                } else {
+                    TensorRead::from_tensor(&b)
+                },
+            ))
+        };
+        // Validate the route this arm actually runs, on its own result, outside timing.
+        let (lhs, rhs) = operands()?;
+        let checked = s.dot_general_read(lhs, rhs, &cfg)?;
+        device_sync(s)?;
+        let got = download_tensor(&rt, &checked)?;
         let got = got.as_slice::<f64>()?;
         let error = check_tol(
             max_rel(&[got[1 + 2 * n]], &[expected]),
             1e-12,
             "view-operand gemm",
         )?;
-        // The borrowed view is a transposed view of its own transpose, so the
-        // logical operand matches the owned arm and only the representation
-        // differs. The view is metadata-only and is built outside the clock.
-        let source = b_t.as_typed::<f64>().ok_or("operand is not f64")?.as_view();
+        // One isolated call per sample; the returned tensor stays alive until
+        // the clock has stopped.
         let m = measure_isolated(timing, || {
-            let rhs = if arm == "view-input" {
-                // A borrowed read view reuses the buffer's memoized device
-                // address (the #1925 fix) instead of resolving a new one.
-                TensorRead::from_view(TensorView::F64(source.transpose_view([1, 0])?))
-            } else {
-                TensorRead::from_tensor(&b)
-            };
-            let lhs = TensorRead::from_tensor(&a);
+            let (lhs, rhs) = operands()?;
+            let mut outputs = Vec::new();
             let start = Instant::now();
-            s.dot_general_read(lhs, rhs, &cfg)?;
+            outputs.push(s.dot_general_read(lhs, rhs, &cfg)?);
             device_sync(s)?;
-            Ok(start.elapsed().as_nanos())
+            let elapsed = start.elapsed().as_nanos();
+            black_box(&outputs);
+            drop(outputs);
+            Ok(elapsed)
         })?;
         Ok((error, m))
     })??;

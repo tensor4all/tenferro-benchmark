@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# gpu/perf_issues: CUDA workloads of open tenferro-rs performance issues
+# gpu/perf_issues: CUDA workloads of open and resolved tenferro-rs performance issues
 # (#2009 transfers, #1887 alloc_zero_output, #1885 small blocks / batched
 # factorizations / live buffers / first-call layouts, #2078 raw-session entry,
 # #2079 decode-sized eager ops, #2080 embedding gather, #2081 freed device

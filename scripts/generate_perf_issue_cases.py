@@ -633,9 +633,10 @@ def gpu_memory_cases(gpu):
             {"cycles": cycles, "gemm_n": 256}, arm="backend-cycle", backend="tenferro-cuda",
             dtype="f64", scope="state_diagnostic", profiles=gpu,
             intent=("tenferro-rs #1924: creating and dropping a CudaBackend (which dlopens and "
-                    "unloads the vendor libraries) N times, reporting the driver free memory "
-                    "before and after. The issue measured ~55 MB leaked per cycle; a state "
-                    "diagnostic, not a timing row.")))
+                    "unloads the vendor libraries) N times. The issue measured host RSS growing "
+                    "410 -> 3114 MB over 50 cycles, so process RSS is recorded before, per cycle "
+                    "and after as the primary observable, with the driver free device bytes kept "
+                    "as supplementary. A state diagnostic, not a timing row.")))
     for arm in ("alloc-free", "runtime-recreate", "driver-alloc-after-free"):
         rows.append(case(
             f"pool_retention_f64_{arm}", ("#2081",), "pool_retention",

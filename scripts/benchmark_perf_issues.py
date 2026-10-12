@@ -401,10 +401,11 @@ def report(run_dir, target, suite_key="cpu"):
     states = [r for r in rows if r["measurement_scope"] == "state_diagnostic"]
     if states:
         lines += ["", "## State diagnostics (no timing)", "",
-                  "Allocation and lifetime state of the CUDA pool, read from the driver before and after "
-                  "each arm. Bytes, not nanoseconds; a case that keeps memory it no longer needs shows "
-                  "up as a non-zero retained value, and a probe that the driver refuses shows up in "
-                  "`probe_status`.", ""]
+                  "Allocation and lifetime state, read before and after each arm: driver free device "
+                  "bytes for the pool, and process RSS where the issue's observable is host memory "
+                  "(#1924). Bytes, not nanoseconds; a case that keeps memory it no longer needs shows "
+                  "up as a non-zero retained or growth value, and a probe that the driver refuses "
+                  "shows up in `probe_status`.", ""]
         skip = {"suite_id", "case_id", "kind", "arm", "backend", "dtype", "issues",
                 "measurement_scope", "profiles", "intent", "params", "reference_for", "threads",
                 "case_key", "effort", "correctness_status", "status", "max_rel_error", "samples",
@@ -426,9 +427,11 @@ def report(run_dir, target, suite_key="cpu"):
                     lines.append(f"| {key} | {value} | — |")
             lines.append("")
             if row.get("per_cycle"):
-                lines += ["| Cycle | Free bytes | Delta bytes |", "|---:|---:|---:|"]
+                columns = list(row["per_cycle"][0].keys())
+                lines.append("| Cycle | " + " | ".join(columns) + " |")
+                lines.append("|---:" + "|---:" * len(columns) + "|")
                 for index, cycle in enumerate(row["per_cycle"]):
-                    lines.append(f"| {index} | {cycle['free_bytes']} | {cycle['delta_bytes']} |")
+                    lines.append(f"| {index} | " + " | ".join(str(cycle[c]) for c in columns) + " |")
                 lines.append("")
     first_calls = [r for r in rows if r["measurement_scope"] == "first_call_diagnostic"]
     if first_calls:
