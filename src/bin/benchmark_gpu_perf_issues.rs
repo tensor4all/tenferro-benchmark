@@ -2328,13 +2328,14 @@ fn borrowed_input_gemm(params: &Value, timing: &Timing, device: usize) -> Result
         // the clock has stopped.
         let m = measure_isolated(timing, || {
             let (lhs, rhs) = operands()?;
-            let mut outputs = Vec::new();
             let start = Instant::now();
-            outputs.push(s.dot_general_read(lhs, rhs, &cfg)?);
+            // A plain local binding: no harness allocation inside the clock, and
+            // the returned tensor lives until the clock has stopped.
+            let result = s.dot_general_read(lhs, rhs, &cfg)?;
             device_sync(s)?;
             let elapsed = start.elapsed().as_nanos();
-            black_box(&outputs);
-            drop(outputs);
+            black_box(&result);
+            drop(result);
             Ok(elapsed)
         })?;
         Ok((error, m))
