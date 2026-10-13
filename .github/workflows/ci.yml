@@ -79,7 +79,13 @@ jobs:
             benchmarks/gpu/linalg_jvp_vjp.yaml \
             benchmarks/gpu/linalg_ad_latency.yaml \
             benchmarks/gpu/elementwise.yaml \
-            benchmarks/gpu/perf_issues.yaml
+            benchmarks/gpu/perf_issues.yaml \
+            benchmarks/gpu/fft.yaml \
+            benchmarks/gpu/nn.yaml \
+            benchmarks/gpu/isolated_ops.yaml \
+            benchmarks/gpu/structural.yaml \
+            benchmarks/gpu/linalg_public_api.yaml \
+            benchmarks/gpu/reuse_contraction.yaml
 
       - name: Check Python scripts compile
         run: |
@@ -87,6 +93,9 @@ jobs:
             scripts/generate_results_index.py \
             scripts/validate_benchmark_suite.py \
             scripts/collect_run_metadata.py \
+            scripts/benchmark_gpu_public_api.py \
+            scripts/gpu_public_api_ops.py \
+            scripts/format_gpu_public_api_results.py \
             scripts/public_api_candidates.py \
             scripts/format_results.py
 
@@ -100,6 +109,11 @@ jobs:
         run: |
           bash tests/test_public_api_selection.sh
           uv run python -m unittest tests.test_public_api_candidates
+
+      - name: Validate GPU public API fixtures and timing contracts without a GPU
+        run: |
+          bash -n scripts/run_gpu_public_api.sh
+          uv run python -m unittest tests.test_gpu_public_api
 
       - name: Cargo check
         run: cargo check --all-targets
