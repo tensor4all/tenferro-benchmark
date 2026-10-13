@@ -2,7 +2,8 @@ use super::{Case, Result};
 use tenferro_ad::{EagerSession, EagerTensor};
 use tenferro_runtime::TensorSessionOpsExt;
 use tenferro_tensor::{
-    BackendSession, DType, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor, TensorRead,
+    BackendSession, DType, DotGeneralConfig, GatherConfig, PadConfig, ScatterConfig, SliceConfig,
+    Tensor, TensorRead,
 };
 
 fn pad() -> PadConfig {
@@ -30,6 +31,7 @@ fn scatter() -> ScatterConfig {
 #[derive(Default)]
 pub(super) struct Arguments<'a> {
     pub(super) reads: Option<(TensorRead<'a>, TensorRead<'a>)>,
+    pub(super) dot: Option<DotGeneralConfig>,
     pad: Option<PadConfig>,
     slice: Option<SliceConfig>,
     scatter: Option<ScatterConfig>,
@@ -39,6 +41,14 @@ pub(super) struct Arguments<'a> {
 pub(super) fn prepare(case: &Case) -> Arguments<'static> {
     let mut args = Arguments::default();
     match case.op.as_str() {
+        "dot_general_axes" | "dot_general_conj" => {
+            args.dot = Some(DotGeneralConfig {
+                lhs_contracting_dims: case.lhs_contracting_dims.clone().into(),
+                rhs_contracting_dims: case.rhs_contracting_dims.clone().into(),
+                lhs_batch_dims: case.lhs_batch_dims.clone().into(),
+                rhs_batch_dims: case.rhs_batch_dims.clone().into(),
+            })
+        }
         "pad" => args.pad = Some(pad()),
         "slice" => args.slice = Some(slice(&case.inputs[0].shape)),
         "scatter" => args.scatter = Some(scatter()),
@@ -61,7 +71,10 @@ pub(super) fn prepare(case: &Case) -> Arguments<'static> {
 
 pub(super) fn prepare_direct<'a>(case: &Case, inputs: &'a [Tensor]) -> Arguments<'a> {
     let mut args = prepare(case);
-    if matches!(case.op.as_str(), "vdot_read" | "norm_squared_read") {
+    if matches!(
+        case.op.as_str(),
+        "vdot_read" | "norm_squared_read" | "dot_general_axes" | "dot_general_conj"
+    ) {
         args.reads = Some((
             TensorRead::from_tensor(&inputs[0]),
             TensorRead::from_tensor(inputs.get(1).unwrap_or(&inputs[0])),
@@ -155,6 +168,6 @@ pub(super) fn eager(
                 DType::F32
             },
         )?,
-        _ => return super::linalg::eager(case, inputs, s),
+        _ => return super::linalg::eager(case, inputs, s, args),
     })
 }

@@ -12,6 +12,15 @@ pub(super) fn direct(
 ) -> Result<Tensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
+        "dot_general_axes" | "dot_general_conj" => {
+            let (a, b) = args.reads.ok_or("missing prepared dot reads")?;
+            let config = args.dot.ok_or("missing prepared dot configuration")?;
+            if case.op == "dot_general_conj" {
+                s.dot_general_with_conj_read(a, b, &config, case.lhs_conj, case.rhs_conj)?
+            } else {
+                s.dot_general_read(a, b, &config)?
+            }
+        }
         "tensordot" => x.tensordot(&inputs[1], TensorDotAxes::Count(1), s)?,
         "vdot_read" => {
             let (a, b) = args.reads.ok_or("missing prepared read operands")?;
@@ -36,9 +45,22 @@ pub(super) fn eager(
     case: &Case,
     inputs: &[EagerTensor],
     s: &mut EagerSession<'_>,
+    args: super::structural::Arguments<'_>,
 ) -> Result<EagerTensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
+        "dot_general_axes" => s.dot_general(
+            x,
+            &inputs[1],
+            args.dot.ok_or("missing prepared dot configuration")?,
+        )?,
+        "dot_general_conj" => s.dot_general_with_conj(
+            x,
+            &inputs[1],
+            args.dot.ok_or("missing prepared dot configuration")?,
+            case.lhs_conj,
+            case.rhs_conj,
+        )?,
         "tensordot" => s.tensordot(x, &inputs[1], TensorDotAxes::Count(1))?,
         "lstsq" => s.lstsq(x, &inputs[1])?,
         "cholesky" => s.cholesky(x)?,

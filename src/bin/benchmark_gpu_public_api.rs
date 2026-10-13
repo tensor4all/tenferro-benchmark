@@ -63,6 +63,18 @@ struct Case {
     #[serde(default)]
     beta: Option<f64>,
     #[serde(default)]
+    lhs_contracting_dims: Vec<usize>,
+    #[serde(default)]
+    rhs_contracting_dims: Vec<usize>,
+    #[serde(default)]
+    lhs_batch_dims: Vec<usize>,
+    #[serde(default)]
+    rhs_batch_dims: Vec<usize>,
+    #[serde(default)]
+    lhs_conj: bool,
+    #[serde(default)]
+    rhs_conj: bool,
+    #[serde(default)]
     excluded: HashMap<String, String>,
     #[serde(default)]
     unavailable: HashMap<String, String>,
@@ -433,6 +445,10 @@ fn main() -> Result<()> {
             "device_ordinal":device,"session_policy":"one entered session for initialization, calibration and samples",
             "setup_policy":"fixtures, H2D, handles, plan initialization and output validation outside timing",
             "synchronization":"CudaRuntime::synchronize; no D2H in timed region"});
+        if matches!(case.op.as_str(), "dot_general_axes" | "dot_general_conj") {
+            row["dot_configuration"] = json!({"lhs_contracting_dims":case.lhs_contracting_dims,"rhs_contracting_dims":case.rhs_contracting_dims,"lhs_batch_dims":case.lhs_batch_dims,"rhs_batch_dims":case.rhs_batch_dims,"lhs_conj":case.lhs_conj,"rhs_conj":case.rhs_conj});
+            row["batch_output_policy"] = json!("native batch-last; reference axis normalization only during untimed CPU verification");
+        }
         if !case.read_op.is_empty() {
             row["input_layout_policy"] = json!("transposed borrowed TensorRead over prepared CUDA storage; view and read-handle construction outside timing");
         }

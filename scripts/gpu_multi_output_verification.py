@@ -56,6 +56,8 @@ def verify_outputs(actual, expected, case, inputs, verify_one):
 
 
 def normalized_outputs(actual, case, backend):
+    if case["op"] == "dot_general_axes" and case.get("variant") == "batch" and backend in {"pytorch-cuda","jax-cuda","jax-cuda-jit"}:
+        return [leaves(actual)[0].transpose(1,2,0)]
     values = leaves(actual)
     if case["op"] == "householder_qr" and backend.startswith("jax"):
         # JAX raw QR stores native reflector rows; inspect the logical packed

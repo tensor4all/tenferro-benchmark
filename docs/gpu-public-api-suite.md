@@ -382,3 +382,20 @@ confirmed all destinations keep their buffer addresses through restoration
 and updates, and validated completion against native CUDA context waits.
 Ref.addupdate has no scaled-alpha argument; pre-scaling its inputs would
 change the timed operation and is not used for other coefficient cases.
+
+Generalized dot adds non-leading batch axes (`lhs[m,b,k]`, `rhs[k,n,b]`)
+and multiple contraction axes (`lhs[m,k,l]`, `rhs[l,n,k]`). Direct borrowed
+read handles and DotGeneralConfig values are prepared before every batch;
+eager uses its public owned dot-general API with prepared configurations.
+The native tenferro batch output is `[m,n,b]`, while native PyTorch `bmm`
+and JAX `lax.dot_general` return `[b,m,n]`. Prepare PyTorch input permutation
+views before timing; preserve every backend's output layout. Normalize batch
+axes only on downloaded CPU arrays for numerical verification, with a view
+and no timed output transpose/copy. No einsum planning is added to these arms.
+
+Complex vector cases distinguish no conjugation, lhs-only, rhs-only, and
+both-conjugated public dot-general calls. Independent real/imaginary fixtures
+make lhs-only and rhs-only results observably different. Native dot and vdot
+are single-call references for the first three contracts (swap arguments for
+rhs-only scalar vdot). Both-conjugated references remain unsupported because
+an explicit conjugation composition would change the operation.
