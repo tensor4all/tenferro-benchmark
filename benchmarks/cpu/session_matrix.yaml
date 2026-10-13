@@ -98,3 +98,9 @@ problems:
   - stream_f64_mixed_len32_einsum_alloc
   - stream_f64_fresh_len32_einsum_alloc
   - stream_f64_strides_len32_einsum_alloc
+  - eager_stream_f64_fixed_len128_einsum3_alloc
+  - eager_stream_f64_mixed_len128_einsum3_alloc
+  - eager_stream_f64_fresh_len128_einsum3_alloc
+  - eager_stream_f64_strides_len128_einsum3_alloc
+  - eager_stream_f64_thrash_len128_einsum3_alloc
+  - eager_stream_f64_cold_len128_einsum3_alloc

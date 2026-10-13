@@ -38,6 +38,10 @@ class ManifestTest(unittest.TestCase):
             self.assertIn(case_id, quick)
         for stream in ("fixed", "mixed", "fresh", "strides"):
             self.assertIn(f"stream_f64_{stream}_len32_einsum_alloc", quick)
+            self.assertIn(f"eager_stream_f64_{stream}_len128_einsum3_alloc", quick)
+        for stream in ("thrash", "cold"):
+            self.assertNotIn(f"eager_stream_f64_{stream}_len128_einsum3_alloc", quick)
+            self.assertIn(f"eager_stream_f64_{stream}_len128_einsum3_alloc", manifest["coverage"]["full"])
         cases = suite.load_cases()
         # The batched op and the 1024-call loop are different workloads.
         self.assertEqual(cases[F2[0]]["route"]["workload_shape"], "one-batched-op")
@@ -98,6 +102,29 @@ class CaseStatusTest(unittest.TestCase):
 
 
 class CollectTest(unittest.TestCase):
+    def test_cache_observations_are_separate_processes_without_latency_samples(self):
+        case_id = 'eager_stream_f64_fixed_len128_einsum3_alloc'
+        snapshots = [{'before':dict(hits=0,misses=0,evictions=0,entries=0,retained_bytes=0),
+                      'after':dict(hits=3,misses=1,evictions=0,entries=1,retained_bytes=128)}]*3
+        def fake(command):
+            if command[command.index('--provider')+1] == 'faer':
+                return dict(correctness='unsupported', samples_ns=[], command_wall_seconds=0)
+            if '--mode' in command:
+                return dict(correctness='passed', samples_ns=[], cache_diagnostics=snapshots,
+                            command_wall_seconds=0)
+            return dict(correctness='passed', samples_ns=[2_000_000]*3,
+                        operations_per_sample=128, command_wall_seconds=0)
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {'BENCH_INSTANCE':case_id,'BENCH_EFFORT':'scan'}), patch.object(suite,'run_one',side_effect=fake) as run:
+            self.assertFalse(suite.collect(Path('/fake'),Path(tmp),1))
+            self.assertEqual(run.call_count,3)
+            diagnostics = [json.loads(line) for line in (Path(tmp)/'cache_diagnostics_t1.jsonl').read_text().splitlines()]
+            self.assertEqual(len(diagnostics),1)
+            self.assertEqual(diagnostics[0]['samples_ns'],[])
+            status=json.loads((Path(tmp)/'case_status_t1.json').read_text())
+            self.assertEqual(len(status['executed']),1)
+            self.assertEqual(len(status['unsupported']),1)
+            self.assertFalse(status['complete'])
+
     def run_collect(self, script, ids):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)

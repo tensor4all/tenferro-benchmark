@@ -7,12 +7,14 @@ import os
 from pathlib import Path
 import statistics
 import subprocess
+import time
 
 import yaml
 
 from benchmark_layout import safe_target_profile
 import bench_selection
 import case_status as cs
+from benchmark_wall import record_report_wall
 from suite_instances import resolve_suite_instance_ids
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +28,7 @@ SUITE_ID = "cpu/small_work"
 TIER_ROUTES = {
     "concrete-shared": ("concrete", "allocating", "owned", "shared-session", "steady_state"),
     "concrete-fresh": ("concrete", "allocating", "owned", "session-per-call", "session_entry_diagnostic"),
+    "concrete-scoped": ("concrete", "allocating", "owned", "execution-scope+session-per-call", "session_entry_diagnostic"),
     "borrowed-shared": ("concrete", "allocating", "view", "shared-session", "steady_state"),
     "borrowed-fresh": ("concrete", "allocating", "view", "session-per-call", "session_entry_diagnostic"),
     "prepared-setup": ("concrete-prepared", "none", "owned", "shared-session", "preparation_diagnostic"),
@@ -78,6 +81,7 @@ def selected_cases():
 
 
 def collect(binary, output, threads, mode="measure"):
+    collection_started = time.monotonic()
     suite, all_cases, manifest, coverage, expected, selected, raw = plan()
     cases = [all_cases[i] for i in selected]
     if mode == "allocations":
@@ -92,7 +96,7 @@ def collect(binary, output, threads, mode="measure"):
     rows = []
     with output.open("w") as fh:
         for case in cases:
-            command = [str(binary), "--case", case["id"]]
+            command = [str(binary), "--case", case["id"], "--threads", str(threads)]
             if mode != "measure":
                 command += ["--mode", mode]
             for key in ("operation", "dtype", "api_tier", "workflow", "layout"):
@@ -105,10 +109,11 @@ def collect(binary, output, threads, mode="measure"):
                         "--calls", str(case["calls_per_workflow"]),
                         "--warmups", str(config["warmups"]), "--samples", str(config["runs"]),
                         "--target-ns", str(int(config["min_runtime_ms"] * 1_000_000))]
+            started = time.monotonic()
             result = subprocess.run(command, text=True, capture_output=True, env=env)
             row = dict(case, threads=threads, case_id=case["id"], samples=[],
                        route=route_for(case), case_key=cs.case_key(case["id"], threads),
-                       effort=effort["effort"])
+                       effort=effort["effort"], command_wall_seconds=time.monotonic()-started)
             if result.returncode:
                 row.update(correctness_status="failed", error=result.stderr.strip())
             else:
@@ -124,6 +129,9 @@ def collect(binary, output, threads, mode="measure"):
             fh.flush()
             rows.append(row)
             print(f"{case['id']}: {row['correctness_status']}", flush=True)
+    (output.parent / f"wall_{mode}_t{threads}.json").write_text(json.dumps({
+        "collection_total_seconds": time.monotonic()-collection_started,
+        "case_process_seconds": sum(r['command_wall_seconds'] for r in rows)}, indent=2)+"\n")
     if mode != "measure":
         return failed
     status = cs.build_case_status(
@@ -184,7 +192,7 @@ def report(run_dir, target):
     passed = sum(r["correctness_status"] == "passed" for r in rows)
     lines += [f"Numerical checks: **{passed}/{len(rows)} recorded rows passed** (case × thread count).", ""]
     lines += ["## Timing", "",
-              "Sequential release runs; warmups, then calibration from at least 1024 operations toward the declared batch duration (2 ms by default; memory bounded for non-AD cases), then the measured batches of the recorded effort (standard: 3 warmups and 15 batches; scan: a low-repetition screen that only marks suspects). "
+              "Sequential release runs; explicit initialization and warmups, then calibration toward the declared batch duration (2 ms by default), then the measured batches of the recorded effort (standard: 3 warmups and 15 batches; scan: a low-repetition screen that only marks suspects). Legacy single-call routes start calibration at 1024 workflows; matched non-AD and dependent-chain routes start at 16 and bound retained memory. "
               "Each batch uses one wall-clock interval; all outputs are retained until it stops. Statistics divide batch time by iterations. "
               "Median and inclusive IQR are in nanoseconds (ns); CoV is sample standard deviation / mean. "
               "NOISY means CoV > 10%, a descriptive label only. No noisy rows are excluded.", "",
@@ -192,7 +200,7 @@ def report(run_dir, target):
               "The separate ns/op column divides the chain median by its operation count, not an independently measured call. "
               "Setup rows measure preparation only, not execution.", "",
               "Inputs and backend construction, independent numerical checks and AD backward checks are outside timing. "
-              "Returned outputs/plans are retained until after each batch interval; "
+              "Returned outputs/plans and every dependent-chain intermediate are retained until after each batch interval; retention containers are prepared before the clock. "
               "value downloads/checks are outside. Eager AD rows measure forward execution/recording, not backward.", "",
               "| Case ID | Operation | API route | Route (path / output / repr / session) | Dtype | Shape | Layout | Workflow | Threads | Provider | Operations/batch | Median batch ms | Median workflow ns | IQR ns | CoV | ns/op (chain only) | Status |",
               "|---|---|---|---|---|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|---|"]
@@ -231,7 +239,7 @@ def report(run_dir, target):
     allocations = [json.loads(line) for path in sorted(run_dir.glob("allocations_t*.jsonl")) for line in path.read_text().splitlines()]
     if allocations:
         lines += ["", "## Separate allocation diagnostics", "",
-                  "Instrumented executable is built separately after latency collection. Calling-thread Rust allocator requests only; excludes foreign BLAS and worker-thread allocations. Realloc counts its requested new size, not net retained bytes. Output destruction and instrumentation setup are excluded. Identical result packaging is included. No allocation-instrumented run contributes latency samples.", "",
+                  "Instrumented executable is built separately after latency collection. Calling-thread Rust allocator requests only; excludes foreign BLAS and worker-thread allocations. Realloc counts its requested new size, not net retained bytes. Output destruction and instrumentation setup are excluded. Helper references and multi-output retention use stack storage. No allocation-instrumented run contributes latency samples.", "",
                   "| Corresponding case ID | Threads | Median allocation requests/op | Median requested bytes/op | Status |",
                   "|---|---:|---:|---:|---|"]
         for row in allocations:
@@ -259,6 +267,9 @@ def report(run_dir, target):
     for row in rows:
         if row.get("error"):
             lines += ["", f"### FAILED: {row['case_id']} ({row['threads']} threads)", "```", row["error"], "```"]
+    record_report_wall(run_dir)
+    for path in sorted(run_dir.glob('wall*.json')):
+        lines += ['', f'Wall observations `{path.name}`:', '```json', path.read_text().rstrip(), '```']
     text = "\n".join(lines) + "\n"
     (run_dir / "report.md").write_text(text)
     latest = ROOT / "result" / safe_target_profile(target) / "cpu/small_work.md"

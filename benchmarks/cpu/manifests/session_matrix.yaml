@@ -2,7 +2,7 @@
 # quick is the routine coverage choice (F2 reproducer plus controls);
 # full is the selectable expanded matrix. Measurement effort (scan/standard/
 # confirm) is chosen independently; see docs/regression-detection.md.
-manifest_version: 3
+manifest_version: 4
 suite_id: cpu/session_matrix
 source: data/instances/session_matrix.json
 generated_by: scripts/generate_session_matrix_cases.py
@@ -37,6 +37,10 @@ coverage:
   - stream_f64_mixed_len32_einsum_alloc
   - stream_f64_fresh_len32_einsum_alloc
   - stream_f64_strides_len32_einsum_alloc
+  - eager_stream_f64_fixed_len128_einsum3_alloc
+  - eager_stream_f64_mixed_len128_einsum3_alloc
+  - eager_stream_f64_fresh_len128_einsum3_alloc
+  - eager_stream_f64_strides_len128_einsum3_alloc
   full:
   - matmul_n2_count1024
   - matmul_n4_count1024
@@ -106,6 +110,12 @@ coverage:
   - stream_f64_mixed_len32_einsum_alloc
   - stream_f64_fresh_len32_einsum_alloc
   - stream_f64_strides_len32_einsum_alloc
+  - eager_stream_f64_fixed_len128_einsum3_alloc
+  - eager_stream_f64_mixed_len128_einsum3_alloc
+  - eager_stream_f64_fresh_len128_einsum3_alloc
+  - eager_stream_f64_strides_len128_einsum3_alloc
+  - eager_stream_f64_thrash_len128_einsum3_alloc
+  - eager_stream_f64_cold_len128_einsum3_alloc
 route_contract_pairs:
 - bdot_c64_b1024_m4n4k4_direct_auto
 - bdot_c64_b1024_m4n4k4_strided_auto

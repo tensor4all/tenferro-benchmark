@@ -2394,5 +2394,161 @@
       "workload_shape": "key-stream:strides"
     },
     "intent": "Contraction-key stream (tenferro-benchmark #107): one sample is the whole 32-call sequence, so fixed/mixed/fresh keys and equal-shape/different-stride calls expose repeated planning or cache misses; planning is inside the timer."
+  },
+  {
+    "id": "eager_stream_f64_fixed_len128_einsum3_alloc",
+    "workload": "eager_stream",
+    "operation": "einsum3",
+    "dtype": "f64",
+    "stream": "fixed",
+    "length": 128,
+    "keys": 4,
+    "providers": [
+      "blas",
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "eager-einsum",
+      "entrypoint": "EagerSessionEinsumExt::einsum_subscripts",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:fixed"
+    },
+    "intent": "#107: whole 128-call three-operand public einsum sequence, exact key order recorded; planning/cache lookup inside; separate-process public eager-extension cache counters; no build-count inference"
+  },
+  {
+    "id": "eager_stream_f64_mixed_len128_einsum3_alloc",
+    "workload": "eager_stream",
+    "operation": "einsum3",
+    "dtype": "f64",
+    "stream": "mixed",
+    "length": 128,
+    "keys": 4,
+    "providers": [
+      "blas",
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "eager-einsum",
+      "entrypoint": "EagerSessionEinsumExt::einsum_subscripts",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:mixed"
+    },
+    "intent": "#107: whole 128-call three-operand public einsum sequence, exact key order recorded; planning/cache lookup inside; separate-process public eager-extension cache counters; no build-count inference"
+  },
+  {
+    "id": "eager_stream_f64_fresh_len128_einsum3_alloc",
+    "workload": "eager_stream",
+    "operation": "einsum3",
+    "dtype": "f64",
+    "stream": "fresh",
+    "length": 128,
+    "keys": 4,
+    "providers": [
+      "blas",
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "eager-einsum",
+      "entrypoint": "EagerSessionEinsumExt::einsum_subscripts",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:fresh"
+    },
+    "intent": "#107: whole 128-call three-operand public einsum sequence, exact key order recorded; planning/cache lookup inside; separate-process public eager-extension cache counters; no build-count inference"
+  },
+  {
+    "id": "eager_stream_f64_strides_len128_einsum3_alloc",
+    "workload": "eager_stream",
+    "operation": "einsum3",
+    "dtype": "f64",
+    "stream": "strides",
+    "length": 128,
+    "keys": 4,
+    "providers": [
+      "blas",
+      "faer"
+    ],
+    "coverage": "quick",
+    "pair": null,
+    "route": {
+      "execution_path": "eager-einsum",
+      "entrypoint": "EagerSessionEinsumExt::einsum_subscripts",
+      "output": "allocating",
+      "representation": "view",
+      "layout": "direct-transposed",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:strides"
+    },
+    "intent": "#107: whole 128-call three-operand public einsum sequence, exact key order recorded; planning/cache lookup inside; separate-process public eager-extension cache counters; no build-count inference"
+  },
+  {
+    "id": "eager_stream_f64_thrash_len128_einsum3_alloc",
+    "workload": "eager_stream",
+    "operation": "einsum3",
+    "dtype": "f64",
+    "stream": "thrash",
+    "length": 128,
+    "keys": 4,
+    "providers": [
+      "blas",
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": null,
+    "route": {
+      "execution_path": "eager-einsum",
+      "entrypoint": "EagerSessionEinsumExt::einsum_subscripts",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:thrash"
+    },
+    "intent": "#107: whole 128-call three-operand public einsum sequence, exact key order recorded; planning/cache lookup inside; separate-process public eager-extension cache counters; no build-count inference"
+  },
+  {
+    "id": "eager_stream_f64_cold_len128_einsum3_alloc",
+    "workload": "eager_stream",
+    "operation": "einsum3",
+    "dtype": "f64",
+    "stream": "cold",
+    "length": 128,
+    "keys": 4,
+    "providers": [
+      "blas",
+      "faer"
+    ],
+    "coverage": "full",
+    "pair": null,
+    "route": {
+      "execution_path": "eager-einsum",
+      "entrypoint": "EagerSessionEinsumExt::einsum_subscripts",
+      "output": "allocating",
+      "representation": "owned",
+      "layout": "direct",
+      "session_boundary": "shared-session",
+      "policy": "auto",
+      "workload_shape": "key-stream:cold"
+    },
+    "intent": "#107: whole 128-call three-operand public einsum sequence, exact key order recorded; planning/cache lookup inside; separate-process public eager-extension cache counters; no build-count inference"
   }
 ]

@@ -4,6 +4,8 @@
 mod batch_route;
 #[path = "../bench_support/shape_stream.rs"]
 mod shape_stream;
+#[path = "../bench_support/eager_shape_stream.rs"]
+mod eager_shape_stream;
 
 use std::{error::Error, hint::black_box, time::Instant};
 use tenferro_cpu::CpuBackend;
@@ -48,6 +50,7 @@ fn run_batched_case(args: &[String]) -> Result<()> {
             .unwrap_or(default.into())
     };
     let case_id = get("--case", "");
+    if case_id.starts_with("eager_stream_") { return eager_shape_stream::run(args); }
     let threads: usize = get("--threads", "1").parse()?;
     let warmups: usize = get("--warmups", "3").parse()?;
     let samples: usize = get("--samples", "15").parse()?;

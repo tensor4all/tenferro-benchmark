@@ -8,7 +8,9 @@ match compact cases; both APIs receive the non-contiguous view. Default
 QR/SVD options and default Auto einsum strategy are identical.
 
 Each workload has direct/eager shared-session and direct/eager per-call
-session routes. The per-call routes are explicitly session-entry diagnostics.
+session routes. Issue #107 adds six concrete execution-scope/per-call-session
+controls for einsum, QR and solve at n=2 and n=16. Scope admission is untimed;
+per-operation session entry is timed. The per-call routes are explicitly session-entry diagnostics.
 Eager values are untracked, under no_grad, in a fresh process that never enters
 capture_trace. Validation checks input/output tracks_grad and checks each
 route independently. The runner does not query private capture state.
@@ -34,14 +36,16 @@ devcontainer exec --workspace-folder . bash -lc '
 
 To collect just these comparisons, set BENCH_INSTANCE to a comma-separated
 list of the `nonad_` case IDs in `data/instances/small_work.json`, with full
-coverage. Quick adds only the twenty n=2 routes to the existing steady-state
-selection. Full coverage and measurement effort remain independent.
+coverage. Quick includes 38 non-AD controls: the twenty n=2 routes, twelve
+n=16 einsum/QR/solve routes, and six execution-scope controls. Full coverage
+and measurement effort remain independent.
 
 After latency collection the same runner builds a separate executable under
 `${CARGO_TARGET_DIR}-allocations` with `allocation-diagnostics` and runs seven
 allocation observations per matching case/thread setting. That executable
 refuses latency mode. Calling-thread Rust allocator requests include result
-packaging and realloc's requested new size; they exclude foreign BLAS and
+allocation intrinsic to returned tensors and realloc's requested new size;
+reference arrays and multi-output retention use stack storage. They exclude foreign BLAS and
 worker-thread allocation, deallocation, validation, and result destruction.
 Counts are not total process allocation or retained memory.
 

@@ -17,10 +17,10 @@ class SmallWorkSuiteTest(unittest.TestCase):
         with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):
             cases, config = suite.selected_cases()
         self.assertGreater(len(cases), 0)
-        self.assertLess(len(cases), 286)
+        self.assertLess(len(cases), 292)
         self.assertFalse(any(c["api_tier"].endswith(("-fresh", "-setup")) for c in cases if not c["id"].startswith("nonad_")))
         with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_INCLUDE_SETUP_DIAGNOSTICS": "1"}):
-            self.assertEqual(len(suite.selected_cases()[0]), 286)
+            self.assertEqual(len(suite.selected_cases()[0]), 292)
         self.assertEqual(len({c['id'] for c in cases}), len(cases))
         self.assertEqual(config['runs'], 15)
         with patch.dict(os.environ, {"BENCH_INSTANCE": cases[0]['id']}):
@@ -41,9 +41,9 @@ class SmallWorkSuiteTest(unittest.TestCase):
             quick = suite.selected_cases()[0]
         self.assertEqual([c["id"] for c in quick if not c["id"].startswith("nonad_")], [c["id"] for c in every if not c["id"].startswith("nonad_") and not old_diagnostic(c)])
         latency = [c for c in quick if c["id"].startswith("nonad_")]
-        self.assertEqual(len(latency), 20)
-        self.assertEqual({c["api_tier"] for c in latency}, {"concrete-fresh", "concrete-shared", "eager-no-ad", "eager-shared"})
-        self.assertEqual({tuple(c["shape"]) for c in latency}, {(2, 2)})
+        self.assertEqual(len(latency), 38)
+        self.assertEqual({c["api_tier"] for c in latency}, {"concrete-fresh", "concrete-shared", "concrete-scoped", "eager-no-ad", "eager-shared"})
+        self.assertEqual({tuple(c["shape"]) for c in latency}, {(2, 2), (16, 16)})
         for case in every:
             route = suite.route_for(case)
             self.assertIn(route["measurement_scope"], {"steady_state", "session_entry_diagnostic",

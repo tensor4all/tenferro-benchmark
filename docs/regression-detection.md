@@ -163,3 +163,29 @@ remain **unmeasured**, not validated. The CUDA and WebGPU runners were adapted
 to the session-side canonicalization and borrowed-session eager einsum, and
 `cargo check --features cuda --bins` / `--features webgpu --bins` pass against
 the repair (compile-only; no CUDA device was used).
+
+## Public eager shape streams (#107)
+
+`eager_stream_*` uses one borrowed, untracked public eager session and 128
+three-operand einsum calls per sample. The sample is the complete ordered
+sequence. Fixtures, lazy views, bindings and output-retention containers are
+prepared before timing; ordinary public planning/cache lookup remains timed.
+The raw `sequence_order` records every pass, including explicit initialization.
+Quick selects fixed keys, four-key revisits, globally fresh keys, and equal
+shapes with alternating strides. Full adds a one-entry capacity-thrashing
+control and cache-cleared sequences. Clearing the eager extension store is
+untimed and does not bypass lookup or retention.
+
+Cache diagnostics run in separate processes with no latency samples. Public
+extension-store counters report hits, misses, evictions, entries and estimated
+retained bytes; plan builds are unavailable and misses are not substituted for
+builds. Provider GEMM-analysis/indexed-plan and runtime prepared caches are
+outside that counter scope. Reports list unsupported providers explicitly.
+
+`run_all.sh` now defaults the public-API follow-up to `quick`.
+`PUBLICATION_GATE_PROFILE=full` preserves full publication collection.
+`run_cpu_session.sh` and `run_small_work.sh` record per-case/process and build,
+collection, diagnostic and report wall observations. Command totals include
+setup and report generation, excluding only the final report file writes.
+`BENCH_COMMAND_BUDGET_SECONDS` enables a descriptive over-budget label; it
+never changes functional success or constitutes a performance regression gate.
