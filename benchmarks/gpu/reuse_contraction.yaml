@@ -110,3 +110,31 @@ problems:
     - dot_general_read_into_c64_s256
     - dot_general_read_into_accum_c64_s256
     - dot_general_read_into_accum_cached_c64_s256
+    - add_strided_read_f32_n1024
+    - add_strided_read_f64_n1024
+    - mul_strided_read_f32_n1024
+    - mul_strided_read_f64_n1024
+    - neg_strided_read_f32_n1024
+    - neg_strided_read_f64_n1024
+    - exp_strided_read_f32_n1024
+    - exp_strided_read_f64_n1024
+    - tanh_strided_read_f32_n1024
+    - tanh_strided_read_f64_n1024
+    - reduce_sum_strided_read_f32_n1024
+    - reduce_sum_strided_read_f64_n1024
+    - conj_strided_read_c32_n1024
+    - conj_strided_read_c64_n1024
+    - add_strided_read_f32_n1048576
+    - add_strided_read_f64_n1048576
+    - mul_strided_read_f32_n1048576
+    - mul_strided_read_f64_n1048576
+    - neg_strided_read_f32_n1048576
+    - neg_strided_read_f64_n1048576
+    - exp_strided_read_f32_n1048576
+    - exp_strided_read_f64_n1048576
+    - tanh_strided_read_f32_n1048576
+    - tanh_strided_read_f64_n1048576
+    - reduce_sum_strided_read_f32_n1048576
+    - reduce_sum_strided_read_f64_n1048576
+    - conj_strided_read_c32_n1048576
+    - conj_strided_read_c64_n1048576

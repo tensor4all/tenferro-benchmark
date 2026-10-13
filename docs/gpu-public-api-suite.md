@@ -311,3 +311,17 @@ CUDA's cached accumulation wrapper currently delegates to ordinary
 accumulation and ignores the session-local slot; these rows identify public
 routes and do not assert distinct cache behavior or a cache speedup. Cache
 miss streams and instrumented counters remain the separate #107 workload.
+
+The `reuse_contraction` suite includes distinct transposed borrowed-read cases
+for `add_read`, `mul_read`, `neg_read`, `exp_read`, `tanh_read`,
+`reduce_sum_read` (logical axis 1), and materialized `conj_read`.
+Rectangular logical shapes 16x64 and 512x2048 prevent swapping logical axes
+from passing unnoticed. Each fixture stores the transposed physical matrix;
+tenferro creates a transposed `TensorView` on its CUDA allocation and prepares
+each move-only `TensorRead` before the clock. PyTorch creates its native
+transposed view before timing. Both receive the same logical values and retain
+their native layouts; no input materialization is charged to just one arm.
+JAX prepares the same logical values outside compilation/timing and compares
+the operation result, without claiming an equivalent public strided-view
+contract. Eager owned tensors are not substitutes for borrowed reads and stay
+unsupported. These cases do not alias other read operations or layouts.

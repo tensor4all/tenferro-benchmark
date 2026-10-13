@@ -25,7 +25,7 @@ families:
     measured_contracts: Full mean/sum-of-squares rows are in the latest GPU0 report; timing-excluded rows do not count as measured coverage.
     deferred:
       scale_real_scale_complex: Public scalar setup must be separated before standard timing; ordinary tensor-tensor multiplication is a different case.
-      noncontiguous_reads: Require separate strided TensorRead fixtures; no blanket aliases.
+      other_noncontiguous_reads: Transposed borrowed add/mul/neg/exp/tanh/conj/reduce_sum have selected independent cases under reuse_contraction; other read operations and layouts remain separate and are not aliases.
   neural:
     cases: data/instances/gpu_nn.json
     suite: benchmarks/gpu/nn.yaml
@@ -78,6 +78,7 @@ families:
     routes: [TensorElementwise, TensorTensordotExt, EagerSessionEinsumExt, BackendSession]
     contracts: Preallocated output reuse is distinct from allocation-returning operations; JAX donation is not an equivalent arm.
     selected_contracts:
+      strided_reads: Transposed rectangular 16x64/512x2048 borrowed add/mul/neg/exp/tanh/reduce_sum F32/F64 and materialized conj C32/C64. PyTorch uses a prepared transpose view; JAX compares the same logical values with native input representation, not a claimed strided-view contract.
       axpby_read_into_accum: Compact F32/F64/C32/C64; y <- 0.5*x + y; destinations restored from a prepared GPU seed before every sample, including calibration and zero-warmup initialization. PyTorch Tensor.add_ is the matching single-call reference.
       dot_general_output_reuse: Square 16/256 F32/F64/C32/C64; overwrite and alpha=0.5/beta=1 accumulation, plus public SessionCachedDot accumulation with slot Some(0). PyTorch addmm with out is the matched reference. CUDA cached accumulation delegates to the ordinary accumulation hook; no separate cache-speed claim.
     deferred:

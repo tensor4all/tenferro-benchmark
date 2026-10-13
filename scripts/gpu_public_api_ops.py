@@ -4,6 +4,9 @@ from scipy import special
 
 
 def fixtures(case, dtype):
+    if case.get("read_op"):
+        logical, expected = fixtures(dict(case, op=case["read_op"], read_op=""), dtype)
+        return [value.T.copy() for value in logical], expected
     op, n = case["op"], case["n"]
     op = op.removesuffix("_into").removesuffix("_read")
     shape = case.get("shape", [n])
@@ -188,6 +191,9 @@ def fixtures(case, dtype):
 
 
 def torch_operation(torch, case, inputs, *, verify_only=False):
+    if case.get("read_op"):
+        return torch_operation(torch, dict(case, op=case["read_op"], read_op=""),
+                               [value.transpose(0, 1) for value in inputs], verify_only=verify_only)
     x, op = inputs[0], case["op"]
     if op.startswith("dot_general_read_into"):
         count = 1 if verify_only else max(1, min(4096, (256 << 20) // (inputs[2].numel()*inputs[2].element_size())))
@@ -313,6 +319,8 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
 
 
 def jax_operation(jax, jnp, case):
+    if case.get("read_op"):
+        return jax_operation(jax, jnp, dict(case, op=case["read_op"], read_op=""))
     op = case["op"]
     unary = {"neg": jnp.negative, "abs": jnp.abs, "sign": jnp.sign, "conj": jnp.conj,
              "exp": jnp.exp, "expm1": jnp.expm1, "log": jnp.log, "log1p": jnp.log1p,
@@ -408,6 +416,8 @@ def jax_operation(jax, jnp, case):
 
 def prepare_jax_inputs(case, inputs):
     """Adapt vector start indices to JAX's scalar-index API before any clock."""
+    if case.get("read_op"):
+        return [value.T for value in inputs]
     if case["op"] in {"householder_r", "householder_q_columns"}:
         import jax.numpy as jnp
         h, tau = jnp.linalg.qr(inputs[0], mode="raw")
