@@ -11,6 +11,39 @@ from benchmark_gpu_public_api import verify
 
 
 class MultiOutputVerification(unittest.TestCase):
+    def test_general_dot_batch_order_and_multiple_axes(self):
+        from gpu_multi_output_verification import normalized_outputs
+        case = dict(op="dot_general_axes", variant="batch", n=60,
+                    shape=[4,3,5], rhs_shape=[5,6,3], equation="mbk,knb->mnb")
+        inputs, expected = fixtures(case, np.complex128)
+        self.assertEqual(expected.shape, (4,6,3))
+        for batch in range(3):
+            np.testing.assert_allclose(inputs[0][:,batch,:] @ inputs[1][:,:,batch], expected[:,:,batch])
+        native = expected.transpose(2,0,1)
+        for backend in ("pytorch-cuda","jax-cuda","jax-cuda-jit"):
+            logical = normalized_outputs([native], case, backend)[0]
+            self.assertTrue(np.shares_memory(logical,native))
+            np.testing.assert_array_equal(logical,expected)
+        case.update(variant="multiple", n=24, shape=[4,2,3], rhs_shape=[3,6,2], equation="mkl,lnk->mn")
+        inputs, expected = fixtures(case,np.float64)
+        for i in range(4):
+            for j in range(6):
+                self.assertAlmostEqual(expected[i,j],sum(inputs[0][i,k,l]*inputs[1][l,j,k] for k in range(2) for l in range(3)))
+
+    def test_conjugation_flags_have_distinct_complex_results(self):
+        case = dict(op="dot_general_conj", n=1024, shape=[1024], rhs_shape=[1024], equation="i,i->")
+        values = {}
+        for left,right in ((False,False),(True,False),(False,True),(True,True)):
+            inputs, expected = fixtures(dict(case,lhs_conj=left,rhs_conj=right),np.complex128)
+            a,b = inputs
+            oracle = sum((x.conjugate() if left else x)*(y.conjugate() if right else y) for x,y in zip(a,b))
+            np.testing.assert_allclose(expected,oracle,rtol=1e-12,atol=1e-12)
+            values[left,right] = expected
+        self.assertGreater(abs(values[True,False].imag),1e-3)
+        self.assertGreater(abs(values[False,False].imag),1e-3)
+        np.testing.assert_allclose(values[True,False].conj(),values[False,True])
+        np.testing.assert_allclose(values[False,False].conj(),values[True,True])
+
     def test_lstsq_fixture_is_overdetermined_with_nonzero_residual(self):
         for dtype in (np.float64, np.complex128):
             inputs, solution = fixtures(dict(op="lstsq", n=60, shape=[12, 5], rhs_cols=3), dtype)

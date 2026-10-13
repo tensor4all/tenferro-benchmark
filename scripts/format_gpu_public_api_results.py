@@ -66,6 +66,9 @@ def render(suite, paths, metadata, timestamp):
     if any(case.get("jax_ref_addupdate") for case in suite["cases"]):
         text[-2:-2] = [
             'Unit-coefficient AXPBY uses native JAX Ref.addupdate with caller-owned fixed buffers. Its synchronization includes one GPU scalar completion token per destination and block_until_ready; tokens are retained through clock stop and included in the logical retention bound. Helper compilation and seed restoration are untimed. Full Ref snapshots are used only for untimed inspection. This scalar-token synchronization cost is included in the reported latency; it performs no full output copy or D2H transfer inside timing.', ""]
+    if any(case["op"] == "dot_general_axes" and case.get("variant") == "batch" for case in suite["cases"]):
+        text[-2:-2] = [
+            'Generalized batch dot preserves native output order: tenferro [m,n,b], PyTorch/JAX [b,m,n]. Input permutation views and dimension-number configurations are prepared before timing. Output axes are normalized only on downloaded CPU arrays for verification; no timed output transpose or copy is added.', ""]
     for case in suite["cases"]:
         cells = []
         for backend in backends:

@@ -13,6 +13,16 @@ def fixtures(case, dtype):
     i = np.arange(n, dtype=np.uint64)
     raw = (((i * 2654435761 + 679) % 2001).astype(np.float64) / 2000 - .5).reshape(shape)
     x = raw.astype(dtype)
+    if op in {"dot_general_axes", "dot_general_conj"}:
+        precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64
+        a = (raw + .7j*np.roll(raw, 3, axis=0) if precision == np.complex128 else raw).astype(dtype)
+        rhs_shape = case["rhs_shape"]
+        indices = np.arange(np.prod(rhs_shape), dtype=np.uint64).reshape(rhs_shape)
+        raw_rhs = ((indices*1597334677 + 131) % 2017).astype(np.float64)/2017 - .5
+        b = (raw_rhs + .3j*np.roll(raw_rhs, 7, axis=-1) if precision == np.complex128 else raw_rhs).astype(dtype)
+        lhs = a.astype(precision).conj() if case.get("lhs_conj") else a.astype(precision)
+        rhs = b.astype(precision).conj() if case.get("rhs_conj") else b.astype(precision)
+        return [a,b], np.asarray(np.einsum(case["equation"],lhs,rhs,optimize=True),dtype=dtype)
     if op == "lstsq":
         precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64
         matrix = raw + 1j*raw[::-1] if precision == np.complex128 else raw
@@ -222,6 +232,21 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
         return torch_operation(torch, dict(case, op=case["read_op"], read_op=""),
                                [value.transpose(0, 1) for value in inputs], verify_only=verify_only)
     x, op = inputs[0], case["op"]
+    if op == "dot_general_axes":
+        if case["variant"] == "batch":
+            a, b = x.permute(1,0,2), inputs[1].permute(2,0,1)
+            return lambda: torch.bmm(a,b)
+        dims = (tuple(case["lhs_contracting_dims"]),tuple(case["rhs_contracting_dims"]))
+        return lambda: torch.tensordot(x,inputs[1],dims=dims)
+    if op == "dot_general_conj":
+        lhs, rhs = case["lhs_conj"], case["rhs_conj"]
+        if not lhs and not rhs:
+            return lambda: torch.dot(x,inputs[1])
+        if lhs and not rhs:
+            return lambda: torch.vdot(x,inputs[1])
+        if rhs and not lhs:
+            return lambda: torch.vdot(inputs[1],x)
+        raise ValueError("no single public both-conjugated dot counterpart")
     if op.startswith("dot_general_read_into"):
         count = 1 if verify_only else max(1, min(4096, (256 << 20) // (inputs[2].numel()*inputs[2].element_size())))
         destinations = [torch.empty_like(inputs[2]) for _ in range(count)]
@@ -353,6 +378,20 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
 
 
 def jax_operation(jax, jnp, case):
+    if case["op"] == "dot_general_axes":
+        dims = ((tuple(case["lhs_contracting_dims"]),tuple(case["rhs_contracting_dims"])),
+                (tuple(case["lhs_batch_dims"]),tuple(case["rhs_batch_dims"])))
+        precision = jax.lax.Precision.HIGHEST
+        return lambda a,b: jax.lax.dot_general(a,b,dims,precision=precision)
+    if case["op"] == "dot_general_conj":
+        lhs, rhs = case["lhs_conj"],case["rhs_conj"]
+        if not lhs and not rhs:
+            return lambda a,b: jnp.dot(a,b)
+        if lhs and not rhs:
+            return lambda a,b: jnp.vdot(a,b)
+        if rhs and not lhs:
+            return lambda a,b: jnp.vdot(b,a)
+        raise ValueError("no single public both-conjugated dot counterpart")
     if case.get("read_op"):
         return jax_operation(jax, jnp, dict(case, op=case["read_op"], read_op=""))
     op = case["op"]

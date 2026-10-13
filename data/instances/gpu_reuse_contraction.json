@@ -2304,6 +2304,890 @@
         "tenferro-cuda-eager": "No matching public caller-owned output API."
       },
       "jax_ref_addupdate": true
+    },
+    {
+      "id": "dot_general_batch_f32_s32",
+      "op": "dot_general_axes",
+      "variant": "batch",
+      "dtype": "f32",
+      "n": 1536,
+      "shape": [
+        32,
+        3,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39,
+        3
+      ],
+      "equation": "mbk,knb->mnb",
+      "lhs_contracting_dims": [
+        2
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [
+        1
+      ],
+      "rhs_batch_dims": [
+        2
+      ],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_batch_f64_s32",
+      "op": "dot_general_axes",
+      "variant": "batch",
+      "dtype": "f64",
+      "n": 1536,
+      "shape": [
+        32,
+        3,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39,
+        3
+      ],
+      "equation": "mbk,knb->mnb",
+      "lhs_contracting_dims": [
+        2
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [
+        1
+      ],
+      "rhs_batch_dims": [
+        2
+      ],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_batch_c32_s32",
+      "op": "dot_general_axes",
+      "variant": "batch",
+      "dtype": "c32",
+      "n": 1536,
+      "shape": [
+        32,
+        3,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39,
+        3
+      ],
+      "equation": "mbk,knb->mnb",
+      "lhs_contracting_dims": [
+        2
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [
+        1
+      ],
+      "rhs_batch_dims": [
+        2
+      ],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_batch_c64_s32",
+      "op": "dot_general_axes",
+      "variant": "batch",
+      "dtype": "c64",
+      "n": 1536,
+      "shape": [
+        32,
+        3,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39,
+        3
+      ],
+      "equation": "mbk,knb->mnb",
+      "lhs_contracting_dims": [
+        2
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [
+        1
+      ],
+      "rhs_batch_dims": [
+        2
+      ],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_multiple_f32_s32",
+      "op": "dot_general_axes",
+      "variant": "multiple",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        8,
+        4
+      ],
+      "rhs_shape": [
+        4,
+        39,
+        8
+      ],
+      "equation": "mkl,lnk->mn",
+      "lhs_contracting_dims": [
+        1,
+        2
+      ],
+      "rhs_contracting_dims": [
+        2,
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_multiple_f64_s32",
+      "op": "dot_general_axes",
+      "variant": "multiple",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        8,
+        4
+      ],
+      "rhs_shape": [
+        4,
+        39,
+        8
+      ],
+      "equation": "mkl,lnk->mn",
+      "lhs_contracting_dims": [
+        1,
+        2
+      ],
+      "rhs_contracting_dims": [
+        2,
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_multiple_c32_s32",
+      "op": "dot_general_axes",
+      "variant": "multiple",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        8,
+        4
+      ],
+      "rhs_shape": [
+        4,
+        39,
+        8
+      ],
+      "equation": "mkl,lnk->mn",
+      "lhs_contracting_dims": [
+        1,
+        2
+      ],
+      "rhs_contracting_dims": [
+        2,
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_multiple_c64_s32",
+      "op": "dot_general_axes",
+      "variant": "multiple",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        8,
+        4
+      ],
+      "rhs_shape": [
+        4,
+        39,
+        8
+      ],
+      "equation": "mkl,lnk->mn",
+      "lhs_contracting_dims": [
+        1,
+        2
+      ],
+      "rhs_contracting_dims": [
+        2,
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_batch_f32_s256",
+      "op": "dot_general_axes",
+      "variant": "batch",
+      "dtype": "f32",
+      "n": 98304,
+      "shape": [
+        256,
+        3,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263,
+        3
+      ],
+      "equation": "mbk,knb->mnb",
+      "lhs_contracting_dims": [
+        2
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [
+        1
+      ],
+      "rhs_batch_dims": [
+        2
+      ],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_batch_f64_s256",
+      "op": "dot_general_axes",
+      "variant": "batch",
+      "dtype": "f64",
+      "n": 98304,
+      "shape": [
+        256,
+        3,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263,
+        3
+      ],
+      "equation": "mbk,knb->mnb",
+      "lhs_contracting_dims": [
+        2
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [
+        1
+      ],
+      "rhs_batch_dims": [
+        2
+      ],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_batch_c32_s256",
+      "op": "dot_general_axes",
+      "variant": "batch",
+      "dtype": "c32",
+      "n": 98304,
+      "shape": [
+        256,
+        3,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263,
+        3
+      ],
+      "equation": "mbk,knb->mnb",
+      "lhs_contracting_dims": [
+        2
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [
+        1
+      ],
+      "rhs_batch_dims": [
+        2
+      ],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_batch_c64_s256",
+      "op": "dot_general_axes",
+      "variant": "batch",
+      "dtype": "c64",
+      "n": 98304,
+      "shape": [
+        256,
+        3,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263,
+        3
+      ],
+      "equation": "mbk,knb->mnb",
+      "lhs_contracting_dims": [
+        2
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [
+        1
+      ],
+      "rhs_batch_dims": [
+        2
+      ],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_multiple_f32_s256",
+      "op": "dot_general_axes",
+      "variant": "multiple",
+      "dtype": "f32",
+      "n": 65536,
+      "shape": [
+        256,
+        64,
+        4
+      ],
+      "rhs_shape": [
+        4,
+        263,
+        64
+      ],
+      "equation": "mkl,lnk->mn",
+      "lhs_contracting_dims": [
+        1,
+        2
+      ],
+      "rhs_contracting_dims": [
+        2,
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_multiple_f64_s256",
+      "op": "dot_general_axes",
+      "variant": "multiple",
+      "dtype": "f64",
+      "n": 65536,
+      "shape": [
+        256,
+        64,
+        4
+      ],
+      "rhs_shape": [
+        4,
+        263,
+        64
+      ],
+      "equation": "mkl,lnk->mn",
+      "lhs_contracting_dims": [
+        1,
+        2
+      ],
+      "rhs_contracting_dims": [
+        2,
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_multiple_c32_s256",
+      "op": "dot_general_axes",
+      "variant": "multiple",
+      "dtype": "c32",
+      "n": 65536,
+      "shape": [
+        256,
+        64,
+        4
+      ],
+      "rhs_shape": [
+        4,
+        263,
+        64
+      ],
+      "equation": "mkl,lnk->mn",
+      "lhs_contracting_dims": [
+        1,
+        2
+      ],
+      "rhs_contracting_dims": [
+        2,
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "issue": 155
+    },
+    {
+      "id": "dot_general_multiple_c64_s256",
+      "op": "dot_general_axes",
+      "variant": "multiple",
+      "dtype": "c64",
+      "n": 65536,
+      "shape": [
+        256,
+        64,
+        4
+      ],
+      "rhs_shape": [
+        4,
+        263,
+        64
+      ],
+      "equation": "mkl,lnk->mn",
+      "lhs_contracting_dims": [
+        1,
+        2
+      ],
+      "rhs_contracting_dims": [
+        2,
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l0r0_c32_n1024",
+      "op": "dot_general_conj",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "rhs_shape": [
+        1024
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": false,
+      "rhs_conj": false,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l1r0_c32_n1024",
+      "op": "dot_general_conj",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "rhs_shape": [
+        1024
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": true,
+      "rhs_conj": false,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l0r1_c32_n1024",
+      "op": "dot_general_conj",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "rhs_shape": [
+        1024
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": false,
+      "rhs_conj": true,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l1r1_c32_n1024",
+      "op": "dot_general_conj",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "rhs_shape": [
+        1024
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": true,
+      "rhs_conj": true,
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation.",
+        "jax-cuda": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation.",
+        "jax-cuda-jit": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation."
+      }
+    },
+    {
+      "id": "dot_conj_l0r0_c64_n1024",
+      "op": "dot_general_conj",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "rhs_shape": [
+        1024
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": false,
+      "rhs_conj": false,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l1r0_c64_n1024",
+      "op": "dot_general_conj",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "rhs_shape": [
+        1024
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": true,
+      "rhs_conj": false,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l0r1_c64_n1024",
+      "op": "dot_general_conj",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "rhs_shape": [
+        1024
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": false,
+      "rhs_conj": true,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l1r1_c64_n1024",
+      "op": "dot_general_conj",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "rhs_shape": [
+        1024
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": true,
+      "rhs_conj": true,
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation.",
+        "jax-cuda": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation.",
+        "jax-cuda-jit": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation."
+      }
+    },
+    {
+      "id": "dot_conj_l0r0_c32_n262144",
+      "op": "dot_general_conj",
+      "dtype": "c32",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "rhs_shape": [
+        262144
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": false,
+      "rhs_conj": false,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l1r0_c32_n262144",
+      "op": "dot_general_conj",
+      "dtype": "c32",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "rhs_shape": [
+        262144
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": true,
+      "rhs_conj": false,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l0r1_c32_n262144",
+      "op": "dot_general_conj",
+      "dtype": "c32",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "rhs_shape": [
+        262144
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": false,
+      "rhs_conj": true,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l1r1_c32_n262144",
+      "op": "dot_general_conj",
+      "dtype": "c32",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "rhs_shape": [
+        262144
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": true,
+      "rhs_conj": true,
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation.",
+        "jax-cuda": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation.",
+        "jax-cuda-jit": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation."
+      }
+    },
+    {
+      "id": "dot_conj_l0r0_c64_n262144",
+      "op": "dot_general_conj",
+      "dtype": "c64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "rhs_shape": [
+        262144
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": false,
+      "rhs_conj": false,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l1r0_c64_n262144",
+      "op": "dot_general_conj",
+      "dtype": "c64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "rhs_shape": [
+        262144
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": true,
+      "rhs_conj": false,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l0r1_c64_n262144",
+      "op": "dot_general_conj",
+      "dtype": "c64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "rhs_shape": [
+        262144
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": false,
+      "rhs_conj": true,
+      "issue": 155
+    },
+    {
+      "id": "dot_conj_l1r1_c64_n262144",
+      "op": "dot_general_conj",
+      "dtype": "c64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "rhs_shape": [
+        262144
+      ],
+      "equation": "i,i->",
+      "lhs_contracting_dims": [
+        0
+      ],
+      "rhs_contracting_dims": [
+        0
+      ],
+      "lhs_batch_dims": [],
+      "rhs_batch_dims": [],
+      "lhs_conj": true,
+      "rhs_conj": true,
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation.",
+        "jax-cuda": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation.",
+        "jax-cuda-jit": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation."
+      }
     }
   ]
 }

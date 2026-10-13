@@ -162,3 +162,35 @@ problems:
     - axpby_overwrite_c64_n1048576
     - axpby_lerp_c64_n1048576
     - axpby_unit_add_c64_n1048576
+    - dot_general_batch_f32_s32
+    - dot_general_batch_f64_s32
+    - dot_general_batch_c32_s32
+    - dot_general_batch_c64_s32
+    - dot_general_multiple_f32_s32
+    - dot_general_multiple_f64_s32
+    - dot_general_multiple_c32_s32
+    - dot_general_multiple_c64_s32
+    - dot_general_batch_f32_s256
+    - dot_general_batch_f64_s256
+    - dot_general_batch_c32_s256
+    - dot_general_batch_c64_s256
+    - dot_general_multiple_f32_s256
+    - dot_general_multiple_f64_s256
+    - dot_general_multiple_c32_s256
+    - dot_general_multiple_c64_s256
+    - dot_conj_l0r0_c32_n1024
+    - dot_conj_l1r0_c32_n1024
+    - dot_conj_l0r1_c32_n1024
+    - dot_conj_l1r1_c32_n1024
+    - dot_conj_l0r0_c64_n1024
+    - dot_conj_l1r0_c64_n1024
+    - dot_conj_l0r1_c64_n1024
+    - dot_conj_l1r1_c64_n1024
+    - dot_conj_l0r0_c32_n262144
+    - dot_conj_l1r0_c32_n262144
+    - dot_conj_l0r1_c32_n262144
+    - dot_conj_l1r1_c32_n262144
+    - dot_conj_l0r0_c64_n262144
+    - dot_conj_l1r0_c64_n262144
+    - dot_conj_l0r1_c64_n262144
+    - dot_conj_l1r1_c64_n262144
