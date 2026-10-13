@@ -1,0 +1,44 @@
+schema_version: 1
+suite_id: gpu/linalg_public_api
+title: CUDA public linalg_public_api APIs
+description: Isolated public APIs and explicit unsupported timing contracts. Issue 155.
+defaults:
+  device: {kind: cuda, ordinal: 0}
+  run: {warmups: 3, runs: 15, min_runtime_ms: 2, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: numpy/scipy double precision, rtol: 0.0005, atol: 0.0005}
+backends: [tenferro-cuda-direct, tenferro-cuda-eager, pytorch-cuda, jax-cuda, jax-cuda-jit]
+problems:
+  source: data/instances/gpu_linalg_public_api.json
+  include:
+    - cholesky_f32_32x32
+    - cholesky_f64_32x32
+    - svdvals_f32_32x32
+    - svdvals_f64_32x32
+    - eigvalsh_f32_32x32
+    - eigvalsh_f64_32x32
+    - pinv_f32_32x32
+    - pinv_f64_32x32
+    - inv_f32_32x32
+    - inv_f64_32x32
+    - det_f32_32x32
+    - det_f64_32x32
+    - norm_f32_32x32
+    - norm_f64_32x32
+    - triangular_solve_f32_32x32
+    - triangular_solve_f64_32x32
+    - cholesky_f32_512x512
+    - cholesky_f64_512x512
+    - svdvals_f32_512x512
+    - svdvals_f64_512x512
+    - eigvalsh_f32_512x512
+    - eigvalsh_f64_512x512
+    - pinv_f32_512x512
+    - pinv_f64_512x512
+    - inv_f32_512x512
+    - inv_f64_512x512
+    - det_f32_512x512
+    - det_f64_512x512
+    - norm_f32_512x512
+    - norm_f64_512x512
+    - triangular_solve_f32_512x512
+    - triangular_solve_f64_512x512

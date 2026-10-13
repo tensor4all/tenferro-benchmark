@@ -159,6 +159,11 @@ path = "src/bin/benchmark_gpu_rust.rs"
 required-features = ["cuda"]
 
 [[bin]]
+name = "benchmark_gpu_public_api"
+path = "src/bin/benchmark_gpu_public_api.rs"
+required-features = ["cuda"]
+
+[[bin]]
 name = "benchmark_gpu_perf_issues"
 path = "src/bin/benchmark_gpu_perf_issues.rs"
 required-features = ["cuda"]

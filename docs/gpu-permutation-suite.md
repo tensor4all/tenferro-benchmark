@@ -214,7 +214,7 @@ measurement, not for correctness.
 
 ### Why JAX Is Not Collected
 
-JAX is intentionally excluded from maintained GPU benchmark reports. During
+JAX is intentionally excluded from this GPU permutation suite. During
 the 2026-07-28 A100 80GB collection, the permutation runner remained inside
 the JAX/XLA path for more than 20 minutes while using one host CPU core and
 about 61 GiB of device memory, without completing the backend run. Earlier

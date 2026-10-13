@@ -1,0 +1,80 @@
+schema_version: 1
+suite_id: gpu/reuse_contraction
+title: CUDA public reuse_contraction APIs
+description: Isolated public APIs and explicit unsupported timing contracts. Issue 155.
+defaults:
+  device: {kind: cuda, ordinal: 0}
+  run: {warmups: 3, runs: 15, min_runtime_ms: 2, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: numpy/scipy double precision, rtol: 0.0005, atol: 0.0005}
+backends: [tenferro-cuda-direct, tenferro-cuda-eager, pytorch-cuda, jax-cuda, jax-cuda-jit]
+problems:
+  source: data/instances/gpu_reuse_contraction.json
+  include:
+    - add_into_f32_n1024
+    - add_into_f64_n1024
+    - add_read_into_f32_n1024
+    - add_read_into_f64_n1024
+    - sub_into_f32_n1024
+    - sub_into_f64_n1024
+    - sub_read_into_f32_n1024
+    - sub_read_into_f64_n1024
+    - mul_into_f32_n1024
+    - mul_into_f64_n1024
+    - mul_read_into_f32_n1024
+    - mul_read_into_f64_n1024
+    - div_into_f32_n1024
+    - div_into_f64_n1024
+    - div_read_into_f32_n1024
+    - div_read_into_f64_n1024
+    - neg_into_f32_n1024
+    - neg_into_f64_n1024
+    - neg_read_into_f32_n1024
+    - neg_read_into_f64_n1024
+    - conj_into_c32_n1024
+    - conj_into_c64_n1024
+    - conj_read_into_c32_n1024
+    - conj_read_into_c64_n1024
+    - add_into_f32_n1048576
+    - add_into_f64_n1048576
+    - add_read_into_f32_n1048576
+    - add_read_into_f64_n1048576
+    - sub_into_f32_n1048576
+    - sub_into_f64_n1048576
+    - sub_read_into_f32_n1048576
+    - sub_read_into_f64_n1048576
+    - mul_into_f32_n1048576
+    - mul_into_f64_n1048576
+    - mul_read_into_f32_n1048576
+    - mul_read_into_f64_n1048576
+    - div_into_f32_n1048576
+    - div_into_f64_n1048576
+    - div_read_into_f32_n1048576
+    - div_read_into_f64_n1048576
+    - neg_into_f32_n1048576
+    - neg_into_f64_n1048576
+    - neg_read_into_f32_n1048576
+    - neg_read_into_f64_n1048576
+    - conj_into_c32_n1048576
+    - conj_into_c64_n1048576
+    - conj_read_into_c32_n1048576
+    - conj_read_into_c64_n1048576
+    - tensordot_f32_n1024
+    - tensordot_f64_n1024
+    - tensordot_c32_n1024
+    - tensordot_c64_n1024
+    - vdot_read_f32_n1024
+    - vdot_read_f64_n1024
+    - vdot_read_c32_n1024
+    - vdot_read_c64_n1024
+    - norm_squared_read_f32_n1024
+    - norm_squared_read_f64_n1024
+    - tensordot_f32_n262144
+    - tensordot_f64_n262144
+    - tensordot_c32_n262144
+    - tensordot_c64_n262144
+    - vdot_read_f32_n262144
+    - vdot_read_f64_n262144
+    - vdot_read_c32_n262144
+    - vdot_read_c64_n262144
+    - norm_squared_read_f32_n262144
+    - norm_squared_read_f64_n262144
