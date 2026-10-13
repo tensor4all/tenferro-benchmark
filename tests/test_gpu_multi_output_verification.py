@@ -11,6 +11,26 @@ from benchmark_gpu_public_api import verify
 
 
 class MultiOutputVerification(unittest.TestCase):
+    def test_lu_all_outputs_follow_pa_equals_lu_and_pivot_parity(self):
+        for dtype in (np.float64, np.complex128):
+            for shape in ([4, 4], [6, 4], [4, 6]):
+                case = dict(op="lu", n=np.prod(shape), shape=shape, rtol=1e-9, atol=1e-9)
+                inputs, expected = fixtures(case, dtype)
+                p, l, u, parity = expected
+                np.testing.assert_allclose(p @ inputs[0], l @ u, rtol=1e-12, atol=1e-12)
+                np.testing.assert_array_equal(p.sum(axis=0), np.ones(shape[0]))
+                np.testing.assert_array_equal(p.sum(axis=1), np.ones(shape[0]))
+                self.assertEqual(parity.shape, ())
+                self.assertEqual(parity.dtype, np.dtype(dtype))
+                np.testing.assert_allclose(parity, np.linalg.det(p), atol=1e-12)
+                if shape == [4, 4]:
+                    self.assertFalse(np.array_equal(p, p.T))
+                for index in range(4):
+                    bad = [value.copy() for value in expected]
+                    bad[index].flat[0] += 1
+                    with self.assertRaises(ValueError):
+                        verify_outputs(bad, expected, case, inputs, verify)
+
     def test_state_inputs_and_complement_reference_preserve_contracts(self):
         for dtype in (np.float64, np.complex128):
             case = dict(op="householder_from_factors", n=60, shape=[12, 5])

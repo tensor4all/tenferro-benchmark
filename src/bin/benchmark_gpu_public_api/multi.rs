@@ -11,6 +11,7 @@ use tenferro_tensor::{BackendSession, BackendSessionHost, DType, Tensor};
 enum Outputs<T> {
     Two([T; 2]),
     Three([T; 3]),
+    Four([T; 4]),
     Compact(HouseholderQr<T>),
 }
 impl<T> Outputs<T> {
@@ -18,12 +19,17 @@ impl<T> Outputs<T> {
         match self {
             Self::Two(v) => v,
             Self::Three(v) => v,
+            Self::Four(v) => v,
             Self::Compact(_) => panic!("opaque QR is inspected through public projections"),
         }
     }
 }
 fn direct(case: &Case, x: &Tensor, session: &mut dyn BackendSession) -> Result<Outputs<Tensor>> {
     Ok(match case.op.as_str() {
+        "lu" => {
+            let (p, l, u, parity) = x.lu(session)?;
+            Outputs::Four([p, l, u, parity])
+        }
         "householder_qr" => Outputs::Compact(x.householder_qr(session)?),
         "svd_full" => {
             let (u, s, vh) = x.svd_full(session)?;
@@ -42,6 +48,10 @@ fn eager(
     session: &mut EagerSession<'_>,
 ) -> Result<Outputs<EagerTensor>> {
     Ok(match case.op.as_str() {
+        "lu" => {
+            let (p, l, u, parity) = session.lu(x)?;
+            Outputs::Four([p, l, u, parity])
+        }
         "householder_qr" => Outputs::Compact(session.householder_qr(x)?),
         "svd_full" => {
             let (u, s, vh) = session.svd_full(x)?;

@@ -2032,6 +2032,390 @@
         "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
         "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
       }
+    },
+    {
+      "id": "lu_square_f32_s32",
+      "op": "lu",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_f64_s32",
+      "op": "lu",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_c32_s32",
+      "op": "lu",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_c64_s32",
+      "op": "lu",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_f32_s32",
+      "op": "lu",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_f64_s32",
+      "op": "lu",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_c32_s32",
+      "op": "lu",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_c64_s32",
+      "op": "lu",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_f32_s32",
+      "op": "lu",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_f64_s32",
+      "op": "lu",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_c32_s32",
+      "op": "lu",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_c64_s32",
+      "op": "lu",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_f32_s256",
+      "op": "lu",
+      "dtype": "f32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_f64_s256",
+      "op": "lu",
+      "dtype": "f64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_c32_s256",
+      "op": "lu",
+      "dtype": "c32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_square_c64_s256",
+      "op": "lu",
+      "dtype": "c64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_f32_s256",
+      "op": "lu",
+      "dtype": "f32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_f64_s256",
+      "op": "lu",
+      "dtype": "f64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_c32_s256",
+      "op": "lu",
+      "dtype": "c32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_tall_c64_s256",
+      "op": "lu",
+      "dtype": "c64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_f32_s256",
+      "op": "lu",
+      "dtype": "f32",
+      "n": 131072,
+      "shape": [
+        256,
+        512
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_f64_s256",
+      "op": "lu",
+      "dtype": "f64",
+      "n": 131072,
+      "shape": [
+        256,
+        512
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_c32_s256",
+      "op": "lu",
+      "dtype": "c32",
+      "n": 131072,
+      "shape": [
+        256,
+        512
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
+    },
+    {
+      "id": "lu_wide_c64_s256",
+      "op": "lu",
+      "dtype": "c64",
+      "n": 131072,
+      "shape": [
+        256,
+        512
+      ],
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation.",
+        "jax-cuda-jit": "No verified single public API returns the matching P/L/U/parity contract; three-output LU plus parity computation is a different operation."
+      }
     }
   ]
 }
