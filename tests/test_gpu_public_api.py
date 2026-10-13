@@ -18,6 +18,21 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_affine_normalization_parameters_have_independent_effects(self):
+        for op in ("layer_norm", "rms_norm"):
+            case = {"op": op, "dtype": "f64", "n": 32, "shape": [4, 8]}
+            _, baseline = fixtures(case, "<f8")
+            for weight, bias in ((True, False), (False, True), (True, True)):
+                inputs, output = fixtures(dict(case, normalization_weight=weight,
+                                                normalization_bias=bias), "<f8")
+                expected = baseline.copy()
+                if weight:
+                    expected *= inputs[1]
+                if bias:
+                    expected += inputs[1 + int(weight)]
+                np.testing.assert_allclose(output, expected, rtol=1e-14, atol=1e-14)
+                self.assertFalse(np.array_equal(output, baseline))
+
     def test_pad_holes_and_crop_keep_correct_source_coordinates(self):
         case = {"op": "pad", "dtype": "f64", "n": 6, "shape": [2, 3],
                 "padding": [(-1, 1, 1), (1, -1, 2)]}

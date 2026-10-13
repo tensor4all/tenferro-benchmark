@@ -71,8 +71,22 @@ pub(super) fn direct(
         "log_softmax" => x.log_softmax(1, s)?,
         "masked_softmax" => x.masked_softmax(&inputs[1], 1, s)?,
         "masked_log_softmax" => x.masked_log_softmax(&inputs[1], 1, s)?,
-        "layer_norm" => x.layer_norm(1, None, None, 1e-5, s)?,
-        "rms_norm" => x.rms_norm(1, None, None, 1e-5, s)?,
+        "layer_norm" => x.layer_norm(
+            1,
+            case.normalization_weight.then(|| &inputs[1]),
+            case.normalization_bias
+                .then(|| &inputs[1 + usize::from(case.normalization_weight)]),
+            1e-5,
+            s,
+        )?,
+        "rms_norm" => x.rms_norm(
+            1,
+            case.normalization_weight.then(|| &inputs[1]),
+            case.normalization_bias
+                .then(|| &inputs[1 + usize::from(case.normalization_weight)]),
+            1e-5,
+            s,
+        )?,
         _ => return super::structural::direct(case, inputs, s, args),
     })
 }
@@ -124,8 +138,22 @@ pub(super) fn eager(
         "log_softmax" => s.log_softmax(x, 1)?,
         "masked_softmax" => s.masked_softmax(x, &inputs[1], 1)?,
         "masked_log_softmax" => s.masked_log_softmax(x, &inputs[1], 1)?,
-        "layer_norm" => s.layer_norm(x, 1, None, None, 1e-5)?,
-        "rms_norm" => s.rms_norm(x, 1, None, None, 1e-5)?,
+        "layer_norm" => s.layer_norm(
+            x,
+            1,
+            case.normalization_weight.then(|| &inputs[1]),
+            case.normalization_bias
+                .then(|| &inputs[1 + usize::from(case.normalization_weight)]),
+            1e-5,
+        )?,
+        "rms_norm" => s.rms_norm(
+            x,
+            1,
+            case.normalization_weight.then(|| &inputs[1]),
+            case.normalization_bias
+                .then(|| &inputs[1 + usize::from(case.normalization_weight)]),
+            1e-5,
+        )?,
         _ => return super::structural::eager(case, inputs, s, args),
     })
 }

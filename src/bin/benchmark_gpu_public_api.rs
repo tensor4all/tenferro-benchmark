@@ -49,6 +49,10 @@ struct Case {
     #[serde(default)]
     full_reduction: bool,
     #[serde(default)]
+    normalization_weight: bool,
+    #[serde(default)]
+    normalization_bias: bool,
+    #[serde(default)]
     padding: Vec<(i64, i64, i64)>,
     #[serde(default)]
     compare_direction: String,

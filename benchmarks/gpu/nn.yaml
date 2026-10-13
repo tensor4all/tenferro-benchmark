@@ -54,3 +54,27 @@ problems:
     - layer_norm_f64_n1048576
     - rms_norm_f32_n1048576
     - rms_norm_f64_n1048576
+    - layer_norm_weight_f32_n1024
+    - layer_norm_bias_f32_n1024
+    - layer_norm_weight_bias_f32_n1024
+    - layer_norm_weight_f64_n1024
+    - layer_norm_bias_f64_n1024
+    - layer_norm_weight_bias_f64_n1024
+    - rms_norm_weight_f32_n1024
+    - rms_norm_bias_f32_n1024
+    - rms_norm_weight_bias_f32_n1024
+    - rms_norm_weight_f64_n1024
+    - rms_norm_bias_f64_n1024
+    - rms_norm_weight_bias_f64_n1024
+    - layer_norm_weight_f32_n1048576
+    - layer_norm_bias_f32_n1048576
+    - layer_norm_weight_bias_f32_n1048576
+    - layer_norm_weight_f64_n1048576
+    - layer_norm_bias_f64_n1048576
+    - layer_norm_weight_bias_f64_n1048576
+    - rms_norm_weight_f32_n1048576
+    - rms_norm_bias_f32_n1048576
+    - rms_norm_weight_bias_f32_n1048576
+    - rms_norm_weight_f64_n1048576
+    - rms_norm_bias_f64_n1048576
+    - rms_norm_weight_bias_f64_n1048576
