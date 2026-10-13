@@ -1,0 +1,128 @@
+[
+  {
+    "id": "incremental_qr_m64_shared",
+    "rows": 64,
+    "path": "shared",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m64_fresh",
+    "rows": 64,
+    "path": "fresh",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m64_eager-fresh",
+    "rows": 64,
+    "path": "eager-fresh",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m64_eager-shared",
+    "rows": 64,
+    "path": "eager-shared",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m64_attributed",
+    "rows": 64,
+    "path": "attributed",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m64_bcgs2",
+    "rows": 64,
+    "path": "bcgs2",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m64_bcgs2-attributed",
+    "rows": 64,
+    "path": "bcgs2-attributed",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m128_shared",
+    "rows": 128,
+    "path": "shared",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m128_fresh",
+    "rows": 128,
+    "path": "fresh",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m128_eager-fresh",
+    "rows": 128,
+    "path": "eager-fresh",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m128_eager-shared",
+    "rows": 128,
+    "path": "eager-shared",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m128_attributed",
+    "rows": 128,
+    "path": "attributed",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m128_bcgs2",
+    "rows": 128,
+    "path": "bcgs2",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m128_bcgs2-attributed",
+    "rows": 128,
+    "path": "bcgs2-attributed",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m256_shared",
+    "rows": 256,
+    "path": "shared",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m256_fresh",
+    "rows": 256,
+    "path": "fresh",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m256_eager-fresh",
+    "rows": 256,
+    "path": "eager-fresh",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m256_eager-shared",
+    "rows": 256,
+    "path": "eager-shared",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m256_attributed",
+    "rows": 256,
+    "path": "attributed",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m256_bcgs2",
+    "rows": 256,
+    "path": "bcgs2",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  },
+  {
+    "id": "incremental_qr_m256_bcgs2-attributed",
+    "rows": 256,
+    "path": "bcgs2-attributed",
+    "intent": "#94; tenferro-rs #1750: compact QR append/R/new Q interleaved workflow; BCGS2 diagnostic"
+  }
+]
