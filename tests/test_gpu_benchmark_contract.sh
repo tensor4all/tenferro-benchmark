@@ -10,7 +10,8 @@ JSONL="$RUN_DIR/records.jsonl"
 MARKDOWN="$RUN_DIR/report.md"
 REPORT="result/nvidia-gpu/gpu/dense.md"
 TMP="$(mktemp -d)"
-ARTIFACTS=("$RUN_YAML" "$JSONL" "$MARKDOWN" "$RUN_DIR/rust_records.jsonl" "$REPORT")
+ARTIFACTS=("$RUN_YAML" "$JSONL" "$MARKDOWN" "$RUN_DIR/rust_records.jsonl" "$REPORT"
+  "$RUN_DIR/wall_backends.jsonl" "$RUN_DIR/wall_command.json")
 
 mkdir -p "$TMP/originals"
 for artifact in "${ARTIFACTS[@]}"; do
@@ -236,6 +237,18 @@ test -s "$RUN_YAML"
 test -s "$JSONL"
 test -s "$MARKDOWN"
 test -s "$REPORT"
+uv run python - "$RUN_DIR" <<'PY'
+import json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+wall = json.loads((root / 'wall_command.json').read_text())
+assert wall['command_seconds_through_this_suite'] > 0
+assert wall['collection_seconds_including_build_and_backend_release_delays'] > 0
+assert wall['report_generation_and_copy_seconds'] >= 0
+rows = [json.loads(line) for line in (root / 'wall_backends.jsonl').read_text().splitlines()]
+assert rows
+assert all(row['build_seconds'] >= 0 and row['process_seconds'] > 0 for row in rows)
+PY
 
 uv run python scripts/validate_benchmark_suite.py --kind run "$RUN_YAML"
 uv run python - "$RUN_YAML" "$JSONL" <<'PYSAMPLING'

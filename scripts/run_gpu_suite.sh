@@ -3,6 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+wall_now() { python3 -c 'import time; print(time.monotonic_ns())'; }
+COMMAND_START_NS="$(wall_now)"
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
 TIMESTAMP="${GPU_BENCH_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
@@ -157,6 +159,7 @@ write_run_metadata() {
 
 RUST_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_rust"
 RUST_BUILT=0
+RUST_BUILD_NS=0
 GPU_BENCH_BACKEND_SLEEP="${GPU_BENCH_BACKEND_SLEEP:-2}"
 
 build_rust_benchmark_if_needed() {
@@ -169,11 +172,14 @@ build_rust_benchmark_if_needed() {
         return 0
     fi
     echo "  Building benchmark_gpu_rust..."
+    local build_start
+    build_start="$(wall_now)"
     CUBECL_DEBUG_LOG=0 \
     CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
     RUST_MIN_STACK="$RUST_MIN_STACK" \
     LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
         cargo build --release --features cuda --bin benchmark_gpu_rust 2>&1
+    RUST_BUILD_NS=$(( $(wall_now) - build_start ))
     RUST_BUILT=1
 }
 
@@ -218,12 +224,25 @@ run_suite_serial_by_backend() {
         echo ">>> Backend: $backend"
         local chunk="$run_dir/chunk_${backend}.jsonl"
         : > "$chunk"
+        local backend_start build_before backend_end
+        backend_start="$(wall_now)"
+        build_before="$RUST_BUILD_NS"
 
         if [[ "$backend" == "tenferro-cuda-eager" || "$backend" == "tenferro-cuda-trace" ]]; then
             run_rust_backend "$suite" "$chunk" "$backend"
         else
             run_python_backend "$suite" "$chunk" "$backend"
         fi
+        backend_end="$(wall_now)"
+        "${PYTHON[@]}" - "$run_dir/wall_backends.jsonl" "$backend" "$backend_start" "$backend_end" "$build_before" "$RUST_BUILD_NS" <<'PY'
+import json, sys
+path, backend = sys.argv[1:3]
+start, end, before, after = map(int, sys.argv[3:])
+with open(path, 'a') as output:
+    output.write(json.dumps({'backend':backend, 'build_seconds':(after-before)/1e9,
+        'process_seconds':(end-start-after+before)/1e9,
+        'scope':'backend process wall time includes startup, preparation, validation and samples; build separated'})+'\n')
+PY
 
         if [[ -s "$chunk" ]]; then
             cat "$chunk" >> "$result_jsonl"
@@ -251,10 +270,13 @@ for suite in "${SUITES[@]}"; do
 
     mkdir -p "$RUN_DIR" "$(dirname "$REPORT_OUT")"
     : > "$RESULT_JSONL"
+    : > "$RUN_DIR/wall_backends.jsonl"
     write_run_metadata "$suite_id" "$suite" "$RUN_YAML"
 
     # Each framework releases its CUDA allocator before the next process starts.
+    COLLECTION_START_NS="$(wall_now)"
     run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL"
+    COLLECTION_END_NS="$(wall_now)"
 
     if [[ ! -s "$RESULT_JSONL" ]]; then
         echo "No records generated for $suite_id; skipping report."
@@ -275,8 +297,20 @@ PY
     "${VALIDATOR[@]}" --kind run "$RUN_YAML"
     "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"
 
+    REPORT_START_NS="$(wall_now)"
     "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
     cp "$MARKDOWN_OUT" "$REPORT_OUT"
+    "${PYTHON[@]}" - "$RUN_DIR/wall_command.json" "$COMMAND_START_NS" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$REPORT_START_NS" "$(wall_now)" <<'PY'
+import json, sys
+from pathlib import Path
+start, collection, collected, report, end = map(int, sys.argv[2:])
+Path(sys.argv[1]).write_text(json.dumps({
+    'command_seconds_through_this_suite':(end-start)/1e9,
+    'collection_seconds_including_build_and_backend_release_delays':(collected-collection)/1e9,
+    'report_generation_and_copy_seconds':(end-report)/1e9,
+    'scope':'script clock-read through this suite report copy; devcontainer CLI startup and final wall-record write excluded',
+},indent=2)+'\n')
+PY
 
     echo ""
     echo "GPU benchmark suite complete: $suite_id"
