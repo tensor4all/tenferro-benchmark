@@ -449,3 +449,13 @@ and synchronized before the operation factory returns. PyTorch `functional.pad`
 compares edge padding/cropping only: interior insertion has no established
 single-call counterpart and remains explicitly unsupported. No timed slice/pad
 composition substitutes for it. Output allocation is intrinsic to the operation.
+
+Affine normalization cases upload independently varying axis-length weight and
+bias vectors during setup. They select weight only, bias only, and both for
+layer/RMS normalization at 32×32 and 1024×1024, F32/F64. Direct and entered eager
+session calls verify full outputs, but their internal scalar transfers cannot
+be hoisted through the public API and exclude them from standard timing.
+PyTorch functional.layer_norm matches all variants; functional.rms_norm has a
+weight argument but no bias argument. No single-call JAX affine counterpart is
+established: timing standardize followed by multiply/add would change this
+isolated API contract. Unsupported and numerical-only rows remain explicit.

@@ -30,10 +30,12 @@ families:
     cases: data/instances/gpu_nn.json
     suite: benchmarks/gpu/nn.yaml
     routes: [TensorSessionOpsExt, EagerSession]
-    dtype_scope: F32/F64; finite inputs, axis=1, eps=1e-5, non-affine normalization.
+    dtype_scope: F32/F64; finite inputs, axis=1, eps=1e-5; non-affine and weight-only/bias-only/weight-and-bias normalization.
     limitations: Per-arm internal scalar transfers and missing framework counterparts are recorded on every selected case.
+    selected_contracts:
+      affine_normalization: Layer/RMS weight-only, bias-only, and both at 32x32 and 1024x1024; independently varying GPU vectors. Torch layer_norm matches all variants; Torch rms_norm matches weight only. JAX single-call affine counterpart unverified. Tenferro paths pass full numeric checks but remain timing-excluded for internal scalar transfers.
+    latest_report: result/nvidia-gpu/gpu/nn.md
     deferred:
-      affine_normalization: General weight/bias output contracts require separate matching references.
       exceptional_mask_policy: All-masked/NaN/infinity semantics require separate correctness cases, not identical-input performance assumptions.
   structural:
     cases: data/instances/gpu_structural.json
