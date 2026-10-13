@@ -1,0 +1,20 @@
+schema_version: 1
+suite_id: gpu/lstsq
+title: CUDA public least-squares contract
+description: Isolated public APIs and explicit unsupported timing contracts. Issue 155.
+defaults:
+  device: {kind: cuda, ordinal: 0}
+  run: {warmups: 3, runs: 15, min_runtime_ms: 2, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: numpy/scipy double precision, rtol: 0.0005, atol: 0.0005}
+backends: [tenferro-cuda-direct, tenferro-cuda-eager, pytorch-cuda, jax-cuda, jax-cuda-jit]
+problems:
+  source: data/instances/gpu_lstsq.json
+  include:
+    - lstsq_tall_f32_s32_rhs8
+    - lstsq_tall_f64_s32_rhs8
+    - lstsq_tall_c32_s32_rhs8
+    - lstsq_tall_c64_s32_rhs8
+    - lstsq_tall_f32_s256_rhs8
+    - lstsq_tall_f64_s256_rhs8
+    - lstsq_tall_c32_s256_rhs8
+    - lstsq_tall_c64_s256_rhs8

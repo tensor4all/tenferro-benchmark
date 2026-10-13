@@ -13,6 +13,18 @@ def fixtures(case, dtype):
     i = np.arange(n, dtype=np.uint64)
     raw = (((i * 2654435761 + 679) % 2001).astype(np.float64) / 2000 - .5).reshape(shape)
     x = raw.astype(dtype)
+    if op == "lstsq":
+        precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64
+        matrix = raw + 1j*raw[::-1] if precision == np.complex128 else raw
+        a = (np.eye(*shape) + .05*matrix).astype(dtype)
+        rhs_shape = [shape[0], case["rhs_cols"]]
+        indices = np.arange(np.prod(rhs_shape), dtype=np.uint64).reshape(rhs_shape)
+        rhs = (((indices*719 + 13) % 1103).astype(np.float64)/1103 - .5)
+        if precision == np.complex128:
+            rhs = rhs + 1j*np.roll(rhs, 3, axis=0)
+        b = rhs.astype(dtype)
+        solution = np.linalg.lstsq(a.astype(precision), b.astype(precision), rcond=None)[0]
+        return [a, b], solution.astype(dtype)
     if op == "lu":
         from scipy.linalg import lu, lu_factor
         precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64

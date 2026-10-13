@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
     exit 1
 }
 family="${1:-fft}"
-case "$family" in fft|nn|isolated_ops|structural|linalg_public_api|reuse_contraction) ;; *) echo "Unknown family: $family" >&2; exit 1;; esac
+case "$family" in fft|nn|isolated_ops|structural|linalg_public_api|reuse_contraction|lstsq) ;; *) echo "Unknown family: $family" >&2; exit 1;; esac
 export GPU_API_VERIFY_ONLY=0
 case "${2:-}" in
     '') default_device=0; export GPU_API_ROLE=benchmark ;;
