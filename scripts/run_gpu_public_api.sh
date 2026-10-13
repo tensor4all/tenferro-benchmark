@@ -9,8 +9,21 @@ cd "$(dirname "$0")/.."
 }
 family="${1:-fft}"
 case "$family" in fft|nn|isolated_ops|structural|linalg_public_api|reuse_contraction) ;; *) echo "Unknown family: $family" >&2; exit 1;; esac
+export GPU_API_VERIFY_ONLY=0
+case "${2:-}" in
+    '') default_device=0; export GPU_API_ROLE=benchmark ;;
+    --verify-only) default_device=1; export GPU_API_ROLE=debug GPU_API_VERIFY_ONLY=1 ;;
+    *) echo "Usage: $0 <family> [--verify-only]" >&2; exit 1 ;;
+esac
 export BENCHMARK_TARGET_PROFILE=nvidia-gpu
-export GPU_BENCH_DEVICE="${GPU_BENCH_DEVICE:-0}"
+# Select the physical nvidia-smi index, then expose only that UUID. CUDA ordinal
+# zero now means the same card in Rust, PyTorch and JAX, regardless of PCI order.
+export GPU_BENCH_PHYSICAL_DEVICE="${GPU_BENCH_DEVICE:-$default_device}"
+export GPU_BENCH_DEVICE_UUID
+GPU_BENCH_DEVICE_UUID="$(nvidia-smi -i "$GPU_BENCH_PHYSICAL_DEVICE" --query-gpu=uuid --format=csv,noheader)"
+[[ "$GPU_BENCH_DEVICE_UUID" == GPU-* && "$GPU_BENCH_DEVICE_UUID" != *$'\n'* ]] || exit 1
+export CUDA_VISIBLE_DEVICES="$GPU_BENCH_DEVICE_UUID" GPU_BENCH_DEVICE=0
+echo "$GPU_API_ROLE: physical GPU $GPU_BENCH_PHYSICAL_DEVICE ($GPU_BENCH_DEVICE_UUID), process CUDA ordinal 0"
 export BENCH_RUNS="${BENCH_RUNS:-15}" BENCH_WARMUPS="${BENCH_WARMUPS:-3}"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 RAYON_NUM_THREADS=1
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
@@ -25,7 +38,11 @@ if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
     git -C extern/tenferro-rs -c 'url.https://github.com/.insteadOf=git@github.com:' pull --ff-only
 fi
 timestamp="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
-run_dir="data/results/nvidia-gpu/gpu/$family/$timestamp"
+if [[ "$GPU_API_VERIFY_ONLY" == 1 ]]; then
+    run_dir="data/verification/nvidia-gpu/gpu/$family/$timestamp"
+else
+    run_dir="data/results/nvidia-gpu/gpu/$family/$timestamp"
+fi
 mkdir -p "$run_dir"
 suite="data/instances/gpu_$family.json"
 uv run python scripts/validate_benchmark_suite.py "benchmarks/gpu/$family.yaml"
@@ -35,7 +52,7 @@ uv run python scripts/collect_run_metadata.py \
     --suite-id "gpu/$family" --target-profile nvidia-gpu \
     --suite-file "benchmarks/gpu/$family.yaml" \
     --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --tenferro-dir extern/tenferro-rs \
-    --features cuda --blas none --cuda-device-ordinal "$GPU_BENCH_DEVICE" \
+    --features cuda --blas none --cuda-device-ordinal "$GPU_BENCH_PHYSICAL_DEVICE" \
     --output "$run_dir/run.yaml"
 uv run python scripts/benchmark_gpu_public_api.py --suite "$suite" \
     --fixtures "$run_dir/fixtures" --backend prepare
@@ -52,5 +69,11 @@ for backend in pytorch-cuda jax-cuda jax-cuda-jit; do
         --fixtures "$run_dir/fixtures" --backend "$backend" --output "$output"
     outputs+=("$output")
 done
-uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
-    --run-metadata "$run_dir/run.yaml" --output "result/nvidia-gpu/gpu/$family.md" "${outputs[@]}"
+if [[ "$GPU_API_VERIFY_ONLY" == 1 ]]; then
+    uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
+        --run-metadata "$run_dir/run.yaml" --verify-only \
+        --output "$run_dir/verification.json" "${outputs[@]}"
+else
+    uv run python scripts/format_gpu_public_api_results.py --suite "$suite" \
+        --run-metadata "$run_dir/run.yaml" --output "result/nvidia-gpu/gpu/$family.md" "${outputs[@]}"
+fi

@@ -78,13 +78,25 @@ def make_fixtures(root, suite):
             setup="fixtures, H2D, runtime/session/handles, plans and compilation outside every timer",
             trace_execution="tenferro trace excluded: run_prepared cannot borrow the entered session; JAX JIT compilation outside timing",
             short_operation_sampling="adaptive batches target 2 ms, at most 4096 operations and 256 MiB retained output; output-reuse destinations prepared before timing")
+        verify_only = os.environ.get("GPU_API_VERIFY_ONLY") == "1"
+        physical_device = os.environ.get("GPU_BENCH_PHYSICAL_DEVICE", os.environ.get("GPU_BENCH_DEVICE", "0"))
+        metadata["gpu_assignment"] = {
+            "role": os.environ.get("GPU_API_ROLE", "benchmark"),
+            "physical_device_index": int(physical_device),
+            "device_uuid": os.environ.get("GPU_BENCH_DEVICE_UUID"),
+            "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+            "process_device_ordinal": int(os.environ.get("GPU_BENCH_DEVICE", "0")),
+            "verification_only": verify_only,
+        }
+        if verify_only:
+            metadata["timing_policy"] = {"scope": "numerical verification only; no calibration or timing samples"}
         paths = [Path(".devcontainer/cuda/devcontainer.json"), Path(".devcontainer/cuda/Dockerfile"),
                  Path("src/bin/benchmark_gpu_public_api.rs"), *Path("src/bin/benchmark_gpu_public_api").glob("*.rs"),
                  Path(__file__), Path(__file__).with_name("gpu_public_api_ops.py"),
                  Path("scripts/run_gpu_public_api.sh"), root / "manifest.json",
                  Path(os.environ.get("CARGO_TARGET_DIR", "target")) / "release/benchmark_gpu_public_api"]
         metadata.setdefault("collection", {}).update(
-            command=f'BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_DEVICE={os.environ.get("GPU_BENCH_DEVICE", "0")} BENCH_RUNS={os.environ.get("BENCH_RUNS", "15")} BENCH_WARMUPS={os.environ.get("BENCH_WARMUPS", "3")} ./scripts/run_gpu_public_api.sh {suite["suite_id"].split("/")[1]}',
+            command=f'BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_DEVICE={physical_device} BENCH_RUNS={os.environ.get("BENCH_RUNS", "15")} BENCH_WARMUPS={os.environ.get("BENCH_WARMUPS", "3")} ./scripts/run_gpu_public_api.sh {suite["suite_id"].split("/")[1]}' + (' --verify-only' if verify_only else ''),
             devcontainer_config=".devcontainer/cuda/devcontainer.json",
             expected_cases=len(cases), selected_cases=len(cases),
             sha256={str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths},
@@ -135,6 +147,7 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
 
 def run_python(backend, root, output):
     device = int(os.environ.get("GPU_BENCH_DEVICE", "0"))
+    verify_only = os.environ.get("GPU_API_VERIFY_ONLY") == "1"
     warmups = int(os.environ.get("BENCH_WARMUPS", "3"))
     runs = int(os.environ.get("BENCH_RUNS", "15"))
     if warmups < 0 or runs < 1:
@@ -161,6 +174,9 @@ def run_python(backend, root, output):
             print(backend, case["id"], flush=True)
             row = {"schema_version": 1, "case_id": case["id"], "op": case["op"],
                    "backend": backend, "version": version, "device_ordinal": device,
+                   "gpu_role": os.environ.get("GPU_API_ROLE", "benchmark"),
+                   "physical_device_index": int(os.environ.get("GPU_BENCH_PHYSICAL_DEVICE", str(device))),
+                   "device_uuid": os.environ.get("GPU_BENCH_DEVICE_UUID"),
                    "setup_policy": "fixtures, H2D, library initialization, compilation and validation outside timing",
                    "session_policy": "backend process and device reused across samples"}
             row["precision_policy"] = "PyTorch TF32 disabled; JAX x64 enabled and matmul precision highest"
@@ -182,7 +198,7 @@ def run_python(backend, root, output):
                         op = lambda: operation(x, n=case["n"], dim=-1, norm="backward")
                     else:
                         from gpu_public_api_ops import torch_operation
-                        op = torch_operation(torch, case, inputs)
+                        op = torch_operation(torch, case, inputs, verify_only=verify_only)
                     sync = lambda: torch.cuda.synchronize(device)
                     ready = lambda outputs: sync()
                     download = lambda y: y.detach().cpu().numpy()
@@ -213,12 +229,14 @@ def run_python(backend, root, output):
                 ready([probe])
                 error = verify(download(probe), expected, case)
                 del probe
-                timing = measure(op, sync, ready, expected.nbytes, warmups, runs, reuse=reuse)
-                probe = op(timing["operations_per_sample"]-1) if reuse else op()
-                ready([probe])
-                error = max(error, verify(download(probe), expected, case))
-                del probe
-                row.update(status="ok", timing=timing,
+                timing = None
+                if not verify_only:
+                    timing = measure(op, sync, ready, expected.nbytes, warmups, runs, reuse=reuse)
+                    probe = op(timing["operations_per_sample"]-1) if reuse else op()
+                    ready([probe])
+                    error = max(error, verify(download(probe), expected, case))
+                    del probe
+                row.update(status="verification_only" if verify_only else "ok", timing=timing,
                            verification={"max_error_over_tolerance": error, "reference": case["reference"]})
             except Exception as error:
                 row.update(status="verification_failed" if str(error).startswith("verification") else "runtime_failed", reason=str(error))

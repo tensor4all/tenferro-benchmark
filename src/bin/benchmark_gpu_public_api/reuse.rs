@@ -51,7 +51,11 @@ pub(super) fn run(
         DType::C64 => Tensor::from_vec_col_major(shape, vec![Complex64::new(0., 0.); n])?,
         _ => return Err("invalid reuse dtype".into()),
     };
-    let cap = ((256 << 20) / bytes.max(1)).clamp(1, 4096);
+    let cap = if settings.verify_only {
+        1
+    } else {
+        ((256 << 20) / bytes.max(1)).clamp(1, 4096)
+    };
     let mut destinations = (0..cap)
         .map(|_| Ok(upload_tensor(rt, &zero)?))
         .collect::<Result<Vec<_>>>()?;
@@ -64,6 +68,9 @@ pub(super) fn run(
         s,
     )?;
     let error = verify(rt, &destinations[0], expected, case)?;
+    if settings.verify_only {
+        return Ok((None, error));
+    }
     let timing = sample_batches(settings, bytes, |count| {
         // Distinct destinations permit all move-only handles to exist before
         // the clock. The same allocations are reused by subsequent samples.

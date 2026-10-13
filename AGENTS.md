@@ -355,6 +355,15 @@ sequential: one devcontainer benchmark command at a time, with no concurrent
 
 Use the CUDA devcontainer for NVIDIA GPU measurements.
 
+On the local two-RTX-3060 host, reserve physical GPU 0 for benchmark collection
+and GPU 1 for debugging/numerical verification. The public API suite implements
+this split with `./scripts/run_gpu_public_api.sh <family> --verify-only` (GPU 1)
+and `./scripts/run_gpu_public_api.sh <family>` (GPU 0). It selects the physical
+card by UUID, exposes it as process-local CUDA ordinal 0, and records both indices
+and the role. See `docs/gpu-public-api-suite.md`. Keep timing collection
+sequential; heavy builds and CPU-intensive debug work must not overlap it even
+when targeting the other GPU.
+
 ```bash
 devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \

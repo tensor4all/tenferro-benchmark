@@ -118,12 +118,12 @@ def fixtures(case, dtype):
     return inputs, y.astype(np.bool_ if op == "compare" else dtype)
 
 
-def torch_operation(torch, case, inputs):
+def torch_operation(torch, case, inputs, *, verify_only=False):
     x, op = inputs[0], case["op"]
     if op.endswith("_into"):
         base = op.removesuffix("_into").removesuffix("_read")
         fn = torch.conj_physical if base == "conj" else getattr(torch, base)
-        count = max(1, min(4096, (256 << 20) // (x.numel()*x.element_size())))
+        count = 1 if verify_only else max(1, min(4096, (256 << 20) // (x.numel()*x.element_size())))
         destinations = [torch.empty_like(x) for _ in range(count)]
         return lambda i: fn(*inputs, out=destinations[i])
     unary = {"neg": torch.neg, "abs": torch.abs, "sign": torch.sign, "conj": torch.conj_physical,

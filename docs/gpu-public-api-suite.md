@@ -27,14 +27,30 @@ result tables. Reports are generated only under `result/nvidia-gpu/gpu/`.
 ```bash
 devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'GPU_BENCH_DEVICE=1 ./scripts/run_gpu_public_api.sh fft --verify-only'
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc 'GPU_BENCH_DEVICE=0 BENCH_RUNS=15 BENCH_WARMUPS=3 ./scripts/run_gpu_public_api.sh fft'
 ```
 
-Repeat the second command sequentially with `nn`, `isolated_ops`, `structural`,
-`linalg_public_api`, and `reuse_contraction`. Do not overlap these commands or
+Repeat verification and collection sequentially with `nn`, `isolated_ops`,
+`structural`, `linalg_public_api`, and `reuse_contraction`. Do not overlap timing commands or
 other GPU benchmark processes. The runner requires a CUDA container, fetches a
 `main` tenferro checkout while preserving pinned checkouts, and rebuilds its
 Rust binary before collection. Public GitHub fetches use HTTPS inside the image.
+
+On the two-RTX-3060 host, physical GPU 0 is reserved for benchmark collection;
+GPU 1 is for debugging and numerical verification. `--verify-only` defaults to
+GPU 1 and performs no calibration or timing samples. Normal collection defaults
+to GPU 0. `GPU_BENCH_DEVICE` selects the physical `nvidia-smi` index; the runner
+isolates its UUID with `CUDA_VISIBLE_DEVICES`, so all frameworks see that card as
+process-local CUDA ordinal 0. Both indices, the UUID and the role are recorded.
+Do not run heavy compilation or CPU-intensive validation alongside collection,
+even when the GPU differs, because the host API timing shares CPU resources.
+
+Verification outputs go under
+`data/verification/nvidia-gpu/gpu/<family>/<timestamp>/`, including a
+`verification.json` summary and per-backend records. They cannot replace a latest
+timing report: the formatter rejects `verification_only` as a measured row.
 
 The maintained defaults are 3 warmups, 15 samples, one CPU thread, GPU ordinal 0,
 a 2 ms target batch duration, a maximum of 4096 operations/sample and 256 MiB of

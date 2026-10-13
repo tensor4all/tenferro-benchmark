@@ -42,6 +42,7 @@ struct Case {
     unavailable: HashMap<String, String>,
 }
 struct Settings {
+    verify_only: bool,
     warmups: usize,
     runs: usize,
     target_ns: u128,
@@ -284,7 +285,7 @@ fn run(
             let probe = direct(case, &input, &mut executor, session)?;
             let error = verify(&rt, &probe, &expected, case)?;
             drop(probe);
-            if case.excluded.contains_key(mode) {
+            if settings.verify_only || case.excluded.contains_key(mode) {
                 return Ok((None, error));
             }
             let timing = measure(settings, bytes, &rt, || {
@@ -313,7 +314,7 @@ fn run(
                 case,
             )?;
             drop(probe);
-            if case.excluded.contains_key(mode) {
+            if settings.verify_only || case.excluded.contains_key(mode) {
                 return Ok((None, error));
             }
             let timing = measure(settings, bytes, &rt, || eager(case, &input, session))?;
@@ -343,6 +344,7 @@ fn main() -> Result<()> {
         return Err("invalid backend".into());
     }
     let settings = Settings {
+        verify_only: env_usize("GPU_API_VERIFY_ONLY", 0)? == 1,
         warmups: env_usize("BENCH_WARMUPS", 3)?,
         runs: env_usize("BENCH_RUNS", 15)?,
         target_ns: 2_000_000,
@@ -358,6 +360,9 @@ fn main() -> Result<()> {
     for case in cases {
         eprintln!("{} {}", mode, case.id);
         let mut row = json!({"schema_version":1,"case_id":case.id,"op":case.op,"backend":mode,
+            "gpu_role":std::env::var("GPU_API_ROLE").unwrap_or_else(|_| "benchmark".into()),
+            "physical_device_index":env_usize("GPU_BENCH_PHYSICAL_DEVICE", device)?,
+            "device_uuid":std::env::var("GPU_BENCH_DEVICE_UUID").ok(),
             "device_ordinal":device,"session_policy":"one entered session for initialization, calibration and samples",
             "setup_policy":"fixtures, H2D, handles, plan initialization and output validation outside timing",
             "synchronization":"CudaRuntime::synchronize; no D2H in timed region"});
@@ -372,6 +377,8 @@ fn main() -> Result<()> {
             Ok((timing, error)) => {
                 row["status"] = json!(if timing.is_some() {
                     "ok"
+                } else if settings.verify_only && !case.excluded.contains_key(&mode) {
+                    "verification_only"
                 } else {
                     "unsupported"
                 });

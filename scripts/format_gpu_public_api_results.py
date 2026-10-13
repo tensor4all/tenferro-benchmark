@@ -9,7 +9,7 @@ import numpy as np
 import yaml
 
 
-def render(suite, paths, metadata, timestamp):
+def load_rows(suite, paths, *, verify_only=False):
     wanted = {(c["id"], b) for c in suite["cases"] for b in suite["backends"]}
     rows = {}
     for path in paths:
@@ -18,21 +18,30 @@ def render(suite, paths, metadata, timestamp):
             key = row["case_id"], row["backend"]
             if key in rows or key not in wanted:
                 raise ValueError(f"duplicate or unselected result: {key}")
-            if row["status"] == "ok":
-                timing = row["timing"]
-                count = timing["operations_per_sample"]
-                samples = timing["batch_ms"]
-                if not isinstance(count, int) or count < 1 or not samples or any(not math.isfinite(v) or v <= 0 for v in samples):
-                    raise ValueError(f"invalid sampling: {key}")
+            if row["status"] == ("verification_only" if verify_only else "ok"):
                 error = row["verification"]["max_error_over_tolerance"]
                 if not math.isfinite(error) or error > 1 or error < 0:
                     raise ValueError(f"invalid verification: {key}")
-                row["samples_us"] = np.asarray(samples) * 1000 / count
+                if verify_only:
+                    if row.get("timing") is not None:
+                        raise ValueError(f"timing present in verification-only result: {key}")
+                else:
+                    timing = row["timing"]
+                    count = timing["operations_per_sample"]
+                    samples = timing["batch_ms"]
+                    if not isinstance(count, int) or count < 1 or not samples or any(not math.isfinite(v) or v <= 0 for v in samples):
+                        raise ValueError(f"invalid sampling: {key}")
+                    row["samples_us"] = np.asarray(samples) * 1000 / count
             elif row["status"] != "unsupported":
                 raise ValueError(f"cannot publish failed measurement {key}: {row.get('reason')}; raw run retained")
             rows[key] = row
     if rows.keys() != wanted:
         raise ValueError(f"missing results: {sorted(wanted - rows.keys())}")
+    return rows
+
+
+def render(suite, paths, metadata, timestamp):
+    rows = load_rows(suite, paths)
     backends = suite["backends"]
     text = [f'# {suite["suite_id"]}: CUDA public API benchmark', "",
             f'Raw run: `data/results/nvidia-gpu/{suite["suite_id"]}/{timestamp}/`.', "",
@@ -67,10 +76,21 @@ def main():
     p.add_argument("--suite", type=Path, required=True)
     p.add_argument("--run-metadata", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--verify-only", action="store_true")
     p.add_argument("inputs", nargs="+", type=Path)
     args = p.parse_args()
-    content = render(json.loads(args.suite.read_text()), args.inputs,
-                     yaml.safe_load(args.run_metadata.read_text()), args.run_metadata.parent.name)
+    suite = json.loads(args.suite.read_text())
+    metadata = yaml.safe_load(args.run_metadata.read_text())
+    if args.verify_only:
+        rows = load_rows(suite, args.inputs, verify_only=True)
+        summary = {"suite_id": suite["suite_id"], "gpu_assignment": metadata["gpu_assignment"],
+                   "verified_rows": sum(r["status"] == "verification_only" for r in rows.values()),
+                   "unsupported_rows": sum(r["status"] == "unsupported" for r in rows.values()),
+                   "numerically_verified_excluded_rows": sum(r.get("cuda_implementation_verified", False) for r in rows.values())}
+        content = json.dumps(summary, indent=2) + "\n"
+        print(content, end="")
+    else:
+        content = render(suite, args.inputs, metadata, args.run_metadata.parent.name)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temp = args.output.with_suffix(".tmp")
     temp.write_text(content)

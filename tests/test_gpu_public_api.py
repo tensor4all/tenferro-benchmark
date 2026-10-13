@@ -93,6 +93,21 @@ class PublicGpuContracts(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     formatter.render(suite, [path], {}, "test")
 
+    def test_verification_only_rows_cannot_be_published_as_timings(self):
+        suite = {"suite_id": "gpu/fft", "cases": [{"id": "one"}], "backends": ["a"]}
+        row = {"case_id": "one", "backend": "a", "status": "verification_only",
+               "timing": None, "verification": {"max_error_over_tolerance": 0.}}
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "rows.jsonl"
+            path.write_text(json.dumps(row) + "\n")
+            self.assertEqual(len(formatter.load_rows(suite, [path], verify_only=True)), 1)
+            with self.assertRaises(ValueError):
+                formatter.render(suite, [path], {}, "test")
+            row["timing"] = {"operations_per_sample": 1, "batch_ms": [1.]}
+            path.write_text(json.dumps(row) + "\n")
+            with self.assertRaises(ValueError):
+                formatter.load_rows(suite, [path], verify_only=True)
+
 
 if __name__ == "__main__":
     unittest.main()
