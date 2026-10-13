@@ -6,7 +6,7 @@ defaults:
   device: {kind: cuda, ordinal: 0}
   layout: {tenferro: col_major, framework: row_major_contiguous}
   run: {warmups: 3, runs: 10, timing_scope: steady_state_host_api_plus_device_sync}
-  verify: {reference: cpu_fp32_tree, rtol: 1.0e-4, atol: 1.0e-5}
+  verify: {reference: analytic_constant_tree_fp64_from_exact_f32_inputs, rtol: 1.0e-4, atol: 1.0e-5}
 backends:
   - tenferro-cuda-trace
   - tenferro-cuda-eager
@@ -36,4 +36,4 @@ problems:
       fill_value: 0.8408964152537145
       execution: tree
     run: {warmups: 3, runs: 10, timing_scope: steady_state_host_api_plus_device_sync}
-    verify: {reference: cpu_fp32_tree, rtol: 1.0e-4, atol: 1.0e-5}
+    verify: {reference: analytic_constant_tree_fp64_from_exact_f32_inputs, rtol: 1.0e-4, atol: 1.0e-5}
