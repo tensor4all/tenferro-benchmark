@@ -138,3 +138,27 @@ problems:
     - reduce_sum_strided_read_f64_n1048576
     - conj_strided_read_c32_n1048576
     - conj_strided_read_c64_n1048576
+    - axpby_overwrite_f32_n1024
+    - axpby_lerp_f32_n1024
+    - axpby_unit_add_f32_n1024
+    - axpby_overwrite_f64_n1024
+    - axpby_lerp_f64_n1024
+    - axpby_unit_add_f64_n1024
+    - axpby_overwrite_c32_n1024
+    - axpby_lerp_c32_n1024
+    - axpby_unit_add_c32_n1024
+    - axpby_overwrite_c64_n1024
+    - axpby_lerp_c64_n1024
+    - axpby_unit_add_c64_n1024
+    - axpby_overwrite_f32_n1048576
+    - axpby_lerp_f32_n1048576
+    - axpby_unit_add_f32_n1048576
+    - axpby_overwrite_f64_n1048576
+    - axpby_lerp_f64_n1048576
+    - axpby_unit_add_f64_n1048576
+    - axpby_overwrite_c32_n1048576
+    - axpby_lerp_c32_n1048576
+    - axpby_unit_add_c32_n1048576
+    - axpby_overwrite_c64_n1048576
+    - axpby_lerp_c64_n1048576
+    - axpby_unit_add_c64_n1048576

@@ -358,3 +358,27 @@ extra residual/rank/singular-value outputs; no matching single-call
 solution-only contract is established here. These explicit unsupported cells
 are not measured coverage. Wide and rank-deficient problems are outside the
 current eager QR-based API contract, not smaller replacements for these cases.
+
+Additional compact AXPBY contracts select `(alpha,beta)=(0.5,0)` (overwrite,
+PyTorch `mul(..., out=...)`), `(0.25,0.75)` (PyTorch
+`lerp(y,x,0.25,out=y)`), and `(1,1)` (native in-place addition). Each has
+F32/F64/C32/C64 cases at 1024/1048576 elements with independent, nonconstant
+GPU seeds; complex seeds also have nonzero imaginary values. Parameter
+construction, output allocation and seed restoration remain untimed.
+
+Unit coefficients have genuine public JAX output-reuse counterparts:
+`jax.ref.addupdate` on preallocated caller-owned Refs, with eager and AOT
+compiled paths reported separately. This is a mutable Ref API, not immutable
+array donation. In JAX 0.10.1, `block_until_ready(ref)` is a no-op and
+`effects_barrier()` does not finish queued Ref GPU writes. Full `ref.get`
+snapshots create different buffers and are used only for untimed inspection.
+For completion, a separately AOT-compiled helper reads one scalar from every
+updated Ref and waits on those device tokens. Prepare and warm each batch-size
+helper outside the clock, retain tokens through clock stop, and include their
+logical bytes in the 256 MiB retention limit. This synchronization has a fixed
+scalar-read cost per destination, which is recorded in raw sampling metadata;
+it performs no full output copy or D2H transfer inside timing. GPU1 checks
+confirmed all destinations keep their buffer addresses through restoration
+and updates, and validated completion against native CUDA context waits.
+Ref.addupdate has no scaled-alpha argument; pre-scaling its inputs would
+change the timed operation and is not used for other coefficient cases.

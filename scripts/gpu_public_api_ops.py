@@ -115,7 +115,12 @@ def fixtures(case, dtype):
         x = (raw + 1j * raw[::-1]).astype(dtype)
     rhs = (1.5 - raw).astype(dtype)
     if op == "axpby_read_into_accum":
-        return [x, rhs], (rhs.astype(np.complex128 if np.iscomplexobj(x) else np.float64) + .5*x).astype(dtype)
+        precision = np.complex128 if np.iscomplexobj(x) else np.float64
+        if "alpha" in case:
+            rhs = (1.5 + .2*np.sin(raw*5) + .1*np.cos(np.roll(raw, 7)*3)).astype(dtype)
+            if np.iscomplexobj(x):
+                rhs = (rhs + .125j*np.roll(raw, 3)).astype(dtype)
+        return [x, rhs], (case.get("beta", 1.)*rhs.astype(precision) + case.get("alpha", .5)*x.astype(precision)).astype(dtype)
     if op == "compare":
         rhs = np.roll(x, 1).copy()
         rhs.flat[::7] = x.flat[::7]
@@ -233,8 +238,15 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
     if op == "axpby_read_into_accum":
         count = 1 if verify_only else max(1, min(4096, (256 << 20) // (x.numel()*x.element_size())))
         destinations = [torch.empty_like(x) for _ in range(count)]
-        def operation(i):
-            return destinations[i].add_(x, alpha=.5)
+        alpha, beta = case.get("alpha", .5), case.get("beta", 1.)
+        if beta == 1.:
+            operation = lambda i: destinations[i].add_(x, alpha=alpha)
+        elif beta == 0.:
+            operation = lambda i: torch.mul(x, alpha, out=destinations[i])
+        elif beta == 1.-alpha:
+            operation = lambda i: torch.lerp(destinations[i], x, alpha, out=destinations[i])
+        else:
+            raise ValueError("no verified single-call PyTorch alpha/beta counterpart")
         def prepare(count):
             for destination in destinations[:count]:
                 destination.copy_(inputs[1])

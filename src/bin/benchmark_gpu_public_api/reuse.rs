@@ -58,16 +58,21 @@ pub(super) fn run(
 ) -> Result<(Option<Value>, f64)> {
     let n = expected.shape().iter().product::<usize>();
     let shape = expected.shape().to_vec();
+    let alpha = case.alpha.unwrap_or(0.5);
+    let beta = case.beta.unwrap_or(1.0);
     let scalars = match expected.dtype() {
-        DType::F32 => (ContractionScalar::F32(0.5), ContractionScalar::F32(1.)),
-        DType::F64 => (ContractionScalar::F64(0.5), ContractionScalar::F64(1.)),
+        DType::F32 => (
+            ContractionScalar::F32(alpha as f32),
+            ContractionScalar::F32(beta as f32),
+        ),
+        DType::F64 => (ContractionScalar::F64(alpha), ContractionScalar::F64(beta)),
         DType::C32 => (
-            ContractionScalar::C32(Complex32::new(0.5, 0.)),
-            ContractionScalar::C32(Complex32::new(1., 0.)),
+            ContractionScalar::C32(Complex32::new(alpha as f32, 0.)),
+            ContractionScalar::C32(Complex32::new(beta as f32, 0.)),
         ),
         DType::C64 => (
-            ContractionScalar::C64(Complex64::new(0.5, 0.)),
-            ContractionScalar::C64(Complex64::new(1., 0.)),
+            ContractionScalar::C64(Complex64::new(alpha, 0.)),
+            ContractionScalar::C64(Complex64::new(beta, 0.)),
         ),
         _ => return Err("invalid reuse dtype".into()),
     };
