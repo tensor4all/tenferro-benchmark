@@ -196,3 +196,14 @@ collection, diagnostic and report wall observations. Command totals include
 setup and report generation, excluding only the final report file writes.
 `BENCH_COMMAND_BUDGET_SECONDS` enables a descriptive over-budget label; it
 never changes functional success or constitutes a performance regression gate.
+
+Latest CPU observations are in the [MKL report](../result/amd-cpu/cpu/session_matrix.md),
+[native report](../result/amd-cpu/cpu/session_matrix_native.md), and
+[command wall report](../result/amd-cpu/cpu/public_route_command_wall.md).
+Validate selection, cache-process separation, completion and budget reporting with:
+
+```bash
+uv run python -m unittest tests/test_session_matrix_suite.py tests/test_small_work_suite.py \
+  tests/test_case_status.py tests/test_benchmark_wall.py \
+  tests/test_route_coverage.py tests/test_regression_detector.py
+```

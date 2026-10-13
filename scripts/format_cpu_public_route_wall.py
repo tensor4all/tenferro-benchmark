@@ -13,8 +13,13 @@ def main():
     parser.add_argument("runs", type=Path, nargs="+")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    models = set()
+    for directory in args.runs:
+        for line in (directory / "cpu_info.md").read_text().splitlines():
+            if line.startswith("- Model:"):
+                models.add(line.split(":", 1)[1].strip())
     lines = ["# CPU public-route command wall observations", "",
-             "Sequential repository CPU devcontainer commands on the Intel i9-9900K; the maintained target namespace is `amd-cpu`. These are command costs, not operation speedups. Times include build/checkout, metadata, prepared input generation, correctness, warmup, collection, separate diagnostics and report generation; final report file writes are excluded. Build cache state differs between campaigns. Initial reference runs preceded budget configuration. An over-budget command is diagnostic and never a functional failure.", "",
+             f"Sequential repository CPU devcontainer commands. Observed CPU models: {', '.join(sorted(models)) or 'unknown'}. These are command costs, not operation speedups. Times include build/checkout, metadata, prepared input generation, correctness, warmup, collection, separate diagnostics and report generation; final report file writes are excluded. Build cache state differs between campaigns. Initial reference runs preceded budget configuration. An over-budget command is diagnostic and never a functional failure.", "",
              "| Suite | Coverage | Effort | Features | Threads | Command s | Build s | Collection/metadata s | Diagnostic build s | Diagnostic collection s | Report s | Configured budget s | Budget status | Raw run |",
              "|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|"]
     for directory in args.runs:

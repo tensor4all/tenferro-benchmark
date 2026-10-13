@@ -183,8 +183,8 @@ assert_any_file() {
 
 (
   cd "$TMP"
-  BENCHMARK_COMMIT=fixture-benchmark BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 1 >"$TMP/run_all_docs_test.out"
-  BENCHMARK_COMMIT=fixture-benchmark BENCHMARK_HOST_OS=Linux PATH="/usr/bin:/bin" ./scripts/run_all.sh 4 >>"$TMP/run_all_docs_test.out"
+  BENCHMARK_COMMIT=fixture-benchmark BENCHMARK_HOST_OS=Linux RUN_PUBLIC_API_SUITE=1 PATH="/usr/bin:/bin" ./scripts/run_all.sh 1 >"$TMP/run_all_docs_test.out"
+  BENCHMARK_COMMIT=fixture-benchmark BENCHMARK_HOST_OS=Linux RUN_PUBLIC_API_SUITE=1 PATH="/usr/bin:/bin" ./scripts/run_all.sh 4 >>"$TMP/run_all_docs_test.out"
 )
 
 assert_any_file "$TMP/data/results/amd-cpu/cpu/einsum/*/run.yaml"
@@ -257,7 +257,7 @@ done
   cd "$TMP"
   TEST_EMPTY_BLAS_PATHS=1 BENCHMARK_COMMIT=fixture-benchmark \
     BENCHMARK_HOST_OS=Darwin BENCHMARK_TARGET_PROFILE=mac-cpu \
-    TENFERRO_CPU_FEATURES=blas-accelerate RUN_PUBLIC_API_PROFILE=full PATH="/usr/bin:/bin" \
+    TENFERRO_CPU_FEATURES=blas-accelerate RUN_PUBLIC_API_SUITE=1 RUN_PUBLIC_API_PROFILE=full PATH="/usr/bin:/bin" \
     ./scripts/run_all.sh 1 >>"$TMP/run_all_docs_test.out"
 )
 test "$(cat "$TMP/public_profile_calls.log")" = "$(printf 'quick\nquick\nquick\nfull')"
