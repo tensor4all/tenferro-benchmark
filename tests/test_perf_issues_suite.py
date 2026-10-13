@@ -119,6 +119,28 @@ class PerfIssueSuiteTest(unittest.TestCase):
         self.assertIn("BENCH_GPU_APPS_END", script)
         self.assertIn('if [[ -n "$BENCH_GPU_APPS_START" || -n "$GPU_APPS_AT_END" ]]', script)
 
+    def test_shape_stream_units_and_counter_values_are_rendered_separately(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp) / "data/results/nvidia-gpu/gpu/perf_issues/probe"
+            run_dir.mkdir(parents=True)
+            base = dict(case_id="stream", issues=["#1873"], kind="shape_stream", arm="fresh",
+                        backend="tenferro-cuda", dtype="f64", threads=1, params={"n": 16},
+                        correctness_status="passed", sequence=[{"key": 0, "lhs_strides": [1, 16, 32]}])
+            latency = dict(base, measurement_scope="shape_stream_diagnostic",
+                           samples=[dict(sample_index=0, elapsed_ns=123456, iterations=1)])
+            counter = dict(base, case_id="stream-counters", measurement_scope="counter_diagnostic", samples=[],
+                           counter_observations=[dict(phase="completion", stats=dict(
+                               plans=dict(entries=8, hits=0, misses=8, evictions=0, retained_bytes=4096),
+                               workspace=dict(bytes=2048), retirement=dict(in_flight=0)))])
+            (run_dir / "samples_t1.jsonl").write_text(json.dumps(latency) + "\n" + json.dumps(counter) + "\n")
+            with patch.object(suite, "ROOT", Path(tmp)):
+                suite.report(run_dir, "nvidia-gpu", "gpu")
+            text = (Path(tmp) / "result/nvidia-gpu/gpu/perf_issues.md").read_text()
+            self.assertIn("Median ns/sequence", text)
+            self.assertIn('"lhs_strides":[1,16,32]', text)
+            self.assertIn("| completion | — | — | 8 | 0 | 8 | 0 | 4096 | 2048 | 0 |", text)
+            self.assertNotIn("stream-counters |", text)
+
     def test_failed_binary_is_a_failed_row(self):
         with tempfile.TemporaryDirectory() as tmp:
             binary = Path(tmp) / "fail"
