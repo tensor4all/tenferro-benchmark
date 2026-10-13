@@ -50,6 +50,9 @@ def render(suite, paths, metadata, timestamp):
             'All measured output elements are checked against NumPy/SciPy double-precision reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.', "",
             '| Case | ' + ' | '.join(backends) + ' |',
             '| --- | ' + ' | '.join(['---:'] * len(backends)) + ' |']
+    if any(case.get("read_op") for case in suite["cases"]):
+        text[-2:-2] = [
+            'Transposed borrowed-read cases use prepared native CUDA views in tenferro and PyTorch. JAX compares the same logical values in its native representation; its columns do not claim an equivalent public strided-view contract. View creation and input conversion are outside timing.', ""]
     for case in suite["cases"]:
         cells = []
         for backend in backends:

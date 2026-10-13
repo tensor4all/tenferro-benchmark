@@ -214,6 +214,11 @@ def run_python(backend, root, output):
                    "setup_policy": "fixtures, H2D, library initialization, compilation and validation outside timing",
                    "session_policy": "backend process and device reused across samples"}
             row["precision_policy"] = "PyTorch TF32 disabled; JAX x64 enabled and matmul precision highest"
+            if case.get("read_op"):
+                row["input_layout_policy"] = (
+                    "prepared transposed CUDA view; no input copy inside timing"
+                    if backend == "pytorch-cuda" else
+                    "same logical values prepared in native JAX representation; no public strided-view equivalence claimed")
             if "_into_accum" in case["op"]:
                 row["input_restoration"] = "GPU seed copied into each destination before every batch; synchronized outside timing"
                 row["accumulation"] = {"alpha": 0.5, "beta": 1.0}

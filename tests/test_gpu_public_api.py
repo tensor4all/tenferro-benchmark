@@ -18,6 +18,19 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_strided_rectangular_fixture_preserves_logical_axes(self):
+        case = dict(op="reduce_sum_strided_read", read_op="reduce_sum",
+                    n=1024, shape=[16, 64])
+        inputs, expected = fixtures(case, "<f8")
+        self.assertEqual(inputs[0].shape, (64, 16))
+        self.assertEqual(expected.shape, (16,))
+        np.testing.assert_allclose(inputs[0].T.sum(axis=1), expected,
+                                   rtol=1e-14, atol=1e-14)
+        case.update(op="conj_strided_read", read_op="conj")
+        inputs, expected = fixtures(case, "<c16")
+        self.assertTrue(np.any(inputs[0].imag != 0))
+        np.testing.assert_array_equal(inputs[0].T.conj(), expected)
+
     def test_device_validation_rejects_fallback_in_any_output_leaf(self):
         def torch_value(kind, index):
             return SimpleNamespace(device=SimpleNamespace(type=kind, index=index))
