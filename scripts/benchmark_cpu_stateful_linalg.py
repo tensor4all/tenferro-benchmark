@@ -50,7 +50,7 @@ def collect(binary, output, threads):
 
 
 def statistics_for(rows, environment_observed=True):
-    if len(rows) != 7 or any(r['correctness'] != 'passed' or len(r['samples_ns']) != 3 for r in rows):
+    if len(rows) != 7 or {r.get('process_index') for r in rows} != set(range(7)) or any(r['correctness'] != 'passed' or len(r['samples_ns']) != 3 for r in rows):
         return None
     medians = [statistics.median(r['samples_ns']) for r in rows]
     per_sequence = [n/r['workflows_per_sample'] for n, r in zip(medians, rows)]

@@ -14,13 +14,15 @@ class StatefulLinalgTest(unittest.TestCase):
         return [dict(correctness='passed', samples_ns=[2_000_000]*3,
                      workflows_per_sample=64, threads=1, worker_count=1,
                      provider='blas', affinity='none', max_reconstruction_error=1e-15,
-                     max_orthogonality_error=2e-15) for _ in range(7)]
+                     max_orthogonality_error=2e-15, process_index=i) for i in range(7)]
 
     def test_incomplete_failed_short_noisy_or_unobserved_replicates_are_inconclusive(self):
         rows = self.rows()
         self.assertEqual(suite.statistics_for(rows)['status'], 'observed')
         self.assertEqual(suite.statistics_for(rows, environment_observed=False)['status'], 'inconclusive')
         self.assertIsNone(suite.statistics_for(rows[:-1]))
+        duplicated = self.rows(); duplicated[0]['process_index'] = 1
+        self.assertIsNone(suite.statistics_for(duplicated))
         rows[0]['correctness'] = 'failed'
         self.assertIsNone(suite.statistics_for(rows))
         rows = self.rows(); rows[0]['samples_ns'] = [999_999]*3
