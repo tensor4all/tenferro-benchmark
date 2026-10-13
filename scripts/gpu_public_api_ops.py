@@ -13,6 +13,16 @@ def fixtures(case, dtype):
     i = np.arange(n, dtype=np.uint64)
     raw = (((i * 2654435761 + 679) % 2001).astype(np.float64) / 2000 - .5).reshape(shape)
     x = raw.astype(dtype)
+    if op == "lu":
+        from scipy.linalg import lu, lu_factor
+        precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64
+        matrix = raw + 1j*raw[::-1] if precision == np.complex128 else raw
+        x = np.roll((np.eye(*shape) + .05*matrix).astype(dtype), 1, axis=0)
+        p, l, u = lu(x.astype(precision))
+        _, pivots = lu_factor(x.astype(precision))
+        parity = -1 if np.count_nonzero(pivots != np.arange(len(pivots))) % 2 else 1
+        # tenferro uses P A = L U; SciPy returns A = P L U.
+        return [x], (p.T.astype(dtype), l.astype(dtype), u.astype(dtype), np.asarray(parity, dtype=dtype))
     if op.startswith("dot_general"):
         precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64
         a = (raw + 1j*raw[::-1] if precision == np.complex128 else raw).astype(dtype)

@@ -325,3 +325,16 @@ JAX prepares the same logical values outside compilation/timing and compares
 the operation result, without claiming an equivalent public strided-view
 contract. Eager owned tensors are not substitutes for borrowed reads and stay
 unsupported. These cases do not alias other read operations or layouts.
+
+Full public LU selects 24 square/tall/wide cases (side 32/256,
+F32/F64/C32/C64) through dynamic `TensorLinalgExt::lu` and
+`EagerSessionLinalgExt::lu`. All four outputs P/L/U/parity are retained
+through synchronization and checked against independent double-precision
+SciPy factorization. tenferro uses `P A = L U`; the fixture transposes
+SciPy's `A = P L U` permutation and derives parity from pivot swaps.
+The dynamic CUDA implementation returns parity in the input dtype; these
+cases do not establish the typed complex API's real-parity contract.
+PyTorch/JAX candidates return three outputs and have no verified matching
+single-call P/L/U/parity operation, so those cells remain unsupported.
+The native cuSOLVER diagnostic-status read is intrinsic to the public LU
+call and remains included; benchmark output inspection downloads are untimed.

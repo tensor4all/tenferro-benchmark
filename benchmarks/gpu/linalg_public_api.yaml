@@ -150,3 +150,27 @@ problems:
     - householder_r_default_c64_512x256
     - householder_q_columns_prefix_c64_512x256
     - householder_q_columns_complement_c64_512x256
+    - lu_square_f32_s32
+    - lu_square_f64_s32
+    - lu_square_c32_s32
+    - lu_square_c64_s32
+    - lu_tall_f32_s32
+    - lu_tall_f64_s32
+    - lu_tall_c32_s32
+    - lu_tall_c64_s32
+    - lu_wide_f32_s32
+    - lu_wide_f64_s32
+    - lu_wide_c32_s32
+    - lu_wide_c64_s32
+    - lu_square_f32_s256
+    - lu_square_f64_s256
+    - lu_square_c32_s256
+    - lu_square_c64_s256
+    - lu_tall_f32_s256
+    - lu_tall_f64_s256
+    - lu_tall_c32_s256
+    - lu_tall_c64_s256
+    - lu_wide_f32_s256
+    - lu_wide_f64_s256
+    - lu_wide_c32_s256
+    - lu_wide_c64_s256

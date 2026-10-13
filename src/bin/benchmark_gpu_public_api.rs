@@ -293,7 +293,7 @@ fn run(
     ) {
         return state::run(root, case, mode, settings, device);
     }
-    if matches!(case.op.as_str(), "svd_full" | "slogdet" | "householder_qr") {
+    if matches!(case.op.as_str(), "svd_full" | "slogdet" | "householder_qr" | "lu") {
         return multi::run(root, case, mode, settings, device);
     }
     let input_host = case
