@@ -276,7 +276,7 @@ fn run(
     settings: &Settings,
     device: usize,
 ) -> Result<(Option<Value>, f64)> {
-    if matches!(case.op.as_str(), "svd_full" | "slogdet") {
+    if matches!(case.op.as_str(), "svd_full" | "slogdet" | "householder_qr") {
         return multi::run(root, case, mode, settings, device);
     }
     let input_host = case

@@ -11,6 +11,19 @@ from benchmark_gpu_public_api import verify
 
 
 class MultiOutputVerification(unittest.TestCase):
+    def test_raw_householder_coefficients_and_jax_layout_are_checked(self):
+        from gpu_multi_output_verification import normalized_outputs
+        for dtype in (np.float64, np.complex128):
+            case = dict(op="householder_qr", n=60, shape=[12, 5], rtol=1e-9, atol=1e-9)
+            inputs, expected = fixtures(case, dtype)
+            native_jax = expected[0].T, expected[1]
+            logical = normalized_outputs(native_jax, case, "jax-cuda")
+            self.assertLessEqual(verify_outputs(logical, expected, case, inputs, verify), 1)
+            corrupted = [a.copy() for a in expected]
+            corrupted[1][0] *= .5
+            with self.assertRaises(ValueError):
+                verify_outputs(corrupted, expected, case, inputs, verify)
+
     def test_svd_gauge_changes_pass_but_corrupted_nullspaces_fail(self):
         for dtype in (np.float64, np.complex128):
             for shape in ([12, 5], [5, 12]):

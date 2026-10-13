@@ -10,6 +10,27 @@ def verify_outputs(actual, expected, case, inputs, verify_one):
     actual, expected = leaves(actual), leaves(expected)
     if len(actual) != len(expected):
         raise ValueError("verification output arity mismatch")
+    if case["op"] == "householder_qr":
+        for a, e in zip(actual, expected):
+            if a.shape != e.shape or a.dtype != e.dtype or not np.all(np.isfinite(a)):
+                raise ValueError("verification compact-QR shape/dtype/finiteness mismatch")
+        packed, tau = actual
+        dtype = np.complex128 if np.iscomplexobj(packed) else np.float64
+        packed, tau = packed.astype(dtype), tau.astype(dtype)
+        m, n = inputs[0].shape
+        k = min(m, n)
+        q = np.eye(m, dtype=dtype)
+        for j in range(k):
+            v = np.concatenate((np.ones(1, dtype=dtype), packed[j+1:, j]))
+            q[:, j:] -= tau[j]*np.outer(q[:, j:] @ v, v.conj())
+        r = np.triu(packed[:k, :])
+        a = inputs[0].astype(dtype)
+        worst = float(np.max(np.abs(q[:, :k] @ r-a)/(case["atol"]+case["rtol"]*np.abs(a))))
+        identity = np.eye(m)
+        worst = max(worst, float(np.max(np.abs(q.conj().T @ q-identity)/(case["atol"]+case["rtol"]*identity))))
+        if not np.isfinite(worst) or worst > 1:
+            raise ValueError(f"verification compact-QR error/tolerance = {worst}")
+        return worst
     if case["op"] != "svd_full":
         return max(verify_one(a, e, case) for a, e in zip(actual, expected))
     for a, e in zip(actual, expected):
@@ -32,3 +53,12 @@ def verify_outputs(actual, expected, case, inputs, verify_one):
     if not np.isfinite(worst) or worst > 1:
         raise ValueError(f"verification full-SVD error/tolerance = {worst}")
     return worst
+
+
+def normalized_outputs(actual, case, backend):
+    values = leaves(actual)
+    if case["op"] == "householder_qr" and backend.startswith("jax"):
+        # JAX raw QR stores native reflector rows; inspect the logical packed
+        # columns only after the operation and its clock have completed.
+        values[0] = values[0].T
+    return values

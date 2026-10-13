@@ -944,6 +944,342 @@
       ],
       "variant": "negative",
       "issue": 155
+    },
+    {
+      "id": "householder_qr_square_f32_32x32",
+      "op": "householder_qr",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_f32_64x32",
+      "op": "householder_qr",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_f32_32x64",
+      "op": "householder_qr",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_f64_32x32",
+      "op": "householder_qr",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_f64_64x32",
+      "op": "householder_qr",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_f64_32x64",
+      "op": "householder_qr",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_c32_32x32",
+      "op": "householder_qr",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_c32_64x32",
+      "op": "householder_qr",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_c32_32x64",
+      "op": "householder_qr",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_phase_c32_32x32",
+      "op": "slogdet",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "phase",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_c64_32x32",
+      "op": "householder_qr",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_c64_64x32",
+      "op": "householder_qr",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_c64_32x64",
+      "op": "householder_qr",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        32,
+        64
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_phase_c64_32x32",
+      "op": "slogdet",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "phase",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_f32_256x256",
+      "op": "householder_qr",
+      "dtype": "f32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_f32_512x256",
+      "op": "householder_qr",
+      "dtype": "f32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_f32_256x512",
+      "op": "householder_qr",
+      "dtype": "f32",
+      "n": 131072,
+      "shape": [
+        256,
+        512
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_f64_256x256",
+      "op": "householder_qr",
+      "dtype": "f64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_f64_512x256",
+      "op": "householder_qr",
+      "dtype": "f64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_f64_256x512",
+      "op": "householder_qr",
+      "dtype": "f64",
+      "n": 131072,
+      "shape": [
+        256,
+        512
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_c32_256x256",
+      "op": "householder_qr",
+      "dtype": "c32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_c32_512x256",
+      "op": "householder_qr",
+      "dtype": "c32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_c32_256x512",
+      "op": "householder_qr",
+      "dtype": "c32",
+      "n": 131072,
+      "shape": [
+        256,
+        512
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_phase_c32_256x256",
+      "op": "slogdet",
+      "dtype": "c32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "variant": "phase",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_square_c64_256x256",
+      "op": "householder_qr",
+      "dtype": "c64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "variant": "square",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_tall_c64_512x256",
+      "op": "householder_qr",
+      "dtype": "c64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "tall",
+      "issue": 155
+    },
+    {
+      "id": "householder_qr_wide_c64_256x512",
+      "op": "householder_qr",
+      "dtype": "c64",
+      "n": 131072,
+      "shape": [
+        256,
+        512
+      ],
+      "variant": "wide",
+      "issue": 155
+    },
+    {
+      "id": "slogdet_phase_c64_256x256",
+      "op": "slogdet",
+      "dtype": "c64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "variant": "phase",
+      "issue": 155
     }
   ]
 }

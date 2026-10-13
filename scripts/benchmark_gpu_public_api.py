@@ -211,7 +211,7 @@ def run_python(backend, root, output):
                 is_fft = case["op"] in {"fft", "ifft", "rfft", "irfft"}
                 x_host = load_array(root, case["inputs"][0])
                 expected = [load_array(root, a) for a in case["outputs"]]
-                from gpu_multi_output_verification import leaves, verify_outputs
+                from gpu_multi_output_verification import leaves, verify_outputs, normalized_outputs
                 if backend == "pytorch-cuda":
                     inputs = [torch.from_numpy(np.ascontiguousarray(a) if a.ndim else a).to(f"cuda:{device}") for a in hosts]
                     if is_fft:
@@ -251,14 +251,14 @@ def run_python(backend, root, output):
                     elif value.devices() != {gpu}:
                         raise RuntimeError("CPU fallback or wrong JAX GPU")
                 ready([probe])
-                error = verify_outputs([download(v) for v in leaves(probe)], expected, case, hosts, verify)
+                error = verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify)
                 del probe
                 timing = None
                 if not verify_only:
                     timing = measure(op, sync, ready, sum(v.nbytes for v in expected), warmups, runs, reuse=reuse)
                     probe = op(timing["operations_per_sample"]-1) if reuse else op()
                     ready([probe])
-                    error = max(error, verify_outputs([download(v) for v in leaves(probe)], expected, case, hosts, verify))
+                    error = max(error, verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify))
                     del probe
                 row.update(status="verification_only" if verify_only else "ok", timing=timing,
                            verification={"max_error_over_tolerance": error, "reference": case["reference"]})

@@ -82,3 +82,31 @@ problems:
     - svd_full_wide_c64_256x512
     - slogdet_positive_c64_256x256
     - slogdet_negative_c64_256x256
+    - householder_qr_square_f32_32x32
+    - householder_qr_tall_f32_64x32
+    - householder_qr_wide_f32_32x64
+    - householder_qr_square_f64_32x32
+    - householder_qr_tall_f64_64x32
+    - householder_qr_wide_f64_32x64
+    - householder_qr_square_c32_32x32
+    - householder_qr_tall_c32_64x32
+    - householder_qr_wide_c32_32x64
+    - slogdet_phase_c32_32x32
+    - householder_qr_square_c64_32x32
+    - householder_qr_tall_c64_64x32
+    - householder_qr_wide_c64_32x64
+    - slogdet_phase_c64_32x32
+    - householder_qr_square_f32_256x256
+    - householder_qr_tall_f32_512x256
+    - householder_qr_wide_f32_256x512
+    - householder_qr_square_f64_256x256
+    - householder_qr_tall_f64_512x256
+    - householder_qr_wide_f64_256x512
+    - householder_qr_square_c32_256x256
+    - householder_qr_tall_c32_512x256
+    - householder_qr_wide_c32_256x512
+    - slogdet_phase_c32_256x256
+    - householder_qr_square_c64_256x256
+    - householder_qr_tall_c64_512x256
+    - householder_qr_wide_c64_256x512
+    - slogdet_phase_c64_256x256
