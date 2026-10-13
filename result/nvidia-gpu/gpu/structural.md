@@ -1,6 +1,6 @@
 # gpu/structural: CUDA public API benchmark
 
-Raw run: `data/results/nvidia-gpu/gpu/structural/20261013_101528/`.
+Raw run: `data/results/nvidia-gpu/gpu/structural/20261013_133930/`.
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
@@ -10,299 +10,299 @@ All measured output elements are checked against NumPy/SciPy double-precision re
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda | jax-cuda-jit |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| pad_default_f32_n1024 | 17.939 (0.690) | 80.086 (21.552) | 28.387 (0.239) | 411.945 (23.250) | 83.406 (2.607) |
-| pad_default_f64_n1024 | 26.214 (0.567) | 165.984 (10.755) | 29.090 (2.718) | 464.812 (15.376) | 88.498 (11.646) |
-| slice_default_f32_n1024 | 33.647 (0.568) | unsupported | 22.543 (0.131) | 208.632 (38.765) | 80.047 (12.019) |
-| slice_default_f64_n1024 | 34.938 (1.586) | unsupported | 23.672 (1.595) | 163.754 (27.369) | 74.247 (1.076) |
-| reverse_default_f32_n1024 | 34.150 (0.640) | 186.372 (6.625) | 12.647 (0.093) | 121.541 (14.118) | 77.561 (5.494) |
-| reverse_default_f64_n1024 | 36.490 (0.539) | 213.465 (25.083) | 12.661 (0.382) | 101.340 (1.623) | 86.092 (6.584) |
-| concatenate_default_f32_n1024 | 71.364 (1.389) | 592.615 (60.906) | 11.662 (0.061) | 224.310 (17.417) | 86.570 (4.988) |
-| concatenate_default_f64_n1024 | 74.525 (0.703) | 458.639 (43.200) | 11.372 (0.381) | 266.595 (31.777) | 87.612 (8.480) |
-| extract_diag_default_f32_n1024 | 40.490 (0.807) | 128.949 (7.353) | 15.749 (0.218) | 124.463 (11.153) | 81.067 (1.677) |
-| extract_diag_default_f64_n1024 | 43.660 (0.903) | 143.561 (5.787) | 15.793 (0.149) | 108.309 (13.287) | 82.317 (5.588) |
-| embed_diag_default_f32_n32 | 46.591 (1.722) | 179.418 (7.661) | 22.433 (2.152) | 123.305 (9.030) | 83.842 (6.422) |
-| embed_diag_default_f64_n32 | 46.066 (1.856) | 199.968 (8.394) | 21.996 (0.094) | 131.929 (11.017) | 81.881 (1.817) |
-| tril_default_f32_n1024 | 44.261 (0.940) | 207.007 (12.842) | 7.814 (0.296) | 95.876 (18.368) | 86.847 (6.203) |
-| tril_default_f64_n1024 | 44.094 (1.278) | 228.599 (14.010) | 7.706 (0.039) | 92.427 (10.705) | 85.252 (6.909) |
-| triu_default_f32_n1024 | 44.035 (1.312) | 252.647 (9.465) | 7.844 (0.043) | 95.684 (13.344) | 86.981 (7.859) |
-| triu_default_f64_n1024 | 45.329 (2.985) | 273.472 (4.472) | 7.920 (0.096) | 98.293 (12.558) | 85.825 (8.592) |
-| take_along_axis_broadcast_indices_f32_n1024 | 109.256 (26.672) | 312.468 (6.936) | 41.197 (3.420) | 93.710 (0.720) | 89.734 (8.799) |
-| take_along_axis_batched_indices_f32_n1024 | unsupported | unsupported | 38.176 (0.217) | 100.010 (9.105) | 89.325 (5.540) |
-| take_along_axis_broadcast_indices_f64_n1024 | 183.111 (6.939) | 324.148 (5.251) | 38.812 (0.188) | 100.220 (10.796) | 87.212 (3.339) |
-| take_along_axis_batched_indices_f64_n1024 | unsupported | unsupported | 38.447 (0.833) | 101.505 (14.927) | 91.540 (10.445) |
-| scatter_default_f32_n1024 | 221.686 (2.998) | 930.949 (49.251) | 25.939 (1.274) | 262.291 (9.906) | 97.331 (14.999) |
-| scatter_default_f64_n1024 | 220.910 (3.576) | 774.991 (132.228) | 25.683 (0.188) | 287.372 (28.047) | 97.014 (6.599) |
-| cast_default_f32_n1024 | 13.521 (0.221) | 126.029 (5.354) | 12.365 (0.550) | 193.804 (41.770) | 77.297 (3.045) |
-| cast_default_f64_n1024 | 13.368 (0.251) | 125.631 (5.135) | 12.633 (0.521) | 177.450 (30.940) | 80.387 (4.935) |
-| pad_default_f32_n1048576 | 178.011 (9.408) | 269.776 (10.360) | 42.607 (0.033) | 280.623 (14.727) | 81.009 (5.231) |
-| pad_default_f64_n1048576 | 223.638 (5.502) | 295.505 (4.580) | 80.591 (0.109) | 290.513 (8.369) | 81.245 (2.797) |
-| slice_default_f32_n1048576 | 270.211 (9.722) | unsupported | 23.168 (0.284) | 140.569 (0.588) | 84.095 (1.485) |
-| slice_default_f64_n1048576 | 259.856 (13.747) | unsupported | 28.544 (0.061) | 146.544 (6.420) | 82.741 (1.246) |
-| reverse_default_f32_n1048576 | 255.298 (12.825) | 475.171 (47.685) | 28.893 (0.025) | 105.933 (1.058) | 82.522 (1.219) |
-| reverse_default_f64_n1048576 | 250.347 (9.679) | 546.964 (35.271) | 54.413 (0.052) | 104.360 (2.645) | 81.166 (3.153) |
-| concatenate_default_f32_n1048576 | 486.989 (22.154) | 1009.707 (133.488) | 54.186 (0.039) | 188.259 (0.967) | 74.297 (4.773) |
-| concatenate_default_f64_n1048576 | 487.965 (17.702) | 1004.271 (113.154) | 105.445 (0.191) | 191.209 (1.202) | 114.597 (2.001) |
-| extract_diag_default_f32_n1048576 | 252.809 (9.933) | 561.774 (34.069) | 16.105 (3.252) | 109.333 (14.048) | 69.384 (4.679) |
-| extract_diag_default_f64_n1048576 | 208.664 (21.435) | 550.505 (26.305) | 15.925 (0.087) | 127.143 (8.899) | 72.563 (2.201) |
-| embed_diag_default_f32_n1024 | 237.299 (26.516) | 792.679 (36.856) | 22.731 (0.377) | 116.458 (8.893) | 74.775 (1.858) |
-| embed_diag_default_f64_n1024 | 290.651 (24.853) | 762.113 (24.315) | 29.742 (0.059) | 102.132 (3.035) | 75.406 (1.443) |
-| tril_default_f32_n1048576 | 285.653 (10.790) | 580.696 (34.811) | 22.720 (0.041) | 90.296 (0.975) | 76.159 (2.938) |
-| tril_default_f64_n1048576 | 252.314 (16.119) | 577.749 (25.705) | 42.060 (0.042) | 92.438 (2.771) | 71.149 (1.679) |
-| triu_default_f32_n1048576 | 272.735 (7.133) | 588.236 (17.409) | 22.563 (0.036) | 89.862 (1.283) | 74.057 (1.876) |
-| triu_default_f64_n1048576 | 257.100 (10.202) | 583.216 (16.597) | 41.856 (0.102) | 92.661 (3.285) | 81.321 (3.574) |
-| take_along_axis_broadcast_indices_f32_n1048576 | 516.922 (43.878) | 746.461 (34.727) | 50.399 (0.266) | 101.986 (4.421) | 86.157 (6.645) |
-| take_along_axis_batched_indices_f32_n1048576 | unsupported | unsupported | 63.191 (0.105) | 96.267 (8.712) | 79.344 (1.464) |
-| take_along_axis_broadcast_indices_f64_n1048576 | 547.819 (23.665) | 537.054 (39.626) | 69.683 (0.180) | 123.561 (18.162) | 95.520 (6.649) |
-| take_along_axis_batched_indices_f64_n1048576 | unsupported | unsupported | 82.013 (0.121) | 136.087 (8.613) | 90.393 (3.996) |
-| scatter_default_f32_n1048576 | 612.608 (22.627) | 767.861 (47.236) | 74.881 (0.131) | 209.332 (13.160) | 96.718 (5.222) |
-| scatter_default_f64_n1048576 | 607.042 (13.938) | 772.899 (44.938) | 132.177 (0.188) | 207.471 (9.305) | 137.501 (1.188) |
-| cast_default_f32_n1048576 | 46.017 (0.256) | 70.805 (0.627) | 41.216 (0.076) | 162.241 (3.211) | 84.347 (1.666) |
-| cast_default_f64_n1048576 | 42.470 (0.046) | 95.916 (0.205) | 40.444 (0.044) | 163.042 (3.538) | 84.267 (1.325) |
+| pad_default_f32_n1024 | 12.079 (1.403) | 69.780 (9.175) | 28.147 (0.766) | 281.811 (11.615) | 96.227 (2.800) |
+| pad_default_f64_n1024 | 15.814 (1.155) | 95.792 (27.098) | 28.313 (1.385) | 358.290 (7.498) | 94.322 (19.193) |
+| slice_default_f32_n1024 | 17.812 (1.182) | unsupported | 24.028 (0.462) | 162.504 (4.759) | 85.608 (9.885) |
+| slice_default_f64_n1024 | 18.928 (0.887) | unsupported | 23.629 (0.202) | 159.800 (1.394) | 79.939 (9.109) |
+| reverse_default_f32_n1024 | 17.560 (0.148) | 98.332 (5.148) | 12.277 (0.183) | 125.956 (3.947) | 79.934 (12.967) |
+| reverse_default_f64_n1024 | 17.481 (0.396) | 115.381 (10.129) | 12.486 (0.288) | 123.752 (9.833) | 82.395 (9.222) |
+| concatenate_default_f32_n1024 | 28.485 (3.657) | 207.913 (5.442) | 11.675 (0.218) | 198.232 (6.870) | 86.918 (14.103) |
+| concatenate_default_f64_n1024 | 29.518 (2.111) | 234.912 (9.777) | 11.600 (0.113) | 205.894 (7.249) | 81.189 (9.752) |
+| extract_diag_default_f32_n1024 | 16.608 (0.254) | 145.921 (3.688) | 16.011 (0.177) | 129.309 (4.920) | 76.861 (5.368) |
+| extract_diag_default_f64_n1024 | 17.919 (0.295) | 148.058 (25.894) | 15.879 (0.134) | 135.725 (11.973) | 74.835 (6.585) |
+| embed_diag_default_f32_n32 | 26.191 (0.654) | 152.017 (2.872) | 22.740 (0.193) | 139.232 (20.321) | 76.120 (12.319) |
+| embed_diag_default_f64_n32 | 26.059 (1.893) | 162.710 (4.030) | 22.516 (0.178) | 145.105 (22.848) | 76.306 (5.899) |
+| tril_default_f32_n1024 | 16.371 (0.790) | 144.983 (2.692) | 7.932 (0.158) | 107.664 (8.438) | 79.636 (12.899) |
+| tril_default_f64_n1024 | 16.635 (0.886) | 151.655 (6.149) | 7.996 (0.116) | 108.842 (9.870) | 80.876 (9.120) |
+| triu_default_f32_n1024 | 17.199 (0.312) | 165.376 (5.494) | 7.901 (0.636) | 109.666 (10.157) | 80.108 (10.477) |
+| triu_default_f64_n1024 | 16.694 (0.171) | 174.491 (11.445) | 8.538 (0.303) | 126.953 (11.592) | 82.045 (9.828) |
+| take_along_axis_broadcast_indices_f32_n1024 | 84.087 (9.544) | 170.900 (3.806) | 42.967 (2.052) | 127.185 (2.903) | 80.808 (13.872) |
+| take_along_axis_batched_indices_f32_n1024 | unsupported | unsupported | 40.302 (0.461) | 132.550 (8.192) | 82.827 (10.667) |
+| take_along_axis_broadcast_indices_f64_n1024 | 108.606 (9.838) | 172.318 (23.486) | 41.781 (1.233) | 124.537 (10.449) | 84.231 (10.390) |
+| take_along_axis_batched_indices_f64_n1024 | unsupported | unsupported | 41.518 (2.946) | 107.421 (10.808) | 85.895 (13.026) |
+| scatter_default_f32_n1024 | 41.554 (0.635) | 420.235 (16.236) | 24.414 (0.382) | 274.537 (22.602) | 96.778 (16.028) |
+| scatter_default_f64_n1024 | 40.750 (0.337) | 446.398 (11.486) | 24.594 (0.623) | 282.225 (25.472) | 89.567 (9.256) |
+| cast_default_f32_n1024 | 15.974 (0.221) | 184.102 (4.510) | 13.124 (0.375) | 195.799 (28.045) | 73.305 (4.015) |
+| cast_default_f64_n1024 | 15.741 (0.193) | 186.355 (3.200) | 13.051 (0.430) | 189.486 (24.140) | 72.729 (8.196) |
+| pad_default_f32_n1048576 | 70.858 (0.390) | 94.670 (0.037) | 42.553 (0.056) | 329.516 (2.816) | 71.640 (2.446) |
+| pad_default_f64_n1048576 | 70.436 (0.242) | 120.621 (0.047) | 80.578 (0.067) | 326.060 (6.750) | 65.265 (2.485) |
+| slice_default_f32_n1048576 | 17.619 (0.013) | unsupported | 24.263 (0.757) | 159.317 (0.713) | 68.655 (2.749) |
+| slice_default_f64_n1048576 | 30.728 (0.112) | unsupported | 28.549 (0.032) | 160.715 (0.481) | 69.280 (2.443) |
+| reverse_default_f32_n1048576 | 31.859 (0.072) | 59.240 (0.235) | 28.836 (0.065) | 108.703 (0.583) | 68.451 (2.250) |
+| reverse_default_f64_n1048576 | 58.161 (0.175) | 105.464 (0.174) | 54.310 (0.106) | 105.186 (1.877) | 64.736 (1.648) |
+| concatenate_default_f32_n1048576 | 64.636 (0.110) | 117.647 (0.193) | 54.037 (0.054) | 192.609 (0.551) | 66.023 (1.077) |
+| concatenate_default_f64_n1048576 | 116.878 (0.803) | 215.720 (0.156) | 105.249 (0.109) | 153.366 (3.257) | 114.853 (1.564) |
+| extract_diag_default_f32_n1048576 | 9.513 (0.071) | 44.414 (0.844) | 15.974 (0.187) | 85.070 (2.692) | 67.060 (1.250) |
+| extract_diag_default_f64_n1048576 | 23.052 (1.427) | 56.322 (0.072) | 16.075 (0.082) | 88.975 (4.625) | 69.865 (6.765) |
+| embed_diag_default_f32_n1024 | 18.235 (0.285) | 164.506 (12.463) | 23.807 (0.293) | 90.101 (3.734) | 69.045 (1.992) |
+| embed_diag_default_f64_n1024 | 31.545 (0.213) | 137.800 (11.737) | 29.520 (0.081) | 85.055 (0.998) | 69.537 (0.751) |
+| tril_default_f32_n1048576 | 27.304 (0.214) | 54.316 (0.166) | 22.528 (0.059) | 76.121 (0.967) | 69.843 (1.676) |
+| tril_default_f64_n1048576 | 44.285 (0.423) | 95.246 (0.222) | 41.843 (0.084) | 74.075 (1.978) | 64.755 (1.522) |
+| triu_default_f32_n1048576 | 27.403 (0.118) | 54.572 (0.184) | 22.411 (0.090) | 76.105 (0.783) | 70.407 (1.731) |
+| triu_default_f64_n1048576 | 44.322 (0.315) | 95.637 (0.158) | 41.692 (0.166) | 74.314 (0.735) | 64.639 (1.181) |
+| take_along_axis_broadcast_indices_f32_n1048576 | 42.473 (1.007) | 100.861 (11.176) | 49.960 (0.134) | 91.724 (8.743) | 80.561 (10.430) |
+| take_along_axis_batched_indices_f32_n1048576 | unsupported | unsupported | 62.997 (0.362) | 81.149 (1.272) | 78.184 (8.039) |
+| take_along_axis_broadcast_indices_f64_n1048576 | 192.518 (8.956) | 119.936 (3.406) | 69.406 (0.209) | 89.322 (8.180) | 81.465 (6.147) |
+| take_along_axis_batched_indices_f64_n1048576 | unsupported | unsupported | 81.831 (0.146) | 95.103 (14.362) | 82.223 (10.639) |
+| scatter_default_f32_n1048576 | 79.072 (0.616) | 148.510 (0.334) | 74.847 (0.115) | 168.668 (9.650) | 82.865 (2.849) |
+| scatter_default_f64_n1048576 | 140.811 (1.032) | 241.621 (0.636) | 132.167 (0.115) | 164.560 (6.264) | 140.024 (3.211) |
+| cast_default_f32_n1048576 | 43.285 (0.187) | 69.311 (0.265) | 41.211 (0.048) | 138.523 (3.081) | 65.739 (2.413) |
+| cast_default_f64_n1048576 | 41.620 (0.269) | 94.650 (0.186) | 40.451 (0.044) | 137.269 (6.871) | 64.014 (1.081) |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: |
-| pad_default_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 4.592 | 0 |
-| pad_default_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 3.355 | 0 |
-| slice_default_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.153 | 0 |
-| slice_default_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.236 | 0 |
-| reverse_default_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.186 | 0 |
-| reverse_default_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.335 | 0 |
-| concatenate_default_f32_n1024 | tenferro-cuda-direct | 32 | 15 | 2.284 | 0 |
-| concatenate_default_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 2.385 | 0 |
-| extract_diag_default_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.591 | 0 |
-| extract_diag_default_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.794 | 0 |
-| embed_diag_default_f32_n32 | tenferro-cuda-direct | 64 | 15 | 2.982 | 0 |
-| embed_diag_default_f64_n32 | tenferro-cuda-direct | 64 | 15 | 2.948 | 0 |
-| tril_default_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.833 | 0 |
-| tril_default_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.822 | 0 |
-| triu_default_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.818 | 0 |
-| triu_default_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.901 | 0 |
-| take_along_axis_broadcast_indices_f32_n1024 | tenferro-cuda-direct | 32 | 15 | 3.496 | 0 |
+| pad_default_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 3.092 | 0 |
+| pad_default_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.024 | 0 |
+| slice_default_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.280 | 0 |
+| slice_default_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.423 | 0 |
+| reverse_default_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.248 | 0 |
+| reverse_default_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.238 | 0 |
+| concatenate_default_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 3.646 | 0 |
+| concatenate_default_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 1.889 | 0 |
+| extract_diag_default_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.126 | 0 |
+| extract_diag_default_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 1.147 | 0 |
+| embed_diag_default_f32_n32 | tenferro-cuda-direct | 128 | 15 | 3.353 | 0 |
+| embed_diag_default_f64_n32 | tenferro-cuda-direct | 128 | 15 | 3.336 | 0 |
+| tril_default_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.095 | 0 |
+| tril_default_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.129 | 0 |
+| triu_default_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.201 | 0 |
+| triu_default_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.137 | 0 |
+| take_along_axis_broadcast_indices_f32_n1024 | tenferro-cuda-direct | 32 | 15 | 2.691 | 0 |
 | take_along_axis_batched_indices_f32_n1024 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy. |
-| take_along_axis_broadcast_indices_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.930 | 0 |
+| take_along_axis_broadcast_indices_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 3.475 | 0 |
 | take_along_axis_batched_indices_f64_n1024 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy. |
-| scatter_default_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.547 | 0 |
-| scatter_default_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 3.535 | 0 |
-| cast_default_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 1.731 | 0 |
-| cast_default_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 1.711 | 0 |
-| pad_default_f32_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.848 | 0 |
-| pad_default_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.578 | 0 |
-| slice_default_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.162 | 0 |
-| slice_default_f64_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.079 | 0 |
-| reverse_default_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.042 | 0 |
-| reverse_default_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 4.006 | 0 |
-| concatenate_default_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 3.896 | 0 |
-| concatenate_default_f64_n1048576 | tenferro-cuda-direct | 8 | 15 | 3.904 | 0 |
-| extract_diag_default_f32_n1048576 | tenferro-cuda-direct | 16 | 15 | 4.045 | 0 |
-| extract_diag_default_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.339 | 0 |
-| embed_diag_default_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.797 | 0 |
-| embed_diag_default_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.325 | 0 |
-| tril_default_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.285 | 0 |
-| tril_default_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 4.037 | 0 |
-| triu_default_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.182 | 0 |
-| triu_default_f64_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.057 | 0 |
-| take_along_axis_broadcast_indices_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 4.135 | 0 |
+| scatter_default_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.659 | 0 |
+| scatter_default_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.608 | 0 |
+| cast_default_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.045 | 0 |
+| cast_default_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.015 | 0 |
+| pad_default_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.267 | 0 |
+| pad_default_f64_n1048576 | tenferro-cuda-direct | 31 | 15 | 2.184 | 0 |
+| slice_default_f32_n1048576 | tenferro-cuda-direct | 128 | 15 | 2.255 | 0 |
+| slice_default_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.967 | 0 |
+| reverse_default_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.039 | 0 |
+| reverse_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.861 | 0 |
+| concatenate_default_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.068 | 0 |
+| concatenate_default_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.870 | 0 |
+| extract_diag_default_f32_n1048576 | tenferro-cuda-direct | 256 | 15 | 2.435 | 0 |
+| extract_diag_default_f64_n1048576 | tenferro-cuda-direct | 256 | 15 | 5.901 | 0 |
+| embed_diag_default_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 1.167 | 0 |
+| embed_diag_default_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 1.009 | 0 |
+| tril_default_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.747 | 0 |
+| tril_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.417 | 0 |
+| triu_default_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.754 | 0 |
+| triu_default_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.418 | 0 |
+| take_along_axis_broadcast_indices_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.718 | 0 |
 | take_along_axis_batched_indices_f32_n1048576 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy. |
-| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-direct | 4 | 15 | 2.191 | 0 |
+| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.080 | 0 |
 | take_along_axis_batched_indices_f64_n1048576 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy. |
-| scatter_default_f32_n1048576 | tenferro-cuda-direct | 4 | 15 | 2.450 | 0 |
-| scatter_default_f64_n1048576 | tenferro-cuda-direct | 4 | 15 | 2.428 | 0 |
-| cast_default_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.473 | 0 |
-| cast_default_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.718 | 0 |
-| pad_default_f32_n1024 | tenferro-cuda-eager | 64 | 15 | 5.126 | 0 |
-| pad_default_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.656 | 0 |
+| scatter_default_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.530 | 0 |
+| scatter_default_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.253 | 0 |
+| cast_default_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.385 | 0 |
+| cast_default_f64_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.664 | 0 |
+| pad_default_f32_n1024 | tenferro-cuda-eager | 64 | 15 | 4.466 | 0 |
+| pad_default_f64_n1024 | tenferro-cuda-eager | 32 | 15 | 3.065 | 0 |
 | slice_default_f32_n1024 | tenferro-cuda-eager | — | — | — | EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer. |
 | slice_default_f64_n1024 | tenferro-cuda-eager | — | — | — | EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer. |
-| reverse_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.982 | 0 |
-| reverse_default_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 3.415 | 0 |
-| concatenate_default_f32_n1024 | tenferro-cuda-eager | 8 | 15 | 4.741 | 0 |
-| concatenate_default_f64_n1024 | tenferro-cuda-eager | 4 | 15 | 1.835 | 0 |
-| extract_diag_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.063 | 0 |
-| extract_diag_default_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.297 | 0 |
-| embed_diag_default_f32_n32 | tenferro-cuda-eager | 16 | 15 | 2.871 | 0 |
-| embed_diag_default_f64_n32 | tenferro-cuda-eager | 16 | 15 | 3.199 | 0 |
-| tril_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 3.312 | 0 |
-| tril_default_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 3.658 | 0 |
-| triu_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 4.042 | 0 |
-| triu_default_f64_n1024 | tenferro-cuda-eager | 8 | 15 | 2.188 | 0 |
-| take_along_axis_broadcast_indices_f32_n1024 | tenferro-cuda-eager | 8 | 15 | 2.500 | 0 |
+| reverse_default_f32_n1024 | tenferro-cuda-eager | 32 | 15 | 3.147 | 0 |
+| reverse_default_f64_n1024 | tenferro-cuda-eager | 32 | 15 | 3.692 | 0 |
+| concatenate_default_f32_n1024 | tenferro-cuda-eager | 8 | 15 | 1.663 | 0 |
+| concatenate_default_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 3.759 | 0 |
+| extract_diag_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.335 | 0 |
+| extract_diag_default_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.369 | 0 |
+| embed_diag_default_f32_n32 | tenferro-cuda-eager | 16 | 15 | 2.432 | 0 |
+| embed_diag_default_f64_n32 | tenferro-cuda-eager | 16 | 15 | 2.603 | 0 |
+| tril_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.320 | 0 |
+| tril_default_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.426 | 0 |
+| triu_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.646 | 0 |
+| triu_default_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.792 | 0 |
+| take_along_axis_broadcast_indices_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.734 | 0 |
 | take_along_axis_batched_indices_f32_n1024 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy. |
-| take_along_axis_broadcast_indices_f64_n1024 | tenferro-cuda-eager | 8 | 15 | 2.593 | 0 |
+| take_along_axis_broadcast_indices_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.757 | 0 |
 | take_along_axis_batched_indices_f64_n1024 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy. |
-| scatter_default_f32_n1024 | tenferro-cuda-eager | 4 | 15 | 3.724 | 0 |
-| scatter_default_f64_n1024 | tenferro-cuda-eager | 4 | 15 | 3.100 | 0 |
-| cast_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.016 | 0 |
-| cast_default_f64_n1024 | tenferro-cuda-eager | 32 | 15 | 4.020 | 0 |
-| pad_default_f32_n1048576 | tenferro-cuda-eager | 16 | 15 | 4.316 | 0 |
-| pad_default_f64_n1048576 | tenferro-cuda-eager | 8 | 15 | 2.364 | 0 |
+| scatter_default_f32_n1024 | tenferro-cuda-eager | 8 | 15 | 3.362 | 0 |
+| scatter_default_f64_n1024 | tenferro-cuda-eager | 8 | 15 | 3.571 | 0 |
+| cast_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.946 | 0 |
+| cast_default_f64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.982 | 0 |
+| pad_default_f32_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.029 | 0 |
+| pad_default_f64_n1048576 | tenferro-cuda-eager | 31 | 15 | 3.739 | 0 |
 | slice_default_f32_n1048576 | tenferro-cuda-eager | — | — | — | EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer. |
 | slice_default_f64_n1048576 | tenferro-cuda-eager | — | — | — | EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer. |
-| reverse_default_f32_n1048576 | tenferro-cuda-eager | 8 | 15 | 3.801 | 0 |
-| reverse_default_f64_n1048576 | tenferro-cuda-eager | 8 | 15 | 4.376 | 0 |
-| concatenate_default_f32_n1048576 | tenferro-cuda-eager | 4 | 15 | 4.039 | 0 |
-| concatenate_default_f64_n1048576 | tenferro-cuda-eager | 4 | 15 | 4.017 | 0 |
-| extract_diag_default_f32_n1048576 | tenferro-cuda-eager | 4 | 15 | 2.247 | 0 |
-| extract_diag_default_f64_n1048576 | tenferro-cuda-eager | 4 | 15 | 2.202 | 0 |
-| embed_diag_default_f32_n1024 | tenferro-cuda-eager | 4 | 15 | 3.171 | 0 |
-| embed_diag_default_f64_n1024 | tenferro-cuda-eager | 4 | 15 | 3.048 | 0 |
-| tril_default_f32_n1048576 | tenferro-cuda-eager | 8 | 15 | 4.646 | 0 |
-| tril_default_f64_n1048576 | tenferro-cuda-eager | 8 | 15 | 4.622 | 0 |
-| triu_default_f32_n1048576 | tenferro-cuda-eager | 8 | 15 | 4.706 | 0 |
-| triu_default_f64_n1048576 | tenferro-cuda-eager | 8 | 15 | 4.666 | 0 |
-| take_along_axis_broadcast_indices_f32_n1048576 | tenferro-cuda-eager | 4 | 15 | 2.986 | 0 |
+| reverse_default_f32_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.791 | 0 |
+| reverse_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.375 | 0 |
+| concatenate_default_f32_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.765 | 0 |
+| concatenate_default_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 3.452 | 0 |
+| extract_diag_default_f32_n1048576 | tenferro-cuda-eager | 64 | 15 | 2.842 | 0 |
+| extract_diag_default_f64_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.605 | 0 |
+| embed_diag_default_f32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.632 | 0 |
+| embed_diag_default_f64_n1024 | tenferro-cuda-eager | 32 | 15 | 4.410 | 0 |
+| tril_default_f32_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.476 | 0 |
+| tril_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.048 | 0 |
+| triu_default_f32_n1048576 | tenferro-cuda-eager | 64 | 15 | 3.493 | 0 |
+| triu_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.060 | 0 |
+| take_along_axis_broadcast_indices_f32_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.228 | 0 |
 | take_along_axis_batched_indices_f32_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy. |
-| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-eager | 8 | 15 | 4.296 | 0 |
+| take_along_axis_broadcast_indices_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.838 | 0 |
 | take_along_axis_batched_indices_f64_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy. |
-| scatter_default_f32_n1048576 | tenferro-cuda-eager | 4 | 15 | 3.071 | 0 |
-| scatter_default_f64_n1048576 | tenferro-cuda-eager | 4 | 15 | 3.092 | 0 |
-| cast_default_f32_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.266 | 0 |
-| cast_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.069 | 0 |
-| pad_default_f32_n1024 | pytorch-cuda | 64 | 15 | 1.817 | 0 |
-| pad_default_f64_n1024 | pytorch-cuda | 128 | 15 | 3.723 | 0 |
-| slice_default_f32_n1024 | pytorch-cuda | 128 | 15 | 2.885 | 0 |
-| slice_default_f64_n1024 | pytorch-cuda | 128 | 15 | 3.030 | 0 |
-| reverse_default_f32_n1024 | pytorch-cuda | 256 | 15 | 3.238 | 0 |
-| reverse_default_f64_n1024 | pytorch-cuda | 256 | 15 | 3.241 | 0 |
-| concatenate_default_f32_n1024 | pytorch-cuda | 256 | 15 | 2.985 | 0 |
-| concatenate_default_f64_n1024 | pytorch-cuda | 256 | 15 | 2.911 | 0 |
-| extract_diag_default_f32_n1024 | pytorch-cuda | 128 | 15 | 2.016 | 0 |
-| extract_diag_default_f64_n1024 | pytorch-cuda | 128 | 15 | 2.021 | 0 |
-| embed_diag_default_f32_n32 | pytorch-cuda | 128 | 15 | 2.871 | 0 |
-| embed_diag_default_f64_n32 | pytorch-cuda | 128 | 15 | 2.815 | 0 |
-| tril_default_f32_n1024 | pytorch-cuda | 256 | 15 | 2.000 | 0 |
-| tril_default_f64_n1024 | pytorch-cuda | 256 | 15 | 1.973 | 0 |
-| triu_default_f32_n1024 | pytorch-cuda | 256 | 15 | 2.008 | 0 |
-| triu_default_f64_n1024 | pytorch-cuda | 256 | 15 | 2.028 | 0 |
-| take_along_axis_broadcast_indices_f32_n1024 | pytorch-cuda | 64 | 15 | 2.637 | 0 |
-| take_along_axis_batched_indices_f32_n1024 | pytorch-cuda | 64 | 15 | 2.443 | 0 |
-| take_along_axis_broadcast_indices_f64_n1024 | pytorch-cuda | 64 | 15 | 2.484 | 0 |
-| take_along_axis_batched_indices_f64_n1024 | pytorch-cuda | 64 | 15 | 2.461 | 0 |
-| scatter_default_f32_n1024 | pytorch-cuda | 64 | 15 | 1.660 | 0 |
-| scatter_default_f64_n1024 | pytorch-cuda | 128 | 15 | 3.287 | 0 |
-| cast_default_f32_n1024 | pytorch-cuda | 256 | 15 | 3.166 | 0 |
-| cast_default_f64_n1024 | pytorch-cuda | 256 | 15 | 3.234 | 0 |
-| pad_default_f32_n1048576 | pytorch-cuda | 63 | 15 | 2.684 | 0 |
+| scatter_default_f32_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.376 | 0 |
+| scatter_default_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 3.866 | 0 |
+| cast_default_f32_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.218 | 0 |
+| cast_default_f64_n1048576 | tenferro-cuda-eager | 32 | 15 | 3.029 | 0 |
+| pad_default_f32_n1024 | pytorch-cuda | 128 | 15 | 3.603 | 0 |
+| pad_default_f64_n1024 | pytorch-cuda | 128 | 15 | 3.624 | 0 |
+| slice_default_f32_n1024 | pytorch-cuda | 128 | 15 | 3.076 | 0 |
+| slice_default_f64_n1024 | pytorch-cuda | 128 | 15 | 3.025 | 0 |
+| reverse_default_f32_n1024 | pytorch-cuda | 256 | 15 | 3.143 | 0 |
+| reverse_default_f64_n1024 | pytorch-cuda | 256 | 15 | 3.197 | 0 |
+| concatenate_default_f32_n1024 | pytorch-cuda | 256 | 15 | 2.989 | 0 |
+| concatenate_default_f64_n1024 | pytorch-cuda | 256 | 15 | 2.970 | 0 |
+| extract_diag_default_f32_n1024 | pytorch-cuda | 128 | 15 | 2.049 | 0 |
+| extract_diag_default_f64_n1024 | pytorch-cuda | 128 | 15 | 2.032 | 0 |
+| embed_diag_default_f32_n32 | pytorch-cuda | 128 | 15 | 2.911 | 0 |
+| embed_diag_default_f64_n32 | pytorch-cuda | 128 | 15 | 2.882 | 0 |
+| tril_default_f32_n1024 | pytorch-cuda | 256 | 15 | 2.031 | 0 |
+| tril_default_f64_n1024 | pytorch-cuda | 256 | 15 | 2.047 | 0 |
+| triu_default_f32_n1024 | pytorch-cuda | 512 | 15 | 4.046 | 0 |
+| triu_default_f64_n1024 | pytorch-cuda | 256 | 15 | 2.186 | 0 |
+| take_along_axis_broadcast_indices_f32_n1024 | pytorch-cuda | 64 | 15 | 2.750 | 0 |
+| take_along_axis_batched_indices_f32_n1024 | pytorch-cuda | 64 | 15 | 2.579 | 0 |
+| take_along_axis_broadcast_indices_f64_n1024 | pytorch-cuda | 64 | 15 | 2.674 | 0 |
+| take_along_axis_batched_indices_f64_n1024 | pytorch-cuda | 64 | 15 | 2.657 | 0 |
+| scatter_default_f32_n1024 | pytorch-cuda | 128 | 15 | 3.125 | 0 |
+| scatter_default_f64_n1024 | pytorch-cuda | 128 | 15 | 3.148 | 0 |
+| cast_default_f32_n1024 | pytorch-cuda | 256 | 15 | 3.360 | 0 |
+| cast_default_f64_n1024 | pytorch-cuda | 256 | 15 | 3.341 | 0 |
+| pad_default_f32_n1048576 | pytorch-cuda | 63 | 15 | 2.681 | 0 |
 | pad_default_f64_n1048576 | pytorch-cuda | 31 | 15 | 2.498 | 0 |
-| slice_default_f32_n1048576 | pytorch-cuda | 128 | 15 | 2.965 | 0 |
+| slice_default_f32_n1048576 | pytorch-cuda | 128 | 15 | 3.106 | 0 |
 | slice_default_f64_n1048576 | pytorch-cuda | 64 | 15 | 1.827 | 0 |
-| reverse_default_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.849 | 0 |
-| reverse_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.741 | 0 |
-| concatenate_default_f32_n1048576 | pytorch-cuda | 32 | 15 | 1.734 | 0 |
-| concatenate_default_f64_n1048576 | pytorch-cuda | 16 | 15 | 1.687 | 0 |
-| extract_diag_default_f32_n1048576 | pytorch-cuda | 128 | 15 | 2.061 | 0 |
-| extract_diag_default_f64_n1048576 | pytorch-cuda | 128 | 15 | 2.038 | 0 |
-| embed_diag_default_f32_n1024 | pytorch-cuda | 64 | 15 | 1.455 | 0 |
-| embed_diag_default_f64_n1024 | pytorch-cuda | 32 | 15 | 0.952 | 0 |
-| tril_default_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.454 | 0 |
-| tril_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.346 | 0 |
-| triu_default_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.444 | 0 |
-| triu_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.339 | 0 |
-| take_along_axis_broadcast_indices_f32_n1048576 | pytorch-cuda | 64 | 15 | 3.226 | 0 |
-| take_along_axis_batched_indices_f32_n1048576 | pytorch-cuda | 32 | 15 | 2.022 | 0 |
-| take_along_axis_broadcast_indices_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.230 | 0 |
-| take_along_axis_batched_indices_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.624 | 0 |
-| scatter_default_f32_n1048576 | pytorch-cuda | 32 | 15 | 2.396 | 0 |
+| reverse_default_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.846 | 0 |
+| reverse_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.738 | 0 |
+| concatenate_default_f32_n1048576 | pytorch-cuda | 32 | 15 | 1.729 | 0 |
+| concatenate_default_f64_n1048576 | pytorch-cuda | 16 | 15 | 1.684 | 0 |
+| extract_diag_default_f32_n1048576 | pytorch-cuda | 128 | 15 | 2.045 | 0 |
+| extract_diag_default_f64_n1048576 | pytorch-cuda | 128 | 15 | 2.058 | 0 |
+| embed_diag_default_f32_n1024 | pytorch-cuda | 64 | 15 | 1.524 | 0 |
+| embed_diag_default_f64_n1024 | pytorch-cuda | 32 | 15 | 0.945 | 0 |
+| tril_default_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.442 | 0 |
+| tril_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.339 | 0 |
+| triu_default_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.434 | 0 |
+| triu_default_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.334 | 0 |
+| take_along_axis_broadcast_indices_f32_n1048576 | pytorch-cuda | 64 | 15 | 3.197 | 0 |
+| take_along_axis_batched_indices_f32_n1048576 | pytorch-cuda | 32 | 15 | 2.016 | 0 |
+| take_along_axis_broadcast_indices_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.221 | 0 |
+| take_along_axis_batched_indices_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.619 | 0 |
+| scatter_default_f32_n1048576 | pytorch-cuda | 32 | 15 | 2.395 | 0 |
 | scatter_default_f64_n1048576 | pytorch-cuda | 16 | 15 | 2.115 | 0 |
 | cast_default_f32_n1048576 | pytorch-cuda | 32 | 15 | 1.319 | 0 |
-| cast_default_f64_n1048576 | pytorch-cuda | 64 | 15 | 2.588 | 0 |
-| pad_default_f32_n1024 | jax-cuda | 8 | 15 | 3.296 | 0 |
-| pad_default_f64_n1024 | jax-cuda | 8 | 15 | 3.718 | 0 |
-| slice_default_f32_n1024 | jax-cuda | 16 | 15 | 3.338 | 0 |
-| slice_default_f64_n1024 | jax-cuda | 16 | 15 | 2.620 | 0 |
-| reverse_default_f32_n1024 | jax-cuda | 16 | 15 | 1.945 | 0 |
-| reverse_default_f64_n1024 | jax-cuda | 32 | 15 | 3.243 | 0 |
-| concatenate_default_f32_n1024 | jax-cuda | 8 | 15 | 1.794 | 0 |
-| concatenate_default_f64_n1024 | jax-cuda | 8 | 15 | 2.133 | 0 |
-| extract_diag_default_f32_n1024 | jax-cuda | 16 | 15 | 1.991 | 0 |
-| extract_diag_default_f64_n1024 | jax-cuda | 32 | 15 | 3.466 | 0 |
-| embed_diag_default_f32_n32 | jax-cuda | 16 | 15 | 1.973 | 0 |
-| embed_diag_default_f64_n32 | jax-cuda | 16 | 15 | 2.111 | 0 |
-| tril_default_f32_n1024 | jax-cuda | 32 | 15 | 3.068 | 0 |
-| tril_default_f64_n1024 | jax-cuda | 32 | 15 | 2.958 | 0 |
-| triu_default_f32_n1024 | jax-cuda | 32 | 15 | 3.062 | 0 |
-| triu_default_f64_n1024 | jax-cuda | 32 | 15 | 3.145 | 0 |
-| take_along_axis_broadcast_indices_f32_n1024 | jax-cuda | 32 | 15 | 2.999 | 0 |
-| take_along_axis_batched_indices_f32_n1024 | jax-cuda | 32 | 15 | 3.200 | 0 |
-| take_along_axis_broadcast_indices_f64_n1024 | jax-cuda | 32 | 15 | 3.207 | 0 |
-| take_along_axis_batched_indices_f64_n1024 | jax-cuda | 32 | 15 | 3.248 | 0 |
-| scatter_default_f32_n1024 | jax-cuda | 8 | 15 | 2.098 | 0 |
-| scatter_default_f64_n1024 | jax-cuda | 8 | 15 | 2.299 | 0 |
-| cast_default_f32_n1024 | jax-cuda | 16 | 15 | 3.101 | 0 |
-| cast_default_f64_n1024 | jax-cuda | 16 | 15 | 2.839 | 0 |
-| pad_default_f32_n1048576 | jax-cuda | 8 | 15 | 2.245 | 0 |
-| pad_default_f64_n1048576 | jax-cuda | 8 | 15 | 2.324 | 0 |
-| slice_default_f32_n1048576 | jax-cuda | 16 | 15 | 2.249 | 0 |
-| slice_default_f64_n1048576 | jax-cuda | 16 | 15 | 2.345 | 0 |
-| reverse_default_f32_n1048576 | jax-cuda | 32 | 15 | 3.390 | 0 |
-| reverse_default_f64_n1048576 | jax-cuda | 32 | 15 | 3.340 | 0 |
-| concatenate_default_f32_n1048576 | jax-cuda | 16 | 15 | 3.012 | 0 |
-| concatenate_default_f64_n1048576 | jax-cuda | 16 | 15 | 3.059 | 0 |
-| extract_diag_default_f32_n1048576 | jax-cuda | 32 | 15 | 3.499 | 0 |
-| extract_diag_default_f64_n1048576 | jax-cuda | 16 | 15 | 2.034 | 0 |
-| embed_diag_default_f32_n1024 | jax-cuda | 16 | 15 | 1.863 | 0 |
-| embed_diag_default_f64_n1024 | jax-cuda | 32 | 15 | 3.268 | 0 |
-| tril_default_f32_n1048576 | jax-cuda | 32 | 15 | 2.889 | 0 |
-| tril_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.958 | 0 |
-| triu_default_f32_n1048576 | jax-cuda | 32 | 15 | 2.876 | 0 |
-| triu_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.965 | 0 |
-| take_along_axis_broadcast_indices_f32_n1048576 | jax-cuda | 32 | 15 | 3.264 | 0 |
-| take_along_axis_batched_indices_f32_n1048576 | jax-cuda | 32 | 15 | 3.081 | 0 |
-| take_along_axis_broadcast_indices_f64_n1048576 | jax-cuda | 16 | 15 | 1.977 | 0 |
-| take_along_axis_batched_indices_f64_n1048576 | jax-cuda | 16 | 15 | 2.177 | 0 |
-| scatter_default_f32_n1048576 | jax-cuda | 16 | 15 | 3.349 | 0 |
-| scatter_default_f64_n1048576 | jax-cuda | 16 | 15 | 3.320 | 0 |
-| cast_default_f32_n1048576 | jax-cuda | 16 | 15 | 2.596 | 0 |
-| cast_default_f64_n1048576 | jax-cuda | 16 | 15 | 2.609 | 0 |
-| pad_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.669 | 0 |
-| pad_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.832 | 0 |
-| slice_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.561 | 0 |
-| slice_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.376 | 0 |
-| reverse_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.482 | 0 |
-| reverse_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.755 | 0 |
-| concatenate_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.770 | 0 |
-| concatenate_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.804 | 0 |
-| extract_diag_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.594 | 0 |
-| extract_diag_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.634 | 0 |
-| embed_diag_default_f32_n32 | jax-cuda-jit | 32 | 15 | 2.683 | 0 |
-| embed_diag_default_f64_n32 | jax-cuda-jit | 32 | 15 | 2.620 | 0 |
-| tril_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.779 | 0 |
-| tril_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.728 | 0 |
-| triu_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.783 | 0 |
-| triu_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.746 | 0 |
-| take_along_axis_broadcast_indices_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.871 | 0 |
-| take_along_axis_batched_indices_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.858 | 0 |
-| take_along_axis_broadcast_indices_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.791 | 0 |
-| take_along_axis_batched_indices_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.929 | 0 |
-| scatter_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.115 | 0 |
-| scatter_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.104 | 0 |
-| cast_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.474 | 0 |
-| cast_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.572 | 0 |
-| pad_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.592 | 0 |
-| pad_default_f64_n1048576 | jax-cuda-jit | 31 | 15 | 2.519 | 0 |
-| slice_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.691 | 0 |
-| slice_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.648 | 0 |
-| reverse_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.641 | 0 |
-| reverse_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.597 | 0 |
-| concatenate_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.377 | 0 |
-| concatenate_default_f64_n1048576 | jax-cuda-jit | 16 | 15 | 1.834 | 0 |
-| extract_diag_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.220 | 0 |
-| extract_diag_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.322 | 0 |
-| embed_diag_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.393 | 0 |
-| embed_diag_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.413 | 0 |
-| tril_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.437 | 0 |
-| tril_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.277 | 0 |
-| triu_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.370 | 0 |
-| triu_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.602 | 0 |
-| take_along_axis_broadcast_indices_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.757 | 0 |
-| take_along_axis_batched_indices_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.539 | 0 |
-| take_along_axis_broadcast_indices_f64_n1048576 | jax-cuda-jit | 32 | 15 | 3.057 | 0 |
-| take_along_axis_batched_indices_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.893 | 0 |
-| scatter_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.095 | 0 |
-| scatter_default_f64_n1048576 | jax-cuda-jit | 16 | 15 | 2.200 | 0 |
-| cast_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.699 | 0 |
-| cast_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.697 | 0 |
+| cast_default_f64_n1048576 | pytorch-cuda | 64 | 15 | 2.589 | 0 |
+| pad_default_f32_n1024 | jax-cuda | 8 | 15 | 2.254 | 0 |
+| pad_default_f64_n1024 | jax-cuda | 8 | 15 | 2.866 | 0 |
+| slice_default_f32_n1024 | jax-cuda | 16 | 15 | 2.600 | 0 |
+| slice_default_f64_n1024 | jax-cuda | 16 | 15 | 2.557 | 0 |
+| reverse_default_f32_n1024 | jax-cuda | 16 | 15 | 2.015 | 0 |
+| reverse_default_f64_n1024 | jax-cuda | 16 | 15 | 1.980 | 0 |
+| concatenate_default_f32_n1024 | jax-cuda | 16 | 15 | 3.172 | 0 |
+| concatenate_default_f64_n1024 | jax-cuda | 16 | 15 | 3.294 | 0 |
+| extract_diag_default_f32_n1024 | jax-cuda | 16 | 15 | 2.069 | 0 |
+| extract_diag_default_f64_n1024 | jax-cuda | 16 | 15 | 2.172 | 0 |
+| embed_diag_default_f32_n32 | jax-cuda | 16 | 15 | 2.228 | 0 |
+| embed_diag_default_f64_n32 | jax-cuda | 16 | 15 | 2.322 | 0 |
+| tril_default_f32_n1024 | jax-cuda | 32 | 15 | 3.445 | 0 |
+| tril_default_f64_n1024 | jax-cuda | 32 | 15 | 3.483 | 0 |
+| triu_default_f32_n1024 | jax-cuda | 32 | 15 | 3.509 | 0 |
+| triu_default_f64_n1024 | jax-cuda | 16 | 15 | 2.031 | 0 |
+| take_along_axis_broadcast_indices_f32_n1024 | jax-cuda | 16 | 15 | 2.035 | 0 |
+| take_along_axis_batched_indices_f32_n1024 | jax-cuda | 16 | 15 | 2.121 | 0 |
+| take_along_axis_broadcast_indices_f64_n1024 | jax-cuda | 16 | 15 | 1.993 | 0 |
+| take_along_axis_batched_indices_f64_n1024 | jax-cuda | 32 | 15 | 3.437 | 0 |
+| scatter_default_f32_n1024 | jax-cuda | 8 | 15 | 2.196 | 0 |
+| scatter_default_f64_n1024 | jax-cuda | 8 | 15 | 2.258 | 0 |
+| cast_default_f32_n1024 | jax-cuda | 16 | 15 | 3.133 | 0 |
+| cast_default_f64_n1024 | jax-cuda | 16 | 15 | 3.032 | 0 |
+| pad_default_f32_n1048576 | jax-cuda | 8 | 15 | 2.636 | 0 |
+| pad_default_f64_n1048576 | jax-cuda | 8 | 15 | 2.608 | 0 |
+| slice_default_f32_n1048576 | jax-cuda | 16 | 15 | 2.549 | 0 |
+| slice_default_f64_n1048576 | jax-cuda | 16 | 15 | 2.571 | 0 |
+| reverse_default_f32_n1048576 | jax-cuda | 32 | 15 | 3.478 | 0 |
+| reverse_default_f64_n1048576 | jax-cuda | 32 | 15 | 3.366 | 0 |
+| concatenate_default_f32_n1048576 | jax-cuda | 16 | 15 | 3.082 | 0 |
+| concatenate_default_f64_n1048576 | jax-cuda | 16 | 15 | 2.454 | 0 |
+| extract_diag_default_f32_n1048576 | jax-cuda | 32 | 15 | 2.722 | 0 |
+| extract_diag_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.847 | 0 |
+| embed_diag_default_f32_n1024 | jax-cuda | 32 | 15 | 2.883 | 0 |
+| embed_diag_default_f64_n1024 | jax-cuda | 32 | 15 | 2.722 | 0 |
+| tril_default_f32_n1048576 | jax-cuda | 32 | 15 | 2.436 | 0 |
+| tril_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.370 | 0 |
+| triu_default_f32_n1048576 | jax-cuda | 32 | 15 | 2.435 | 0 |
+| triu_default_f64_n1048576 | jax-cuda | 32 | 15 | 2.378 | 0 |
+| take_along_axis_broadcast_indices_f32_n1048576 | jax-cuda | 32 | 15 | 2.935 | 0 |
+| take_along_axis_batched_indices_f32_n1048576 | jax-cuda | 32 | 15 | 2.597 | 0 |
+| take_along_axis_broadcast_indices_f64_n1048576 | jax-cuda | 32 | 15 | 2.858 | 0 |
+| take_along_axis_batched_indices_f64_n1048576 | jax-cuda | 32 | 15 | 3.043 | 0 |
+| scatter_default_f32_n1048576 | jax-cuda | 16 | 15 | 2.699 | 0 |
+| scatter_default_f64_n1048576 | jax-cuda | 16 | 15 | 2.633 | 0 |
+| cast_default_f32_n1048576 | jax-cuda | 16 | 15 | 2.216 | 0 |
+| cast_default_f64_n1048576 | jax-cuda | 16 | 15 | 2.196 | 0 |
+| pad_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.079 | 0 |
+| pad_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.018 | 0 |
+| slice_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.739 | 0 |
+| slice_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.558 | 0 |
+| reverse_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.558 | 0 |
+| reverse_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.637 | 0 |
+| concatenate_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.781 | 0 |
+| concatenate_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.598 | 0 |
+| extract_diag_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.460 | 0 |
+| extract_diag_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.395 | 0 |
+| embed_diag_default_f32_n32 | jax-cuda-jit | 32 | 15 | 2.436 | 0 |
+| embed_diag_default_f64_n32 | jax-cuda-jit | 32 | 15 | 2.442 | 0 |
+| tril_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.548 | 0 |
+| tril_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.588 | 0 |
+| triu_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.563 | 0 |
+| triu_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.625 | 0 |
+| take_along_axis_broadcast_indices_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.586 | 0 |
+| take_along_axis_batched_indices_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.650 | 0 |
+| take_along_axis_broadcast_indices_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.695 | 0 |
+| take_along_axis_batched_indices_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.749 | 0 |
+| scatter_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.097 | 0 |
+| scatter_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.866 | 0 |
+| cast_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.346 | 0 |
+| cast_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.327 | 0 |
+| pad_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.292 | 0 |
+| pad_default_f64_n1048576 | jax-cuda-jit | 31 | 15 | 2.023 | 0 |
+| slice_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.197 | 0 |
+| slice_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.217 | 0 |
+| reverse_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.190 | 0 |
+| reverse_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.072 | 0 |
+| concatenate_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.113 | 0 |
+| concatenate_default_f64_n1048576 | jax-cuda-jit | 16 | 15 | 1.838 | 0 |
+| extract_diag_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.146 | 0 |
+| extract_diag_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.236 | 0 |
+| embed_diag_default_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.209 | 0 |
+| embed_diag_default_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.225 | 0 |
+| tril_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.235 | 0 |
+| tril_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.072 | 0 |
+| triu_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.253 | 0 |
+| triu_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.068 | 0 |
+| take_along_axis_broadcast_indices_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.578 | 0 |
+| take_along_axis_batched_indices_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.502 | 0 |
+| take_along_axis_broadcast_indices_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.607 | 0 |
+| take_along_axis_batched_indices_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.631 | 0 |
+| scatter_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.652 | 0 |
+| scatter_default_f64_n1048576 | jax-cuda-jit | 16 | 15 | 2.240 | 0 |
+| cast_default_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.104 | 0 |
+| cast_default_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.048 | 0 |
 
 ## Run metadata
 
@@ -311,20 +311,20 @@ schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/structural
 suite_file: benchmarks/gpu/structural.yaml
-timestamp: '2026-10-13T10:15:29Z'
+timestamp: '2026-10-13T13:39:31Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: 8b13220c1e0397a29a27be65557c24105352a35b
+  commit: dfbdf6b66d40162f4731da116ec42ed034da0dce
   dirty: false
   features:
   - cuda
   resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: ed0ed4c79805014f2bba4644383450a6b9bf9361
+  commit: 2858dcda46699788bc1df84d923a95ed93ef6469
   dirty: false
 environment:
-  hostname: 33ed5e46905b
+  hostname: 737f43342de3
   os: Linux-6.8.0-146-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
@@ -433,17 +433,17 @@ collection:
   expected_cases: 48
   selected_cases: 48
   sha256:
-    .devcontainer/cuda/devcontainer.json: 6d3b10caecad15c0a513120ce6282ebb13c65be81c40e29f78a329439c50f083
+    .devcontainer/cuda/devcontainer.json: 76569d9e898967d094988483a7adf6ab96eb426793db7248545d50e155f19cf1
     .devcontainer/cuda/Dockerfile: 1cadf2f890f01187553bab0f136dc817f8964eff6a35b1806b1448a7383d21de
-    src/bin/benchmark_gpu_public_api.rs: f29f1ad0dd99e8e5d24fffc68b6fe30673b0c42d34b5fe4a5557b7f774c2af15
-    src/bin/benchmark_gpu_public_api/runtime_ops.rs: 86f2856411d902d27dcc5c8e66415eb933e057e04b9fad86be55569004572a36
-    src/bin/benchmark_gpu_public_api/structural.rs: b5d780e867a5748be4f29f245d367833a8cd5ee0ebd440926d8b3003b432b0e4
-    src/bin/benchmark_gpu_public_api/linalg.rs: 7d4e29355a973f3c60c2af53fd6ceac597d85fe21f9ab5f6bf164d0afe0a6566
+    src/bin/benchmark_gpu_public_api.rs: 249184323d09433d1fbf401284e39fa797c0252dceb20351bbcc151551d1b32c
+    src/bin/benchmark_gpu_public_api/runtime_ops.rs: d7b64dccce85c804b8f67543fefca89836f045702bdcf15b5441c7bb8543eb21
+    src/bin/benchmark_gpu_public_api/structural.rs: 382fb5ffb6d86ac1a4a66723376808e9c95c8a8731570a5617f2ffed2a6e40a7
+    src/bin/benchmark_gpu_public_api/linalg.rs: 84162923fa0d0772c88ec9c4eab169ad3a75e5d16ff76961d1541670dd8565c1
     src/bin/benchmark_gpu_public_api/reuse.rs: ad72b565373904275128d7beb8673bada08d922e8f310be6cedb0d2d8187898f
-    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 24cd5cec53eaecc8b6b4a22a1cd69e8cbe430ab6c9945d48df4c03d3b2655999
-    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: 0a9e8d89405fc802e392e047d8b7c587e38ab1850d831735dd53fe13e87dabd3
+    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 4d05b9facc0b7e5a3ff31146fc42f98d680010264c6606a3154e9da2dfa6a0cc
+    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: 71cb26510a35647e7aadc46827ca00d06a06e283eacfcba8ebe93d2e8e8add86
     scripts/run_gpu_public_api.sh: 3516e06358fc3c2e36a066067cdffcab85673c7e78bf9a244dde318d109dd772
-    data/results/nvidia-gpu/gpu/structural/20261013_101528/fixtures/manifest.json: b8881ec3ec33df4edad659aa32d13c3cc89286bcc67ec701527f999691786074
-    target/release/benchmark_gpu_public_api: 91380afb8faffb97ca96d131ef98cc8e2656aababe594e82d65a07c9bb1bed38
+    data/results/nvidia-gpu/gpu/structural/20261013_133930/fixtures/manifest.json: b8881ec3ec33df4edad659aa32d13c3cc89286bcc67ec701527f999691786074
+    target/release/benchmark_gpu_public_api: b505a2bdb3d0c5a7bffd1390af659a154753ea998ec68becd4779e137c9c7150
   reference_numpy_version: 2.4.2
 ```

@@ -23,6 +23,131 @@ class EinsumBackend(Protocol):
 T = TypeVar("T")
 
 
+def _prepare_compact_transpose(shape, permutation):
+    """Coalesce consecutive source axes before a physical permutation."""
+    from math import prod
+    if tuple(permutation) == tuple(range(len(shape))):
+        return lambda value: value
+    groups = []
+    for axis in permutation:
+        if groups and axis == groups[-1][-1] + 1:
+            groups[-1].append(axis)
+        else:
+            groups.append([axis])
+    source = sorted(groups, key=lambda group: group[0])
+    compact_shape = tuple(prod(shape[i] for i in group) for group in source)
+    group_order = tuple(source.index(group) for group in groups)
+    target_shape = tuple(shape[i] for i in permutation)
+    return lambda value: value.reshape(compact_shape).transpose(group_order).reshape(target_shape)
+
+
+def _jax_binary_contract(ixs, iy, shapes, restore_output=True):
+    """Lower ordinary binary contractions directly, with no einsum optimizer.
+
+    Shared output labels are batch axes. Other shared labels are contracted;
+    the final transpose restores the tree's declared output ordering.
+    """
+    if len(ixs) != 2 or any(len(ix) != len(set(ix)) for ix in ixs):
+        return None
+    left, right = map(list, ixs)
+    output = list(iy)
+    shared = set(left) & set(right)
+    if set(left) | set(right) != set(output) | shared:
+        return None  # unilateral reductions require a different lowering
+    batches = [label for label in output if label in shared]
+    summed = [label for label in left if label in shared and label not in output]
+    remaining_left = [label for label in left if label not in shared]
+    remaining_right = [label for label in right if label not in shared]
+    native = batches + remaining_left + remaining_right
+    permutation = tuple(native.index(label) for label in output)
+    import jax
+    from math import prod
+    sizes = dict(zip(left, shapes[0]))
+    sizes.update(zip(right, shapes[1]))
+    a_order = tuple(left.index(i) for i in batches + remaining_left + summed)
+    b_order = tuple(right.index(i) for i in batches + summed + remaining_right)
+    transpose_a = _prepare_compact_transpose(shapes[0], a_order)
+    transpose_b = _prepare_compact_transpose(shapes[1], b_order)
+    m = prod(sizes[i] for i in remaining_left)
+    k = prod(sizes[i] for i in summed)
+    n = prod(sizes[i] for i in remaining_right)
+    if batches:
+        batch = prod(sizes[i] for i in batches)
+        a_shape, b_shape = (batch, m, k), (batch, k, n)
+        dims = (((2,), (1,)), ((0,), (0,)))
+    else:
+        a_shape, b_shape = (m, k), (k, n)
+        dims = (((1,), (0,)), ((), ()))
+    native_shape = tuple(sizes[i] for i in native)
+    transpose_output = _prepare_compact_transpose(native_shape, permutation) if restore_output else (lambda value: value)
+
+    def execute(a, b):
+        a = transpose_a(a).reshape(a_shape)
+        b = transpose_b(b).reshape(b_shape)
+        result = jax.lax.dot_general(a, b, dims, precision=jax.lax.Precision.HIGHEST)
+        return transpose_output(result.reshape(native_shape))
+
+    execute.output_labels = native
+    return execute
+
+
+def prepare_tree_jax_native(tree, inputs, *, compile_nodes=False, compiler_options=None):
+    """Keep intermediate native axis order, remapping subsequent node labels.
+
+    The contraction tree is unchanged. Intermediate layout is private; only the
+    root is restored to its requested order. This avoids high-rank transpose
+    kernels between ordinary binary contractions.
+    """
+    import opt_einsum as oe
+    import jax
+    prepared_nodes = [0]
+
+    def prepare(node):
+        if node.get("isleaf"):
+            index = int(node["tensorindex"]) - 1
+            shape = tuple(inputs[index].shape)
+            return (lambda values: values[index]), shape, tuple(range(len(shape))), inputs[index] if compile_nodes else None
+        children = [prepare(child) for child in node["args"]]
+        declared = node["eins"]["ixs"]
+        output = list(node["eins"]["iy"])
+        ixs = [[labels[i] for i in order] for labels, (_, _, order, _) in zip(declared, children)]
+        binary = _jax_binary_contract(ixs, output, [shape for _, shape, _, _ in children], restore_output=False)
+        sizes = {label: size for labels, (_, shape, _, _) in zip(ixs, children)
+                 for label, size in zip(labels, shape)}
+        if binary is not None:
+            operation = binary
+            actual_labels = binary.output_labels
+        else:
+            names = {label: oe.get_symbol(i) for i, label in enumerate(sorted(sizes))}
+            expression = ",".join("".join(names[i] for i in labels) for labels in ixs)
+            expression += "->" + "".join(names[i] for i in output)
+            contract = oe.contract_expression(expression, *(shape for _, shape, _, _ in children), optimize="greedy")
+            operation = lambda *operands: contract(*operands, backend="jax")
+            actual_labels = output
+        representative = None
+        if compile_nodes:
+            operands = tuple(value for _, _, _, value in children)
+            operation = jax.jit(operation).lower(*operands).compile(compiler_options=compiler_options or {})
+            representative = jax.block_until_ready(operation(*operands))
+            prepared_nodes[0] += 1
+            if prepared_nodes[0] % 32 == 0:
+                print(f"Prepared JAX tree kernels: {prepared_nodes[0]}", flush=True)
+        executors = tuple(run for run, _, _, _ in children)
+
+        def execute(values):
+            return operation(*(run(values) for run in executors))
+
+        return execute, tuple(sizes[i] for i in actual_labels), tuple(output.index(i) for i in actual_labels), representative
+
+    execute, shape, order, representative = prepare(tree)
+    del representative
+    inverse = tuple(order.index(i) for i in range(len(order)))
+    if inverse == tuple(range(len(order))):
+        return execute
+    transpose = _prepare_compact_transpose(shape, inverse)
+    return lambda values: transpose(execute(values))
+
+
 def resolve_source_path(project_root: Path, source: str) -> Path:
     path = Path(source)
     if not path.is_absolute():
@@ -63,6 +188,8 @@ def contract_tree(
 
 def prepare_tree(tree: dict[str, Any], inputs: Sequence[Any], backend_name: str):
     """Prepare each contraction and label mapping before operation timing."""
+    if backend_name == "jax":
+        return prepare_tree_jax_native(tree, inputs)
     import opt_einsum as oe
 
     def prepare(node):
@@ -80,6 +207,7 @@ def prepare_tree(tree: dict[str, Any], inputs: Sequence[Any], backend_name: str)
         )
         shapes = [shape for _, shape in children]
         contract = oe.contract_expression(expression, *shapes, optimize="greedy")
+        binary = _jax_binary_contract(ixs, iy, shapes) if backend_name == "jax" else None
         sizes = {
             label: size
             for ix, shape in zip(ixs, shapes)
@@ -88,6 +216,8 @@ def prepare_tree(tree: dict[str, Any], inputs: Sequence[Any], backend_name: str)
 
         def execute(values):
             operands = [run(values) for run, _ in children]
+            if binary is not None:
+                return binary(*operands)
             return contract(*operands, backend=backend_name)
 
         return execute, tuple(sizes[i] for i in iy)
@@ -103,6 +233,49 @@ def build_input_shapes(
 
 def build_fill_value(fill_value: float | None = None) -> float:
     return DEFAULT_FILL_VALUE if fill_value is None else float(fill_value)
+
+
+def constant_tree_reference(network, bond_dim, fill_value):
+    """Exact constant-input tree result, without allocating intermediates.
+
+    Each entry is a product of child constants multiplied by the number of
+    summed assignments. Logarithms avoid intermediate overflow/underflow. The
+    input constant is rounded to F32 exactly as in the maintained CUDA fixture.
+    This oracle applies only to the declared constant-fill workload.
+    """
+    import numpy as np
+    value = float(np.float32(fill_value))
+    if value <= 0 or bond_dim < 1:
+        raise ValueError("constant-tree reference requires positive fill and dimension")
+
+    def evaluate(node):
+        if node.get("isleaf"):
+            axes = network["inputs"][int(node["tensorindex"]) - 1]
+            return float(np.log2(value)), len(axes)
+        children = [evaluate(child) for child in node["args"]]
+        ixs, iy = node["eins"]["ixs"], node["eins"]["iy"]
+        if len(children) != len(ixs) or any(rank != len(ix) for (_, rank), ix in zip(children, ixs)):
+            raise ValueError("constant-tree reference: inconsistent child ranks")
+        labels = {label for ix in ixs for label in ix}
+        if len(iy) != len(set(iy)) or not set(iy) <= labels:
+            raise ValueError("constant-tree reference: invalid output labels")
+        summed = len(labels - set(iy))
+        return sum(log_value for log_value, _ in children) + summed * float(np.log2(bond_dim)), len(iy)
+
+    logarithm, rank = evaluate(network["tree"])
+    return np.full((bond_dim,) * rank, np.exp2(logarithm), dtype=np.float64)
+
+
+def prepare_tree_jax_kernels(tree, inputs, compiler_options=None):
+    """Compile and initialize each tree contraction, preserving the full tree.
+
+    Planning, compilation and the representative initialization execution are
+    outside timing. Unlike whole-tree JIT, execution dispatches the prepared
+    kernels through the Python tree; callers must label these paths separately.
+    """
+    return prepare_tree_jax_native(
+        tree, inputs, compile_nodes=True, compiler_options=compiler_options
+    )
 
 
 class IntegerLabelEinsumBackend:

@@ -90,6 +90,10 @@ missing rows, duplicates and invalid samples without replacing the latest report
   cases prepare distinct destinations and move-only write handles before each
   batch and reuse the same destination allocations across samples; PyTorch's
   `out=` arm uses the same destination schedule. JAX donation is not output reuse.
+  Rust pad/slice/scatter configurations and vdot/norm borrowed read handles are
+  also prepared before each batch, including initialization with zero warmups.
+  Earlier structural measurements constructed their move-only configurations
+  inside the timer and are noncompliant; rerun them before using their ratios.
 * References use NumPy/SciPy double precision on the exact rounded inputs and
   check every output element before and after measurement. Shapes and dtypes
   must match; NaNs fail. Matched masked log-softmax negative infinities are
@@ -97,6 +101,13 @@ missing rows, duplicates and invalid samples without replacing the latest report
   `32 * eps * ceil(log2(n)) * norm2(input) / normalization`, with a `1e-9`
   floor, to account for roundoff in cancellation-heavy frequency bins; the
   per-case manifest records the actual tolerances.
+  Full sum reductions use an absolute roundoff budget of
+  `max(base_atol, 32 * eps * ceil(log2(n)) * norm2(input))`; full products use
+  `max(base_rtol, 32 * eps * sqrt(n))` for relative error. These are explicitly
+  size-dependent verification policies, rather than elementwise error budgets
+  or formal worst-case IEEE error bounds. Both preserve the original fixture
+  values and double-precision reference. The initial failed verification run
+  `20261013_124057` remains available in raw verification data.
 
 ## Explicit limitations
 
@@ -132,7 +143,8 @@ matching PyTorch/JAX operation; compositions are not timed as substitutes.
 Masked softmax lacks a matching stable PyTorch operation. JAX RMS normalization
 and eager tenferro values-only SVD are similarly explicit unsupported arms.
 Normalization uses no affine parameters, `eps=1e-5`, and nonempty finite inputs;
-pinv uses `rtol=1e-5`; triangular solve is left/lower/non-transposed/non-unit.
+pinv uses `atol=0`, `rtol=1e-5`, with framework tolerance tensors prepared and
+uploaded before timing; triangular solve is left/lower/non-transposed/non-unit.
 
 This first set covers compact F32/F64 paths, complex FFT/conjugation/contractions,
 Bool masks and I64 indices. Non-contiguous `TensorRead` routes are not aliases of
@@ -143,6 +155,69 @@ fixtures/contracts. Existing QR/SVD/eigh/solve, permutation, AD and perf-issue
 suites remain separate coverage; their presence does not count these remaining
 routes as measured. CUDA-unsupported eig/eigvals/full-pivot LU, grouped GEMM and
 unsupported read-linalg hooks remain excluded as documented in issue #155.
+
+## Existing suites and JAX references
+
+`gpu/dense`, `gpu/einsum`, `gpu/elementwise`, and `gpu/tensornetwork`
+select JAX references. The Python runner prepares plans, explicitly compiles JAX
+functions, initializes libraries, asserts CUDA placement, and verifies outputs
+before bounded batched sampling. It verifies again after sampling. Skipped
+verification cannot become a successful measurement. Frameworks execute in
+separate processes, releasing their GPU allocator before the next starts.
+
+Use the complete declared shapes for numerical verification on physical GPU 1:
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'GPU_BENCH_VERIFY_ONLY=1 GPU_BENCH_DEVICE=1 \
+    GPU_BENCH_BACKENDS=tenferro-cuda-eager,pytorch-cuda,jax-cuda,jax-cuda-tree-jit \
+    GPU_BENCH_SUITE=benchmarks/gpu/dense.yaml,benchmarks/gpu/einsum.yaml,benchmarks/gpu/elementwise.yaml,benchmarks/gpu/tensornetwork.yaml \
+    ./scripts/run_gpu_suite.sh'
+```
+
+Verification-only records have no timing samples and cannot replace reports.
+`jax-cuda` means whole-operation compiled JIT. `jax-cuda-tree-jit` is a distinct
+tensor-network path: the complete original tree is preserved, each contraction
+is planned/compiled/initialized before timing, and the Python tree dispatches
+those kernels. All inputs and requested outputs match the PyTorch tree arm.
+Ordinary binary nodes use `jax.lax.dot_general` directly: shared output labels
+become batch axes and shared non-output labels become contraction axes. The
+eager tree retains the native intermediate axis order and remaps downstream
+labels; only the root is restored to the requested order. Repeated labels or
+unilateral reductions retain the general einsum implementation. This preserves
+the full tree and avoids invoking JAX's general einsum compiler for every
+ordinary binary node. Full-size CUDA verification remains required before
+publishing this path.
+
+The tensor-network node-JIT arm disables XLA GPU autotuning and Triton GEMM
+through the suite's explicit `tensor_network.jax_compiler_options`. Its default
+compiler configuration exceeded the 32 GiB guard (`20261013_125730`); the
+configured path compiled all 549 nodes and passed CUDA verification
+(`20261013_131210`). Result notes record the options actually passed to JIT
+compilation. `GPU_BENCH_JAX_COMPILER_OPTIONS` can override them with a JSON
+object; eager JAX and PyTorch do not apply these JIT options.
+
+The previous general-einsum whole-tree lowering exhausted roughly 91 GiB of
+host memory and also failed guarded 32 GiB attempts. Those failed raw runs are
+retained. The compact native lowering and recorded compiler policy now pass
+whole-tree JIT CUDA verification (`compiler_probe_native_no_autotune.json`).
+Whole-tree JIT, node-JIT and eager execution remain separate report arms.
+The CUDA devcontainer now caps host memory at 32 GiB (34 GiB including swap) to
+prevent a compiler process from exhausting the workstation. Per-arm notes record
+the active cgroup memory limit and any nondefault JAX compiler options.
+
+The constant-fill tensor-network fixture has an independent analytic reference:
+each contraction multiplies child constants and the number of summed index
+assignments. It uses exact rounded F32 input values and evaluates the result in
+F64, without allocating giant CPU intermediates. Small summed/free-axis trees
+are checked against dense NumPy contractions, and prepared JAX tree kernels are
+tested on nonconstant inputs.
+
+Tenferro eager sampling reuses one entered session for initialization, calibration
+and samples, with inactive AD recording. Standard tenferro trace rows are
+unsupported because `Runtime::run_prepared` still enters sessions during execution
+and exposes no caller-borrowed session route. Trace public-call latency belongs
+in separately named diagnostic suites, including the work in issue #107.
 
 ## Checks
 

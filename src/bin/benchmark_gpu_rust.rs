@@ -17,18 +17,18 @@ use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::tensornetwork::{
     build_cpu_eager_inputs as build_tensor_network_cpu_inputs, contract_tree_eager,
     contract_tree_trace, load_tensor_network, scalar_f32, scalar_f32_tensor, tensor_f32_col_major,
-    TensorNetworkFile, TensorNetworkSpec,
+    TensorNetworkFile, TensorNetworkSpec, TreeNode,
 };
 use tenferro_gpu::cuda::{
     cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaBackend,
     CudaRuntime,
 };
-use tenferro_linalg::{EagerSessionLinalgExt, EagerTensorLinalgExt, TracedTensorLinalgExt};
+use tenferro_linalg::{EagerSessionLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
     DType, DotGeneralConfig, Error as TfError, GraphCompiler, Runtime, TraceContext, TracedTensor,
 };
-use tenferro_tensor::Tensor;
+use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 
 fn eager_from_tensor_in(
     tensor: Tensor,
@@ -157,6 +157,10 @@ fn dispatch(
     }
     match backend {
         "tenferro-cuda-eager" => run_eager(suite_id, problem, backend, device_ordinal, ts, bc, tc),
+        "tenferro-cuda-trace" if !matches!(suite_id, "gpu/public_path_latency" | "gpu/planning_latency") => stub(
+            suite_id, problem, backend, device_ordinal, "unsupported",
+            "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate.",
+            "trace-session-setup-unavailable", ts, bc, tc),
         "tenferro-cuda-trace" => run_trace(suite_id, problem, backend, device_ordinal, ts, bc, tc),
         _ => stub(
             suite_id,
@@ -192,6 +196,48 @@ fn verify_tensor_network_scalar(
         Some(max_abs),
         Some(max_rel),
     )
+}
+
+fn constant_tree_scalar(node: &TreeNode, spec: &TensorNetworkSpec) -> Result<f32, String> {
+    fn logarithm(node: &TreeNode, spec: &TensorNetworkSpec) -> Result<f64, String> {
+        if node.isleaf {
+            return Ok((spec.fill_value as f32 as f64).log2());
+        }
+        let eins = node.eins.as_ref().ok_or("missing einsum metadata")?;
+        let labels = eins
+            .ixs
+            .iter()
+            .flatten()
+            .copied()
+            .collect::<std::collections::HashSet<_>>();
+        let output = eins
+            .iy
+            .iter()
+            .copied()
+            .collect::<std::collections::HashSet<_>>();
+        let summed = labels.difference(&output).count();
+        let mut value = summed as f64 * (spec.bond_dim as f64).log2();
+        for child in node.args.as_ref().ok_or("missing tree children")? {
+            value += logarithm(child, spec)?;
+        }
+        Ok(value)
+    }
+    Ok(logarithm(node, spec)?.exp2() as f32)
+}
+
+fn verification_only() -> bool {
+    std::env::var("GPU_BENCH_VERIFY_ONLY").as_deref() == Ok("1")
+}
+
+fn apply_eager_sampling_record(record: &mut Value, sampling: &Value) {
+    record["execution"]["notes"] = json!(sampling.to_string());
+    if verification_only() {
+        record["status"] = json!("verification_only");
+        record["timing"]["timed_runs"] = json!(0);
+        for name in ["first_run_ms", "median_ms", "min_ms", "p95_ms", "iqr_ms"] {
+            record["timing"][name] = Value::Null;
+        }
+    }
 }
 
 fn build_gpu_eager_inputs(
@@ -334,40 +380,33 @@ fn run_eager_tensor_network(
         let gpu_inputs =
             build_gpu_eager_inputs(&network, &spec, ctx.clone(), transfer_bk.runtime())?;
         sync_cubecl_runtime(transfer_bk.runtime())?;
-        let cpu_ctx =
-            EagerRuntime::with_cpu_backend(CpuBackend::default()).expect("CPU reference runtime");
-        let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx.clone())?;
         let prepared_tree =
             tenferro_einsum_benchmark::tensornetwork::PreparedEagerTree::new(&network.tree)?;
 
-        for _ in 0..n_warmup.max(1) {
-            let _ = prepared_tree.execute(&gpu_inputs)?;
-            sync_eager_runtime(&ctx)?;
-        }
-
-        let mut times_ms = Vec::with_capacity(n_runs);
-        let mut last_out: Option<EagerTensor> = None;
-        for _ in 0..n_runs {
-            drop(last_out.take());
-            let t0 = Instant::now();
-            let out = prepared_tree.execute(&gpu_inputs)?;
-            sync_eager_runtime(&ctx)?;
-            times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
-            last_out = Some(out);
-        }
-
-        let cpu_scalar = scalar_f32(&contract_tree_eager(&network.tree, &cpu_inputs)?)?;
-        let last_out = last_out.ok_or("missing timed tensor network result".to_string())?;
-        let gpu_scalar = scalar_f32_from_eager_gpu(&last_out, transfer_bk.runtime())?;
+        let _guard = ctx.no_grad();
+        let (times_ms, outputs, sampling) = sample_eager(
+            &ctx,
+            transfer_bk.runtime(),
+            n_warmup,
+            n_runs,
+            device_ordinal,
+            |session, _config| {
+                prepared_tree
+                    .execute_in(session, &gpu_inputs)
+                    .map(|out| vec![out])
+            },
+        )?;
+        let cpu_scalar = constant_tree_scalar(&network.tree, &spec)?;
+        let gpu_scalar = scalar_f32_from_eager_gpu(&outputs[0], transfer_bk.runtime())?;
         let (ver_status, max_abs, max_rel) =
             verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
 
-        Ok((times_ms, ver_status, max_abs, max_rel))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
-            if ver_status == "failed" {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
+            if ver_status != "passed" {
                 return stub(
                     suite_id,
                     problem,
@@ -381,8 +420,12 @@ fn run_eager_tensor_network(
                     tc,
                 );
             }
-            let stats = timing_stats(&times_ms);
-            ok_record(
+            let stats = if verification_only() {
+                (0., 0., 0., 0., 0.)
+            } else {
+                timing_stats(&times_ms)
+            };
+            let mut record = ok_record(
                 suite_id,
                 problem,
                 backend,
@@ -399,7 +442,11 @@ fn run_eager_tensor_network(
                 ts,
                 bc,
                 tc,
-            )
+            );
+            apply_eager_sampling_record(&mut record, &sampling);
+            record["verification"]["reference_backend"] =
+                json!("analytic_constant_tree_fp64_from_exact_f32_inputs");
+            record
         }
         Ok(Err(msg)) => stub(
             suite_id,
@@ -660,26 +707,17 @@ fn run_eager(
         let parsed = tenferro_einsum::Subscripts::parse(expression).map_err(|e| e.to_string())?;
         let subscripts = (&parsed).into();
 
-        // Warmup
-        for _ in 0..n_warmup.max(1) {
-            let config = batched_matmul_cfg();
-            let out = run_eager_op(op, &subscripts, config, &gpu_inputs)?;
-            sync_eager_runtime(&ctx)?;
-            black_box(out.len());
-        }
-
-        // Timed runs
-        let mut times_ms = Vec::with_capacity(n_runs);
-        let mut last_out: Option<Vec<EagerTensor>> = None;
-        for _ in 0..n_runs {
-            drop(last_out.take());
-            let config = batched_matmul_cfg();
-            let t0 = Instant::now();
-            let out = run_eager_op(op, &subscripts, config, &gpu_inputs)?;
-            sync_eager_runtime(&ctx)?;
-            times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
-            last_out = Some(out);
-        }
+        let _guard = ctx.no_grad();
+        let refs = gpu_inputs.extra.iter().collect::<Vec<_>>();
+        let (times_ms, last, sampling) = sample_eager(
+            &ctx,
+            transfer_bk.runtime(),
+            n_warmup,
+            n_runs,
+            device_ordinal,
+            |session, config| run_eager_op_in(session, op, &subscripts, config, &gpu_inputs, &refs),
+        )?;
+        let last_out = Some(last);
 
         // Verify last result against CPU reference
         let (ver_status, max_abs, max_rel) = if let Some(ref g) = last_out {
@@ -701,12 +739,12 @@ fn run_eager(
             ("skipped".to_string(), None, None)
         };
 
-        Ok((times_ms, ver_status, max_abs, max_rel))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
-            if ver_status == "failed" {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
+            if ver_status != "passed" {
                 return stub(
                     suite_id,
                     problem,
@@ -720,8 +758,12 @@ fn run_eager(
                     tc,
                 );
             }
-            let stats = timing_stats(&times_ms);
-            ok_record(
+            let stats = if verification_only() {
+                (0., 0., 0., 0., 0.)
+            } else {
+                timing_stats(&times_ms)
+            };
+            let mut record = ok_record(
                 suite_id,
                 problem,
                 backend,
@@ -738,7 +780,9 @@ fn run_eager(
                 ts,
                 bc,
                 tc,
-            )
+            );
+            apply_eager_sampling_record(&mut record, &sampling);
+            record
         }
         Ok(Err(msg)) => stub(
             suite_id,
@@ -1362,89 +1406,161 @@ fn build_cpu_eager_inputs(
     }
 }
 
-/// Run one eager operation in its own borrowed eager session.
-///
-/// tenferro-rs #1938 moved eager ops from `EagerTensor` onto `EagerSession`.
-/// Each pre-#1938 tensor-owned op entered the eager backend once, so entering
-/// one session per op keeps that entry inside the timed region.
-fn in_eager_session<R: Send>(
-    anchor: &EagerTensor,
-    op: impl FnOnce(&mut EagerSession<'_>) -> Result<R, tenferro_ad::Error> + Send,
-) -> Result<R, tenferro_ad::Error> {
-    anchor.runtime().with_eager_session(op)
-}
-
 fn run_eager_op(
     op: &str,
     subscripts: &tenferro_einsum::EinsumSubscripts,
     batched_config: DotGeneralConfig,
     inputs: &EagerInputs,
 ) -> Result<Vec<EagerTensor>, String> {
-    match op {
-        "matmul" => {
-            let b = inputs.b.as_ref().unwrap();
-            let out = in_eager_session(&inputs.a, |session| session.matmul(&inputs.a, b))
-                .map_err(|e| format!("matmul: {e}"))?;
-            Ok(vec![out])
-        }
-        "elementwise_chain" => {
-            let a = &inputs.a;
-            let b = inputs.b.as_ref().unwrap();
-            let mut t = a.clone();
-            for _ in 0..ELEMENTWISE_CHAIN_STEPS {
-                // One eager session per op, as each pre-#1938 tensor-owned op entered.
-                t = in_eager_session(a, |session| session.mul(&t, a))
-                    .and_then(|value| in_eager_session(a, |session| session.add(&value, b)))
-                    .and_then(|value| in_eager_session(a, |session| session.tanh(&value)))
-                    .map_err(|e| format!("elementwise_chain: {e}"))?;
+    let anchor = if op == "einsum" {
+        &inputs.extra[0]
+    } else {
+        &inputs.a
+    };
+    let refs = inputs.extra.iter().collect::<Vec<_>>();
+    anchor
+        .runtime()
+        .with_eager_session(|session| {
+            run_eager_op_in(session, op, subscripts, batched_config, inputs, &refs)
+                .map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+        })
+        .map_err(|e| e.to_string())
+}
+
+fn run_eager_op_in(
+    session: &mut EagerSession<'_>,
+    op: &str,
+    subscripts: &tenferro_einsum::EinsumSubscripts,
+    batched_config: DotGeneralConfig,
+    inputs: &EagerInputs,
+    refs: &[&EagerTensor],
+) -> Result<Vec<EagerTensor>, String> {
+    let result: Result<Vec<EagerTensor>, tenferro_ad::Error> = (|| {
+        Ok(match op {
+            "matmul" => vec![session.matmul(&inputs.a, inputs.b.as_ref().unwrap())?],
+            "elementwise_chain" => {
+                let a = &inputs.a;
+                let b = inputs.b.as_ref().unwrap();
+                let mut value = a.clone();
+                for _ in 0..ELEMENTWISE_CHAIN_STEPS {
+                    let product = session.mul(&value, a)?;
+                    let sum = session.add(&product, b)?;
+                    value = session.tanh(&sum)?;
+                }
+                vec![value]
             }
-            Ok(vec![t])
+            "batched_matmul" => {
+                vec![session.dot_general(&inputs.a, inputs.b.as_ref().unwrap(), batched_config)?]
+            }
+            "einsum" => vec![session
+                .einsum_subscripts(refs, subscripts)
+                .map_err(|e| TfError::Internal(e.to_string()))?],
+            "qr" => {
+                let (q, r) = session.qr(&inputs.a)?;
+                vec![q, r]
+            }
+            "solve" => vec![session.solve(&inputs.a, inputs.b.as_ref().unwrap())?],
+            "svd" => {
+                let (u, s, vh) = session.svd(&inputs.a)?;
+                vec![u, s, vh]
+            }
+            "eigh" => {
+                let (w, v) = session.eigh(&inputs.a)?;
+                vec![w, v]
+            }
+            _ => {
+                return Err(tenferro_ad::Error::from(TfError::Internal(format!(
+                    "unknown eager operation {op}"
+                ))))
+            }
+        })
+    })();
+    result.map_err(|e| e.to_string())
+}
+
+fn sample_eager(
+    ctx: &std::sync::Arc<EagerRuntime>,
+    rt: &CudaRuntime,
+    warmups: usize,
+    runs: usize,
+    device_ordinal: usize,
+    mut op: impl FnMut(&mut EagerSession<'_>, DotGeneralConfig) -> Result<Vec<EagerTensor>, String>,
+) -> Result<(Vec<f64>, Vec<EagerTensor>, Value), String> {
+    ctx.with_eager_session(|session| {
+        let result = (|| -> Result<_, String> {
+            if verification_only() {
+                let output = op(session, batched_matmul_cfg())?;
+                sync_cubecl_runtime(rt)?;
+                assert_cuda_eager_outputs(&output, device_ordinal)?;
+                return Ok((Vec::new(), output, json!({"sampling":null,"verification_only":true,
+                    "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()})));
+            }
+            let mut batch = |count: usize| -> Result<_, String> {
+                let mut outputs = Vec::with_capacity(count);
+                let mut configs = (0..count).map(|_| Some(batched_matmul_cfg())).collect::<Vec<_>>();
+                sync_cubecl_runtime(rt)?;
+                let start = Instant::now();
+                for config in &mut configs {
+                    outputs.push(op(session, config.take().unwrap())?);
+                }
+                sync_cubecl_runtime(rt)?;
+                let elapsed = start.elapsed().as_secs_f64() * 1000.;
+                black_box(&outputs);
+                Ok((elapsed, outputs))
+            };
+            let (_, initial) = batch(1)?;
+            assert_cuda_eager_outputs(&initial[0], device_ordinal)?;
+            let bytes = initial[0].iter().map(|value| {
+                let view = value.tensor_read();
+                let width = match view.dtype() { DType::F32 => 4, DType::C64 => 16, _ => 8 };
+                view.shape().iter().product::<usize>() * width
+            }).sum::<usize>().max(1);
+            drop(initial);
+            for _ in 0..warmups { drop(batch(1)?); }
+            let cap = ((256 << 20) / bytes).clamp(1, 4096);
+            let mut count = 1;
+            while batch(count)?.0 < 2. && count < cap { count = (count * 2).min(cap); }
+            let mut raw = Vec::with_capacity(runs);
+            let mut last = None;
+            for _ in 0..runs {
+                drop(last.take());
+                let (elapsed, mut outputs) = batch(count)?;
+                raw.push(elapsed);
+                last = outputs.pop();
+            }
+            let normalized = raw.iter().map(|time| time / count as f64).collect();
+            let notes = json!({"sampling":{"operations_per_sample":count,"batch_ms":raw,
+                "target_batch_ms":2,"retention_budget_bytes":256<<20},
+                "setup":"one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks",
+                "precision":"native declared dtype; no AD recording",
+                "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()});
+            let output = last.ok_or("no timed eager samples")?;
+            assert_cuda_eager_outputs(&output, device_ordinal)?;
+            Ok((normalized, output, notes))
+        })();
+        result.map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+    }).map_err(|e| e.to_string())
+}
+
+fn assert_cuda_eager_outputs(outputs: &[EagerTensor], device_ordinal: usize) -> Result<(), String> {
+    for output in outputs {
+        let read = output.tensor_read();
+        let tensor = read
+            .as_tensor()
+            .ok_or("CUDA operation returned a lazy view")?;
+        let placement = tensor.placement();
+        let device = placement
+            .device
+            .as_ref()
+            .ok_or("CPU fallback: no CUDA placement")?;
+        if device.kind != DeviceKind::Gpu(GpuBackendKind::Cuda)
+            || device.ordinal != device_ordinal
+            || !tensor.is_backend_buffer()
+        {
+            return Err("CPU fallback or wrong CUDA output allocation".into());
         }
-        "batched_matmul" => {
-            let b = inputs.b.as_ref().unwrap();
-            let out = in_eager_session(&inputs.a, |session| {
-                session.dot_general(&inputs.a, b, batched_config)
-            })
-            .map_err(|e| format!("batched_matmul: {e}"))?;
-            Ok(vec![out])
-        }
-        "einsum" => {
-            let refs: Vec<&EagerTensor> = inputs.extra.iter().collect();
-            // One borrowed eager session per public einsum call (#1946 F5).
-            let out = refs[0]
-                .runtime()
-                .with_eager_session(|session| {
-                    session
-                        .einsum_subscripts(&refs, subscripts)
-                        .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
-                })
-                .map_err(|e| format!("einsum: {e}"))?;
-            Ok(vec![out])
-        }
-        "qr" => {
-            let (q, r) = in_eager_session(&inputs.a, |session| session.qr(&inputs.a))
-                .map_err(|e| format!("qr: {e}"))?;
-            Ok(vec![q, r])
-        }
-        "solve" => {
-            let x = inputs
-                .a
-                .solve(inputs.b.as_ref().unwrap())
-                .map_err(|e| format!("solve: {e}"))?;
-            Ok(vec![x])
-        }
-        "svd" => {
-            let (u, s, vh) = in_eager_session(&inputs.a, |session| session.svd(&inputs.a))
-                .map_err(|e| format!("svd: {e}"))?;
-            Ok(vec![u, s, vh])
-        }
-        "eigh" => {
-            let (w, v) = in_eager_session(&inputs.a, |session| session.eigh(&inputs.a))
-                .map_err(|e| format!("eigh: {e}"))?;
-            Ok(vec![w, v])
-        }
-        _ => Err(format!("unknown op: {op}")),
     }
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------

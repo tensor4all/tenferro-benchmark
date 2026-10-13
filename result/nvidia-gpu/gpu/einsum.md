@@ -3,30 +3,30 @@
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/einsum`
 - Suite file: `benchmarks/gpu/einsum.yaml`
-- Timestamp: `2026-10-06T19:36:19.553911+00:00`
-- tenferro-rs commit: `5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102`
+- Timestamp: `2026-10-13T13:44:20.569187+00:00`
+- tenferro-rs commit: `dfbdf6b66d40162f4731da116ec42ed034da0dce`
 
 ## GPU Information
 
 - Device: `cuda:0`
-- Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
-- Memory: `80 GiB`
-- Driver version: `580.126.09`
+- Name: `NVIDIA GeForce RTX 3060`
+- UUID: `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`
+- Memory: `12 GiB`
+- Driver version: `580.178.04`
 - CUDA version: `13.0`
 - CUDA runtime: `12.9`
 - cuDNN version: `92700`
 
 ## CPU Information
 
-- Model: `AMD EPYC 7713P 64-Core Processor`
-- Vendor: `AuthenticAMD`
-- Logical CPUs: `64`
+- Model: `Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz`
+- Vendor: `GenuineIntel`
+- Logical CPUs: `36`
 - Sockets: `1`
-- Cores per socket: `64`
-- Threads per core: `1`
+- Cores per socket: `18`
+- Threads per core: `2`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-146-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -38,6 +38,16 @@ Non-`ok` cells show the structured backend status.
 
 ## gpu/einsum / einsum / allocating output
 
-| Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | cuBLASLt | CUTLASS | cuSOLVER | cuSPARSE | Ginkgo |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| einsum_bin_matmul_3072_f64 | 3.200 | 3.165 | 3.173 | 3.181 | 3.479 | unsupported | unsupported | unsupported |
+| Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT |
+|---|---:|---:|---:|---:|
+| einsum_bin_matmul_3072_f64 | unsupported | 315.434 | 315.510 | 270.593 |
+
+## Python sampling
+
+JAX uses compiled JIT execution; compilation, planning and numerical checks are outside timing. PyTorch uses eager execution. Samples retain every output until native synchronization and clock stop. Values are normalized per declared operation.
+
+| Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
+| --- | --- | ---: | --- | --- |
+| einsum_bin_matmul_3072_f64 | tenferro-cuda-eager | 1 | 315.405, 315.451, 315.434, 315.434, 315.45, 315.435, 315.383 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| einsum_bin_matmul_3072_f64 | pytorch-cuda | 1 | 315.432, 315.497, 315.548, 315.51, 315.526, 315.512, 315.494 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| einsum_bin_matmul_3072_f64 | jax-cuda | 1 | 270.593, 270.574, 270.587, 270.508, 270.617, 270.613, 270.614 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |

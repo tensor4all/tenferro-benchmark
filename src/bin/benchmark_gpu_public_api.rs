@@ -37,6 +37,10 @@ struct Case {
     atol: f64,
     reference: String,
     #[serde(default)]
+    full_reduction: bool,
+    #[serde(default)]
+    compare_direction: String,
+    #[serde(default)]
     excluded: HashMap<String, String>,
     #[serde(default)]
     unavailable: HashMap<String, String>,
@@ -178,18 +182,20 @@ fn verify(rt: &CudaRuntime, actual: &Tensor, expected: &Tensor, case: &Case) -> 
 
 /// Both calibration and measurement retain outputs until the clock stops.
 /// The callback captures a session entered before invoking this function.
-fn measure<O>(
+fn measure<O, A>(
     settings: &Settings,
     bytes: usize,
     rt: &CudaRuntime,
-    mut op: impl FnMut() -> Result<O>,
+    mut prepare: impl FnMut() -> A,
+    mut op: impl FnMut(A) -> Result<O>,
 ) -> Result<Value> {
     let batch = |count: usize| -> Result<u128> {
         let mut outputs = Vec::with_capacity(count);
+        let mut arguments = (0..count).map(|_| Some(prepare())).collect::<Vec<_>>();
         rt.synchronize()?;
         let start = Instant::now();
-        for _ in 0..count {
-            outputs.push(op()?);
+        for args in &mut arguments {
+            outputs.push(op(args.take().unwrap())?);
         }
         rt.synchronize()?;
         let elapsed = start.elapsed().as_nanos();
@@ -227,6 +233,7 @@ fn direct(
     inputs: &[Tensor],
     executor: &mut FftExecutor,
     session: &mut dyn BackendSession,
+    args: structural::Arguments<'_>,
 ) -> Result<Tensor> {
     let input = &inputs[0];
     Ok(match case.op.as_str() {
@@ -234,13 +241,14 @@ fn direct(
         "ifft" => executor.ifft(input, None, -1, FftNorm::Backward, session)?,
         "rfft" => executor.rfft(input, None, -1, FftNorm::Backward, session)?,
         "irfft" => executor.irfft(input, Some(case.n), -1, FftNorm::Backward, session)?,
-        _ => return runtime_ops::direct(case, inputs, session),
+        _ => return runtime_ops::direct(case, inputs, session, args),
     })
 }
 fn eager(
     case: &Case,
     inputs: &[EagerTensor],
     session: &mut tenferro_ad::EagerSession<'_>,
+    args: structural::Arguments<'_>,
 ) -> Result<EagerTensor> {
     let input = &inputs[0];
     Ok(match case.op.as_str() {
@@ -248,7 +256,7 @@ fn eager(
         "ifft" => session.ifft(input, None, -1, FftNorm::Backward)?,
         "rfft" => session.rfft(input, None, -1, FftNorm::Backward)?,
         "irfft" => session.irfft(input, Some(case.n), -1, FftNorm::Backward)?,
-        _ => return runtime_ops::eager(case, inputs, session),
+        _ => return runtime_ops::eager(case, inputs, session, args),
     })
 }
 fn run(
@@ -282,16 +290,32 @@ fn run(
             if case.op.ends_with("_into") {
                 return reuse::run(case, &input, &expected, &rt, session, settings, bytes);
             }
-            let probe = direct(case, &input, &mut executor, session)?;
+            let probe = direct(
+                case,
+                &input,
+                &mut executor,
+                session,
+                structural::prepare_direct(case, &input),
+            )?;
             let error = verify(&rt, &probe, &expected, case)?;
             drop(probe);
             if settings.verify_only || case.excluded.contains_key(mode) {
                 return Ok((None, error));
             }
-            let timing = measure(settings, bytes, &rt, || {
-                direct(case, &input, &mut executor, session)
-            })?;
-            let final_output = direct(case, &input, &mut executor, session)?;
+            let timing = measure(
+                settings,
+                bytes,
+                &rt,
+                || structural::prepare_direct(case, &input),
+                |args| direct(case, &input, &mut executor, session, args),
+            )?;
+            let final_output = direct(
+                case,
+                &input,
+                &mut executor,
+                session,
+                structural::prepare_direct(case, &input),
+            )?;
             let error = error.max(verify(&rt, &final_output, &expected, case)?);
             Ok((Some(timing), error))
         })?
@@ -303,7 +327,7 @@ fn run(
                 .into_iter()
                 .map(|a| Ok(session.constant_from(a)?))
                 .collect::<Result<Vec<_>>>()?;
-            let probe = eager(case, &input, session)?;
+            let probe = eager(case, &input, session, structural::prepare(case))?;
             let error = verify(
                 &rt,
                 probe
@@ -317,8 +341,14 @@ fn run(
             if settings.verify_only || case.excluded.contains_key(mode) {
                 return Ok((None, error));
             }
-            let timing = measure(settings, bytes, &rt, || eager(case, &input, session))?;
-            let final_output = eager(case, &input, session)?;
+            let timing = measure(
+                settings,
+                bytes,
+                &rt,
+                || structural::prepare(case),
+                |args| eager(case, &input, session, args),
+            )?;
+            let final_output = eager(case, &input, session, structural::prepare(case))?;
             let error = error.max(verify(
                 &rt,
                 final_output

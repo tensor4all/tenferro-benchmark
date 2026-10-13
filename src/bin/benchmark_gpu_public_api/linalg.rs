@@ -2,18 +2,25 @@ use super::{Case, Result};
 use tenferro_ad::{EagerSession, EagerTensor};
 use tenferro_einsum::{EagerSessionEinsumExt, TensorDotAxes, TensorTensordotExt};
 use tenferro_linalg::{EagerSessionLinalgExt, TensorLinalgExt};
-use tenferro_tensor::TensorRead;
 use tenferro_tensor::{BackendSession, Tensor};
 
-pub(super) fn direct(case: &Case, inputs: &[Tensor], s: &mut dyn BackendSession) -> Result<Tensor> {
+pub(super) fn direct(
+    case: &Case,
+    inputs: &[Tensor],
+    s: &mut dyn BackendSession,
+    args: super::structural::Arguments<'_>,
+) -> Result<Tensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
         "tensordot" => x.tensordot(&inputs[1], TensorDotAxes::Count(1), s)?,
-        "vdot_read" => s.vdot_read(
-            TensorRead::from_tensor(x),
-            TensorRead::from_tensor(&inputs[1]),
-        )?,
-        "norm_squared_read" => s.norm_squared_read(TensorRead::from_tensor(x))?,
+        "vdot_read" => {
+            let (a, b) = args.reads.ok_or("missing prepared read operands")?;
+            s.vdot_read(a, b)?
+        }
+        "norm_squared_read" => {
+            let (a, _) = args.reads.ok_or("missing prepared read operand")?;
+            s.norm_squared_read(a)?
+        }
         "cholesky" => x.cholesky(s)?,
         "svdvals" => x.svdvals(s)?,
         "eigvalsh" => x.eigvalsh(s)?,

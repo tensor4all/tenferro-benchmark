@@ -39,6 +39,19 @@ def make_fixtures(root, suite):
                         outputs=[save_array(root, f'{spec["id"]}_out.bin', y)], reference="numpy/scipy double precision",
                         rtol=5e-4 if spec["dtype"].endswith("32") else 1e-9,
                         atol=5e-4 if spec["dtype"].endswith("32") else 1e-9)
+            if spec.get("full_reduction") and spec["op"] in {"reduce_sum", "reduce_prod"}:
+                # Parallel accumulation has an operation-size-dependent
+                # roundoff budget. Use exact fixture values, never measured
+                # backend discrepancies, to determine this policy.
+                eps = np.finfo(inputs[0].dtype).eps
+                if spec["op"] == "reduce_sum":
+                    case["atol"] = max(case["atol"], float(
+                        32 * eps * max(1, np.ceil(np.log2(spec["n"])))
+                        * np.linalg.norm(inputs[0].astype(np.float64))))
+                    case["tolerance_policy"] = "sum atol=max(base,32*eps*ceil(log2(n))*norm2(input)); base rtol"
+                else:
+                    case["rtol"] = max(case["rtol"], float(32 * eps * np.sqrt(spec["n"])))
+                    case["tolerance_policy"] = "prod rtol=max(base,32*eps*sqrt(n)); base atol"
             cases.append(case)
             continue
         op, dtype, n = spec["op"], spec["dtype"], spec["n"]
