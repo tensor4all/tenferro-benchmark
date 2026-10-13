@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 
-def render(status):
+def render(status, source=None):
     lines = ["# GPU routine coverage", "",
              f"Manifest version: {status['manifest_version']}; coverage: {status['coverage']}; "
              f"effort: {status['effort']}.", "",
@@ -12,6 +12,8 @@ def render(status):
              "Verification-only, unsupported, missing and unselected rows are not measured coverage. "
              "Noise flags are descriptive screens, not regression conclusions.", "",
              "| Classification | Count |", "|---|---:|"]
+    if source is not None:
+        lines[2:2] = [f"Source accounting: `{source}`.", ""]
     for category, count in status['counts'].items():
         lines.append(f"| {category} | {count} |")
     for category in ("expected", "selected", "executed", "unsupported", "failed", "missing",
@@ -28,7 +30,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(render(json.loads(args.status.read_text())))
+    args.output.write_text(render(json.loads(args.status.read_text()), args.status.as_posix()))
 
 
 if __name__ == "__main__":

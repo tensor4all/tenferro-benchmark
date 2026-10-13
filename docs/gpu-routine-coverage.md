@@ -47,3 +47,15 @@ from operation timings. The initial full command baseline and its scope are
 documented in [gpu-command-wall.md](gpu-command-wall.md). Dynamic-shape and
 lifetime diagnostic controls remain separate suites until their routine lane
 is validated; these 27 pairs alone do not complete issue #107.
+
+The first standard quick collection (`20261013_232208`, tenferro-rs `9655b4e0`,
+harness `020332f`) executed all 27 pairs on physical RTX 3060 GPU0. All passed
+numerical verification and retained raw batch samples; none exceeded the
+descriptive noise threshold. The script clock through the final suite report
+copy was 148.916 seconds, including a 0.30-second cached Rust build. This scope
+excludes devcontainer CLI startup and the final coverage-accounting/report write;
+it is not yet a whole-command budget. See the generated
+[coverage report](../result/nvidia-gpu/gpu/routine_coverage.md) and
+[phase report](../result/nvidia-gpu/gpu/routine_command_wall.md).
+The earlier full baseline used a different upstream revision and validation
+implementation; these observations do not establish an implementation speedup.
