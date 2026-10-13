@@ -20,7 +20,7 @@ problems:
     op: einsum
     dtype: {a: f64, b: f64, c: f64, accum: f64}
     layout: {tenferro: col_major, framework: row_major_contiguous}
-    data: {generator: zeros, seed: 0}
+    data: {generator: normal, seed: 0}
     einsum:
       format_rowmajor: "ij,jk->ik"
       format_colmajor: "ij,jk->ik"
