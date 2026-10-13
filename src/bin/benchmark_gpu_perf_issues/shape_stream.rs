@@ -213,7 +213,16 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
             batch()?;
             Ok(None)
         } else {
-            Ok(Some(measure_isolated(timing, &mut batch)?))
+            // Initialization was explicit above. Respect zero warmups and
+            // sample whole sequences without adaptive per-operation batching.
+            for _ in 0..timing.warmups { batch()?; }
+            let mut samples = Vec::with_capacity(timing.samples);
+            for sample_index in 0..timing.samples {
+                let elapsed_ns = batch()?;
+                if elapsed_ns == 0 { return Err("zero shape-sequence duration".into()); }
+                samples.push(Sample { sample_index, elapsed_ns, iterations:1 });
+            }
+            Ok(Some(Measurement { iterations:1, samples }))
         }
     })??;
     let measured_enqueue = if instrument {
@@ -221,7 +230,7 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
     } else {
         enqueue_ns
             .iter()
-            .skip(timing.warmups.max(1) + 1)
+            .skip(timing.warmups)
             .copied()
             .collect::<Vec<_>>()
     };
@@ -234,6 +243,6 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
             "cache_mode":mode,"plan_cache_capacity":64,"cache_reset_scope":"CUDA extension-owned plans/workspace; excludes CubeCL kernels, cuTENSOR handle and output/allocator pools",
             "instrumentation_only":instrument,"counter_observations":observations,
             "host_enqueue_samples_ns":measured_enqueue,
-            "host_enqueue_ns_including_initialization_and_warmups":enqueue_ns,
+            "host_enqueue_ns_including_warmups":enqueue_ns,
             "latency_classification":"whole-sequence workflow diagnostic; not steady-state operation throughput"}) })
 }

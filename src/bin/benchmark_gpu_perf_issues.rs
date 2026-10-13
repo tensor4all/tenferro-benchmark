@@ -2580,7 +2580,9 @@ fn main() -> Result<()> {
     }
     if let Some(m) = outcome.measurement {
         output["samples"] = serde_json::to_value(&m.samples)?;
-        output["calibration"] = json!({"target_ns": timing.target_ns, "iterations": m.iterations});
+        output["calibration"] = if kind == "shape_stream" {
+            json!({"mode":"fixed_whole_sequence","sequences_per_sample":1})
+        } else { json!({"target_ns": timing.target_ns, "iterations": m.iterations}) };
     }
     println!("{}", serde_json::to_string(&output)?);
     Ok(())
