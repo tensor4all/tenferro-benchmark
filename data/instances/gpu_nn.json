@@ -672,6 +672,542 @@
         "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
         "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
       }
+    },
+    {
+      "id": "layer_norm_weight_f32_n1024",
+      "op": "layer_norm",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": true,
+      "normalization_bias": false,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_bias_f32_n1024",
+      "op": "layer_norm",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": false,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_weight_bias_f32_n1024",
+      "op": "layer_norm",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": true,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_weight_f64_n1024",
+      "op": "layer_norm",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": true,
+      "normalization_bias": false,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_bias_f64_n1024",
+      "op": "layer_norm",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": false,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_weight_bias_f64_n1024",
+      "op": "layer_norm",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": true,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "rms_norm_weight_f32_n1024",
+      "op": "rms_norm",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": true,
+      "normalization_bias": false,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "rms_norm_bias_f32_n1024",
+      "op": "rms_norm",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": false,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "pytorch-cuda": "PyTorch rms_norm has no bias argument"
+      }
+    },
+    {
+      "id": "rms_norm_weight_bias_f32_n1024",
+      "op": "rms_norm",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": true,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "pytorch-cuda": "PyTorch rms_norm has no bias argument"
+      }
+    },
+    {
+      "id": "rms_norm_weight_f64_n1024",
+      "op": "rms_norm",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": true,
+      "normalization_bias": false,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "rms_norm_bias_f64_n1024",
+      "op": "rms_norm",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": false,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "pytorch-cuda": "PyTorch rms_norm has no bias argument"
+      }
+    },
+    {
+      "id": "rms_norm_weight_bias_f64_n1024",
+      "op": "rms_norm",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": true,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "pytorch-cuda": "PyTorch rms_norm has no bias argument"
+      }
+    },
+    {
+      "id": "layer_norm_weight_f32_n1048576",
+      "op": "layer_norm",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": true,
+      "normalization_bias": false,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_bias_f32_n1048576",
+      "op": "layer_norm",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": false,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_weight_bias_f32_n1048576",
+      "op": "layer_norm",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": true,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_weight_f64_n1048576",
+      "op": "layer_norm",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": true,
+      "normalization_bias": false,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_bias_f64_n1048576",
+      "op": "layer_norm",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": false,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "layer_norm_weight_bias_f64_n1048576",
+      "op": "layer_norm",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "normalization_weight": true,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "rms_norm_weight_f32_n1048576",
+      "op": "rms_norm",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": true,
+      "normalization_bias": false,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "rms_norm_bias_f32_n1048576",
+      "op": "rms_norm",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": false,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "pytorch-cuda": "PyTorch rms_norm has no bias argument"
+      }
+    },
+    {
+      "id": "rms_norm_weight_bias_f32_n1048576",
+      "op": "rms_norm",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": true,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "pytorch-cuda": "PyTorch rms_norm has no bias argument"
+      }
+    },
+    {
+      "id": "rms_norm_weight_f64_n1048576",
+      "op": "rms_norm",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": true,
+      "normalization_bias": false,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API"
+      }
+    },
+    {
+      "id": "rms_norm_bias_f64_n1048576",
+      "op": "rms_norm",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": false,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "pytorch-cuda": "PyTorch rms_norm has no bias argument"
+      }
+    },
+    {
+      "id": "rms_norm_weight_bias_f64_n1048576",
+      "op": "rms_norm",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "jax-cuda": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API.",
+        "jax-cuda-jit": "No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API."
+      },
+      "normalization_weight": true,
+      "normalization_bias": true,
+      "unavailable": {
+        "jax-cuda": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "jax-cuda-jit": "No verified single-call affine normalization counterpart; composition is not an equivalent isolated API",
+        "pytorch-cuda": "PyTorch rms_norm has no bias argument"
+      }
     }
   ]
 }

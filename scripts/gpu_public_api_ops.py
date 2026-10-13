@@ -191,10 +191,18 @@ def fixtures(case, dtype):
             inputs.append(mask)
             a = np.where(mask, a, -np.inf)
         y = (special.log_softmax if "log" in op else special.softmax)(a, axis=1)
-    elif op == "layer_norm":
-        y = (a-a.mean(axis=1, keepdims=True))/np.sqrt(a.var(axis=1, keepdims=True)+1e-5)
-    elif op == "rms_norm":
-        y = a/np.sqrt(np.mean(a*a, axis=1, keepdims=True)+1e-5)
+    elif op in {"layer_norm", "rms_norm"}:
+        y = ((a-a.mean(axis=1, keepdims=True))/np.sqrt(a.var(axis=1, keepdims=True)+1e-5)
+             if op == "layer_norm" else a/np.sqrt(np.mean(a*a, axis=1, keepdims=True)+1e-5))
+        coordinate = np.arange(a.shape[1], dtype=np.float64)
+        if case.get("normalization_weight"):
+            weight = (.7 + .3*np.cos(coordinate*.37)).astype(dtype)
+            inputs.append(weight)
+            y = y * weight.astype(np.float64)
+        if case.get("normalization_bias"):
+            bias = (.2*np.sin(coordinate*.53)).astype(dtype)
+            inputs.append(bias)
+            y = y + bias.astype(np.float64)
     elif op == "pad":
         padding = case.get("padding", [(0, 0, 0), (8, 8, 0)])
         shape = tuple(lo + hi + size + max(size - 1, 0) * interior
@@ -352,9 +360,14 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
     if op in {"softmax", "log_softmax"}:
         return lambda: getattr(torch.nn.functional, op)(x, dim=1)
     if op == "layer_norm":
-        return lambda: torch.nn.functional.layer_norm(x, (x.shape[1],), eps=1e-5)
+        weight = inputs[1] if case.get("normalization_weight") else None
+        bias = inputs[1 + int(case.get("normalization_weight", False))] if case.get("normalization_bias") else None
+        return lambda: torch.nn.functional.layer_norm(x, (x.shape[1],), weight=weight, bias=bias, eps=1e-5)
     if op == "rms_norm":
-        return lambda: torch.nn.functional.rms_norm(x, (x.shape[1],), eps=1e-5)
+        if case.get("normalization_bias"):
+            raise NotImplementedError("PyTorch rms_norm has no bias argument")
+        weight = inputs[1] if case.get("normalization_weight") else None
+        return lambda: torch.nn.functional.rms_norm(x, (x.shape[1],), weight=weight, eps=1e-5)
     if op == "pad":
         padding = case.get("padding", [(0, 0, 0), (8, 8, 0)])
         if any(interior for _, _, interior in padding):
