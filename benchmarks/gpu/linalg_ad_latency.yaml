@@ -22,6 +22,7 @@ defaults:
 backends:
 - tenferro-cuda-trace
 - pytorch-cuda
+- jax-cuda
 problems:
 - id: linalg_ad_small_grad_sum_svd_s_jvp_f64_2
   family: linalg_ad

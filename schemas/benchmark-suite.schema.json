@@ -85,6 +85,7 @@
             "steady_state_host_api",
             "steady_state_device_only",
             "steady_state_host_api_plus_device_sync",
+            "public_path_latency_including_internal_session_entry",
             "steady_state_host_api_plus_device_sync_with_download",
             "compile_plus_first_run"
           ]

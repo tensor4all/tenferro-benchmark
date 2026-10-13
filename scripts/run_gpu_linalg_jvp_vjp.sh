@@ -1,9 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+[[ -f /.dockerenv && -d /usr/local/cuda ]] || {
+    echo 'Use the repository CUDA devcontainer for GPU AD collection.' >&2
+    exit 1
+}
+export GPU_BENCH_VERIFY_ONLY="${GPU_BENCH_VERIFY_ONLY:-0}"
+default_device=0
+[[ "$GPU_BENCH_VERIFY_ONLY" == 1 ]] && default_device=1
+export GPU_BENCH_PHYSICAL_DEVICE="${GPU_BENCH_DEVICE:-$default_device}"
+export GPU_BENCH_DEVICE_UUID
+GPU_BENCH_DEVICE_UUID="$(nvidia-smi -i "$GPU_BENCH_PHYSICAL_DEVICE" --query-gpu=uuid --format=csv,noheader)"
+[[ "$GPU_BENCH_DEVICE_UUID" == GPU-* && "$GPU_BENCH_DEVICE_UUID" != *$'\n'* ]] || exit 1
+export CUDA_VISIBLE_DEVICES="$GPU_BENCH_DEVICE_UUID" GPU_BENCH_DEVICE=0
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 RAYON_NUM_THREADS=1
+export XLA_PYTHON_CLIENT_PREALLOCATE=false
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_ROOT="$PROJECT_DIR/data/results"
+[[ "$GPU_BENCH_VERIFY_ONLY" == 1 ]] && RESULTS_ROOT="$PROJECT_DIR/data/verification"
 REPORTS_DIR="$PROJECT_DIR/result"
 TIMESTAMP="${GPU_BENCH_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-nvidia-gpu}"
@@ -31,6 +46,9 @@ PY
 )"
 
 cd "$PROJECT_DIR"
+if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
+    git -C extern/tenferro-rs -c 'url.https://github.com/.insteadOf=git@github.com:' pull --ff-only
+fi
 
 VALIDATOR=(python3 "$SCRIPT_DIR/validate_benchmark_suite.py")
 METADATA=(python3 "$SCRIPT_DIR/collect_run_metadata.py")
@@ -72,7 +90,7 @@ metadata_args=(
     --tenferro-dir "$tenferro_dir"
     --features cuda
     --blas none
-    --cuda-device-ordinal "$DEVICE_ORDINAL"
+    --cuda-device-ordinal "$GPU_BENCH_PHYSICAL_DEVICE"
     --output "$RUN_YAML"
 )
 if [[ -n "$tenferro_commit" ]]; then
@@ -104,10 +122,13 @@ CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
 RUST_MIN_STACK="$RUST_MIN_STACK" \
 LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
     "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "" -- "$SUITE_FILE"
+mv "$RUST_JSONL" "$RUN_DIR/rust_records_unverified.jsonl"
+"${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
+    "$RUN_DIR/rust_records_unverified.jsonl" "$RUST_JSONL" "$SUITE_FILE"
 cat "$RUST_JSONL" >> "$RESULT_JSONL"
 sleep "$GPU_BENCH_BACKEND_SLEEP"
 
-for backend in pytorch-cuda; do
+for backend in pytorch-cuda jax-cuda; do
     echo "Running $backend linalg AD benchmarks..."
     chunk="$RUN_DIR/chunk_${backend}.jsonl"
     : > "$chunk"
@@ -124,6 +145,17 @@ if [[ ! -s "$RESULT_JSONL" ]]; then
     exit 1
 fi
 
+if [[ "$GPU_BENCH_VERIFY_ONLY" == 1 ]]; then
+    "${PYTHON[@]}" - "$RESULT_JSONL" <<'PYDEBUG'
+import json,sys
+rows=[json.loads(line) for line in open(sys.argv[1])]
+assert all(r['status'] in {'verification_only','unsupported'} for r in rows), rows
+assert all(r['verification']['status']=='passed' for r in rows if r['status']=='verification_only')
+assert all(r['timing']['median_ms'] is None for r in rows)
+print('AD CUDA verification complete:',len(rows),'cells; no timing report updated')
+PYDEBUG
+    exit 0
+fi
 "${VALIDATOR[@]}" --kind run "$RUN_YAML"
 "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"
 "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$REPORT_OUT"

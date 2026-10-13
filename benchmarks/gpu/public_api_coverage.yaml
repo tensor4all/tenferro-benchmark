@@ -82,7 +82,7 @@ families:
 cross_cutting:
   trace: Runtime::run_prepared cannot borrow the entered session; per-call session setup is excluded from standard rows.
   metadata_views: transpose_view/reshape_view/slice_view/slice_axis_view/broadcast_in_dim_view do no GPU numerical work; classify separately.
-  autodiff: Existing scalar-loss JVP/VJP is partial coverage; each new differentiated operation needs matching arguments and forward/backward scope.
+  autodiff: Five existing scalar-loss JVP/VJP contracts now have independently verified F64 CUDA outputs and matched PyTorch/JAX JIT arms (n=2,4,8,256,512). Large trace timing excludes internal session setup; small trace rows explicitly measure public-path latency. New differentiated operation families remain separate coverage.
   runtime_transfer_lifecycle: Separate workflow/initialization diagnostics, tracked by issue 107 and perf_issues.
   legacy_jax_reports: >-
     Dense/einsum/chain select whole-operation JAX JIT; tensor-network additionally

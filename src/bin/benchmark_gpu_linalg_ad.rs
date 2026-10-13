@@ -12,11 +12,12 @@ use std::time::Instant;
 use serde_json::{json, Value};
 use tenferro_ad::AdContext;
 use tenferro_gpu::cuda::{
-    cuda_runtime_engine_registration, gpu_available, upload_tensor, CudaBackend, CudaRuntime,
+    cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaBackend,
+    CudaRuntime,
 };
 use tenferro_linalg::TracedTensorLinalgExt;
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
-use tenferro_tensor::Tensor;
+use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -99,8 +100,16 @@ fn dispatch(
         );
     }
 
-    let n_warmup = yaml_usize(&problem["run"]["warmups"], 3);
-    let n_runs = yaml_usize(&problem["run"]["runs"], 7);
+    let n_warmup = std::env::var("BENCH_WARMUPS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or_else(|| yaml_usize(&problem["run"]["warmups"], 3));
+    let n_runs = std::env::var("BENCH_RUNS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or_else(|| yaml_usize(&problem["run"]["runs"], 7));
+    let verify_only = std::env::var("GPU_BENCH_VERIFY_ONLY").as_deref() == Ok("1");
+    let diagnostic = suite_id == "gpu/linalg_ad_latency";
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
         // A clone shares the backend's runtime and allocation domain.
@@ -136,42 +145,115 @@ fn dispatch(
             .prepare_compiled(&program, &[])
             .map_err(|e| format!("prepare: {e}"))?;
 
-        for _ in 0..n_warmup.max(1) {
-            let out = runtime
-                .run_prepared(&prepared, &[])
-                .map_err(|e| format!("warmup: {e}"))?;
-            sync_runtime(compute_bk.runtime())?;
-            black_box(out.len());
+        let probe = runtime
+            .run_prepared(&prepared, &[])
+            .map_err(|e| format!("initial run: {e}"))?;
+        sync_runtime(compute_bk.runtime())?;
+        let initial = export_outputs(compute_bk.runtime(), &probe, device_ordinal)?;
+        let bytes = probe
+            .iter()
+            .map(|v| v.shape().iter().product::<usize>() * 8)
+            .sum::<usize>();
+        drop(probe);
+        let mut times_ms = Vec::new();
+        let mut batch_ms = Vec::new();
+        let mut count = 1;
+        if diagnostic && !verify_only {
+            // Runtime cannot borrow an entered session. This is explicitly
+            // public-path latency, never a shared-session operation benchmark.
+            let batch = |count: usize| -> Result<f64, String> {
+                let mut retained = Vec::with_capacity(count);
+                sync_runtime(compute_bk.runtime())?;
+                let start = Instant::now();
+                for _ in 0..count {
+                    retained.push(
+                        runtime
+                            .run_prepared(&prepared, &[])
+                            .map_err(|e| format!("run: {e}"))?,
+                    );
+                }
+                sync_runtime(compute_bk.runtime())?;
+                let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+                black_box(&retained);
+                Ok(elapsed)
+            };
+            for _ in 0..n_warmup {
+                batch(1)?;
+            }
+            let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
+            while batch(count)? < 2.0 && count < cap {
+                count = (count * 2).min(cap);
+            }
+            for _ in 0..n_runs {
+                let duration = batch(count)?;
+                batch_ms.push(duration);
+                times_ms.push(duration / count as f64);
+            }
         }
-
-        let mut times_ms = Vec::with_capacity(n_runs);
-        for _ in 0..n_runs {
-            let t0 = Instant::now();
-            let out = runtime
-                .run_prepared(&prepared, &[])
-                .map_err(|e| format!("run: {e}"))?;
-            sync_runtime(compute_bk.runtime())?;
-            times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
-            black_box(out.len());
-        }
-
-        Ok((times_ms,))
+        let final_outputs = runtime
+            .run_prepared(&prepared, &[])
+            .map_err(|e| format!("final run: {e}"))?;
+        sync_runtime(compute_bk.runtime())?;
+        let final_values = export_outputs(compute_bk.runtime(), &final_outputs, device_ordinal)?;
+        Ok((
+            times_ms,
+            json!({"initial": initial, "final": final_values}),
+            json!({"operations_per_sample":count,"batch_ms":batch_ms,"retention_budget_bytes":256usize<<20,
+                   "target_batch_ms":2,"warmups":n_warmup,"scope":"public_path_latency_including_internal_session_entry"}),
+        ))
     }));
 
     match result {
-        Ok(Ok((times_ms,))) => {
-            let stats = timing_stats(&times_ms);
-            ok_record(
-                suite_id,
-                problem,
-                device_ordinal,
-                n_warmup,
-                n_runs,
-                stats,
-                ts,
-                bc,
-                tc,
-            )
+        Ok(Ok((times_ms, verification_outputs, sampling))) => {
+            let mut rec = if !diagnostic {
+                stub(suite_id, problem, device_ordinal, "unsupported",
+                    "run_prepared cannot borrow an entered session; standard operation timing would include internal setup",
+                    ts, bc, tc)
+            } else if verify_only {
+                stub(
+                    suite_id,
+                    problem,
+                    device_ordinal,
+                    "verification_only",
+                    "awaiting independent numerical verification",
+                    ts,
+                    bc,
+                    tc,
+                )
+            } else {
+                ok_record(
+                    suite_id,
+                    problem,
+                    device_ordinal,
+                    n_warmup,
+                    n_runs,
+                    timing_stats(&times_ms),
+                    ts,
+                    bc,
+                    tc,
+                )
+            };
+            rec["execution"]["execution_path"] = json!(if diagnostic {
+                "prepared-tenferro-cuda-trace-public-path-linalg-ad"
+            } else {
+                "prepared-tenferro-cuda-trace-linalg-ad"
+            });
+            rec["execution"]["synchronization"] = json!(
+                "native CUDA synchronization; initial/final verification downloads outside timing"
+            );
+            rec["verification"]["status"] = json!("skipped");
+            rec["verification"]["reason"] = json!("awaiting independent CPU AD verification");
+            rec["execution"]["notes"] = json!(json!({"verification_outputs":verification_outputs,
+                "sampling":if diagnostic && !verify_only {sampling} else {Value::Null},
+                "session_policy":"run_prepared enters internal sessions; not caller-shared",
+                "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok(),
+                "physical_device_index":std::env::var("GPU_BENCH_PHYSICAL_DEVICE").ok()})
+            .to_string());
+            if diagnostic {
+                rec["timing"]["timing_scope"] =
+                    json!("public_path_latency_including_internal_session_entry");
+            }
+            rec
         }
         Ok(Err(msg)) => {
             let (status, reason) = classify_linalg_ad_error(&msg);
@@ -197,6 +279,38 @@ fn dispatch(
             tc,
         ),
     }
+}
+
+fn export_outputs(
+    runtime: &CudaRuntime,
+    outputs: &[Tensor],
+    device_ordinal: usize,
+) -> Result<Vec<Value>, String> {
+    outputs
+        .iter()
+        .map(|value| {
+            let placement = value.placement();
+            let device = placement
+                .device
+                .as_ref()
+                .ok_or("AD output has no CUDA placement")?;
+            if device.kind != DeviceKind::Gpu(GpuBackendKind::Cuda)
+                || device.ordinal != device_ordinal
+                || !value.is_backend_buffer()
+            {
+                return Err("AD output CPU fallback or wrong CUDA device".into());
+            }
+            let host = download_tensor(runtime, value)
+                .map_err(|e| format!("verification download: {e}"))?;
+            let data = host
+                .as_slice::<f64>()
+                .map_err(|e| format!("verification dtype: {e}"))?;
+            if data.iter().any(|v| !v.is_finite()) {
+                return Err("nonfinite AD output".into());
+            }
+            Ok(json!({"shape":host.shape(),"dtype":"f64","values_col_major":data}))
+        })
+        .collect()
 }
 
 #[derive(Clone, Copy)]

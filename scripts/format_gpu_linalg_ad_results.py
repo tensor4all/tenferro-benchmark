@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -18,11 +19,13 @@ from collect_gpu_info import markdown as gpu_info_markdown, resolve_gpu_info
 BACKEND_ORDER = [
     "tenferro-cuda-trace",
     "pytorch-cuda",
+    "jax-cuda",
 ]
 
 BACKEND_LABELS = {
     "tenferro-cuda-trace": "tenferro-rs CUDA trace",
     "pytorch-cuda": "PyTorch CUDA",
+    "jax-cuda": "JAX CUDA JIT",
 }
 
 LOSS_NOTES = {
@@ -96,6 +99,35 @@ def format_markdown(
     records: list[dict[str, Any]],
     run_metadata: dict[str, Any] | None = None,
 ) -> str:
+    seen = set()
+    for record in records:
+        key = record["problem_id"], record["backend"]
+        if key in seen or record["backend"] not in BACKEND_ORDER:
+            raise ValueError(f"duplicate/unselected AD result: {key}")
+        seen.add(key)
+        if record["status"] == "ok":
+            verification = record["verification"]
+            if verification["status"] != "passed" or not verification.get("reference_backend"):
+                raise ValueError(f"unverified AD result: {key}")
+            for field in ("max_abs_error", "max_rel_error", "residual"):
+                value = verification.get(field)
+                if value is None or not math.isfinite(value) or value < 0:
+                    raise ValueError(f"invalid AD verification: {key}")
+            if verification["residual"] > 1:
+                raise ValueError(f"AD verification exceeds tolerance: {key}")
+            sampling = json.loads(record["execution"]["notes"])["sampling"]
+            count, samples = sampling["operations_per_sample"], sampling["batch_ms"]
+            if not isinstance(count, int) or count < 1 or len(samples) != record["timing"]["timed_runs"] or not samples:
+                raise ValueError(f"invalid AD sampling: {key}")
+            if any(not math.isfinite(v) or v <= 0 for v in samples):
+                raise ValueError(f"invalid AD batch durations: {key}")
+        elif record["status"] != "unsupported":
+            raise ValueError(f"cannot publish AD status {record['status']}: {key}")
+    if run_metadata and run_metadata.get("suite_file"):
+        suite = yaml.safe_load(Path(run_metadata["suite_file"]).read_text())
+        expected = {(p["id"], b) for p in suite["problems"] for b in suite["backends"]}
+        if seen != expected:
+            raise ValueError(f"incomplete/unselected AD matrix: missing={sorted(expected-seen)}, extra={sorted(seen-expected)}")
     by_key: dict[tuple[str, str, str, str], dict[str, dict[str, Any]]] = defaultdict(dict)
     for record in records:
         suite, benchmark, shape = problem_meta(record["problem_id"])
@@ -132,22 +164,8 @@ def format_markdown(
         "tenferro-rs JVP/VJP use trace-mode `AdContext` on CUDA; PyTorch uses "
         "`torch.func.jvp` / `vjp` on CUDA."
     )
-    tenferro_records = [r for r in records if r.get("backend") == "tenferro-cuda-trace"]
-    if tenferro_records and all(r.get("status") == "unsupported" for r in tenferro_records):
-        lines.append(
-            "tenferro-rs CUDA trace linalg JVP/VJP is currently unsupported: compiled AD "
-            "graphs hit scalar-vector `mul` shape mismatches because the CUDA backend does "
-            "not yet implement CPU-style 0-D scalar broadcast."
-        )
-    elif any(
-        r.get("backend") == "tenferro-cuda-trace" and r.get("status") == "unsupported"
-        for r in records
-    ):
-        lines.append(
-            "tenferro-rs CUDA trace linalg JVP/VJP is partially unsupported: `grad_sum_qr` "
-            "hits scalar-vector `mul` shape mismatches on CUDA because the backend does not "
-            "yet implement CPU-style 0-D scalar broadcast."
-        )
+    lines.append("JAX uses an explicitly lowered/compiled whole-operation JIT; compilation and lazy initialization occur before sampling. Primal loss and first-order derivatives with respect to A are both returned and checked against CPU F64 AD, whose directional derivative is checked by central differences. RHS and derivative seeds are prepared before timing.")
+    lines.append("Standard tenferro trace rows are unsupported when run_prepared cannot borrow an entered session. Small trace rows are separately labelled public-path latency diagnostics including internal session entry. Each unsupported row retains its actual reason in the raw records.")
     lines.append(
         "Inputs are uploaded to the GPU before timed runs; initial host-to-device "
         "transfer is outside the timed region."
@@ -158,12 +176,7 @@ def format_markdown(
     )
     suites_present = {suite for suite, _, _, _ in by_key}
     if "small" in suites_present:
-        lines.append(
-            "Small cases (n=2, 4, 8) are single-call diagnostics, not batched shared-session "
-            "small-work comparisons. Public API session entry remains included; these rows "
-            "must not be interpreted as isolated kernel or shared-session overhead. "
-            "This suite checks successful execution only; AD outputs are not numerically compared."
-        )
+        lines.append("Small cases (n=2, 4, 8) use bounded batches of repeated declared operations with retained outputs. They are public-path latency diagnostics, not isolated GPU throughput or shared-session comparisons. Native synchronization ends each batch; numerical downloads are outside timing.")
     if suites_present == {"small"}:
         lines.append(
             "This suite exists to measure single-call latency and per-op overhead: the "
@@ -196,6 +209,14 @@ def format_markdown(
         ]
         lines.append("| " + " | ".join(row) + " |")
 
+    lines.extend(["", "## Sampling and unsupported routes", "", "| Case | Backend | Ops/sample | Samples | Scope / reason |", "| --- | --- | ---: | ---: | --- |"])
+    for record in records:
+        if record["status"] == "ok":
+            sample = json.loads(record["execution"]["notes"])["sampling"]
+            count, samples, scope = sample["operations_per_sample"], len(sample["batch_ms"]), record["timing"]["timing_scope"]
+        else:
+            count, samples, scope = "—", "—", record["execution"]["unsupported_reason"]
+        lines.append(f"| {record['problem_id']} | {record['backend']} | {count} | {samples} | {scope.replace('|', '/')} |")
     covered = sorted({benchmark.rsplit("_", 1)[0] for _, benchmark, _, _ in by_key})
     if covered:
         lines.extend(["", "## Loss Definitions", ""])
