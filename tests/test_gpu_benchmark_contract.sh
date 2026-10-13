@@ -11,7 +11,12 @@ MARKDOWN="$RUN_DIR/report.md"
 REPORT="result/nvidia-gpu/gpu/dense.md"
 TMP="$(mktemp -d)"
 ARTIFACTS=("$RUN_YAML" "$JSONL" "$MARKDOWN" "$RUN_DIR/rust_records.jsonl" "$REPORT"
-  "$RUN_DIR/wall_backends.jsonl" "$RUN_DIR/wall_command.json")
+  "$RUN_DIR/wall_backends.jsonl" "$RUN_DIR/wall_command.json"
+  "result/nvidia-gpu/gpu/routine_coverage.md" "result/nvidia-gpu/gpu/routine_workflow.md")
+SELECTION_DIR="data/results/nvidia-gpu/gpu/routine_selection/19990101_000000"
+for name in selection.json gpu_dense.yaml case_status.json report.md wall_command_complete.json wall_report.md; do
+  ARTIFACTS+=("$SELECTION_DIR/$name")
+done
 
 mkdir -p "$TMP/originals"
 for artifact in "${ARTIFACTS[@]}"; do

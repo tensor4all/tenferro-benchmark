@@ -69,3 +69,15 @@ and control phases through validation, accounting and report writes. Its scope
 excludes devcontainer CLI startup and the final wall-record write. Core-only
 phase reports do not include the control lane and must not be presented as the
 total cost of the normal command.
+
+The reference quick/standard run `20261013_234113` completed all 27 core pairs,
+ten timed controls and eight state observations on the two RTX 3060 cards.
+The generated [workflow report](../result/nvidia-gpu/gpu/routine_workflow.md)
+records both the script checkpoint and an independently measured enclosing
+devcontainer command. [routine_budget.yaml](../benchmarks/gpu/routine_budget.yaml)
+declares a 300-second descriptive script budget after that characterization,
+with the existing CUDA image/dependency cache and mandatory binary rebuilds.
+The command reports budget status for matching hardware, coverage and effort
+only when both core and controls are complete. Over-budget observations never
+change functional exit status; incomplete, verification-only, filtered and
+other-hardware runs do not establish a passing complete routine workflow.

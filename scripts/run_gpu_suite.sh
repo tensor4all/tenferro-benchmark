@@ -378,9 +378,15 @@ from pathlib import Path
 Path(sys.argv[1]).write_text(json.dumps({
     'script_seconds_before_final_wall_record_write': (int(sys.argv[3])-int(sys.argv[2]))/1e9,
     'routine_controls_selected': sys.argv[4] == '1',
-    'scope': 'script clock read through core and control collection, validation, accounting and report writes; excludes devcontainer CLI startup and final wall-record write'
+    'scope': 'script clock read through core and control collection, validation, accounting and report writes; excludes devcontainer CLI startup and final wall metadata/report formatting'
 }, indent=2)+'\n')
 PY
+if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
+    "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$SELECTION_DIR" --output "$SELECTION_DIR/wall_report.md"
+    if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
+        cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
+    fi
+fi
 
 echo ""
 echo "GPU benchmark suites complete"
