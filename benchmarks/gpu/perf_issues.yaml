@@ -177,3 +177,23 @@ problems:
   - borrowed_input_gemm_f64_n8_view-input
   - borrowed_input_gemm_f64_n32_owned-input
   - borrowed_input_gemm_f64_n32_view-input
+  - shape_stream_f64_n16_fixed-warm_latency
+  - shape_stream_f64_n16_fixed-warm_counters
+  - shape_stream_f64_n16_mixed-warm_latency
+  - shape_stream_f64_n16_mixed-warm_counters
+  - shape_stream_f64_n16_fresh_latency
+  - shape_stream_f64_n16_fresh_counters
+  - shape_stream_f64_n16_capacity-thrash_latency
+  - shape_stream_f64_n16_capacity-thrash_counters
+  - shape_stream_f64_n16_equal-shape-strides_latency
+  - shape_stream_f64_n16_equal-shape-strides_counters
+  - shape_stream_f64_n64_fixed-warm_latency
+  - shape_stream_f64_n64_fixed-warm_counters
+  - shape_stream_f64_n64_mixed-warm_latency
+  - shape_stream_f64_n64_mixed-warm_counters
+  - shape_stream_f64_n64_fresh_latency
+  - shape_stream_f64_n64_fresh_counters
+  - shape_stream_f64_n64_capacity-thrash_latency
+  - shape_stream_f64_n64_capacity-thrash_counters
+  - shape_stream_f64_n64_equal-shape-strides_latency
+  - shape_stream_f64_n64_equal-shape-strides_counters
