@@ -1,0 +1,13 @@
+schema_version: 1
+suite_id: cpu/public_api_followups
+title: CPU Public API Follow-up Benchmarks
+description: Thirteen activation, normalization, reduction and indexing APIs previously measured only in perf_issues; direct and borrowed-session eager calls with equivalent native PyTorch/JAX operations.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  layout: {tenferro: col_major, framework: row_major_contiguous}
+  run: {warmups: 3, runs: 15, timing_scope: steady_state_host_api}
+  verify: {reference: pytorch, rtol: 2.0e-5, atol: 2.0e-5}
+backends: [tenferro-direct, tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu]
+problems:
+  source: generated
+  include: [neural_public_api]

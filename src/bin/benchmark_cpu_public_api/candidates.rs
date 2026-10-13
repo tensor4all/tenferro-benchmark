@@ -82,6 +82,13 @@ fn dims(case: &Case) -> (usize, usize) {
 }
 
 fn operation_count(case: &Case) -> usize {
+    if case.suite == "cpu/neural_public_api" {
+        return if case.shape.starts_with("1024x") {
+            64
+        } else {
+            8
+        };
+    }
     // Sixteen retained dense QR outputs at the largest shape stay below
     // 64 MiB. Selection alone returns 256 MiB, so it is memory-limited to one.
     if case.benchmark == "where_select" {
@@ -93,7 +100,7 @@ fn operation_count(case: &Case) -> usize {
 
 /// Outputs, including opaque compact QR state, remain alive across clock stop.
 /// An explicit initialization call is always performed even with zero warmups.
-fn sample_count<T, E: std::error::Error + 'static>(
+pub(super) fn sample_count<T, E: std::error::Error + 'static>(
     args: &Args,
     count: usize,
     mut op: impl FnMut() -> Result<T, E>,
@@ -285,7 +292,7 @@ fn eager(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
     })
 }
 
-fn row(
+pub(super) fn row(
     writer: &mut impl Write,
     args: &Args,
     case: &Case,
@@ -465,7 +472,7 @@ pub(super) fn time_session_case(
     Ok(stats)
 }
 
-fn check_values(actual: &[f64], expected: &[f64]) -> BenchResult<()> {
+pub(super) fn check_values(actual: &[f64], expected: &[f64]) -> BenchResult<()> {
     if actual.len() != expected.len() {
         return Err("unexpected output length".into());
     }

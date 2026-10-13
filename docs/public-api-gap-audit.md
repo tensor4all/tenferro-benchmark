@@ -45,6 +45,14 @@ and mask-plus-log-softmax compositions are not standard operation comparisons.
 JAX pivoted QR has three outputs while tenferro RRQR also returns numerical
 rank. Compiled trace currently has no public borrowed-session execution API;
 its per-call session creation is excluded from these standard operation rows.
-The follow-ups are tracked individually in issues #133–#138. Issues #139–#151
-track APIs already measured in AMD `cpu/perf_issues`, whose standard-table
-integration or JAX comparison is still pending.
+The initial follow-ups are tracked individually in issues #133–#138.
+
+The thirteen APIs tracked by #139–#151 now have standard F32 direct/eager cases
+at 1024x64 and 4096x256 and native PyTorch/JAX counterparts where available.
+They are also included in an ordinary full Public API collection. Their
+focused refresh uses the same command above with
+`PUBLIC_API_FOLLOWUPS_ONLY=1` in place of `PUBLIC_API_CANDIDATES_ONLY=1` and writes
+`result/<target_profile>/cpu/public_api_followups.md`. Existing AMD perf_issues
+results remain intact. Normalization is explicitly non-affine: JAX's public
+`standardize` provides LayerNorm and, with `mean=0` and stable variance, RMSNorm.
+The selected softplus fixture stays below PyTorch's threshold transition.

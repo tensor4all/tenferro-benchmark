@@ -12,6 +12,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from public_api_candidates import PreparedOperation, pytorch_linalg_cases, selection_operation
+from public_api_followups import cases as followup_cases
 
 
 FIELDNAMES = [
@@ -458,6 +459,7 @@ def make_cases() -> list[tuple[str, str, str, str, str, Callable[[], object] | N
 
     return [
         *pytorch_linalg_cases(),
+        *followup_cases("pytorch"),
         ("cpu/elementwise_reduction", "add", "f64", "33554432", "binary elementwise", lambda: x_fast + y_fast),
         ("cpu/elementwise_reduction", "sub", "f64", "33554432", "binary elementwise", lambda: x_fast - y_fast),
         ("cpu/elementwise_reduction", "mul", "f64", "33554432", "binary elementwise", lambda: x_fast * y_fast),
