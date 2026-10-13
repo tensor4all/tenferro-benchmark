@@ -462,9 +462,9 @@ isolated API contract. Unsupported and numerical-only rows remain explicit.
 
 Scalar-scale cases call the actual public `scale_real`/`scale_complex` methods.
 Direct CUDA outputs are checked, but internal scalar uploads exclude standard
-timing. Eager scale instead creates a host scalar through `constant_from`; the
-current CUDA `mul` rejects that operand, so those cells are unavailable and not
-numerically verified. PyTorch/JAX reference inputs include a preuploaded
+timing. The old eager host-placement error was fixed by upstream 917d5341 via
+`constant_from_host`. Current direct/eager outputs pass CUDA numerical checks,
+but both calls still upload internal scalars and remain timing-excluded. PyTorch/JAX reference inputs include a preuploaded
 same-dtype scalar and call one native multiply. This does not alias the
 ordinary tenferro tensor-tensor `mul` route.
 
@@ -492,3 +492,13 @@ untimed functional reproducer, not a performance benchmark. Run it on debug
 GPU1 inside the CUDA devcontainer with `cargo run --release --features cuda
 --example cuda_linalg_host_scalars`; physical-device selection uses the same
 UUID mask as other debug commands. It exits 1 when the public calls fail.
+
+Integer isolated cases cover I32/I64 arithmetic, unary/order operations, and
+axis-1 sum/max/min at 32×32 and 1024×1024. Rust/Python verification compares
+integer values exactly, without float conversion. Division/remainder truncate
+toward zero; references use torch.div(rounding_mode="trunc") and integer
+jax.lax.div. Sum specifies the input dtype in references, matching tenferro.
+Arithmetic fixtures stay within range, while I64 unary/order fixtures include
+values above 2**53 to catch loss of integer precision. Inputs, JIT and
+verification downloads remain untimed. Other integer operations/dtypes are
+independent capability domains, not aliases of these selected cases.

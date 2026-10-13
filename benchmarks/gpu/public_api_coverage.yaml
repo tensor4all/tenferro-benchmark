@@ -16,11 +16,12 @@ families:
     cases: data/instances/gpu_isolated_ops.json
     suite: benchmarks/gpu/isolated_ops.yaml
     routes: [TensorSessionOpsExt, EagerSession]
-    dtype_scope: F32/F64; C32/C64 materialized conjugation; Bool comparison/selection masks.
+    dtype_scope: F32/F64; C32/C64 materialized conjugation and scalar scaling; I32/I64 arithmetic, unary/order and axis-1 reductions; Bool comparison/selection masks.
     limitations: Small direct compare cases pass numerical verification. Current GPU1 recheck 20261013_192206 reproduces Gt F32 within-process batch-time growth across three fresh processes; other directions share the allocation path but their drift is not asserted. See result/nvidia-gpu/gpu/compare_lifetime.md. Keep excluded pending issue 107 instrumentation; eager and large cases remain selected.
     selected_contracts:
       full_reductions: Full sum/prod/max/min/mean/sum-of-squares, F32/F64, n=1024 and 1048576; None axes in tenferro, omitted axis/dim in references. Full real sum-of-squares uses the single public vdot(x,x) reference; mean retains scalar-setup exclusions.
-      scalar_scale: scale_real F32/F64/C32/C64 and scale_complex C32/C64 at n=1024 and 1048576. Direct outputs pass current CUDA checks but internal scalar uploads exclude timing. Eager scale creates a host scalar and CUDA execution fails; raw probe 20261013_200158 records this as unavailable. Framework references use one multiply with a preuploaded same-dtype scalar; ordinary Tensor.mul remains a distinct route.
+      scalar_scale: scale_real F32/F64/C32/C64 and scale_complex C32/C64 at n=1024 and 1048576. Direct/eager outputs pass current fbd735ab CUDA checks but internal scalar uploads exclude timing. Eager host-placement failure from raw probe 20261013_200158 was fixed by upstream 917d5341 and is no longer execution-unavailable. Framework references use one multiply with a preuploaded same-dtype scalar; ordinary Tensor.mul remains a distinct route.
+      integer_operations: I32/I64 add/sub/mul/div/rem/maximum/minimum/neg/abs/sign and axis-1 sum/max/min at 32x32 and 1024x1024. All outputs require exact equality without floating conversion. Div/rem truncate toward zero; sum preserves dtype. Bounded arithmetic avoids overflow; I64 unary/order data exceed 2**53.
       comparison_directions: Eq/Lt/Le/Gt/Ge with true, false and equality-boundary values; CompareDir has no Ne variant.
     latest_report: result/nvidia-gpu/gpu/isolated_ops.md; only validated measured cells count.
     measured_contracts: Full mean/sum-of-squares rows are in the latest GPU0 report; timing-excluded rows do not count as measured coverage.
