@@ -23,6 +23,8 @@ mod state;
 mod structural;
 #[path = "benchmark_gpu_public_api/read_layout.rs"]
 mod read_layout;
+#[path = "benchmark_gpu_public_api/plan.rs"]
+mod plan;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -300,6 +302,9 @@ fn run(
     settings: &Settings,
     device: usize,
 ) -> Result<(Option<Value>, f64)> {
+    if case.op.starts_with("einsum_plan") {
+        return plan::run(root,case,settings,device);
+    }
     if matches!(
         case.op.as_str(),
         "householder_from_factors"
@@ -337,7 +342,7 @@ fn run(
                 return read_layout::run(case, &input, &expected, &rt, session, settings, bytes);
             }
             if case.op.contains("_into") {
-                return reuse::run(case, &input, &expected, &rt, session, settings, bytes);
+                return reuse::run(case, &input, &expected, &rt, session, settings, bytes, None, None);
             }
             let probe = direct(
                 case,

@@ -3,10 +3,11 @@ use super::{sample_batches, verify, Case, Result, Settings};
 use num_complex::{Complex32, Complex64};
 use serde_json::Value;
 use std::{hint::black_box, time::Instant};
+use tenferro_einsum::ConcreteEinsumPlan;
 use tenferro_gpu::cuda::{upload_tensor, CudaRuntime};
 use tenferro_tensor::{
     BackendSession, ContractionScalar, DType, DotGeneralAccumulation, DotGeneralConfig, Tensor,
-    TensorRead, TensorWrite,
+    TensorRead, TensorView, TensorWrite,
 };
 
 fn execute(
@@ -19,10 +20,20 @@ fn execute(
     scalars: (ContractionScalar, ContractionScalar),
     config: &DotGeneralConfig,
     dot_accumulation: DotGeneralAccumulation,
+    plan: Option<&ConcreteEinsumPlan>,
 ) -> Result<()> {
     let x = &inputs[0];
     let y = inputs.get(1).unwrap_or(x);
     match op {
+        "einsum_plan_into" => plan
+            .ok_or("missing prepared plan")?
+            .execute_into([x, y], s, out)?,
+        "einsum_plan_read_into" | "einsum_plan_strided_read_into" => plan
+            .ok_or("missing prepared plan")?
+            .execute_read_into([a, b], s, out)?,
+        "einsum_plan_read_into_accum" | "einsum_plan_strided_read_into_accum" => plan
+            .ok_or("missing prepared plan")?
+            .execute_read_into_accum([a, b], s, dot_accumulation, out)?,
         "dot_general_read_into" => s.dot_general_read_into(a, b, config, out)?,
         "dot_general_read_into_accum" => {
             s.dot_general_read_into_accum(a, b, config, dot_accumulation, out)?
@@ -55,7 +66,13 @@ pub(super) fn run(
     s: &mut dyn BackendSession,
     settings: &Settings,
     bytes: usize,
+    plan: Option<&ConcreteEinsumPlan>,
+    views: Option<&[TensorView<'_>]>,
 ) -> Result<(Option<Value>, f64)> {
+    let read = |index| match views {
+        Some(views) => TensorRead::from_view(views[index].clone()),
+        None => TensorRead::from_tensor(&inputs[index]),
+    };
     let n = expected.shape().iter().product::<usize>();
     let shape = expected.shape().to_vec();
     let alpha = case.alpha.unwrap_or(0.5);
@@ -77,7 +94,7 @@ pub(super) fn run(
         _ => return Err("invalid reuse dtype".into()),
     };
     let accum = case.op.contains("_into_accum");
-    let seed = if case.op.starts_with("dot_general") {
+    let seed = if case.op.starts_with("dot_general") || case.op.starts_with("einsum_plan") {
         2
     } else {
         1
@@ -122,13 +139,14 @@ pub(super) fn run(
     execute(
         &case.op,
         inputs,
-        TensorRead::from_tensor(&inputs[0]),
-        TensorRead::from_tensor(inputs.get(1).unwrap_or(&inputs[0])),
+        read(0),
+        read(if inputs.len() > 1 { 1 } else { 0 }),
         TensorWrite::from_tensor(&mut destinations[0]),
         s,
         scalars,
         &config,
         dot_accumulation,
+        plan,
     )?;
     let error = verify(rt, &destinations[0], expected, case)?;
     if settings.verify_only {
@@ -149,8 +167,8 @@ pub(super) fn run(
             .iter_mut()
             .map(|t| {
                 Some((
-                    TensorRead::from_tensor(&inputs[0]),
-                    TensorRead::from_tensor(inputs.get(1).unwrap_or(&inputs[0])),
+                    read(0),
+                    read(if inputs.len() > 1 { 1 } else { 0 }),
                     TensorWrite::from_tensor(t),
                 ))
             })
@@ -169,6 +187,7 @@ pub(super) fn run(
                 scalars,
                 &config,
                 dot_accumulation,
+                plan,
             )?;
         }
         rt.synchronize()?;

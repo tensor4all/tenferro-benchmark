@@ -399,3 +399,22 @@ make lhs-only and rhs-only results observably different. Native dot and vdot
 are single-call references for the first three contracts (swap arguments for
 rhs-only scalar vdot). Both-conjugated references remain unsupported because
 an explicit conjugation composition would change the operation.
+
+Prepared concrete einsum adds 64 `ik,kj->ij` cases at side 32/256 and
+F32/F64/C32/C64. Independently select `ConcreteEinsumPlan::execute`,
+`execute_read`, `execute_into`, `execute_read_into`, and
+`execute_read_into_accum`; borrowed read and reuse APIs also have transposed
+non-contiguous fixtures. Build each public plan exactly once with `prepare`
+or `prepare_read` before execution, create move-only read/write handles
+before every batch clock, and reuse one entered backend session. Accumulation
+uses alpha=0.5/beta=1 and restores the prepared GPU seed before each batch.
+
+For this matrix equation, native PyTorch `mm`/`mm(out=)`/`addmm(out=)`
+and allocation-returning JAX `matmul` have matching mathematical/output
+contracts. Their labels describe those native APIs, not an asserted prepared
+plan interface. Input transposition views/values are prepared outside timing.
+JAX matrix output reuse has no verified single-call public counterpart;
+`Ref.set(matmul(...))` would be a composed operation. Concrete plans accept
+Tensor/TensorRead, so the EagerTensor prepared-plan arm is explicitly
+unsupported. Other equations and execution routes are not aliases of these
+cases.

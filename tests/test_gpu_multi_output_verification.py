@@ -11,6 +11,26 @@ from benchmark_gpu_public_api import verify
 
 
 class MultiOutputVerification(unittest.TestCase):
+    def test_prepared_plan_fixtures_preserve_storage_and_accumulation(self):
+        for dtype in (np.float64,np.complex128):
+            for op in ("einsum_plan_owned","einsum_plan_read","einsum_plan_strided_read",
+                       "einsum_plan_into","einsum_plan_read_into","einsum_plan_read_into_accum",
+                       "einsum_plan_strided_read_into","einsum_plan_strided_read_into_accum"):
+                inputs,expected = fixtures(dict(op=op,n=8,shape=[4,2],rhs_shape=[2,7]),dtype)
+                a,b = inputs[:2]
+                if "strided" in op:
+                    self.assertEqual(a.shape,(2,4))
+                    self.assertEqual(b.shape,(7,2))
+                    a,b = a.T,b.T
+                oracle = a @ b
+                if "_accum" in op:
+                    self.assertEqual(inputs[2].shape,(4,7))
+                    oracle = .5*oracle+inputs[2]
+                    if dtype==np.complex128:
+                        self.assertTrue(np.any(inputs[2].imag != 0))
+                self.assertEqual(expected.shape,(4,7))
+                np.testing.assert_allclose(expected,oracle,rtol=1e-12,atol=1e-12)
+
     def test_general_dot_batch_order_and_multiple_axes(self):
         from gpu_multi_output_verification import normalized_outputs
         case = dict(op="dot_general_axes", variant="batch", n=60,
