@@ -1,0 +1,13 @@
+schema_version: 1
+suite_id: cpu/public_api_candidates
+title: CPU Public API Candidate Benchmarks
+description: Isolated compact QR, four-output RRQR, caller-output solve, masked log-softmax, sum-of-squares and selection. Collection selects only the declared candidate cases from the public API runners.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  layout: {tenferro: col_major, framework: row_major_contiguous}
+  run: {warmups: 3, runs: 15, timing_scope: steady_state_host_api}
+  verify: {reference: pytorch, rtol: 1.0e-10, atol: 1.0e-10}
+backends: [tenferro-direct, tenferro-eager, tenferro-trace, pytorch-cpu, jax-cpu]
+problems:
+  source: generated
+  include: [elementwise_reduction_public_api, output_reuse_public_api, linalg_uncovered_public_api]

@@ -17,3 +17,34 @@ the Rust runner and equivalent PyTorch, JAX, and Julia arms, with setup outside
 the timed region. The current newly discovered cases are
 `reduce_sum_squares_axis0`, `masked_log_softmax_axis1`, and `where_select` in
 `cpu/elementwise_reduction`.
+
+Compact Householder QR, four-output rank-revealing QR (full and deficient
+rank), and caller-output solve now have dedicated cases. Collect these and
+the three session cases as a focused report inside the current CPU
+devcontainer image:
+
+```bash
+npx --yes @devcontainers/cli exec --workspace-folder . bash -lc '
+  export TENFERRO_CPU_FEATURES=blas-mkl
+  export BENCHMARK_TARGET_PROFILE=amd-cpu
+  export PUBLICATION_GATE_PROFILE=full
+  export PUBLIC_API_CANDIDATES_ONLY=1
+  ./scripts/run_cpu_public_api.sh 1 4'
+```
+
+Focused collection writes `cpu/public_api_candidates` raw runs and
+`result/<target_profile>/cpu/public_api_candidates.md`; it does not overwrite
+the complete Public API report. Candidate rows batch sixteen operations per
+sample, with retained outputs and normalized per-operation durations; selection
+is limited to one operation because its output already occupies 256 MiB.
+Fixture creation, session entry, JIT initialization and numerical
+validation remain outside every clock, including zero-warmup runs.
+
+Missing direct operations remain explicit unsupported rows: square-plus-sum
+and mask-plus-log-softmax compositions are not standard operation comparisons.
+JAX pivoted QR has three outputs while tenferro RRQR also returns numerical
+rank. Compiled trace currently has no public borrowed-session execution API;
+its per-call session creation is excluded from these standard operation rows.
+The follow-ups are tracked individually in issues #133–#138. Issues #139–#151
+track APIs already measured in AMD `cpu/perf_issues`, whose standard-table
+integration or JAX comparison is still pending.

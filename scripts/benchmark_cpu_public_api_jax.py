@@ -11,6 +11,8 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
+from public_api_candidates import PreparedOperation, jax_linalg_cases, selection_operation, masked_log_softmax_operation
+
 
 FIELDNAMES = [
     "suite",
@@ -25,7 +27,7 @@ FIELDNAMES = [
     "notes",
 ]
 
-Case = tuple[str, str, str, str, str, Callable[[], object]]
+Case = tuple[str, str, str, str, str, Callable[[], object] | None]
 
 
 class LazyArray:
@@ -63,7 +65,7 @@ def median_iqr(times: list[float]) -> tuple[float, float]:
     )
 
 
-def bench(fn: Callable[[], object], runs: int, warmups: int) -> tuple[float, float]:
+def bench(fn: Callable[[], object], runs: int, warmups: int, operations_per_sample: int = 1) -> tuple[float, float]:
     import jax
 
     # The first warmup performs XLA compilation. All warmups, including that
@@ -72,10 +74,12 @@ def bench(fn: Callable[[], object], runs: int, warmups: int) -> tuple[float, flo
         jax.block_until_ready(fn())
     times: list[float] = []
     for _ in range(runs):
+        outputs = [None] * operations_per_sample
         start = time.perf_counter()
-        output = jax.block_until_ready(fn())
-        times.append((time.perf_counter() - start) * 1000.0)
-        del output
+        for index in range(operations_per_sample):
+            outputs[index] = jax.block_until_ready(fn())
+        times.append((time.perf_counter() - start) * 1000.0 / operations_per_sample)
+        del outputs
     return median_iqr(times)
 
 
@@ -371,6 +375,7 @@ def make_cases() -> list[Case]:
     lin = "cpu/linalg_uncovered"
     cplx = "cpu/complex"
     return [
+        *jax_linalg_cases(),
         (elem, "add", "f64", "33554432", "binary elementwise", compiled(lambda a, b: a + b, x_fast, y_fast)),
         (elem, "sub", "f64", "33554432", "binary elementwise", compiled(lambda a, b: a - b, x_fast, y_fast)),
         (elem, "mul", "f64", "33554432", "binary elementwise", compiled(lambda a, b: a * b, x_fast, y_fast)),
@@ -383,7 +388,7 @@ def make_cases() -> list[Case]:
         (elem, "minimum", "f64", "33554432", "binary elementwise", compiled(jnp.minimum, x_fast, y_fast)),
         (elem, "compare_lt", "f64", "33554432", "ordered compare", compiled(lambda a, b: a < b, x_fast, y_fast)),
         (elem, "select", "f64", "33554432", "ternary select", compiled(jnp.where, cond_fast, x_fast, y_fast)),
-        (elem, "where_select", "f64", "33554432", "uncovered public API; broadcasted boolean selection", compiled(jnp.where, cond_fast, x_fast, y_fast)),
+        (elem, "where_select", "f64", "33554432", "boolean selection; setup=explicit; validation=untimed", selection_operation("jax", cond_fast, x_fast, y_fast)),
         (elem, "clamp", "f64", "8388608", "clamp with tensor bounds", compiled(jnp.clip, x, lower, upper)),
         (elem, "exp", "f64", "8388608", "analytic unary", compiled(jnp.exp, x)),
         (elem, "log", "f64", "8388608", "analytic unary", compiled(jnp.log, xp)),
@@ -408,8 +413,8 @@ def make_cases() -> list[Case]:
         (elem, "reduce_sum_axis1", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.sum(a, axis=1), matrix_axis)),
         (elem, "reduce_prod_axis0", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.prod(a, axis=0), prod_axis)),
         (elem, "reduce_prod_axis1", "f64", "2048x2048", "axis reduction", compiled(lambda a: jnp.prod(a, axis=1), prod_axis)),
-        (elem, "reduce_sum_squares_axis0", "f64", "2048x2048", "uncovered public API; sum of squares reduction", compiled(lambda a: jnp.sum(jnp.square(a), axis=0), matrix_axis)),
-        (elem, "masked_log_softmax_axis1", "f64", "1024x64", "uncovered public API; boolean-masked log-softmax", compiled(lambda a, m: jax.nn.log_softmax(a, axis=1, where=m), masked_log_softmax_input, masked_log_softmax_mask)),
+        (elem, "reduce_sum_squares_axis0", "f64", "2048x2048", "no direct axis-wise sum-of-squares public API; square+sum composition excluded", None),
+        (elem, "masked_log_softmax_axis1", "f64", "1024x64", "boolean-masked log-softmax; setup/XLA compilation=explicit untimed; validation=untimed", masked_log_softmax_operation(masked_log_softmax_input, masked_log_softmax_mask)),
         (idx, "gather", "f64", "262144", "1D gather", compiled(lambda a, i: jnp.take(a, i), gather_base, gather_idx)),
         (idx, "scatter", "f64", "262144", "1D scatter", compiled(lambda a, i, u: jnp.zeros_like(a).at[i].set(u), gather_base, gather_idx, gather_updates)),
         (idx, "slice", "f64", "4194304 -> 2096128", "static slice materialized output", compiled(lambda a: a[1024 : 4_194_304 - 1024 : 2], slice_base)),
@@ -471,8 +476,20 @@ def selected(case: Case) -> bool:
 
 def emit_case(writer: csv.DictWriter[str], args, case: Case) -> None:
     suite, benchmark, dtype, shape, notes, fn = case
+    if fn is None:
+        writer.writerow(dict(suite=suite, benchmark=benchmark, dtype=dtype,
+            threads=args.num_threads, shape=shape, backend="jax-cpu",
+            median_ms="", iqr_ms="", status="unsupported", notes=notes))
+        return
     try:
-        median_ms, iqr_ms = bench(fn, args.runs, args.warmups)
+        if isinstance(fn, PreparedOperation):
+            fn.prepare()
+        count = fn.operations_per_sample if isinstance(fn, PreparedOperation) else 1
+        median_ms, iqr_ms = bench(fn, args.runs, args.warmups, count)
+        if isinstance(fn, PreparedOperation):
+            fn.validate()
+        if count > 1:
+            notes += f"; operations_per_sample={count}; median_batch_ms={median_ms * count:.6f}"
         status, median, iqr, result_notes = (
             "ok",
             f"{median_ms:.6f}",

@@ -22,6 +22,7 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/public_api_selection.sh"
 
 # shellcheck source=scripts/cpu_blas_provider.sh
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
@@ -73,8 +74,12 @@ assert_benchmark_host_idle
 
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
-SUITE_ID="cpu/public_api"
-SUITE_FILE="$PROJECT_DIR/benchmarks/cpu/public_api.yaml"
+REPORT_NAME="public_api"
+if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
+    REPORT_NAME="public_api_candidates"
+fi
+SUITE_ID="cpu/$REPORT_NAME"
+SUITE_FILE="$PROJECT_DIR/benchmarks/cpu/$REPORT_NAME.yaml"
 BENCHMARK_TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
 export BENCHMARK_TIMESTAMP
 BENCHMARK_PROFILE="${PUBLICATION_GATE_PROFILE:-quick}"
@@ -92,11 +97,11 @@ print(datetime.now(timezone.utc).isoformat())
 PY
 )"
 
-RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/cpu/public_api/$BENCHMARK_TIMESTAMP"
+RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/$SUITE_ID/$BENCHMARK_TIMESTAMP"
 RUN_YAML="$RUN_DIR/run.yaml"
 TABLE="$RUN_DIR/cpu_public_api_${BENCHMARK_TIMESTAMP}.md"
 REPORT="$RUN_DIR/report.md"
-LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/public_api.md"
+LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/$REPORT_NAME.md"
 TENFERRO_DIR="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
 TENFERRO_COMMIT=""
 if [[ -d "$TENFERRO_DIR/.git" ]] && command -v git >/dev/null 2>&1; then
@@ -131,10 +136,12 @@ configure_cpu_thread_env "${THREAD_COUNTS[0]}"
 collect_run_metadata "$RUN_YAML"
 
 HAVE_JULIA=0
-if command -v julia >/dev/null 2>&1; then
+if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" != "1" ]] && command -v julia >/dev/null 2>&1; then
     HAVE_JULIA=1
     echo "Instantiating Julia project..."
     (cd "$PROJECT_DIR" && julia --project="$PROJECT_DIR" -e 'import Pkg; Pkg.instantiate()')
+elif [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
+    echo "Focused candidate collection selects tenferro-rs, PyTorch and JAX; Julia columns are unselected."
 else
     echo "WARNING: julia not found on PATH; skipping julia-base / strided-jl columns." >&2
 fi
@@ -162,6 +169,8 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_rust_group() {
         local api_suite="$1"
         local benchmark_filter="${2:-}"
+        select_public_api_group "$api_suite" "$benchmark_filter" || return 0
+        benchmark_filter="$PUBLIC_API_GROUP_BENCHMARK_FILTER"
         assert_benchmark_host_idle
         PUBLIC_API_SUITE_FILTER="$api_suite" \
             PUBLIC_API_BENCHMARK_FILTER="$benchmark_filter" \
@@ -189,6 +198,9 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_rust_group cpu/complex "dot_general,dot_general_with_conj,tensordot,svd,qr,eig,solve,cholesky,norm_fro"
 
     assert_benchmark_host_idle
+    if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
+        export PUBLIC_API_BENCHMARK_FILTER="householder_qr,rank_revealing_qr,rank_revealing_qr_deficient,solve_read_into,reduce_sum_squares_axis0,masked_log_softmax_axis1,where_select"
+    fi
     if command -v uv >/dev/null 2>&1; then
         uv run python "$SCRIPT_DIR/benchmark_cpu_public_api_python.py" \
             --num-threads "$NUM_THREADS" \
@@ -202,6 +214,8 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_jax_group() {
         local api_suite="$1"
         local benchmark_filter="${2:-}"
+        select_public_api_group "$api_suite" "$benchmark_filter" || return 0
+        benchmark_filter="$PUBLIC_API_GROUP_BENCHMARK_FILTER"
         assert_benchmark_host_idle
         if command -v uv >/dev/null 2>&1; then
             PUBLIC_API_SUITE_FILTER="$api_suite" \
@@ -227,6 +241,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_jax_group cpu/elementwise_reduction "reduce_max_axis0,reduce_max_axis1,reduce_min_axis0,reduce_min_axis1,reduce_sum_axis0,reduce_sum_axis1,reduce_prod_axis0,reduce_prod_axis1,reduce_sum_squares_axis0,masked_log_softmax_axis1"
     run_jax_group cpu/indexing_layout
     run_jax_group cpu/structural_shape
+    run_jax_group cpu/output_reuse "solve_read_into"
     run_jax_group cpu/einsum_concrete
     run_jax_group cpu/linalg_uncovered
     run_jax_group cpu/linalg_batched
@@ -292,6 +307,10 @@ fi
     echo "- Public API coverage manifest: \`benchmarks/cpu/public_api_coverage.yaml\`"
     echo "- Run metadata: \`${RUN_YAML#$PROJECT_DIR/}\`"
     echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
+    if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
+        echo "- Selection: initial six API candidates only; this report does not replace the complete Public API report. Julia columns are unselected."
+        echo "- Invocation prefix: \`PUBLIC_API_CANDIDATES_ONLY=1 TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES BENCHMARK_TARGET_PROFILE=$BENCHMARK_TARGET_PROFILE\`"
+    fi
     echo ""
     if [[ "$BENCHMARK_PROFILE" == "quick" ]]; then
         echo "Latest run: \`./scripts/run_cpu_public_api.sh ${THREAD_COUNTS[*]}\`."
@@ -318,7 +337,7 @@ fi
         echo ""
         echo "### Threads: $NUM_THREADS"
         echo ""
-        echo "- Run metadata: \`data/results/$BENCHMARK_TARGET_PROFILE/cpu/public_api/$BENCHMARK_TIMESTAMP/run_t${NUM_THREADS}.yaml\`"
+        echo "- Run metadata: \`data/results/$BENCHMARK_TARGET_PROFILE/$SUITE_ID/$BENCHMARK_TIMESTAMP/run_t${NUM_THREADS}.yaml\`"
         for key in OMP_NUM_THREADS OMP_THREAD_LIMIT OMP_DYNAMIC RAYON_NUM_THREADS OPENBLAS_NUM_THREADS GOTO_NUM_THREADS MKL_NUM_THREADS VECLIB_MAXIMUM_THREADS VECLIB_NUM_THREADS NUMEXPR_NUM_THREADS BLIS_NUM_THREADS XLA_FLAGS JULIA_NUM_THREADS; do
             echo "- ${key}: \`${!key:-}\`"
         done
@@ -339,6 +358,8 @@ fi
     echo "- Julia \`cpu/view_metadata\` rows are \`reshape\`/\`transpose\`/\`@view\` lazy wrappers with no output-sized copy; \`broadcast_in_dim_view\` has no natural Base spelling and stays missing for Julia."
     echo "- Julia \`cpu/output_reuse\` rows use broadcast-into (\`.=\`), \`mul!\`, and \`copyto!\` with destinations allocated during warmup and reused, the same reuse discipline as the tenferro-rs \`_into\`/PyTorch \`out=\` rows above."
     echo "- Rust, PyTorch, and JAX fixtures contain identical logical values. Python/JAX reconstruct the Rust column-major fixture in each framework's native layout before timing."
+    echo "- Compact Householder QR and RRQR use explicit fixture/session setup; QR extraction and reconstruction/orthogonality checks are untimed. RRQR retains Q, R, permutation and numerical rank; JAX's three-output pivoted QR and PyTorch's unpivoted QR are not equivalent and are unsupported. Compact trace state and caller-output trace solve are unsupported."
+    echo "- The gap cases use explicit setup and numerical validation outside sampling. Axis-wise sum-of-squares and PyTorch/Julia masked log-softmax compositions are excluded from direct operation comparisons."
     echo "- PyTorch complex conjugation uses \`torch.conj_physical\` to match tenferro-rs physical output rather than the lazy conjugate view from \`torch.conj\`."
     echo "- \`dot_general_with_conj\` instead uses PyTorch's lazy conjugate view so conjugation can be handled by the contraction, matching tenferro-rs' conjugation flags; trace is unsupported because there is no equivalent public traced API. Julia's \`dot_general_with_conj\` row materializes the conjugate before the GEMM instead, since Julia has no lazy conj-without-transpose spelling that BLAS can fuse."
     echo "- \`pad\` has no natural Base spelling and stays missing for Julia."
@@ -367,6 +388,9 @@ fi
     cat "$TABLE"
 } > "$REPORT"
 
+if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
+    "$PROJECT_DIR/.venv/bin/python" "$SCRIPT_DIR/format_public_api_candidate_report.py" "$REPORT"
+fi
 cp "$REPORT" "$LATEST_REPORT"
 
 echo ""

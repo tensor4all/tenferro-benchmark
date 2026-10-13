@@ -330,16 +330,8 @@ function elementwise_cases(fx::Fixtures)
         () -> prod(fx.prod_axis; dims = 1), nothing))
     push!(cases, ("cpu/elementwise_reduction", "reduce_prod_axis1", "f64", "2048x2048", "axis reduction",
         () -> prod(fx.prod_axis; dims = 2), nothing))
-    push!(cases, ("cpu/elementwise_reduction", "reduce_sum_squares_axis0", "f64", "2048x2048", "uncovered public API; sum of squares reduction",
-        () -> sum(fx.matrix_axis .^ 2; dims = 1), nothing))
     push!(cases, ("cpu/elementwise_reduction", "where_select", "f64", "33554432", "uncovered public API; broadcasted boolean selection",
         () -> ifelse.(fx.cond_fast, fx.x_fast, fx.y_fast), nothing))
-    push!(cases, ("cpu/elementwise_reduction", "masked_log_softmax_axis1", "f64", "1024x64", "uncovered public API; boolean-masked log-softmax",
-        () -> begin
-            masked = ifelse.(masked_log_softmax_mask, masked_log_softmax_input, -Inf)
-            shifted = masked .- maximum(masked; dims = 2)
-            shifted .- log.(sum(exp.(shifted); dims = 2))
-        end, nothing))
     return cases
 end
 
@@ -748,6 +740,14 @@ function main()
     try
         if !append
             println(io, join(FIELDNAMES, ","))
+        end
+
+        for (name, shape) in (("reduce_sum_squares_axis0", "2048x2048"),
+                              ("masked_log_softmax_axis1", "1024x64"))
+            selected("cpu/elementwise_reduction", name) || continue
+            write_row(io, "cpu/elementwise_reduction", name, "f64", num_threads,
+                shape, "julia-base", nothing, nothing, "unsupported",
+                "no matching direct Base operation; composition excluded from operation comparison")
         end
 
         elementwise_names = (
