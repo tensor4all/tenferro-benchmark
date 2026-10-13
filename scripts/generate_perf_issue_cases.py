@@ -564,7 +564,8 @@ def gpu_latency_cases(gpu):
                       ("dot_general", {"in": 1024, "out": 1024, "len": 8})):
         label = f"{shape.get('hidden', shape.get('in'))}x{shape.get('tokens', shape.get('len'))}"
         for arm, scope, ref in (("eager-session", "steady_state", None),
-                                ("eager-per-call", "session_entry_diagnostic", "eager-session")):
+                                ("eager-per-call", "session_entry_diagnostic", "eager-session"),
+                                ("launch-only-floor", "steady_state", "eager-session")):
             rows.append(case(
                 f"eager_op_f32_{op}_decode_{arm}", ("#2079",), "eager_op",
                 dict(shape, op=op), arm=arm, backend="tenferro-cuda", dtype="f32", scope=scope,
@@ -577,7 +578,9 @@ def gpu_latency_cases(gpu):
                         "`eager-per-call` enters a session per operation, the diagnostic that "
                         "separates session entry from dispatch. The GPU work of one decode-shaped "
                         "op is a small fraction of the host cost, so these are latency rows, not "
-                        "throughput.")))
+                        "throughput. `launch-only-floor` runs the same elementwise kernel through "
+                        "`add_read_into` on a reused output, i.e. with the per-op output allocation "
+                        "removed: the floor the eager per-op cost is compared against.")))
     return rows
 
 

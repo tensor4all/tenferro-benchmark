@@ -1190,6 +1190,41 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
                 timed(it, &mut || run(s), &mut || Ok(rt.synchronize()?))
             })
         })?
+    } else if arm == "launch-only-floor" {
+        // The same kernel with the per-op output allocation removed: what the
+        // op costs when only the launch path is left. This is the floor the
+        // acceptance compares the eager per-op cost against.
+        let mut floor_bk = backend(device)?;
+        let floor_rt = floor_bk.runtime().clone();
+        let (floor_lhs, floor_rhs, mut floor_out) = match op.as_str() {
+            "add" => {
+                let (hidden, tokens) =
+                    (param_usize(params, "hidden")?, param_usize(params, "tokens")?);
+                let shape = vec![hidden, tokens];
+                let lhs = upload_tensor(&floor_rt, &host_f32(shape.clone(), fill_f32(hidden * tokens, 7))?)?;
+                let rhs = upload_tensor(&floor_rt, &host_f32(shape.clone(), fill_f32(hidden * tokens, 8))?)?;
+                let out = upload_tensor(&floor_rt, &host_f32(shape, fill_f32(hidden * tokens, 0))?)?;
+                (lhs, rhs, out)
+            }
+            other => return Err(format!("unknown #2079 floor op {other}").into()),
+        };
+        floor_rt.synchronize()?;
+        floor_bk.with_backend_session(|s| -> Result<Measurement> {
+            measure(timing, bytes as usize, |it| {
+                timed(
+                    it,
+                    &mut || {
+                        s.add_read_into(
+                            TensorRead::from_tensor(&floor_lhs),
+                            TensorRead::from_tensor(&floor_rhs),
+                            TensorWrite::from_tensor(&mut floor_out),
+                        )?;
+                        Ok(())
+                    },
+                    &mut || Ok(floor_rt.synchronize()?),
+                )
+            })
+        })??
     } else if arm == "eager-per-call" {
         measure(timing, bytes as usize, |it| {
             timed(
@@ -1207,6 +1242,11 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
         timer: if arm == "eager-session" {
             vec![
                 "one eager op in a reused with_eager_session",
+                "one device synchronize at the batch edge",
+            ]
+        } else if arm == "launch-only-floor" {
+            vec![
+                "one add_read_into on a reused output (no per-op allocation)",
                 "one device synchronize at the batch edge",
             ]
         } else {
