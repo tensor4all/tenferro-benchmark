@@ -70,7 +70,7 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
         for j in 0..3 {
             for i in 0..m {
                 for batch in 0..2 {
-                    expected[batch + 2 * (i + m * j)] = (0..n)
+                    expected[i + m * (j + 3 * batch)] = (0..n)
                         .map(|k| a[i + m * (batch + 2 * k)] * b[k + n * (batch + 2 * j)])
                         .sum();
                 }
@@ -105,15 +105,14 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
         .collect::<Result<Vec<_>>>()?;
     let sequence = order
         .iter()
-        .map(|&key| {
-            json!({"key":key,
+        .map(|&key| -> Result<_> {
+            Ok(json!({"key":key,
         "lhs_shape":reads[key].0.shape(),"rhs_shape":reads[key].1.shape(),
-        "lhs_strides":if mode == "equal-shape-strides" && key == 1 {vec![2*n,n,1]}
-            else {vec![1,reads[key].0.shape()[0],2*reads[key].0.shape()[0]]},
-        "rhs_strides":[1,n,2*n],
-        "lhs_layout":if mode == "equal-shape-strides" && key == 1 {"transposed"}else{"compact"}})
+            "lhs_strides":reads[key].0.strides()?,
+            "rhs_strides":reads[key].1.strides()?,
+        "lhs_layout":if mode == "equal-shape-strides" && key == 1 {"transposed"}else{"compact"}}))
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
     let mut error = 0.0_f64;
     let mut observations = Vec::new();
     let mut enqueue_ns = Vec::new();
@@ -133,10 +132,11 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
                     return Err("shape stream wrong CUDA placement".into());
                 }
                 let m = reads[key].0.shape()[0];
-                if out.shape() != [2, m, 3]
+                if out.shape() != [m, 3, 2]
                     || TensorRead::from_tensor(out).allocation_domain().is_none()
                 {
-                    return Err("shape stream output shape/domain mismatch".into());
+                    return Err(format!("shape stream output shape/domain mismatch: shape={:?}, expected={:?}, domain={:?}",
+                        out.shape(), [m,3,2], TensorRead::from_tensor(out).allocation_domain()).into());
                 }
                 let got = download_tensor(&rt, out)?;
                 error = error.max(check_tol(
