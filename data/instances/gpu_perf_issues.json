@@ -3393,11 +3393,11 @@
    "arm": "fixed-warm",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
  },
  {
   "id": "shape_stream_f64_n16_fixed-warm_counters",
@@ -3420,7 +3420,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
  },
  {
   "id": "shape_stream_f64_n16_mixed-warm_latency",
@@ -3439,11 +3439,11 @@
    "arm": "mixed-warm",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_latency"
  },
  {
@@ -3467,7 +3467,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_counters"
  },
  {
@@ -3487,11 +3487,11 @@
    "arm": "fresh",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_latency"
  },
  {
@@ -3515,7 +3515,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_counters"
  },
  {
@@ -3535,11 +3535,11 @@
    "arm": "capacity-thrash",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_latency"
  },
  {
@@ -3563,7 +3563,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_counters"
  },
  {
@@ -3583,11 +3583,11 @@
    "arm": "equal-shape-strides",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_latency"
  },
  {
@@ -3611,7 +3611,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_counters"
  },
  {
@@ -3631,11 +3631,11 @@
    "arm": "fixed-warm",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
  },
  {
   "id": "shape_stream_f64_n64_fixed-warm_counters",
@@ -3658,7 +3658,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
  },
  {
   "id": "shape_stream_f64_n64_mixed-warm_latency",
@@ -3677,11 +3677,11 @@
    "arm": "mixed-warm",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_latency"
  },
  {
@@ -3705,7 +3705,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_counters"
  },
  {
@@ -3725,11 +3725,11 @@
    "arm": "fresh",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_latency"
  },
  {
@@ -3753,7 +3753,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_counters"
  },
  {
@@ -3773,11 +3773,11 @@
    "arm": "capacity-thrash",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_latency"
  },
  {
@@ -3801,7 +3801,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_counters"
  },
  {
@@ -3821,11 +3821,11 @@
    "arm": "equal-shape-strides",
    "dtype": "f64"
   },
-  "measurement_scope": "issue_workflow_diagnostic",
+  "measurement_scope": "shape_stream_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_latency"
  },
  {
@@ -3849,7 +3849,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "Benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_counters"
  }
 ]

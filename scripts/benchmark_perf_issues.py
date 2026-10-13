@@ -342,8 +342,10 @@ def report(run_dir, target, suite_key="cpu"):
     header = ["| Case ID | Issues | Arm | Backend | Dtype | Workload | Threads | Ops/batch | Median ns/op | IQR ns | CoV | Status |",
               "|---|---|---|---|---|---|---:|---:|---:|---:|---:|---|"]
 
-    def table(selected):
+    def table(selected, sequence=False):
         out = list(header)
+        if sequence:
+            out[0] = out[0].replace("Ops/batch", "Sequences/sample").replace("Median ns/op", "Median ns/sequence")
         for row in selected:
             median, iqr, cov, status = summary(row)
             out.append("| " + " | ".join(map(str, [
@@ -383,6 +385,18 @@ def report(run_dir, target, suite_key="cpu"):
         selected = [r for r in rows if r["measurement_scope"] == scope]
         if selected:
             lines += ["", f"## {title}", "", note, ""] + table(selected)
+    streams = [r for r in rows if r["measurement_scope"] == "shape_stream_diagnostic"]
+    if streams:
+        lines += ["", "## Whole-sequence CUDA shape-stream latency", "",
+                  "One sample is the entire recorded sequence, including required planning and one final native "
+                  "synchronization. Cache reset and explicitly declared key warmup are outside timing. "
+                  "Median/IQR describe sequence latency, not single-operation throughput. Enqueue durations and "
+                  "the exact key/shape/stride sequence are retained in raw rows. Counter observations run separately. "
+                  "NOISY is descriptive; these screens establish no baseline/candidate performance claim.", ""]
+        lines += table(streams, sequence=True)
+        for row in streams:
+            lines += ["", f"### {row['case_id']} sequence", "",
+                      "```json", json.dumps(row.get("sequence", []), separators=(",", ":")), "```", ""]
     counters = [r for r in rows if r["measurement_scope"] == "counter_diagnostic"]
     if counters:
         lines += ["", "## Counter diagnostics (no timing)", ""]
@@ -390,6 +404,20 @@ def report(run_dir, target, suite_key="cpu"):
             lines += [f"### {row['case_id']} ({' '.join(row['issues'])}, {row['threads']} threads)", ""]
             if row["correctness_status"] != "passed":
                 lines += ["FAILED", ""]
+                continue
+            if row.get("kind") == "shape_stream":
+                lines += ["Untimed public cache/workspace/retirement observations; cumulative counters. "
+                          "Exact sequence and reset scope are recorded in the raw row.", "",
+                          "| Phase | Index | Key | Plans | Hits | Misses | Evictions | Plan bytes | Workspace bytes | In flight |",
+                          "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+                for observation in row.get("counter_observations", []):
+                    stats = observation["stats"]
+                    plans = stats["plans"]
+                    fields = [observation["phase"], observation.get("index", "—"), observation.get("key", "—"),
+                              plans["entries"], plans["hits"], plans["misses"], plans["evictions"],
+                              plans["retained_bytes"], stats["workspace"]["bytes"], stats["retirement"]["in_flight"]]
+                    lines.append("| " + " | ".join(map(str, fields)) + " |")
+                lines.append("")
                 continue
             lines += [f"Source: {row.get('counter_source', '')}. Unavailable: {', '.join(row.get('unavailable', []))}.", "",
                       "| Op | Output bytes | Host allocations/op | Allocated bytes/op | Allocated/output |",

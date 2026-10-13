@@ -134,6 +134,8 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
         };
         if instrument { batch()?; Ok(None) } else { Ok(Some(measure_isolated(timing, &mut batch)?)) }
     })??;
+    let measured_enqueue = if instrument { Vec::new() }
+        else { enqueue_ns.iter().skip(timing.warmups.max(1) + 1).copied().collect::<Vec<_>>() };
     Ok(CaseOutcome { max_rel_error:error, measurement,
         timer:vec!["entire declared shape sequence, including required planning, then native synchronization"],
         outside_timer:vec!["backend/session/library initialization, input generation/upload and read-handle preparation",
@@ -142,6 +144,7 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
         extra:json!({"sequence":sequence,"operations_per_sequence":order.len(),
             "cache_mode":mode,"plan_cache_capacity":64,"cache_reset_scope":"CUDA extension-owned plans/workspace; excludes CubeCL kernels, cuTENSOR handle and output/allocator pools",
             "instrumentation_only":instrument,"counter_observations":observations,
+            "host_enqueue_samples_ns":measured_enqueue,
             "host_enqueue_ns_including_initialization_and_warmups":enqueue_ns,
             "latency_classification":"whole-sequence workflow diagnostic; not steady-state operation throughput"}) })
 }

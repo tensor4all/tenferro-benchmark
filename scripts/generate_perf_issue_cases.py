@@ -53,7 +53,8 @@ GPU_MANIFEST_VERSION = 4
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
-                     "first_call_diagnostic", "state_diagnostic", "issue_workflow_diagnostic"}
+                     "first_call_diagnostic", "state_diagnostic", "issue_workflow_diagnostic",
+                     "shape_stream_diagnostic"}
 
 
 def case(cid, issues, kind, params, *, arm, backend="tenferro-rs", dtype, scope="steady_state",
@@ -528,9 +529,9 @@ def gpu_shape_stream_cases(gpu):
                     f"shape_stream_f64_n{n}_{mode}_{suffix}", ("#1873", "#1805"),
                     "shape_stream", {"n": n, "instrument": instrument}, arm=mode,
                     backend="tenferro-cuda", dtype="f64", profiles=gpu,
-                    scope="counter_diagnostic" if instrument else "issue_workflow_diagnostic",
+                    scope="counter_diagnostic" if instrument else "shape_stream_diagnostic",
                     reference_for=None if mode == "fixed-warm" else f"shape_stream_f64_n{n}_fixed-warm_{suffix}",
-                    intent=("Benchmark #107: entire ordered batched-contraction shape stream, "
+                    intent=("tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, "
                             "with CUDA extension plans/workspace reset before each sequence; "
                             "fixed/mixed and stride streams explicitly warm their keys, fresh and "
                             "72-key capacity-thrashing streams include planning. Retain every output "
