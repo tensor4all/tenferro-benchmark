@@ -31,6 +31,14 @@ pub(super) fn direct(
 ) -> Result<Tensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
+        "scale_real" => x.scale_real(case.alpha.ok_or("missing scale factor")?, s)?,
+        "scale_complex" => x.scale_complex(
+            num_complex::Complex64::new(
+                case.alpha.ok_or("missing real factor")?,
+                case.beta.ok_or("missing imaginary factor")?,
+            ),
+            s,
+        )?,
         "neg" => x.neg(s)?,
         "abs" => x.abs(s)?,
         "sign" => x.sign(s)?,
@@ -98,6 +106,14 @@ pub(super) fn eager(
 ) -> Result<EagerTensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
+        "scale_real" => s.scale_real(x, case.alpha.ok_or("missing scale factor")?)?,
+        "scale_complex" => s.scale_complex(
+            x,
+            num_complex::Complex64::new(
+                case.alpha.ok_or("missing real factor")?,
+                case.beta.ok_or("missing imaginary factor")?,
+            ),
+        )?,
         "neg" => s.neg(x)?,
         "abs" => s.abs(x)?,
         "sign" => s.sign(x)?,

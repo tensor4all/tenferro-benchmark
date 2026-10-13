@@ -1932,6 +1932,190 @@
       ],
       "issue": 155,
       "full_reduction": true
+    },
+    {
+      "id": "scale_real_f32_n1024",
+      "op": "scale_real",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      }
+    },
+    {
+      "id": "scale_real_f64_n1024",
+      "op": "scale_real",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      }
+    },
+    {
+      "id": "scale_real_c32_n1024",
+      "op": "scale_real",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      }
+    },
+    {
+      "id": "scale_real_c64_n1024",
+      "op": "scale_real",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      }
+    },
+    {
+      "id": "scale_complex_c32_n1024",
+      "op": "scale_complex",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "beta": 0.75
+    },
+    {
+      "id": "scale_complex_c64_n1024",
+      "op": "scale_complex",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "beta": 0.75
+    },
+    {
+      "id": "scale_real_f32_n1048576",
+      "op": "scale_real",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      }
+    },
+    {
+      "id": "scale_real_f64_n1048576",
+      "op": "scale_real",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      }
+    },
+    {
+      "id": "scale_real_c32_n1048576",
+      "op": "scale_real",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      }
+    },
+    {
+      "id": "scale_real_c64_n1048576",
+      "op": "scale_real",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      }
+    },
+    {
+      "id": "scale_complex_c32_n1048576",
+      "op": "scale_complex",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "beta": 0.75
+    },
+    {
+      "id": "scale_complex_c64_n1048576",
+      "op": "scale_complex",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "beta": 0.75
     }
   ]
 }
