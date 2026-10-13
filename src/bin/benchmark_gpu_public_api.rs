@@ -59,6 +59,8 @@ struct Case {
     #[serde(default)]
     output_shape: Vec<usize>,
     #[serde(default)]
+    axis: isize,
+    #[serde(default)]
     broadcast_dims: Vec<usize>,
     #[serde(default)]
     slice_sizes: Vec<usize>,
@@ -355,7 +357,8 @@ fn run(
     let bytes = expected.shape().iter().product::<usize>()
         * match expected.dtype() {
             DType::C64 => 16,
-            DType::C32 | DType::F64 => 8,
+            DType::C32 | DType::F64 | DType::I64 => 8,
+            DType::Bool => 1,
             _ => 4,
         };
     if mode == "tenferro-cuda-direct" {
@@ -377,6 +380,7 @@ fn run(
                 structural::prepare_direct(case, &input),
             )?;
             let error = verify(&rt, &probe, &expected, case)?;
+            structural::verify_materialized(case, &input.iter().collect::<Vec<_>>(), &probe, session)?;
             drop(probe);
             if settings.verify_only || case.excluded.contains_key(mode) {
                 return Ok((None, error));
@@ -396,6 +400,7 @@ fn run(
                 structural::prepare_direct(case, &input),
             )?;
             let error = error.max(verify(&rt, &final_output, &expected, case)?);
+            structural::verify_materialized(case, &input.iter().collect::<Vec<_>>(), &final_output, session)?;
             Ok((Some(timing), error))
         })?
     } else {
@@ -416,6 +421,13 @@ fn run(
                 &expected,
                 case,
             )?;
+            if matches!(case.op.as_str(), "reshape" | "stack") {
+                let reads = input.iter().map(|x| x.tensor_read()).collect::<Vec<_>>();
+                let tensors = reads.iter().map(|x| x.as_tensor()
+                    .ok_or("verification eager input is not materialized")).collect::<Result<Vec<_>>>()?;
+                structural::verify_materialized(case, &tensors, probe.tensor_read().as_tensor()
+                    .ok_or("verification eager output is not materialized")?, session.backend_session())?;
+            }
             drop(probe);
             if settings.verify_only || case.excluded.contains_key(mode) {
                 return Ok((None, error));
@@ -437,6 +449,13 @@ fn run(
                 &expected,
                 case,
             )?);
+            if matches!(case.op.as_str(), "reshape" | "stack") {
+                let reads = input.iter().map(|x| x.tensor_read()).collect::<Vec<_>>();
+                let tensors = reads.iter().map(|x| x.as_tensor()
+                    .ok_or("verification eager input is not materialized")).collect::<Result<Vec<_>>>()?;
+                structural::verify_materialized(case, &tensors, final_output.tensor_read().as_tensor()
+                    .ok_or("verification eager output is not materialized")?, session.backend_session())?;
+            }
             Ok((Some(timing), error))
         })
     }

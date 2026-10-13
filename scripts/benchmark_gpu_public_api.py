@@ -298,7 +298,7 @@ def run_python(backend, root, output):
                     ready([probe])
                     probe = op.inspect(probe)  # snapshot only for untimed verification
                 verify_device(probe, backend, device if backend == "pytorch-cuda" else gpu)
-                (jax.block_until_ready if hasattr(op, "inspect") else ready)([probe])
+                (jax.block_until_ready if backend != "pytorch-cuda" and hasattr(op, "inspect") else ready)([probe])
                 error = verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify)
                 del probe
                 timing = None
@@ -312,7 +312,7 @@ def run_python(backend, root, output):
                         ready([probe])
                         probe = op.inspect(probe)
                     verify_device(probe, backend, device if backend == "pytorch-cuda" else gpu)
-                    (jax.block_until_ready if hasattr(op, "inspect") else ready)([probe])
+                    (jax.block_until_ready if backend != "pytorch-cuda" and hasattr(op, "inspect") else ready)([probe])
                     error = max(error, verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify))
                     del probe
                 row.update(status="unsupported" if numerical_exclusion else ("verification_only" if verify_only else "ok"), timing=timing,

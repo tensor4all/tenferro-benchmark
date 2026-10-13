@@ -18,6 +18,18 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_reshape_and_stack_preserve_logical_axes_and_dtype(self):
+        for dtype in ("f64", "c64", "i32", "i64"):
+            case = dict(op="reshape", dtype=dtype, n=12, shape=[3, 4], output_shape=[1, 3, 4])
+            inputs, expected = fixtures(case, bench.DTYPES[dtype])
+            np.testing.assert_array_equal(expected[0], inputs[0])
+            self.assertEqual(expected.dtype, inputs[0].dtype)
+            for axis in (0, 2):
+                inputs, expected = fixtures(dict(case, op="stack", axis=axis), bench.DTYPES[dtype])
+                np.testing.assert_array_equal(np.take(expected, 0, axis=axis), inputs[0])
+                np.testing.assert_array_equal(np.take(expected, 1, axis=axis), inputs[1])
+                self.assertFalse(np.array_equal(inputs[0], inputs[1]))
+
     def test_i64_verification_rejects_single_bit_error_above_float_precision(self):
         expected = np.array([2**54 + 1, -(2**54 + 3)], dtype=np.int64)
         case = {"rtol": 5e-4, "atol": 5e-4}

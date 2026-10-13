@@ -92,3 +92,39 @@ problems:
     - pad_interior_f64_n1048576
     - pad_crop_f64_n1048576
     - pad_interior_crop_f64_n1048576
+    - reshape_copy_f32_n1024
+    - stack_axis0_f32_n1024
+    - stack_axis2_f32_n1024
+    - reshape_copy_f64_n1024
+    - stack_axis0_f64_n1024
+    - stack_axis2_f64_n1024
+    - reshape_copy_c32_n1024
+    - stack_axis0_c32_n1024
+    - stack_axis2_c32_n1024
+    - reshape_copy_c64_n1024
+    - stack_axis0_c64_n1024
+    - stack_axis2_c64_n1024
+    - reshape_copy_i32_n1024
+    - stack_axis0_i32_n1024
+    - stack_axis2_i32_n1024
+    - reshape_copy_i64_n1024
+    - stack_axis0_i64_n1024
+    - stack_axis2_i64_n1024
+    - reshape_copy_f32_n1048576
+    - stack_axis0_f32_n1048576
+    - stack_axis2_f32_n1048576
+    - reshape_copy_f64_n1048576
+    - stack_axis0_f64_n1048576
+    - stack_axis2_f64_n1048576
+    - reshape_copy_c32_n1048576
+    - stack_axis0_c32_n1048576
+    - stack_axis2_c32_n1048576
+    - reshape_copy_c64_n1048576
+    - stack_axis0_c64_n1048576
+    - stack_axis2_c64_n1048576
+    - reshape_copy_i32_n1048576
+    - stack_axis0_i32_n1048576
+    - stack_axis2_i32_n1048576
+    - reshape_copy_i64_n1048576
+    - stack_axis0_i64_n1048576
+    - stack_axis2_i64_n1048576

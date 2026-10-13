@@ -63,6 +63,12 @@ def render(suite, paths, metadata, timestamp):
     if any(case.get("dtype") in {"i32", "i64"} for case in suite["cases"]):
         text[-2:-2] = [
             'I32/I64 outputs require exact integer equality without conversion to floating point. Division and remainder truncate toward zero; axis-1 sum preserves the input dtype. Arithmetic fixtures avoid overflow, and I64 unary/order fixtures include values above 2**53 to detect loss of integer precision. A zero verification value in these rows means exact equality.', ""]
+    if any(case.get("op") == "reshape" for case in suite["cases"]):
+        text[-2:-2] = [
+            'Reshape-copy cases add a leading singleton dimension and materialize the full output. Direct Tensor.reshape and EagerSession.reshape copy device data; PyTorch calls public view_copy. Initial/final allocation-pointer checks are untimed and reject input aliasing. JAX reshape has no established matching owned-output guarantee and remains unsupported; reshape-plus-copy composition is not substituted.', ""]
+    if any(case.get("op") == "stack" for case in suite["cases"]):
+        text[-2:-2] = [
+            'Stack selects actual public Tensor.stack/EagerSession.stack with two distinct inputs and axis 0 or 2. Their intrinsic intermediate allocations are part of this public stack operation. PyTorch/JAX use native stack; final outputs are fully verified. Rust initial/final pointer checks reject aliasing either input outside timing.', ""]
     if any(case.get("read_op") for case in suite["cases"]):
         text[-2:-2] = [
             'Transposed borrowed-read cases use prepared native CUDA views in tenferro and PyTorch. JAX compares the same logical values in its native representation; its columns do not claim an equivalent public strided-view contract. View creation and input conversion are outside timing.', ""]
