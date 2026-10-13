@@ -49,11 +49,11 @@ SUITE_ID = "cpu/perf_issues"
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 1
+GPU_MANIFEST_VERSION = 3
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
-                     "first_call_diagnostic"}
+                     "first_call_diagnostic", "state_diagnostic", "issue_workflow_diagnostic"}
 
 
 def case(cid, issues, kind, params, *, arm, backend="tenferro-rs", dtype, scope="steady_state",
@@ -454,7 +454,10 @@ def generate_gpu_cases():
                             "256 MiB), upload_tensor + runtime synchronize / download_tensor, vs "
                             "plain cudarc memcpy from pageable and pinned host memory on the same "
                             "device. Every call includes its own synchronize; the transfer is the "
-                            "declared operation.")))
+                            "declared operation. The cudarc arms reuse one preallocated "
+                            "destination while the tenferro arms allocate their output, so the "
+                            "cudarc rows are an output-reuse lower bound for the transport, not an "
+                            "allocation-equivalent comparison.")))
     for elements in (0, 16, 512, 32768, 2 << 20):
         for arm, ref in (("alloc-zero-within-callback", None), ("alloc-zero-per-callback", None),
                          ("host-zero-upload", "alloc-zero-per-callback"),
@@ -506,6 +509,254 @@ def generate_gpu_cases():
                     "destination, of a transposed device view) for 22 distinct [r, c] layouts after "
                     "one warm-up layout, in one cold process. A first-call (NVRTC compile) "
                     "diagnostic, never a steady-state row; the second call is the warm reference.")))
+    rows += gpu_latency_cases(gpu)
+    rows += gpu_memory_cases(gpu)
+    rows += gpu_linalg_driver_cases(gpu)
+    rows += gpu_contraction_cases(gpu)
+    rows += gpu_borrowed_input_cases(gpu)
+    return rows
+
+
+def gpu_borrowed_input_cases(gpu):
+    """#1925: a borrowed read view must reuse the buffer's memoized device address."""
+    rows = []
+    for n in (8, 32):
+        for arm, ref in (("owned-input", None), ("view-input", "owned-input")):
+            rows.append(case(
+                f"borrowed_input_gemm_f64_n{n}_{arm}", ("#1925",), "borrowed_input_gemm",
+                {"n": n}, arm=arm, backend="tenferro-cuda", dtype="f64",
+                scope="issue_workflow_diagnostic",
+                reference_for=ref and f"borrowed_input_gemm_f64_n{n}_{ref}", profiles=gpu,
+                intent=("tenferro-rs #1925: one small in-session dot_general_read with a borrowed "
+                        "transposed input view against the same contraction with owned inputs "
+                        "(the issue measured 36.6 -> 19.7 us at 8x8 with owned operands at "
+                        "18.5 us). A borrowed read view must reuse the buffer's memoized device "
+                        "address rather than resolving a new one, and must not cost a blocking "
+                        "resource round trip per operand. The view is metadata-only and is built "
+                        "outside the clock, so a sample is one isolated call.")))
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# #2078 / #2079: raw-session entry and eager per-op host cost
+# ---------------------------------------------------------------------------
+
+def gpu_latency_cases(gpu):
+    """Workloads of #2078 (raw-session entry) and #2079 (decode-sized eager ops)."""
+    rows = []
+    for arm, ref in (("empty-idle", None),
+                     ("empty-behind-queued-gemm", "sync-behind-queued-gemm"),
+                     ("sync-behind-queued-gemm", None)):
+        rows.append(case(
+            f"raw_scope_entry_f64_{arm}", ("#2078",), "raw_scope_entry",
+            {"gemm_n": 4096, "queued_gemms": 4}, arm=arm,
+            backend="tenferro-cuda", dtype="f64", scope="session_entry_diagnostic",
+            reference_for=ref and f"raw_scope_entry_f64_{ref}", profiles=gpu,
+            intent=("tenferro-rs #2078: entering a raw CUDA session "
+                    "(CudaExecSession::with_raw) with an empty closure, on an idle device and "
+                    "behind queued device work (4 x 4096^3 f64 GEMMs enqueued first). The issue "
+                    "measures the second empty scope after the GEMMs, which blocks for the whole "
+                    "device time; the sync arm is the explicit barrier it is compared with. The idle "
+                    "arm runs many scopes in one timed interval; the queued arms hold one scope per "
+                    "batch (the retention precondition caps the batch), so their per-op number is that "
+                    "call. A raw scope must return in microseconds and leave queued work in flight.")))
+    for op, shape in (("add", {"hidden": 1024, "tokens": 8}),
+                      ("dot_general", {"in": 1024, "out": 1024, "len": 8})):
+        label = f"{shape.get('hidden', shape.get('in'))}x{shape.get('tokens', shape.get('len'))}"
+        for arm, scope, ref in (("eager-session", "steady_state", None),
+                                ("eager-per-call", "session_entry_diagnostic", "eager-session"),
+                                ("eager-session-streaming", "steady_state", "eager-session"),
+                                ("launch-only-floor", "steady_state", "eager-session")):
+            rows.append(case(
+                f"eager_op_f32_{op}_decode_{arm}", ("#2079",), "eager_op",
+                dict(shape, op=op), arm=arm, backend="tenferro-cuda", dtype="f32", scope=scope,
+                reference_for=ref and f"eager_op_f32_{op}_decode_{ref}", profiles=gpu,
+                intent=(f"tenferro-rs #2079 ({label} f32, decode-sized): the host-side cost of one "
+                        "eager op on CUDA. `eager-session` times the op in one reused "
+                        "with_eager_session with a single device synchronize at the batch edge, "
+                        "so the per-op nanoseconds are the host dispatch the issue measured "
+                        "(11.5 us per add, 41.3 us per GEMM) plus the amortized wait; "
+                        "`eager-per-call` enters a session per operation, the diagnostic that "
+                        "separates session entry from dispatch. The GPU work of one decode-shaped "
+                        "op is a small fraction of the host cost, so these are latency rows, not "
+                        "throughput. `launch-only-floor` runs the same elementwise kernel through "
+                        "`add_read_into` on a reused output, i.e. with the per-op output allocation "
+                        "removed: the floor the eager per-op cost is compared against. "
+                        "`eager-session-streaming` drops each result before the next op, the way a "
+                        "decode loop consumes intermediates, so the output pool can hand the buffer "
+                        "back.")))
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# #2080 / #2081 / #2082 / #2083 / #1924: table-sized materialization,
+# device memory, per-session vendor handles and vendor churn
+# ---------------------------------------------------------------------------
+
+def gpu_memory_cases(gpu):
+    """Workloads of #2080 (gather), #2081 (freed memory), #2082 (reshape), #2083, #1924."""
+    rows = []
+    for vocab in (8192, 65536, 248320):
+        for arm, ref, backend in (("eager-gather", None, "tenferro-cuda"),
+                                  ("cudarc-row-copies", "eager-gather", "cudarc")):
+            rows.append(case(
+                f"gather_embedding_f32_vocab{vocab}_{arm}", ("#2080",), "gather_table",
+                {"vocab": vocab, "hidden": 1024, "tokens": 8}, arm=arm,
+                backend=backend, dtype="f32",
+                reference_for=ref and f"gather_embedding_f32_vocab{vocab}_{ref}", profiles=gpu,
+                intent=("tenferro-rs #2080: an embedding lookup (8 token ids, hidden=1024, f32) "
+                        "from a [vocab, hidden] table, vs the 8 device-to-device row copies the "
+                        "same selection needs, into a freshly allocated destination so the two "
+                        "arms have the same output policy. The issue measures 0.23 / 1.67 / 6.3 ms at vocab "
+                        "8192 / 65536 / 248320, i.e. time proportional to the table because the "
+                        "whole table is permuted first; the row-copy arm shows the O(tokens) cost "
+                        "the lookup is expected to have.")))
+    for arm, ref in (("constant", None), ("op-output", "constant")):
+        rows.append(case(
+            f"reshape_constant_f32_64M_{arm}", ("#2082",), "reshape_materialize",
+            {"elements": 1 << 26, "rows": 1 << 16, "cols": 1 << 10}, arm=arm,
+            backend="tenferro-cuda", dtype="f32",
+            reference_for=ref and f"reshape_constant_f32_64M_{ref}", profiles=gpu,
+            intent=("tenferro-rs #2082: reshape of a 256 MiB f32 device tensor from [2^26] to "
+                    "[2^16, 2^10]. The issue measured the reshape of an uploaded constant as a "
+                    "cuTENSOR permute copy plus a new 256 MiB buffer (0.5-0.65 ms) while the "
+                    "reshape of an op output (e.g. add) was a metadata-only view (0.04 ms); "
+                    "`constant` reshapes the uploaded constant and `op-output` reshapes an "
+                    "elementwise result, with the op-output arm as the reference the constant "
+                    "route has to reach. A compact reshape must be a view, not a device copy.")))
+    for arm, ref in (("create-destroy", None), ("reused", "create-destroy"),
+                     ("runtime-handle", "create-destroy")):
+        rows.append(case(
+            f"vendor_handle_cublas_f64_{arm}", ("#2083",), "vendor_handle",
+            {"arm": arm}, arm=arm, backend="tenferro-cuda", dtype="f64",
+            scope="session_entry_diagnostic",
+            reference_for=ref and f"vendor_handle_cublas_f64_{ref}", profiles=gpu,
+            intent=("tenferro-rs #2083: the documented raw-session pattern creates and destroys "
+                    "a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and "
+                    "10 MiB per session on the issue's card); the reused arm keeps one handle. "
+                    "Both arms are per-iteration inside the raw scope.")))
+    for cycles in (8, 64):
+        rows.append(case(
+            f"vendor_churn_f64_cycles{cycles}", ("#1924",), "vendor_churn",
+            {"cycles": cycles, "gemm_n": 256}, arm="backend-cycle", backend="tenferro-cuda",
+            dtype="f64", scope="state_diagnostic", profiles=gpu,
+            intent=("tenferro-rs #1924: creating and dropping a CudaBackend (which dlopens and "
+                    "unloads the vendor libraries) N times. The issue measured host RSS growing "
+                    "410 -> 3114 MB over 50 cycles, so process RSS is recorded before, per cycle "
+                    "and after as the primary observable, with the driver free device bytes kept "
+                    "as supplementary. A state diagnostic, not a timing row.")))
+    for arm in ("alloc-free", "trim-after-drop", "runtime-recreate", "driver-alloc-after-free"):
+        rows.append(case(
+            f"pool_retention_f64_{arm}", ("#2081",), "pool_retention",
+            {"arm": arm, "gib": 1, "count": 8, "probe_gib": 6}, arm=arm,
+            backend="tenferro-cuda", dtype="f64", scope="state_diagnostic", profiles=gpu,
+            intent=("tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped "
+                    "runtime) is never returned to the driver. The issue's sequence: eight 1 GiB "
+                    "tensors alive at the high-water mark (one of them downloaded and compared "
+                    "with its host payload), then all dropped. The driver free memory is reported "
+                    "before, at the high-water mark, after the drops, and after recreating the "
+                    "runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver "
+                    "allocation the issue could not serve. State diagnostic: bytes, not "
+                    "nanoseconds. A caller must see the memory back or get an Err, never a panic "
+                    "with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the "
+                    "merged slice 1 (#2113): the blocks whose owners are gone must come back "
+                    "without recreating the runtime.")))
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# #1839 / #1846 / #1849 / #1852 / #1923: CUDA linalg driver and batch knees
+# ---------------------------------------------------------------------------
+
+def gpu_linalg_driver_cases(gpu):
+    """Workloads of the cuSOLVER driver-selection issues."""
+    rows = []
+    for n in (64, 256, 1024):
+        for driver in ("auto", "gesvdj", "gesvd", "xgesvdp"):
+            rows.append(case(
+                f"svd_driver_c64_n{n}_{driver}", ("#1839", "#1849"), "svd_driver",
+                {"n": n, "driver": driver}, arm=driver, backend="tenferro-cuda", dtype="c64",
+                reference_for=None if driver == "auto" else f"svd_driver_c64_n{n}_auto",
+                profiles=gpu,
+                intent=("tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an "
+                        "explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the "
+                        "JAX-compatible policy (gesvdj at both dimensions <= 1024), which the "
+                        "issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the "
+                        "polar-decomposition driver added in #1849 and is explicit-only.")))
+    for dtype in ("f64", "c64"):
+        for n in (16, 32, 128):
+            for driver in ("auto", "syevd", "syevj"):
+                rows.append(case(
+                    f"eigh_batched_{dtype}_n{n}_{driver}", ("#1846", "#1852", "#1923"),
+                    "eigh_driver", {"n": n, "batch": 64, "driver": driver}, arm=driver,
+                    backend="tenferro-cuda", dtype=dtype,
+                    reference_for=None if driver == "auto" else f"eigh_batched_{dtype}_n{n}_auto",
+                    profiles=gpu,
+                    intent=("tenferro-rs #1846 / #1852 / #1923: batched Hermitian "
+                            "eigendecomposition of 64 n x n items with an explicit cuSOLVER "
+                            "driver. Auto selects cusolverDnXsyevBatched for a batch (about 100x "
+                            "to 280x faster than the previous per-matrix loop on the issue's "
+                            "card); #1852 records the syevjBatched n <= 32 knee, so n=32 is the "
+                            "row that matters and n=16 / n=128 bracket it. #1923 is the c64 "
+                            "coverage.")))
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# #1898 / #1873 / #1805 / #1949: contraction shape and plan/route lifetime
+# ---------------------------------------------------------------------------
+
+def gpu_contraction_cases(gpu):
+    """Workloads of the degenerate-contraction and route-lifetime issues."""
+    rows = []
+    for arm, ref in (("dot-general", None), ("multiply", "dot-general")):
+        rows.append(case(
+            f"hadamard_f32_1024x1024_{arm}", ("#1898",), "hadamard_dot_general",
+            {"rows": 1024, "cols": 1024}, arm=arm, backend="tenferro-cuda", dtype="f32",
+            reference_for=ref and f"hadamard_f32_1024x1024_{ref}", profiles=gpu,
+            intent=("tenferro-rs #1898: a pure Hadamard product routed through dot_general "
+                    "(every axis is a batch axis) vs the elementwise multiply. On the CPU backend "
+                    "the former degenerated to one 1x1x1 GEMM per element (23x); the CUDA arm checks "
+                    "whether the same shape routing holds on the device.")))
+    for arm, ref, distinct in (("distinct-plans", None, 72),
+                               ("repeated-plan", "distinct-plans", 72),
+                               ("below-capacity-varying-workspace", "repeated-plan", 48)):
+        rows.append(case(
+            f"contraction_plan_churn_f64_{arm}", ("#1873", "#1805"), "contraction_plan_churn",
+            {"distinct": distinct, "n": 64}, arm=arm, backend="tenferro-cuda", dtype="f64",
+            scope="issue_workflow_diagnostic",
+            reference_for=ref and f"contraction_plan_churn_f64_{ref}", profiles=gpu,
+            intent=("tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the "
+                    "contraction-plan cache, and raw-session resources are dropped when a plan is "
+                    "evicted. `distinct-plans` fills the cache with 72 distinct small shapes and "
+                    "then re-runs the first (more than the backend's 64-plan capacity, so the "
+                    "churn really evicts); `repeated-plan` runs the same number of contractions of "
+                    "one shape. The timed operation is the re-run alone, with the churn as its "
+                    "untimed precondition. A re-run after churn must not cost more than the "
+                    "repeated shape. A cache miss reconstructs the contraction plan and its "
+                    "workspace inside the call, and the precondition cannot be batched, so this "
+                    "is one isolated call per sample: a cache-miss diagnostic, not a steady-state "
+                    "operation row. `below-capacity-varying-workspace` is the detector for the "
+                    "fix: 48 distinct shapes (below the 64-plan capacity) with varying workspace "
+                    "sizes must not evict a plan, so its re-run must not cost more than the "
+                    "repeated shape.")))
+    for arm, ref in (("owned-dst", None), ("borrowed-dst", "owned-dst")):
+        rows.append(case(
+            f"dot_general_destination_f64_{arm}", ("#1949",), "owned_destination",
+            {"n": 512}, arm=arm, backend="tenferro-cuda", dtype="f64",
+            scope="issue_workflow_diagnostic",
+            reference_for=ref and f"dot_general_destination_f64_{ref}", profiles=gpu,
+            intent=("tenferro-rs #1949: the owned-destination memo fast path for raw CUDA vendor "
+                    "calls, where a vendor write to a memoized address can overtake a queued "
+                    "CubeCL read (the skipped get_resource round trip is what flushes). "
+                    "Both arms write one caller-provided destination that is reused by every "
+                    "call: `owned-dst` through the owned-tensor write route the memo covers, "
+                    "`borrowed-dst` through the borrowed-view route, which keeps the resource "
+                    "round trip. The fix must not add a blocking round trip, so the owned arm "
+                    "must stay at or below the borrowed one. The destination handle is built per "
+                    "call and the precondition cannot be batched, so this is one isolated call "
+                    "per sample: a route-lifetime diagnostic, not a steady-state operation row, "
+                    "and it reports the destination contents it actually wrote.")))
     return rows
 
 
@@ -593,9 +844,9 @@ def render(cases, *, suite_id=SUITE_ID, manifest_version=MANIFEST_VERSION,
     suite = header + yaml.safe_dump({
         "schema_version": 1,
         "suite_id": suite_id,
-        "title": f"Workloads of open tenferro-rs performance issues ({device.upper()})",
+        "title": f"Workloads of open and resolved tenferro-rs performance issues ({device.upper()})",
         "description": (
-            "One case family per open tenferro-rs performance issue ("
+            "One case family per open or resolved tenferro-rs performance issue ("
             + ", ".join(issues)
             + "), each with its reference arm(s); the issue numbers are recorded per case in "
             + source + ". Workloads are added when an issue is opened; "

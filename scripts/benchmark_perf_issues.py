@@ -353,22 +353,33 @@ def report(run_dir, target, suite_key="cpu"):
         return out
 
     steady = [r for r in rows if r["measurement_scope"] == "steady_state"]
+    allocation_policy = ("" if suite_key == "gpu" else
+                         "faer-direct and host-sgemm write into a preallocated output, the tenferro and "
+                         "PyTorch arms allocate their output. ")
     lines += ["## Steady-state operation rows", "",
               "Each batch is one wall-clock interval over many operations; every output is retained until the "
               "clock stops. Median and inclusive IQR are per operation, in nanoseconds; CoV is sample standard "
               "deviation / mean (NOISY means CoV > 10%, a descriptive label only). Setup (inputs, backends, "
-              "runtimes, session entry, tracing/compilation, preparation) is outside timing; faer-direct and "
-              "host-sgemm write into a preallocated output, the tenferro and PyTorch arms allocate their output. "
+              "runtimes, session entry, tracing/compilation, preparation) is outside timing; "
+              + allocation_policy +
               "`reference_for` in the case file names the case each reference arm is compared with. "
               "GPU batches end with one device synchronize (a per-call synchronize where the transfer is the operation); "
               "the Threads column is the host thread setting.", ""]
     lines += table(steady)
     for scope, title, note in (
             ("session_entry_diagnostic", "Per-call session entry diagnostics (not operation comparisons)",
-             "A session (or eager session) is entered and left for every operation, inside the timer."),
+             "The measured call includes session/scope entry or exit: the eager-per-call arms enter and "
+             "leave an eager session per operation, the raw-scope arms enter and leave a raw CUDA scope "
+             "(or time the explicit barrier they replace), and the vendor arms enter a raw scope per "
+             "operation. Each case's timing note lists its own boundary."),
             ("eager_ad_workflow", "Eager AD workflow diagnostics",
              "Forward + reduction + backward through the eager runtime, including its internal session entries; "
-             "gradients accumulate across a batch and are reset outside timing.")):
+             "gradients accumulate across a batch and are reset outside timing."),
+            ("issue_workflow_diagnostic", "Issue-workload diagnostics (not steady-state operation rows)",
+             "The workload of the issue needs a per-call precondition that cannot be batched (a cache miss "
+             "that reconstructs the contraction plan and its workspace, or a caller-provided destination "
+             "handle built per call), so a sample is exactly one call: the median is that call's latency, "
+             "not an average over a batch, and the precondition sits outside its clock.")):
         selected = [r for r in rows if r["measurement_scope"] == scope]
         if selected:
             lines += ["", f"## {title}", "", note, ""] + table(selected)
@@ -387,6 +398,41 @@ def report(run_dir, target, suite_key="cpu"):
                 lines.append(f"| {c['op']} | {c['output_bytes']} | {c['host_allocations_per_op']:.2f} | "
                              f"{c['host_allocated_bytes_per_op']:.0f} | {c['allocated_bytes_over_output_bytes']:.2f} |")
             lines.append("")
+    states = [r for r in rows if r["measurement_scope"] == "state_diagnostic"]
+    if states:
+        lines += ["", "## State diagnostics (no timing)", "",
+                  "Allocation and lifetime state, read before and after each arm: driver free device "
+                  "bytes for the pool, and process RSS where the issue's observable is host memory "
+                  "(#1924). Bytes, not nanoseconds; a case that keeps memory it no longer needs shows "
+                  "up as a non-zero retained or growth value, and a probe that the driver refuses "
+                  "shows up in `probe_status`.", ""]
+        skip = {"suite_id", "case_id", "kind", "arm", "backend", "dtype", "issues",
+                "measurement_scope", "profiles", "intent", "params", "reference_for", "threads",
+                "case_key", "effort", "correctness_status", "status", "max_rel_error", "samples",
+                "scope", "cov", "error", "per_cycle", "id", "device_ordinal"}
+        for row in states:
+            lines += [f"### {row['case_id']} ({' '.join(row['issues'])})", ""]
+            if row["correctness_status"] != "passed":
+                lines += ["FAILED", ""]
+                continue
+            lines += ["| Field | Value | MiB |", "|---|---:|---:|"]
+            for key, value in row.items():
+                if key in skip or not isinstance(value, (int, float, str, bool)):
+                    continue
+                if isinstance(value, bool) or not isinstance(value, (int, float)):
+                    lines.append(f"| {key} | `{value}` | — |")
+                elif "bytes" in key:
+                    lines.append(f"| {key} | {value} | {float(value) / (1 << 20):.1f} |")
+                else:
+                    lines.append(f"| {key} | {value} | — |")
+            lines.append("")
+            if row.get("per_cycle"):
+                columns = list(row["per_cycle"][0].keys())
+                lines.append("| Cycle | " + " | ".join(columns) + " |")
+                lines.append("|---:" + "|---:" * len(columns) + "|")
+                for index, cycle in enumerate(row["per_cycle"]):
+                    lines.append(f"| {index} | " + " | ".join(str(cycle[c]) for c in columns) + " |")
+                lines.append("")
     first_calls = [r for r in rows if r["measurement_scope"] == "first_call_diagnostic"]
     if first_calls:
         lines += ["", "## First-call diagnostics (not steady-state rows)", "",
@@ -405,11 +451,15 @@ def report(run_dir, target, suite_key="cpu"):
                              f"{c['first_call_ms']:.3f} | {c['second_call_ms']:.3f} |")
             lines.append("")
     lines += ["", "## Timing boundaries", ""]
+    # Key on the boundary, not just the case: one (kind, arm) can run under two
+    # different boundaries (an upload and a download arm, an f64 and a c64 arm).
     scopes = {}
     for row in rows:
         if row.get("scope"):
-            scopes[(row["kind"], row["arm"])] = row["scope"]
-    for (kind, arm), scope in sorted(scopes.items()):
+            scope = row["scope"]
+            key = (row["kind"], row["arm"], tuple(scope["timer"]), tuple(scope["outside_timer"]))
+            scopes[key] = scope
+    for (kind, arm, _, _), scope in sorted(scopes.items()):
         lines.append(f"- **{kind} / {arm}** — inside: {', '.join(scope['timer']) or '—'}; "
                      f"outside: {', '.join(scope['outside_timer'])}.")
     for row in rows:

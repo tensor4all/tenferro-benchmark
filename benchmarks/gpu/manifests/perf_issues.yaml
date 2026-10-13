@@ -2,7 +2,7 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 1
+manifest_version: 3
 suite_id: gpu/perf_issues
 source: data/instances/gpu_perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -83,6 +83,52 @@ coverage:
   - qr_live_buffers_f64_n32_live16
   - qr_live_buffers_f64_n32_live256
   - qr_live_buffers_f64_n32_live1024
+  - eager_op_f32_add_decode_eager-session
+  - eager_op_f32_add_decode_eager-session-streaming
+  - eager_op_f32_add_decode_launch-only-floor
+  - eager_op_f32_dot_general_decode_eager-session
+  - eager_op_f32_dot_general_decode_eager-session-streaming
+  - eager_op_f32_dot_general_decode_launch-only-floor
+  - gather_embedding_f32_vocab8192_eager-gather
+  - gather_embedding_f32_vocab8192_cudarc-row-copies
+  - gather_embedding_f32_vocab65536_eager-gather
+  - gather_embedding_f32_vocab65536_cudarc-row-copies
+  - gather_embedding_f32_vocab248320_eager-gather
+  - gather_embedding_f32_vocab248320_cudarc-row-copies
+  - reshape_constant_f32_64M_constant
+  - reshape_constant_f32_64M_op-output
+  - svd_driver_c64_n64_auto
+  - svd_driver_c64_n64_gesvdj
+  - svd_driver_c64_n64_gesvd
+  - svd_driver_c64_n64_xgesvdp
+  - svd_driver_c64_n256_auto
+  - svd_driver_c64_n256_gesvdj
+  - svd_driver_c64_n256_gesvd
+  - svd_driver_c64_n256_xgesvdp
+  - svd_driver_c64_n1024_auto
+  - svd_driver_c64_n1024_gesvdj
+  - svd_driver_c64_n1024_gesvd
+  - svd_driver_c64_n1024_xgesvdp
+  - eigh_batched_f64_n16_auto
+  - eigh_batched_f64_n16_syevd
+  - eigh_batched_f64_n16_syevj
+  - eigh_batched_f64_n32_auto
+  - eigh_batched_f64_n32_syevd
+  - eigh_batched_f64_n32_syevj
+  - eigh_batched_f64_n128_auto
+  - eigh_batched_f64_n128_syevd
+  - eigh_batched_f64_n128_syevj
+  - eigh_batched_c64_n16_auto
+  - eigh_batched_c64_n16_syevd
+  - eigh_batched_c64_n16_syevj
+  - eigh_batched_c64_n32_auto
+  - eigh_batched_c64_n32_syevd
+  - eigh_batched_c64_n32_syevj
+  - eigh_batched_c64_n128_auto
+  - eigh_batched_c64_n128_syevd
+  - eigh_batched_c64_n128_syevj
+  - hadamard_f32_1024x1024_dot-general
+  - hadamard_f32_1024x1024_multiply
   full:
   - transfer_up_f64_tenferro_8B
   - transfer_up_f64_cudarc-pageable_8B
@@ -161,3 +207,72 @@ coverage:
   - qr_live_buffers_f64_n32_live1024
   - first_call_transpose_to-contiguous_f64_layouts_r2-12_c5-7
   - first_call_transpose_copy-into_f64_layouts_r2-12_c5-7
+  - raw_scope_entry_f64_empty-idle
+  - raw_scope_entry_f64_empty-behind-queued-gemm
+  - raw_scope_entry_f64_sync-behind-queued-gemm
+  - eager_op_f32_add_decode_eager-session
+  - eager_op_f32_add_decode_eager-per-call
+  - eager_op_f32_add_decode_eager-session-streaming
+  - eager_op_f32_add_decode_launch-only-floor
+  - eager_op_f32_dot_general_decode_eager-session
+  - eager_op_f32_dot_general_decode_eager-per-call
+  - eager_op_f32_dot_general_decode_eager-session-streaming
+  - eager_op_f32_dot_general_decode_launch-only-floor
+  - gather_embedding_f32_vocab8192_eager-gather
+  - gather_embedding_f32_vocab8192_cudarc-row-copies
+  - gather_embedding_f32_vocab65536_eager-gather
+  - gather_embedding_f32_vocab65536_cudarc-row-copies
+  - gather_embedding_f32_vocab248320_eager-gather
+  - gather_embedding_f32_vocab248320_cudarc-row-copies
+  - reshape_constant_f32_64M_constant
+  - reshape_constant_f32_64M_op-output
+  - vendor_handle_cublas_f64_create-destroy
+  - vendor_handle_cublas_f64_reused
+  - vendor_handle_cublas_f64_runtime-handle
+  - vendor_churn_f64_cycles8
+  - vendor_churn_f64_cycles64
+  - pool_retention_f64_alloc-free
+  - pool_retention_f64_trim-after-drop
+  - pool_retention_f64_runtime-recreate
+  - pool_retention_f64_driver-alloc-after-free
+  - svd_driver_c64_n64_auto
+  - svd_driver_c64_n64_gesvdj
+  - svd_driver_c64_n64_gesvd
+  - svd_driver_c64_n64_xgesvdp
+  - svd_driver_c64_n256_auto
+  - svd_driver_c64_n256_gesvdj
+  - svd_driver_c64_n256_gesvd
+  - svd_driver_c64_n256_xgesvdp
+  - svd_driver_c64_n1024_auto
+  - svd_driver_c64_n1024_gesvdj
+  - svd_driver_c64_n1024_gesvd
+  - svd_driver_c64_n1024_xgesvdp
+  - eigh_batched_f64_n16_auto
+  - eigh_batched_f64_n16_syevd
+  - eigh_batched_f64_n16_syevj
+  - eigh_batched_f64_n32_auto
+  - eigh_batched_f64_n32_syevd
+  - eigh_batched_f64_n32_syevj
+  - eigh_batched_f64_n128_auto
+  - eigh_batched_f64_n128_syevd
+  - eigh_batched_f64_n128_syevj
+  - eigh_batched_c64_n16_auto
+  - eigh_batched_c64_n16_syevd
+  - eigh_batched_c64_n16_syevj
+  - eigh_batched_c64_n32_auto
+  - eigh_batched_c64_n32_syevd
+  - eigh_batched_c64_n32_syevj
+  - eigh_batched_c64_n128_auto
+  - eigh_batched_c64_n128_syevd
+  - eigh_batched_c64_n128_syevj
+  - hadamard_f32_1024x1024_dot-general
+  - hadamard_f32_1024x1024_multiply
+  - contraction_plan_churn_f64_distinct-plans
+  - contraction_plan_churn_f64_repeated-plan
+  - contraction_plan_churn_f64_below-capacity-varying-workspace
+  - dot_general_destination_f64_owned-dst
+  - dot_general_destination_f64_borrowed-dst
+  - borrowed_input_gemm_f64_n8_owned-input
+  - borrowed_input_gemm_f64_n8_view-input
+  - borrowed_input_gemm_f64_n32_owned-input
+  - borrowed_input_gemm_f64_n32_view-input

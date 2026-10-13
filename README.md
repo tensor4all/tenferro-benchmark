@@ -218,8 +218,9 @@ sgemm, PyTorch, cudarc memcpy, the eager or batched counterpart, ...);
 `reference_for` names the compared case. Cases are built only from public
 tenferro-rs APIs (`CpuBackend::new()` / `with_threads(n)`,
 `with_backend_session`, public concrete/eager/traced ops). Steady-state rows,
-per-call session-entry diagnostics, eager AD workflows, counter runs and the
-GPU first-call diagnostic are reported in separate sections.
+per-call session-entry diagnostics, eager AD workflows, counter runs, GPU
+allocation-state diagnostics and the GPU first-call diagnostic are reported in
+separate sections.
 
 Edit `scripts/generate_perf_issue_cases.py` (it also writes the #1865/#1863
 `cpu/einsum` instances), rerun it and bump the manifest version. Collection:
@@ -255,9 +256,22 @@ timing. Raw runs go to `data/results/<target_profile>/{cpu,gpu}/perf_issues/<tim
 | #1976 (#2010 PR-B1) | `{softmax,log_softmax,masked_softmax}_f32_*`, `reduce_mean_f32_*` | `cpu/perf_issues` |
 | #2008 (#2010 PR-B1) | `take_along_axis_rows_f64_*` | `cpu/perf_issues` |
 | #1885 §4.1 | `small_contraction_abcd-dbef-acef_f64_*_d4` | `cpu/perf_issues` |
-| #2009 | `transfer_{up,down}_f64_*` | `gpu/perf_issues` |
+| #2009 | `transfer_{up,down}_f64_*` (the cudarc arms are an output-reuse lower bound: they reuse one destination while the tenferro arms allocate) | `gpu/perf_issues` |
 | #1887 | `alloc_zero_f64_*` | `gpu/perf_issues` |
 | #1885 §3.1-§3.4 | `small_blocks_gemm_*`, `batched_{qr,svd}_*`, `qr_live_buffers_*`, `first_call_transpose_*` | `gpu/perf_issues` |
+| #2078 | `raw_scope_entry_f64_{empty-idle,empty-behind-queued-gemm,sync-behind-queued-gemm}` | `gpu/perf_issues` |
+| #2079 | `eager_op_f32_{add,dot_general}_decode_*` | `gpu/perf_issues` |
+| #2080 | `gather_embedding_f32_vocab{8192,65536,248320}_*` | `gpu/perf_issues` |
+| #2081 | `pool_retention_f64_*` (allocation-state diagnostic) | `gpu/perf_issues` |
+| #2082 | `reshape_constant_f32_64M_{constant,op-output}` | `gpu/perf_issues` |
+| #2083 | `vendor_handle_cublas_f64_{create-destroy,reused}` | `gpu/perf_issues` |
+| #1924 | `vendor_churn_f64_cycles{8,64}` (state diagnostic: process RSS per cycle, the leak the issue documents, plus device free bytes) | `gpu/perf_issues` |
+| #1839, #1849 | `svd_driver_c64_n{64,256,1024}_{auto,gesvdj,gesvd,xgesvdp}` | `gpu/perf_issues` |
+| #1846, #1852, #1923 | `eigh_batched_{f64,c64}_n{16,32,128}_{auto,syevd,syevj}` | `gpu/perf_issues` |
+| #1898 | `hadamard_f32_1024x1024_{dot-general,multiply}` | `gpu/perf_issues` |
+| #1873, #1805 | `contraction_plan_churn_f64_{distinct-plans,repeated-plan}` | `gpu/perf_issues` |
+| #1949 | `dot_general_destination_f64_{owned-dst,borrowed-dst}` | `gpu/perf_issues` |
+| #1925 | `borrowed_input_gemm_f64_n{8,32}_{owned-input,view-input}` | `gpu/perf_issues` |
 
 ### CPU permutation suite (`cpu/permutation`)
 
