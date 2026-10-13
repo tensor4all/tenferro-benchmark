@@ -297,3 +297,17 @@ measured batch, and synchronize restoration before starting the clock.
 Restoration is device-to-device and is excluded from operation time. The
 compact CUDA path passes coefficients as host cuBLAS arguments; the strided
 source path uploads coefficients internally and is a separate contract.
+
+Matrix output reuse selects public `dot_general_read_into`,
+`dot_general_read_into_accum`, and
+`SessionCachedDot::dot_general_read_into_accum_cached(Some(0), ...)` on
+square 16/256 F32/F64/C32/C64 matrices. All configurations and move-only
+operand/output handles are prepared outside the clock. Overwrite computes
+`C = A @ B`; accumulation computes `C = 0.5 * A @ B + C` and restores C
+from a prepared GPU seed before every batch. PyTorch uses one native
+`torch.addmm(C, A, B, alpha=..., beta=..., out=C)` call with matching
+output ownership. Eager and JAX have no equivalent caller-owned output API.
+CUDA's cached accumulation wrapper currently delegates to ordinary
+accumulation and ignores the session-local slot; these rows identify public
+routes and do not assert distinct cache behavior or a cache speedup. Cache
+miss streams and instrumented counters remain the separate #107 workload.

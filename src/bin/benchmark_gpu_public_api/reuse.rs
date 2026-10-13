@@ -4,7 +4,10 @@ use num_complex::{Complex32, Complex64};
 use serde_json::Value;
 use std::{hint::black_box, time::Instant};
 use tenferro_gpu::cuda::{upload_tensor, CudaRuntime};
-use tenferro_tensor::{BackendSession, ContractionScalar, DType, Tensor, TensorRead, TensorWrite};
+use tenferro_tensor::{
+    BackendSession, ContractionScalar, DType, DotGeneralAccumulation, DotGeneralConfig, Tensor,
+    TensorRead, TensorWrite,
+};
 
 fn execute(
     op: &str,
@@ -14,10 +17,19 @@ fn execute(
     out: TensorWrite<'_>,
     s: &mut dyn BackendSession,
     scalars: (ContractionScalar, ContractionScalar),
+    config: &DotGeneralConfig,
+    dot_accumulation: DotGeneralAccumulation,
 ) -> Result<()> {
     let x = &inputs[0];
     let y = inputs.get(1).unwrap_or(x);
     match op {
+        "dot_general_read_into" => s.dot_general_read_into(a, b, config, out)?,
+        "dot_general_read_into_accum" => {
+            s.dot_general_read_into_accum(a, b, config, dot_accumulation, out)?
+        }
+        "dot_general_read_into_accum_cached" => {
+            s.dot_general_read_into_accum_cached(Some(0), a, b, config, dot_accumulation, out)?
+        }
         "axpby_read_into_accum" => s.axpby_read_into_accum(scalars.0, a, scalars.1, out)?,
         "add_into" => s.add_into(x, y, out)?,
         "sub_into" => s.sub_into(x, y, out)?,
@@ -59,7 +71,28 @@ pub(super) fn run(
         ),
         _ => return Err("invalid reuse dtype".into()),
     };
-    let accum = case.op == "axpby_read_into_accum";
+    let accum = case.op.contains("_into_accum");
+    let seed = if case.op.starts_with("dot_general") {
+        2
+    } else {
+        1
+    };
+    let config = DotGeneralConfig {
+        lhs_contracting_dims: [1].as_slice().into(),
+        rhs_contracting_dims: [0].as_slice().into(),
+        lhs_batch_dims: [].as_slice().into(),
+        rhs_batch_dims: [].as_slice().into(),
+    };
+    let dot_accumulation = if accum {
+        DotGeneralAccumulation {
+            lhs_conj: false,
+            rhs_conj: false,
+            alpha: scalars.0,
+            beta: scalars.1,
+        }
+    } else {
+        DotGeneralAccumulation::overwrite(expected.dtype())?
+    };
     let zero = match expected.dtype() {
         DType::F32 => Tensor::from_vec_col_major(shape, vec![0f32; n])?,
         DType::F64 => Tensor::from_vec_col_major(shape, vec![0f64; n])?,
@@ -77,7 +110,7 @@ pub(super) fn run(
         .collect::<Result<Vec<_>>>()?;
     if accum {
         s.copy_read_into(
-            TensorRead::from_tensor(&inputs[1]),
+            TensorRead::from_tensor(&inputs[seed]),
             TensorWrite::from_tensor(&mut destinations[0]),
         )?;
     }
@@ -89,6 +122,8 @@ pub(super) fn run(
         TensorWrite::from_tensor(&mut destinations[0]),
         s,
         scalars,
+        &config,
+        dot_accumulation,
     )?;
     let error = verify(rt, &destinations[0], expected, case)?;
     if settings.verify_only {
@@ -98,7 +133,7 @@ pub(super) fn run(
         if accum {
             for destination in &mut destinations[..count] {
                 s.copy_read_into(
-                    TensorRead::from_tensor(&inputs[1]),
+                    TensorRead::from_tensor(&inputs[seed]),
                     TensorWrite::from_tensor(destination),
                 )?;
             }
@@ -119,7 +154,17 @@ pub(super) fn run(
         let start = Instant::now();
         for write in &mut writes {
             let (a, b, out) = write.take().unwrap();
-            execute(&case.op, inputs, a, b, out, s, scalars)?;
+            execute(
+                &case.op,
+                inputs,
+                a,
+                b,
+                out,
+                s,
+                scalars,
+                &config,
+                dot_accumulation,
+            )?;
         }
         rt.synchronize()?;
         let elapsed = start.elapsed().as_nanos();

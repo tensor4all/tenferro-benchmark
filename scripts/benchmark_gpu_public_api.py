@@ -214,9 +214,11 @@ def run_python(backend, root, output):
                    "setup_policy": "fixtures, H2D, library initialization, compilation and validation outside timing",
                    "session_policy": "backend process and device reused across samples"}
             row["precision_policy"] = "PyTorch TF32 disabled; JAX x64 enabled and matmul precision highest"
-            if case["op"] == "axpby_read_into_accum":
+            if "_into_accum" in case["op"]:
                 row["input_restoration"] = "GPU seed copied into each destination before every batch; synchronized outside timing"
                 row["accumulation"] = {"alpha": 0.5, "beta": 1.0}
+            if case["op"] == "dot_general_read_into":
+                row["accumulation"] = {"alpha": 1.0, "beta": 0.0}
             unavailable = {**case.get("excluded", {}), **case.get("unavailable", {})}
             if backend in unavailable:
                 row.update(status="unsupported", reason=unavailable[backend])
@@ -258,7 +260,7 @@ def run_python(backend, root, output):
                     ready = jax.block_until_ready
                     download = np.asarray
                     row["synchronization"] = "jax.block_until_ready on all retained outputs; no D2H in timed region"
-                reuse = case["op"].endswith("_into") or case["op"] == "axpby_read_into_accum"
+                reuse = "_into" in case["op"]
                 if hasattr(op, "prepare"):
                     op.prepare(1)
                 probe = op(0) if reuse else op()
