@@ -299,7 +299,9 @@ PY
 
     REPORT_START_NS="$(wall_now)"
     "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
-    cp "$MARKDOWN_OUT" "$REPORT_OUT"
+    if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
+        cp "$MARKDOWN_OUT" "$REPORT_OUT"
+    fi
     "${PYTHON[@]}" - "$RUN_DIR/wall_command.json" "$COMMAND_START_NS" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$REPORT_START_NS" "$(wall_now)" <<'PY'
 import json, sys
 from pathlib import Path
