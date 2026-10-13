@@ -37,6 +37,10 @@ struct Case {
     atol: f64,
     reference: String,
     #[serde(default)]
+    full_reduction: bool,
+    #[serde(default)]
+    compare_direction: String,
+    #[serde(default)]
     excluded: HashMap<String, String>,
     #[serde(default)]
     unavailable: HashMap<String, String>,

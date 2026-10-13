@@ -4,6 +4,25 @@ use tenferro_ad::{EagerSession, EagerTensor};
 use tenferro_runtime::TensorSessionOpsExt;
 use tenferro_tensor::{BackendSession, CompareDir, Tensor};
 
+fn axes(case: &Case) -> Option<&'static [usize]> {
+    if case.full_reduction {
+        None
+    } else {
+        Some(&[1])
+    }
+}
+
+fn direction(case: &Case) -> Result<CompareDir> {
+    Ok(match case.compare_direction.as_str() {
+        "" | "gt" => CompareDir::Gt,
+        "eq" => CompareDir::Eq,
+        "lt" => CompareDir::Lt,
+        "le" => CompareDir::Le,
+        "ge" => CompareDir::Ge,
+        value => return Err(format!("unknown comparison direction {value}").into()),
+    })
+}
+
 pub(super) fn direct(case: &Case, inputs: &[Tensor], s: &mut dyn BackendSession) -> Result<Tensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
@@ -34,13 +53,13 @@ pub(super) fn direct(case: &Case, inputs: &[Tensor], s: &mut dyn BackendSession)
         "pow" => x.pow(&inputs[1], s)?,
         "maximum" => x.maximum(&inputs[1], s)?,
         "minimum" => x.minimum(&inputs[1], s)?,
-        "reduce_sum" => x.reduce_sum(Some(&[1]), s)?,
-        "reduce_prod" => x.reduce_prod(Some(&[1]), s)?,
-        "reduce_max" => x.reduce_max(Some(&[1]), s)?,
-        "reduce_min" => x.reduce_min(Some(&[1]), s)?,
-        "reduce_sum_squares" => x.reduce_sum_squares(Some(&[1]), s)?,
-        "reduce_mean" => x.reduce_mean(Some(&[1]), s)?,
-        "compare" => x.compare(&inputs[1], CompareDir::Gt, s)?,
+        "reduce_sum" => x.reduce_sum(axes(case), s)?,
+        "reduce_prod" => x.reduce_prod(axes(case), s)?,
+        "reduce_max" => x.reduce_max(axes(case), s)?,
+        "reduce_min" => x.reduce_min(axes(case), s)?,
+        "reduce_sum_squares" => x.reduce_sum_squares(axes(case), s)?,
+        "reduce_mean" => x.reduce_mean(axes(case), s)?,
+        "compare" => x.compare(&inputs[1], direction(case)?, s)?,
         "where_select" => inputs[2].where_select(x, &inputs[1], s)?,
         "clamp" => x.clamp(&inputs[1], &inputs[2], s)?,
         "softmax" => x.softmax(1, s)?,
@@ -86,13 +105,13 @@ pub(super) fn eager(
         "pow" => s.pow(x, &inputs[1])?,
         "maximum" => s.maximum(x, &inputs[1])?,
         "minimum" => s.minimum(x, &inputs[1])?,
-        "reduce_sum" => s.reduce_sum(x, Some(&[1]))?,
-        "reduce_prod" => s.reduce_prod(x, Some(&[1]))?,
-        "reduce_max" => s.reduce_max(x, Some(&[1]))?,
-        "reduce_min" => s.reduce_min(x, Some(&[1]))?,
-        "reduce_sum_squares" => s.reduce_sum_squares(x, Some(&[1]))?,
-        "reduce_mean" => s.reduce_mean(x, Some(&[1]))?,
-        "compare" => s.compare(x, &inputs[1], CompareDir::Gt)?,
+        "reduce_sum" => s.reduce_sum(x, axes(case))?,
+        "reduce_prod" => s.reduce_prod(x, axes(case))?,
+        "reduce_max" => s.reduce_max(x, axes(case))?,
+        "reduce_min" => s.reduce_min(x, axes(case))?,
+        "reduce_sum_squares" => s.reduce_sum_squares(x, axes(case))?,
+        "reduce_mean" => s.reduce_mean(x, axes(case))?,
+        "compare" => s.compare(x, &inputs[1], direction(case)?)?,
         "where_select" => s.where_select(&inputs[2], x, &inputs[1])?,
         "clamp" => s.clamp(x, &inputs[1], &inputs[2])?,
         "softmax" => s.softmax(x, 1)?,

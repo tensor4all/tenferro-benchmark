@@ -1428,6 +1428,406 @@
         "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
         "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
       }
+    },
+    {
+      "id": "reduce_sum_full_f32_n1024",
+      "op": "reduce_sum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_prod_full_f32_n1024",
+      "op": "reduce_prod",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_max_full_f32_n1024",
+      "op": "reduce_max",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_min_full_f32_n1024",
+      "op": "reduce_min",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "compare_eq_f32_n1024",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "compare_direction": "eq",
+      "excluded": {
+        "tenferro-cuda-direct": "Small comparison allocation path requires steady-state lifetime validation; known Gt drift is tracked separately from numerical support."
+      }
+    },
+    {
+      "id": "compare_lt_f32_n1024",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "compare_direction": "lt",
+      "excluded": {
+        "tenferro-cuda-direct": "Small comparison allocation path requires steady-state lifetime validation; known Gt drift is tracked separately from numerical support."
+      }
+    },
+    {
+      "id": "compare_le_f32_n1024",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "compare_direction": "le",
+      "excluded": {
+        "tenferro-cuda-direct": "Small comparison allocation path requires steady-state lifetime validation; known Gt drift is tracked separately from numerical support."
+      }
+    },
+    {
+      "id": "compare_ge_f32_n1024",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "compare_direction": "ge",
+      "excluded": {
+        "tenferro-cuda-direct": "Small comparison allocation path requires steady-state lifetime validation; known Gt drift is tracked separately from numerical support."
+      }
+    },
+    {
+      "id": "reduce_sum_full_f64_n1024",
+      "op": "reduce_sum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_prod_full_f64_n1024",
+      "op": "reduce_prod",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_max_full_f64_n1024",
+      "op": "reduce_max",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_min_full_f64_n1024",
+      "op": "reduce_min",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "compare_eq_f64_n1024",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "compare_direction": "eq",
+      "excluded": {
+        "tenferro-cuda-direct": "Small comparison allocation path requires steady-state lifetime validation; known Gt drift is tracked separately from numerical support."
+      }
+    },
+    {
+      "id": "compare_lt_f64_n1024",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "compare_direction": "lt",
+      "excluded": {
+        "tenferro-cuda-direct": "Small comparison allocation path requires steady-state lifetime validation; known Gt drift is tracked separately from numerical support."
+      }
+    },
+    {
+      "id": "compare_le_f64_n1024",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "compare_direction": "le",
+      "excluded": {
+        "tenferro-cuda-direct": "Small comparison allocation path requires steady-state lifetime validation; known Gt drift is tracked separately from numerical support."
+      }
+    },
+    {
+      "id": "compare_ge_f64_n1024",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "compare_direction": "ge",
+      "excluded": {
+        "tenferro-cuda-direct": "Small comparison allocation path requires steady-state lifetime validation; known Gt drift is tracked separately from numerical support."
+      }
+    },
+    {
+      "id": "reduce_sum_full_f32_n1048576",
+      "op": "reduce_sum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_prod_full_f32_n1048576",
+      "op": "reduce_prod",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_max_full_f32_n1048576",
+      "op": "reduce_max",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_min_full_f32_n1048576",
+      "op": "reduce_min",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "compare_eq_f32_n1048576",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "compare_direction": "eq",
+      "excluded": {}
+    },
+    {
+      "id": "compare_lt_f32_n1048576",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "compare_direction": "lt",
+      "excluded": {}
+    },
+    {
+      "id": "compare_le_f32_n1048576",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "compare_direction": "le",
+      "excluded": {}
+    },
+    {
+      "id": "compare_ge_f32_n1048576",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "compare_direction": "ge",
+      "excluded": {}
+    },
+    {
+      "id": "reduce_sum_full_f64_n1048576",
+      "op": "reduce_sum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_prod_full_f64_n1048576",
+      "op": "reduce_prod",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_max_full_f64_n1048576",
+      "op": "reduce_max",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_min_full_f64_n1048576",
+      "op": "reduce_min",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true,
+      "excluded": {}
+    },
+    {
+      "id": "compare_eq_f64_n1048576",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "compare_direction": "eq",
+      "excluded": {}
+    },
+    {
+      "id": "compare_lt_f64_n1048576",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "compare_direction": "lt",
+      "excluded": {}
+    },
+    {
+      "id": "compare_le_f64_n1048576",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "compare_direction": "le",
+      "excluded": {}
+    },
+    {
+      "id": "compare_ge_f64_n1048576",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "compare_direction": "ge",
+      "excluded": {}
     }
   ]
 }

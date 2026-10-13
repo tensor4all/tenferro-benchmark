@@ -40,6 +40,9 @@ def fixtures(case, dtype):
     if np.issubdtype(np.dtype(dtype), np.complexfloating):
         x = (raw + 1j * raw[::-1]).astype(dtype)
     rhs = (1.5 - raw).astype(dtype)
+    if op == "compare":
+        rhs = np.roll(x, 1).copy()
+        rhs.flat[::7] = x.flat[::7]
     inputs = [x]
     # Reference arithmetic in float64/complex128, rounded once to output dtype.
     a = x.astype(np.complex128 if np.iscomplexobj(x) else np.float64)
@@ -53,7 +56,7 @@ def fixtures(case, dtype):
              "gelu_tanh": lambda v: v * .5 * (1 + np.tanh(np.sqrt(2/np.pi)*(v+.044715*v**3)))}
     binary = {"add": np.add, "sub": np.subtract, "mul": np.multiply, "div": np.divide,
               "rem": np.fmod, "pow": np.power, "maximum": np.maximum, "minimum": np.minimum,
-              "compare": np.greater}
+              "compare": getattr(np, {"eq": "equal", "lt": "less", "le": "less_equal", "gt": "greater", "ge": "greater_equal"}[case.get("compare_direction", "gt")])}
     if op in unary:
         y = unary[op](a)
     elif op in binary:
@@ -68,7 +71,8 @@ def fixtures(case, dtype):
         y = np.clip(a, inputs[1], inputs[2])
     elif op.startswith("reduce_"):
         which = op.removeprefix("reduce_")
-        y = np.sum(a*a, axis=1) if which == "sum_squares" else getattr(np, which)(a, axis=1)
+        axis = None if case.get("full_reduction") else 1
+        y = np.sum(a*a, axis=axis) if which == "sum_squares" else getattr(np, which)(a, axis=axis)
     elif op in {"softmax", "log_softmax", "masked_softmax", "masked_log_softmax"}:
         if op.startswith("masked_"):
             mask = raw > -.1
@@ -133,7 +137,7 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
              "silu": torch.nn.functional.silu, "softplus": torch.nn.functional.softplus}
     binary = {"add": torch.add, "sub": torch.sub, "mul": torch.mul, "div": torch.div,
               "rem": torch.fmod, "pow": torch.pow, "maximum": torch.maximum,
-              "minimum": torch.minimum, "compare": torch.gt}
+              "minimum": torch.minimum, "compare": getattr(torch, case.get("compare_direction", "gt"))}
     if op in unary:
         return lambda: unary[op](x)
     if op in binary:
@@ -187,7 +191,7 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
     if op.startswith("reduce_"):
         fn = {"reduce_sum": torch.sum, "reduce_prod": torch.prod, "reduce_max": torch.amax,
               "reduce_min": torch.amin, "reduce_mean": torch.mean}[op]
-        return lambda: fn(x, dim=1)
+        return (lambda: fn(x)) if case.get("full_reduction") else (lambda: fn(x, dim=1))
     raise ValueError(f"missing native PyTorch API: {op}")
 
 
@@ -200,7 +204,7 @@ def jax_operation(jax, jnp, case):
              "silu": jax.nn.silu, "softplus": jax.nn.softplus}
     binary = {"add": jnp.add, "sub": jnp.subtract, "mul": jnp.multiply, "div": jnp.divide,
               "rem": jnp.fmod, "pow": jnp.power, "maximum": jnp.maximum,
-              "minimum": jnp.minimum, "compare": jnp.greater}
+              "minimum": jnp.minimum, "compare": getattr(jnp, {"eq": "equal", "lt": "less", "le": "less_equal", "gt": "greater", "ge": "greater_equal"}[case.get("compare_direction", "gt")])}
     if op in unary:
         return lambda x: unary[op](x)
     if op in binary:
@@ -255,5 +259,6 @@ def jax_operation(jax, jnp, case):
         return lambda x: jnp.vdot(x, x)
     if op.startswith("reduce_"):
         fn = getattr(jnp, op.removeprefix("reduce_"))
-        return lambda x: fn(x, axis=1)
+        axis = None if case.get("full_reduction") else 1
+        return lambda x: fn(x, axis=axis)
     raise ValueError(f"missing native JAX API: {op}")

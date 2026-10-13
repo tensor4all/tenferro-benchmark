@@ -17,6 +17,41 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_comparison_fixtures_include_equality_and_both_orderings(self):
+        import gpu_public_api_ops as operations
+        for direction in ("eq", "lt", "le", "gt", "ge"):
+            case = dict(op="compare", n=1024, shape=[1024], compare_direction=direction)
+            inputs, expected = operations.fixtures(case, "<f4")
+            self.assertTrue(np.any(inputs[0] == inputs[1]))
+            self.assertTrue(np.any(inputs[0] < inputs[1]))
+            self.assertTrue(np.any(inputs[0] > inputs[1]))
+            self.assertTrue(np.any(expected))
+            self.assertTrue(np.any(~expected))
+
+    def test_full_reduction_references_are_scalars_and_preserve_dtype(self):
+        for op in ("sum", "prod", "max", "min"):
+            case = dict(op="reduce_" + op, n=1024, shape=[1024], full_reduction=True)
+            inputs, expected = fixtures(case, "<f8")
+            self.assertEqual(expected.shape, ())
+            self.assertEqual(expected.dtype, np.dtype("float64"))
+            self.assertEqual(expected, getattr(np, op)(inputs[0]))
+
+    def test_large_reduction_policy_still_rejects_zero_or_percent_product_error(self):
+        suite = {"cases": [dict(id=op, op=op, dtype="f32", n=1048576,
+                                shape=[1048576], full_reduction=True)
+                           for op in ("reduce_sum", "reduce_prod")]}
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "fixtures"
+            bench.make_fixtures(root, suite)
+            for case in json.loads((root / "manifest.json").read_text()):
+                expected = bench.load_array(root, case["outputs"][0])
+                self.assertIn("tolerance_policy", case)
+                with self.assertRaises(ValueError):
+                    bench.verify(np.zeros_like(expected), expected, case)
+                if case["op"] == "reduce_prod":
+                    with self.assertRaises(ValueError):
+                        bench.verify(expected * np.float32(1.01), expected, case)
+
     def test_all_fixtures_have_finite_data_and_matching_binary_layout(self):
         for path in (ROOT / "data/instances").glob("gpu_*.json"):
             if path.stem not in {"gpu_nn", "gpu_isolated_ops", "gpu_structural", "gpu_linalg_public_api", "gpu_reuse_contraction"}:

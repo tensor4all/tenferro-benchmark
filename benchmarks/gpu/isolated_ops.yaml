@@ -134,3 +134,35 @@ problems:
     - reduce_sum_squares_f64_n1048576
     - reduce_mean_f32_n1048576
     - reduce_mean_f64_n1048576
+    - reduce_sum_full_f32_n1024
+    - reduce_prod_full_f32_n1024
+    - reduce_max_full_f32_n1024
+    - reduce_min_full_f32_n1024
+    - compare_eq_f32_n1024
+    - compare_lt_f32_n1024
+    - compare_le_f32_n1024
+    - compare_ge_f32_n1024
+    - reduce_sum_full_f64_n1024
+    - reduce_prod_full_f64_n1024
+    - reduce_max_full_f64_n1024
+    - reduce_min_full_f64_n1024
+    - compare_eq_f64_n1024
+    - compare_lt_f64_n1024
+    - compare_le_f64_n1024
+    - compare_ge_f64_n1024
+    - reduce_sum_full_f32_n1048576
+    - reduce_prod_full_f32_n1048576
+    - reduce_max_full_f32_n1048576
+    - reduce_min_full_f32_n1048576
+    - compare_eq_f32_n1048576
+    - compare_lt_f32_n1048576
+    - compare_le_f32_n1048576
+    - compare_ge_f32_n1048576
+    - reduce_sum_full_f64_n1048576
+    - reduce_prod_full_f64_n1048576
+    - reduce_max_full_f64_n1048576
+    - reduce_min_full_f64_n1048576
+    - compare_eq_f64_n1048576
+    - compare_lt_f64_n1048576
+    - compare_le_f64_n1048576
+    - compare_ge_f64_n1048576

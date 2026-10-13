@@ -18,11 +18,13 @@ families:
     routes: [TensorSessionOpsExt, EagerSession]
     dtype_scope: F32/F64; C32/C64 materialized conjugation; Bool comparison/selection masks.
     limitations: Small direct compare cases pass numerical verification but repeated batches drift; exclude from standard timing pending allocator/lifetime investigation. Eager and large compare cases remain selected.
+    selected_contracts:
+      full_reductions: Full sum/prod/max/min, F32/F64, n=1024 and 1048576; None axes in tenferro, omitted axis/dim in references.
+      comparison_directions: Eq/Lt/Le/Gt/Ge with true, false and equality-boundary values; CompareDir has no Ne variant.
+    pending_measurements: New full-reduction and direction cases require refreshed reports; selections alone are not measured coverage.
     deferred:
       scale_real_scale_complex: Public scalar setup must be separated before standard timing; ordinary tensor-tensor multiplication is a different case.
-      full_reductions: Axis-wise cases do not claim full-reduction route coverage; full real norm_squared_read has separate cases.
       noncontiguous_reads: Require separate strided TensorRead fixtures; no blanket aliases.
-      comparison_directions: Current numerical comparison cases use Gt; other directions are not separately measured.
   neural:
     cases: data/instances/gpu_nn.json
     suite: benchmarks/gpu/nn.yaml

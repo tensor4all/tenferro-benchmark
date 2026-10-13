@@ -97,6 +97,13 @@ missing rows, duplicates and invalid samples without replacing the latest report
   `32 * eps * ceil(log2(n)) * norm2(input) / normalization`, with a `1e-9`
   floor, to account for roundoff in cancellation-heavy frequency bins; the
   per-case manifest records the actual tolerances.
+  Full sum reductions use an absolute roundoff budget of
+  `max(base_atol, 32 * eps * ceil(log2(n)) * norm2(input))`; full products use
+  `max(base_rtol, 32 * eps * sqrt(n))` for relative error. These are explicitly
+  size-dependent verification policies, rather than elementwise error budgets
+  or formal worst-case IEEE error bounds. Both preserve the original fixture
+  values and double-precision reference. The initial failed verification run
+  `20261013_124057` remains available in raw verification data.
 
 ## Explicit limitations
 
