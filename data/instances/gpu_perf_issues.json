@@ -1825,7 +1825,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput."
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back."
  },
  {
   "id": "eager_op_f32_add_decode_eager-per-call",
@@ -1848,7 +1848,55 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput.",
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
+  "reference_for": "eager_op_f32_add_decode_eager-session"
+ },
+ {
+  "id": "eager_op_f32_add_decode_eager-session-streaming",
+  "issues": [
+   "#2079"
+  ],
+  "kind": "eager_op",
+  "arm": "eager-session-streaming",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "hidden": 1024,
+   "tokens": 8,
+   "op": "add",
+   "kind": "eager_op",
+   "arm": "eager-session-streaming",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
+  "reference_for": "eager_op_f32_add_decode_eager-session"
+ },
+ {
+  "id": "eager_op_f32_add_decode_launch-only-floor",
+  "issues": [
+   "#2079"
+  ],
+  "kind": "eager_op",
+  "arm": "launch-only-floor",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "hidden": 1024,
+   "tokens": 8,
+   "op": "add",
+   "kind": "eager_op",
+   "arm": "launch-only-floor",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
   "reference_for": "eager_op_f32_add_decode_eager-session"
  },
  {
@@ -1873,7 +1921,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput."
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back."
  },
  {
   "id": "eager_op_f32_dot_general_decode_eager-per-call",
@@ -1897,7 +1945,57 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput.",
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
+  "reference_for": "eager_op_f32_dot_general_decode_eager-session"
+ },
+ {
+  "id": "eager_op_f32_dot_general_decode_eager-session-streaming",
+  "issues": [
+   "#2079"
+  ],
+  "kind": "eager_op",
+  "arm": "eager-session-streaming",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "op": "dot_general",
+   "kind": "eager_op",
+   "arm": "eager-session-streaming",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
+  "reference_for": "eager_op_f32_dot_general_decode_eager-session"
+ },
+ {
+  "id": "eager_op_f32_dot_general_decode_launch-only-floor",
+  "issues": [
+   "#2079"
+  ],
+  "kind": "eager_op",
+  "arm": "launch-only-floor",
+  "backend": "tenferro-cuda",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "op": "dot_general",
+   "kind": "eager_op",
+   "arm": "launch-only-floor",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2079 (1024x8 f32, decode-sized): the host-side cost of one eager op on CUDA. `eager-session` times the op in one reused with_eager_session with a single device synchronize at the batch edge, so the per-op nanoseconds are the host dispatch the issue measured (11.5 us per add, 41.3 us per GEMM) plus the amortized wait; `eager-per-call` enters a session per operation, the diagnostic that separates session entry from dispatch. The GPU work of one decode-shaped op is a small fraction of the host cost, so these are latency rows, not throughput. `launch-only-floor` runs the same elementwise kernel through `add_read_into` on a reused output, i.e. with the per-op output allocation removed: the floor the eager per-op cost is compared against. `eager-session-streaming` drops each result before the next op, the way a decode loop consumes intermediates, so the output pool can hand the buffer back.",
   "reference_for": "eager_op_f32_dot_general_decode_eager-session"
  },
  {
@@ -2215,7 +2313,30 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output."
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the merged slice 1 (#2113): the blocks whose owners are gone must come back without recreating the runtime."
+ },
+ {
+  "id": "pool_retention_f64_trim-after-drop",
+  "issues": [
+   "#2081"
+  ],
+  "kind": "pool_retention",
+  "arm": "trim-after-drop",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "arm": "trim-after-drop",
+   "gib": 1,
+   "count": 8,
+   "probe_gib": 6,
+   "kind": "pool_retention",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the merged slice 1 (#2113): the blocks whose owners are gone must come back without recreating the runtime."
  },
  {
   "id": "pool_retention_f64_runtime-recreate",
@@ -2238,7 +2359,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output."
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the merged slice 1 (#2113): the blocks whose owners are gone must come back without recreating the runtime."
  },
  {
   "id": "pool_retention_f64_driver-alloc-after-free",
@@ -2261,7 +2382,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output."
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the merged slice 1 (#2113): the blocks whose owners are gone must come back without recreating the runtime."
  },
  {
   "id": "svd_driver_c64_n64_auto",
@@ -3076,7 +3197,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` fills the cache with 72 distinct small shapes and then re-runs the first (more than the backend's 64-plan capacity, so the churn really evicts); `repeated-plan` runs the same number of contractions of one shape. The timed operation is the re-run alone, with the churn as its untimed precondition. A re-run after churn must not cost more than the repeated shape. A cache miss reconstructs the contraction plan and its workspace inside the call, and the precondition cannot be batched, so this is one isolated call per sample: a cache-miss diagnostic, not a steady-state operation row."
+  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` fills the cache with 72 distinct small shapes and then re-runs the first (more than the backend's 64-plan capacity, so the churn really evicts); `repeated-plan` runs the same number of contractions of one shape. The timed operation is the re-run alone, with the churn as its untimed precondition. A re-run after churn must not cost more than the repeated shape. A cache miss reconstructs the contraction plan and its workspace inside the call, and the precondition cannot be batched, so this is one isolated call per sample: a cache-miss diagnostic, not a steady-state operation row. `below-capacity-varying-workspace` is the detector for the fix: 48 distinct shapes (below the 64-plan capacity) with varying workspace sizes must not evict a plan, so its re-run must not cost more than the repeated shape."
  },
  {
   "id": "contraction_plan_churn_f64_repeated-plan",
@@ -3099,8 +3220,32 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` fills the cache with 72 distinct small shapes and then re-runs the first (more than the backend's 64-plan capacity, so the churn really evicts); `repeated-plan` runs the same number of contractions of one shape. The timed operation is the re-run alone, with the churn as its untimed precondition. A re-run after churn must not cost more than the repeated shape. A cache miss reconstructs the contraction plan and its workspace inside the call, and the precondition cannot be batched, so this is one isolated call per sample: a cache-miss diagnostic, not a steady-state operation row.",
+  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` fills the cache with 72 distinct small shapes and then re-runs the first (more than the backend's 64-plan capacity, so the churn really evicts); `repeated-plan` runs the same number of contractions of one shape. The timed operation is the re-run alone, with the churn as its untimed precondition. A re-run after churn must not cost more than the repeated shape. A cache miss reconstructs the contraction plan and its workspace inside the call, and the precondition cannot be batched, so this is one isolated call per sample: a cache-miss diagnostic, not a steady-state operation row. `below-capacity-varying-workspace` is the detector for the fix: 48 distinct shapes (below the 64-plan capacity) with varying workspace sizes must not evict a plan, so its re-run must not cost more than the repeated shape.",
   "reference_for": "contraction_plan_churn_f64_distinct-plans"
+ },
+ {
+  "id": "contraction_plan_churn_f64_below-capacity-varying-workspace",
+  "issues": [
+   "#1873",
+   "#1805"
+  ],
+  "kind": "contraction_plan_churn",
+  "arm": "below-capacity-varying-workspace",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "distinct": 48,
+   "n": 64,
+   "kind": "contraction_plan_churn",
+   "arm": "below-capacity-varying-workspace",
+   "dtype": "f64"
+  },
+  "measurement_scope": "issue_workflow_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the contraction-plan cache, and raw-session resources are dropped when a plan is evicted. `distinct-plans` fills the cache with 72 distinct small shapes and then re-runs the first (more than the backend's 64-plan capacity, so the churn really evicts); `repeated-plan` runs the same number of contractions of one shape. The timed operation is the re-run alone, with the churn as its untimed precondition. A re-run after churn must not cost more than the repeated shape. A cache miss reconstructs the contraction plan and its workspace inside the call, and the precondition cannot be batched, so this is one isolated call per sample: a cache-miss diagnostic, not a steady-state operation row. `below-capacity-varying-workspace` is the detector for the fix: 48 distinct shapes (below the 64-plan capacity) with varying workspace sizes must not evict a plan, so its re-run must not cost more than the repeated shape.",
+  "reference_for": "contraction_plan_churn_f64_repeated-plan"
  },
  {
   "id": "dot_general_destination_f64_owned-dst",
