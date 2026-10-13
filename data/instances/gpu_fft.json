@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/fft",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda",
+    "jax-cuda-jit"
+  ],
+  "cases": [
+    {
+      "id": "fft_c32_n1024",
+      "op": "fft",
+      "dtype": "c32",
+      "n": 1024,
+      "issue": 155
+    },
+    {
+      "id": "fft_c64_n1024",
+      "op": "fft",
+      "dtype": "c64",
+      "n": 1024,
+      "issue": 155
+    },
+    {
+      "id": "ifft_c32_n1024",
+      "op": "ifft",
+      "dtype": "c32",
+      "n": 1024,
+      "issue": 155
+    },
+    {
+      "id": "ifft_c64_n1024",
+      "op": "ifft",
+      "dtype": "c64",
+      "n": 1024,
+      "issue": 155
+    },
+    {
+      "id": "rfft_f32_n1024",
+      "op": "rfft",
+      "dtype": "f32",
+      "n": 1024,
+      "issue": 155
+    },
+    {
+      "id": "rfft_f64_n1024",
+      "op": "rfft",
+      "dtype": "f64",
+      "n": 1024,
+      "issue": 155
+    },
+    {
+      "id": "irfft_c32_n1024",
+      "op": "irfft",
+      "dtype": "c32",
+      "n": 1024,
+      "issue": 155
+    },
+    {
+      "id": "irfft_c64_n1024",
+      "op": "irfft",
+      "dtype": "c64",
+      "n": 1024,
+      "issue": 155
+    },
+    {
+      "id": "fft_c32_n1048576",
+      "op": "fft",
+      "dtype": "c32",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "fft_c64_n1048576",
+      "op": "fft",
+      "dtype": "c64",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "ifft_c32_n1048576",
+      "op": "ifft",
+      "dtype": "c32",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "ifft_c64_n1048576",
+      "op": "ifft",
+      "dtype": "c64",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "rfft_f32_n1048576",
+      "op": "rfft",
+      "dtype": "f32",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "rfft_f64_n1048576",
+      "op": "rfft",
+      "dtype": "f64",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "irfft_c32_n1048576",
+      "op": "irfft",
+      "dtype": "c32",
+      "n": 1048576,
+      "issue": 155
+    },
+    {
+      "id": "irfft_c64_n1048576",
+      "op": "irfft",
+      "dtype": "c64",
+      "n": 1048576,
+      "issue": 155
+    }
+  ]
+}

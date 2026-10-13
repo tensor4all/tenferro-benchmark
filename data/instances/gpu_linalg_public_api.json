@@ -1,0 +1,469 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/linalg_public_api",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda",
+    "jax-cuda-jit"
+  ],
+  "cases": [
+    {
+      "id": "cholesky_f32_32x32",
+      "op": "cholesky",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "cholesky_f64_32x32",
+      "op": "cholesky",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "svdvals_f32_32x32",
+      "op": "svdvals",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+      }
+    },
+    {
+      "id": "svdvals_f64_32x32",
+      "op": "svdvals",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+      }
+    },
+    {
+      "id": "eigvalsh_f32_32x32",
+      "op": "eigvalsh",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "eigvalsh_f64_32x32",
+      "op": "eigvalsh",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "pinv_f32_32x32",
+      "op": "pinv",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "pinv_f64_32x32",
+      "op": "pinv",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "inv_f32_32x32",
+      "op": "inv",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "inv_f64_32x32",
+      "op": "inv",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "det_f32_32x32",
+      "op": "det",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "det_f64_32x32",
+      "op": "det",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "norm_f32_32x32",
+      "op": "norm",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "norm_f64_32x32",
+      "op": "norm",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "triangular_solve_f32_32x32",
+      "op": "triangular_solve",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "triangular_solve_f64_32x32",
+      "op": "triangular_solve",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "cholesky_f32_512x512",
+      "op": "cholesky",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "cholesky_f64_512x512",
+      "op": "cholesky",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "svdvals_f32_512x512",
+      "op": "svdvals",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+      }
+    },
+    {
+      "id": "svdvals_f64_512x512",
+      "op": "svdvals",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent."
+      }
+    },
+    {
+      "id": "eigvalsh_f32_512x512",
+      "op": "eigvalsh",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "eigvalsh_f64_512x512",
+      "op": "eigvalsh",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "pinv_f32_512x512",
+      "op": "pinv",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "pinv_f64_512x512",
+      "op": "pinv",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "inv_f32_512x512",
+      "op": "inv",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "inv_f64_512x512",
+      "op": "inv",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer."
+      },
+      "unavailable": {
+        "tenferro-cuda-direct": "CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906."
+      }
+    },
+    {
+      "id": "det_f32_512x512",
+      "op": "det",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "det_f64_512x512",
+      "op": "det",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "norm_f32_512x512",
+      "op": "norm",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "norm_f64_512x512",
+      "op": "norm",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "triangular_solve_f32_512x512",
+      "op": "triangular_solve",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "triangular_solve_f64_512x512",
+      "op": "triangular_solve",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    }
+  ]
+}

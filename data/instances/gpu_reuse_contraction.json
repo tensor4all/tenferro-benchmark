@@ -1,0 +1,985 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/reuse_contraction",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda",
+    "jax-cuda-jit"
+  ],
+  "cases": [
+    {
+      "id": "add_into_f32_n1024",
+      "op": "add_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "add_into_f64_n1024",
+      "op": "add_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "add_read_into_f32_n1024",
+      "op": "add_read_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "add_read_into_f64_n1024",
+      "op": "add_read_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_into_f32_n1024",
+      "op": "sub_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_into_f64_n1024",
+      "op": "sub_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_read_into_f32_n1024",
+      "op": "sub_read_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_read_into_f64_n1024",
+      "op": "sub_read_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_into_f32_n1024",
+      "op": "mul_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_into_f64_n1024",
+      "op": "mul_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_read_into_f32_n1024",
+      "op": "mul_read_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_read_into_f64_n1024",
+      "op": "mul_read_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_into_f32_n1024",
+      "op": "div_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_into_f64_n1024",
+      "op": "div_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_read_into_f32_n1024",
+      "op": "div_read_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_read_into_f64_n1024",
+      "op": "div_read_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_into_f32_n1024",
+      "op": "neg_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_into_f64_n1024",
+      "op": "neg_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_read_into_f32_n1024",
+      "op": "neg_read_into",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_read_into_f64_n1024",
+      "op": "neg_read_into",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_into_c32_n1024",
+      "op": "conj_into",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_into_c64_n1024",
+      "op": "conj_into",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_read_into_c32_n1024",
+      "op": "conj_read_into",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_read_into_c64_n1024",
+      "op": "conj_read_into",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "add_into_f32_n1048576",
+      "op": "add_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "add_into_f64_n1048576",
+      "op": "add_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "add_read_into_f32_n1048576",
+      "op": "add_read_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "add_read_into_f64_n1048576",
+      "op": "add_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_into_f32_n1048576",
+      "op": "sub_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_into_f64_n1048576",
+      "op": "sub_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_read_into_f32_n1048576",
+      "op": "sub_read_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "sub_read_into_f64_n1048576",
+      "op": "sub_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_into_f32_n1048576",
+      "op": "mul_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_into_f64_n1048576",
+      "op": "mul_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_read_into_f32_n1048576",
+      "op": "mul_read_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "mul_read_into_f64_n1048576",
+      "op": "mul_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_into_f32_n1048576",
+      "op": "div_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_into_f64_n1048576",
+      "op": "div_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_read_into_f32_n1048576",
+      "op": "div_read_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "div_read_into_f64_n1048576",
+      "op": "div_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_into_f32_n1048576",
+      "op": "neg_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_into_f64_n1048576",
+      "op": "neg_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_read_into_f32_n1048576",
+      "op": "neg_read_into",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "neg_read_into_f64_n1048576",
+      "op": "neg_read_into",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_into_c32_n1048576",
+      "op": "conj_into",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_into_c64_n1048576",
+      "op": "conj_into",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_read_into_c32_n1048576",
+      "op": "conj_read_into",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "conj_read_into_c64_n1048576",
+      "op": "conj_read_into",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes.",
+        "jax-cuda-jit": "No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes."
+      }
+    },
+    {
+      "id": "tensordot_f32_n1024",
+      "op": "tensordot",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {}
+    },
+    {
+      "id": "tensordot_f64_n1024",
+      "op": "tensordot",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {}
+    },
+    {
+      "id": "tensordot_c32_n1024",
+      "op": "tensordot",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {}
+    },
+    {
+      "id": "tensordot_c64_n1024",
+      "op": "tensordot",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "unavailable": {}
+    },
+    {
+      "id": "vdot_read_f32_n1024",
+      "op": "vdot_read",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "vdot_read_f64_n1024",
+      "op": "vdot_read",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "vdot_read_c32_n1024",
+      "op": "vdot_read",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "vdot_read_c64_n1024",
+      "op": "vdot_read",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "norm_squared_read_f32_n1024",
+      "op": "norm_squared_read",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "norm_squared_read_f64_n1024",
+      "op": "norm_squared_read",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "tensordot_f32_n262144",
+      "op": "tensordot",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "unavailable": {}
+    },
+    {
+      "id": "tensordot_f64_n262144",
+      "op": "tensordot",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "unavailable": {}
+    },
+    {
+      "id": "tensordot_c32_n262144",
+      "op": "tensordot",
+      "dtype": "c32",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "unavailable": {}
+    },
+    {
+      "id": "tensordot_c64_n262144",
+      "op": "tensordot",
+      "dtype": "c64",
+      "n": 262144,
+      "shape": [
+        512,
+        512
+      ],
+      "issue": 155,
+      "unavailable": {}
+    },
+    {
+      "id": "vdot_read_f32_n262144",
+      "op": "vdot_read",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "vdot_read_f64_n262144",
+      "op": "vdot_read",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "vdot_read_c32_n262144",
+      "op": "vdot_read",
+      "dtype": "c32",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "vdot_read_c64_n262144",
+      "op": "vdot_read",
+      "dtype": "c64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "norm_squared_read_f32_n262144",
+      "op": "norm_squared_read",
+      "dtype": "f32",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    },
+    {
+      "id": "norm_squared_read_f64_n262144",
+      "op": "norm_squared_read",
+      "dtype": "f64",
+      "n": 262144,
+      "shape": [
+        262144
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
+      }
+    }
+  ]
+}

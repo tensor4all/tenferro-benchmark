@@ -1,0 +1,653 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/structural",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda",
+    "jax-cuda-jit"
+  ],
+  "cases": [
+    {
+      "id": "pad_default_f32_n1024",
+      "op": "pad",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "pad_default_f64_n1024",
+      "op": "pad",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "slice_default_f32_n1024",
+      "op": "slice",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer."
+      }
+    },
+    {
+      "id": "slice_default_f64_n1024",
+      "op": "slice",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer."
+      }
+    },
+    {
+      "id": "reverse_default_f32_n1024",
+      "op": "reverse",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reverse_default_f64_n1024",
+      "op": "reverse",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "concatenate_default_f32_n1024",
+      "op": "concatenate",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "concatenate_default_f64_n1024",
+      "op": "concatenate",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "extract_diag_default_f32_n1024",
+      "op": "extract_diag",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "extract_diag_default_f64_n1024",
+      "op": "extract_diag",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "embed_diag_default_f32_n32",
+      "op": "embed_diag",
+      "dtype": "f32",
+      "n": 32,
+      "shape": [
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "embed_diag_default_f64_n32",
+      "op": "embed_diag",
+      "dtype": "f64",
+      "n": 32,
+      "shape": [
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tril_default_f32_n1024",
+      "op": "tril",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tril_default_f64_n1024",
+      "op": "tril",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "triu_default_f32_n1024",
+      "op": "triu",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "triu_default_f64_n1024",
+      "op": "triu",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "take_along_axis_broadcast_indices_f32_n1024",
+      "op": "take_along_axis",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "broadcast_indices",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "take_along_axis_batched_indices_f32_n1024",
+      "op": "take_along_axis",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "batched_indices",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy."
+      }
+    },
+    {
+      "id": "take_along_axis_broadcast_indices_f64_n1024",
+      "op": "take_along_axis",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "broadcast_indices",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "take_along_axis_batched_indices_f64_n1024",
+      "op": "take_along_axis",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "variant": "batched_indices",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy."
+      }
+    },
+    {
+      "id": "scatter_default_f32_n1024",
+      "op": "scatter",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "notes": "Additive scatter into a copy of the operand, matching torch.scatter_add and jax.lax.scatter_add; unique in-bounds indices."
+    },
+    {
+      "id": "scatter_default_f64_n1024",
+      "op": "scatter",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "notes": "Additive scatter into a copy of the operand, matching torch.scatter_add and jax.lax.scatter_add; unique in-bounds indices."
+    },
+    {
+      "id": "cast_default_f32_n1024",
+      "op": "cast",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "cast_default_f64_n1024",
+      "op": "cast",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "pad_default_f32_n1048576",
+      "op": "pad",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "pad_default_f64_n1048576",
+      "op": "pad",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "slice_default_f32_n1048576",
+      "op": "slice",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer."
+      }
+    },
+    {
+      "id": "slice_default_f64_n1048576",
+      "op": "slice",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "tenferro-cuda-eager": "EagerSession::slice returns a lazy metadata view; it is not equivalent to the materializing direct slice / torch.slice_copy / JAX slice contract. No copy is added inside its timer."
+      }
+    },
+    {
+      "id": "reverse_default_f32_n1048576",
+      "op": "reverse",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reverse_default_f64_n1048576",
+      "op": "reverse",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "concatenate_default_f32_n1048576",
+      "op": "concatenate",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "concatenate_default_f64_n1048576",
+      "op": "concatenate",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "extract_diag_default_f32_n1048576",
+      "op": "extract_diag",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "extract_diag_default_f64_n1048576",
+      "op": "extract_diag",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "embed_diag_default_f32_n1024",
+      "op": "embed_diag",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "embed_diag_default_f64_n1024",
+      "op": "embed_diag",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tril_default_f32_n1048576",
+      "op": "tril",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tril_default_f64_n1048576",
+      "op": "tril",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "triu_default_f32_n1048576",
+      "op": "triu",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "triu_default_f64_n1048576",
+      "op": "triu",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "take_along_axis_broadcast_indices_f32_n1048576",
+      "op": "take_along_axis",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "broadcast_indices",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "take_along_axis_batched_indices_f32_n1048576",
+      "op": "take_along_axis",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "batched_indices",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy."
+      }
+    },
+    {
+      "id": "take_along_axis_broadcast_indices_f64_n1048576",
+      "op": "take_along_axis",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "broadcast_indices",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "take_along_axis_batched_indices_f64_n1048576",
+      "op": "take_along_axis",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "variant": "batched_indices",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: batch-coordinate construction uploads scalar constants inside take_along_axis; unavailable under setup-free timing policy."
+      }
+    },
+    {
+      "id": "scatter_default_f32_n1048576",
+      "op": "scatter",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "notes": "Additive scatter into a copy of the operand, matching torch.scatter_add and jax.lax.scatter_add; unique in-bounds indices."
+    },
+    {
+      "id": "scatter_default_f64_n1048576",
+      "op": "scatter",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {},
+      "notes": "Additive scatter into a copy of the operand, matching torch.scatter_add and jax.lax.scatter_add; unique in-bounds indices."
+    },
+    {
+      "id": "cast_default_f32_n1048576",
+      "op": "cast",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "cast_default_f64_n1048576",
+      "op": "cast",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {}
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+schema_version: 1
+suite_id: gpu/nn
+title: CUDA public nn APIs
+description: Isolated public APIs and explicit unsupported timing contracts. Issue 155.
+defaults:
+  device: {kind: cuda, ordinal: 0}
+  run: {warmups: 3, runs: 15, min_runtime_ms: 2, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: numpy/scipy double precision, rtol: 0.0005, atol: 0.0005}
+backends: [tenferro-cuda-direct, tenferro-cuda-eager, pytorch-cuda, jax-cuda, jax-cuda-jit]
+problems:
+  source: data/instances/gpu_nn.json
+  include:
+    - sigmoid_f32_n1024
+    - sigmoid_f64_n1024
+    - silu_f32_n1024
+    - silu_f64_n1024
+    - softplus_f32_n1024
+    - softplus_f64_n1024
+    - gelu_f32_n1024
+    - gelu_f64_n1024
+    - gelu_tanh_f32_n1024
+    - gelu_tanh_f64_n1024
+    - softmax_f32_n1024
+    - softmax_f64_n1024
+    - log_softmax_f32_n1024
+    - log_softmax_f64_n1024
+    - masked_softmax_f32_n1024
+    - masked_softmax_f64_n1024
+    - masked_log_softmax_f32_n1024
+    - masked_log_softmax_f64_n1024
+    - layer_norm_f32_n1024
+    - layer_norm_f64_n1024
+    - rms_norm_f32_n1024
+    - rms_norm_f64_n1024
+    - sigmoid_f32_n1048576
+    - sigmoid_f64_n1048576
+    - silu_f32_n1048576
+    - silu_f64_n1048576
+    - softplus_f32_n1048576
+    - softplus_f64_n1048576
+    - gelu_f32_n1048576
+    - gelu_f64_n1048576
+    - gelu_tanh_f32_n1048576
+    - gelu_tanh_f64_n1048576
+    - softmax_f32_n1048576
+    - softmax_f64_n1048576
+    - log_softmax_f32_n1048576
+    - log_softmax_f64_n1048576
+    - masked_softmax_f32_n1048576
+    - masked_softmax_f64_n1048576
+    - masked_log_softmax_f32_n1048576
+    - masked_log_softmax_f64_n1048576
+    - layer_norm_f32_n1048576
+    - layer_norm_f64_n1048576
+    - rms_norm_f32_n1048576
+    - rms_norm_f64_n1048576

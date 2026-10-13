@@ -1,0 +1,92 @@
+# Operation/route inventory for issue #155. Selections are not measured coverage.
+schema_version: 1
+issue: https://github.com/tensor4all/tenferro-benchmark/issues/155
+audited_tenferro_commit: 8b13220c1e0397a29a27be65557c24105352a35b
+measured_coverage_rule: Only validated status=ok rows in the linked latest reports count.
+families:
+  fft:
+    cases: data/instances/gpu_fft.json
+    suite: benchmarks/gpu/fft.yaml
+    routes: [FftExecutor, EagerSessionFftExt]
+    unsupported:
+      TensorFftExt: One-shot plan construction cannot be hoisted outside standard timing.
+      TensorReadFftExt: One-shot planning; noncontiguous read route is not an alias of FftExecutor.
+      EagerTensorFftExt_in_place: CPU only at the audited revision.
+  elementwise_reduction:
+    cases: data/instances/gpu_isolated_ops.json
+    suite: benchmarks/gpu/isolated_ops.yaml
+    routes: [TensorSessionOpsExt, EagerSession]
+    dtype_scope: F32/F64; C32/C64 materialized conjugation; Bool comparison/selection masks.
+    deferred:
+      scale_real_scale_complex: Public scalar setup must be separated before standard timing; ordinary tensor-tensor multiplication is a different case.
+      full_reductions: Axis-wise cases do not claim full-reduction route coverage; full real norm_squared_read has separate cases.
+      noncontiguous_reads: Require separate strided TensorRead fixtures; no blanket aliases.
+      comparison_directions: Current numerical comparison cases use Gt; other directions are not separately measured.
+  neural:
+    cases: data/instances/gpu_nn.json
+    suite: benchmarks/gpu/nn.yaml
+    routes: [TensorSessionOpsExt, EagerSession]
+    dtype_scope: F32/F64; finite inputs, axis=1, eps=1e-5, non-affine normalization.
+    limitations: Per-arm internal scalar transfers and missing framework counterparts are recorded on every selected case.
+    deferred:
+      affine_normalization: General weight/bias output contracts require separate matching references.
+      exceptional_mask_policy: All-masked/NaN/infinity semantics require separate correctness cases, not identical-input performance assumptions.
+  structural:
+    cases: data/instances/gpu_structural.json
+    suite: benchmarks/gpu/structural.yaml
+    routes: [TensorSessionOpsExt, EagerSession]
+    contracts:
+      scatter: Additive, unique in-bounds I64 indices; torch.scatter_add and lax.scatter_add.
+      slice: Materialized direct slice; eager lazy view explicitly excluded from this comparison.
+      take_along_axis: Shared-index and batch-varying-index routes are separate cases.
+      cast: Explicit F32-to-F64 and F64-to-F32 materialization.
+    existing_partial: [gpu/permutation, gpu/perf_issues]
+    deferred:
+      convert: Checked promotion differs from cast; requires a separate input/dtype contract.
+      broadcast_in_dim: Requires verified materializing counterpart and separate metadata-view classification.
+      dynamic_slice: Device-resident start indices and matching clamping rules need dedicated fixtures.
+      gather_reshape: Existing perf_issues cases are partial coverage; ordinary framework-comparison cases remain to be added.
+      stack_index_select_slice_axis_take_axis: Map each public lowering before assigning operation aliases; wrapper latency is separate.
+      pad_interior_crop: Current constant edge-padding cases do not cover interior padding or negative padding.
+  linalg:
+    cases: data/instances/gpu_linalg_public_api.json
+    suite: benchmarks/gpu/linalg_public_api.yaml
+    routes: [TensorLinalgExt, EagerSessionLinalgExt]
+    existing_partial: [gpu/dense, gpu/linalg_jvp_vjp, gpu/linalg_ad_latency, gpu/perf_issues]
+    contracts: F32/F64; owned compact inputs; values-only svdvals/eigvalsh; pinv rtol=1e-5; Frobenius norm; left/lower/non-unit triangular solve.
+    deferred:
+      svd_full: Full U/V outputs require gauge-invariant reconstruction/orthogonality verification; reduced SVD is not an alias.
+      slogdet: Two-output sign/log contract requires tuple-output fixture validation; det is not an alias.
+      householder_qr: Raw reflector/tau layouts and gauge need dedicated verification.
+      lu: Tenferro returns P/L/U/parity; current framework candidates return P/L/U.
+      lstsq: Solution-only versus residual/rank/singular-value output contracts are unresolved.
+      rank_revealing_qr: No verified GPU-resident Q/R/P/rank reference; JAX pivoting can fall back to host LAPACK.
+      HouseholderQr_state: from_factors/append_columns/r/q_columns are stateful contracts; follow issue 94, not full refactorization substitutes.
+      driver_gauge_variants: Existing perf_issues driver cases are partial coverage; nondefault options are not default-operation aliases.
+      TensorReadLinalgExt: Requires separately verified strided routes; known unsupported read hooks stay excluded.
+  output_reuse_contraction:
+    cases: data/instances/gpu_reuse_contraction.json
+    suite: benchmarks/gpu/reuse_contraction.yaml
+    routes: [TensorElementwise, TensorTensordotExt, EagerSessionEinsumExt, BackendSession]
+    contracts: Preallocated output reuse is distinct from allocation-returning operations; JAX donation is not an equivalent arm.
+    deferred:
+      generalized_conjugating_dot: General batch/contract axes and conjugation placement need separate fixtures.
+      dot_general_into_accum_cached: Alpha/beta, cache state, destination restoration and matched addmm output reuse need dedicated cases.
+      axpby_read_into_accum: Only beta=1 has an established single-call PyTorch counterpart; arbitrary beta remains unmatched.
+      ConcreteEinsumPlan: Plan creation must be untimed; noncontiguous and into/accum variants need their own cases.
+      TensorEinsumIntoExt: No general PyTorch/JAX einsum caller-owned-output counterpart.
+      complex_norm_squared: Real result dtype differs from complex vdot; do not equate contracts.
+cross_cutting:
+  trace: Runtime::run_prepared cannot borrow the entered session; per-call session setup is excluded from standard rows.
+  metadata_views: transpose_view/reshape_view/slice_view/slice_axis_view/broadcast_in_dim_view do no GPU numerical work; classify separately.
+  autodiff: Existing scalar-loss JVP/VJP is partial coverage; each new differentiated operation needs matching arguments and forward/backward scope.
+  runtime_transfer_lifecycle: Separate workflow/initialization diagnostics, tracked by issue 107 and perf_issues.
+  legacy_jax_reports: New suites select and measure JAX. Legacy dense/einsum/chain/TN runner refreshes still require their own timing audit and JAX selection update.
+cuda_unavailable_at_audit:
+  - TensorLinalgExt inv/pinv_with_rtol (CUDA execution probe found internal host-scalar operands; eager routes differ)
+  - eig/eigvals/full_piv_lu/full_piv_lu_solve
+  - dynamic_update_slice
+  - TensorReadLinalgExt solve_read/solve_read_into/triangular_solve_read/inv_read
+  - SessionCachedDot grouped_gemm_cached (default requires host storage)
+  - fused_activation_read (CUDA declines the optional hook; do not time Ok(None))
+  - ext/sparse (host example, not a tenferro CUDA sparse implementation)
