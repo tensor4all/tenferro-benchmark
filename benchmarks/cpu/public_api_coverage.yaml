@@ -62,12 +62,43 @@ coverage:
       - TypedTensorSessionOpsExt::masked_log_softmax
       - TensorSessionOpsExt::where_select
       - TypedTensorMaskSessionOpsExt::where_select
-    pytorch: torch.sum(x.square(), dim=...); torch.log_softmax(x.masked_fill(~mask, -inf), dim=...)
-    jax: jax.numpy.sum(jax.numpy.square(x), axis=...); jax.nn.log_softmax(x, where=mask, axis=...)
-    julia: sum(x .^ 2; dims=...); masked log-softmax composition
-    disposition: implemented_not_collected
+    pytorch: torch.where (sum-of-squares and masked log-softmax unsupported; compositions excluded)
+    jax: jax.numpy.where; jax.nn.log_softmax(x, where=mask, axis=...) (axis sum-of-squares unsupported)
+    julia: ifelse broadcast (sum-of-squares and masked log-softmax unsupported)
+    disposition: measured
     benchmarks: cpu/elementwise_reduction::{reduce_sum_squares_axis0,masked_log_softmax_axis1,where_select}
-    reason: Added through the uncovered-public-API path; the audit script fails when a public session method has no benchmark-source evidence.
+    issues: ["tenferro-benchmark#136", "tenferro-benchmark#137", "tenferro-benchmark#138"]
+    reason: Explicit fixture/session setup and numerical validation are outside sampling. where_select shares the select kernel but has a dedicated public session row. Unsupported direct equivalents are retained as status rows.
+
+  - family: compact_householder_qr
+    tenferro_apis:
+      - TensorLinalgExt::householder_qr
+      - EagerSessionLinalgExt::householder_qr
+    pytorch: torch.geqrf
+    jax: jax.numpy.linalg.qr(mode=raw)
+    disposition: measured
+    benchmarks: cpu/linalg_uncovered/householder_qr
+    issues: ["tenferro-benchmark#133"]
+    reason: Compact state initialization only; Q/R extraction is untimed validation. Compiled trace cannot return the opaque state without additional extraction operations.
+  - family: rank_revealing_qr
+    tenferro_apis:
+      - TensorLinalgExt::rank_revealing_qr
+      - EagerSessionLinalgExt::rank_revealing_qr
+    pytorch: null
+    jax: null
+    disposition: measured
+    benchmarks: cpu/linalg_uncovered::{rank_revealing_qr,rank_revealing_qr_deficient}
+    issues: ["tenferro-benchmark#134"]
+    reason: Full and deficient rank; Q/R/permutation/numerical-rank outputs, Raw gauge, rtol=1e-12. JAX pivoted QR has only three outputs, so the four-output contract has no direct equivalent. Compiled trace cannot borrow the entered session and remains unsupported in standard operation timings.
+  - family: solve_output_reuse
+    tenferro_apis:
+      - TensorReadLinalgExt::solve_read_into
+    pytorch: torch.linalg.solve(out=...)
+    jax: null
+    disposition: measured
+    benchmarks: cpu/output_reuse/solve_read_into
+    issues: ["tenferro-benchmark#135"]
+    reason: Destination preallocated before sampling; factorization plus solve is timed. JAX and trace do not expose the equivalent caller-output API.
 
   - family: structural
     tenferro_apis:

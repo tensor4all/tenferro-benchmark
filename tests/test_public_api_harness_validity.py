@@ -5,12 +5,14 @@ from __future__ import annotations
 
 import csv
 import importlib.util
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 SPD_3_SEED_7 = [
     [1.9408365885416667, -0.010172526041666666, 0.038818359375],
     [-0.010172526041666666, 2.3721516927083335, 0.004475911458333333],

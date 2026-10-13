@@ -20,10 +20,10 @@ jobs:
     env:
       OPENBLAS_ROOT: /usr
       # Validate the recorded compatible revision: the tenferro-rs commit this
-      # harness now builds against (#2004 CPU boundary integration, PR #2026).
+      # harness now builds against (CPU public API gap cases #133–#138).
       # Latest upstream main is exercised separately by
       # benchmark-smoke-tenferro-main / nightly jobs.
-      TENFERRO_REF: b3f47296244ff7b7c55ac0a75f782cb0835418c1
+      TENFERRO_REF: 8b13220c1e0397a29a27be65557c24105352a35b
       TENFERRO_UPDATE: "1"
     steps:
       - name: Checkout
@@ -66,6 +66,7 @@ jobs:
           uv run python scripts/validate_benchmark_suite.py \
             benchmarks/cpu/einsum.yaml \
             benchmarks/cpu/public_api.yaml \
+            benchmarks/cpu/public_api_candidates.yaml \
             benchmarks/cpu/fft.yaml \
             benchmarks/cpu/permutation.yaml \
             benchmarks/cpu/cpu_ops.yaml \
@@ -86,6 +87,7 @@ jobs:
             scripts/generate_results_index.py \
             scripts/validate_benchmark_suite.py \
             scripts/collect_run_metadata.py \
+            scripts/public_api_candidates.py \
             scripts/format_results.py
 
       - name: Run layout validation test
@@ -93,6 +95,11 @@ jobs:
 
       - name: Check public API report output without runner stdout
         run: bash tests/test_public_api_table_output.sh
+
+      - name: Validate public API candidate contracts
+        run: |
+          bash tests/test_public_api_selection.sh
+          uv run python -m unittest tests.test_public_api_candidates
 
       - name: Cargo check
         run: cargo check --all-targets

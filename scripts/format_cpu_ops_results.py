@@ -400,10 +400,10 @@ def format_table(paths: list[Path]) -> str:
     if batch_timings:
         lines.extend(["", "## Short-operation batches", "",
                       "Total batch duration and normalized ns/op are shown without rounding sub-microsecond calls to zero. Metadata views require no execution session.", "",
-                      "| Operation | Threads | Backend | Operations/batch | Median batch ms | Median ns/op |",
-                      "|---|---:|---|---:|---:|---:|"])
+                      "| Operation | Dtype | Shape | Threads | Backend | Operations/batch | Median batch ms | Median ns/op |",
+                      "|---|---|---|---:|---|---:|---:|---:|"])
         for (key, backend), (count, total) in sorted(batch_timings.items()):
-            lines.append(f"| {key[1]} | {key[3]} | {BACKEND_LABELS.get(backend, backend)} | {count} | {total:.6f} | {total * 1e6 / count:.2f} |")
+            lines.append(f"| {key[1]} | {key[2]} | `{key[4]}` | {key[3]} | {BACKEND_LABELS.get(backend, backend)} | {count} | {total:.6f} | {total * 1e6 / count:.2f} |")
 
     spread_findings = plausibility_findings(timings)
     lines.extend(

@@ -227,7 +227,12 @@ variables, as required by the benchmark-result policy.
 ## Linux CPU Devcontainer Workflow
 
 Use the devcontainer/Docker path for Linux CPU measurements. **Always run Linux
-CPU benchmark collection inside the devcontainer.** The default image uses
+CPU benchmark collection inside the devcontainer.** Use the image provided by
+this repository's `.devcontainer/devcontainer.json` and its referenced
+Dockerfile for builds, validation, and measurement. Create or recreate it with
+the devcontainer CLI; do not substitute an ad hoc Docker image. If `devcontainer`
+is not installed on PATH, use `npx --yes @devcontainers/cli` for the same commands.
+The default image uses
 `blas-mkl` to match the PyTorch wheel. For provider-matched OpenBLAS comparisons,
 use `.devcontainer/openblas/devcontainer.json` and `blas-openblas` instead;
 see `docs/linux-cpu-devcontainer.md`. Keep its `BENCHMARK_TORCH_WHEEL` setting

@@ -21,7 +21,7 @@ use tenferro_einsum_benchmark::thread_enforcement::{
 use tenferro_linalg::{
     EagerSessionLinalgExt, LinalgBackend, TensorLinalgExt, TracedTensorLinalgExt,
 };
-use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor, TensorSessionOpsExt};
+use tenferro_runtime::{GraphCompiler, Runtime, TensorSessionOpsExt, TracedTensor};
 use tenferro_tensor::{
     BackendSession, BackendSessionHost, CompareDir, DType, DotGeneralAccumulation,
     DotGeneralConfig, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor, TensorRead,
@@ -29,6 +29,9 @@ use tenferro_tensor::{
 };
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
+
+#[path = "benchmark_cpu_public_api/candidates.rs"]
+mod candidates;
 
 const EW_FAST_N: usize = 33_554_432;
 const EW_N: usize = 8_388_608;
@@ -807,6 +810,7 @@ fn cases() -> Vec<Case> {
         ),
     ];
     cases.extend(batch_family_cases());
+    cases.extend(candidates::cases());
     cases
 }
 
@@ -970,6 +974,9 @@ fn emit_case(
     case: &Case,
     mut attribution: Option<&mut AttributionSink>,
 ) -> BenchResult<()> {
+    if candidates::handles(case) {
+        return candidates::emit(writer, args, backend, case);
+    }
     if args.execution_filter.runs_direct() {
         match time_case(args, backend, case, attribution.as_deref_mut()) {
             Ok((median_ms, iqr_ms)) => {
@@ -1219,26 +1226,13 @@ fn time_case(
     if case.suite == "cpu/view_metadata" {
         return time_view_case(args, case, attribution);
     }
-    let times = if matches!(case.benchmark, "reduce_sum_squares_axis0" | "masked_log_softmax_axis1" | "where_select") {
-        // Fixtures and the entered session exist before sample_case starts any clock.
-        let input = tensor_f64(&[1024, 64], 1);
-        let mask = tensor_bool(&[1024, 64]);
-        let matrix = tensor_f64(&[2048, 2048], 1);
-        let condition = tensor_bool(&[EW_FAST_N]);
-        let on_true = tensor_f64(&[EW_FAST_N], 1);
-        let on_false = tensor_f64(&[EW_FAST_N], 2);
-        backend.with_backend_session(|session| {
-            sample_case(args, || {
-                let output = match case.benchmark {
-                    "reduce_sum_squares_axis0" => matrix.reduce_sum_squares(Some(&[0]), session)?,
-                    "masked_log_softmax_axis1" => input.masked_log_softmax(mask, 1, session)?,
-                    _ => condition.where_select(on_true, on_false, session)?,
-                };
-                consume(output);
-                Ok(())
-            })
-        })??
-    } else if case.suite == BATCH_FAMILY_SUITE {
+    if matches!(
+        case.benchmark,
+        "reduce_sum_squares_axis0" | "masked_log_softmax_axis1" | "where_select"
+    ) {
+        return candidates::time_session_case(args, backend, case, attribution);
+    }
+    let times = if case.suite == BATCH_FAMILY_SUITE {
         let spec = BatchFamilySpec::parse(case)?;
         backend.with_backend_session(|session| {
             with_cpu_exec_session(session, |session| {
@@ -1811,10 +1805,8 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
             one(traced(tensor_f64(&[2048, 2048], 1))?.reduce_sum_squares(Some(&[0]))?)
         }
         ("cpu/elementwise_reduction", "masked_log_softmax_axis1") => {
-            one(traced(tensor_f64(&[1024, 64], 1))?.masked_log_softmax(
-                &traced(tensor_bool(&[1024, 64]))?,
-                1,
-            )?)
+            one(traced(tensor_f64(&[1024, 64], 1))?
+                .masked_log_softmax(&traced(tensor_bool(&[1024, 64]))?, 1)?)
         }
         ("cpu/indexing_layout", "gather") => {
             const N: usize = 262_144;
