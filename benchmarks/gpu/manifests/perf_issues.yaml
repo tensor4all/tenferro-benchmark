@@ -2,8 +2,8 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-# GPU quick also includes fixed/mixed/fresh whole-sequence latency controls.
-manifest_version: 4
+# GPU quick also includes fixed/mixed/fresh sequence and allocation-entry controls.
+manifest_version: 5
 suite_id: gpu/perf_issues
 source: data/instances/gpu_perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
