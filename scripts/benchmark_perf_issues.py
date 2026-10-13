@@ -495,6 +495,9 @@ def report(run_dir, target, suite_key="cpu"):
             lines += ["", f"### FAILED: {row['case_id']} ({row['threads']} threads)", "```", row["error"], "```"]
     text = "\n".join(lines) + "\n"
     (run_dir / "report.md").write_text(text)
+    if suite_key == "gpu" and os.environ.get("GPU_BENCH_SKIP_LATEST") == "1":
+        print(run_dir / "report.md")
+        return
     latest = ROOT / "result" / safe_target_profile(target) / f"{suite_id}.md"
     latest.parent.mkdir(parents=True, exist_ok=True)
     latest.write_text(text)
