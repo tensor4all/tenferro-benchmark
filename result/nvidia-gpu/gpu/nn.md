@@ -1,6 +1,6 @@
 # gpu/nn: CUDA public API benchmark
 
-Raw run: `data/results/nvidia-gpu/gpu/nn/20261013_101308/`.
+Raw run: `data/results/nvidia-gpu/gpu/nn/20261013_133644/`.
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
@@ -10,50 +10,50 @@ All measured output elements are checked against NumPy/SciPy double-precision re
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda | jax-cuda-jit |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| sigmoid_f32_n1024 | unsupported | unsupported | 8.973 (0.113) | 77.895 (2.301) | 78.901 (2.485) |
-| sigmoid_f64_n1024 | unsupported | unsupported | 9.821 (0.421) | 92.013 (8.645) | 84.943 (6.892) |
-| silu_f32_n1024 | unsupported | unsupported | 10.299 (0.149) | 90.238 (9.924) | 86.604 (9.994) |
-| silu_f64_n1024 | unsupported | unsupported | 10.487 (0.342) | 94.684 (22.797) | 93.498 (10.870) |
-| softplus_f32_n1024 | 110.959 (0.792) | 368.698 (12.203) | 9.564 (0.111) | 98.584 (18.946) | 94.463 (14.895) |
-| softplus_f64_n1024 | 112.909 (8.758) | 396.181 (8.955) | 26.038 (0.061) | 110.582 (23.065) | 127.039 (8.948) |
-| gelu_f32_n1024 | unsupported | unsupported | 10.604 (0.072) | 1719.042 (192.023) | 155.602 (26.059) |
-| gelu_f64_n1024 | unsupported | unsupported | 17.013 (0.011) | 1675.726 (206.678) | 149.170 (11.218) |
-| gelu_tanh_f32_n1024 | unsupported | unsupported | 10.554 (0.229) | 2673.288 (34.633) | 143.540 (16.187) |
-| gelu_tanh_f64_n1024 | unsupported | unsupported | 10.823 (0.149) | 2678.185 (57.063) | 131.943 (5.853) |
-| softmax_f32_n1024 | unsupported | unsupported | 10.477 (0.145) | 1263.574 (26.984) | 93.352 (0.596) |
-| softmax_f64_n1024 | unsupported | unsupported | 10.035 (0.212) | 1292.280 (19.724) | 93.005 (0.538) |
-| log_softmax_f32_n1024 | unsupported | unsupported | 10.757 (0.172) | 91.236 (2.351) | 92.902 (0.766) |
-| log_softmax_f64_n1024 | unsupported | unsupported | 10.063 (0.218) | 90.469 (1.364) | 93.137 (0.762) |
-| masked_softmax_f32_n1024 | unsupported | unsupported | unsupported | 2123.412 (44.851) | 95.807 (0.618) |
-| masked_softmax_f64_n1024 | unsupported | unsupported | unsupported | 2107.985 (66.890) | 95.794 (0.745) |
-| masked_log_softmax_f32_n1024 | unsupported | unsupported | unsupported | 92.569 (3.423) | 96.239 (0.920) |
-| masked_log_softmax_f64_n1024 | unsupported | unsupported | unsupported | 92.683 (0.768) | 96.201 (0.317) |
-| layer_norm_f32_n1024 | unsupported | unsupported | 21.474 (1.175) | 285.086 (20.745) | 104.303 (9.286) |
-| layer_norm_f64_n1024 | unsupported | unsupported | 23.232 (0.647) | 360.683 (15.062) | 142.730 (11.510) |
-| rms_norm_f32_n1024 | unsupported | unsupported | 21.445 (0.208) | unsupported | unsupported |
-| rms_norm_f64_n1024 | unsupported | unsupported | 24.000 (0.513) | unsupported | unsupported |
-| sigmoid_f32_n1048576 | unsupported | unsupported | 27.590 (0.071) | 94.606 (4.473) | 96.161 (0.561) |
-| sigmoid_f64_n1048576 | unsupported | unsupported | 258.690 (0.193) | 305.395 (1.420) | 303.457 (4.027) |
-| silu_f32_n1048576 | unsupported | unsupported | 27.529 (0.028) | 93.584 (8.168) | 95.979 (0.779) |
-| silu_f64_n1048576 | unsupported | unsupported | 293.503 (0.227) | 317.447 (1.361) | 316.105 (2.452) |
-| softplus_f32_n1048576 | 273.976 (1.503) | 310.936 (2.930) | 28.352 (0.193) | 93.054 (9.143) | 88.784 (6.877) |
-| softplus_f64_n1048576 | 1261.139 (11.163) | 1260.996 (0.861) | 898.837 (0.449) | 1100.847 (16.202) | 1094.080 (7.473) |
-| gelu_f32_n1048576 | unsupported | unsupported | 27.450 (0.039) | 1114.370 (17.534) | 99.497 (5.126) |
-| gelu_f64_n1048576 | unsupported | unsupported | 575.457 (0.229) | 2964.210 (118.052) | 1751.634 (13.042) |
-| gelu_tanh_f32_n1048576 | unsupported | unsupported | 27.443 (0.042) | 1696.221 (42.337) | 97.157 (5.685) |
-| gelu_tanh_f64_n1048576 | unsupported | unsupported | 250.526 (0.118) | 1678.639 (20.637) | 307.973 (4.212) |
-| softmax_f32_n1048576 | unsupported | unsupported | 27.679 (0.129) | 835.732 (101.598) | 93.713 (0.786) |
-| softmax_f64_n1048576 | unsupported | unsupported | 338.941 (0.485) | 767.594 (82.080) | 441.945 (5.734) |
-| log_softmax_f32_n1048576 | unsupported | unsupported | 28.227 (0.048) | 82.364 (0.548) | 93.493 (0.480) |
-| log_softmax_f64_n1048576 | unsupported | unsupported | 292.342 (1.743) | 389.531 (2.032) | 401.893 (8.772) |
-| masked_softmax_f32_n1048576 | unsupported | unsupported | unsupported | 1073.433 (19.180) | 96.255 (2.326) |
-| masked_softmax_f64_n1048576 | unsupported | unsupported | unsupported | 1259.480 (28.536) | 672.631 (10.388) |
-| masked_log_softmax_f32_n1048576 | unsupported | unsupported | unsupported | 91.003 (4.013) | 96.540 (0.972) |
-| masked_log_softmax_f64_n1048576 | unsupported | unsupported | unsupported | 385.088 (2.344) | 392.838 (11.580) |
-| layer_norm_f32_n1048576 | unsupported | unsupported | 34.355 (0.077) | 189.365 (7.691) | 119.164 (11.141) |
-| layer_norm_f64_n1048576 | unsupported | unsupported | 709.192 (0.213) | 200.854 (5.651) | 119.307 (1.503) |
-| rms_norm_f32_n1048576 | unsupported | unsupported | 33.681 (0.086) | unsupported | unsupported |
-| rms_norm_f64_n1048576 | unsupported | unsupported | 709.420 (0.208) | unsupported | unsupported |
+| sigmoid_f32_n1024 | unsupported | unsupported | 8.876 (0.242) | 100.999 (3.097) | 88.209 (2.508) |
+| sigmoid_f64_n1024 | unsupported | unsupported | 9.061 (0.138) | 123.104 (3.842) | 90.726 (6.248) |
+| silu_f32_n1024 | unsupported | unsupported | 9.766 (0.179) | 140.147 (24.381) | 89.390 (13.051) |
+| silu_f64_n1024 | unsupported | unsupported | 10.439 (0.357) | 147.836 (28.606) | 93.945 (14.384) |
+| softplus_f32_n1024 | 129.662 (1.935) | 416.957 (11.236) | 9.272 (0.129) | 149.108 (11.424) | 98.562 (15.860) |
+| softplus_f64_n1024 | 134.003 (1.533) | 454.481 (22.615) | 27.764 (0.007) | 146.336 (10.196) | 104.147 (16.739) |
+| gelu_f32_n1024 | unsupported | unsupported | 10.489 (0.172) | 2046.881 (87.806) | 130.023 (21.445) |
+| gelu_f64_n1024 | unsupported | unsupported | 16.933 (0.005) | 1728.828 (220.394) | 128.259 (3.207) |
+| gelu_tanh_f32_n1024 | unsupported | unsupported | 10.960 (0.175) | 2855.015 (40.744) | 130.291 (23.718) |
+| gelu_tanh_f64_n1024 | unsupported | unsupported | 10.707 (0.202) | 2728.146 (124.363) | 133.786 (30.159) |
+| softmax_f32_n1024 | unsupported | unsupported | 9.893 (0.182) | 1376.865 (7.280) | 89.579 (2.246) |
+| softmax_f64_n1024 | unsupported | unsupported | 10.239 (0.492) | 1380.749 (23.740) | 85.359 (1.386) |
+| log_softmax_f32_n1024 | unsupported | unsupported | 9.797 (0.114) | 96.356 (1.013) | 86.838 (1.862) |
+| log_softmax_f64_n1024 | unsupported | unsupported | 9.864 (0.135) | 90.664 (1.067) | 88.807 (1.406) |
+| masked_softmax_f32_n1024 | unsupported | unsupported | unsupported | 2216.621 (23.454) | 92.014 (2.415) |
+| masked_softmax_f64_n1024 | unsupported | unsupported | unsupported | 2123.874 (61.059) | 94.745 (0.406) |
+| masked_log_softmax_f32_n1024 | unsupported | unsupported | unsupported | 97.595 (2.496) | 94.423 (0.782) |
+| masked_log_softmax_f64_n1024 | unsupported | unsupported | unsupported | 97.800 (0.257) | 95.582 (0.664) |
+| layer_norm_f32_n1024 | unsupported | unsupported | 22.347 (0.127) | 309.026 (13.946) | 112.942 (7.656) |
+| layer_norm_f64_n1024 | unsupported | unsupported | 24.213 (0.239) | 313.301 (20.376) | 137.452 (2.259) |
+| rms_norm_f32_n1024 | unsupported | unsupported | 21.190 (0.182) | unsupported | unsupported |
+| rms_norm_f64_n1024 | unsupported | unsupported | 24.396 (0.727) | unsupported | unsupported |
+| sigmoid_f32_n1048576 | unsupported | unsupported | 27.553 (0.026) | 104.495 (3.536) | 107.287 (1.579) |
+| sigmoid_f64_n1048576 | unsupported | unsupported | 258.496 (0.249) | 307.015 (11.451) | 300.646 (14.114) |
+| silu_f32_n1048576 | unsupported | unsupported | 27.525 (0.056) | 97.101 (1.410) | 106.275 (2.765) |
+| silu_f64_n1048576 | unsupported | unsupported | 293.354 (0.051) | 317.157 (2.508) | 315.619 (2.739) |
+| softplus_f32_n1048576 | 269.739 (1.908) | 311.635 (1.516) | 28.245 (0.050) | 99.770 (4.705) | 94.974 (5.053) |
+| softplus_f64_n1048576 | 1249.864 (2.969) | 1253.303 (0.948) | 898.631 (0.652) | 1102.660 (10.949) | 1111.924 (15.809) |
+| gelu_f32_n1048576 | unsupported | unsupported | 27.447 (0.022) | 1173.154 (25.159) | 97.329 (9.115) |
+| gelu_f64_n1048576 | unsupported | unsupported | 575.268 (0.430) | 2984.561 (88.470) | 1755.353 (12.376) |
+| gelu_tanh_f32_n1048576 | unsupported | unsupported | 27.425 (0.036) | 1783.378 (50.961) | 96.335 (4.263) |
+| gelu_tanh_f64_n1048576 | unsupported | unsupported | 250.416 (0.133) | 1765.875 (23.997) | 308.568 (3.551) |
+| softmax_f32_n1048576 | unsupported | unsupported | 27.643 (0.068) | 1032.611 (29.270) | 90.772 (0.555) |
+| softmax_f64_n1048576 | unsupported | unsupported | 338.552 (0.345) | 835.277 (18.342) | 438.894 (11.209) |
+| log_softmax_f32_n1048576 | unsupported | unsupported | 28.220 (0.036) | 92.289 (2.360) | 98.949 (5.393) |
+| log_softmax_f64_n1048576 | unsupported | unsupported | 292.138 (4.869) | 397.839 (10.803) | 397.288 (10.773) |
+| masked_softmax_f32_n1048576 | unsupported | unsupported | unsupported | 1356.867 (17.173) | 86.932 (0.946) |
+| masked_softmax_f64_n1048576 | unsupported | unsupported | unsupported | 1364.810 (32.561) | 680.962 (10.967) |
+| masked_log_softmax_f32_n1048576 | unsupported | unsupported | unsupported | 98.327 (4.461) | 92.965 (2.622) |
+| masked_log_softmax_f64_n1048576 | unsupported | unsupported | unsupported | 386.068 (3.678) | 387.578 (9.824) |
+| layer_norm_f32_n1048576 | unsupported | unsupported | 34.379 (0.164) | 220.613 (13.199) | 110.069 (5.018) |
+| layer_norm_f64_n1048576 | unsupported | unsupported | 709.133 (0.756) | 251.006 (10.896) | 118.834 (1.295) |
+| rms_norm_f32_n1048576 | unsupported | unsupported | 33.626 (0.049) | unsupported | unsupported |
+| rms_norm_f64_n1048576 | unsupported | unsupported | 709.370 (0.212) | unsupported | unsupported |
 
 ## Sampling
 
@@ -63,8 +63,8 @@ All measured output elements are checked against NumPy/SciPy double-precision re
 | sigmoid_f64_n1024 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | silu_f32_n1024 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | silu_f64_n1024 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| softplus_f32_n1024 | tenferro-cuda-direct | 32 | 15 | 3.551 | 8.073e-05 |
-| softplus_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 3.613 | 1.428e-07 |
+| softplus_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 2.075 | 8.073e-05 |
+| softplus_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.144 | 1.428e-07 |
 | gelu_f32_n1024 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | gelu_f64_n1024 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | gelu_tanh_f32_n1024 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
@@ -85,8 +85,8 @@ All measured output elements are checked against NumPy/SciPy double-precision re
 | sigmoid_f64_n1048576 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | silu_f32_n1048576 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | silu_f64_n1048576 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| softplus_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.192 | 0.0001273 |
-| softplus_f64_n1048576 | tenferro-cuda-direct | 2 | 15 | 2.522 | 1.467e-07 |
+| softplus_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.158 | 0.0001273 |
+| softplus_f64_n1048576 | tenferro-cuda-direct | 2 | 15 | 2.500 | 1.467e-07 |
 | gelu_f32_n1048576 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | gelu_f64_n1048576 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | gelu_tanh_f32_n1048576 | tenferro-cuda-direct | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
@@ -107,8 +107,8 @@ All measured output elements are checked against NumPy/SciPy double-precision re
 | sigmoid_f64_n1024 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | silu_f32_n1024 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | silu_f64_n1024 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| softplus_f32_n1024 | tenferro-cuda-eager | 8 | 15 | 2.950 | 8.073e-05 |
-| softplus_f64_n1024 | tenferro-cuda-eager | 8 | 15 | 3.169 | 1.428e-07 |
+| softplus_f32_n1024 | tenferro-cuda-eager | 8 | 15 | 3.336 | 8.073e-05 |
+| softplus_f64_n1024 | tenferro-cuda-eager | 8 | 15 | 3.636 | 1.428e-07 |
 | gelu_f32_n1024 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | gelu_f64_n1024 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | gelu_tanh_f32_n1024 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
@@ -129,8 +129,8 @@ All measured output elements are checked against NumPy/SciPy double-precision re
 | sigmoid_f64_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | silu_f32_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | silu_f64_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| softplus_f32_n1048576 | tenferro-cuda-eager | 8 | 15 | 2.487 | 0.0001273 |
-| softplus_f64_n1048576 | tenferro-cuda-eager | 2 | 15 | 2.522 | 1.467e-07 |
+| softplus_f32_n1048576 | tenferro-cuda-eager | 8 | 15 | 2.493 | 0.0001273 |
+| softplus_f64_n1048576 | tenferro-cuda-eager | 2 | 15 | 2.507 | 1.467e-07 |
 | gelu_f32_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | gelu_f64_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | gelu_tanh_f32_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
@@ -147,136 +147,136 @@ All measured output elements are checked against NumPy/SciPy double-precision re
 | layer_norm_f64_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | rms_norm_f32_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
 | rms_norm_f64_n1048576 | tenferro-cuda-eager | — | — | — | CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer. |
-| sigmoid_f32_n1024 | pytorch-cuda | 256 | 15 | 2.297 | 8.389e-05 |
-| sigmoid_f64_n1024 | pytorch-cuda | 256 | 15 | 2.514 | 7.964e-08 |
-| silu_f32_n1024 | pytorch-cuda | 256 | 15 | 2.636 | 4.766e-05 |
-| silu_f64_n1024 | pytorch-cuda | 256 | 15 | 2.685 | 4.848e-08 |
-| softplus_f32_n1024 | pytorch-cuda | 256 | 15 | 2.448 | 8.073e-05 |
-| softplus_f64_n1024 | pytorch-cuda | 128 | 15 | 3.333 | 1.428e-07 |
-| gelu_f32_n1024 | pytorch-cuda | 256 | 15 | 2.715 | 4.754e-05 |
-| gelu_f64_n1024 | pytorch-cuda | 128 | 15 | 2.178 | 4.899e-08 |
-| gelu_tanh_f32_n1024 | pytorch-cuda | 256 | 15 | 2.702 | 4.766e-05 |
-| gelu_tanh_f64_n1024 | pytorch-cuda | 256 | 15 | 2.771 | 4.349e-08 |
-| softmax_f32_n1024 | pytorch-cuda | 256 | 15 | 2.682 | 1.435e-05 |
-| softmax_f64_n1024 | pytorch-cuda | 256 | 15 | 2.569 | 2.012e-08 |
-| log_softmax_f32_n1024 | pytorch-cuda | 256 | 15 | 2.754 | 0.0001185 |
-| log_softmax_f64_n1024 | pytorch-cuda | 256 | 15 | 2.576 | 2.068e-07 |
+| sigmoid_f32_n1024 | pytorch-cuda | 256 | 15 | 2.272 | 8.389e-05 |
+| sigmoid_f64_n1024 | pytorch-cuda | 256 | 15 | 2.320 | 7.964e-08 |
+| silu_f32_n1024 | pytorch-cuda | 256 | 15 | 2.500 | 4.766e-05 |
+| silu_f64_n1024 | pytorch-cuda | 256 | 15 | 2.672 | 4.848e-08 |
+| softplus_f32_n1024 | pytorch-cuda | 256 | 15 | 2.374 | 8.073e-05 |
+| softplus_f64_n1024 | pytorch-cuda | 128 | 15 | 3.554 | 1.428e-07 |
+| gelu_f32_n1024 | pytorch-cuda | 256 | 15 | 2.685 | 4.754e-05 |
+| gelu_f64_n1024 | pytorch-cuda | 128 | 15 | 2.167 | 4.899e-08 |
+| gelu_tanh_f32_n1024 | pytorch-cuda | 256 | 15 | 2.806 | 4.766e-05 |
+| gelu_tanh_f64_n1024 | pytorch-cuda | 256 | 15 | 2.741 | 4.349e-08 |
+| softmax_f32_n1024 | pytorch-cuda | 256 | 15 | 2.533 | 1.435e-05 |
+| softmax_f64_n1024 | pytorch-cuda | 256 | 15 | 2.621 | 2.012e-08 |
+| log_softmax_f32_n1024 | pytorch-cuda | 256 | 15 | 2.508 | 0.0001185 |
+| log_softmax_f64_n1024 | pytorch-cuda | 256 | 15 | 2.525 | 2.068e-07 |
 | masked_softmax_f32_n1024 | pytorch-cuda | — | — | — | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
 | masked_softmax_f64_n1024 | pytorch-cuda | — | — | — | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
 | masked_log_softmax_f32_n1024 | pytorch-cuda | — | — | — | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
 | masked_log_softmax_f64_n1024 | pytorch-cuda | — | — | — | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
-| layer_norm_f32_n1024 | pytorch-cuda | 128 | 15 | 2.749 | 0.000193 |
-| layer_norm_f64_n1024 | pytorch-cuda | 128 | 15 | 2.974 | 1.757e-07 |
-| rms_norm_f32_n1024 | pytorch-cuda | 128 | 15 | 2.745 | 0.0001828 |
-| rms_norm_f64_n1024 | pytorch-cuda | 128 | 15 | 3.072 | 2.032e-07 |
-| sigmoid_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.766 | 8.57e-05 |
-| sigmoid_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.070 | 7.964e-08 |
+| layer_norm_f32_n1024 | pytorch-cuda | 128 | 15 | 2.860 | 0.000193 |
+| layer_norm_f64_n1024 | pytorch-cuda | 128 | 15 | 3.099 | 1.757e-07 |
+| rms_norm_f32_n1024 | pytorch-cuda | 128 | 15 | 2.712 | 0.0001828 |
+| rms_norm_f64_n1024 | pytorch-cuda | 128 | 15 | 3.123 | 2.032e-07 |
+| sigmoid_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.763 | 8.57e-05 |
+| sigmoid_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.068 | 7.964e-08 |
 | silu_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.762 | 4.781e-05 |
-| silu_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.348 | 4.848e-08 |
-| softplus_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.815 | 0.0001261 |
+| silu_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.347 | 4.848e-08 |
+| softplus_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.808 | 0.0001261 |
 | softplus_f64_n1048576 | pytorch-cuda | 4 | 15 | 3.595 | 1.467e-07 |
 | gelu_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.757 | 4.754e-05 |
-| gelu_f64_n1048576 | pytorch-cuda | 4 | 15 | 2.302 | 4.899e-08 |
-| gelu_tanh_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.756 | 5.198e-05 |
-| gelu_tanh_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.004 | 4.349e-08 |
-| softmax_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.771 | 6.976e-07 |
-| softmax_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.712 | 8.661e-10 |
-| log_softmax_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.807 | 0.0001277 |
-| log_softmax_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.339 | 2.377e-07 |
+| gelu_f64_n1048576 | pytorch-cuda | 4 | 15 | 2.301 | 4.899e-08 |
+| gelu_tanh_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.755 | 5.198e-05 |
+| gelu_tanh_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.003 | 4.349e-08 |
+| softmax_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.769 | 6.976e-07 |
+| softmax_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.708 | 8.661e-10 |
+| log_softmax_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.806 | 0.0001277 |
+| log_softmax_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.337 | 2.377e-07 |
 | masked_softmax_f32_n1048576 | pytorch-cuda | — | — | — | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
 | masked_softmax_f64_n1048576 | pytorch-cuda | — | — | — | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
 | masked_log_softmax_f32_n1048576 | pytorch-cuda | — | — | — | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
 | masked_log_softmax_f64_n1048576 | pytorch-cuda | — | — | — | No equivalent stable single PyTorch public masked-softmax operation; masked_fill plus softmax would change the operation contract. |
-| layer_norm_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.199 | 0.0002616 |
+| layer_norm_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.200 | 0.0002616 |
 | layer_norm_f64_n1048576 | pytorch-cuda | 4 | 15 | 2.837 | 3.138e-07 |
-| rms_norm_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.156 | 0.000212 |
-| rms_norm_f64_n1048576 | pytorch-cuda | 4 | 15 | 2.838 | 2.654e-07 |
-| sigmoid_f32_n1024 | jax-cuda | 32 | 15 | 2.493 | 8.389e-05 |
-| sigmoid_f64_n1024 | jax-cuda | 32 | 15 | 2.944 | 7.964e-08 |
-| silu_f32_n1024 | jax-cuda | 32 | 15 | 2.888 | 9.241e-05 |
-| silu_f64_n1024 | jax-cuda | 32 | 15 | 3.030 | 4.848e-08 |
-| softplus_f32_n1024 | jax-cuda | 32 | 15 | 3.155 | 8.073e-05 |
-| softplus_f64_n1024 | jax-cuda | 32 | 15 | 3.539 | 1.428e-07 |
-| gelu_f32_n1024 | jax-cuda | 2 | 15 | 3.438 | 4.763e-05 |
-| gelu_f64_n1024 | jax-cuda | 2 | 15 | 3.351 | 4.625e-08 |
-| gelu_tanh_f32_n1024 | jax-cuda | 1 | 15 | 2.673 | 4.766e-05 |
-| gelu_tanh_f64_n1024 | jax-cuda | 1 | 15 | 2.678 | 4.349e-08 |
-| softmax_f32_n1024 | jax-cuda | 2 | 15 | 2.527 | 1.445e-05 |
-| softmax_f64_n1024 | jax-cuda | 2 | 15 | 2.585 | 2.012e-08 |
-| log_softmax_f32_n1024 | jax-cuda | 32 | 15 | 2.920 | 0.0001185 |
-| log_softmax_f64_n1024 | jax-cuda | 32 | 15 | 2.895 | 2.068e-07 |
-| masked_softmax_f32_n1024 | jax-cuda | 1 | 15 | 2.123 | 2.137e-05 |
-| masked_softmax_f64_n1024 | jax-cuda | 1 | 15 | 2.108 | 1.335e-08 |
-| masked_log_softmax_f32_n1024 | jax-cuda | 32 | 15 | 2.962 | 0.0001303 |
-| masked_log_softmax_f64_n1024 | jax-cuda | 32 | 15 | 2.966 | 2.225e-07 |
-| layer_norm_f32_n1024 | jax-cuda | 8 | 15 | 2.281 | 0.000223 |
-| layer_norm_f64_n1024 | jax-cuda | 8 | 15 | 2.885 | 1.939e-07 |
+| rms_norm_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.152 | 0.000212 |
+| rms_norm_f64_n1048576 | pytorch-cuda | 4 | 15 | 2.837 | 2.654e-07 |
+| sigmoid_f32_n1024 | jax-cuda | 32 | 15 | 3.232 | 8.389e-05 |
+| sigmoid_f64_n1024 | jax-cuda | 16 | 15 | 1.970 | 7.964e-08 |
+| silu_f32_n1024 | jax-cuda | 16 | 15 | 2.242 | 9.241e-05 |
+| silu_f64_n1024 | jax-cuda | 16 | 15 | 2.365 | 4.848e-08 |
+| softplus_f32_n1024 | jax-cuda | 16 | 15 | 2.386 | 8.073e-05 |
+| softplus_f64_n1024 | jax-cuda | 16 | 15 | 2.341 | 1.428e-07 |
+| gelu_f32_n1024 | jax-cuda | 1 | 15 | 2.047 | 4.763e-05 |
+| gelu_f64_n1024 | jax-cuda | 2 | 15 | 3.458 | 4.625e-08 |
+| gelu_tanh_f32_n1024 | jax-cuda | 1 | 15 | 2.855 | 4.766e-05 |
+| gelu_tanh_f64_n1024 | jax-cuda | 1 | 15 | 2.728 | 4.349e-08 |
+| softmax_f32_n1024 | jax-cuda | 2 | 15 | 2.754 | 1.441e-05 |
+| softmax_f64_n1024 | jax-cuda | 2 | 15 | 2.761 | 2.012e-08 |
+| log_softmax_f32_n1024 | jax-cuda | 32 | 15 | 3.083 | 0.0001185 |
+| log_softmax_f64_n1024 | jax-cuda | 32 | 15 | 2.901 | 2.068e-07 |
+| masked_softmax_f32_n1024 | jax-cuda | 1 | 15 | 2.217 | 2.132e-05 |
+| masked_softmax_f64_n1024 | jax-cuda | 1 | 15 | 2.124 | 1.335e-08 |
+| masked_log_softmax_f32_n1024 | jax-cuda | 32 | 15 | 3.123 | 0.0001303 |
+| masked_log_softmax_f64_n1024 | jax-cuda | 32 | 15 | 3.130 | 2.225e-07 |
+| layer_norm_f32_n1024 | jax-cuda | 8 | 15 | 2.472 | 0.000223 |
+| layer_norm_f64_n1024 | jax-cuda | 8 | 15 | 2.506 | 1.939e-07 |
 | rms_norm_f32_n1024 | jax-cuda | — | — | — | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
 | rms_norm_f64_n1024 | jax-cuda | — | — | — | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
-| sigmoid_f32_n1048576 | jax-cuda | 16 | 15 | 1.514 | 8.57e-05 |
-| sigmoid_f64_n1048576 | jax-cuda | 8 | 15 | 2.443 | 7.964e-08 |
-| silu_f32_n1048576 | jax-cuda | 32 | 15 | 2.995 | 9.241e-05 |
-| silu_f64_n1048576 | jax-cuda | 8 | 15 | 2.540 | 4.848e-08 |
-| softplus_f32_n1048576 | jax-cuda | 32 | 15 | 2.978 | 0.0001273 |
-| softplus_f64_n1048576 | jax-cuda | 2 | 15 | 2.202 | 1.467e-07 |
-| gelu_f32_n1048576 | jax-cuda | 2 | 15 | 2.229 | 4.939e-05 |
-| gelu_f64_n1048576 | jax-cuda | 1 | 15 | 2.964 | 4.81e-08 |
-| gelu_tanh_f32_n1048576 | jax-cuda | 2 | 15 | 3.392 | 5.166e-05 |
-| gelu_tanh_f64_n1048576 | jax-cuda | 2 | 15 | 3.357 | 4.349e-08 |
-| softmax_f32_n1048576 | jax-cuda | 4 | 15 | 3.343 | 6.977e-07 |
-| softmax_f64_n1048576 | jax-cuda | 4 | 15 | 3.070 | 6.499e-10 |
-| log_softmax_f32_n1048576 | jax-cuda | 32 | 15 | 2.636 | 0.0001277 |
-| log_softmax_f64_n1048576 | jax-cuda | 8 | 15 | 3.116 | 2.377e-07 |
-| masked_softmax_f32_n1048576 | jax-cuda | 2 | 15 | 2.147 | 9.297e-07 |
-| masked_softmax_f64_n1048576 | jax-cuda | 2 | 15 | 2.519 | 8.659e-10 |
-| masked_log_softmax_f32_n1048576 | jax-cuda | 32 | 15 | 2.912 | 0.0001337 |
-| masked_log_softmax_f64_n1048576 | jax-cuda | 8 | 15 | 3.081 | 2.489e-07 |
-| layer_norm_f32_n1048576 | jax-cuda | 16 | 15 | 3.030 | 0.0002619 |
-| layer_norm_f64_n1048576 | jax-cuda | 16 | 15 | 3.214 | 3.398e-07 |
+| sigmoid_f32_n1048576 | jax-cuda | 16 | 15 | 1.672 | 8.57e-05 |
+| sigmoid_f64_n1048576 | jax-cuda | 8 | 15 | 2.456 | 7.964e-08 |
+| silu_f32_n1048576 | jax-cuda | 32 | 15 | 3.107 | 9.241e-05 |
+| silu_f64_n1048576 | jax-cuda | 8 | 15 | 2.537 | 4.848e-08 |
+| softplus_f32_n1048576 | jax-cuda | 32 | 15 | 3.193 | 0.0001273 |
+| softplus_f64_n1048576 | jax-cuda | 2 | 15 | 2.205 | 1.467e-07 |
+| gelu_f32_n1048576 | jax-cuda | 2 | 15 | 2.346 | 4.939e-05 |
+| gelu_f64_n1048576 | jax-cuda | 1 | 15 | 2.985 | 4.81e-08 |
+| gelu_tanh_f32_n1048576 | jax-cuda | 2 | 15 | 3.567 | 5.166e-05 |
+| gelu_tanh_f64_n1048576 | jax-cuda | 2 | 15 | 3.532 | 4.349e-08 |
+| softmax_f32_n1048576 | jax-cuda | 2 | 15 | 2.065 | 6.977e-07 |
+| softmax_f64_n1048576 | jax-cuda | 4 | 15 | 3.341 | 6.499e-10 |
+| log_softmax_f32_n1048576 | jax-cuda | 32 | 15 | 2.953 | 0.0001277 |
+| log_softmax_f64_n1048576 | jax-cuda | 8 | 15 | 3.183 | 2.377e-07 |
+| masked_softmax_f32_n1048576 | jax-cuda | 2 | 15 | 2.714 | 9.296e-07 |
+| masked_softmax_f64_n1048576 | jax-cuda | 2 | 15 | 2.730 | 8.659e-10 |
+| masked_log_softmax_f32_n1048576 | jax-cuda | 32 | 15 | 3.146 | 0.0001337 |
+| masked_log_softmax_f64_n1048576 | jax-cuda | 8 | 15 | 3.089 | 2.489e-07 |
+| layer_norm_f32_n1048576 | jax-cuda | 16 | 15 | 3.530 | 0.0002619 |
+| layer_norm_f64_n1048576 | jax-cuda | 8 | 15 | 2.008 | 3.398e-07 |
 | rms_norm_f32_n1048576 | jax-cuda | — | — | — | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
 | rms_norm_f64_n1048576 | jax-cuda | — | — | — | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
-| sigmoid_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.525 | 8.389e-05 |
-| sigmoid_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.718 | 7.964e-08 |
-| silu_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.771 | 9.241e-05 |
-| silu_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.992 | 4.848e-08 |
-| softplus_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.023 | 8.073e-05 |
-| softplus_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.033 | 1.428e-07 |
-| gelu_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.490 | 4.763e-05 |
-| gelu_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.387 | 4.625e-08 |
-| gelu_tanh_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.297 | 4.766e-05 |
-| gelu_tanh_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.111 | 4.349e-08 |
-| softmax_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.987 | 1.441e-05 |
-| softmax_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.976 | 2.012e-08 |
-| log_softmax_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.973 | 0.0001185 |
-| log_softmax_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.980 | 2.068e-07 |
-| masked_softmax_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.066 | 2.137e-05 |
-| masked_softmax_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.065 | 1.335e-08 |
-| masked_log_softmax_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.080 | 0.0001303 |
-| masked_log_softmax_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.078 | 2.225e-07 |
-| layer_norm_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.338 | 0.000223 |
-| layer_norm_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.284 | 1.939e-07 |
+| sigmoid_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.823 | 8.389e-05 |
+| sigmoid_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.903 | 7.964e-08 |
+| silu_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.860 | 9.241e-05 |
+| silu_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.006 | 4.848e-08 |
+| softplus_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.154 | 8.073e-05 |
+| softplus_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.333 | 1.428e-07 |
+| gelu_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.080 | 4.763e-05 |
+| gelu_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.052 | 4.625e-08 |
+| gelu_tanh_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.085 | 4.766e-05 |
+| gelu_tanh_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.141 | 4.349e-08 |
+| softmax_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.867 | 1.441e-05 |
+| softmax_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.732 | 2.012e-08 |
+| log_softmax_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.779 | 0.0001185 |
+| log_softmax_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.842 | 2.068e-07 |
+| masked_softmax_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.944 | 2.137e-05 |
+| masked_softmax_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.032 | 1.335e-08 |
+| masked_log_softmax_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.022 | 0.0001303 |
+| masked_log_softmax_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.059 | 2.225e-07 |
+| layer_norm_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.614 | 0.000223 |
+| layer_norm_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.199 | 1.939e-07 |
 | rms_norm_f32_n1024 | jax-cuda-jit | — | — | — | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
 | rms_norm_f64_n1024 | jax-cuda-jit | — | — | — | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
-| sigmoid_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.077 | 8.57e-05 |
-| sigmoid_f64_n1048576 | jax-cuda-jit | 8 | 15 | 2.428 | 7.964e-08 |
-| silu_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.071 | 9.241e-05 |
-| silu_f64_n1048576 | jax-cuda-jit | 8 | 15 | 2.529 | 4.848e-08 |
-| softplus_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.841 | 0.0001273 |
-| softplus_f64_n1048576 | jax-cuda-jit | 2 | 15 | 2.188 | 1.467e-07 |
-| gelu_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.184 | 4.939e-05 |
-| gelu_f64_n1048576 | jax-cuda-jit | 2 | 15 | 3.503 | 4.81e-08 |
-| gelu_tanh_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.109 | 5.166e-05 |
-| gelu_tanh_f64_n1048576 | jax-cuda-jit | 8 | 15 | 2.464 | 4.349e-08 |
-| softmax_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.999 | 6.977e-07 |
-| softmax_f64_n1048576 | jax-cuda-jit | 8 | 15 | 3.536 | 6.499e-10 |
-| log_softmax_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.992 | 0.0001277 |
-| log_softmax_f64_n1048576 | jax-cuda-jit | 8 | 15 | 3.215 | 2.377e-07 |
-| masked_softmax_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.080 | 9.297e-07 |
-| masked_softmax_f64_n1048576 | jax-cuda-jit | 4 | 15 | 2.691 | 8.659e-10 |
-| masked_log_softmax_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.089 | 0.0001337 |
-| masked_log_softmax_f64_n1048576 | jax-cuda-jit | 8 | 15 | 3.143 | 2.489e-07 |
-| layer_norm_f32_n1048576 | jax-cuda-jit | 16 | 15 | 1.907 | 0.0002619 |
-| layer_norm_f64_n1048576 | jax-cuda-jit | 32 | 15 | 3.818 | 3.398e-07 |
+| sigmoid_f32_n1048576 | jax-cuda-jit | 16 | 15 | 1.717 | 8.57e-05 |
+| sigmoid_f64_n1048576 | jax-cuda-jit | 8 | 15 | 2.405 | 7.964e-08 |
+| silu_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.401 | 9.241e-05 |
+| silu_f64_n1048576 | jax-cuda-jit | 8 | 15 | 2.525 | 4.848e-08 |
+| softplus_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.039 | 0.0001273 |
+| softplus_f64_n1048576 | jax-cuda-jit | 2 | 15 | 2.224 | 1.467e-07 |
+| gelu_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.115 | 4.939e-05 |
+| gelu_f64_n1048576 | jax-cuda-jit | 2 | 15 | 3.511 | 4.81e-08 |
+| gelu_tanh_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.083 | 5.166e-05 |
+| gelu_tanh_f64_n1048576 | jax-cuda-jit | 8 | 15 | 2.469 | 4.349e-08 |
+| softmax_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.905 | 6.977e-07 |
+| softmax_f64_n1048576 | jax-cuda-jit | 8 | 15 | 3.511 | 6.499e-10 |
+| log_softmax_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.166 | 0.0001277 |
+| log_softmax_f64_n1048576 | jax-cuda-jit | 8 | 15 | 3.178 | 2.377e-07 |
+| masked_softmax_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.782 | 9.297e-07 |
+| masked_softmax_f64_n1048576 | jax-cuda-jit | 4 | 15 | 2.724 | 8.659e-10 |
+| masked_log_softmax_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.975 | 0.0001337 |
+| masked_log_softmax_f64_n1048576 | jax-cuda-jit | 8 | 15 | 3.101 | 2.489e-07 |
+| layer_norm_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.522 | 0.0002619 |
+| layer_norm_f64_n1048576 | jax-cuda-jit | 32 | 15 | 3.803 | 3.398e-07 |
 | rms_norm_f32_n1048576 | jax-cuda-jit | — | — | — | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
 | rms_norm_f64_n1048576 | jax-cuda-jit | — | — | — | No equivalent single public JAX RMS-normalization operation; a composition is not timed as the missing API. |
 
@@ -287,20 +287,20 @@ schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/nn
 suite_file: benchmarks/gpu/nn.yaml
-timestamp: '2026-10-13T10:13:08Z'
+timestamp: '2026-10-13T13:36:45Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: 8b13220c1e0397a29a27be65557c24105352a35b
+  commit: dfbdf6b66d40162f4731da116ec42ed034da0dce
   dirty: false
   features:
   - cuda
   resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: ed0ed4c79805014f2bba4644383450a6b9bf9361
+  commit: 2858dcda46699788bc1df84d923a95ed93ef6469
   dirty: false
 environment:
-  hostname: 33ed5e46905b
+  hostname: 737f43342de3
   os: Linux-6.8.0-146-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
@@ -409,17 +409,17 @@ collection:
   expected_cases: 44
   selected_cases: 44
   sha256:
-    .devcontainer/cuda/devcontainer.json: 6d3b10caecad15c0a513120ce6282ebb13c65be81c40e29f78a329439c50f083
+    .devcontainer/cuda/devcontainer.json: 76569d9e898967d094988483a7adf6ab96eb426793db7248545d50e155f19cf1
     .devcontainer/cuda/Dockerfile: 1cadf2f890f01187553bab0f136dc817f8964eff6a35b1806b1448a7383d21de
-    src/bin/benchmark_gpu_public_api.rs: f29f1ad0dd99e8e5d24fffc68b6fe30673b0c42d34b5fe4a5557b7f774c2af15
-    src/bin/benchmark_gpu_public_api/runtime_ops.rs: 86f2856411d902d27dcc5c8e66415eb933e057e04b9fad86be55569004572a36
-    src/bin/benchmark_gpu_public_api/structural.rs: b5d780e867a5748be4f29f245d367833a8cd5ee0ebd440926d8b3003b432b0e4
-    src/bin/benchmark_gpu_public_api/linalg.rs: 7d4e29355a973f3c60c2af53fd6ceac597d85fe21f9ab5f6bf164d0afe0a6566
+    src/bin/benchmark_gpu_public_api.rs: 249184323d09433d1fbf401284e39fa797c0252dceb20351bbcc151551d1b32c
+    src/bin/benchmark_gpu_public_api/runtime_ops.rs: d7b64dccce85c804b8f67543fefca89836f045702bdcf15b5441c7bb8543eb21
+    src/bin/benchmark_gpu_public_api/structural.rs: 382fb5ffb6d86ac1a4a66723376808e9c95c8a8731570a5617f2ffed2a6e40a7
+    src/bin/benchmark_gpu_public_api/linalg.rs: 84162923fa0d0772c88ec9c4eab169ad3a75e5d16ff76961d1541670dd8565c1
     src/bin/benchmark_gpu_public_api/reuse.rs: ad72b565373904275128d7beb8673bada08d922e8f310be6cedb0d2d8187898f
-    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 24cd5cec53eaecc8b6b4a22a1cd69e8cbe430ab6c9945d48df4c03d3b2655999
-    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: 0a9e8d89405fc802e392e047d8b7c587e38ab1850d831735dd53fe13e87dabd3
+    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 4d05b9facc0b7e5a3ff31146fc42f98d680010264c6606a3154e9da2dfa6a0cc
+    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: 71cb26510a35647e7aadc46827ca00d06a06e283eacfcba8ebe93d2e8e8add86
     scripts/run_gpu_public_api.sh: 3516e06358fc3c2e36a066067cdffcab85673c7e78bf9a244dde318d109dd772
-    data/results/nvidia-gpu/gpu/nn/20261013_101308/fixtures/manifest.json: 8b70cf1b7b8b1ff4c32c7efa328c0213d6b03eb4b8973c1de68138f01651075c
-    target/release/benchmark_gpu_public_api: 91380afb8faffb97ca96d131ef98cc8e2656aababe594e82d65a07c9bb1bed38
+    data/results/nvidia-gpu/gpu/nn/20261013_133644/fixtures/manifest.json: 8b70cf1b7b8b1ff4c32c7efa328c0213d6b03eb4b8973c1de68138f01651075c
+    target/release/benchmark_gpu_public_api: b505a2bdb3d0c5a7bffd1390af659a154753ea998ec68becd4779e137c9c7150
   reference_numpy_version: 2.4.2
 ```

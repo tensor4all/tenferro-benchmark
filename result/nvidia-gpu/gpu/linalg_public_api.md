@@ -1,6 +1,6 @@
 # gpu/linalg_public_api: CUDA public API benchmark
 
-Raw run: `data/results/nvidia-gpu/gpu/linalg_public_api/20261013_101613/`.
+Raw run: `data/results/nvidia-gpu/gpu/linalg_public_api/20261013_140259/`.
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
@@ -10,203 +10,203 @@ All measured output elements are checked against NumPy/SciPy double-precision re
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda | jax-cuda-jit |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| cholesky_f32_32x32 | 130.040 (2.091) | 249.887 (7.255) | 90.156 (2.117) | 169.094 (3.257) | 146.020 (3.059) |
-| cholesky_f64_32x32 | 238.886 (1.421) | 403.185 (6.012) | 161.516 (1.372) | 203.744 (6.686) | 205.496 (7.071) |
-| svdvals_f32_32x32 | 715.295 (30.071) | unsupported | 406.341 (5.212) | 885.450 (11.759) | 885.699 (8.912) |
-| svdvals_f64_32x32 | 5298.836 (19.012) | unsupported | 4820.312 (171.167) | 5857.478 (92.565) | 5768.628 (95.057) |
-| eigvalsh_f32_32x32 | 241.573 (3.425) | 373.004 (3.480) | 224.273 (6.263) | 565.720 (21.982) | 596.632 (16.673) |
-| eigvalsh_f64_32x32 | 648.880 (3.495) | 855.691 (17.164) | 613.120 (2.918) | 2930.452 (13.233) | 2941.297 (34.206) |
-| pinv_f32_32x32 | unsupported | unsupported | 563.202 (4.410) | 1324.928 (9.897) | 730.941 (27.177) |
-| pinv_f64_32x32 | unsupported | unsupported | 4997.068 (27.326) | 5908.659 (14.055) | 5375.175 (14.025) |
-| inv_f32_32x32 | unsupported | unsupported | 293.569 (5.374) | 329.557 (13.677) | 332.802 (37.696) |
-| inv_f64_32x32 | unsupported | unsupported | 292.296 (3.553) | 353.310 (17.971) | 198.803 (0.950) |
-| det_f32_32x32 | 651.188 (110.254) | 1238.098 (28.011) | 167.981 (1.041) | 272.887 (8.319) | 260.131 (10.154) |
-| det_f64_32x32 | 722.213 (8.964) | 1256.517 (20.758) | 169.362 (6.754) | 270.488 (6.588) | 156.995 (1.843) |
-| norm_f32_32x32 | 75.580 (0.458) | 318.381 (7.205) | 15.447 (0.327) | 176.414 (21.460) | 134.295 (10.234) |
-| norm_f64_32x32 | 79.621 (1.305) | 338.313 (5.742) | 15.440 (0.159) | 177.780 (5.788) | 158.144 (14.946) |
-| triangular_solve_f32_32x32 | 105.744 (4.122) | 352.045 (5.500) | 52.880 (0.602) | 152.035 (3.196) | 183.609 (25.868) |
-| triangular_solve_f64_32x32 | 86.407 (2.684) | 371.721 (12.223) | 52.856 (0.731) | 239.003 (32.598) | 152.917 (3.972) |
-| cholesky_f32_512x512 | 391.623 (2.808) | 823.328 (21.928) | 281.743 (5.925) | 274.596 (7.101) | 269.842 (7.627) |
-| cholesky_f64_512x512 | 2464.848 (11.277) | 3262.570 (65.521) | 2214.669 (5.137) | 2765.570 (29.936) | 2756.016 (17.089) |
-| svdvals_f32_512x512 | 25827.753 (300.535) | unsupported | 28073.332 (235.671) | 25955.011 (26.504) | 25930.276 (24.575) |
-| svdvals_f64_512x512 | 537796.838 (132.987) | unsupported | 592194.332 (42.269) | 538401.628 (70.318) | 538417.532 (49.927) |
-| eigvalsh_f32_512x512 | 4328.039 (25.415) | 4772.507 (14.361) | 4355.966 (11.323) | 5033.768 (36.534) | 4997.400 (54.307) |
-| eigvalsh_f64_512x512 | 14756.073 (53.790) | 14833.286 (66.987) | 14624.744 (65.884) | 19595.045 (95.832) | 19554.677 (172.996) |
-| pinv_f32_512x512 | unsupported | unsupported | 31582.627 (83.548) | 29357.140 (28.941) | 28691.940 (15.153) |
-| pinv_f64_512x512 | unsupported | unsupported | 677383.900 (34.948) | 616627.675 (51.543) | 616152.925 (38.989) |
-| inv_f32_512x512 | unsupported | unsupported | 1942.568 (7.961) | 2318.617 (16.454) | 2216.962 (32.482) |
-| inv_f64_512x512 | unsupported | unsupported | 5964.873 (5.483) | 6413.906 (28.791) | 6381.314 (33.022) |
-| det_f32_512x512 | 2296.159 (38.500) | 3960.321 (118.417) | 1434.401 (2.383) | 1631.807 (11.520) | 1615.737 (16.091) |
-| det_f64_512x512 | 3481.581 (31.386) | 5282.868 (341.729) | 2497.102 (11.403) | 2907.185 (21.198) | 2903.040 (20.102) |
-| norm_f32_512x512 | 83.909 (6.704) | 705.021 (45.486) | 19.940 (0.287) | 167.950 (3.566) | 163.613 (3.559) |
-| norm_f64_512x512 | 69.107 (4.794) | 583.040 (31.949) | 20.527 (0.286) | 158.032 (23.992) | 99.309 (0.958) |
-| triangular_solve_f32_512x512 | 82.099 (4.490) | 346.761 (10.424) | 102.869 (0.081) | 149.424 (4.927) | 162.322 (9.178) |
-| triangular_solve_f64_512x512 | 142.860 (0.467) | 377.832 (25.444) | 839.245 (0.693) | 191.771 (13.258) | 252.209 (5.499) |
+| cholesky_f32_32x32 | 186.547 (18.894) | 241.600 (70.172) | 92.509 (5.279) | 120.365 (3.674) | 126.999 (4.898) |
+| cholesky_f64_32x32 | 303.051 (8.605) | 391.302 (5.920) | 160.714 (1.814) | 157.469 (2.739) | 186.383 (6.741) |
+| svdvals_f32_32x32 | 725.537 (28.893) | unsupported | 402.653 (3.339) | 881.068 (21.458) | 792.253 (28.625) |
+| svdvals_f64_32x32 | 5529.583 (9.140) | unsupported | 5087.390 (3.995) | 5861.534 (74.657) | 5695.905 (23.352) |
+| eigvalsh_f32_32x32 | 272.062 (6.740) | 321.488 (5.311) | 218.222 (9.062) | 678.622 (6.943) | 578.570 (20.915) |
+| eigvalsh_f64_32x32 | 655.767 (8.750) | 693.189 (4.650) | 610.523 (8.213) | 2923.483 (25.909) | 2945.922 (21.972) |
+| pinv_f32_32x32 | unsupported | unsupported | 551.987 (16.052) | 1201.884 (15.014) | 752.948 (28.676) |
+| pinv_f64_32x32 | unsupported | unsupported | 4913.612 (12.096) | 5862.271 (23.788) | 5421.338 (19.537) |
+| inv_f32_32x32 | unsupported | unsupported | 281.667 (2.557) | 207.357 (16.979) | 210.352 (1.289) |
+| inv_f64_32x32 | unsupported | unsupported | 280.308 (3.358) | 345.790 (18.312) | 208.123 (8.889) |
+| det_f32_32x32 | 645.041 (9.834) | 832.793 (56.635) | 166.823 (4.846) | 224.261 (26.041) | 182.467 (9.373) |
+| det_f64_32x32 | 496.647 (4.875) | 826.206 (18.462) | 160.927 (3.287) | 182.958 (5.258) | 154.161 (2.660) |
+| norm_f32_32x32 | 65.258 (4.247) | 194.028 (5.673) | 15.148 (1.360) | 130.442 (3.477) | 138.506 (11.876) |
+| norm_f64_32x32 | 60.235 (1.881) | 216.385 (4.274) | 15.391 (0.787) | 166.396 (7.371) | 159.234 (14.593) |
+| triangular_solve_f32_32x32 | 75.898 (2.549) | 281.788 (50.996) | 53.248 (2.667) | 225.951 (50.798) | 188.975 (33.717) |
+| triangular_solve_f64_32x32 | 68.127 (2.806) | 271.465 (15.141) | 57.194 (4.486) | 226.679 (40.810) | 184.485 (19.416) |
+| cholesky_f32_512x512 | 346.813 (4.992) | 500.045 (35.053) | 278.923 (2.841) | 267.847 (2.738) | 267.845 (8.676) |
+| cholesky_f64_512x512 | 2258.461 (4.608) | 2513.682 (12.445) | 2194.067 (13.448) | 2750.091 (25.986) | 2763.194 (20.290) |
+| svdvals_f32_512x512 | 25716.713 (29.275) | unsupported | 28276.004 (10.507) | 26020.736 (499.938) | 25983.728 (33.459) |
+| svdvals_f64_512x512 | 539504.415 (56.632) | unsupported | 597865.760 (68.452) | 543407.286 (35.600) | 539932.945 (66.899) |
+| eigvalsh_f32_512x512 | 4270.918 (19.878) | 4604.263 (262.386) | 4388.359 (5.848) | 5074.599 (78.923) | 4996.120 (49.936) |
+| eigvalsh_f64_512x512 | 14637.413 (61.296) | 14764.809 (75.300) | 14752.492 (43.385) | 19701.325 (122.978) | 19552.279 (277.571) |
+| pinv_f32_512x512 | unsupported | unsupported | 31720.141 (60.248) | 29316.131 (42.217) | 28726.192 (19.217) |
+| pinv_f64_512x512 | unsupported | unsupported | 683694.991 (72.039) | 622432.157 (123.508) | 617797.992 (63.716) |
+| inv_f32_512x512 | unsupported | unsupported | 1953.397 (5.083) | 2297.197 (27.490) | 2311.348 (49.080) |
+| inv_f64_512x512 | unsupported | unsupported | 6015.930 (11.542) | 6437.421 (27.432) | 6381.455 (20.660) |
+| det_f32_512x512 | 1781.625 (5.618) | 1975.797 (34.755) | 1442.305 (1.732) | 1632.793 (16.643) | 1596.318 (29.846) |
+| det_f64_512x512 | 2865.967 (11.324) | 3017.181 (17.663) | 2512.110 (10.721) | 2900.718 (12.605) | 2810.352 (45.737) |
+| norm_f32_512x512 | 37.968 (0.941) | 97.224 (1.394) | 19.756 (0.987) | 163.698 (2.727) | 167.684 (6.064) |
+| norm_f64_512x512 | 36.962 (0.654) | 101.405 (1.420) | 20.335 (0.681) | 164.728 (2.576) | 164.272 (6.172) |
+| triangular_solve_f32_512x512 | 71.295 (0.139) | 181.570 (2.083) | 103.812 (0.044) | 148.458 (1.430) | 179.491 (8.692) |
+| triangular_solve_f64_512x512 | 141.214 (0.181) | 213.157 (5.790) | 847.054 (0.295) | 217.894 (38.170) | 191.346 (22.371) |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: |
-| cholesky_f32_32x32 | tenferro-cuda-direct | 16 | 15 | 2.081 | 0.0002352 |
-| cholesky_f64_32x32 | tenferro-cuda-direct | 16 | 15 | 3.822 | 2.188e-07 |
-| svdvals_f32_32x32 | tenferro-cuda-direct | 4 | 15 | 2.861 | 0.003338 |
-| svdvals_f64_32x32 | tenferro-cuda-direct | 1 | 15 | 5.299 | 4.546e-06 |
-| eigvalsh_f32_32x32 | tenferro-cuda-direct | 16 | 15 | 3.865 | 0.001073 |
-| eigvalsh_f64_32x32 | tenferro-cuda-direct | 4 | 15 | 2.596 | 5.433e-07 |
+| cholesky_f32_32x32 | tenferro-cuda-direct | 16 | 15 | 2.985 | 0.0002352 |
+| cholesky_f64_32x32 | tenferro-cuda-direct | 8 | 15 | 2.424 | 2.188e-07 |
+| svdvals_f32_32x32 | tenferro-cuda-direct | 4 | 15 | 2.902 | 0.003338 |
+| svdvals_f64_32x32 | tenferro-cuda-direct | 1 | 15 | 5.530 | 4.546e-06 |
+| eigvalsh_f32_32x32 | tenferro-cuda-direct | 8 | 15 | 2.176 | 0.001073 |
+| eigvalsh_f64_32x32 | tenferro-cuda-direct | 4 | 15 | 2.623 | 5.433e-07 |
 | pinv_f32_32x32 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
 | pinv_f64_32x32 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
 | inv_f32_32x32 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
 | inv_f64_32x32 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
-| det_f32_32x32 | tenferro-cuda-direct | 8 | 15 | 5.210 | 0.002641 |
-| det_f64_32x32 | tenferro-cuda-direct | 4 | 15 | 2.889 | 1.135e-06 |
-| norm_f32_32x32 | tenferro-cuda-direct | 32 | 15 | 2.419 | 0 |
-| norm_f64_32x32 | tenferro-cuda-direct | 32 | 15 | 2.548 | 0 |
-| triangular_solve_f32_32x32 | tenferro-cuda-direct | 32 | 15 | 3.384 | 0.0001546 |
-| triangular_solve_f64_32x32 | tenferro-cuda-direct | 32 | 15 | 2.765 | 1.609e-07 |
-| cholesky_f32_512x512 | tenferro-cuda-direct | 8 | 15 | 3.133 | 0.0003554 |
-| cholesky_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 2.465 | 4.418e-07 |
-| svdvals_f32_512x512 | tenferro-cuda-direct | 1 | 15 | 25.828 | 0.1547 |
-| svdvals_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 537.797 | 0.0002063 |
-| eigvalsh_f32_512x512 | tenferro-cuda-direct | 1 | 15 | 4.328 | 0.008342 |
-| eigvalsh_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 14.756 | 1.55e-06 |
+| det_f32_32x32 | tenferro-cuda-direct | 4 | 15 | 2.580 | 0.002641 |
+| det_f64_32x32 | tenferro-cuda-direct | 4 | 15 | 1.987 | 1.135e-06 |
+| norm_f32_32x32 | tenferro-cuda-direct | 32 | 15 | 2.088 | 0 |
+| norm_f64_32x32 | tenferro-cuda-direct | 32 | 15 | 1.928 | 0 |
+| triangular_solve_f32_32x32 | tenferro-cuda-direct | 32 | 15 | 2.429 | 0.0001546 |
+| triangular_solve_f64_32x32 | tenferro-cuda-direct | 32 | 15 | 2.180 | 1.609e-07 |
+| cholesky_f32_512x512 | tenferro-cuda-direct | 8 | 15 | 2.775 | 0.0003554 |
+| cholesky_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 2.258 | 4.418e-07 |
+| svdvals_f32_512x512 | tenferro-cuda-direct | 1 | 15 | 25.717 | 0.1547 |
+| svdvals_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 539.504 | 0.0002063 |
+| eigvalsh_f32_512x512 | tenferro-cuda-direct | 1 | 15 | 4.271 | 0.008342 |
+| eigvalsh_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 14.637 | 1.55e-06 |
 | pinv_f32_512x512 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
 | pinv_f64_512x512 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: pinv_from_svd passes a host threshold scalar to mul_read. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
 | inv_f32_512x512 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
 | inv_f64_512x512 | tenferro-cuda-direct | — | — | — | CUDA concrete route fails at revision 8b13220c: inv_owned/eye_like passes a host scalar to broadcast_in_dim. No public caller parameter can replace this internal operand; reproduced in raw run 20261013_094906. |
-| det_f32_512x512 | tenferro-cuda-direct | 1 | 15 | 2.296 | 0.008577 |
-| det_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 3.482 | 1.426e-05 |
-| norm_f32_512x512 | tenferro-cuda-direct | 32 | 15 | 2.685 | 0 |
-| norm_f64_512x512 | tenferro-cuda-direct | 32 | 15 | 2.211 | 1.909e-07 |
-| triangular_solve_f32_512x512 | tenferro-cuda-direct | 32 | 15 | 2.627 | 0.0007877 |
-| triangular_solve_f64_512x512 | tenferro-cuda-direct | 16 | 15 | 2.286 | 1.157e-06 |
-| cholesky_f32_32x32 | tenferro-cuda-eager | 16 | 15 | 3.998 | 0.0002352 |
-| cholesky_f64_32x32 | tenferro-cuda-eager | 8 | 15 | 3.225 | 2.188e-07 |
+| det_f32_512x512 | tenferro-cuda-direct | 2 | 15 | 3.563 | 0.008577 |
+| det_f64_512x512 | tenferro-cuda-direct | 1 | 15 | 2.866 | 1.426e-05 |
+| norm_f32_512x512 | tenferro-cuda-direct | 64 | 15 | 2.430 | 0 |
+| norm_f64_512x512 | tenferro-cuda-direct | 64 | 15 | 2.366 | 1.909e-07 |
+| triangular_solve_f32_512x512 | tenferro-cuda-direct | 32 | 15 | 2.281 | 0.0007877 |
+| triangular_solve_f64_512x512 | tenferro-cuda-direct | 16 | 15 | 2.259 | 1.157e-06 |
+| cholesky_f32_32x32 | tenferro-cuda-eager | 16 | 15 | 3.866 | 0.0002352 |
+| cholesky_f64_32x32 | tenferro-cuda-eager | 8 | 15 | 3.130 | 2.188e-07 |
 | svdvals_f32_32x32 | tenferro-cuda-eager | — | — | — | EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent. |
 | svdvals_f64_32x32 | tenferro-cuda-eager | — | — | — | EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent. |
-| eigvalsh_f32_32x32 | tenferro-cuda-eager | 8 | 15 | 2.984 | 0.001073 |
-| eigvalsh_f64_32x32 | tenferro-cuda-eager | 4 | 15 | 3.423 | 5.433e-07 |
+| eigvalsh_f32_32x32 | tenferro-cuda-eager | 8 | 15 | 2.572 | 0.001073 |
+| eigvalsh_f64_32x32 | tenferro-cuda-eager | 4 | 15 | 2.773 | 5.433e-07 |
 | pinv_f32_32x32 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
 | pinv_f64_32x32 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
 | inv_f32_32x32 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
 | inv_f64_32x32 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
-| det_f32_32x32 | tenferro-cuda-eager | 2 | 15 | 2.476 | 0.002641 |
-| det_f64_32x32 | tenferro-cuda-eager | 2 | 15 | 2.513 | 1.135e-06 |
-| norm_f32_32x32 | tenferro-cuda-eager | 8 | 15 | 2.547 | 0 |
-| norm_f64_32x32 | tenferro-cuda-eager | 8 | 15 | 2.707 | 0 |
-| triangular_solve_f32_32x32 | tenferro-cuda-eager | 8 | 15 | 2.816 | 0.0001546 |
-| triangular_solve_f64_32x32 | tenferro-cuda-eager | 8 | 15 | 2.974 | 1.609e-07 |
-| cholesky_f32_512x512 | tenferro-cuda-eager | 4 | 15 | 3.293 | 0.0003554 |
-| cholesky_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 3.263 | 4.418e-07 |
+| det_f32_32x32 | tenferro-cuda-eager | 4 | 15 | 3.331 | 0.002641 |
+| det_f64_32x32 | tenferro-cuda-eager | 4 | 15 | 3.305 | 1.135e-06 |
+| norm_f32_32x32 | tenferro-cuda-eager | 16 | 15 | 3.104 | 0 |
+| norm_f64_32x32 | tenferro-cuda-eager | 16 | 15 | 3.462 | 0 |
+| triangular_solve_f32_32x32 | tenferro-cuda-eager | 8 | 15 | 2.254 | 0.0001546 |
+| triangular_solve_f64_32x32 | tenferro-cuda-eager | 16 | 15 | 4.343 | 1.609e-07 |
+| cholesky_f32_512x512 | tenferro-cuda-eager | 4 | 15 | 2.000 | 0.0003554 |
+| cholesky_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 2.514 | 4.418e-07 |
 | svdvals_f32_512x512 | tenferro-cuda-eager | — | — | — | EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent. |
 | svdvals_f64_512x512 | tenferro-cuda-eager | — | — | — | EagerSessionLinalgExt has no values-only svdvals entry point; returning and discarding singular vectors is not equivalent. |
-| eigvalsh_f32_512x512 | tenferro-cuda-eager | 1 | 15 | 4.773 | 0.008342 |
-| eigvalsh_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 14.833 | 1.55e-06 |
+| eigvalsh_f32_512x512 | tenferro-cuda-eager | 1 | 15 | 4.604 | 0.008342 |
+| eigvalsh_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 14.765 | 1.55e-06 |
 | pinv_f32_512x512 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
 | pinv_f64_512x512 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
 | inv_f32_512x512 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
 | inv_f64_512x512 | tenferro-cuda-eager | — | — | — | Public linalg composite constructs scalar/identity operands per call; cannot move internal setup outside the timer. |
-| det_f32_512x512 | tenferro-cuda-eager | 1 | 15 | 3.960 | 0.008577 |
-| det_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 5.283 | 1.426e-05 |
-| norm_f32_512x512 | tenferro-cuda-eager | 4 | 15 | 2.820 | 0 |
-| norm_f64_512x512 | tenferro-cuda-eager | 4 | 15 | 2.332 | 1.909e-07 |
-| triangular_solve_f32_512x512 | tenferro-cuda-eager | 8 | 15 | 2.774 | 0.0007877 |
-| triangular_solve_f64_512x512 | tenferro-cuda-eager | 8 | 15 | 3.023 | 1.157e-06 |
-| cholesky_f32_32x32 | pytorch-cuda | 32 | 15 | 2.885 | 0.0002352 |
-| cholesky_f64_32x32 | pytorch-cuda | 16 | 15 | 2.584 | 2.188e-07 |
-| svdvals_f32_32x32 | pytorch-cuda | 8 | 15 | 3.251 | 0.007749 |
-| svdvals_f64_32x32 | pytorch-cuda | 1 | 15 | 4.820 | 3.387e-06 |
-| eigvalsh_f32_32x32 | pytorch-cuda | 16 | 15 | 3.588 | 0.001073 |
-| eigvalsh_f64_32x32 | pytorch-cuda | 4 | 15 | 2.452 | 5.433e-07 |
-| pinv_f32_32x32 | pytorch-cuda | 4 | 15 | 2.253 | 0.001023 |
-| pinv_f64_32x32 | pytorch-cuda | 1 | 15 | 4.997 | 9.374e-07 |
-| inv_f32_32x32 | pytorch-cuda | 8 | 15 | 2.349 | 0.0004905 |
-| inv_f64_32x32 | pytorch-cuda | 8 | 15 | 2.338 | 2.284e-07 |
-| det_f32_32x32 | pytorch-cuda | 16 | 15 | 2.688 | 0.002641 |
-| det_f64_32x32 | pytorch-cuda | 16 | 15 | 2.710 | 3.784e-07 |
-| norm_f32_32x32 | pytorch-cuda | 128 | 15 | 1.977 | 0 |
-| norm_f64_32x32 | pytorch-cuda | 128 | 15 | 1.976 | 0 |
-| triangular_solve_f32_32x32 | pytorch-cuda | 64 | 15 | 3.384 | 9.242e-05 |
-| triangular_solve_f64_32x32 | pytorch-cuda | 64 | 15 | 3.383 | 1.415e-07 |
-| cholesky_f32_512x512 | pytorch-cuda | 8 | 15 | 2.254 | 0.0003554 |
-| cholesky_f64_512x512 | pytorch-cuda | 1 | 15 | 2.215 | 4.418e-07 |
-| svdvals_f32_512x512 | pytorch-cuda | 1 | 15 | 28.073 | 0.1733 |
-| svdvals_f64_512x512 | pytorch-cuda | 1 | 15 | 592.194 | 0.0002066 |
-| eigvalsh_f32_512x512 | pytorch-cuda | 1 | 15 | 4.356 | 0.008342 |
-| eigvalsh_f64_512x512 | pytorch-cuda | 1 | 15 | 14.625 | 1.55e-06 |
-| pinv_f32_512x512 | pytorch-cuda | 1 | 15 | 31.583 | 0.01126 |
-| pinv_f64_512x512 | pytorch-cuda | 1 | 15 | 677.384 | 8.747e-06 |
-| inv_f32_512x512 | pytorch-cuda | 2 | 15 | 3.885 | 0.002107 |
-| inv_f64_512x512 | pytorch-cuda | 1 | 15 | 5.965 | 1.85e-06 |
-| det_f32_512x512 | pytorch-cuda | 2 | 15 | 2.869 | 0.007965 |
-| det_f64_512x512 | pytorch-cuda | 1 | 15 | 2.497 | 1.369e-05 |
-| norm_f32_512x512 | pytorch-cuda | 128 | 15 | 2.552 | 0 |
-| norm_f64_512x512 | pytorch-cuda | 128 | 15 | 2.627 | 1.909e-07 |
-| triangular_solve_f32_512x512 | pytorch-cuda | 32 | 15 | 3.292 | 0.0006008 |
-| triangular_solve_f64_512x512 | pytorch-cuda | 4 | 15 | 3.357 | 6.887e-07 |
-| cholesky_f32_32x32 | jax-cuda | 16 | 15 | 2.706 | 0.0002352 |
-| cholesky_f64_32x32 | jax-cuda | 16 | 15 | 3.260 | 2.188e-07 |
-| svdvals_f32_32x32 | jax-cuda | 4 | 15 | 3.542 | 0.003338 |
-| svdvals_f64_32x32 | jax-cuda | 1 | 15 | 5.857 | 4.546e-06 |
-| eigvalsh_f32_32x32 | jax-cuda | 4 | 15 | 2.263 | 0.004775 |
-| eigvalsh_f64_32x32 | jax-cuda | 1 | 15 | 2.930 | 5.542e-06 |
-| pinv_f32_32x32 | jax-cuda | 2 | 15 | 2.650 | 0.0006436 |
-| pinv_f64_32x32 | jax-cuda | 1 | 15 | 5.909 | 1.367e-06 |
-| inv_f32_32x32 | jax-cuda | 8 | 15 | 2.636 | 0.0004905 |
-| inv_f64_32x32 | jax-cuda | 8 | 15 | 2.826 | 2.284e-07 |
-| det_f32_32x32 | jax-cuda | 8 | 15 | 2.183 | 0.002641 |
-| det_f64_32x32 | jax-cuda | 8 | 15 | 2.164 | 1.135e-06 |
-| norm_f32_32x32 | jax-cuda | 16 | 15 | 2.823 | 0 |
-| norm_f64_32x32 | jax-cuda | 16 | 15 | 2.844 | 0 |
-| triangular_solve_f32_32x32 | jax-cuda | 16 | 15 | 2.433 | 0.0001546 |
-| triangular_solve_f64_32x32 | jax-cuda | 16 | 15 | 3.824 | 1.609e-07 |
-| cholesky_f32_512x512 | jax-cuda | 8 | 15 | 2.197 | 0.0003554 |
-| cholesky_f64_512x512 | jax-cuda | 1 | 15 | 2.766 | 4.418e-07 |
-| svdvals_f32_512x512 | jax-cuda | 1 | 15 | 25.955 | 0.1547 |
-| svdvals_f64_512x512 | jax-cuda | 1 | 15 | 538.402 | 0.0002063 |
-| eigvalsh_f32_512x512 | jax-cuda | 1 | 15 | 5.034 | 0.008342 |
-| eigvalsh_f64_512x512 | jax-cuda | 1 | 15 | 19.595 | 1.55e-06 |
-| pinv_f32_512x512 | jax-cuda | 1 | 15 | 29.357 | 0.009647 |
-| pinv_f64_512x512 | jax-cuda | 1 | 15 | 616.628 | 8.975e-06 |
-| inv_f32_512x512 | jax-cuda | 1 | 15 | 2.319 | 0.002107 |
-| inv_f64_512x512 | jax-cuda | 1 | 15 | 6.414 | 1.85e-06 |
-| det_f32_512x512 | jax-cuda | 2 | 15 | 3.264 | 0.004748 |
-| det_f64_512x512 | jax-cuda | 1 | 15 | 2.907 | 1.426e-05 |
-| norm_f32_512x512 | jax-cuda | 16 | 15 | 2.687 | 0 |
-| norm_f64_512x512 | jax-cuda | 16 | 15 | 2.529 | 1.909e-07 |
-| triangular_solve_f32_512x512 | jax-cuda | 16 | 15 | 2.391 | 0.0007877 |
-| triangular_solve_f64_512x512 | jax-cuda | 16 | 15 | 3.068 | 1.157e-06 |
-| cholesky_f32_32x32 | jax-cuda-jit | 16 | 15 | 2.336 | 0.0002352 |
-| cholesky_f64_32x32 | jax-cuda-jit | 16 | 15 | 3.288 | 2.188e-07 |
-| svdvals_f32_32x32 | jax-cuda-jit | 4 | 15 | 3.543 | 0.003338 |
-| svdvals_f64_32x32 | jax-cuda-jit | 1 | 15 | 5.769 | 4.546e-06 |
-| eigvalsh_f32_32x32 | jax-cuda-jit | 4 | 15 | 2.387 | 0.004775 |
-| eigvalsh_f64_32x32 | jax-cuda-jit | 1 | 15 | 2.941 | 5.542e-06 |
-| pinv_f32_32x32 | jax-cuda-jit | 4 | 15 | 2.924 | 0.0006436 |
-| pinv_f64_32x32 | jax-cuda-jit | 1 | 15 | 5.375 | 1.367e-06 |
-| inv_f32_32x32 | jax-cuda-jit | 8 | 15 | 2.662 | 0.0004905 |
-| inv_f64_32x32 | jax-cuda-jit | 16 | 15 | 3.181 | 2.284e-07 |
-| det_f32_32x32 | jax-cuda-jit | 8 | 15 | 2.081 | 0.002641 |
-| det_f64_32x32 | jax-cuda-jit | 16 | 15 | 2.512 | 1.135e-06 |
-| norm_f32_32x32 | jax-cuda-jit | 16 | 15 | 2.149 | 0 |
-| norm_f64_32x32 | jax-cuda-jit | 16 | 15 | 2.530 | 0 |
-| triangular_solve_f32_32x32 | jax-cuda-jit | 16 | 15 | 2.938 | 0.0001546 |
-| triangular_solve_f64_32x32 | jax-cuda-jit | 16 | 15 | 2.447 | 1.609e-07 |
-| cholesky_f32_512x512 | jax-cuda-jit | 8 | 15 | 2.159 | 0.0003554 |
-| cholesky_f64_512x512 | jax-cuda-jit | 1 | 15 | 2.756 | 4.418e-07 |
-| svdvals_f32_512x512 | jax-cuda-jit | 1 | 15 | 25.930 | 0.1547 |
-| svdvals_f64_512x512 | jax-cuda-jit | 1 | 15 | 538.418 | 0.0002063 |
-| eigvalsh_f32_512x512 | jax-cuda-jit | 1 | 15 | 4.997 | 0.008342 |
-| eigvalsh_f64_512x512 | jax-cuda-jit | 1 | 15 | 19.555 | 1.55e-06 |
-| pinv_f32_512x512 | jax-cuda-jit | 1 | 15 | 28.692 | 0.009647 |
-| pinv_f64_512x512 | jax-cuda-jit | 1 | 15 | 616.153 | 8.975e-06 |
-| inv_f32_512x512 | jax-cuda-jit | 1 | 15 | 2.217 | 0.002107 |
+| det_f32_512x512 | tenferro-cuda-eager | 2 | 15 | 3.952 | 0.008577 |
+| det_f64_512x512 | tenferro-cuda-eager | 1 | 15 | 3.017 | 1.426e-05 |
+| norm_f32_512x512 | tenferro-cuda-eager | 32 | 15 | 3.111 | 0 |
+| norm_f64_512x512 | tenferro-cuda-eager | 32 | 15 | 3.245 | 1.909e-07 |
+| triangular_solve_f32_512x512 | tenferro-cuda-eager | 16 | 15 | 2.905 | 0.0007877 |
+| triangular_solve_f64_512x512 | tenferro-cuda-eager | 16 | 15 | 3.411 | 1.157e-06 |
+| cholesky_f32_32x32 | pytorch-cuda | 32 | 15 | 2.960 | 0.0002352 |
+| cholesky_f64_32x32 | pytorch-cuda | 16 | 15 | 2.571 | 2.188e-07 |
+| svdvals_f32_32x32 | pytorch-cuda | 8 | 15 | 3.221 | 0.007749 |
+| svdvals_f64_32x32 | pytorch-cuda | 1 | 15 | 5.087 | 3.387e-06 |
+| eigvalsh_f32_32x32 | pytorch-cuda | 16 | 15 | 3.492 | 0.001073 |
+| eigvalsh_f64_32x32 | pytorch-cuda | 4 | 15 | 2.442 | 5.433e-07 |
+| pinv_f32_32x32 | pytorch-cuda | 4 | 15 | 2.208 | 0.001023 |
+| pinv_f64_32x32 | pytorch-cuda | 1 | 15 | 4.914 | 9.374e-07 |
+| inv_f32_32x32 | pytorch-cuda | 8 | 15 | 2.253 | 0.0004905 |
+| inv_f64_32x32 | pytorch-cuda | 8 | 15 | 2.242 | 2.284e-07 |
+| det_f32_32x32 | pytorch-cuda | 16 | 15 | 2.669 | 0.002641 |
+| det_f64_32x32 | pytorch-cuda | 16 | 15 | 2.575 | 3.784e-07 |
+| norm_f32_32x32 | pytorch-cuda | 128 | 15 | 1.939 | 0 |
+| norm_f64_32x32 | pytorch-cuda | 128 | 15 | 1.970 | 0 |
+| triangular_solve_f32_32x32 | pytorch-cuda | 64 | 15 | 3.408 | 9.242e-05 |
+| triangular_solve_f64_32x32 | pytorch-cuda | 64 | 15 | 3.660 | 1.415e-07 |
+| cholesky_f32_512x512 | pytorch-cuda | 8 | 15 | 2.231 | 0.0003554 |
+| cholesky_f64_512x512 | pytorch-cuda | 1 | 15 | 2.194 | 4.418e-07 |
+| svdvals_f32_512x512 | pytorch-cuda | 1 | 15 | 28.276 | 0.1733 |
+| svdvals_f64_512x512 | pytorch-cuda | 1 | 15 | 597.866 | 0.0002066 |
+| eigvalsh_f32_512x512 | pytorch-cuda | 1 | 15 | 4.388 | 0.008342 |
+| eigvalsh_f64_512x512 | pytorch-cuda | 1 | 15 | 14.752 | 1.55e-06 |
+| pinv_f32_512x512 | pytorch-cuda | 1 | 15 | 31.720 | 0.01126 |
+| pinv_f64_512x512 | pytorch-cuda | 1 | 15 | 683.695 | 8.747e-06 |
+| inv_f32_512x512 | pytorch-cuda | 2 | 15 | 3.907 | 0.002107 |
+| inv_f64_512x512 | pytorch-cuda | 1 | 15 | 6.016 | 1.85e-06 |
+| det_f32_512x512 | pytorch-cuda | 2 | 15 | 2.885 | 0.007965 |
+| det_f64_512x512 | pytorch-cuda | 1 | 15 | 2.512 | 1.369e-05 |
+| norm_f32_512x512 | pytorch-cuda | 128 | 15 | 2.529 | 0 |
+| norm_f64_512x512 | pytorch-cuda | 128 | 15 | 2.603 | 1.909e-07 |
+| triangular_solve_f32_512x512 | pytorch-cuda | 32 | 15 | 3.322 | 0.0006008 |
+| triangular_solve_f64_512x512 | pytorch-cuda | 4 | 15 | 3.388 | 6.887e-07 |
+| cholesky_f32_32x32 | jax-cuda | 16 | 15 | 1.926 | 0.0002352 |
+| cholesky_f64_32x32 | jax-cuda | 16 | 15 | 2.519 | 2.188e-07 |
+| svdvals_f32_32x32 | jax-cuda | 4 | 15 | 3.524 | 0.003338 |
+| svdvals_f64_32x32 | jax-cuda | 1 | 15 | 5.862 | 4.546e-06 |
+| eigvalsh_f32_32x32 | jax-cuda | 4 | 15 | 2.714 | 0.004775 |
+| eigvalsh_f64_32x32 | jax-cuda | 1 | 15 | 2.923 | 5.542e-06 |
+| pinv_f32_32x32 | jax-cuda | 2 | 15 | 2.404 | 0.0006436 |
+| pinv_f64_32x32 | jax-cuda | 1 | 15 | 5.862 | 1.367e-06 |
+| inv_f32_32x32 | jax-cuda | 16 | 15 | 3.318 | 0.0004905 |
+| inv_f64_32x32 | jax-cuda | 8 | 15 | 2.766 | 2.284e-07 |
+| det_f32_32x32 | jax-cuda | 16 | 15 | 3.588 | 0.002641 |
+| det_f64_32x32 | jax-cuda | 16 | 15 | 2.927 | 1.135e-06 |
+| norm_f32_32x32 | jax-cuda | 16 | 15 | 2.087 | 0 |
+| norm_f64_32x32 | jax-cuda | 16 | 15 | 2.662 | 0 |
+| triangular_solve_f32_32x32 | jax-cuda | 16 | 15 | 3.615 | 0.0001546 |
+| triangular_solve_f64_32x32 | jax-cuda | 16 | 15 | 3.627 | 1.609e-07 |
+| cholesky_f32_512x512 | jax-cuda | 8 | 15 | 2.143 | 0.0003554 |
+| cholesky_f64_512x512 | jax-cuda | 1 | 15 | 2.750 | 4.418e-07 |
+| svdvals_f32_512x512 | jax-cuda | 1 | 15 | 26.021 | 0.1547 |
+| svdvals_f64_512x512 | jax-cuda | 1 | 15 | 543.407 | 0.0002063 |
+| eigvalsh_f32_512x512 | jax-cuda | 1 | 15 | 5.075 | 0.008342 |
+| eigvalsh_f64_512x512 | jax-cuda | 1 | 15 | 19.701 | 1.55e-06 |
+| pinv_f32_512x512 | jax-cuda | 1 | 15 | 29.316 | 0.009647 |
+| pinv_f64_512x512 | jax-cuda | 1 | 15 | 622.432 | 8.975e-06 |
+| inv_f32_512x512 | jax-cuda | 1 | 15 | 2.297 | 0.002107 |
+| inv_f64_512x512 | jax-cuda | 1 | 15 | 6.437 | 1.85e-06 |
+| det_f32_512x512 | jax-cuda | 2 | 15 | 3.266 | 0.004748 |
+| det_f64_512x512 | jax-cuda | 1 | 15 | 2.901 | 1.426e-05 |
+| norm_f32_512x512 | jax-cuda | 16 | 15 | 2.619 | 0 |
+| norm_f64_512x512 | jax-cuda | 16 | 15 | 2.636 | 1.909e-07 |
+| triangular_solve_f32_512x512 | jax-cuda | 16 | 15 | 2.375 | 0.0007877 |
+| triangular_solve_f64_512x512 | jax-cuda | 16 | 15 | 3.486 | 1.157e-06 |
+| cholesky_f32_32x32 | jax-cuda-jit | 16 | 15 | 2.032 | 0.0002352 |
+| cholesky_f64_32x32 | jax-cuda-jit | 16 | 15 | 2.982 | 2.188e-07 |
+| svdvals_f32_32x32 | jax-cuda-jit | 4 | 15 | 3.169 | 0.003338 |
+| svdvals_f64_32x32 | jax-cuda-jit | 1 | 15 | 5.696 | 4.546e-06 |
+| eigvalsh_f32_32x32 | jax-cuda-jit | 4 | 15 | 2.314 | 0.004775 |
+| eigvalsh_f64_32x32 | jax-cuda-jit | 1 | 15 | 2.946 | 5.542e-06 |
+| pinv_f32_32x32 | jax-cuda-jit | 4 | 15 | 3.012 | 0.0006436 |
+| pinv_f64_32x32 | jax-cuda-jit | 1 | 15 | 5.421 | 1.367e-06 |
+| inv_f32_32x32 | jax-cuda-jit | 16 | 15 | 3.366 | 0.0004905 |
+| inv_f64_32x32 | jax-cuda-jit | 16 | 15 | 3.330 | 2.284e-07 |
+| det_f32_32x32 | jax-cuda-jit | 16 | 15 | 2.919 | 0.002641 |
+| det_f64_32x32 | jax-cuda-jit | 16 | 15 | 2.467 | 1.135e-06 |
+| norm_f32_32x32 | jax-cuda-jit | 16 | 15 | 2.216 | 0 |
+| norm_f64_32x32 | jax-cuda-jit | 16 | 15 | 2.548 | 0 |
+| triangular_solve_f32_32x32 | jax-cuda-jit | 16 | 15 | 3.024 | 0.0001546 |
+| triangular_solve_f64_32x32 | jax-cuda-jit | 16 | 15 | 2.952 | 1.609e-07 |
+| cholesky_f32_512x512 | jax-cuda-jit | 8 | 15 | 2.143 | 0.0003554 |
+| cholesky_f64_512x512 | jax-cuda-jit | 1 | 15 | 2.763 | 4.418e-07 |
+| svdvals_f32_512x512 | jax-cuda-jit | 1 | 15 | 25.984 | 0.1547 |
+| svdvals_f64_512x512 | jax-cuda-jit | 1 | 15 | 539.933 | 0.0002063 |
+| eigvalsh_f32_512x512 | jax-cuda-jit | 1 | 15 | 4.996 | 0.008342 |
+| eigvalsh_f64_512x512 | jax-cuda-jit | 1 | 15 | 19.552 | 1.55e-06 |
+| pinv_f32_512x512 | jax-cuda-jit | 1 | 15 | 28.726 | 0.009647 |
+| pinv_f64_512x512 | jax-cuda-jit | 1 | 15 | 617.798 | 8.975e-06 |
+| inv_f32_512x512 | jax-cuda-jit | 1 | 15 | 2.311 | 0.002107 |
 | inv_f64_512x512 | jax-cuda-jit | 1 | 15 | 6.381 | 1.85e-06 |
-| det_f32_512x512 | jax-cuda-jit | 2 | 15 | 3.231 | 0.004748 |
-| det_f64_512x512 | jax-cuda-jit | 1 | 15 | 2.903 | 1.426e-05 |
-| norm_f32_512x512 | jax-cuda-jit | 16 | 15 | 2.618 | 0 |
-| norm_f64_512x512 | jax-cuda-jit | 32 | 15 | 3.178 | 1.909e-07 |
-| triangular_solve_f32_512x512 | jax-cuda-jit | 16 | 15 | 2.597 | 0.0007877 |
-| triangular_solve_f64_512x512 | jax-cuda-jit | 8 | 15 | 2.018 | 1.157e-06 |
+| det_f32_512x512 | jax-cuda-jit | 2 | 15 | 3.193 | 0.004748 |
+| det_f64_512x512 | jax-cuda-jit | 1 | 15 | 2.810 | 1.426e-05 |
+| norm_f32_512x512 | jax-cuda-jit | 16 | 15 | 2.683 | 0 |
+| norm_f64_512x512 | jax-cuda-jit | 16 | 15 | 2.628 | 1.909e-07 |
+| triangular_solve_f32_512x512 | jax-cuda-jit | 16 | 15 | 2.872 | 0.0007877 |
+| triangular_solve_f64_512x512 | jax-cuda-jit | 16 | 15 | 3.062 | 1.157e-06 |
 
 ## Run metadata
 
@@ -215,20 +215,20 @@ schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/linalg_public_api
 suite_file: benchmarks/gpu/linalg_public_api.yaml
-timestamp: '2026-10-13T10:16:13Z'
+timestamp: '2026-10-13T14:03:00Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: 8b13220c1e0397a29a27be65557c24105352a35b
+  commit: dfbdf6b66d40162f4731da116ec42ed034da0dce
   dirty: false
   features:
   - cuda
   resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: ed0ed4c79805014f2bba4644383450a6b9bf9361
+  commit: 71cf328826a92cc9628a8c15e8f45430a8a6d98c
   dirty: false
 environment:
-  hostname: 33ed5e46905b
+  hostname: 737f43342de3
   os: Linux-6.8.0-146-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
@@ -337,17 +337,17 @@ collection:
   expected_cases: 32
   selected_cases: 32
   sha256:
-    .devcontainer/cuda/devcontainer.json: 6d3b10caecad15c0a513120ce6282ebb13c65be81c40e29f78a329439c50f083
+    .devcontainer/cuda/devcontainer.json: 76569d9e898967d094988483a7adf6ab96eb426793db7248545d50e155f19cf1
     .devcontainer/cuda/Dockerfile: 1cadf2f890f01187553bab0f136dc817f8964eff6a35b1806b1448a7383d21de
-    src/bin/benchmark_gpu_public_api.rs: f29f1ad0dd99e8e5d24fffc68b6fe30673b0c42d34b5fe4a5557b7f774c2af15
-    src/bin/benchmark_gpu_public_api/runtime_ops.rs: 86f2856411d902d27dcc5c8e66415eb933e057e04b9fad86be55569004572a36
-    src/bin/benchmark_gpu_public_api/structural.rs: b5d780e867a5748be4f29f245d367833a8cd5ee0ebd440926d8b3003b432b0e4
-    src/bin/benchmark_gpu_public_api/linalg.rs: 7d4e29355a973f3c60c2af53fd6ceac597d85fe21f9ab5f6bf164d0afe0a6566
+    src/bin/benchmark_gpu_public_api.rs: 249184323d09433d1fbf401284e39fa797c0252dceb20351bbcc151551d1b32c
+    src/bin/benchmark_gpu_public_api/runtime_ops.rs: d7b64dccce85c804b8f67543fefca89836f045702bdcf15b5441c7bb8543eb21
+    src/bin/benchmark_gpu_public_api/structural.rs: 382fb5ffb6d86ac1a4a66723376808e9c95c8a8731570a5617f2ffed2a6e40a7
+    src/bin/benchmark_gpu_public_api/linalg.rs: 84162923fa0d0772c88ec9c4eab169ad3a75e5d16ff76961d1541670dd8565c1
     src/bin/benchmark_gpu_public_api/reuse.rs: ad72b565373904275128d7beb8673bada08d922e8f310be6cedb0d2d8187898f
-    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 24cd5cec53eaecc8b6b4a22a1cd69e8cbe430ab6c9945d48df4c03d3b2655999
-    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: 0a9e8d89405fc802e392e047d8b7c587e38ab1850d831735dd53fe13e87dabd3
+    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 4d05b9facc0b7e5a3ff31146fc42f98d680010264c6606a3154e9da2dfa6a0cc
+    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: c5ae66679294bcb1bb27982832ef2733d76544f94a2d321c99dab3b370062b0c
     scripts/run_gpu_public_api.sh: 3516e06358fc3c2e36a066067cdffcab85673c7e78bf9a244dde318d109dd772
-    data/results/nvidia-gpu/gpu/linalg_public_api/20261013_101613/fixtures/manifest.json: 370eb17f94269bef6bc63e658c5697f52b2acf97be1c43a97e1e93b5ea728991
-    target/release/benchmark_gpu_public_api: 91380afb8faffb97ca96d131ef98cc8e2656aababe594e82d65a07c9bb1bed38
+    data/results/nvidia-gpu/gpu/linalg_public_api/20261013_140259/fixtures/manifest.json: db62318dc4ca5c2f46c47b35d0e9804251416a8c0fa52f5c1e022b5e2de1e38e
+    target/release/benchmark_gpu_public_api: b505a2bdb3d0c5a7bffd1390af659a154753ea998ec68becd4779e137c9c7150
   reference_numpy_version: 2.4.2
 ```
