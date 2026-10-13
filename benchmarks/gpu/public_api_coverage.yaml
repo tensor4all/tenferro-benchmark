@@ -44,6 +44,8 @@ families:
     routes: [TensorSessionOpsExt, EagerSession]
     contracts:
       padding: Edge/interior insertion, negative edge cropping, and combined interior/crop F32/F64 at 32x32 and 1024x1024. JAX lax.pad uses a preuploaded zero; PyTorch functional.pad compares cropping only and interior insertion is explicitly unsupported.
+      reshape: Full owned output copy adding a leading singleton dimension, F32/F64/C32/C64/I32/I64 at 32x32 and 1024x1024; Tensor.reshape, EagerSession.reshape and torch.view_copy. JAX owned-output counterpart unverified. Direct/Torch allocation checks are untimed; eager original descriptors are validated before untimed inspection copies.
+      stack: Actual Tensor.stack and EagerSession.stack, two distinct inputs, axis 0 or 2, same six dtypes/sizes; native Torch/JAX stack. Intrinsic intermediate allocations remain part of the declared public operation.
       scatter: Additive, unique in-bounds I64 indices; torch.scatter_add and lax.scatter_add.
       slice: Materialized direct slice; eager lazy view explicitly excluded from this comparison.
       take_along_axis: Shared-index and batch-varying-index routes are separate cases.
@@ -57,8 +59,7 @@ families:
       convert_other_dtype_domains: F32-to-F64 checked lossless promotion has selected cases; other domains require separate checked contracts.
       broadcast_other_mappings: Ordered rank-two singleton broadcasting has selected materializing direct/torch.expand_copy/JAX cases; eager lazy views are excluded. Other mappings remain separate.
       dynamic_slice_other_domains: F32/F64 with I64 CUDA starts now has in-bounds and clamped rank-two cases; other index dtype/rank domains remain separate.
-      reshape: Existing perf_issues cases are partial coverage; an ordinary materialization/reference contract remains to be added.
-      stack_index_select_slice_axis_take_axis: Map each public lowering before assigning operation aliases; wrapper latency is separate.
+      index_select_slice_axis_take_axis: Public index_select/take_axis lower to gather with host-created indices, and slice_axis/slice-builder lower to slice. Existing device-index gather and materialized slice cases cover those primitives, not wrapper entry/host-index setup; wrapper latency remains separate.
   linalg:
     cases: data/instances/gpu_linalg_public_api.json
     suite: benchmarks/gpu/linalg_public_api.yaml
