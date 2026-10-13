@@ -2130,6 +2130,27 @@
   "reference_for": "vendor_handle_cublas_f64_create-destroy"
  },
  {
+  "id": "vendor_handle_cublas_f64_runtime-handle",
+  "issues": [
+   "#2083"
+  ],
+  "kind": "vendor_handle",
+  "arm": "runtime-handle",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "arm": "runtime-handle",
+   "kind": "vendor_handle",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2083: the documented raw-session pattern creates and destroys a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and 10 MiB per session on the issue's card); the reused arm keeps one handle. Both arms are per-iteration inside the raw scope.",
+  "reference_for": "vendor_handle_cublas_f64_create-destroy"
+ },
+ {
   "id": "vendor_churn_f64_cycles8",
   "issues": [
    "#1924"

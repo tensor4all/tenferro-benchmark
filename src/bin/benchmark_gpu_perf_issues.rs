@@ -1529,6 +1529,69 @@ fn cublas_dgemm_raw(
     }
 }
 
+/// One dgemm through the handle the runtime already owns (#2083's ask), inside
+/// a raw scope, with the same host barrier as the other arms.
+fn cublas_dgemm_runtime_handle(
+    bk: &mut CudaBackend,
+    a: &Tensor,
+    b: &Tensor,
+    n: usize,
+) -> Result<Tensor> {
+    use tenferro_tensor::Error;
+    let dim = i32::try_from(n).map_err(|error| format!("{error}"))?;
+    let out = bk.with_backend_session(|s| -> Result<Tensor> {
+        let out = with_cuda_exec_session(s, |cs| {
+            cs.with_raw(VENDOR_OP, |raw| {
+                let ar = raw.tensor(
+                    a.as_typed::<f64>()
+                        .ok_or_else(|| Error::invalid_argument(VENDOR_OP, "a", "not f64"))?,
+                )?;
+                let br = raw.tensor(
+                    b.as_typed::<f64>()
+                        .ok_or_else(|| Error::invalid_argument(VENDOR_OP, "b", "not f64"))?,
+                )?;
+                let mut c = raw.alloc_output::<f64>(&[n, n])?;
+                let cr = raw.tensor_mut(&mut c)?;
+                let (alpha, beta) = (1.0_f64, 0.0_f64);
+                raw.with_cublas_handle(
+                    VENDOR_OP,
+                    cublas_sys::cublasPointerMode_t::CUBLAS_POINTER_MODE_HOST,
+                    |handle| {
+                        // SAFETY: the device pointers come from references that
+                        // stay borrowed until the synchronize below; all three
+                        // operands are n x n compact column-major, cuBLAS's
+                        // native layout, with C the only buffer written.
+                        unsafe {
+                            cublas::dgemm(
+                                handle,
+                                cublas_sys::cublasOperation_t::CUBLAS_OP_N,
+                                cublas_sys::cublasOperation_t::CUBLAS_OP_N,
+                                dim,
+                                dim,
+                                dim,
+                                &alpha,
+                                ar.raw_ptr().cast(),
+                                dim,
+                                br.raw_ptr().cast(),
+                                dim,
+                                &beta,
+                                cr.raw_ptr().cast(),
+                                dim,
+                            )
+                        }
+                        .map_err(|e| Error::backend_source(VENDOR_OP, e))
+                    },
+                )?;
+                raw.synchronize()?;
+                Ok(Tensor::from(c))
+            })
+        })
+        .ok_or("not a CUDA execution session")??;
+        Ok(out)
+    })??;
+    Ok(out)
+}
+
 fn destroy_raw_handle(bk: &mut CudaBackend, handle: cublas_sys::cublasHandle_t) -> Result<()> {
     use tenferro_tensor::Error;
     bk.with_backend_session(|s| -> Result<()> {
@@ -1580,18 +1643,28 @@ fn vendor_handle(params: &Value, timing: &Timing, device: usize) -> Result<CaseO
     };
     let keep = arm == "reused";
     let bytes = n * n * 8;
-    let measurement = bk.with_backend_session(|s| {
+    let measurement = if arm == "runtime-handle" {
         measure(timing, bytes, |it| {
             timed(
                 it,
-                &mut || {
-                    let (_, out) = cublas_dgemm_raw(s, &a, &b, n, keep, persistent)?;
-                    Ok(out)
-                },
+                &mut || cublas_dgemm_runtime_handle(&mut bk, &a, &b, n),
                 &mut || Ok(()),
             )
-        })
-    })??;
+        })?
+    } else {
+        bk.with_backend_session(|s| {
+            measure(timing, bytes, |it| {
+                timed(
+                    it,
+                    &mut || {
+                        let (_, out) = cublas_dgemm_raw(s, &a, &b, n, keep, persistent)?;
+                        Ok(out)
+                    },
+                    &mut || Ok(()),
+                )
+            })
+        })??
+    };
     if let Some(handle) = persistent {
         destroy_raw_handle(&mut bk, handle)?;
     }
@@ -1599,10 +1672,12 @@ fn vendor_handle(params: &Value, timing: &Timing, device: usize) -> Result<CaseO
         max_rel_error: error,
         measurement: Some(measurement),
         timer: vec![
-            if keep {
-                "cublasSetStream + dgemm inside one with_raw scope per operation (handle reused)"
-            } else {
-                "cublasCreate + cublasSetStream + dgemm + cublasDestroy inside one with_raw scope per operation"
+            match arm.as_str() {
+                "runtime-handle" => {
+                    "dgemm inside one with_raw scope per operation, on the runtime's own cuBLAS handle"
+                }
+                "reused" => "cublasSetStream + dgemm inside one with_raw scope per operation (handle reused)",
+                _ => "cublasCreate + cublasSetStream + dgemm + cublasDestroy inside one with_raw scope per operation",
             },
             "host barrier (raw.synchronize) inside the scope",
         ],

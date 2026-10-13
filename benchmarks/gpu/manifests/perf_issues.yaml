@@ -2,7 +2,7 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 2
+manifest_version: 3
 suite_id: gpu/perf_issues
 source: data/instances/gpu_perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -220,6 +220,7 @@ coverage:
   - reshape_constant_f32_64M_op-output
   - vendor_handle_cublas_f64_create-destroy
   - vendor_handle_cublas_f64_reused
+  - vendor_handle_cublas_f64_runtime-handle
   - vendor_churn_f64_cycles8
   - vendor_churn_f64_cycles64
   - pool_retention_f64_alloc-free

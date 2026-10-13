@@ -49,7 +49,7 @@ SUITE_ID = "cpu/perf_issues"
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 2
+GPU_MANIFEST_VERSION = 3
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
@@ -617,7 +617,8 @@ def gpu_memory_cases(gpu):
                     "`constant` reshapes the uploaded constant and `op-output` reshapes an "
                     "elementwise result, with the op-output arm as the reference the constant "
                     "route has to reach. A compact reshape must be a view, not a device copy.")))
-    for arm, ref in (("create-destroy", None), ("reused", "create-destroy")):
+    for arm, ref in (("create-destroy", None), ("reused", "create-destroy"),
+                     ("runtime-handle", "create-destroy")):
         rows.append(case(
             f"vendor_handle_cublas_f64_{arm}", ("#2083",), "vendor_handle",
             {"arm": arm}, arm=arm, backend="tenferro-cuda", dtype="f64",
