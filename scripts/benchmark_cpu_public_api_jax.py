@@ -12,6 +12,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from public_api_candidates import PreparedOperation, jax_linalg_cases, selection_operation, masked_log_softmax_operation
+from public_api_followups import cases as followup_cases
 
 
 FIELDNAMES = [
@@ -376,6 +377,7 @@ def make_cases() -> list[Case]:
     cplx = "cpu/complex"
     return [
         *jax_linalg_cases(),
+        *followup_cases("jax"),
         (elem, "add", "f64", "33554432", "binary elementwise", compiled(lambda a, b: a + b, x_fast, y_fast)),
         (elem, "sub", "f64", "33554432", "binary elementwise", compiled(lambda a, b: a - b, x_fast, y_fast)),
         (elem, "mul", "f64", "33554432", "binary elementwise", compiled(lambda a, b: a * b, x_fast, y_fast)),

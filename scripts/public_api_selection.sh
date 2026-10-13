@@ -5,6 +5,10 @@
 select_public_api_group() {
     local suite="$1" requested="${2:-}" names name
     PUBLIC_API_GROUP_BENCHMARK_FILTER="$requested"
+    if [[ "${PUBLIC_API_FOLLOWUPS_ONLY:-0}" == "1" ]]; then
+        [[ "$suite" == "cpu/neural_public_api" ]] || return 1
+        return 0
+    fi
     [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]] || return 0
     case "$suite" in
         cpu/elementwise_reduction) names="reduce_sum_squares_axis0,masked_log_softmax_axis1,where_select" ;;

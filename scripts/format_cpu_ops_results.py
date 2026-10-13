@@ -62,6 +62,7 @@ PUBLIC_API_MATERIALIZING_SUITES = {
     "cpu/linalg_batched",
     "cpu/linalg_batch_families",
     "cpu/linalg_uncovered",
+    "cpu/neural_public_api",
     "cpu/output_reuse",
     "cpu/structural_shape",
 }

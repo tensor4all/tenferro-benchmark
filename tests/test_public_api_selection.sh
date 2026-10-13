@@ -17,3 +17,7 @@ if select_public_api_group cpu/complex; then exit 1; fi
 PUBLIC_API_CANDIDATES_ONLY=0
 select_public_api_group cpu/complex "conj,mul"
 [[ "$PUBLIC_API_GROUP_BENCHMARK_FILTER" == conj,mul ]]
+PUBLIC_API_FOLLOWUPS_ONLY=1
+select_public_api_group cpu/neural_public_api
+[[ -z "$PUBLIC_API_GROUP_BENCHMARK_FILTER" ]]
+if select_public_api_group cpu/linalg_uncovered; then exit 1; fi

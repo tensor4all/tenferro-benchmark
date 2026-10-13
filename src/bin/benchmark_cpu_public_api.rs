@@ -32,6 +32,8 @@ type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 #[path = "benchmark_cpu_public_api/candidates.rs"]
 mod candidates;
+#[path = "benchmark_cpu_public_api/followups.rs"]
+mod followups;
 
 const EW_FAST_N: usize = 33_554_432;
 const EW_N: usize = 8_388_608;
@@ -811,6 +813,7 @@ fn cases() -> Vec<Case> {
     ];
     cases.extend(batch_family_cases());
     cases.extend(candidates::cases());
+    cases.extend(followups::cases());
     cases
 }
 
@@ -976,6 +979,9 @@ fn emit_case(
 ) -> BenchResult<()> {
     if candidates::handles(case) {
         return candidates::emit(writer, args, backend, case);
+    }
+    if case.suite == followups::SUITE {
+        return followups::emit(writer, args, backend, case);
     }
     if args.execution_filter.runs_direct() {
         match time_case(args, backend, case, attribution.as_deref_mut()) {

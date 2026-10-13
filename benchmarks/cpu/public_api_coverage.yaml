@@ -1,6 +1,6 @@
 schema_version: 2
 scope:
-  description: Operation-level coverage of public tenferro-rs numerical tensor APIs with a meaningful PyTorch CPU counterpart.
+  description: Operation-level coverage of public tenferro-rs CPU numerical tensor APIs, with matching PyTorch/JAX counterparts where available.
   rules:
     - TypedTensor wrappers and TensorRead values backed by an owned contiguous Tensor are aliases only when they dispatch to the same backend kernel.
     - Non-contiguous TensorRead paths are not aliases; any claimed coverage must name a dedicated view/materialization benchmark.
@@ -12,6 +12,16 @@ scope:
     - Every spelling must exist in the tenferro-rs revision under test (scripts/route_coverage.py entrypoints); removed spellings are deleted, not kept as aliases.
 
 coverage:
+  - family: neural_public_api_followups
+    tenferro_apis:
+      - TensorSessionOpsExt::{erf,sigmoid,silu,softplus,gelu,gelu_tanh,reduce_mean,softmax,log_softmax,masked_softmax,layer_norm,rms_norm,take_along_axis}
+      - EagerSession::{erf,sigmoid,silu,softplus,gelu,gelu_tanh,reduce_mean,softmax,log_softmax,masked_softmax,layer_norm,rms_norm,take_along_axis}
+    pytorch: torch.erf/sigmoid/mean/take_along_dim; torch.nn.functional activations and non-affine normalization (masked softmax unsupported)
+    jax: jax.scipy.special.erf; jax.nn activations/softmax/standardize; jax.numpy.mean/take_along_axis
+    disposition: measured
+    benchmarks: cpu/neural_public_api
+    issues: ["tenferro-benchmark#139", "tenferro-benchmark#140", "tenferro-benchmark#141", "tenferro-benchmark#142", "tenferro-benchmark#143", "tenferro-benchmark#144", "tenferro-benchmark#145", "tenferro-benchmark#146", "tenferro-benchmark#147", "tenferro-benchmark#148", "tenferro-benchmark#149", "tenferro-benchmark#150", "tenferro-benchmark#151"]
+    reason: F32 at two shapes; axis 1, eps=1e-5, non-affine normalization. JAX standardize with mean=0 and stable variance directly implements non-affine RMSNorm. Existing perf_issues data remain intact. Standard trace lacks a public borrowed-session execution API.
   - family: elementwise
     tenferro_apis:
       - TensorElementwise::{add_read,sub_read,mul_read,div_read}

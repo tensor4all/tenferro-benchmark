@@ -78,6 +78,9 @@ REPORT_NAME="public_api"
 if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
     REPORT_NAME="public_api_candidates"
 fi
+if [[ "${PUBLIC_API_FOLLOWUPS_ONLY:-0}" == "1" ]]; then
+    REPORT_NAME="public_api_followups"
+fi
 SUITE_ID="cpu/$REPORT_NAME"
 SUITE_FILE="$PROJECT_DIR/benchmarks/cpu/$REPORT_NAME.yaml"
 BENCHMARK_TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
@@ -136,11 +139,11 @@ configure_cpu_thread_env "${THREAD_COUNTS[0]}"
 collect_run_metadata "$RUN_YAML"
 
 HAVE_JULIA=0
-if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" != "1" ]] && command -v julia >/dev/null 2>&1; then
+if [[ "$REPORT_NAME" == "public_api" ]] && command -v julia >/dev/null 2>&1; then
     HAVE_JULIA=1
     echo "Instantiating Julia project..."
     (cd "$PROJECT_DIR" && julia --project="$PROJECT_DIR" -e 'import Pkg; Pkg.instantiate()')
-elif [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
+elif [[ "$REPORT_NAME" != "public_api" ]]; then
     echo "Focused candidate collection selects tenferro-rs, PyTorch and JAX; Julia columns are unselected."
 else
     echo "WARNING: julia not found on PATH; skipping julia-base / strided-jl columns." >&2
@@ -192,6 +195,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_rust_group cpu/linalg_uncovered
     run_rust_group cpu/linalg_batched
     run_rust_group cpu/linalg_batch_families
+    run_rust_group cpu/neural_public_api
     run_rust_group cpu/complex "conj"
     run_rust_group cpu/complex "mul,div"
     run_rust_group cpu/complex "exp,log"
@@ -200,6 +204,9 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     assert_benchmark_host_idle
     if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
         export PUBLIC_API_BENCHMARK_FILTER="householder_qr,rank_revealing_qr,rank_revealing_qr_deficient,solve_read_into,reduce_sum_squares_axis0,masked_log_softmax_axis1,where_select"
+    fi
+    if [[ "${PUBLIC_API_FOLLOWUPS_ONLY:-0}" == "1" ]]; then
+        export PUBLIC_API_SUITE_FILTER="cpu/neural_public_api"
     fi
     if command -v uv >/dev/null 2>&1; then
         uv run python "$SCRIPT_DIR/benchmark_cpu_public_api_python.py" \
@@ -246,6 +253,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     run_jax_group cpu/linalg_uncovered
     run_jax_group cpu/linalg_batched
     run_jax_group cpu/linalg_batch_families
+    run_jax_group cpu/neural_public_api
     run_jax_group cpu/complex "conj"
     run_jax_group cpu/complex "mul,div"
     run_jax_group cpu/complex "exp,log"
@@ -310,6 +318,10 @@ fi
     if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
         echo "- Selection: initial six API candidates only; this report does not replace the complete Public API report. Julia columns are unselected."
         echo "- Invocation prefix: \`PUBLIC_API_CANDIDATES_ONLY=1 TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES BENCHMARK_TARGET_PROFILE=$BENCHMARK_TARGET_PROFILE\`"
+    fi
+    if [[ "${PUBLIC_API_FOLLOWUPS_ONLY:-0}" == "1" ]]; then
+        echo "- Selection: thirteen API follow-ups previously measured in perf_issues; this report preserves the complete Public API report. Julia columns are unselected."
+        echo "- Invocation prefix: \`PUBLIC_API_FOLLOWUPS_ONLY=1 TENFERRO_CPU_FEATURES=$TENFERRO_CPU_FEATURES BENCHMARK_TARGET_PROFILE=$BENCHMARK_TARGET_PROFILE\`"
     fi
     echo ""
     if [[ "$BENCHMARK_PROFILE" == "quick" ]]; then
@@ -388,7 +400,7 @@ fi
     cat "$TABLE"
 } > "$REPORT"
 
-if [[ "${PUBLIC_API_CANDIDATES_ONLY:-0}" == "1" ]]; then
+if [[ "$REPORT_NAME" != "public_api" ]]; then
     "$PROJECT_DIR/.venv/bin/python" "$SCRIPT_DIR/format_public_api_candidate_report.py" "$REPORT"
 fi
 cp "$REPORT" "$LATEST_REPORT"
