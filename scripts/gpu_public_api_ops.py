@@ -23,7 +23,10 @@ def fixtures(case, dtype):
         elif op == "eigvalsh":
             y = np.linalg.eigvalsh(a)
         elif op == "pinv":
-            y = np.linalg.pinv(a, rcond=1e-5)
+            # Tolerance tensors are operation inputs: construct and upload them
+            # with the fixture, rather than in the timed scalar overload.
+            inputs += [np.asarray(0, dtype=dtype), np.asarray(1e-5, dtype=dtype)]
+            y = np.linalg.pinv(a, rcond=float(inputs[2]))
         elif op == "inv":
             y = np.linalg.inv(a)
         elif op == "det":
@@ -179,7 +182,7 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
     if op in {"cholesky", "svdvals", "eigvalsh", "inv", "det", "norm"}:
         return lambda: getattr(torch.linalg, op)(x)
     if op == "pinv":
-        return lambda: torch.linalg.pinv(x, rtol=1e-5)
+        return lambda: torch.linalg.pinv(x, atol=inputs[1], rtol=inputs[2])
     if op == "triangular_solve":
         return lambda: torch.linalg.solve_triangular(x, inputs[1], upper=False)
     if op == "tensordot":
@@ -247,7 +250,7 @@ def jax_operation(jax, jnp, case):
     if op == "svdvals":
         return lambda x: jnp.linalg.svd(x, compute_uv=False)
     if op == "pinv":
-        return lambda x: jnp.linalg.pinv(x, rtol=1e-5)
+        return lambda x, atol, rtol: jnp.linalg.pinv(x, rtol=rtol)
     if op == "triangular_solve":
         import jax.scipy.linalg
         return lambda x, rhs: jax.scipy.linalg.solve_triangular(x, rhs, lower=True)

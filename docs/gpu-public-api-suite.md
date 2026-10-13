@@ -143,7 +143,8 @@ matching PyTorch/JAX operation; compositions are not timed as substitutes.
 Masked softmax lacks a matching stable PyTorch operation. JAX RMS normalization
 and eager tenferro values-only SVD are similarly explicit unsupported arms.
 Normalization uses no affine parameters, `eps=1e-5`, and nonempty finite inputs;
-pinv uses `rtol=1e-5`; triangular solve is left/lower/non-transposed/non-unit.
+pinv uses `atol=0`, `rtol=1e-5`, with framework tolerance tensors prepared and
+uploaded before timing; triangular solve is left/lower/non-transposed/non-unit.
 
 This first set covers compact F32/F64 paths, complex FFT/conjugation/contractions,
 Bool masks and I64 indices. Non-contiguous `TensorRead` routes are not aliases of

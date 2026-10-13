@@ -21,7 +21,7 @@ families:
     selected_contracts:
       full_reductions: Full sum/prod/max/min, F32/F64, n=1024 and 1048576; None axes in tenferro, omitted axis/dim in references.
       comparison_directions: Eq/Lt/Le/Gt/Ge with true, false and equality-boundary values; CompareDir has no Ne variant.
-    pending_measurements: New full-reduction and direction cases require refreshed reports; selections alone are not measured coverage.
+    latest_report: result/nvidia-gpu/gpu/isolated_ops.md; only validated measured cells count.
     deferred:
       scale_real_scale_complex: Public scalar setup must be separated before standard timing; ordinary tensor-tensor multiplication is a different case.
       noncontiguous_reads: Require separate strided TensorRead fixtures; no blanket aliases.
@@ -90,7 +90,7 @@ cross_cutting:
     layouts and recorded JIT compiler options pass full-size CUDA checks after
     earlier general-einsum/compiler-default OOMs. Framework timing, strict
     verification and held eager sessions are
-    implemented; refreshed full-size timing reports remain pending.
+    implemented; refreshed full-size GPU0 reports are linked under result/nvidia-gpu/gpu/.
 cuda_unavailable_at_audit:
   - TensorLinalgExt inv/pinv_with_rtol (CUDA execution probe found internal host-scalar operands; eager routes differ)
   - eig/eigvals/full_piv_lu/full_piv_lu_solve
