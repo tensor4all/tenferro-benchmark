@@ -24,9 +24,18 @@ export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-mac-cpu}"
 TENFERRO_DIR="${BENCH_TENFERRO_DIR:-extern/tenferro-rs}"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
+START_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
+export BENCH_COMMAND_START_NS="$START_NS"
+# Reference warm-build 1T+4T commands: quick/scan 89 s, full/standard 116 s.
+# Cold builds are included and may be labelled over budget without failing.
+if [[ "${BENCH_COVERAGE:-quick}" == full ]]; then
+    export BENCH_COMMAND_BUDGET_SECONDS="${BENCH_COMMAND_BUDGET_SECONDS:-600}"
+else
+    export BENCH_COMMAND_BUDGET_SECONDS="${BENCH_COMMAND_BUDGET_SECONDS:-300}"
+fi
 COMMAND="$(printf '%q ' "$0" "$@")"
 for var in BENCHMARK_TARGET_PROFILE TENFERRO_CPU_FEATURES BENCH_COVERAGE BENCH_EFFORT \
-    BENCH_INSTANCE BENCH_CONFIRM_CONFIG BENCH_AA_WARMUPS BENCH_AA_RUNS BENCH_SESSION_BINARY; do
+    BENCH_INSTANCE BENCH_CONFIRM_CONFIG BENCH_AA_WARMUPS BENCH_AA_RUNS BENCH_SESSION_BINARY BENCH_COMMAND_BUDGET_SECONDS; do
     if [[ -n "${!var:-}" ]]; then COMMAND="$var=${!var} $COMMAND"; fi
 done
 # Also needed by prebuilt binaries: sets the provider library paths.
@@ -45,6 +54,7 @@ else
     cargo build --release --no-default-features --features "$TENFERRO_CPU_FEATURES" --bin benchmark_cpu_session
     BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_cpu_session"
 fi
+BUILD_END_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
 "$PYTHON" -c 'from scripts.benchmark_layout import safe_target_profile; import sys; safe_target_profile(sys.argv[1])' "$BENCHMARK_TARGET_PROFILE"
 "$PYTHON" scripts/generate_session_matrix_cases.py --check
 "$PYTHON" scripts/validate_benchmark_suite.py benchmarks/cpu/session_matrix.yaml
@@ -67,6 +77,16 @@ for threads in "${THREAD_COUNTS[@]}"; do
     "$PYTHON" scripts/benchmark_cpu_session.py --binary "$BINARY" \
         --threads "$threads" --run-dir "$RUN_DIR" || failed=1
 done
+REPORT_START_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
+export BENCH_REPORT_START_NS="$REPORT_START_NS"
+"$PYTHON" - "$RUN_DIR/wall_phases.json" "$START_NS" "$BUILD_END_NS" "$REPORT_START_NS" <<'PY'
+import json,sys
+from pathlib import Path
+start,build,report=map(int,sys.argv[2:])
+Path(sys.argv[1]).write_text(json.dumps({'build_and_checkout_seconds':(build-start)/1e9,
+    'validation_metadata_and_collection_seconds':(report-build)/1e9,
+    'command_before_report_seconds':(report-start)/1e9},indent=2)+'\n')
+PY
 if [[ "${BENCH_SKIP_LATEST:-0}" == 1 ]]; then
     "$PYTHON" scripts/benchmark_cpu_session.py --report --run-dir "$RUN_DIR" \
         --target-profile "$BENCHMARK_TARGET_PROFILE" --no-latest

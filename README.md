@@ -196,9 +196,9 @@ The CLI can also be invoked as `npx --yes @devcontainers/cli`.
 
 `BENCH_INSTANCE` accepts comma-separated case IDs; list them using
 `python scripts/suite_instances.py --suite-file benchmarks/cpu/small_work.yaml --format lines`.
-The suite is included in multi-thread-count `run_all.sh` calls (disable with
-`RUN_SMALL_WORK_SUITE=0`), or opt in with `RUN_SMALL_WORK_SUITE=1` for a
-single-thread-count call. Standalone collection avoids rerunning other suites.
+The suite and `cpu/session_matrix` run by default in `run_all.sh` calls
+(disable with `RUN_SMALL_WORK_SUITE=0`). Standalone collection avoids
+rerunning other suites.
 
 Numerical values, solve residuals, and applicable AD gradients are checked
 outside timing. The report records batch-normalized median/IQR in ns, CoV,

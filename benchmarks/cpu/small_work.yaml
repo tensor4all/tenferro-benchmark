@@ -2,7 +2,7 @@ schema_version: 1
 suite_id: cpu/small_work
 title: CPU small-work public API benchmarks
 description: >-
-  286 saved cases, including matched non-AD einsum/QR/SVD/solve routes,
+  292 saved cases, including matched non-AD einsum/QR/SVD/solve routes,
   including 12 generic-subscript f64 einsum cases that guard tenferro-rs
   #1897 (canonical-fallback fixed cost), #1899 (prepared einsum dispatch)
   and #1904 (in-session tiny GEMM).
@@ -310,3 +310,9 @@ problems:
   - nonad_solve_n64_col_major_contiguous_eager-no-ad
   - nonad_solve_n64_col_major_contiguous_concrete-shared
   - nonad_solve_n64_col_major_contiguous_eager-shared
+  - nonad_einsum_n2_col_major_contiguous_concrete-scoped
+  - nonad_qr_n2_col_major_contiguous_concrete-scoped
+  - nonad_solve_n2_col_major_contiguous_concrete-scoped
+  - nonad_einsum_n16_col_major_contiguous_concrete-scoped
+  - nonad_qr_n16_col_major_contiguous_concrete-scoped
+  - nonad_solve_n16_col_major_contiguous_concrete-scoped

@@ -34,8 +34,12 @@ They are independent:
   `aa` takes explicit `BENCH_AA_WARMUPS` / `BENCH_AA_RUNS`.
 
 A scan flags suspects; only a confirmed paired run makes a performance claim.
-Measure total command/phase wall time of `quick` on the target host before
-setting a routine time budget; no budget is set here.
+The CPU public-route runners record end-to-end and phase wall observations.
+Their descriptive default command budgets are 120 s (small-work quick),
+300 s (session-matrix quick), and 600 s (either full matrix). They are based
+on sequential 1T+4T devcontainer reference commands with cached release
+builds. Cold builds are included and may exceed the budget. Override with
+`BENCH_COMMAND_BUDGET_SECONDS`; over-budget status never fails functional CI.
 
 ## Case status
 
@@ -43,7 +47,8 @@ Only rows that ran and passed count as executed (covered). Unsupported
 (typed `Unsupported` from the library, a provider absent from the build, or an
 API absent at the revision), failed (numerical, crash, compile/launch failure),
 timeouts (liveness) and missing cases are listed separately; `complete` is
-false whenever anything expected was not selected, missing or failed. Run
+false whenever anything expected was not selected, unsupported, missing or failed,
+or duplicate/unexpected rows were recorded. Run
 metadata records the coverage, manifest version, filter, expected/selected
 counts, effort, harness revision and dirty state, and the exact command.
 
@@ -163,3 +168,42 @@ remain **unmeasured**, not validated. The CUDA and WebGPU runners were adapted
 to the session-side canonicalization and borrowed-session eager einsum, and
 `cargo check --features cuda --bins` / `--features webgpu --bins` pass against
 the repair (compile-only; no CUDA device was used).
+
+## Public eager shape streams (#107)
+
+`eager_stream_*` uses one borrowed, untracked public eager session and 128
+three-operand einsum calls per sample. The sample is the complete ordered
+sequence. Fixtures, lazy views, bindings and output-retention containers are
+prepared before timing; ordinary public planning/cache lookup remains timed.
+The raw `sequence_order` records every pass, including explicit initialization.
+Quick selects fixed keys, four-key revisits, globally fresh keys, and equal
+shapes with alternating strides. Full adds a one-entry capacity-thrashing
+control and cache-cleared sequences. Clearing the eager extension store is
+untimed and does not bypass lookup or retention.
+
+Cache diagnostics run in separate processes with no latency samples. Public
+extension-store counters report hits, misses, evictions, entries and estimated
+retained bytes; plan builds are unavailable and misses are not substituted for
+builds. Provider GEMM-analysis/indexed-plan and runtime prepared caches are
+outside that counter scope. Reports list unsupported providers explicitly.
+
+`run_all.sh` now defaults the public-API follow-up to `quick`.
+`PUBLICATION_GATE_PROFILE=full` preserves full publication collection.
+Both single-thread and multi-thread `run_all.sh` invocations include the
+quick small-work/session-matrix lanes; `RUN_SMALL_WORK_SUITE=0` skips them.
+`run_cpu_session.sh` and `run_small_work.sh` record per-case/process and build,
+collection, diagnostic and report wall observations. Command totals include
+setup and report generation, excluding only the final report file writes.
+`BENCH_COMMAND_BUDGET_SECONDS` enables a descriptive over-budget label; it
+never changes functional success or constitutes a performance regression gate.
+
+Latest CPU observations are in the [MKL report](../result/amd-cpu/cpu/session_matrix.md),
+[native report](../result/amd-cpu/cpu/session_matrix_native.md), and
+[command wall report](../result/amd-cpu/cpu/public_route_command_wall.md).
+Validate selection, cache-process separation, completion and budget reporting with:
+
+```bash
+uv run python -m unittest tests/test_session_matrix_suite.py tests/test_small_work_suite.py \
+  tests/test_case_status.py tests/test_benchmark_wall.py \
+  tests/test_route_coverage.py tests/test_regression_detector.py
+```

@@ -31,9 +31,8 @@ set -euo pipefail
 # Set RUN_PUBLIC_API_SUITE=1 to also run scripts/run_cpu_public_api.sh (the
 # cpu/public_api suite) sequentially after CPU FFT if enabled.
 #
-# Set RUN_SMALL_WORK_SUITE=1 to run cpu/small_work and cpu/session_matrix
-# sequentially as well. It is included by default in multi-thread-count
-# invocations. BENCH_COVERAGE=quick|full and BENCH_EFFORT=scan|standard|confirm
+# cpu/small_work and cpu/session_matrix run sequentially by default; set
+# RUN_SMALL_WORK_SUITE=0 to skip them. BENCH_COVERAGE=quick|full and BENCH_EFFORT=scan|standard|confirm
 # apply to these suites.
 #
 # Set RUN_PERMUTATION_SUITE=1 to also run scripts/run_permutation.sh (the
@@ -68,7 +67,7 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     fi
 
     if [[ "${RUN_PUBLIC_API_SUITE:-1}" == "1" ]]; then
-        public_api_profile="${RUN_PUBLIC_API_PROFILE:-${PUBLICATION_GATE_PROFILE:-full}}"
+        public_api_profile="${RUN_PUBLIC_API_PROFILE:-${PUBLICATION_GATE_PROFILE:-quick}}"
         echo "Running cpu/public_api suite for threads: ${THREAD_COUNTS[*]} (profile=$public_api_profile)..."
         PUBLICATION_GATE_PROFILE="$public_api_profile" \
             "$SCRIPT_DIR/run_cpu_public_api.sh" "${THREAD_COUNTS[@]}"
@@ -700,13 +699,13 @@ fi
 # SKIP_EXTERN_SETUP=1 avoids re-running setup_extern_deps.sh, already done above.
 if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_PUBLIC_API_SUITE:-0}" == "1" ]]; then
     echo "Running cpu/public_api suite for 1 and 4 threads (RUN_PUBLIC_API_SUITE=1)..."
-    public_api_profile="${RUN_PUBLIC_API_PROFILE:-${PUBLICATION_GATE_PROFILE:-full}}"
+    public_api_profile="${RUN_PUBLIC_API_PROFILE:-${PUBLICATION_GATE_PROFILE:-quick}}"
     SKIP_EXTERN_SETUP=1 PUBLICATION_GATE_PROFILE="$public_api_profile" \
         "$SCRIPT_DIR/run_cpu_public_api.sh" 1 4
     echo ""
 fi
 
-if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_SMALL_WORK_SUITE:-0}" == "1" ]]; then
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_SMALL_WORK_SUITE:-1}" == "1" ]]; then
     SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_small_work.sh" "$NUM_THREADS"
     "$SCRIPT_DIR/run_cpu_session.sh" "$NUM_THREADS"
 fi

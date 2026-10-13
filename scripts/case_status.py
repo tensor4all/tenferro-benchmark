@@ -88,8 +88,9 @@ def build_case_status(*, suite_id: str, manifest_version: int, coverage: str,
             "failed": len(failed), "missing": len(missing), "noisy": len(noisy),
         },
         # A run is complete only when everything expected was selected and
-        # every selected case was accounted for without failure.
-        "complete": not not_selected and not missing and not failed,
+        # every selected case actually passed. Unsupported is accounted for,
+        # but is never covered; duplicates/unexpected rows invalidate completion.
+        "complete": not (not_selected or missing or failed or unsupported or duplicates or unexpected),
         "expected": expected,
         "selected": selected,
         "not_selected": not_selected,
@@ -121,7 +122,11 @@ def merge_case_status(parts: list[dict]) -> dict:
     merged["counts"] = {f: len(merged[f]) for f in
                         ("expected", "selected", "executed", "unsupported", "failed",
                          "missing", "noisy")}
-    merged["complete"] = all(part["complete"] for part in parts)
+    # Recompute when formatting older raw campaigns: their cached `complete`
+    # field treated unsupported rows as complete accounting, not coverage.
+    merged["complete"] = not any(merged[field] for field in
+                                ("not_selected", "missing", "failed", "unsupported",
+                                 "unexpected_rows", "duplicate_rows"))
     return merged
 
 

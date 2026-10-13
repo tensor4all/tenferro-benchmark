@@ -2,7 +2,7 @@
 # quick: steady-state shared-session/prepared routes (the previous default selection).
 # full: adds per-call session entry, eager, compiled and setup diagnostics
 # (explicitly labelled diagnostic scopes). Bump manifest_version on any change.
-manifest_version: 2
+manifest_version: 3
 suite_id: cpu/small_work
 source: data/instances/small_work.json
 coverage:
@@ -61,6 +61,24 @@ coverage:
   - nonad_solve_n2_col_major_contiguous_eager-no-ad
   - nonad_solve_n2_col_major_contiguous_concrete-shared
   - nonad_solve_n2_col_major_contiguous_eager-shared
+  - nonad_einsum_n16_col_major_contiguous_eager-shared
+  - nonad_einsum_n16_col_major_contiguous_concrete-shared
+  - nonad_einsum_n16_col_major_contiguous_eager-no-ad
+  - nonad_einsum_n16_col_major_contiguous_concrete-fresh
+  - nonad_qr_n16_col_major_contiguous_eager-shared
+  - nonad_qr_n16_col_major_contiguous_concrete-shared
+  - nonad_qr_n16_col_major_contiguous_eager-no-ad
+  - nonad_qr_n16_col_major_contiguous_concrete-fresh
+  - nonad_solve_n16_col_major_contiguous_eager-shared
+  - nonad_solve_n16_col_major_contiguous_concrete-shared
+  - nonad_solve_n16_col_major_contiguous_eager-no-ad
+  - nonad_solve_n16_col_major_contiguous_concrete-fresh
+  - nonad_einsum_n2_col_major_contiguous_concrete-scoped
+  - nonad_qr_n2_col_major_contiguous_concrete-scoped
+  - nonad_solve_n2_col_major_contiguous_concrete-scoped
+  - nonad_einsum_n16_col_major_contiguous_concrete-scoped
+  - nonad_qr_n16_col_major_contiguous_concrete-scoped
+  - nonad_solve_n16_col_major_contiguous_concrete-scoped
   full:
   - add_f64_concrete_fresh
   - add_f64_concrete-fresh_size4_dependent10
@@ -348,3 +366,9 @@ coverage:
   - nonad_solve_n64_col_major_contiguous_eager-no-ad
   - nonad_solve_n64_col_major_contiguous_concrete-shared
   - nonad_solve_n64_col_major_contiguous_eager-shared
+  - nonad_einsum_n2_col_major_contiguous_concrete-scoped
+  - nonad_qr_n2_col_major_contiguous_concrete-scoped
+  - nonad_solve_n2_col_major_contiguous_concrete-scoped
+  - nonad_einsum_n16_col_major_contiguous_concrete-scoped
+  - nonad_qr_n16_col_major_contiguous_concrete-scoped
+  - nonad_solve_n16_col_major_contiguous_concrete-scoped

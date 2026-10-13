@@ -90,43 +90,55 @@ fn check(op: &str, n: usize, a: &[f64], expected: &[f64], out: &[Tensor]) -> Res
     Ok(residual.max(ortho))
 }
 
+enum Outputs<T> {
+    One([T; 1]),
+    Two([T; 2]),
+    Three([T; 3]),
+}
+impl<T> Outputs<T> {
+    fn as_slice(&self) -> &[T] {
+        match self {
+            Self::One(v) => v,
+            Self::Two(v) => v,
+            Self::Three(v) => v,
+        }
+    }
+}
 fn direct(
     op: &str,
     input: &[Tensor],
-    views: Option<&[TensorValue]>,
+    views: Option<&[TensorRead<'_>]>,
     subs: &EinsumSubscripts,
     session: &mut dyn BackendSession,
-) -> Result<Vec<Tensor>, BoxError> {
-    if let Some(views) = views {
-        let reads: Vec<_> = views.iter().map(TensorValue::tensor_read).collect();
+) -> Result<Outputs<Tensor>, BoxError> {
+    use Outputs::*;
+    if let Some(reads) = views {
         return Ok(match op {
-            "einsum" | "einsum3" => vec![reads.as_slice().einsum_read_subscripts(subs, session)?],
+            "einsum" | "einsum3" => One([reads.einsum_read_subscripts(subs, session)?]),
             "qr" => {
                 let (q, r) = reads[0].clone().qr_read(session)?;
-                vec![q, r]
+                Two([q, r])
             }
             "svd" => {
                 let (u, s, v) = reads[0].clone().svd_read(session)?;
-                vec![u, s, v]
+                Three([u, s, v])
             }
-            "solve" => vec![reads[0].clone().solve_read(reads[1].clone(), session)?],
+            "solve" => One([reads[0].clone().solve_read(reads[1].clone(), session)?]),
             _ => return Err("unknown operation".into()),
         });
     }
     Ok(match op {
-        "einsum" | "einsum3" => {
-            let refs: Vec<_> = input.iter().collect();
-            vec![refs.as_slice().einsum_subscripts(subs, session)?]
-        }
+        "einsum" => One([[&input[0], &input[1]].einsum_subscripts(subs, session)?]),
+        "einsum3" => One([[&input[0], &input[1], &input[2]].einsum_subscripts(subs, session)?]),
         "qr" => {
             let (q, r) = input[0].qr(session)?;
-            vec![q, r]
+            Two([q, r])
         }
         "svd" => {
             let (u, s, v) = input[0].svd(session)?;
-            vec![u, s, v]
+            Three([u, s, v])
         }
-        "solve" => vec![input[0].solve(&input[1], session)?],
+        "solve" => One([input[0].solve(&input[1], session)?]),
         _ => return Err("unknown operation".into()),
     })
 }
@@ -135,21 +147,20 @@ fn eager(
     input: &[EagerTensor],
     subs: &EinsumSubscripts,
     session: &mut EagerSession<'_>,
-) -> Result<Vec<EagerTensor>, BoxError> {
+) -> Result<Outputs<EagerTensor>, BoxError> {
+    use Outputs::*;
     Ok(match op {
-        "einsum" | "einsum3" => {
-            let refs: Vec<_> = input.iter().collect();
-            vec![session.einsum_subscripts(&refs, subs)?]
-        }
+        "einsum" => One([session.einsum_subscripts(&[&input[0], &input[1]], subs)?]),
+        "einsum3" => One([session.einsum_subscripts(&[&input[0], &input[1], &input[2]], subs)?]),
         "qr" => {
             let (q, r) = session.qr(&input[0])?;
-            vec![q, r]
+            Two([q, r])
         }
         "svd" => {
             let (u, s, v) = session.svd(&input[0])?;
-            vec![u, s, v]
+            Three([u, s, v])
         }
-        "solve" => vec![session.solve(&input[0], &input[1])?],
+        "solve" => One([session.solve(&input[0], &input[1])?]),
         _ => return Err("unknown operation".into()),
     })
 }
@@ -189,7 +200,7 @@ fn sample<O>(
                 counts.push(serde_json::json!({"allocations":allocations,"bytes":bytes}));
             }
             return Ok(serde_json::json!({"samples":[],"allocation_samples":counts,
-                "allocation_scope":"calling-thread Rust GlobalAlloc alloc/alloc_zeroed/realloc requests; excludes frees, foreign BLAS and worker-thread allocations; includes intrinsic result packaging"}));
+                "allocation_scope":"calling-thread Rust GlobalAlloc alloc/alloc_zeroed/realloc requests; excludes frees, foreign BLAS and worker-thread allocations; includes public operation output allocation; excludes setup and helper retention allocation"}));
         }
         #[cfg(not(feature = "allocation-diagnostics"))]
         return Err("allocations mode requires separate allocation-diagnostics build".into());
@@ -243,7 +254,11 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
         || !matches!(op.as_str(), "einsum" | "einsum3" | "qr" | "svd" | "solve")
         || !matches!(
             tier.as_str(),
-            "concrete-fresh" | "concrete-shared" | "eager-no-ad" | "eager-shared"
+            "concrete-fresh"
+                | "concrete-shared"
+                | "concrete-scoped"
+                | "eager-no-ad"
+                | "eager-shared"
         )
         || !matches!(
             mode.as_str(),
@@ -307,7 +322,18 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
     } else {
         EinsumSubscripts::new(&[&[0, 1], &[1, 2]], &[0, 2])
     };
+    let threads = parse_usize("--threads", 1)?;
+    tenferro_einsum_benchmark::thread_enforcement::enforce_thread_request(threads)?;
     let mut backend = CpuBackend::new();
+    let workers = backend.num_threads();
+    tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
+        "CpuBackend",
+        workers,
+        threads,
+    )?;
+    let prepared_reads = views
+        .as_ref()
+        .map(|v| v.iter().map(TensorValue::tensor_read).collect::<Vec<_>>());
     let residual;
     let mut initial_public_call_ns = 0;
     let measured = if tier.starts_with("eager") {
@@ -329,16 +355,24 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
         if eager_input.iter().any(EagerTensor::tracks_grad) {
             return Err("tracked eager input".into());
         }
+        if views.is_some()
+            && eager_input
+                .iter()
+                .any(|t| t.tensor_read().strides().ok() != Some(vec![n as isize, 1]))
+        {
+            return Err("eager input did not retain its transposed view layout".into());
+        }
         let validated = runtime.with_eager_session(|s| {
             let start = Instant::now();
             let result = eager(&op, &eager_input, &subs, s)?;
             initial_public_call_ns = start.elapsed().as_nanos();
             Ok::<_, BoxError>(result)
         })?;
-        if validated.iter().any(EagerTensor::tracks_grad) {
+        if validated.as_slice().iter().any(EagerTensor::tracks_grad) {
             return Err("tracked eager output".into());
         }
         let tensors = validated
+            .as_slice()
             .iter()
             .map(EagerTensor::to_tensor)
             .collect::<Result<Vec<_>, _>>()?;
@@ -357,28 +391,49 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
     } else {
         let validated = backend.session_scope(|s| {
             let start = Instant::now();
-            let result = direct(&op, &input, views.as_deref(), &subs, s)?;
+            let result = direct(&op, &input, prepared_reads.as_deref(), &subs, s)?;
             initial_public_call_ns = start.elapsed().as_nanos();
             Ok(result)
         })?;
-        residual = check(&op, n, &a, &expected, &validated)?;
+        residual = check(&op, n, &a, &expected, validated.as_slice())?;
         if tier == "concrete-shared" {
             backend.session_scope(|s| {
                 sample(&mode, n, warmups, runs, target, || {
-                    direct(&op, &input, views.as_deref(), &subs, s)
+                    direct(&op, &input, prepared_reads.as_deref(), &subs, s)
                 })
             })?
+        } else if tier == "concrete-scoped" {
+            let owner = backend.clone();
+            owner.with_execution_scope(|| -> Result<_, BoxError> {
+                let checked = backend
+                    .session_scope(|s| direct(&op, &input, prepared_reads.as_deref(), &subs, s))?;
+                check(&op, n, &a, &expected, checked.as_slice())?;
+                sample(&mode, n, warmups, runs, target, || {
+                    backend
+                        .session_scope(|s| direct(&op, &input, prepared_reads.as_deref(), &subs, s))
+                })
+            })??
         } else {
             sample(&mode, n, warmups, runs, target, || {
-                backend.session_scope(|s| direct(&op, &input, views.as_deref(), &subs, s))
+                backend.session_scope(|s| direct(&op, &input, prepared_reads.as_deref(), &subs, s))
             })?
         }
     };
-    let mut output = serde_json::json!({"suite_id":"cpu/small_work","case_id":case_id,"operation":op,"api_tier":tier,"dtype":"f64","shape":[n,n],"layout":layout,"workflow":"single","calls_per_workflow":1,"provider":tenferro_einsum_benchmark::compiled_cpu_provider(),"correctness_status":"passed","max_numerical_residual":residual,"capture_policy":"standalone fresh process; no capture_trace guard; no_grad; inputs and validated outputs tracks_grad=false","result_consumption":"borrowed/native owning results retained; no extra output materialization inside clock","scope":{"timer":["public extension call","intrinsic output allocation and result packaging",if tier.ends_with("shared") {"session entry excluded"} else {"per-call session entry/exit diagnostic"},if op.starts_with("einsum") {"ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"}else{"default linalg options"}],"outside_timer":["fixtures and view creation","backend/runtime construction","shared session entry/exit","initialization and warmups","validation/materialization","output destruction"]}});
+    let mut output = serde_json::json!({"suite_id":"cpu/small_work","case_id":case_id,"operation":op,"api_tier":tier,"dtype":"f64","shape":[n,n],"layout":layout,"workflow":"single","calls_per_workflow":1,"provider":tenferro_einsum_benchmark::compiled_cpu_provider(),"correctness_status":"passed","max_numerical_residual":residual,"capture_policy":"standalone fresh process; no capture_trace guard; no_grad; inputs and validated outputs tracks_grad=false","result_consumption":"borrowed/native owning results retained; no extra output materialization inside clock","scope":{"timer":["public extension call","intrinsic public output allocation; stack output retention enum (no helper heap allocation)",if tier.ends_with("shared") {"session entry excluded"} else {"per-call session entry/exit diagnostic"},if op.starts_with("einsum") {"ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"}else{"default linalg options"}],"outside_timer":["fixtures and view creation","backend/runtime construction","shared session entry/exit","initialization and warmups","validation/materialization","output destruction"]}});
     for (k, v) in measured.as_object().ok_or("invalid measurement")? {
         output[k] = v.clone();
     }
     output["initial_public_call_ns"] = serde_json::json!(initial_public_call_ns);
+    output["requested_threads"] = serde_json::json!(threads);
+    output["worker_count"] = serde_json::json!(workers);
+    if tier == "concrete-scoped" {
+        output["scope"]["outside_timer"]
+            .as_array_mut()
+            .ok_or("invalid scope")?
+            .push(serde_json::json!(
+                "execution scope admission/exit; cloned witness setup"
+            ));
+    }
     output["initial_public_call_scope"] = serde_json::json!("first selected operation inside entered shared session; lazy operation initialization included; validation/destruction excluded; single-call diagnostic, no performance ratio");
     println!("{}", serde_json::to_string(&output)?);
     Ok(())

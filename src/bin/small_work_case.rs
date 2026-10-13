@@ -939,6 +939,74 @@ fn execute_eager(
     add_chain(lhs, rhs, calls, |a, b| eager_operation(operation, a, b))
 }
 
+/// Retain every intermediate of a dependent workflow, using containers
+/// allocated before its batch clock. Never destroy a chain output in timing.
+fn fill_chain<T>(
+    lhs: &T,
+    rhs: &T,
+    calls: usize,
+    outputs: &mut Vec<T>,
+    mut operation: impl FnMut(&T, &T) -> Result<T, BoxError>,
+) -> Result<(), BoxError> {
+    for _ in 0..calls {
+        let value = operation(outputs.last().unwrap_or(lhs), rhs)?;
+        outputs.push(value);
+    }
+    Ok(())
+}
+fn measure_chain<T>(
+    lhs: &T,
+    rhs: &T,
+    calls: usize,
+    size: usize,
+    warmups: usize,
+    samples_count: usize,
+    target_ns: u128,
+    process_index: usize,
+    sample_start: usize,
+    mut operation: impl FnMut(&T, &T) -> Result<T, BoxError>,
+) -> Result<Measurement, BoxError> {
+    let max_iterations = (64 * 1024 * 1024
+        / (calls * (size * 8 + std::mem::size_of::<T>() + 1024)))
+        .clamp(1, CALIBRATION_MAX_ITERATIONS);
+    for _ in 0..warmups.max(1) {
+        let mut outputs = Vec::with_capacity(calls);
+        fill_chain(lhs, rhs, calls, &mut outputs, &mut operation)?;
+    }
+    let mut batch = |iterations: usize| -> Result<u128, BoxError> {
+        let mut outputs: Vec<Vec<T>> = (0..iterations).map(|_| Vec::with_capacity(calls)).collect();
+        let start = Instant::now();
+        for chain in &mut outputs {
+            fill_chain(lhs, rhs, calls, chain, &mut operation)?;
+        }
+        let elapsed = start.elapsed().as_nanos();
+        black_box(&outputs);
+        Ok(elapsed)
+    };
+    let mut iterations = 16usize.min(max_iterations);
+    let calibrated_ns = loop {
+        let ns = batch(iterations)?;
+        if ns >= target_ns || iterations == max_iterations {
+            break ns;
+        }
+        iterations = (iterations * 2).min(max_iterations);
+    };
+    let mut samples = Vec::with_capacity(samples_count);
+    for i in 0..samples_count {
+        samples.push(Sample {
+            process_index,
+            sample_index: sample_start + i,
+            elapsed_ns: batch(iterations)?,
+            iterations,
+        });
+    }
+    Ok(Measurement {
+        iterations,
+        calibrated_ns,
+        samples,
+    })
+}
+
 fn check_eager(
     output: &EagerTensor,
     expected: &[f64],
@@ -2066,6 +2134,10 @@ mod tests {
 }
 
 fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
+    #[cfg(feature = "allocation-diagnostics")]
+    if arg("--mode", "measure") == "measure" {
+        return Err("instrumented build cannot collect latency".into());
+    }
     let case_id = required_arg("--case")?;
     if case_id.starts_with("nonad_") {
         return nonad::run(&case_id);
@@ -2355,47 +2427,121 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         "operation"
     });
 
-    let measurement = match api_tier.as_str() {
-        "compiled-setup" => {
-            let n = matrix_dimension(size)?;
-            let dtype = lhs.dtype();
-            measure(
+    let measurement = if calls > 1 {
+        match api_tier.as_str() {
+            "concrete-shared" => {
+                concrete
+                    .as_mut()
+                    .ok_or("missing backend")?
+                    .session_scope(|s| {
+                        measure_chain(
+                            &lhs,
+                            rhs,
+                            calls,
+                            size,
+                            warmups,
+                            samples_count,
+                            target_ns,
+                            process_index,
+                            sample_start,
+                            |a, b| concrete_operation(&operation, s, a, b),
+                        )
+                    })?
+            }
+            "concrete-fresh" => {
+                let backend = concrete.as_mut().ok_or("missing backend")?;
+                measure_chain(
+                    &lhs,
+                    rhs,
+                    calls,
+                    size,
+                    warmups,
+                    samples_count,
+                    target_ns,
+                    process_index,
+                    sample_start,
+                    |a, b| concrete_fresh(&operation, backend, a, b),
+                )?
+            }
+            "eager-no-ad" | "eager-ad" => {
+                let (left, right) = eager_pair.as_ref().ok_or("missing eager inputs")?;
+                measure_chain(
+                    left,
+                    right,
+                    calls,
+                    size,
+                    warmups,
+                    samples_count,
+                    target_ns,
+                    process_index,
+                    sample_start,
+                    |a, b| eager_operation(&operation, a, b),
+                )?
+            }
+            _ => return Err("unsupported retained-chain tier".into()),
+        }
+    } else {
+        match api_tier.as_str() {
+            "compiled-setup" => {
+                let n = matrix_dimension(size)?;
+                let dtype = lhs.dtype();
+                measure(
+                    warmups,
+                    samples_count,
+                    target_ns,
+                    process_index,
+                    sample_start,
+                    || trace_compile_einsum(n, dtype),
+                )?
+            }
+            "compiled-repeat" => {
+                let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
+                let prepared = runtime.prepare_compiled(program, &compiled_bindings)?;
+                measure(
+                    warmups,
+                    samples_count,
+                    target_ns,
+                    process_index,
+                    sample_start,
+                    || Ok(runtime.run_prepared(&prepared, &compiled_bindings)?),
+                )?
+            }
+            "prepared-setup" => measure(
                 warmups,
                 samples_count,
                 target_ns,
                 process_index,
                 sample_start,
-                || trace_compile_einsum(n, dtype),
-            )?
-        }
-        "compiled-repeat" => {
-            let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
-            let prepared = runtime.prepare_compiled(program, &compiled_bindings)?;
-            measure(
-                warmups,
-                samples_count,
-                target_ns,
-                process_index,
-                sample_start,
-                || Ok(runtime.run_prepared(&prepared, &compiled_bindings)?),
-            )?
-        }
-        "prepared-setup" => measure(
-            warmups,
-            samples_count,
-            target_ns,
-            process_index,
-            sample_start,
-            || {
-                Ok(tenferro_einsum::ConcreteEinsumPlan::prepare(
-                    [&lhs, rhs],
-                    "ij,jk->ik",
-                )?)
-            },
-        )?,
-        "concrete-shared" | "borrowed-shared" | "prepared-repeat" => {
-            let backend = concrete.as_mut().ok_or("concrete backend missing")?;
-            backend.session_scope(|session| {
+                || {
+                    Ok(tenferro_einsum::ConcreteEinsumPlan::prepare(
+                        [&lhs, rhs],
+                        "ij,jk->ik",
+                    )?)
+                },
+            )?,
+            "concrete-shared" | "borrowed-shared" | "prepared-repeat" => {
+                let backend = concrete.as_mut().ok_or("concrete backend missing")?;
+                backend.session_scope(|session| {
+                    measure(
+                        warmups,
+                        samples_count,
+                        target_ns,
+                        process_index,
+                        sample_start,
+                        || {
+                            if let Some(views) = borrowed.as_ref() {
+                                borrowed_einsum(views, session)
+                            } else if let Some(plan) = prepared.as_ref() {
+                                Ok(plan.execute([&lhs, rhs], session)?)
+                            } else {
+                                execute_shared(&operation, session, &lhs, rhs, calls)
+                            }
+                        },
+                    )
+                })?
+            }
+            "concrete-fresh" | "borrowed-fresh" => {
+                let backend = concrete.as_mut().ok_or("concrete backend missing")?;
                 measure(
                     warmups,
                     samples_count,
@@ -2404,48 +2550,73 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                     sample_start,
                     || {
                         if let Some(views) = borrowed.as_ref() {
-                            borrowed_einsum(views, session)
-                        } else if let Some(plan) = prepared.as_ref() {
-                            Ok(plan.execute([&lhs, rhs], session)?)
+                            backend.session_scope(|session| borrowed_einsum(views, session))
                         } else {
-                            execute_shared(&operation, session, &lhs, rhs, calls)
+                            execute_fresh(&operation, backend, &lhs, rhs, calls)
                         }
                     },
-                )
-            })?
+                )?
+            }
+            "eager-no-ad" | "eager-ad" => {
+                let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
+                measure(
+                    warmups,
+                    samples_count,
+                    target_ns,
+                    process_index,
+                    sample_start,
+                    || execute_eager(&operation, left, right, calls),
+                )?
+            }
+            _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
         }
-        "concrete-fresh" | "borrowed-fresh" => {
-            let backend = concrete.as_mut().ok_or("concrete backend missing")?;
-            measure(
-                warmups,
-                samples_count,
-                target_ns,
-                process_index,
-                sample_start,
-                || {
-                    if let Some(views) = borrowed.as_ref() {
-                        backend.session_scope(|session| borrowed_einsum(views, session))
-                    } else {
-                        execute_fresh(&operation, backend, &lhs, rhs, calls)
-                    }
-                },
-            )?
-        }
-        "eager-no-ad" | "eager-ad" => {
-            let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
-            measure(
-                warmups,
-                samples_count,
-                target_ns,
-                process_index,
-                sample_start,
-                || execute_eager(&operation, left, right, calls),
-            )?
-        }
-        _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
     };
     output["samples"] = serde_json::to_value(&measurement.samples)?;
+    if calls > 1 {
+        output["result_retention_policy"] = serde_json::json!("all dependent intermediates retained until batch stop; outer and per-workflow containers allocated before clock; 64 MiB estimated retention bound");
+    }
+
     output["calibration"] = serde_json::json!({"target_ns": target_ns, "iterations": measurement.iterations, "elapsed_ns": measurement.calibrated_ns});
     println!("{}", serde_json::to_string(&output)?);
     Ok(())
+}
+
+#[cfg(test)]
+mod retained_chain_tests {
+    use super::*;
+    use std::{cell::Cell, rc::Rc};
+    struct Value {
+        number: i64,
+        drops: Rc<Cell<usize>>,
+    }
+    impl Drop for Value {
+        fn drop(&mut self) {
+            self.drops.set(self.drops.get() + 1);
+        }
+    }
+    #[test]
+    fn dependent_outputs_survive_until_explicit_cleanup() {
+        let drops = Rc::new(Cell::new(0));
+        let lhs = Value {
+            number: 1,
+            drops: drops.clone(),
+        };
+        let rhs = Value {
+            number: 2,
+            drops: drops.clone(),
+        };
+        let mut outputs = Vec::with_capacity(10);
+        fill_chain(&lhs, &rhs, 10, &mut outputs, |a, b| {
+            Ok(Value {
+                number: a.number + b.number,
+                drops: drops.clone(),
+            })
+        })
+        .unwrap();
+        assert_eq!(outputs.len(), 10);
+        assert_eq!(outputs.last().unwrap().number, 21);
+        assert_eq!(drops.get(), 0);
+        drop(outputs);
+        assert_eq!(drops.get(), 10);
+    }
 }

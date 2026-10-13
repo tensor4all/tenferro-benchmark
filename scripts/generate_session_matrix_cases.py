@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/session_matrix.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/session_matrix.yaml"
 SUITE = ROOT / "benchmarks/cpu/session_matrix.yaml"
-MANIFEST_VERSION = 3
+MANIFEST_VERSION = 4
 SUITE_ID = "cpu/session_matrix"
 
 # Default Auto lane cost model of tenferro-cpu (dot_runtime.rs at 5a4e7fd84;
@@ -347,6 +347,21 @@ def suite_yaml(ids: list[str]) -> str:
 
 def generate() -> tuple[str, str, str]:
     cases = loop_cases() + batched_cases()
+    for stream in ("fixed", "mixed", "fresh", "strides", "thrash", "cold"):
+        cases.append({
+            "id": f"eager_stream_f64_{stream}_len128_einsum3_alloc",
+            "workload": "eager_stream", "operation": "einsum3", "dtype": "f64",
+            "stream": stream, "length": 128, "keys": 4,
+            "providers": ["blas", "faer"],
+            "coverage": "full" if stream in {"thrash", "cold"} else "quick",
+            "pair": None,
+            "route": {"execution_path": "eager-einsum", "entrypoint": "EagerSessionEinsumExt::einsum_subscripts",
+                      "output": "allocating", "representation": "view" if stream == "strides" else "owned",
+                      "layout": "direct-transposed" if stream == "strides" else "direct",
+                      "session_boundary": "shared-session", "policy": "auto",
+                      "workload_shape": f"key-stream:{stream}"},
+            "intent": "#107: whole 128-call three-operand public einsum sequence, exact key order recorded; planning/cache lookup inside; separate-process public eager-extension cache counters; no build-count inference",
+        })
     ids = [c["id"] for c in cases]
     if len(ids) != len(set(ids)):
         raise SystemExit("duplicate case IDs")

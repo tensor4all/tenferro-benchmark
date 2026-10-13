@@ -28,13 +28,14 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bench_selection  # noqa: E402
 import case_status as cs  # noqa: E402
+from benchmark_wall import record_report_wall
 
 ROOT = Path(__file__).resolve().parents[1]
 SUITE = ROOT / "benchmarks/cpu/session_matrix.yaml"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/session_matrix.yaml"
 INSTANCES = ROOT / "data/instances/session_matrix.json"
 SUITE_ID = "cpu/session_matrix"
-BATCHED = {"batched_dot", "batched_einsum", "hadamard", "chain3", "stream"}
+BATCHED = {"batched_dot", "batched_einsum", "hadamard", "chain3", "stream", "eager_stream"}
 CASE_TIMEOUT_S = int(os.environ.get("BENCH_CASE_TIMEOUT_S", "900"))
 
 
@@ -51,6 +52,9 @@ def torch_case(n, count, samples, threads, op, warmups=3):
         fixtures.append((a,b))
     expected = [a @ b for a,b in fixtures] if op == 'matmul' else None
     execute = torch.matmul if op == 'matmul' else torch.linalg.solve
+    # Initialize this exact public operation even with zero requested warmups.
+    initialized = execute(*fixtures[0])
+    del initialized
     outputs = [None]*count
     durations = []
     for sample in range(samples+warmups):
@@ -97,19 +101,23 @@ def per_op(row):
 
 def run_one(command, timeout=CASE_TIMEOUT_S):
     """Run one case process; failures and timeouts become rows, never latencies."""
+    started = time.monotonic()
     try:
         result = subprocess.run(command, text=True, capture_output=True, timeout=timeout)
     except subprocess.TimeoutExpired:
-        return {"correctness": "timeout", "error": f"no result within {timeout} s (liveness)"}
+        return {"correctness": "timeout", "error": f"no result within {timeout} s (liveness)", "command_wall_seconds": time.monotonic()-started}
     if result.returncode:
-        return {"correctness": "failed", "error": result.stderr.strip()[-4000:]}
+        return {"correctness": "failed", "error": result.stderr.strip()[-4000:], "command_wall_seconds": time.monotonic()-started}
     try:
-        return json.loads(result.stdout.strip().splitlines()[-1])
+        row = json.loads(result.stdout.strip().splitlines()[-1])
+        row["command_wall_seconds"] = time.monotonic()-started
+        return row
     except (ValueError, IndexError) as error:
-        return {"correctness": "failed", "error": f"invalid case output: {error}"}
+        return {"correctness": "failed", "error": f"invalid case output: {error}", "command_wall_seconds": time.monotonic()-started}
 
 
 def collect(binary, run_dir, threads, coverage=None):
+    started = time.monotonic()
     manifest, coverage, expected, selected, raw, cases = plan(coverage)
     suite = yaml.safe_load(SUITE.read_text())
     effort = bench_selection.resolve_effort(suite["defaults"]["run"],
@@ -159,7 +167,27 @@ def collect(binary, run_dir, threads, coverage=None):
         effort=effort["effort"], expected=expand(expected, cases, threads),
         selected=expand(selected, cases, threads), rows=rows, selection_filter=raw)
     cs.write_case_status(run_dir / f"case_status_t{threads}.json", status)
-    return bool(status["failed"] or status["missing"])
+    latency_finished = time.monotonic()
+    diagnostic_failed = False
+    # All latency collection for this thread setting has stopped. Counters
+    # execute separately, without latency samples or per-call clocks.
+    with (run_dir / f"cache_diagnostics_t{threads}.jsonl").open("w") as fh:
+        for row in rows:
+            if row.get("workload") != "eager_stream" or row.get("status") != "passed":
+                continue
+            command = [str(binary), "--case", row["case_id"], "--threads", str(threads),
+                       "--instances", str(INSTANCES), "--provider", row["provider"],
+                       "--mode", "cache-diagnostic", "--warmups", str(effort["warmups"]),
+                       "--samples", str(effort["runs"])]
+            diagnostic = run_one(command)
+            diagnostic.update(case_id=row["case_id"], threads=threads, command=command)
+            diagnostic_failed |= diagnostic.get("correctness") != "passed" or len(diagnostic.get("cache_diagnostics", [])) != effort["runs"]
+            fh.write(json.dumps(diagnostic) + "\n")
+    (run_dir / f"wall_collection_t{threads}.json").write_text(json.dumps({
+        "latency_case_processes_seconds": latency_finished-started,
+        "separate_cache_diagnostics_seconds": time.monotonic()-latency_finished,
+        "collection_total_seconds": time.monotonic()-started}, indent=2)+"\n")
+    return bool(status["failed"] or status["missing"] or diagnostic_failed)
 
 
 def fmt(values, scale=1.0):
@@ -192,7 +220,8 @@ def report(run_dir, target, latest=True):
             lines += ["**Scan effort**: a low-repetition screen. Rows mark suspects only; "
                       "no performance conclusion may be drawn from them.", ""]
     loop = [r for r in rows if r["workload"] not in BATCHED]
-    batched = [r for r in rows if r["workload"] in BATCHED]
+    batched = [r for r in rows if r["workload"] in BATCHED and r["workload"] not in {"stream", "eager_stream"}]
+    streams = [r for r in rows if r["workload"] in {"stream", "eager_stream"}]
     lines += ['## Loop of independent small calls', '',
              'Each sample executes 1024 independent, distinct f64 matrix pairs; '
              'one wall-clock interval covers the whole loop. All inputs, output-container allocation, session entry, '
@@ -204,9 +233,9 @@ def report(run_dir, target, latest=True):
              'PyTorch uses a Python loop over the same inputs, with its thread pools initialized before timing. '
              'Its Python dispatch cost is included. These are allocation-returning operations, not batched tensor APIs; '
              'the one-operation batched cases below are a different workload.', '',
-             'EagerTensor and compiled trace are not labeled shared-session: their current public interfaces '
-             'do not accept this borrowed session and create internal sessions during execution. '
-             'The old single-call measurements remain diagnostic evidence only.', '',
+             'This independent-call loop lane uses concrete Tensor routes. Borrowed eager-session '
+             'shape streams are reported separately below. Compiled trace still uses runtime-internal '
+             'session entry and is not a borrowed-session route.', '',
              '| Case ID | Operation | Matrix | Operations | Threads | Provider | Route | Execution mode | Median total ms | IQR total ms | Median ns/op | CoV | Check |',
              '|---|---|---|---:|---:|---|---|---|---:|---:|---:|---:|---|']
     for r in sorted(loop, key=lambda r: (r['case_id'], r['threads'], r['provider'])):
@@ -245,6 +274,31 @@ def report(run_dir, target, latest=True):
     for r in rows:
         if r['status'] not in ('passed', 'unsupported'):
             lines += ['', f"### {r['status'].upper()}: {r['case_key']}", '```', str(r.get('error', '')), '```']
+    if streams:
+        lines += ['', '## Whole shape-sequence public-call diagnostics', '',
+                  'One sample is the entire ordered sequence, with required planning/cache lookup inside the clock. Inputs, views, wrapping, bindings and retention containers are prepared first; outputs survive clock stop. The initialization pass and warmups are separate. Exact keys and ordering for every pass are in the raw row. Cold mode clears only the declared eager extension caches outside each sequence; it does not bypass lookup or retention. Capacity thrash bounds that store to one entry with four revisited keys. Concrete and eager three-operand streams are distinct workloads.', '',
+                  '| Case | Provider | Threads | Calls/sequence | Median sequence ms | IQR ms | p90 ms | Maximum ms | CoV | Status |',
+                  '|---|---|---:|---:|---:|---:|---:|---:|---:|---|']
+        for row in streams:
+            values = row['samples_ns']; med, iqr, cov = fmt(values, 1e6)
+            p90 = f"{statistics.quantiles(values, n=10, method='inclusive')[8]/1e6:.3f}" if len(values)>1 else '—'
+            maximum = f'{max(values)/1e6:.3f}' if values else '—'
+            state = row['status'] + (' (NOISY; inconclusive)' if row.get('cov') and row['cov']>.1 else '')
+            lines.append(f"| {row['case_id']} | {row['provider']} | {row['threads']} | {row.get('operations_per_sample', '—')} | {med} | {iqr} | {p90} | {maximum} | {cov} | {state} |")
+        diagnostic_rows = [json.loads(line) for p in sorted(run_dir.glob('cache_diagnostics_t*.jsonl')) for line in p.read_text().splitlines()]
+        if diagnostic_rows:
+            lines += ['', '### Separate-process cache observations', '',
+                      'Public EagerRuntime extension-store counters only. Provider GEMM-analysis/indexed-plan caches and runtime prepared caches are outside this scope. No public plan-build counter exists; lookup misses are not treated as builds. These processes collect no latency samples. Hits/misses/evictions are measured-pass deltas; retained bytes are a logical estimate, not process RSS.', '',
+                      '| Case | Threads | Hits | Misses | Evictions | Final entries | Final retained bytes | Builds | Status |',
+                      '|---|---:|---:|---:|---:|---:|---:|---|---|']
+            for row in diagnostic_rows:
+                samples = row.get('cache_diagnostics', [])
+                deltas = [sum(s['after'][key]-s['before'][key] for s in samples) for key in ('hits','misses','evictions')]
+                final = samples[-1]['after'] if samples else {}
+                lines.append(f"| {row['case_id']} | {row['threads']} | {deltas[0]} | {deltas[1]} | {deltas[2]} | {final.get('entries', '—')} | {final.get('retained_bytes', '—')} | unavailable | {row.get('correctness')} |")
+    record_report_wall(run_dir)
+    for path in sorted(run_dir.glob('wall*.json')):
+        lines += ['', f'Wall observations `{path.name}`:', '```json', path.read_text().rstrip(), '```']
     text = '\n'.join(lines) + '\n'
     (run_dir / 'report.md').write_text(text)
     if latest:
