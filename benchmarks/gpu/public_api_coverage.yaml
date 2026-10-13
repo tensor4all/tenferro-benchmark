@@ -69,7 +69,7 @@ families:
       lu: Tenferro returns P/L/U/parity; current framework candidates return P/L/U.
       lstsq: Solution-only versus residual/rank/singular-value output contracts are unresolved.
       rank_revealing_qr: No verified GPU-resident Q/R/P/rank reference; JAX pivoting can fall back to host LAPACK.
-      HouseholderQr_state: from_factors/append_columns/r/q_columns are stateful contracts; follow issue 94, not full refactorization substitutes.
+      HouseholderQr_state_other_options: from_factors/append_columns/r/prefix-and-complement q_columns now have independent verified cases. CUDA append/Q application uploads BLAS scalars internally and stays excluded from standard timing. Other gauge/driver options remain separate.
       driver_gauge_variants: Existing perf_issues driver cases are partial coverage; nondefault options are not default-operation aliases.
       TensorReadLinalgExt: Requires separately verified strided routes; known unsupported read hooks stay excluded.
   output_reuse_contraction:

@@ -270,3 +270,19 @@ unitarity. Torch `geqrf` and JAX raw QR return equivalent compact factors;
 JAX's native transposed reflector layout is normalized only during untimed
 inspection. State projections used for validation do not count as independently
 measured `r`/`q_columns` cases.
+
+Householder state operations have independent cases. `from_factors` receives
+pre-generated Q/R factors; `append_columns` receives a pre-generated initial
+block and appended columns. Both return opaque states retained through the
+stopped clock and verified by untimed public projections. Initial state
+construction for `r`/`q_columns` is outside timing. R uses native `triu` on
+prepared compact factors as its reference. Prefix Q uses native
+`householder_product`; the complement uses Torch `ormqr` with a selector
+prepared outside timing. No refactorization or full-Q-plus-slice composition
+is substituted for a missing state-query/update operation.
+
+CUDA append/Q application internally constructs and uploads BLAS scalar
+operands per call. Those paths are numerically verified but excluded from
+standard operation timing. From-factors uses host BLAS scalar arguments and
+has a separately verified standard path. Unsupported reference arms and
+unselected/failed cells never count as measured coverage.

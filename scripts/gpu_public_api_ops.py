@@ -10,6 +10,26 @@ def fixtures(case, dtype):
     i = np.arange(n, dtype=np.uint64)
     raw = (((i * 2654435761 + 679) % 2001).astype(np.float64) / 2000 - .5).reshape(shape)
     x = raw.astype(dtype)
+    if op in {"householder_from_factors", "householder_append", "householder_r", "householder_q_columns"}:
+        matrix = raw + 1j*raw[::-1] if np.issubdtype(np.dtype(dtype), np.complexfloating) else raw
+        x = (np.eye(*shape) + .05*matrix).astype(dtype)
+        precision = np.complex128 if np.iscomplexobj(x) else np.float64
+        q, r = np.linalg.qr(x.astype(precision), mode="complete")
+        k = min(shape)
+        if op == "householder_r":
+            return [x], r[:k].astype(dtype)
+        if op == "householder_q_columns":
+            start, end = case["column_range"]
+            return [x], q[:, start:end].astype(dtype)
+        if op == "householder_from_factors":
+            q, r = q[:, :k].astype(dtype), r[:k].astype(dtype)
+            x = (q.astype(precision) @ r.astype(precision)).astype(dtype)
+            inputs = [x, q, r]
+        else:
+            split = shape[1]//2
+            inputs = [x, x[:, :split].copy(), x[:, split:].copy()]
+        h, tau = np.linalg.qr(x.astype(precision), mode="raw")
+        return inputs, (h.T.astype(dtype), tau.astype(dtype))
     if op in {"svd_full", "slogdet", "householder_qr"}:
         real_dtype = np.empty((), dtype=dtype).real.dtype
         matrix = raw + 1j*raw[::-1] if np.issubdtype(np.dtype(dtype), np.complexfloating) else raw
@@ -223,6 +243,19 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
         return lambda: getattr(torch.linalg, op)(x)
     if op == "pinv":
         return lambda: torch.linalg.pinv(x, atol=inputs[1], rtol=inputs[2])
+    if op == "householder_r":
+        packed, tau = torch.geqrf(x)
+        argument = packed[:min(x.shape), :]
+        return lambda: torch.triu(argument)
+    if op == "householder_q_columns":
+        packed, tau = torch.geqrf(x)
+        start, end = case["column_range"]
+        if start == 0 and end <= min(x.shape):
+            packed, tau = packed[:, :end], tau[:end]
+            return lambda: torch.linalg.householder_product(packed, tau)
+        selector = torch.eye(x.shape[0], dtype=x.dtype, device=x.device)[:, start:end]
+        packed = packed[:, :min(x.shape)]
+        return lambda: torch.ormqr(packed, tau, selector, left=True, transpose=False)
     if op == "householder_qr":
         return lambda: torch.geqrf(x)
     if op == "svd_full":
@@ -312,6 +345,10 @@ def jax_operation(jax, jnp, case):
         return lambda x: jnp.linalg.svd(x, compute_uv=False)
     if op == "pinv":
         return lambda x, atol, rtol: jnp.linalg.pinv(x, rtol=rtol)
+    if op == "householder_r":
+        return lambda packed: jnp.triu(packed)
+    if op == "householder_q_columns":
+        return lambda packed, tau: jax.lax.linalg.householder_product(packed, tau)
     if op == "householder_qr":
         return lambda x: jnp.linalg.qr(x, mode="raw")
     if op == "svd_full":
@@ -338,6 +375,16 @@ def jax_operation(jax, jnp, case):
 
 def prepare_jax_inputs(case, inputs):
     """Adapt vector start indices to JAX's scalar-index API before any clock."""
+    if case["op"] in {"householder_r", "householder_q_columns"}:
+        import jax.numpy as jnp
+        h, tau = jnp.linalg.qr(inputs[0], mode="raw")
+        packed = h.T
+        if case["op"] == "householder_r":
+            return [packed[:min(case["shape"]), :]]
+        start, end = case["column_range"]
+        if start != 0 or end > min(case["shape"]):
+            raise ValueError("no matched JAX range-Q operation")
+        return [packed[:, :end], tau[:end]]
     if case["op"] == "dynamic_slice":
         return [inputs[0], *(inputs[1][axis] for axis in range(len(case["slice_sizes"])))]
     return inputs

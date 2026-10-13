@@ -17,6 +17,8 @@ mod multi;
 mod reuse;
 #[path = "benchmark_gpu_public_api/runtime_ops.rs"]
 mod runtime_ops;
+#[path = "benchmark_gpu_public_api/state.rs"]
+mod state;
 #[path = "benchmark_gpu_public_api/structural.rs"]
 mod structural;
 
@@ -50,6 +52,8 @@ struct Case {
     slice_sizes: Vec<usize>,
     #[serde(default)]
     gather_axis: usize,
+    #[serde(default)]
+    column_range: Vec<usize>,
     #[serde(default)]
     excluded: HashMap<String, String>,
     #[serde(default)]
@@ -276,6 +280,15 @@ fn run(
     settings: &Settings,
     device: usize,
 ) -> Result<(Option<Value>, f64)> {
+    if matches!(
+        case.op.as_str(),
+        "householder_from_factors"
+            | "householder_append"
+            | "householder_r"
+            | "householder_q_columns"
+    ) {
+        return state::run(root, case, mode, settings, device);
+    }
     if matches!(case.op.as_str(), "svd_full" | "slogdet" | "householder_qr") {
         return multi::run(root, case, mode, settings, device);
     }
