@@ -2,7 +2,7 @@ schema_version: 1
 suite_id: cpu/small_work
 title: CPU small-work public API benchmarks
 description: >-
-  166 saved F64 add/einsum/solve/gather/reduce_sum and C64 einsum cases,
+  286 saved cases, including matched non-AD einsum/QR/SVD/solve routes,
   including 12 generic-subscript f64 einsum cases that guard tenferro-rs
   #1897 (canonical-fallback fixed cost), #1899 (prepared einsum dispatch)
   and #1904 (in-session tiny GEMM).
@@ -13,7 +13,7 @@ defaults:
   run:
     warmups: 3
     runs: 15
-    min_runtime_ms: 1
+    min_runtime_ms: 2
     timing_scope: steady_state_host_api
   verify:
     reference: independent analytic values, solve residuals, and AD gradients
@@ -190,3 +190,123 @@ problems:
   - einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single
   - einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single
   - einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single
+  - nonad_einsum_n2_col_major_contiguous_concrete-fresh
+  - nonad_einsum_n2_col_major_contiguous_eager-no-ad
+  - nonad_einsum_n2_col_major_contiguous_concrete-shared
+  - nonad_einsum_n2_col_major_contiguous_eager-shared
+  - nonad_einsum3_n2_col_major_contiguous_concrete-fresh
+  - nonad_einsum3_n2_col_major_contiguous_eager-no-ad
+  - nonad_einsum3_n2_col_major_contiguous_concrete-shared
+  - nonad_einsum3_n2_col_major_contiguous_eager-shared
+  - nonad_qr_n2_col_major_contiguous_concrete-fresh
+  - nonad_qr_n2_col_major_contiguous_eager-no-ad
+  - nonad_qr_n2_col_major_contiguous_concrete-shared
+  - nonad_qr_n2_col_major_contiguous_eager-shared
+  - nonad_svd_n2_col_major_contiguous_concrete-fresh
+  - nonad_svd_n2_col_major_contiguous_eager-no-ad
+  - nonad_svd_n2_col_major_contiguous_concrete-shared
+  - nonad_svd_n2_col_major_contiguous_eager-shared
+  - nonad_solve_n2_col_major_contiguous_concrete-fresh
+  - nonad_solve_n2_col_major_contiguous_eager-no-ad
+  - nonad_solve_n2_col_major_contiguous_concrete-shared
+  - nonad_solve_n2_col_major_contiguous_eager-shared
+  - nonad_einsum_n4_col_major_contiguous_eager-shared
+  - nonad_einsum_n4_col_major_contiguous_concrete-shared
+  - nonad_einsum_n4_col_major_contiguous_eager-no-ad
+  - nonad_einsum_n4_col_major_contiguous_concrete-fresh
+  - nonad_einsum3_n4_col_major_contiguous_eager-shared
+  - nonad_einsum3_n4_col_major_contiguous_concrete-shared
+  - nonad_einsum3_n4_col_major_contiguous_eager-no-ad
+  - nonad_einsum3_n4_col_major_contiguous_concrete-fresh
+  - nonad_qr_n4_col_major_contiguous_eager-shared
+  - nonad_qr_n4_col_major_contiguous_concrete-shared
+  - nonad_qr_n4_col_major_contiguous_eager-no-ad
+  - nonad_qr_n4_col_major_contiguous_concrete-fresh
+  - nonad_svd_n4_col_major_contiguous_eager-shared
+  - nonad_svd_n4_col_major_contiguous_concrete-shared
+  - nonad_svd_n4_col_major_contiguous_eager-no-ad
+  - nonad_svd_n4_col_major_contiguous_concrete-fresh
+  - nonad_solve_n4_col_major_contiguous_eager-shared
+  - nonad_solve_n4_col_major_contiguous_concrete-shared
+  - nonad_solve_n4_col_major_contiguous_eager-no-ad
+  - nonad_solve_n4_col_major_contiguous_concrete-fresh
+  - nonad_einsum_n8_col_major_contiguous_concrete-fresh
+  - nonad_einsum_n8_col_major_contiguous_eager-no-ad
+  - nonad_einsum_n8_col_major_contiguous_concrete-shared
+  - nonad_einsum_n8_col_major_contiguous_eager-shared
+  - nonad_einsum3_n8_col_major_contiguous_concrete-fresh
+  - nonad_einsum3_n8_col_major_contiguous_eager-no-ad
+  - nonad_einsum3_n8_col_major_contiguous_concrete-shared
+  - nonad_einsum3_n8_col_major_contiguous_eager-shared
+  - nonad_qr_n8_col_major_contiguous_concrete-fresh
+  - nonad_qr_n8_col_major_contiguous_eager-no-ad
+  - nonad_qr_n8_col_major_contiguous_concrete-shared
+  - nonad_qr_n8_col_major_contiguous_eager-shared
+  - nonad_svd_n8_col_major_contiguous_concrete-fresh
+  - nonad_svd_n8_col_major_contiguous_eager-no-ad
+  - nonad_svd_n8_col_major_contiguous_concrete-shared
+  - nonad_svd_n8_col_major_contiguous_eager-shared
+  - nonad_solve_n8_col_major_contiguous_concrete-fresh
+  - nonad_solve_n8_col_major_contiguous_eager-no-ad
+  - nonad_solve_n8_col_major_contiguous_concrete-shared
+  - nonad_solve_n8_col_major_contiguous_eager-shared
+  - nonad_einsum_n16_col_major_contiguous_eager-shared
+  - nonad_einsum_n16_col_major_contiguous_concrete-shared
+  - nonad_einsum_n16_col_major_contiguous_eager-no-ad
+  - nonad_einsum_n16_col_major_contiguous_concrete-fresh
+  - nonad_einsum_n16_row_major_contiguous_eager-shared
+  - nonad_einsum_n16_row_major_contiguous_concrete-shared
+  - nonad_einsum_n16_row_major_contiguous_eager-no-ad
+  - nonad_einsum_n16_row_major_contiguous_concrete-fresh
+  - nonad_einsum3_n16_col_major_contiguous_eager-shared
+  - nonad_einsum3_n16_col_major_contiguous_concrete-shared
+  - nonad_einsum3_n16_col_major_contiguous_eager-no-ad
+  - nonad_einsum3_n16_col_major_contiguous_concrete-fresh
+  - nonad_einsum3_n16_row_major_contiguous_eager-shared
+  - nonad_einsum3_n16_row_major_contiguous_concrete-shared
+  - nonad_einsum3_n16_row_major_contiguous_eager-no-ad
+  - nonad_einsum3_n16_row_major_contiguous_concrete-fresh
+  - nonad_qr_n16_col_major_contiguous_eager-shared
+  - nonad_qr_n16_col_major_contiguous_concrete-shared
+  - nonad_qr_n16_col_major_contiguous_eager-no-ad
+  - nonad_qr_n16_col_major_contiguous_concrete-fresh
+  - nonad_qr_n16_row_major_contiguous_eager-shared
+  - nonad_qr_n16_row_major_contiguous_concrete-shared
+  - nonad_qr_n16_row_major_contiguous_eager-no-ad
+  - nonad_qr_n16_row_major_contiguous_concrete-fresh
+  - nonad_svd_n16_col_major_contiguous_eager-shared
+  - nonad_svd_n16_col_major_contiguous_concrete-shared
+  - nonad_svd_n16_col_major_contiguous_eager-no-ad
+  - nonad_svd_n16_col_major_contiguous_concrete-fresh
+  - nonad_svd_n16_row_major_contiguous_eager-shared
+  - nonad_svd_n16_row_major_contiguous_concrete-shared
+  - nonad_svd_n16_row_major_contiguous_eager-no-ad
+  - nonad_svd_n16_row_major_contiguous_concrete-fresh
+  - nonad_solve_n16_col_major_contiguous_eager-shared
+  - nonad_solve_n16_col_major_contiguous_concrete-shared
+  - nonad_solve_n16_col_major_contiguous_eager-no-ad
+  - nonad_solve_n16_col_major_contiguous_concrete-fresh
+  - nonad_solve_n16_row_major_contiguous_eager-shared
+  - nonad_solve_n16_row_major_contiguous_concrete-shared
+  - nonad_solve_n16_row_major_contiguous_eager-no-ad
+  - nonad_solve_n16_row_major_contiguous_concrete-fresh
+  - nonad_einsum_n64_col_major_contiguous_concrete-fresh
+  - nonad_einsum_n64_col_major_contiguous_eager-no-ad
+  - nonad_einsum_n64_col_major_contiguous_concrete-shared
+  - nonad_einsum_n64_col_major_contiguous_eager-shared
+  - nonad_einsum3_n64_col_major_contiguous_concrete-fresh
+  - nonad_einsum3_n64_col_major_contiguous_eager-no-ad
+  - nonad_einsum3_n64_col_major_contiguous_concrete-shared
+  - nonad_einsum3_n64_col_major_contiguous_eager-shared
+  - nonad_qr_n64_col_major_contiguous_concrete-fresh
+  - nonad_qr_n64_col_major_contiguous_eager-no-ad
+  - nonad_qr_n64_col_major_contiguous_concrete-shared
+  - nonad_qr_n64_col_major_contiguous_eager-shared
+  - nonad_svd_n64_col_major_contiguous_concrete-fresh
+  - nonad_svd_n64_col_major_contiguous_eager-no-ad
+  - nonad_svd_n64_col_major_contiguous_concrete-shared
+  - nonad_svd_n64_col_major_contiguous_eager-shared
+  - nonad_solve_n64_col_major_contiguous_concrete-fresh
+  - nonad_solve_n64_col_major_contiguous_eager-no-ad
+  - nonad_solve_n64_col_major_contiguous_concrete-shared
+  - nonad_solve_n64_col_major_contiguous_eager-shared

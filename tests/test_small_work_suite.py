@@ -17,10 +17,10 @@ class SmallWorkSuiteTest(unittest.TestCase):
         with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):
             cases, config = suite.selected_cases()
         self.assertGreater(len(cases), 0)
-        self.assertLess(len(cases), 166)
-        self.assertFalse(any(c["api_tier"].endswith(("-fresh", "-setup")) for c in cases))
+        self.assertLess(len(cases), 286)
+        self.assertFalse(any(c["api_tier"].endswith(("-fresh", "-setup")) for c in cases if not c["id"].startswith("nonad_")))
         with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_INCLUDE_SETUP_DIAGNOSTICS": "1"}):
-            self.assertEqual(len(suite.selected_cases()[0]), 166)
+            self.assertEqual(len(suite.selected_cases()[0]), 286)
         self.assertEqual(len({c['id'] for c in cases}), len(cases))
         self.assertEqual(config['runs'], 15)
         with patch.dict(os.environ, {"BENCH_INSTANCE": cases[0]['id']}):
@@ -29,8 +29,7 @@ class SmallWorkSuiteTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 suite.selected_cases()
 
-    def test_manifest_quick_is_the_previous_default_and_routes_are_labelled(self):
-        # Migration check: quick keeps exactly the old default filter.
+    def test_manifest_keeps_previous_steady_cases_and_adds_bounded_latency_lane(self):
         def old_diagnostic(c):
             return (c["api_tier"] in {"eager-no-ad", "eager-ad", "compiled-repeat"}
                     or c["api_tier"].endswith(("-fresh", "-setup"))
@@ -40,12 +39,16 @@ class SmallWorkSuiteTest(unittest.TestCase):
             every = suite.selected_cases()[0]
         with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_COVERAGE": "quick"}):
             quick = suite.selected_cases()[0]
-        self.assertEqual([c["id"] for c in quick], [c["id"] for c in every if not old_diagnostic(c)])
+        self.assertEqual([c["id"] for c in quick if not c["id"].startswith("nonad_")], [c["id"] for c in every if not c["id"].startswith("nonad_") and not old_diagnostic(c)])
+        latency = [c for c in quick if c["id"].startswith("nonad_")]
+        self.assertEqual(len(latency), 20)
+        self.assertEqual({c["api_tier"] for c in latency}, {"concrete-fresh", "concrete-shared", "eager-no-ad", "eager-shared"})
+        self.assertEqual({tuple(c["shape"]) for c in latency}, {(2, 2)})
         for case in every:
             route = suite.route_for(case)
             self.assertIn(route["measurement_scope"], {"steady_state", "session_entry_diagnostic",
                                                        "preparation_diagnostic"})
-        self.assertEqual({suite.route_for(c)["measurement_scope"] for c in quick}, {"steady_state"})
+        self.assertEqual({suite.route_for(c)["measurement_scope"] for c in quick}, {"steady_state", "session_entry_diagnostic"})
         self.assertNotIn("all 166", (Path(suite.ROOT) / "scripts/run_small_work.sh").read_text())
 
     def test_collect_writes_case_status(self):

@@ -25,6 +25,12 @@ const CALIBRATION_DEADLINE_NS: u128 = 10_000_000_000;
 
 type BoxError = Box<dyn Error + Send + Sync>;
 
+#[cfg(feature = "allocation-diagnostics")]
+#[path = "small_work/allocations.rs"]
+mod allocations;
+#[path = "small_work/nonad.rs"]
+mod nonad;
+
 /// Enter one backend session and flatten the session-entry error into the
 /// callback's own error channel.
 trait SessionScope {
@@ -2061,6 +2067,9 @@ mod tests {
 
 fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let case_id = required_arg("--case")?;
+    if case_id.starts_with("nonad_") {
+        return nonad::run(&case_id);
+    }
     let operation = required_arg("--operation")?;
     let dtype = required_arg("--dtype")?;
     let api_tier = required_arg("--api-tier")?;

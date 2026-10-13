@@ -33,6 +33,7 @@ TIER_ROUTES = {
     "prepared-into-repeat": ("concrete-prepared", "reused", "owned", "shared-session", "steady_state"),
     "dot-general-into-shared": ("concrete", "reused", "owned", "shared-session", "steady_state"),
     "eager-no-ad": ("eager", "allocating", "owned", "session-per-call", "session_entry_diagnostic"),
+    "eager-shared": ("eager", "allocating", "owned", "shared-session", "steady_state"),
     "eager-ad": ("eager", "allocating", "owned", "session-per-call", "session_entry_diagnostic"),
     "compiled-setup": ("compiled-trace", "none", "owned", "runtime", "preparation_diagnostic"),
     "compiled-repeat": ("compiled-trace", "allocating", "owned", "runtime-internal-session", "session_entry_diagnostic"),
@@ -76,9 +77,11 @@ def selected_cases():
     return [cases[i] for i in selected], suite["defaults"]["run"]
 
 
-def collect(binary, output, threads):
+def collect(binary, output, threads, mode="measure"):
     suite, all_cases, manifest, coverage, expected, selected, raw = plan()
     cases = [all_cases[i] for i in selected]
+    if mode == "allocations":
+        cases = [case for case in cases if case["id"].startswith("nonad_")]
     config = dict(suite["defaults"]["run"])
     effort = bench_selection.resolve_effort(config, suite["defaults"].get("effort"))
     config.update(warmups=effort["warmups"], runs=effort["runs"])
@@ -90,6 +93,8 @@ def collect(binary, output, threads):
     with output.open("w") as fh:
         for case in cases:
             command = [str(binary), "--case", case["id"]]
+            if mode != "measure":
+                command += ["--mode", mode]
             for key in ("operation", "dtype", "api_tier", "workflow", "layout"):
                 command += ["--" + key.replace("_", "-"), str(case[key])]
             if "operand_shapes" in case:
@@ -119,6 +124,8 @@ def collect(binary, output, threads):
             fh.flush()
             rows.append(row)
             print(f"{case['id']}: {row['correctness_status']}", flush=True)
+    if mode != "measure":
+        return failed
     status = cs.build_case_status(
         suite_id=SUITE_ID, manifest_version=manifest["manifest_version"], coverage=coverage,
         effort=effort["effort"], expected=[cs.case_key(i, threads) for i in expected],
@@ -138,6 +145,8 @@ def summary(row):
     cov = statistics.stdev(values) / statistics.mean(values) if len(values) > 1 else 0.0
     # A descriptive label, never a performance gate or reason to drop a row.
     status = "NOISY" if cov > 0.10 else "ok"
+    if row.get("case_id", "").startswith("nonad_") and min(s["elapsed_ns"] for s in row["samples"]) < 1_000_000:
+        status = "INCONCLUSIVE (<1 ms batch)"
     return f"{median:.2f}", f"{q[2]-q[0]:.2f}", f"{cov*100:.1f}%", status
 
 
@@ -175,7 +184,7 @@ def report(run_dir, target):
     passed = sum(r["correctness_status"] == "passed" for r in rows)
     lines += [f"Numerical checks: **{passed}/{len(rows)} recorded rows passed** (case × thread count).", ""]
     lines += ["## Timing", "",
-              "Sequential release runs; warmups, then calibration from at least 1024 operations toward a 1 ms batch, then the measured batches of the recorded effort (standard: 3 warmups and 15 batches; scan: a low-repetition screen that only marks suspects). "
+              "Sequential release runs; warmups, then calibration from at least 1024 operations toward the declared batch duration (2 ms by default; memory bounded for non-AD cases), then the measured batches of the recorded effort (standard: 3 warmups and 15 batches; scan: a low-repetition screen that only marks suspects). "
               "Each batch uses one wall-clock interval; all outputs are retained until it stops. Statistics divide batch time by iterations. "
               "Median and inclusive IQR are in nanoseconds (ns); CoV is sample standard deviation / mean. "
               "NOISY means CoV > 10%, a descriptive label only. No noisy rows are excluded.", "",
@@ -188,7 +197,7 @@ def report(run_dir, target):
               "| Case ID | Operation | API route | Route (path / output / repr / session) | Dtype | Shape | Layout | Workflow | Threads | Provider | Operations/batch | Median batch ms | Median workflow ns | IQR ns | CoV | ns/op (chain only) | Status |",
               "|---|---|---|---|---|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|---|"]
     for row in rows:
-        if row.get("measurement_kind") == "setup_diagnostic" or row["api_tier"].endswith(("-fresh", "-setup")):
+        if row.get("measurement_kind") == "setup_diagnostic" or (row["api_tier"].endswith(("-fresh", "-setup")) and not row["case_id"].startswith("nonad_")):
             continue
         median, iqr, cov, status = summary(row)
         per_op = f"{float(median)/row['calls_per_workflow']:.2f}" if median != "—" and row['calls_per_workflow'] > 1 else "—"
@@ -200,6 +209,36 @@ def report(run_dir, target):
             row["samples"][0]["iterations"] * row["calls_per_workflow"] if row["samples"] else "—",
             f"{statistics.median(s['elapsed_ns'] for s in row['samples'])/1e6:.6f}" if row["samples"] else "—",
             median, iqr, cov, per_op, status])) + " |")
+    lines += ["", "## Matched non-AD eager comparisons (#98)", "",
+              "All requested QR/SVD outputs are retained. Ordinary einsum uses the same parsed integer notation and default Auto strategy; planning/cache lookup stays inside both public calls. These are public-call diagnostics, not prepared execution or an isolated AD cost. Fresh pairs include session entry; shared pairs exclude it. Views are constructed untimed and consumed as views on both routes. No output to_tensor conversion is timed. Capture is inactive by construction in each fresh process, with no capture_trace guard; inputs and validation outputs are checked untracked.", "",
+              "| Operation | Shape | Layout | Session | Threads | Direct ns | Eager ns | Eager − direct ns | Eager/direct | Quality |",
+              "|---|---|---|---|---:|---:|---:|---:|---:|---|"]
+    matched = {}
+    for row in rows:
+        if row["case_id"].startswith("nonad_"):
+            key = (row["operation"], tuple(row["shape"]), row["layout"], row["threads"])
+            matched.setdefault(key, {})[row["api_tier"]] = row
+    for (op, shape, layout, threads), group in sorted(matched.items()):
+        for direct, eager, session in [("concrete-fresh", "eager-no-ad", "per call diagnostic"), ("concrete-shared", "eager-shared", "shared")]:
+            if direct not in group or eager not in group:
+                continue
+            d, e = summary(group[direct]), summary(group[eager])
+            valid = d[0] != "—" and e[0] != "—"
+            delta = f"{float(e[0])-float(d[0]):.2f}" if valid else "—"
+            ratio = f"{float(e[0])/float(d[0]):.3f}" if valid and float(d[0]) else "—"
+            quality = "inconclusive" if d[3] != "ok" or e[3] != "ok" else "observed; no speedup claim"
+            lines.append(f"| {op} | {'×'.join(map(str,shape))} | {layout} | {session} | {threads} | {d[0]} | {e[0]} | {delta} | {ratio} | {quality} |")
+    allocations = [json.loads(line) for path in sorted(run_dir.glob("allocations_t*.jsonl")) for line in path.read_text().splitlines()]
+    if allocations:
+        lines += ["", "## Separate allocation diagnostics", "",
+                  "Instrumented executable is built separately after latency collection. Calling-thread Rust allocator requests only; excludes foreign BLAS and worker-thread allocations. Realloc counts its requested new size, not net retained bytes. Output destruction and instrumentation setup are excluded. Identical result packaging is included. No allocation-instrumented run contributes latency samples.", "",
+                  "| Corresponding case ID | Threads | Median allocation requests/op | Median requested bytes/op | Status |",
+                  "|---|---:|---:|---:|---|"]
+        for row in allocations:
+            values = row.get("allocation_samples", [])
+            counts = statistics.median(v["allocations"] for v in values) if values else "—"
+            bytes_ = statistics.median(v["bytes"] for v in values) if values else "—"
+            lines.append(f"| {row['case_id']} | {row['threads']} | {counts} | {bytes_} | {row['correctness_status']} |")
     diagnostics = [r for r in rows if r.get("measurement_kind") == "setup_diagnostic"]
     if diagnostics:
         lines += ["", "## Explicit setup diagnostics (not operation comparisons)", "",
@@ -235,8 +274,9 @@ if __name__ == "__main__":
     parser.add_argument("--threads", type=int)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--target-profile", default="amd-cpu")
+    parser.add_argument("--mode", choices=["measure", "allocations"], default="measure")
     args = parser.parse_args()
     if args.report:
         report(args.report, args.target_profile)
     else:
-        raise SystemExit(collect(args.binary, args.output, args.threads))
+        raise SystemExit(collect(args.binary, args.output, args.threads, args.mode))
