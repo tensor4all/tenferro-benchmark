@@ -150,6 +150,7 @@ fn read_array(root: &Path, a: &Array) -> Result<Tensor> {
             a.shape.clone(),
             bytes.iter().map(|&x| x != 0).collect::<Vec<_>>(),
         )?,
+        "i32" => real!(i32, 4),
         "i64" => real!(i64, 8),
         "f32" => real!(f32, 4),
         "f64" => real!(f64, 8),
@@ -207,6 +208,17 @@ fn verify(rt: &CudaRuntime, actual: &Tensor, expected: &Tensor, case: &Case) -> 
         .into());
     }
     let host = download_tensor(rt, actual)?;
+    if matches!(expected.dtype(), DType::I32 | DType::I64) {
+        let equal = match expected.dtype() {
+            DType::I32 => host.as_slice::<i32>()? == expected.as_slice::<i32>()?,
+            DType::I64 => host.as_slice::<i64>()? == expected.as_slice::<i64>()?,
+            _ => unreachable!(),
+        };
+        if !equal {
+            return Err("verification exact integer mismatch".into());
+        }
+        return Ok(0.0);
+    }
     let mut worst = 0.0_f64;
     for (x, y) in numbers(&host)?.iter().zip(numbers(expected)?) {
         if *x == y {

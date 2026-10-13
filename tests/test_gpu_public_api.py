@@ -18,6 +18,26 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_i64_verification_rejects_single_bit_error_above_float_precision(self):
+        expected = np.array([2**54 + 1, -(2**54 + 3)], dtype=np.int64)
+        case = {"rtol": 5e-4, "atol": 5e-4}
+        self.assertEqual(bench.verify(expected.copy(), expected, case), 0)
+        wrong = expected.copy()
+        wrong[0] += 1
+        with self.assertRaisesRegex(ValueError, "exact integer mismatch"):
+            bench.verify(wrong, expected, case)
+
+    def test_integer_division_and_remainder_use_truncation(self):
+        for dtype, spelling in (("<i4", "i32"), ("<i8", "i64")):
+            case = dict(op="div", dtype=spelling, n=128, shape=[8, 16])
+            inputs, quotient = fixtures(case, dtype)
+            np.testing.assert_array_equal(quotient, np.trunc(inputs[0] / inputs[1]).astype(dtype))
+            _, remainder = fixtures(dict(case, op="rem"), dtype)
+            np.testing.assert_array_equal(remainder, np.fmod(*inputs))
+            self.assertTrue(np.any(remainder != np.mod(*inputs)))
+            _, total = fixtures(dict(case, op="reduce_sum"), dtype)
+            self.assertEqual(total.dtype, np.dtype(dtype))
+
     def test_complex_scale_checks_real_and_imaginary_cross_terms(self):
         case = {"op": "scale_complex", "dtype": "c64", "n": 16, "shape": [16],
                 "alpha": .5, "beta": .75}

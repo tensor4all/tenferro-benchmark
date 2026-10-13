@@ -13,6 +13,29 @@ def fixtures(case, dtype):
     i = np.arange(n, dtype=np.uint64)
     raw = (((i * 2654435761 + 679) % 2001).astype(np.float64) / 2000 - .5).reshape(shape)
     x = raw.astype(dtype)
+    if np.issubdtype(np.dtype(dtype), np.integer):
+        integer = ((i * 97 + 5) % 129).astype(np.int64).reshape(shape) - 64
+        rhs = (((i * 73 + 3) % 17).astype(np.int64) + 1).reshape(shape)
+        rhs *= np.where((i.reshape(shape) % 2) == 0, 1, -1)
+        if case["dtype"] == "i64" and op in {"neg", "abs", "sign", "maximum", "minimum", "reduce_max", "reduce_min"}:
+            integer += np.where(integer >= 0, 1 << 54, -(1 << 54))
+            rhs += np.where(rhs > 0, 1 << 54, -(1 << 54))
+        x, rhs = integer.astype(dtype), rhs.astype(dtype)
+        unary = {"neg": np.negative, "abs": np.abs, "sign": np.sign}
+        binary = {"add": np.add, "sub": np.subtract, "mul": np.multiply,
+                  "maximum": np.maximum, "minimum": np.minimum}
+        if op in unary:
+            return [x], unary[op](x)
+        if op in binary:
+            return [x, rhs], binary[op](x, rhs)
+        if op in {"div", "rem"}:
+            quotient = (np.abs(x) // np.abs(rhs)) * np.sign(x) * np.sign(rhs)
+            return [x, rhs], (quotient if op == "div" else x - quotient * rhs).astype(dtype)
+        if op in {"reduce_sum", "reduce_max", "reduce_min"}:
+            fn = getattr(np, op.removeprefix("reduce_"))
+            result = fn(x, axis=1, dtype=x.dtype) if op == "reduce_sum" else fn(x, axis=1)
+            return [x], result
+        raise ValueError(f"unselected integer fixture operation {op}")
     if op.startswith("einsum_plan"):
         precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64
         rhs_shape = case["rhs_shape"]
@@ -276,6 +299,10 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
         return torch_operation(torch, dict(case, op=case["read_op"], read_op=""),
                                [value.transpose(0, 1) for value in inputs], verify_only=verify_only)
     x, op = inputs[0], case["op"]
+    if case["dtype"] in {"i32", "i64"} and op == "div":
+        return lambda: torch.div(x, inputs[1], rounding_mode="trunc")
+    if case["dtype"] in {"i32", "i64"} and op == "reduce_sum":
+        return lambda: torch.sum(x, dim=1, dtype=x.dtype)
     if op.startswith("einsum_plan"):
         a,b = inputs[:2]
         if "strided" in op:
@@ -450,6 +477,10 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
 
 
 def jax_operation(jax, jnp, case):
+    if case["dtype"] in {"i32", "i64"} and case["op"] == "div":
+        return lambda x, y: jax.lax.div(x, y)
+    if case["dtype"] in {"i32", "i64"} and case["op"] == "reduce_sum":
+        return lambda x: jnp.sum(x, axis=1, dtype=x.dtype)
     if case["op"] in {"scale_real", "scale_complex"}:
         return lambda x, factor: jnp.multiply(x, factor)
     if case["op"].startswith("einsum_plan"):
