@@ -69,7 +69,7 @@ pub(super) fn run(
     plan: Option<&ConcreteEinsumPlan>,
     views: Option<&[TensorView<'_>]>,
 ) -> Result<(Option<Value>, f64)> {
-    let read = |index| match views {
+    let read = |index: usize| match views {
         Some(views) => TensorRead::from_view(views[index].clone()),
         None => TensorRead::from_tensor(&inputs[index]),
     };
