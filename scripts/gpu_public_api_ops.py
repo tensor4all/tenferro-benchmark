@@ -476,7 +476,8 @@ def jax_operation(jax, jnp, case):
         return lambda x: jax.nn.standardize(x, axis=1, epsilon=1e-5)
     if op == "pad":
         padding = tuple(tuple(v) for v in case.get("padding", [(0, 0, 0), (8, 8, 0)]))
-        zero = np.array(0, dtype={"f32": np.float32, "f64": np.float64}[case["dtype"]])
+        zero = jax.device_put(np.array(0, dtype={"f32": np.float32, "f64": np.float64}[case["dtype"]]), jax.devices("gpu")[0])
+        jax.block_until_ready(zero)
         return lambda x: jax.lax.pad(x, zero, padding)
     if op == "slice":
         return lambda x: jax.lax.slice_in_dim(x, 0, x.shape[1]//2, axis=1)
