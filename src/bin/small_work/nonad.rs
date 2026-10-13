@@ -33,6 +33,27 @@ fn orthogonality(n: usize, q: &[f64]) -> f64 {
         .fold(0., f64::max)
 }
 fn check(op: &str, n: usize, a: &[f64], expected: &[f64], out: &[Tensor]) -> Result<f64, BoxError> {
+    let expected_outputs = match op {
+        "qr" => 2,
+        "svd" => 3,
+        _ => 1,
+    };
+    if out.len() != expected_outputs {
+        return Err("wrong output count".into());
+    }
+    for (index, tensor) in out.iter().enumerate() {
+        let expected_shape = if op == "svd" && index == 1 {
+            vec![n]
+        } else {
+            vec![n, n]
+        };
+        if tensor.shape() != expected_shape {
+            return Err("wrong output shape".into());
+        }
+        if tensor.as_slice::<f64>()?.iter().any(|x| !x.is_finite()) {
+            return Err("nonfinite output".into());
+        }
+    }
     let values: Vec<&[f64]> = out
         .iter()
         .map(|t| t.as_slice::<f64>())
@@ -361,4 +382,18 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
     output["initial_public_call_scope"] = serde_json::json!("first selected operation inside entered shared session; lazy operation initialization included; validation/destruction excluded; single-call diagnostic, no performance ratio");
     println!("{}", serde_json::to_string(&output)?);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn rejects_nonfinite_and_wrong_shape_outputs() {
+        let values = fixture(2, 1);
+        let nan = Tensor::from_vec_col_major([2, 2], vec![f64::NAN; 4]).unwrap();
+        assert!(check("einsum", 2, &values, &values, &[nan]).is_err());
+        let flat = Tensor::from_vec_col_major([4], values.clone()).unwrap();
+        assert!(check("einsum", 2, &values, &values, &[flat]).is_err());
+        assert!(check("qr", 2, &values, &values, &[]).is_err());
+    }
 }
