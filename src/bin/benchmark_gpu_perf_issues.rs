@@ -33,6 +33,9 @@ use tenferro_tensor::{
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
 
+#[path = "benchmark_gpu_perf_issues/shape_stream.rs"]
+mod shape_stream;
+
 const CALIBRATION_MAX_ITERATIONS: usize = 1 << 16;
 const CALIBRATION_DEADLINE_NS: u128 = 30_000_000_000;
 const RETENTION_BUDGET_BYTES: usize = 1 << 30;
@@ -2556,6 +2559,7 @@ fn main() -> Result<()> {
         "eigh_driver" => eigh_driver(&params, &timing, device),
         "hadamard_dot_general" => hadamard_dot_general(&params, &timing, device),
         "contraction_plan_churn" => contraction_plan_churn(&params, &timing, device),
+        "shape_stream" => shape_stream::run(&params, &timing, device),
         "owned_destination" => owned_destination(&params, &timing, device),
         "borrowed_input_gemm" => borrowed_input_gemm(&params, &timing, device),
         _ => Err(format!("unknown case kind {kind}").into()),
