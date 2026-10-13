@@ -3188,6 +3188,1238 @@
         "jax-cuda": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation.",
         "jax-cuda-jit": "No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation."
       }
+    },
+    {
+      "id": "einsum_plan_owned_f32_s32",
+      "op": "einsum_plan_owned",
+      "dtype": "f32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_read_f32_s32",
+      "op": "einsum_plan_read",
+      "dtype": "f32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_f32_s32",
+      "op": "einsum_plan_strided_read",
+      "dtype": "f32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_into_f32_s32",
+      "op": "einsum_plan_into",
+      "dtype": "f32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_f32_s32",
+      "op": "einsum_plan_read_into",
+      "dtype": "f32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_accum_f32_s32",
+      "op": "einsum_plan_read_into_accum",
+      "dtype": "f32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_f32_s32",
+      "op": "einsum_plan_strided_read_into",
+      "dtype": "f32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_accum_f32_s32",
+      "op": "einsum_plan_strided_read_into_accum",
+      "dtype": "f32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_owned_f64_s32",
+      "op": "einsum_plan_owned",
+      "dtype": "f64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_read_f64_s32",
+      "op": "einsum_plan_read",
+      "dtype": "f64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_f64_s32",
+      "op": "einsum_plan_strided_read",
+      "dtype": "f64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_into_f64_s32",
+      "op": "einsum_plan_into",
+      "dtype": "f64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_f64_s32",
+      "op": "einsum_plan_read_into",
+      "dtype": "f64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_accum_f64_s32",
+      "op": "einsum_plan_read_into_accum",
+      "dtype": "f64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_f64_s32",
+      "op": "einsum_plan_strided_read_into",
+      "dtype": "f64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_accum_f64_s32",
+      "op": "einsum_plan_strided_read_into_accum",
+      "dtype": "f64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_owned_c32_s32",
+      "op": "einsum_plan_owned",
+      "dtype": "c32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_read_c32_s32",
+      "op": "einsum_plan_read",
+      "dtype": "c32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_c32_s32",
+      "op": "einsum_plan_strided_read",
+      "dtype": "c32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_into_c32_s32",
+      "op": "einsum_plan_into",
+      "dtype": "c32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_c32_s32",
+      "op": "einsum_plan_read_into",
+      "dtype": "c32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_accum_c32_s32",
+      "op": "einsum_plan_read_into_accum",
+      "dtype": "c32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_c32_s32",
+      "op": "einsum_plan_strided_read_into",
+      "dtype": "c32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_accum_c32_s32",
+      "op": "einsum_plan_strided_read_into_accum",
+      "dtype": "c32",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_owned_c64_s32",
+      "op": "einsum_plan_owned",
+      "dtype": "c64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_read_c64_s32",
+      "op": "einsum_plan_read",
+      "dtype": "c64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_c64_s32",
+      "op": "einsum_plan_strided_read",
+      "dtype": "c64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_into_c64_s32",
+      "op": "einsum_plan_into",
+      "dtype": "c64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_c64_s32",
+      "op": "einsum_plan_read_into",
+      "dtype": "c64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_accum_c64_s32",
+      "op": "einsum_plan_read_into_accum",
+      "dtype": "c64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_c64_s32",
+      "op": "einsum_plan_strided_read_into",
+      "dtype": "c64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_accum_c64_s32",
+      "op": "einsum_plan_strided_read_into_accum",
+      "dtype": "c64",
+      "n": 512,
+      "shape": [
+        32,
+        16
+      ],
+      "rhs_shape": [
+        16,
+        39
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_owned_f32_s256",
+      "op": "einsum_plan_owned",
+      "dtype": "f32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_read_f32_s256",
+      "op": "einsum_plan_read",
+      "dtype": "f32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_f32_s256",
+      "op": "einsum_plan_strided_read",
+      "dtype": "f32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_into_f32_s256",
+      "op": "einsum_plan_into",
+      "dtype": "f32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_f32_s256",
+      "op": "einsum_plan_read_into",
+      "dtype": "f32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_accum_f32_s256",
+      "op": "einsum_plan_read_into_accum",
+      "dtype": "f32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_f32_s256",
+      "op": "einsum_plan_strided_read_into",
+      "dtype": "f32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_accum_f32_s256",
+      "op": "einsum_plan_strided_read_into_accum",
+      "dtype": "f32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_owned_f64_s256",
+      "op": "einsum_plan_owned",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_read_f64_s256",
+      "op": "einsum_plan_read",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_f64_s256",
+      "op": "einsum_plan_strided_read",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_into_f64_s256",
+      "op": "einsum_plan_into",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_f64_s256",
+      "op": "einsum_plan_read_into",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_accum_f64_s256",
+      "op": "einsum_plan_read_into_accum",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_f64_s256",
+      "op": "einsum_plan_strided_read_into",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_accum_f64_s256",
+      "op": "einsum_plan_strided_read_into_accum",
+      "dtype": "f64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_owned_c32_s256",
+      "op": "einsum_plan_owned",
+      "dtype": "c32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_read_c32_s256",
+      "op": "einsum_plan_read",
+      "dtype": "c32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_c32_s256",
+      "op": "einsum_plan_strided_read",
+      "dtype": "c32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_into_c32_s256",
+      "op": "einsum_plan_into",
+      "dtype": "c32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_c32_s256",
+      "op": "einsum_plan_read_into",
+      "dtype": "c32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_accum_c32_s256",
+      "op": "einsum_plan_read_into_accum",
+      "dtype": "c32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_c32_s256",
+      "op": "einsum_plan_strided_read_into",
+      "dtype": "c32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_accum_c32_s256",
+      "op": "einsum_plan_strided_read_into_accum",
+      "dtype": "c32",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_owned_c64_s256",
+      "op": "einsum_plan_owned",
+      "dtype": "c64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_read_c64_s256",
+      "op": "einsum_plan_read",
+      "dtype": "c64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_c64_s256",
+      "op": "einsum_plan_strided_read",
+      "dtype": "c64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established."
+      }
+    },
+    {
+      "id": "einsum_plan_into_c64_s256",
+      "op": "einsum_plan_into",
+      "dtype": "c64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_c64_s256",
+      "op": "einsum_plan_read_into",
+      "dtype": "c64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_read_into_accum_c64_s256",
+      "op": "einsum_plan_read_into_accum",
+      "dtype": "c64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_c64_s256",
+      "op": "einsum_plan_strided_read_into",
+      "dtype": "c64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
+    },
+    {
+      "id": "einsum_plan_strided_read_into_accum_c64_s256",
+      "op": "einsum_plan_strided_read_into_accum",
+      "dtype": "c64",
+      "n": 32768,
+      "shape": [
+        256,
+        128
+      ],
+      "rhs_shape": [
+        128,
+        263
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established.",
+        "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
+        "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
+      }
     }
   ]
 }

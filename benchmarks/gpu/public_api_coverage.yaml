@@ -85,7 +85,7 @@ families:
       other_generalized_conjugating_dot: Selected non-leading batch and multiple contraction axes have F32/F64/C32/C64 cases with native Torch bmm/tensordot and JAX lax.dot_general. Complex vectors cover all four conjugation flags; both-conjugated reference cells are unsupported. Additional read/layout/axis domains remain separate.
       dot_general_other_accumulation_layouts: Compact square overwrite/accumulation/cached-wrapper cases are selected; other alpha/beta values, batch/contract axes and borrowed strided reads need separate cases.
       axpby_other_beta_or_layout: Beta=0/1 and beta=1-alpha compact cases are selected; other independent alpha/beta combinations lack an established single-call reference. Strided sources internally upload coefficients and need a separate timing disposition. Ref.addupdate has no alpha parameter; scaled functional composition is not an equivalent arm.
-      ConcreteEinsumPlan: Plan creation must be untimed; noncontiguous and into/accum variants need their own cases.
+      ConcreteEinsumPlan_other_equations: Prepared ik,kj->ij has selected owned/read/transposed-read execution, owned/read/strided output reuse and read/strided accumulation cases. Plan creation and input handles are untimed. Other equations, typed wrappers and multi-input plans remain separate.
       TensorEinsumIntoExt: No general PyTorch/JAX einsum caller-owned-output counterpart.
       complex_norm_squared: Real result dtype differs from complex vdot; do not equate contracts.
 cross_cutting:

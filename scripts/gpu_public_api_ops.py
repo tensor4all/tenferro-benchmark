@@ -13,6 +13,26 @@ def fixtures(case, dtype):
     i = np.arange(n, dtype=np.uint64)
     raw = (((i * 2654435761 + 679) % 2001).astype(np.float64) / 2000 - .5).reshape(shape)
     x = raw.astype(dtype)
+    if op.startswith("einsum_plan"):
+        precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64
+        rhs_shape = case["rhs_shape"]
+        indices = np.arange(np.prod(rhs_shape),dtype=np.uint64).reshape(rhs_shape)
+        raw_rhs = ((indices*1597334677+131)%2017).astype(np.float64)/2017-.5
+        a = (raw+.7j*np.roll(raw,3,axis=0) if precision==np.complex128 else raw).astype(dtype)
+        b = (raw_rhs+.3j*np.roll(raw_rhs,7,axis=1) if precision==np.complex128 else raw_rhs).astype(dtype)
+        expected = a.astype(precision) @ b.astype(precision)
+        inputs = [a,b]
+        if "_accum" in op:
+            rows,cols = expected.shape
+            seed_values = np.arange(rows*cols).reshape(rows,cols)
+            seed = (1.5+.2*np.sin(seed_values*.17)).astype(dtype)
+            if precision==np.complex128:
+                seed = (seed+.1j*np.cos(seed_values*.23)).astype(dtype)
+            inputs.append(seed)
+            expected = .5*expected+seed.astype(precision)
+        if "strided" in op:
+            inputs[:2] = [a.T.copy(),b.T.copy()]
+        return inputs,expected.astype(dtype)
     if op in {"dot_general_axes", "dot_general_conj"}:
         precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64
         a = (raw + .7j*np.roll(raw, 3, axis=0) if precision == np.complex128 else raw).astype(dtype)
@@ -232,6 +252,23 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
         return torch_operation(torch, dict(case, op=case["read_op"], read_op=""),
                                [value.transpose(0, 1) for value in inputs], verify_only=verify_only)
     x, op = inputs[0], case["op"]
+    if op.startswith("einsum_plan"):
+        a,b = inputs[:2]
+        if "strided" in op:
+            a,b = a.transpose(0,1),b.transpose(0,1)
+        if "_into" not in op:
+            return lambda: torch.mm(a,b)
+        bytes_per_output = a.shape[0]*b.shape[1]*a.element_size()
+        count = 1 if verify_only else max(1,min(4096,(256<<20)//bytes_per_output))
+        destinations = [torch.empty((a.shape[0],b.shape[1]),dtype=a.dtype,device=a.device) for _ in range(count)]
+        if "_accum" in op:
+            def operation(i):
+                return torch.addmm(destinations[i],a,b,alpha=.5,beta=1.,out=destinations[i])
+            def prepare(count):
+                for destination in destinations[:count]: destination.copy_(inputs[2])
+            operation.prepare = prepare
+            return operation
+        return lambda i: torch.mm(a,b,out=destinations[i])
     if op == "dot_general_axes":
         if case["variant"] == "batch":
             a, b = x.permute(1,0,2), inputs[1].permute(2,0,1)
@@ -378,6 +415,8 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
 
 
 def jax_operation(jax, jnp, case):
+    if case["op"].startswith("einsum_plan"):
+        return lambda a,b: jnp.matmul(a,b)
     if case["op"] == "dot_general_axes":
         dims = ((tuple(case["lhs_contracting_dims"]),tuple(case["rhs_contracting_dims"])),
                 (tuple(case["lhs_batch_dims"]),tuple(case["rhs_batch_dims"])))
@@ -489,6 +528,8 @@ def jax_operation(jax, jnp, case):
 
 def prepare_jax_inputs(case, inputs):
     """Adapt vector start indices to JAX's scalar-index API before any clock."""
+    if case["op"].startswith("einsum_plan") and "strided" in case["op"]:
+        return [inputs[0].T,inputs[1].T]
     if case.get("read_op"):
         return [value.T for value in inputs]
     if case["op"] in {"householder_r", "householder_q_columns"}:

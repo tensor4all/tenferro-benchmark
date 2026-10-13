@@ -217,6 +217,9 @@ def run_python(backend, root, output):
                    "setup_policy": "fixtures, H2D, library initialization, compilation and validation outside timing",
                    "session_policy": "backend process and device reused across samples"}
             row["precision_policy"] = "PyTorch TF32 disabled; JAX x64 enabled and matmul precision highest"
+            if case["op"].startswith("einsum_plan"):
+                row["reference_api"] = "native matrix multiplication/accumulation with matched outputs, not a prepared-plan interface"
+                row["input_layout_policy"] = "native input representation; transpose views/values prepared outside timing when selected"
             if case["op"] in {"dot_general_axes", "dot_general_conj"}:
                 row["dot_configuration"] = {key: case.get(key, False if key.endswith("conj") else []) for key in ("lhs_contracting_dims","rhs_contracting_dims","lhs_batch_dims","rhs_batch_dims","lhs_conj","rhs_conj")}
                 row["batch_output_policy"] = "native batch-first; axis normalization only during untimed CPU verification"

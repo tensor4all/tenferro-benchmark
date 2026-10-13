@@ -5,7 +5,7 @@ use serde_json::Value;
 use tenferro_gpu::cuda::CudaRuntime;
 use tenferro_tensor::{BackendSession, DType, Tensor, TensorRead, TensorView};
 
-fn transpose(input: &Tensor) -> Result<TensorView<'_>> {
+pub(super) fn transpose(input: &Tensor) -> Result<TensorView<'_>> {
     macro_rules! view {
         ($ty:ty, $variant:ident) => {
             TensorView::$variant(
