@@ -23,7 +23,7 @@ class EinsumBackend(Protocol):
 T = TypeVar("T")
 
 
-def _jax_binary_contract(ixs, iy):
+def _jax_binary_contract(ixs, iy, restore_output=True):
     """Lower ordinary binary contractions directly, with no einsum optimizer.
 
     Shared output labels are batch axes. Other shared labels are contracted;
@@ -48,9 +48,55 @@ def _jax_binary_contract(ixs, iy):
     def execute(a, b):
         import jax
         result = jax.lax.dot_general(a, b, dimensions, precision=jax.lax.Precision.HIGHEST)
-        return result if permutation == tuple(range(len(native))) else result.transpose(permutation)
+        return result if not restore_output or permutation == tuple(range(len(native))) else result.transpose(permutation)
 
+    execute.output_labels = native
     return execute
+
+
+def prepare_tree_jax_native(tree, inputs):
+    """Keep intermediate native axis order, remapping subsequent node labels.
+
+    The contraction tree is unchanged. Intermediate layout is private; only the
+    root is restored to its requested order. This avoids high-rank transpose
+    kernels between ordinary binary contractions.
+    """
+    import opt_einsum as oe
+
+    def prepare(node):
+        if node.get("isleaf"):
+            index = int(node["tensorindex"]) - 1
+            shape = tuple(inputs[index].shape)
+            return (lambda values: values[index]), shape, tuple(range(len(shape)))
+        children = [prepare(child) for child in node["args"]]
+        declared = node["eins"]["ixs"]
+        output = list(node["eins"]["iy"])
+        ixs = [[labels[i] for i in order] for labels, (_, _, order) in zip(declared, children)]
+        binary = _jax_binary_contract(ixs, output, restore_output=False)
+        sizes = {label: size for labels, (_, shape, _) in zip(ixs, children)
+                 for label, size in zip(labels, shape)}
+        if binary is not None:
+            operation = binary
+            actual_labels = binary.output_labels
+        else:
+            names = {label: oe.get_symbol(i) for i, label in enumerate(sorted(sizes))}
+            expression = ",".join("".join(names[i] for i in labels) for labels in ixs)
+            expression += "->" + "".join(names[i] for i in output)
+            contract = oe.contract_expression(expression, *(shape for _, shape, _ in children), optimize="greedy")
+            operation = lambda *operands: contract(*operands, backend="jax")
+            actual_labels = output
+        executors = tuple(run for run, _, _ in children)
+
+        def execute(values):
+            return operation(*(run(values) for run in executors))
+
+        return execute, tuple(sizes[i] for i in actual_labels), tuple(output.index(i) for i in actual_labels)
+
+    execute, _, order = prepare(tree)
+    inverse = tuple(order.index(i) for i in range(len(order)))
+    if inverse == tuple(range(len(order))):
+        return execute
+    return lambda values: execute(values).transpose(inverse)
 
 
 def resolve_source_path(project_root: Path, source: str) -> Path:
@@ -93,6 +139,8 @@ def contract_tree(
 
 def prepare_tree(tree: dict[str, Any], inputs: Sequence[Any], backend_name: str):
     """Prepare each contraction and label mapping before operation timing."""
+    if backend_name == "jax":
+        return prepare_tree_jax_native(tree, inputs)
     import opt_einsum as oe
 
     def prepare(node):

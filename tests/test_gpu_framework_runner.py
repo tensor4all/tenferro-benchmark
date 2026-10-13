@@ -24,6 +24,22 @@ class LegacyGpuContracts(unittest.TestCase):
         np.testing.assert_allclose(np.asarray(actual), np.einsum("bik,bkj->jbi", a, b), rtol=1e-6)
         self.assertIsNone(tnc._jax_binary_contract([[0, 1], [1, 2]], [2]))
 
+    def test_native_jax_tree_propagates_permuted_intermediate_axes(self):
+        import jax
+        import numpy as np
+        import tensornetwork_contract as tnc
+        tree = {"args": [
+            {"args": [{"isleaf": True, "tensorindex": 1}, {"isleaf": True, "tensorindex": 2}],
+             "eins": {"ixs": [[0, 1], [1, 2]], "iy": [2, 0]}},
+            {"isleaf": True, "tensorindex": 3}],
+            "eins": {"ixs": [[2, 0], [0, 3]], "iy": [3, 2]}}
+        hosts = [np.arange(6, dtype=np.float32).reshape(2, 3) / 10,
+                 np.arange(12, dtype=np.float32).reshape(3, 4) / 20,
+                 np.arange(10, dtype=np.float32).reshape(2, 5) / 30]
+        expected = tnc.prepare_tree(tree, hosts, "numpy")(hosts)
+        inputs = [jax.device_put(value, jax.devices("cpu")[0]) for value in hosts]
+        np.testing.assert_allclose(np.asarray(tnc.prepare_tree(tree, inputs, "jax")(inputs)), expected, rtol=1e-6)
+
     def test_constant_tree_oracle_matches_dense_reference_with_sums_and_free_axes(self):
         import numpy as np
         import tensornetwork_contract as tnc

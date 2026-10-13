@@ -169,8 +169,9 @@ tensor-network path: the complete original tree is preserved, each contraction
 is planned/compiled/initialized before timing, and the Python tree dispatches
 those kernels. All inputs and requested outputs match the PyTorch tree arm.
 Ordinary binary nodes use `jax.lax.dot_general` directly: shared output labels
-become batch axes, shared non-output labels become contraction axes, and an
-explicit transpose restores the tree's output ordering. Repeated labels or
+become batch axes and shared non-output labels become contraction axes. The
+eager tree retains the native intermediate axis order and remaps downstream
+labels; only the root is restored to the requested order. Repeated labels or
 unilateral reductions retain the general einsum implementation. This preserves
 the full tree and avoids invoking JAX's general einsum compiler for every
 ordinary binary node. Full-size CUDA verification remains required before
