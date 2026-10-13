@@ -17,6 +17,20 @@ cat > "$TMP/records.jsonl" <<'JSONL'
 {"schema_version":1,"suite_id":"gpu/linalg_jvp_vjp","problem_id":"linalg_ad_small_grad_sum_solve_vjp_f64_8","op":"vjp","backend":"pytorch-cuda","status":"ok","timing":{"warmup_runs":3,"timed_runs":7,"compile_time_ms":null,"first_run_ms":1.5,"median_ms":1.5,"min_ms":1.5,"p95_ms":1.5,"iqr_ms":0.1,"timing_scope":"steady_state_host_api_plus_device_sync"},"performance":{"tflops":null,"effective_bandwidth_gbps":null,"peak_memory_bytes":null},"verification":{"status":"skipped","reference_backend":null,"max_abs_error":null,"max_rel_error":null,"residual":null,"rtol":1e-5,"atol":1e-8,"reason":null},"execution":{"device":"cuda","device_ordinal":0,"execution_path":"test","synchronization":"sync","layout":null,"dtype":null,"notes":"shape=8x8,rhs=1","unsupported_reason":null}}
 JSONL
 
+# Unverified successful-execution rows must not be published.
+if "${PY[@]}" "$ROOT/scripts/format_gpu_linalg_ad_results.py" "$TMP/records.jsonl" > "$TMP/rejected.md" 2>/dev/null; then
+    echo 'formatter accepted unverified AD outputs' >&2
+    exit 1
+fi
+"${PY[@]}" - "$TMP/records.jsonl" <<'PYFIXTURE'
+import json,sys
+from pathlib import Path
+p=Path(sys.argv[1]); rows=[json.loads(l) for l in p.read_text().splitlines()]
+for row in rows:
+    row['verification'].update(status='passed',reference_backend='independent fixture',max_abs_error=0.,max_rel_error=0.,residual=0.)
+    row['execution']['notes']=json.dumps({'sampling':{'operations_per_sample':1,'batch_ms':[row['timing']['median_ms']]*7}})
+p.write_text(''.join(json.dumps(r)+'\n' for r in rows))
+PYFIXTURE
 OUT="$TMP/report.md"
 "${PY[@]}" "$ROOT/scripts/format_gpu_linalg_ad_results.py" "$TMP/records.jsonl" > "$OUT"
 
@@ -24,8 +38,8 @@ grep -q '## Linalg JVP/VJP Benchmark Items' "$OUT"
 grep -q 'grad_sum_qr_jvp' "$OUT"
 grep -q 'tenferro-rs CUDA trace' "$OUT"
 grep -q 'PyTorch CUDA' "$OUT"
-grep -q 'single-call diagnostics, not batched shared-session' "$OUT"
-! grep -q 'JAX CUDA' "$OUT"
+grep -q 'bounded batches of repeated declared operations' "$OUT"
+grep -q 'JAX CUDA JIT' "$OUT"
 grep -q 'loss = sum(solve(A, b))' "$OUT"
 ! grep -q 'grad_sum_matmul' "$OUT"
 

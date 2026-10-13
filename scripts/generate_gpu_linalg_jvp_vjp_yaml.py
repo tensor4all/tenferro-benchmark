@@ -121,6 +121,7 @@ def suite_document(suite_id: str, title: str, description: str, regime: str) -> 
         "backends": [
             "tenferro-cuda-trace",
             "pytorch-cuda",
+            "jax-cuda",
         ],
         "problems": build_problems(regime),
     }
