@@ -86,7 +86,7 @@ class LegacyGpuContracts(unittest.TestCase):
             self.assertIn("jax-cuda", suite["backends"])
             for case in suite["problems"]:
                 self.assertIn(case["op"], runner._JAX_OPS)
-                expected = "jax-cuda-tree-jit" if family == "tensornetwork" else "jax-cuda"
+                expected = "jax-cuda"
                 self.assertIn(expected, runner._backend_candidates(case, suite["backends"]), case["id"])
 
     def test_skipped_numerical_check_cannot_count_as_success(self):

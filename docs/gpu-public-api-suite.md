@@ -196,11 +196,11 @@ configured path compiled all 549 nodes and passed CUDA verification
 compilation. `GPU_BENCH_JAX_COMPILER_OPTIONS` can override them with a JSON
 object; eager JAX and PyTorch do not apply these JIT options.
 
-Whole-tree JAX compilation on this host exhausted roughly 91 GiB of host memory.
-Guarded attempts also failed during compilation with a 32 GiB limit, including
-attempts disabling autotuning and constant folding. Those incomplete verification
-runs are retained and never count as measured coverage. The whole-tree JAX arm
-is explicitly skipped for this workload; it is not an alias of tree-kernel JIT.
+The previous general-einsum whole-tree lowering exhausted roughly 91 GiB of
+host memory and also failed guarded 32 GiB attempts. Those failed raw runs are
+retained. The compact native lowering and recorded compiler policy now pass
+whole-tree JIT CUDA verification (`compiler_probe_native_no_autotune.json`).
+Whole-tree JIT, node-JIT and eager execution remain separate report arms.
 The CUDA devcontainer now caps host memory at 32 GiB (34 GiB including swap) to
 prevent a compiler process from exhausting the workstation. Per-arm notes record
 the active cgroup memory limit and any nondefault JAX compiler options.

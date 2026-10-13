@@ -21,16 +21,12 @@ problems:
     intent: Compare tenferro-rs CUDA backends against PyTorch on the TensorNetworkBenchmarks tree.
     notes: >-
       Uses the complete TensorNetworkBenchmarks tree and original F32 fixture.
-      Whole-tree JAX JIT exceeded 91 GiB host memory and also failed a 32 GiB
-      guarded retry during compilation (raw verification runs 20261013_104847,
-      20261013_111739, 20261013_112149, 20261013_112624). It is unmeasured on
-      this host. jax-cuda-tree-jit preserves all nodes, inputs and outputs while
-      compiling each prepared contraction separately; it has a distinct label.
-      Default node-JIT compilation also exceeded the 32 GiB guard in verification
-      run 20261013_125730. Disabling autotuning and Triton GEMM compiled every
-      node and passed numerical verification in run 20261013_131210; the explicit
-      compiler options below are recorded in result metadata.
-    skip_backends: [jax-cuda]
+      The previous general-einsum lowering exhausted host memory, and native
+      node-JIT with default compiler settings also exceeded the 32 GiB guard
+      (verification run 20261013_125730). Compact native layouts with autotuning
+      and Triton GEMM disabled pass full-size whole-tree JIT and node-JIT CUDA
+      verification. Both use the explicit compiler options below, recorded in
+      result metadata. Eager JAX retains its primitive-dispatch compiler policy.
     dtype: {a: f32, accum: f32}
     layout: {tenferro: col_major, framework: row_major_contiguous}
     data: {generator: tensornetwork_fill, seed: 0}

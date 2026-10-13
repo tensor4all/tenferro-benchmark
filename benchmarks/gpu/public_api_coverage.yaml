@@ -86,8 +86,10 @@ cross_cutting:
   runtime_transfer_lifecycle: Separate workflow/initialization diagnostics, tracked by issue 107 and perf_issues.
   legacy_jax_reports: >-
     Dense/einsum/chain select whole-operation JAX JIT; tensor-network additionally
-    selects distinct prepared tree-kernel JIT. Whole-tree JIT has verified host-OOM
-    exclusions. Framework timing, strict verification and held eager sessions are
+    selects distinct prepared tree-kernel JIT and eager execution. Compact native
+    layouts and recorded JIT compiler options pass full-size CUDA checks after
+    earlier general-einsum/compiler-default OOMs. Framework timing, strict
+    verification and held eager sessions are
     implemented; refreshed full-size timing reports remain pending.
 cuda_unavailable_at_audit:
   - TensorLinalgExt inv/pinv_with_rtol (CUDA execution probe found internal host-scalar operands; eager routes differ)
