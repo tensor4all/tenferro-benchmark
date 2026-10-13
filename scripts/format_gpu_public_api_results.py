@@ -63,6 +63,9 @@ def render(suite, paths, metadata, timestamp):
     if any(case.get("read_op") for case in suite["cases"]):
         text[-2:-2] = [
             'Transposed borrowed-read cases use prepared native CUDA views in tenferro and PyTorch. JAX compares the same logical values in its native representation; its columns do not claim an equivalent public strided-view contract. View creation and input conversion are outside timing.', ""]
+    if any(case.get("jax_ref_addupdate") for case in suite["cases"]):
+        text[-2:-2] = [
+            'Unit-coefficient AXPBY uses native JAX Ref.addupdate with caller-owned fixed buffers. Its synchronization includes one GPU scalar completion token per destination and block_until_ready; tokens are retained through clock stop and included in the logical retention bound. Helper compilation and seed restoration are untimed. Full Ref snapshots are used only for untimed inspection. This scalar-token synchronization cost is included in the reported latency; it performs no full output copy or D2H transfer inside timing.', ""]
     for case in suite["cases"]:
         cells = []
         for backend in backends:

@@ -59,6 +59,10 @@ struct Case {
     #[serde(default)]
     read_op: String,
     #[serde(default)]
+    alpha: Option<f64>,
+    #[serde(default)]
+    beta: Option<f64>,
+    #[serde(default)]
     excluded: HashMap<String, String>,
     #[serde(default)]
     unavailable: HashMap<String, String>,
@@ -434,7 +438,7 @@ fn main() -> Result<()> {
         }
         if case.op.contains("_into_accum") {
             row["input_restoration"] = json!("GPU seed copied into each destination before every batch; synchronized outside timing");
-            row["accumulation"] = json!({"alpha":0.5,"beta":1.0});
+            row["accumulation"] = json!({"alpha":case.alpha.unwrap_or(0.5),"beta":case.beta.unwrap_or(1.0)});
         }
         if case.op == "dot_general_read_into" {
             row["accumulation"] = json!({"alpha":1.0,"beta":0.0});

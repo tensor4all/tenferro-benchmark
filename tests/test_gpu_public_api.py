@@ -18,6 +18,32 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_completion_tokens_survive_until_clock_stop(self):
+        stopped, violations = [True], []
+        class Token:
+            def __del__(self):
+                if not stopped[0]:
+                    violations.append("completion token released inside clock")
+        tick = [0]
+        def clock():
+            stopped[0] = not stopped[0]
+            tick[0] += 1_000_000
+            return tick[0]
+        with patch.object(bench.time, "perf_counter_ns", clock):
+            bench.measure(lambda: object(), lambda: None,
+                          lambda outputs: [Token() for _ in outputs],
+                          256 << 20, 0, 3)
+        gc.collect()
+        self.assertEqual(violations, [])
+
+    def test_unqualified_ref_adapter_is_rejected_before_any_timing(self):
+        def operation():
+            self.fail("numerical-only Ref operation executed by sampler")
+        operation.verification_only = True
+        with patch.object(bench.time, "perf_counter_ns", side_effect=AssertionError("timer entered")):
+            with self.assertRaisesRegex(ValueError, "synchronization"):
+                bench.measure(operation, lambda: None, lambda outputs: None, 16, 0, 1)
+
     def test_excluded_verified_rows_cannot_hide_failed_validation_or_timings(self):
         suite = {"suite_id": "gpu/lstsq", "cases": [{"id": "one"}], "backends": ["a"]}
         row = dict(case_id="one", backend="a", status="unsupported", reason="internal setup",

@@ -992,8 +992,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+        "jax-cuda": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter.",
+        "jax-cuda-jit": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
       }
     },
     {
@@ -1007,8 +1007,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+        "jax-cuda": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter.",
+        "jax-cuda-jit": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
       }
     },
     {
@@ -1022,8 +1022,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+        "jax-cuda": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter.",
+        "jax-cuda-jit": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
       }
     },
     {
@@ -1037,8 +1037,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+        "jax-cuda": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter.",
+        "jax-cuda-jit": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
       }
     },
     {
@@ -1052,8 +1052,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+        "jax-cuda": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter.",
+        "jax-cuda-jit": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
       }
     },
     {
@@ -1067,8 +1067,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+        "jax-cuda": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter.",
+        "jax-cuda-jit": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
       }
     },
     {
@@ -1082,8 +1082,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+        "jax-cuda": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter.",
+        "jax-cuda-jit": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
       }
     },
     {
@@ -1097,8 +1097,8 @@
       "issue": 155,
       "unavailable": {
         "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
-        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+        "jax-cuda": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter.",
+        "jax-cuda-jit": "No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter."
       }
     },
     {
@@ -1904,6 +1904,406 @@
       "unavailable": {
         "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
       }
+    },
+    {
+      "id": "axpby_overwrite_f32_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "beta": 0.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_lerp_f32_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.25,
+      "beta": 0.75,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_unit_add_f32_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 1.0,
+      "beta": 1.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API."
+      },
+      "jax_ref_addupdate": true
+    },
+    {
+      "id": "axpby_overwrite_f64_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "beta": 0.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_lerp_f64_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.25,
+      "beta": 0.75,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_unit_add_f64_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 1.0,
+      "beta": 1.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API."
+      },
+      "jax_ref_addupdate": true
+    },
+    {
+      "id": "axpby_overwrite_c32_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "beta": 0.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_lerp_c32_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.25,
+      "beta": 0.75,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_unit_add_c32_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 1.0,
+      "beta": 1.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API."
+      },
+      "jax_ref_addupdate": true
+    },
+    {
+      "id": "axpby_overwrite_c64_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "beta": 0.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_lerp_c64_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.25,
+      "beta": 0.75,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_unit_add_c64_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 1.0,
+      "beta": 1.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API."
+      },
+      "jax_ref_addupdate": true
+    },
+    {
+      "id": "axpby_overwrite_f32_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "beta": 0.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_lerp_f32_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.25,
+      "beta": 0.75,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_unit_add_f32_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 1.0,
+      "beta": 1.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API."
+      },
+      "jax_ref_addupdate": true
+    },
+    {
+      "id": "axpby_overwrite_f64_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "beta": 0.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_lerp_f64_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.25,
+      "beta": 0.75,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_unit_add_f64_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 1.0,
+      "beta": 1.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API."
+      },
+      "jax_ref_addupdate": true
+    },
+    {
+      "id": "axpby_overwrite_c32_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "beta": 0.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_lerp_c32_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.25,
+      "beta": 0.75,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_unit_add_c32_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 1.0,
+      "beta": 1.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API."
+      },
+      "jax_ref_addupdate": true
+    },
+    {
+      "id": "axpby_overwrite_c64_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "beta": 0.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_lerp_c64_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.25,
+      "beta": 0.75,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API.",
+        "jax-cuda": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts.",
+        "jax-cuda-jit": "No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts."
+      }
+    },
+    {
+      "id": "axpby_unit_add_c64_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 1.0,
+      "beta": 1.0,
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API."
+      },
+      "jax_ref_addupdate": true
     }
   ]
 }

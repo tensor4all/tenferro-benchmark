@@ -141,6 +141,8 @@ def verify(actual, expected, case):
 
 
 def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
+    if getattr(op, "verification_only", False):
+        raise ValueError("Ref completion synchronization is not validated for timing")
     def batch(count):
         outputs = [None] * count
         if hasattr(op, "prepare"):
@@ -149,7 +151,7 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
         start = time.perf_counter_ns()
         for i in range(count):
             outputs[i] = op(i) if reuse else op()
-        ready(outputs)
+        completion_tokens = ready(outputs)
         elapsed = time.perf_counter_ns() - start
         # Keep all outputs alive through synchronization and the stopped clock.
         return elapsed
@@ -157,7 +159,7 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
     first = batch(1)  # explicit lazy initialization, including with zero warmups
     for _ in range(warmups):
         batch(1)
-    cap = max(1, min(4096, RETENTION_BUDGET // max(1, nbytes)))
+    cap = max(1, min(4096, RETENTION_BUDGET // max(1, nbytes + getattr(op, "synchronization_bytes_per_operation", 0))))
     count = 1
     while batch(count) < 2_000_000 and count < cap:
         count = min(count * 2, cap)
@@ -165,7 +167,8 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
     return {"operations_per_sample": count, "batch_ms": samples,
             "first_run_ms": first / 1e6, "retention_budget_bytes": RETENTION_BUDGET,
             "target_batch_ms": 2, "warmups": warmups,
-            "scope": "steady_state_host_api_plus_device_sync"}
+            "scope": "steady_state_host_api_plus_device_sync",
+            "completion_token_bytes_per_operation": getattr(op, "synchronization_bytes_per_operation", 0)}
 
 
 def verify_device(outputs, backend, device):
@@ -221,11 +224,12 @@ def run_python(backend, root, output):
                     "same logical values prepared in native JAX representation; no public strided-view equivalence claimed")
             if "_into_accum" in case["op"]:
                 row["input_restoration"] = "GPU seed copied into each destination before every batch; synchronized outside timing"
-                row["accumulation"] = {"alpha": 0.5, "beta": 1.0}
+                row["accumulation"] = {"alpha": case.get("alpha", .5), "beta": case.get("beta", 1.)}
             if case["op"] == "dot_general_read_into":
                 row["accumulation"] = {"alpha": 1.0, "beta": 0.0}
             unavailable = {**case.get("excluded", {}), **case.get("unavailable", {})}
-            if backend in unavailable:
+            numerical_exclusion = backend in case.get("excluded", {}) and backend in case.get("verify_excluded", [])
+            if backend in unavailable and (not numerical_exclusion or backend in case.get("unavailable", {})):
                 row.update(status="unsupported", reason=unavailable[backend])
                 f.write(json.dumps(row) + "\n")
                 continue
@@ -250,42 +254,58 @@ def run_python(backend, root, output):
                     row["synchronization"] = "torch.cuda.synchronize; no D2H in timed region"
                 else:
                     inputs = [jax.device_put(a, gpu) for a in hosts]
-                    if is_fft:
+                    if case.get("jax_ref_addupdate"):
+                        from gpu_ref_reuse import prepare_addupdate
+                        op = prepare_addupdate(jax, case, inputs, compiled=backend.endswith("-jit"), verify_only=verify_only)
+                        row["output_reuse_api"] = "jax.ref.addupdate; caller-owned fixed-buffer Ref"
+                    elif is_fft:
                         operation = getattr(jnp.fft, case["op"])
                         fn = lambda value: operation(value, n=case["n"], axis=-1, norm="backward")
                     else:
                         from gpu_public_api_ops import jax_operation, prepare_jax_inputs
                         fn = jax_operation(jax, jnp, case)
                         inputs = prepare_jax_inputs(case, inputs)
-                    if backend.endswith("-jit"):
-                        fn = jax.jit(fn).lower(*inputs).compile()
-                    op = lambda: fn(*inputs)
+                    if not case.get("jax_ref_addupdate"):
+                        if backend.endswith("-jit"):
+                            fn = jax.jit(fn).lower(*inputs).compile()
+                        op = lambda: fn(*inputs)
                     jax.block_until_ready(inputs)
                     sync = lambda: None  # previous batch waits on every output
                     ready = jax.block_until_ready
                     download = np.asarray
                     row["synchronization"] = "jax.block_until_ready on all retained outputs; no D2H in timed region"
+                if hasattr(op, "ready"):
+                    ready = op.ready
+                    row["synchronization"] = "AOT-compiled scalar token per Ref plus block_until_ready; tokens retained through clock stop; no full snapshot or D2H in timed region"
                 reuse = "_into" in case["op"]
                 if hasattr(op, "prepare"):
                     op.prepare(1)
                 probe = op(0) if reuse else op()
+                if hasattr(op, "inspect"):
+                    ready([probe])
+                    probe = op.inspect(probe)  # snapshot only for untimed verification
                 verify_device(probe, backend, device if backend == "pytorch-cuda" else gpu)
-                ready([probe])
+                (jax.block_until_ready if hasattr(op, "inspect") else ready)([probe])
                 error = verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify)
                 del probe
                 timing = None
-                if not verify_only:
+                if not verify_only and not numerical_exclusion:
                     timing = measure(op, sync, ready, sum(v.nbytes for v in expected), warmups, runs, reuse=reuse)
                     if hasattr(op, "prepare"):
                         op.prepare(timing["operations_per_sample"])
                         sync()
                     probe = op(timing["operations_per_sample"]-1) if reuse else op()
+                    if hasattr(op, "inspect"):
+                        ready([probe])
+                        probe = op.inspect(probe)
                     verify_device(probe, backend, device if backend == "pytorch-cuda" else gpu)
-                    ready([probe])
+                    (jax.block_until_ready if hasattr(op, "inspect") else ready)([probe])
                     error = max(error, verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify))
                     del probe
-                row.update(status="verification_only" if verify_only else "ok", timing=timing,
+                row.update(status="unsupported" if numerical_exclusion else ("verification_only" if verify_only else "ok"), timing=timing,
                            verification={"max_error_over_tolerance": error, "reference": case["reference"]})
+                if numerical_exclusion:
+                    row.update(reason=case["excluded"][backend], cuda_implementation_verified=True)
             except Exception as error:
                 row.update(status="verification_failed" if str(error).startswith("verification") else "runtime_failed", reason=str(error))
             f.write(json.dumps(row, allow_nan=False) + "\n")
