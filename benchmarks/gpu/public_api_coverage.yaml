@@ -22,7 +22,7 @@ families:
       full_reductions: Full sum/prod/max/min/mean/sum-of-squares, F32/F64, n=1024 and 1048576; None axes in tenferro, omitted axis/dim in references. Full real sum-of-squares uses the single public vdot(x,x) reference; mean retains scalar-setup exclusions.
       comparison_directions: Eq/Lt/Le/Gt/Ge with true, false and equality-boundary values; CompareDir has no Ne variant.
     latest_report: result/nvidia-gpu/gpu/isolated_ops.md; only validated measured cells count.
-    pending_measurements: New full mean/sum-of-squares selections require GPU verification and refreshed reports.
+    pending_measurements: New full mean/sum-of-squares selections passed GPU1 numerical verification; refreshed GPU0 reports are pending.
     deferred:
       scale_real_scale_complex: Public scalar setup must be separated before standard timing; ordinary tensor-tensor multiplication is a different case.
       noncontiguous_reads: Require separate strided TensorRead fixtures; no blanket aliases.
@@ -44,12 +44,16 @@ families:
       slice: Materialized direct slice; eager lazy view explicitly excluded from this comparison.
       take_along_axis: Shared-index and batch-varying-index routes are separate cases.
       cast: Explicit F32-to-F64 and F64-to-F32 materialization.
+      convert: Checked lossless F32-to-F64 promotion, with matched framework conversions on that exact domain.
+      broadcast: Materialized rank-two singleton broadcast; torch.expand_copy/JAX lax broadcast. Eager lazy output is not an equivalent materialization.
+      dynamic_slice: I64 CUDA starts, two-dimensional half-sized windows, in-bounds and negative/high clamped starts. JAX scalar-start preparation is outside timing; PyTorch has no verified matching single API.
+      gather: Unique in-bounds I64 row/column indices; configs prepared outside timing, torch.index_select and JAX lax.gather.
     existing_partial: [gpu/permutation, gpu/perf_issues]
     deferred:
       convert_other_dtype_domains: F32-to-F64 checked lossless promotion has selected cases; other domains require separate checked contracts.
       broadcast_other_mappings: Ordered rank-two singleton broadcasting has selected materializing direct/torch.expand_copy/JAX cases; eager lazy views are excluded. Other mappings remain separate.
-      dynamic_slice: Device-resident start indices and matching clamping rules need dedicated fixtures.
-      gather_reshape: Existing perf_issues cases are partial coverage; ordinary framework-comparison cases remain to be added.
+      dynamic_slice_other_domains: F32/F64 with I64 CUDA starts now has in-bounds and clamped rank-two cases; other index dtype/rank domains remain separate.
+      reshape: Existing perf_issues cases are partial coverage; an ordinary materialization/reference contract remains to be added.
       stack_index_select_slice_axis_take_axis: Map each public lowering before assigning operation aliases; wrapper latency is separate.
       pad_interior_crop: Current constant edge-padding cases do not cover interior padding or negative padding.
   linalg:

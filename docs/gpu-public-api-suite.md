@@ -247,3 +247,11 @@ from general `cast`. Materialized rank-two singleton broadcast uses concrete
 Eager broadcast returns a lazy broadcast view and is excluded from this
 materializing comparison. Case selection alone is not measured coverage;
 only validated cells in the linked latest reports count.
+
+Dynamic-slice fixtures use I64 device-resident start vectors, half-sized windows,
+and separate in-bounds and negative/high clamping cases. JAX start scalars are
+prepared from the index vector before compilation and sampling; negative-index
+wrapping is disabled. No composed PyTorch indexing substitute is measured.
+Gather fixtures select unique in-bounds rows or columns. Rust `GatherConfig`
+values and PyTorch index views are prepared before timing; JAX uses native
+`lax.gather` with the same index values and output extents.
