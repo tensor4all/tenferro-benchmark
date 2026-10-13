@@ -438,3 +438,14 @@ record that limitation rather than calling private hooks. After-enqueue
 queries can perturb execution and are observational, not completion barriers
 or measurements of enqueue latency. This is a separate diagnostic pass for
 #107; the original timing pass remains untouched.
+
+Structural padding cases specify `(low, high, interior)` for each axis. The
+interior, crop, and combined interior/crop cases use 32×32 and 1024×1024
+F32/F64 inputs. Their independent NumPy coordinate oracle maps surviving input
+coordinates into a zero-filled output, including holes and cropped coordinates.
+Direct and eager tenferro paths prepare `PadConfig` outside timing; JAX calls
+`lax.pad` with a prepared configuration and a typed zero uploaded to the selected GPU
+and synchronized before the operation factory returns. PyTorch `functional.pad`
+compares edge padding/cropping only: interior insertion has no established
+single-call counterpart and remains explicitly unsupported. No timed slice/pad
+composition substitutes for it. Output allocation is intrinsic to the operation.

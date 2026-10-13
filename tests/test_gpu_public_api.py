@@ -18,6 +18,15 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_pad_holes_and_crop_keep_correct_source_coordinates(self):
+        case = {"op": "pad", "dtype": "f64", "n": 6, "shape": [2, 3],
+                "padding": [(-1, 1, 1), (1, -1, 2)]}
+        inputs, output = fixtures(case, "<f8")
+        expected = np.zeros((3, 7))
+        expected[1, 1] = inputs[0][1, 0]
+        expected[1, 4] = inputs[0][1, 1]
+        np.testing.assert_array_equal(output, expected)
+
     def test_completion_tokens_survive_until_clock_stop(self):
         stopped, violations = [True], []
         class Token:

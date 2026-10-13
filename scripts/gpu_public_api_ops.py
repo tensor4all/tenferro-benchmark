@@ -196,7 +196,18 @@ def fixtures(case, dtype):
     elif op == "rms_norm":
         y = a/np.sqrt(np.mean(a*a, axis=1, keepdims=True)+1e-5)
     elif op == "pad":
-        y = np.pad(a, ((0, 0), (8, 8)))
+        padding = case.get("padding", [(0, 0, 0), (8, 8, 0)])
+        shape = tuple(lo + hi + size + max(size - 1, 0) * interior
+                      for size, (lo, hi, interior) in zip(a.shape, padding))
+        y = np.zeros(shape, dtype=a.dtype)
+        # Independent coordinate oracle covers holes and cropping together.
+        coordinates = np.indices(a.shape)
+        destination = [lo + coordinates[axis] * (interior + 1)
+                       for axis, (lo, hi, interior) in enumerate(padding)]
+        valid = np.ones(a.shape, dtype=bool)
+        for axis, coord in enumerate(destination):
+            valid &= (coord >= 0) & (coord < shape[axis])
+        y[tuple(coord[valid] for coord in destination)] = a[valid]
     elif op == "slice":
         y = a[:, :a.shape[1]//2]
     elif op == "reverse":
@@ -345,7 +356,11 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
     if op == "rms_norm":
         return lambda: torch.nn.functional.rms_norm(x, (x.shape[1],), eps=1e-5)
     if op == "pad":
-        return lambda: torch.nn.functional.pad(x, (8, 8))
+        padding = case.get("padding", [(0, 0, 0), (8, 8, 0)])
+        if any(interior for _, _, interior in padding):
+            raise NotImplementedError("PyTorch pad has no single-call interior padding counterpart")
+        widths = tuple(v for lo, hi, _ in reversed(padding) for v in (lo, hi))
+        return lambda: torch.nn.functional.pad(x, widths)
     if op == "slice":
         return lambda: torch.slice_copy(x, 1, 0, x.shape[1]//2)
     if op == "reverse":
@@ -460,7 +475,10 @@ def jax_operation(jax, jnp, case):
     if op == "layer_norm":
         return lambda x: jax.nn.standardize(x, axis=1, epsilon=1e-5)
     if op == "pad":
-        return lambda x: jnp.pad(x, ((0, 0), (8, 8)))
+        padding = tuple(tuple(v) for v in case.get("padding", [(0, 0, 0), (8, 8, 0)]))
+        zero = jax.device_put(np.array(0, dtype={"f32": np.float32, "f64": np.float64}[case["dtype"]]), jax.devices("gpu")[0])
+        jax.block_until_ready(zero)
+        return lambda x: jax.lax.pad(x, zero, padding)
     if op == "slice":
         return lambda x: jax.lax.slice_in_dim(x, 0, x.shape[1]//2, axis=1)
     if op == "reverse":
