@@ -255,3 +255,18 @@ wrapping is disabled. No composed PyTorch indexing substitute is measured.
 Gather fixtures select unique in-bounds rows or columns. Rust `GatherConfig`
 values and PyTorch index views are prepared before timing; JAX uses native
 `lax.gather` with the same index values and output extents.
+
+Multiple-output factorizations retain every output through the stopped clock and
+use the sum of their allocation sizes to bound sampling. Full SVD checks shapes,
+dtypes, finiteness, sorted/nonnegative singular values, reconstruction and the
+entire square-factor orthogonality, including nullspaces. Vector signs/phases
+are not compared elementwise. Slogdet verifies both sign and real log magnitude,
+including complex determinant phases.
+
+Compact Householder construction returns an opaque public state. Its private
+buffers are never accessed: public `r` and full-width `q_columns` projections
+are inspected after timing for reconstruction, upper-trapezoidal structure and
+unitarity. Torch `geqrf` and JAX raw QR return equivalent compact factors;
+JAX's native transposed reflector layout is normalized only during untimed
+inspection. State projections used for validation do not count as independently
+measured `r`/`q_columns` cases.

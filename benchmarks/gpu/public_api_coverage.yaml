@@ -63,9 +63,9 @@ families:
     existing_partial: [gpu/dense, gpu/linalg_jvp_vjp, gpu/linalg_ad_latency, gpu/perf_issues]
     contracts: F32/F64; owned compact inputs; values-only svdvals/eigvalsh; pinv rtol=1e-5; Frobenius norm; left/lower/non-unit triangular solve.
     deferred:
-      svd_full: Full U/V outputs require gauge-invariant reconstruction/orthogonality verification; reduced SVD is not an alias.
-      slogdet: Two-output sign/log contract requires tuple-output fixture validation; det is not an alias.
-      householder_qr: Raw reflector/tau layouts and gauge need dedicated verification.
+      svd_other_read_layouts: Full square/tall/wide F32/F64/C32/C64 outputs have verified cases, including full nullspace orthogonality; strided/read variants remain separate.
+      slogdet_other_layouts: Both sign/log outputs have verified positive/negative/complex-phase cases; other layouts remain separate.
+      householder_read_layouts: Compact construction has verified state-projection checks and Torch/JAX raw-QR references; other read layouts remain separate.
       lu: Tenferro returns P/L/U/parity; current framework candidates return P/L/U.
       lstsq: Solution-only versus residual/rank/singular-value output contracts are unresolved.
       rank_revealing_qr: No verified GPU-resident Q/R/P/rank reference; JAX pivoting can fall back to host LAPACK.
