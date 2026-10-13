@@ -17,7 +17,7 @@ use tenferro_gpu::cuda::{
 };
 use tenferro_linalg::TracedTensorLinalgExt;
 use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
-use tenferro_tensor::Tensor;
+use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -149,7 +149,7 @@ fn dispatch(
             .run_prepared(&prepared, &[])
             .map_err(|e| format!("initial run: {e}"))?;
         sync_runtime(compute_bk.runtime())?;
-        let initial = export_outputs(compute_bk.runtime(), &probe)?;
+        let initial = export_outputs(compute_bk.runtime(), &probe, device_ordinal)?;
         let bytes = probe
             .iter()
             .map(|v| v.shape().iter().product::<usize>() * 8)
@@ -194,7 +194,7 @@ fn dispatch(
             .run_prepared(&prepared, &[])
             .map_err(|e| format!("final run: {e}"))?;
         sync_runtime(compute_bk.runtime())?;
-        let final_values = export_outputs(compute_bk.runtime(), &final_outputs)?;
+        let final_values = export_outputs(compute_bk.runtime(), &final_outputs, device_ordinal)?;
         Ok((
             times_ms,
             json!({"initial": initial, "final": final_values}),
@@ -233,6 +233,14 @@ fn dispatch(
                     tc,
                 )
             };
+            rec["execution"]["execution_path"] = json!(if diagnostic {
+                "prepared-tenferro-cuda-trace-public-path-linalg-ad"
+            } else {
+                "prepared-tenferro-cuda-trace-linalg-ad"
+            });
+            rec["execution"]["synchronization"] = json!(
+                "native CUDA synchronization; initial/final verification downloads outside timing"
+            );
             rec["verification"]["status"] = json!("skipped");
             rec["verification"]["reason"] = json!("awaiting independent CPU AD verification");
             rec["execution"]["notes"] = json!(json!({"verification_outputs":verification_outputs,
@@ -273,10 +281,25 @@ fn dispatch(
     }
 }
 
-fn export_outputs(runtime: &CudaRuntime, outputs: &[Tensor]) -> Result<Vec<Value>, String> {
+fn export_outputs(
+    runtime: &CudaRuntime,
+    outputs: &[Tensor],
+    device_ordinal: usize,
+) -> Result<Vec<Value>, String> {
     outputs
         .iter()
         .map(|value| {
+            let placement = value.placement();
+            let device = placement
+                .device
+                .as_ref()
+                .ok_or("AD output has no CUDA placement")?;
+            if device.kind != DeviceKind::Gpu(GpuBackendKind::Cuda)
+                || device.ordinal != device_ordinal
+                || !value.is_backend_buffer()
+            {
+                return Err("AD output CPU fallback or wrong CUDA device".into());
+            }
             let host = download_tensor(runtime, value)
                 .map_err(|e| format!("verification download: {e}"))?;
             let data = host
