@@ -25,6 +25,19 @@ def require_verification(result):
     return result
 
 
+def compiler_options_for(problem, backend):
+    # Only explicit JIT compilation accepts these options. Primitive eager JAX
+    # dispatch and PyTorch do not use them and must not claim they did.
+    if not backend.startswith("jax-cuda") or backend == "jax-cuda-eager":
+        return {}
+    override = os.environ.get("GPU_BENCH_JAX_COMPILER_OPTIONS")
+    options = (json.loads(override) if override is not None else
+               dict(problem.get("tensor_network", {}).get("jax_compiler_options", {})))
+    if not isinstance(options, dict):
+        raise ValueError("JAX compiler options must be a JSON object")
+    return options
+
+
 def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     import numpy as np
 
@@ -41,7 +54,7 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         path = "prepared-jax-cuda-eager-tree"
     kw = dict(ts=ts, bc=bc, tc=tc)
     compile_ms = None
-    compiler_options = json.loads(os.environ.get("GPU_BENCH_JAX_COMPILER_OPTIONS", "{}"))
+    compiler_options = compiler_options_for(problem, backend)
     print(backend, problem["id"], "setup", flush=True)
     try:
         if is_jax:

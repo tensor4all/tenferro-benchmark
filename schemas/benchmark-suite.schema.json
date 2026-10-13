@@ -430,6 +430,10 @@
         "source": { "type": "string", "minLength": 1 },
         "bond_dim": { "type": "integer", "minimum": 1 },
         "fill_value": { "type": "number" },
+        "jax_compiler_options": {
+          "type": "object",
+          "additionalProperties": { "type": ["number", "boolean", "string"] }
+        },
         "execution": { "enum": ["tree"] }
       }
     },

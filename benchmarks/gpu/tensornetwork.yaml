@@ -26,6 +26,10 @@ problems:
       20261013_111739, 20261013_112149, 20261013_112624). It is unmeasured on
       this host. jax-cuda-tree-jit preserves all nodes, inputs and outputs while
       compiling each prepared contraction separately; it has a distinct label.
+      Default node-JIT compilation also exceeded the 32 GiB guard in verification
+      run 20261013_125730. Disabling autotuning and Triton GEMM compiled every
+      node and passed numerical verification in run 20261013_131210; the explicit
+      compiler options below are recorded in result metadata.
     skip_backends: [jax-cuda]
     dtype: {a: f32, accum: f32}
     layout: {tenferro: col_major, framework: row_major_contiguous}
@@ -35,5 +39,8 @@ problems:
       bond_dim: 2
       fill_value: 0.8408964152537145
       execution: tree
+      jax_compiler_options:
+        xla_gpu_autotune_level: 0
+        xla_gpu_enable_triton_gemm: false
     run: {warmups: 3, runs: 10, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: analytic_constant_tree_fp64_from_exact_f32_inputs, rtol: 1.0e-4, atol: 1.0e-5}

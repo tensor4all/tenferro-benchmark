@@ -188,6 +188,14 @@ the full tree and avoids invoking JAX's general einsum compiler for every
 ordinary binary node. Full-size CUDA verification remains required before
 publishing this path.
 
+The tensor-network node-JIT arm disables XLA GPU autotuning and Triton GEMM
+through the suite's explicit `tensor_network.jax_compiler_options`. Its default
+compiler configuration exceeded the 32 GiB guard (`20261013_125730`); the
+configured path compiled all 549 nodes and passed CUDA verification
+(`20261013_131210`). Result notes record the options actually passed to JIT
+compilation. `GPU_BENCH_JAX_COMPILER_OPTIONS` can override them with a JSON
+object; eager JAX and PyTorch do not apply these JIT options.
+
 Whole-tree JAX compilation on this host exhausted roughly 91 GiB of host memory.
 Guarded attempts also failed during compilation with a 32 GiB limit, including
 attempts disabling autotuning and constant folding. Those incomplete verification

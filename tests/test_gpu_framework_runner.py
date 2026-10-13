@@ -3,15 +3,26 @@ import json
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import benchmark_gpu_python as runner
 import format_gpu_results as formatter
-from gpu_framework_runner import require_verification
+from gpu_framework_runner import compiler_options_for, require_verification
 
 
 class LegacyGpuContracts(unittest.TestCase):
+    def test_compiler_policy_records_only_options_used_by_the_execution_path(self):
+        problem = {"tensor_network": {"jax_compiler_options": {"xla_gpu_autotune_level": 0}}}
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertEqual(compiler_options_for(problem, "jax-cuda-tree-jit"), {"xla_gpu_autotune_level": 0})
+            self.assertEqual(compiler_options_for(problem, "jax-cuda-eager"), {})
+            self.assertEqual(compiler_options_for(problem, "pytorch-cuda"), {})
+        with patch.dict("os.environ", {"GPU_BENCH_JAX_COMPILER_OPTIONS": '{"xla_gpu_autotune_level":1}'}):
+            self.assertEqual(compiler_options_for(problem, "jax-cuda-tree-jit"), {"xla_gpu_autotune_level": 1})
+            self.assertEqual(compiler_options_for(problem, "jax-cuda-eager"), {})
+
     def test_binary_jax_lowering_matches_batch_contraction_and_output_order(self):
         import jax
         import numpy as np
