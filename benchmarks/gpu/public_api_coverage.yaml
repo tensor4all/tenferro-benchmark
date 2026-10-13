@@ -97,6 +97,10 @@ cross_cutting:
   metadata_views: transpose_view/reshape_view/slice_view/slice_axis_view/broadcast_in_dim_view do no GPU numerical work; classify separately.
   autodiff: Five existing scalar-loss JVP/VJP contracts now have independently verified F64 CUDA outputs and matched PyTorch/JAX JIT arms (n=2,4,8,256,512). Large trace timing excludes internal session setup; small trace rows explicitly measure public-path latency. New differentiated operation families remain separate coverage.
   runtime_transfer_lifecycle: Separate workflow/initialization diagnostics, tracked by issue 107 and perf_issues.
+  deferred_workflows:
+    dynamic_shape_helpers: shape_of, dynamic_truncate, pad_to_match and symbolic reshape/broadcast require matched shape-dependent workflows and CUDA execution checks. Graph construction alone is not numerical-operation coverage; existing static slice/pad/reshape cases do not cover these helpers.
+    checkpoint_recomputation: Requires matched differentiated arguments, retained intermediates and recomputation scope. No separately verified CUDA checkpoint workflow is selected; ordinary JVP/VJP rows do not establish this coverage.
+    connected_gradients: Optional connected-gradient spellings can share a verified AD transform contract only when their requested outputs and differentiated arguments match. Disconnected-gradient behavior and wrapper latency are not covered by that mapping.
   legacy_jax_reports: >-
     Dense/einsum/chain select whole-operation JAX JIT; tensor-network additionally
     selects distinct prepared tree-kernel JIT and eager execution. Compact native
