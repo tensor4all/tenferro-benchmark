@@ -638,7 +638,7 @@ def gpu_memory_cases(gpu):
                     "410 -> 3114 MB over 50 cycles, so process RSS is recorded before, per cycle "
                     "and after as the primary observable, with the driver free device bytes kept "
                     "as supplementary. A state diagnostic, not a timing row.")))
-    for arm in ("alloc-free", "runtime-recreate", "driver-alloc-after-free"):
+    for arm in ("alloc-free", "trim-after-drop", "runtime-recreate", "driver-alloc-after-free"):
         rows.append(case(
             f"pool_retention_f64_{arm}", ("#2081",), "pool_retention",
             {"arm": arm, "gib": 1, "count": 8, "probe_gib": 6}, arm=arm,
@@ -651,7 +651,9 @@ def gpu_memory_cases(gpu):
                     "runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver "
                     "allocation the issue could not serve. State diagnostic: bytes, not "
                     "nanoseconds. A caller must see the memory back or get an Err, never a panic "
-                    "with Ok from alloc_output.")))
+                    "with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the "
+                    "merged slice 1 (#2113): the blocks whose owners are gone must come back "
+                    "without recreating the runtime.")))
     return rows
 
 

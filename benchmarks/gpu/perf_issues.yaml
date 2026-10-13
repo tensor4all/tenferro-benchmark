@@ -129,6 +129,7 @@ problems:
   - vendor_churn_f64_cycles8
   - vendor_churn_f64_cycles64
   - pool_retention_f64_alloc-free
+  - pool_retention_f64_trim-after-drop
   - pool_retention_f64_runtime-recreate
   - pool_retention_f64_driver-alloc-after-free
   - svd_driver_c64_n64_auto

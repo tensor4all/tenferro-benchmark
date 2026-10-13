@@ -1829,6 +1829,15 @@ fn pool_retention(params: &Value, device: usize) -> Result<CaseOutcome> {
         let recreated = backend(device)?;
         free_after_recreate = device_free_bytes(&ctx)?;
         drop(recreated);
+    } else if arm == "trim-after-drop" {
+        // The ownership half this arm pins: the owners are gone, so an explicit
+        // trim must hand the blocks back to the driver without recreating the
+        // runtime.
+        rt.trim_memory();
+        drop(bk);
+        drop(rt);
+        free_after_drop = device_free_bytes(&ctx)?;
+        free_after_recreate = free_after_drop;
     } else {
         drop(bk);
         drop(rt);
