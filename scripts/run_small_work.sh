@@ -17,6 +17,13 @@ PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
 START_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
 export BENCH_COMMAND_START_NS="$START_NS"
+# Reference warm-build 1T+4T commands: quick/standard 42 s, full/standard 181 s.
+# Budgets diagnose slow commands (including builds); they never fail a run.
+if [[ "${BENCH_COVERAGE:-quick}" == full || ( -z "${BENCH_COVERAGE:-}" && "${BENCH_INCLUDE_SETUP_DIAGNOSTICS:-0}" == 1 ) ]]; then
+    export BENCH_COMMAND_BUDGET_SECONDS="${BENCH_COMMAND_BUDGET_SECONDS:-600}"
+else
+    export BENCH_COMMAND_BUDGET_SECONDS="${BENCH_COMMAND_BUDGET_SECONDS:-120}"
+fi
 if [[ "${SKIP_EXTERN_SETUP:-0}" != 1 ]]; then
     source "$SCRIPT_DIR/setup_extern_deps.sh"
 fi
@@ -52,7 +59,8 @@ metadata = yaml.safe_load(path.read_text())
 metadata['environment'].setdefault('env', {}).update({
     'BENCHMARK_COMMIT': os.environ['BENCHMARK_COMMIT'], 'BENCHMARK_BUILD_PROFILE': 'release',
     'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
-    'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None})
+    'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None,
+    'BENCH_COMMAND_BUDGET_SECONDS': os.environ['BENCH_COMMAND_BUDGET_SECONDS']})
 # What this run actually selects, from the versioned manifest (never "all N").
 sys.path.insert(0, 'scripts')
 import benchmark_small_work as suite

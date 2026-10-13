@@ -34,8 +34,12 @@ They are independent:
   `aa` takes explicit `BENCH_AA_WARMUPS` / `BENCH_AA_RUNS`.
 
 A scan flags suspects; only a confirmed paired run makes a performance claim.
-Measure total command/phase wall time of `quick` on the target host before
-setting a routine time budget; no budget is set here.
+The CPU public-route runners record end-to-end and phase wall observations.
+Their descriptive default command budgets are 120 s (small-work quick),
+300 s (session-matrix quick), and 600 s (either full matrix). They are based
+on sequential 1T+4T devcontainer reference commands with cached release
+builds. Cold builds are included and may exceed the budget. Override with
+`BENCH_COMMAND_BUDGET_SECONDS`; over-budget status never fails functional CI.
 
 ## Case status
 
@@ -184,6 +188,8 @@ outside that counter scope. Reports list unsupported providers explicitly.
 
 `run_all.sh` now defaults the public-API follow-up to `quick`.
 `PUBLICATION_GATE_PROFILE=full` preserves full publication collection.
+Both single-thread and multi-thread `run_all.sh` invocations include the
+quick small-work/session-matrix lanes; `RUN_SMALL_WORK_SUITE=0` skips them.
 `run_cpu_session.sh` and `run_small_work.sh` record per-case/process and build,
 collection, diagnostic and report wall observations. Command totals include
 setup and report generation, excluding only the final report file writes.

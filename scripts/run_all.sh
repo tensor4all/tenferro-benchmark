@@ -31,9 +31,8 @@ set -euo pipefail
 # Set RUN_PUBLIC_API_SUITE=1 to also run scripts/run_cpu_public_api.sh (the
 # cpu/public_api suite) sequentially after CPU FFT if enabled.
 #
-# Set RUN_SMALL_WORK_SUITE=1 to run cpu/small_work and cpu/session_matrix
-# sequentially as well. It is included by default in multi-thread-count
-# invocations. BENCH_COVERAGE=quick|full and BENCH_EFFORT=scan|standard|confirm
+# cpu/small_work and cpu/session_matrix run sequentially by default; set
+# RUN_SMALL_WORK_SUITE=0 to skip them. BENCH_COVERAGE=quick|full and BENCH_EFFORT=scan|standard|confirm
 # apply to these suites.
 #
 # Set RUN_PERMUTATION_SUITE=1 to also run scripts/run_permutation.sh (the
@@ -706,7 +705,7 @@ if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_PUBLIC_API_SUITE:-0}" == "1" ]]
     echo ""
 fi
 
-if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_SMALL_WORK_SUITE:-0}" == "1" ]]; then
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_SMALL_WORK_SUITE:-1}" == "1" ]]; then
     SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_small_work.sh" "$NUM_THREADS"
     "$SCRIPT_DIR/run_cpu_session.sh" "$NUM_THREADS"
 fi

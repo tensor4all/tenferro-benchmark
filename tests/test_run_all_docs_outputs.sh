@@ -163,6 +163,13 @@ cat > "$TMP/scripts/run_cpu_public_api.sh" <<'SH'
 set -euo pipefail
 printf '%s\n' "${PUBLICATION_GATE_PROFILE:-missing}" >> "$(dirname "$0")/../public_profile_calls.log"
 SH
+for runner in run_small_work run_cpu_session; do
+  cat > "$TMP/scripts/$runner.sh" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s %s\n' "$(basename "$0")" "$*" >> "$(dirname "$0")/../small_suite_calls.log"
+SH
+done
 chmod +x "$TMP/scripts/"*.sh "$TMP/scripts/format_results.py" "$TMP/scripts/format_cpu_ops_results.py"
 
 assert_any_file() {
@@ -254,6 +261,7 @@ done
     ./scripts/run_all.sh 1 >>"$TMP/run_all_docs_test.out"
 )
 test "$(cat "$TMP/public_profile_calls.log")" = "$(printf 'quick\nquick\nquick\nfull')"
+test "$(cat "$TMP/small_suite_calls.log")" = "$(printf 'run_small_work.sh 1\nrun_cpu_session.sh 1\nrun_small_work.sh 4\nrun_cpu_session.sh 4\nrun_small_work.sh 1\nrun_cpu_session.sh 1')"
 for report in einsum cpu_ops; do
   test -s "$TMP/result/mac-cpu/cpu/$report.md"
   grep -q 'BLAS implementation: `accelerate`' "$TMP/result/mac-cpu/cpu/$report.md"

@@ -113,7 +113,7 @@ def run_one(command, timeout=CASE_TIMEOUT_S):
         row["command_wall_seconds"] = time.monotonic()-started
         return row
     except (ValueError, IndexError) as error:
-        return {"correctness": "failed", "error": f"invalid case output: {error}"}
+        return {"correctness": "failed", "error": f"invalid case output: {error}", "command_wall_seconds": time.monotonic()-started}
 
 
 def collect(binary, run_dir, threads, coverage=None):
