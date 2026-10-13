@@ -120,6 +120,7 @@ def render(cases, timing_path, counter_path):
     lines += ["", "## Untimed public counters on GPU1", "",
               "Deltas use the first snapshot after reset/prewarming and the final snapshot after output drop. "
               "Workspace bytes describe retained shared scratch, not total allocator reservations. "
+              "Public stats expose no separate plan-build counter; cache misses are reported without substituting them for builds. "
               "All per-command enqueue/completion/drop observations remain in the raw records.", "",
               "| Case | Entries before→drop | Hits Δ | Misses Δ | Evictions Δ | Plan bytes at drop | Workspace bytes at drop | Observed enqueue in-flight peak |",
               "|---|---:|---:|---:|---:|---:|---:|---:|"]
