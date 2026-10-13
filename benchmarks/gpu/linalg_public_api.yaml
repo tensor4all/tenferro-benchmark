@@ -110,3 +110,43 @@ problems:
     - householder_qr_tall_c64_512x256
     - householder_qr_wide_c64_256x512
     - slogdet_phase_c64_256x256
+    - householder_from_factors_default_f32_64x32
+    - householder_append_default_f32_64x32
+    - householder_r_default_f32_64x32
+    - householder_q_columns_prefix_f32_64x32
+    - householder_q_columns_complement_f32_64x32
+    - householder_from_factors_default_f64_64x32
+    - householder_append_default_f64_64x32
+    - householder_r_default_f64_64x32
+    - householder_q_columns_prefix_f64_64x32
+    - householder_q_columns_complement_f64_64x32
+    - householder_from_factors_default_c32_64x32
+    - householder_append_default_c32_64x32
+    - householder_r_default_c32_64x32
+    - householder_q_columns_prefix_c32_64x32
+    - householder_q_columns_complement_c32_64x32
+    - householder_from_factors_default_c64_64x32
+    - householder_append_default_c64_64x32
+    - householder_r_default_c64_64x32
+    - householder_q_columns_prefix_c64_64x32
+    - householder_q_columns_complement_c64_64x32
+    - householder_from_factors_default_f32_512x256
+    - householder_append_default_f32_512x256
+    - householder_r_default_f32_512x256
+    - householder_q_columns_prefix_f32_512x256
+    - householder_q_columns_complement_f32_512x256
+    - householder_from_factors_default_f64_512x256
+    - householder_append_default_f64_512x256
+    - householder_r_default_f64_512x256
+    - householder_q_columns_prefix_f64_512x256
+    - householder_q_columns_complement_f64_512x256
+    - householder_from_factors_default_c32_512x256
+    - householder_append_default_c32_512x256
+    - householder_r_default_c32_512x256
+    - householder_q_columns_prefix_c32_512x256
+    - householder_q_columns_complement_c32_512x256
+    - householder_from_factors_default_c64_512x256
+    - householder_append_default_c64_512x256
+    - householder_r_default_c64_512x256
+    - householder_q_columns_prefix_c64_512x256
+    - householder_q_columns_complement_c64_512x256

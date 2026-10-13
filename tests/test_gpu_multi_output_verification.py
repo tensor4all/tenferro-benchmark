@@ -11,6 +11,20 @@ from benchmark_gpu_public_api import verify
 
 
 class MultiOutputVerification(unittest.TestCase):
+    def test_state_inputs_and_complement_reference_preserve_contracts(self):
+        for dtype in (np.float64, np.complex128):
+            case = dict(op="householder_from_factors", n=60, shape=[12, 5])
+            inputs, expected = fixtures(case, dtype)
+            np.testing.assert_allclose(inputs[1] @ inputs[2], inputs[0], rtol=1e-12, atol=1e-12)
+            self.assertEqual(expected[0].shape, (12, 5))
+            case["op"] = "householder_append"
+            inputs, _ = fixtures(case, dtype)
+            np.testing.assert_array_equal(np.concatenate(inputs[1:], axis=1), inputs[0])
+            case.update(op="householder_q_columns", column_range=[5, 12])
+            inputs, complement = fixtures(case, dtype)
+            np.testing.assert_allclose(complement.conj().T @ inputs[0], 0, atol=1e-12)
+            np.testing.assert_allclose(complement.conj().T @ complement, np.eye(7), atol=1e-12)
+
     def test_raw_householder_coefficients_and_jax_layout_are_checked(self):
         from gpu_multi_output_verification import normalized_outputs
         for dtype in (np.float64, np.complex128):

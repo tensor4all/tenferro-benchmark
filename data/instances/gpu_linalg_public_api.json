@@ -1280,6 +1280,758 @@
       ],
       "variant": "phase",
       "issue": 155
+    },
+    {
+      "id": "householder_from_factors_default_f32_64x32",
+      "op": "householder_from_factors",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_f32_64x32",
+      "op": "householder_append",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_f32_64x32",
+      "op": "householder_r",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_f32_64x32",
+      "op": "householder_q_columns",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_f32_64x32",
+      "op": "householder_q_columns",
+      "dtype": "f32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        32,
+        64
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_f64_64x32",
+      "op": "householder_from_factors",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_f64_64x32",
+      "op": "householder_append",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_f64_64x32",
+      "op": "householder_r",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_f64_64x32",
+      "op": "householder_q_columns",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_f64_64x32",
+      "op": "householder_q_columns",
+      "dtype": "f64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        32,
+        64
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_c32_64x32",
+      "op": "householder_from_factors",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_c32_64x32",
+      "op": "householder_append",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_c32_64x32",
+      "op": "householder_r",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_c32_64x32",
+      "op": "householder_q_columns",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_c32_64x32",
+      "op": "householder_q_columns",
+      "dtype": "c32",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        32,
+        64
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_c64_64x32",
+      "op": "householder_from_factors",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_c64_64x32",
+      "op": "householder_append",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_c64_64x32",
+      "op": "householder_r",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_c64_64x32",
+      "op": "householder_q_columns",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_c64_64x32",
+      "op": "householder_q_columns",
+      "dtype": "c64",
+      "n": 2048,
+      "shape": [
+        64,
+        32
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        32,
+        64
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_f32_512x256",
+      "op": "householder_from_factors",
+      "dtype": "f32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_f32_512x256",
+      "op": "householder_append",
+      "dtype": "f32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_f32_512x256",
+      "op": "householder_r",
+      "dtype": "f32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_f32_512x256",
+      "op": "householder_q_columns",
+      "dtype": "f32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_f32_512x256",
+      "op": "householder_q_columns",
+      "dtype": "f32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        256,
+        512
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_f64_512x256",
+      "op": "householder_from_factors",
+      "dtype": "f64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_f64_512x256",
+      "op": "householder_append",
+      "dtype": "f64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_f64_512x256",
+      "op": "householder_r",
+      "dtype": "f64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_f64_512x256",
+      "op": "householder_q_columns",
+      "dtype": "f64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_f64_512x256",
+      "op": "householder_q_columns",
+      "dtype": "f64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        256,
+        512
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_c32_512x256",
+      "op": "householder_from_factors",
+      "dtype": "c32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_c32_512x256",
+      "op": "householder_append",
+      "dtype": "c32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_c32_512x256",
+      "op": "householder_r",
+      "dtype": "c32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_c32_512x256",
+      "op": "householder_q_columns",
+      "dtype": "c32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_c32_512x256",
+      "op": "householder_q_columns",
+      "dtype": "c32",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        256,
+        512
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
+    },
+    {
+      "id": "householder_from_factors_default_c64_512x256",
+      "op": "householder_from_factors",
+      "dtype": "c64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_append_default_c64_512x256",
+      "op": "householder_append",
+      "dtype": "c64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "pytorch-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted.",
+        "jax-cuda-jit": "No verified single public QR state initialization/update counterpart; factor multiplication or full refactorization is not substituted."
+      }
+    },
+    {
+      "id": "householder_r_default_c64_512x256",
+      "op": "householder_r",
+      "dtype": "c64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "default",
+      "issue": 155
+    },
+    {
+      "id": "householder_q_columns_prefix_c64_512x256",
+      "op": "householder_q_columns",
+      "dtype": "c64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "prefix",
+      "issue": 155,
+      "column_range": [
+        0,
+        8
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      }
+    },
+    {
+      "id": "householder_q_columns_complement_c64_512x256",
+      "op": "householder_q_columns",
+      "dtype": "c64",
+      "n": 131072,
+      "shape": [
+        512,
+        256
+      ],
+      "variant": "complement",
+      "issue": 155,
+      "column_range": [
+        256,
+        512
+      ],
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing.",
+        "tenferro-cuda-eager": "CUDA reflector application constructs/uploads BLAS scalar operands per call; public state API cannot hoist that input setup outside standard timing."
+      },
+      "unavailable": {
+        "jax-cuda": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs.",
+        "jax-cuda-jit": "No verified single JAX operation for a selected non-prefix Q range; full-Q construction plus slicing changes requested outputs."
+      }
     }
   ]
 }

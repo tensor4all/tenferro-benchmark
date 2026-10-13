@@ -143,7 +143,13 @@ fn check(
     }
     Ok(worst)
 }
-fn check_qr(rt: &CudaRuntime, q: &Tensor, r: &Tensor, input: &Tensor, case: &Case) -> Result<f64> {
+pub(super) fn check_qr(
+    rt: &CudaRuntime,
+    q: &Tensor,
+    r: &Tensor,
+    input: &Tensor,
+    case: &Case,
+) -> Result<f64> {
     let m = input.shape()[0];
     let n = input.shape()[1];
     let k = m.min(n);
