@@ -489,28 +489,34 @@ fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
     let error = check(&first)?;
     let (measurement, timer): (Measurement, Vec<&str>) = match arm {
         "alloc-zero-within-callback" => {
-            // One with_cubecl callback per batch; the batch's allocations share it.
-            let m = bk.with_backend_session(|s| {
-                measure(timing, bytes, |it| {
-                    let start = Instant::now();
-                    let outputs = with_cuda_exec_session(s, |cs| {
-                        cs.with_cubecl("perf_issues.alloc_zero_batch", |cub| {
-                            (0..it)
-                                .map(|_| cub.alloc_zero_output::<f64>(&shape))
-                                .collect::<std::result::Result<Vec<_>, _>>()
-                        })
+            // Enter the raw execution scope once, before initialization and
+            // every sample. Retention-container allocation is also untimed.
+            let m = bk.with_backend_session(|s| -> Result<Measurement> {
+                with_cuda_exec_session(s, |cs| {
+                    cs.with_cubecl("perf_issues.alloc_zero_samples", |cub| {
+                        Ok((|| -> Result<Measurement> {
+                            let initialized = cub.alloc_zero_output::<f64>(&shape)?;
+                            rt.synchronize()?;
+                            check(&Tensor::from(initialized))?;
+                            measure(timing, bytes, |it| {
+                                let mut outputs = Vec::with_capacity(it);
+                                let start = Instant::now();
+                                for _ in 0..it {
+                                    outputs.push(cub.alloc_zero_output::<f64>(&shape)?);
+                                }
+                                rt.synchronize()?;
+                                let elapsed = start.elapsed().as_nanos();
+                                black_box(&outputs);
+                                Ok(elapsed)
+                            })
+                        })())
                     })
-                    .ok_or("not a CUDA execution session")??;
-                    device_sync(s)?;
-                    let elapsed = start.elapsed().as_nanos();
-                    black_box(&outputs);
-                    Ok(elapsed)
                 })
+                .ok_or("not a CUDA execution session")??
             })??;
             (
                 m,
                 vec![
-                    "one with_cubecl entry/exit per batch",
                     "alloc_zero_output x iterations",
                     "device synchronize at batch end",
                 ],
@@ -575,6 +581,8 @@ fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
         outside_timer: vec![
             "backend construction",
             "backend session entry/exit",
+            "shared raw execution scope entry/exit for within-callback arm",
+            "output-retention container allocation",
             "host zero buffer construction",
             "zero check (download)",
         ],

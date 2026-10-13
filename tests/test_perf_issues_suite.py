@@ -32,19 +32,23 @@ class PerfIssueSuiteTest(unittest.TestCase):
                 if "reference_for" in case:
                     self.assertIn(case["reference_for"], cases, case["id"])
 
-    def test_quick_excludes_diagnostics(self):
+    def test_quick_keeps_declared_gpu_latency_controls(self):
         for key in ("cpu", "gpu"):
             with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_COVERAGE": "quick"}):
                 _, cases, _, _, _, selected, _ = suite.plan(key)
             self.assertTrue(selected)
             scopes = {cases[i]["measurement_scope"] for i in selected}
             self.assertEqual(scopes, {"steady_state"} if key == "cpu" else
-                             {"steady_state", "shape_stream_diagnostic"})
+                             {"steady_state", "shape_stream_diagnostic", "session_entry_diagnostic"})
             if key == "gpu":
                 streams = [cases[i] for i in selected if cases[i]["kind"] == "shape_stream"]
                 self.assertEqual(len(streams), 6)
                 self.assertEqual({c["arm"] for c in streams}, {"fixed-warm", "mixed-warm", "fresh"})
                 self.assertTrue(all(not c["params"]["instrument"] for c in streams))
+                allocation_controls = [cases[i] for i in selected
+                                       if cases[i]["measurement_scope"] == "session_entry_diagnostic"]
+                self.assertEqual(len(allocation_controls), 10)
+                self.assertTrue(all(c["kind"] == "alloc_zero" for c in allocation_controls))
 
     def test_issue_table_rows_are_present(self):
         cpu = {i for c in gen.generate_cases() for i in c["issues"]}

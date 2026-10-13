@@ -834,7 +834,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_0el",
@@ -851,11 +851,11 @@
    "arm": "alloc-zero-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_0el",
@@ -876,7 +876,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_0el"
  },
  {
@@ -894,11 +894,11 @@
    "arm": "alloc-fill-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_0el"
  },
  {
@@ -920,7 +920,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_16el",
@@ -937,11 +937,11 @@
    "arm": "alloc-zero-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_16el",
@@ -962,7 +962,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_16el"
  },
  {
@@ -980,11 +980,11 @@
    "arm": "alloc-fill-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_16el"
  },
  {
@@ -1006,7 +1006,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_512el",
@@ -1023,11 +1023,11 @@
    "arm": "alloc-zero-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_512el",
@@ -1048,7 +1048,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_512el"
  },
  {
@@ -1066,11 +1066,11 @@
    "arm": "alloc-fill-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_512el"
  },
  {
@@ -1092,7 +1092,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_32768el",
@@ -1109,11 +1109,11 @@
    "arm": "alloc-zero-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_32768el",
@@ -1134,7 +1134,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_32768el"
  },
  {
@@ -1152,11 +1152,11 @@
    "arm": "alloc-fill-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_32768el"
  },
  {
@@ -1178,7 +1178,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_2097152el",
@@ -1195,11 +1195,11 @@
    "arm": "alloc-zero-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize."
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_2097152el",
@@ -1220,7 +1220,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_2097152el"
  },
  {
@@ -1238,11 +1238,11 @@
    "arm": "alloc-fill-per-callback",
    "dtype": "f64"
   },
-  "measurement_scope": "steady_state",
+  "measurement_scope": "session_entry_diagnostic",
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one with_cubecl callback and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize.",
+  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_2097152el"
  },
  {
