@@ -206,16 +206,26 @@ pub(super) fn verify_materialized(
         cuda.with_raw("verification.materialized", |raw| {
             macro_rules! check {
                 ($ty:ty) => {{
-                    let out = raw.tensor(output.as_typed::<$ty>().ok_or_else(||
-                        tenferro_gpu::Error::unsupported("verification.materialized", "output dtype mismatch"))?)?;
+                    let out = raw.tensor(output.as_typed::<$ty>().ok_or_else(|| {
+                        tenferro_tensor::Error::unsupported(
+                            "verification.materialized",
+                            "output dtype mismatch",
+                        )
+                    })?)?;
                     for input in inputs {
-                        let src = raw.tensor(input.as_typed::<$ty>().ok_or_else(||
-                            tenferro_gpu::Error::unsupported("verification.materialized", "input dtype mismatch"))?)?;
+                        let src = raw.tensor(input.as_typed::<$ty>().ok_or_else(|| {
+                            tenferro_tensor::Error::unsupported(
+                                "verification.materialized",
+                                "input dtype mismatch",
+                            )
+                        })?)?;
                         // SAFETY: compare addresses only while both public raw references
                         // and their owning tensors remain alive; no pointer escapes the scope.
                         if unsafe { src.raw_ptr() == out.raw_ptr() } {
-                            return Err(tenferro_gpu::Error::unsupported(
-                                "verification.materialized", "output aliases an input"));
+                            return Err(tenferro_tensor::Error::unsupported(
+                                "verification.materialized",
+                                "output aliases an input",
+                            ));
                         }
                     }
                 }};
@@ -227,11 +237,16 @@ pub(super) fn verify_materialized(
                 DType::C64 => check!(num_complex::Complex64),
                 DType::I32 => check!(i32),
                 DType::I64 => check!(i64),
-                _ => return Err(tenferro_gpu::Error::unsupported(
-                    "verification.materialized", "unselected dtype")),
+                _ => {
+                    return Err(tenferro_tensor::Error::unsupported(
+                        "verification.materialized",
+                        "unselected dtype",
+                    ))
+                }
             }
             Ok(())
         })
-    }).ok_or("verification missing CUDA session")??;
+    })
+    .ok_or("verification missing CUDA session")??;
     Ok(())
 }

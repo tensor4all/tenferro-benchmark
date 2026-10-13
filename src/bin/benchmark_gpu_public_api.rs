@@ -354,13 +354,9 @@ fn run(
         .iter()
         .map(|a| Ok(upload_tensor(&rt, a)?))
         .collect::<Result<Vec<_>>>()?;
-    let bytes = expected.shape().iter().product::<usize>()
-        * match expected.dtype() {
-            DType::C64 => 16,
-            DType::C32 | DType::F64 | DType::I64 => 8,
-            DType::Bool => 1,
-            _ => 4,
-        };
+    // Serialized reference length is the exact output size for every supported
+    // dtype, including I64 and Bool; do not estimate it with a partial dtype table.
+    let bytes: usize = fs::metadata(root.join(&case.outputs[0].file))?.len().try_into()?;
     if mode == "tenferro-cuda-direct" {
         let mut executor = FftExecutor::default();
         backend.with_backend_session(|session| {
@@ -380,7 +376,12 @@ fn run(
                 structural::prepare_direct(case, &input),
             )?;
             let error = verify(&rt, &probe, &expected, case)?;
-            structural::verify_materialized(case, &input.iter().collect::<Vec<_>>(), &probe, session)?;
+            structural::verify_materialized(
+                case,
+                &input.iter().collect::<Vec<_>>(),
+                &probe,
+                session,
+            )?;
             drop(probe);
             if settings.verify_only || case.excluded.contains_key(mode) {
                 return Ok((None, error));
@@ -400,7 +401,12 @@ fn run(
                 structural::prepare_direct(case, &input),
             )?;
             let error = error.max(verify(&rt, &final_output, &expected, case)?);
-            structural::verify_materialized(case, &input.iter().collect::<Vec<_>>(), &final_output, session)?;
+            structural::verify_materialized(
+                case,
+                &input.iter().collect::<Vec<_>>(),
+                &final_output,
+                session,
+            )?;
             Ok((Some(timing), error))
         })?
     } else {
@@ -412,22 +418,7 @@ fn run(
                 .map(|a| Ok(session.constant_from(a)?))
                 .collect::<Result<Vec<_>>>()?;
             let probe = eager(case, &input, session, structural::prepare(case))?;
-            let error = verify(
-                &rt,
-                probe
-                    .tensor_read()
-                    .as_tensor()
-                    .ok_or("eager output is not materialized")?,
-                &expected,
-                case,
-            )?;
-            if matches!(case.op.as_str(), "reshape" | "stack") {
-                let reads = input.iter().map(|x| x.tensor_read()).collect::<Vec<_>>();
-                let tensors = reads.iter().map(|x| x.as_tensor()
-                    .ok_or("verification eager input is not materialized")).collect::<Result<Vec<_>>>()?;
-                structural::verify_materialized(case, &tensors, probe.tensor_read().as_tensor()
-                    .ok_or("verification eager output is not materialized")?, session.backend_session())?;
-            }
+            let error = verify_eager_output(&rt, session, &probe, &expected, case)?;
             drop(probe);
             if settings.verify_only || case.excluded.contains_key(mode) {
                 return Ok((None, error));
@@ -440,26 +431,48 @@ fn run(
                 |args| eager(case, &input, session, args),
             )?;
             let final_output = eager(case, &input, session, structural::prepare(case))?;
-            let error = error.max(verify(
+            let error = error.max(verify_eager_output(
                 &rt,
-                final_output
-                    .tensor_read()
-                    .as_tensor()
-                    .ok_or("eager output is not materialized")?,
+                session,
+                &final_output,
                 &expected,
                 case,
             )?);
-            if matches!(case.op.as_str(), "reshape" | "stack") {
-                let reads = input.iter().map(|x| x.tensor_read()).collect::<Vec<_>>();
-                let tensors = reads.iter().map(|x| x.as_tensor()
-                    .ok_or("verification eager input is not materialized")).collect::<Result<Vec<_>>>()?;
-                structural::verify_materialized(case, &tensors, final_output.tensor_read().as_tensor()
-                    .ok_or("verification eager output is not materialized")?, session.backend_session())?;
-            }
             Ok((Some(timing), error))
         })
     }
 }
+/// Validate the original eager descriptor before making any untimed inspection copy.
+fn verify_eager_output(
+    rt: &CudaRuntime,
+    session: &mut tenferro_ad::EagerSession<'_>,
+    output: &EagerTensor,
+    expected: &Tensor,
+    case: &Case,
+) -> Result<f64> {
+    let read = output.tensor_read();
+    let device = read
+        .placement()
+        .device
+        .as_ref()
+        .ok_or("verification eager output has no CUDA placement")?;
+    if device.kind != tenferro_tensor::DeviceKind::Gpu(tenferro_tensor::GpuBackendKind::Cuda)
+        || device.ordinal != env_usize("GPU_BENCH_DEVICE", 0)?
+        || read.allocation_domain().is_none()
+        || read.shape() != expected.shape()
+        || read.dtype() != expected.dtype()
+    {
+        return Err("verification eager original placement/shape/dtype mismatch".into());
+    }
+    if let Some(tensor) = read.as_tensor() {
+        return verify(rt, tensor, expected, case);
+    }
+    // This public inspection copy is after clock stop (or before sampling).
+    // It must never turn a metadata-only operation into a measured materialization.
+    let inspected = session.duplicate_value(output)?;
+    verify(rt, &inspected, expected, case)
+}
+
 fn main() -> Result<()> {
     let manifest = arg("--fixtures")?;
     let root = Path::new(&manifest)

@@ -17,7 +17,7 @@ def fixtures(case, dtype):
         integer = ((i * 97 + 5) % 129).astype(np.int64).reshape(shape) - 64
         rhs = (((i * 73 + 3) % 17).astype(np.int64) + 1).reshape(shape)
         rhs *= np.where((i.reshape(shape) % 2) == 0, 1, -1)
-        if case["dtype"] == "i64" and op in {"neg", "abs", "sign", "maximum", "minimum", "reduce_max", "reduce_min"}:
+        if case["dtype"] == "i64" and op in {"neg", "abs", "sign", "maximum", "minimum", "reduce_max", "reduce_min", "reshape", "stack"}:
             integer += np.where(integer >= 0, 1 << 54, -(1 << 54))
             rhs += np.where(rhs > 0, 1 << 54, -(1 << 54))
         x, rhs = integer.astype(dtype), rhs.astype(dtype)
