@@ -191,3 +191,7 @@ debug = 0
 
 [profile.test]
 debug = 0
+
+[[example]]
+name = "cuda_linalg_host_scalars"
+required-features = ["cuda"]

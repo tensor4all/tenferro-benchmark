@@ -4420,6 +4420,1206 @@
         "jax-cuda": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation.",
         "jax-cuda-jit": "No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation."
       }
+    },
+    {
+      "id": "sub_strided_read_f32_n1024",
+      "op": "sub_strided_read",
+      "read_op": "sub",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sub_strided_read_f64_n1024",
+      "op": "sub_strided_read",
+      "read_op": "sub",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "div_strided_read_f32_n1024",
+      "op": "div_strided_read",
+      "read_op": "div",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "div_strided_read_f64_n1024",
+      "op": "div_strided_read",
+      "read_op": "div",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rem_strided_read_f32_n1024",
+      "op": "rem_strided_read",
+      "read_op": "rem",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rem_strided_read_f64_n1024",
+      "op": "rem_strided_read",
+      "read_op": "rem",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "pow_strided_read_f32_n1024",
+      "op": "pow_strided_read",
+      "read_op": "pow",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "pow_strided_read_f64_n1024",
+      "op": "pow_strided_read",
+      "read_op": "pow",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "maximum_strided_read_f32_n1024",
+      "op": "maximum_strided_read",
+      "read_op": "maximum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "maximum_strided_read_f64_n1024",
+      "op": "maximum_strided_read",
+      "read_op": "maximum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "minimum_strided_read_f32_n1024",
+      "op": "minimum_strided_read",
+      "read_op": "minimum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "minimum_strided_read_f64_n1024",
+      "op": "minimum_strided_read",
+      "read_op": "minimum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "abs_strided_read_f32_n1024",
+      "op": "abs_strided_read",
+      "read_op": "abs",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "abs_strided_read_f64_n1024",
+      "op": "abs_strided_read",
+      "read_op": "abs",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sign_strided_read_f32_n1024",
+      "op": "sign_strided_read",
+      "read_op": "sign",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sign_strided_read_f64_n1024",
+      "op": "sign_strided_read",
+      "read_op": "sign",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "expm1_strided_read_f32_n1024",
+      "op": "expm1_strided_read",
+      "read_op": "expm1",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "expm1_strided_read_f64_n1024",
+      "op": "expm1_strided_read",
+      "read_op": "expm1",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log_strided_read_f32_n1024",
+      "op": "log_strided_read",
+      "read_op": "log",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log_strided_read_f64_n1024",
+      "op": "log_strided_read",
+      "read_op": "log",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log1p_strided_read_f32_n1024",
+      "op": "log1p_strided_read",
+      "read_op": "log1p",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log1p_strided_read_f64_n1024",
+      "op": "log1p_strided_read",
+      "read_op": "log1p",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "erf_strided_read_f32_n1024",
+      "op": "erf_strided_read",
+      "read_op": "erf",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "erf_strided_read_f64_n1024",
+      "op": "erf_strided_read",
+      "read_op": "erf",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sin_strided_read_f32_n1024",
+      "op": "sin_strided_read",
+      "read_op": "sin",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sin_strided_read_f64_n1024",
+      "op": "sin_strided_read",
+      "read_op": "sin",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "cos_strided_read_f32_n1024",
+      "op": "cos_strided_read",
+      "read_op": "cos",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "cos_strided_read_f64_n1024",
+      "op": "cos_strided_read",
+      "read_op": "cos",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sqrt_strided_read_f32_n1024",
+      "op": "sqrt_strided_read",
+      "read_op": "sqrt",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sqrt_strided_read_f64_n1024",
+      "op": "sqrt_strided_read",
+      "read_op": "sqrt",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rsqrt_strided_read_f32_n1024",
+      "op": "rsqrt_strided_read",
+      "read_op": "rsqrt",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rsqrt_strided_read_f64_n1024",
+      "op": "rsqrt_strided_read",
+      "read_op": "rsqrt",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_prod_strided_read_f32_n1024",
+      "op": "reduce_prod_strided_read",
+      "read_op": "reduce_prod",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_prod_strided_read_f64_n1024",
+      "op": "reduce_prod_strided_read",
+      "read_op": "reduce_prod",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_max_strided_read_f32_n1024",
+      "op": "reduce_max_strided_read",
+      "read_op": "reduce_max",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_max_strided_read_f64_n1024",
+      "op": "reduce_max_strided_read",
+      "read_op": "reduce_max",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_min_strided_read_f32_n1024",
+      "op": "reduce_min_strided_read",
+      "read_op": "reduce_min",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_min_strided_read_f64_n1024",
+      "op": "reduce_min_strided_read",
+      "read_op": "reduce_min",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_sum_squares_strided_read_f32_n1024",
+      "op": "reduce_sum_squares_strided_read",
+      "read_op": "reduce_sum_squares",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_sum_squares_strided_read_f64_n1024",
+      "op": "reduce_sum_squares_strided_read",
+      "read_op": "reduce_sum_squares",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        16,
+        64
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sub_strided_read_f32_n1048576",
+      "op": "sub_strided_read",
+      "read_op": "sub",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sub_strided_read_f64_n1048576",
+      "op": "sub_strided_read",
+      "read_op": "sub",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "div_strided_read_f32_n1048576",
+      "op": "div_strided_read",
+      "read_op": "div",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "div_strided_read_f64_n1048576",
+      "op": "div_strided_read",
+      "read_op": "div",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rem_strided_read_f32_n1048576",
+      "op": "rem_strided_read",
+      "read_op": "rem",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rem_strided_read_f64_n1048576",
+      "op": "rem_strided_read",
+      "read_op": "rem",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "pow_strided_read_f32_n1048576",
+      "op": "pow_strided_read",
+      "read_op": "pow",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "pow_strided_read_f64_n1048576",
+      "op": "pow_strided_read",
+      "read_op": "pow",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "maximum_strided_read_f32_n1048576",
+      "op": "maximum_strided_read",
+      "read_op": "maximum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "maximum_strided_read_f64_n1048576",
+      "op": "maximum_strided_read",
+      "read_op": "maximum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "minimum_strided_read_f32_n1048576",
+      "op": "minimum_strided_read",
+      "read_op": "minimum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "minimum_strided_read_f64_n1048576",
+      "op": "minimum_strided_read",
+      "read_op": "minimum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "abs_strided_read_f32_n1048576",
+      "op": "abs_strided_read",
+      "read_op": "abs",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "abs_strided_read_f64_n1048576",
+      "op": "abs_strided_read",
+      "read_op": "abs",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sign_strided_read_f32_n1048576",
+      "op": "sign_strided_read",
+      "read_op": "sign",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sign_strided_read_f64_n1048576",
+      "op": "sign_strided_read",
+      "read_op": "sign",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "expm1_strided_read_f32_n1048576",
+      "op": "expm1_strided_read",
+      "read_op": "expm1",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "expm1_strided_read_f64_n1048576",
+      "op": "expm1_strided_read",
+      "read_op": "expm1",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log_strided_read_f32_n1048576",
+      "op": "log_strided_read",
+      "read_op": "log",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log_strided_read_f64_n1048576",
+      "op": "log_strided_read",
+      "read_op": "log",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log1p_strided_read_f32_n1048576",
+      "op": "log1p_strided_read",
+      "read_op": "log1p",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "log1p_strided_read_f64_n1048576",
+      "op": "log1p_strided_read",
+      "read_op": "log1p",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "erf_strided_read_f32_n1048576",
+      "op": "erf_strided_read",
+      "read_op": "erf",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "erf_strided_read_f64_n1048576",
+      "op": "erf_strided_read",
+      "read_op": "erf",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sin_strided_read_f32_n1048576",
+      "op": "sin_strided_read",
+      "read_op": "sin",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sin_strided_read_f64_n1048576",
+      "op": "sin_strided_read",
+      "read_op": "sin",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "cos_strided_read_f32_n1048576",
+      "op": "cos_strided_read",
+      "read_op": "cos",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "cos_strided_read_f64_n1048576",
+      "op": "cos_strided_read",
+      "read_op": "cos",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sqrt_strided_read_f32_n1048576",
+      "op": "sqrt_strided_read",
+      "read_op": "sqrt",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "sqrt_strided_read_f64_n1048576",
+      "op": "sqrt_strided_read",
+      "read_op": "sqrt",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rsqrt_strided_read_f32_n1048576",
+      "op": "rsqrt_strided_read",
+      "read_op": "rsqrt",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "rsqrt_strided_read_f64_n1048576",
+      "op": "rsqrt_strided_read",
+      "read_op": "rsqrt",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_prod_strided_read_f32_n1048576",
+      "op": "reduce_prod_strided_read",
+      "read_op": "reduce_prod",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_prod_strided_read_f64_n1048576",
+      "op": "reduce_prod_strided_read",
+      "read_op": "reduce_prod",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_max_strided_read_f32_n1048576",
+      "op": "reduce_max_strided_read",
+      "read_op": "reduce_max",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_max_strided_read_f64_n1048576",
+      "op": "reduce_max_strided_read",
+      "read_op": "reduce_max",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_min_strided_read_f32_n1048576",
+      "op": "reduce_min_strided_read",
+      "read_op": "reduce_min",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_min_strided_read_f64_n1048576",
+      "op": "reduce_min_strided_read",
+      "read_op": "reduce_min",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_sum_squares_strided_read_f32_n1048576",
+      "op": "reduce_sum_squares_strided_read",
+      "read_op": "reduce_sum_squares",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
+    },
+    {
+      "id": "reduce_sum_squares_strided_read_f64_n1048576",
+      "op": "reduce_sum_squares_strided_read",
+      "read_op": "reduce_sum_squares",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        512,
+        2048
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation."
+      }
     }
   ]
 }

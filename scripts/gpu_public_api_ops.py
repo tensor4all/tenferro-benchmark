@@ -440,8 +440,8 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
         return lambda: torch.vdot(x, inputs[1])
     if op == "norm_squared_read":
         return lambda: torch.vdot(x, x)
-    if op == "reduce_sum_squares" and case.get("full_reduction"):
-        return lambda: torch.vdot(x, x)
+    if op == "reduce_sum_squares":
+        return (lambda: torch.vdot(x, x)) if case.get("full_reduction") else (lambda: torch.linalg.vecdot(x, x, dim=1))
     if op.startswith("reduce_"):
         fn = {"reduce_sum": torch.sum, "reduce_prod": torch.prod, "reduce_max": torch.amax,
               "reduce_min": torch.amin, "reduce_mean": torch.mean}[op]
@@ -557,8 +557,8 @@ def jax_operation(jax, jnp, case):
         return lambda x, y: jnp.vdot(x, y)
     if op == "norm_squared_read":
         return lambda x: jnp.vdot(x, x)
-    if op == "reduce_sum_squares" and case.get("full_reduction"):
-        return lambda x: jnp.vdot(x, x)
+    if op == "reduce_sum_squares":
+        return (lambda x: jnp.vdot(x, x)) if case.get("full_reduction") else (lambda x: jnp.vecdot(x, x, axis=1))
     if op.startswith("reduce_"):
         fn = getattr(jnp, op.removeprefix("reduce_"))
         axis = None if case.get("full_reduction") else 1

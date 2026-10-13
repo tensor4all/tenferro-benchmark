@@ -25,7 +25,7 @@ families:
     latest_report: result/nvidia-gpu/gpu/isolated_ops.md; only validated measured cells count.
     measured_contracts: Full mean/sum-of-squares rows are in the latest GPU0 report; timing-excluded rows do not count as measured coverage.
     deferred:
-      other_noncontiguous_reads: Transposed borrowed add/mul/neg/exp/tanh/conj/reduce_sum have selected independent cases under reuse_contraction; other read operations and layouts remain separate and are not aliases.
+      other_noncontiguous_reads: Transposed borrowed arithmetic, analytic functions, conjugation and sum/prod/max/min/sum-of-squares have independent cases under reuse_contraction. Comparison/select/clamp reads, offset/sliced layouts and additional dtype domains remain separate; none are blanket aliases.
   neural:
     cases: data/instances/gpu_nn.json
     suite: benchmarks/gpu/nn.yaml
@@ -80,7 +80,7 @@ families:
     routes: [TensorElementwise, TensorTensordotExt, EagerSessionEinsumExt, BackendSession]
     contracts: Preallocated output reuse is distinct from allocation-returning operations; JAX donation is not an equivalent arm.
     selected_contracts:
-      strided_reads: Transposed rectangular 16x64/512x2048 borrowed add/mul/neg/exp/tanh/reduce_sum F32/F64 and materialized conj C32/C64. PyTorch uses a prepared transpose view; JAX compares the same logical values with native input representation, not a claimed strided-view contract.
+      strided_reads: Transposed rectangular 16x64/512x2048 borrowed add/sub/mul/div/rem/pow/maximum/minimum/neg/abs/sign/exp/expm1/log/log1p/erf/sin/cos/tanh/sqrt/rsqrt and axis-1 sum/prod/max/min/sum-of-squares F32/F64, plus materialized conj C32/C64. PyTorch uses a prepared transpose view; JAX compares the same logical values with native input representation, not a claimed strided-view contract.
       axpby_read_into_accum: Compact F32/F64/C32/C64; alpha/beta=(0.5,1),(0.5,0),(0.25,0.75),(1,1). Restore prepared GPU seeds before every batch. PyTorch add_, mul(out=), and lerp(out=) are matching single-call counterparts. Unit coefficients also select native JAX Ref.addupdate, with AOT scalar completion tokens and untimed full snapshots.
       dot_general_output_reuse: Square 16/256 F32/F64/C32/C64; overwrite and alpha=0.5/beta=1 accumulation, plus public SessionCachedDot accumulation with slot Some(0). PyTorch addmm with out is the matched reference. CUDA cached accumulation delegates to the ordinary accumulation hook; no separate cache-speed claim.
     deferred:
@@ -103,7 +103,7 @@ cross_cutting:
     verification and held eager sessions are
     implemented; refreshed full-size GPU0 reports are linked under result/nvidia-gpu/gpu/.
 cuda_unavailable_at_audit:
-  - TensorLinalgExt inv/pinv_with_rtol (current dfbdf6b GPU1 recheck 20261013_200509 confirms internal host-scalar failures for all eight F32/F64 32x32/512x512 cases; see result/nvidia-gpu/gpu/linalg_capability.md; eager routes differ)
+  - TensorLinalgExt inv/pinv_with_rtol (Latest fbd735ab F64 2x2 public Rust MWE confirms both internal host-scalar failures, reported upstream as #2147. Earlier dfbdf6b probe covered all eight F32/F64 32x32/512x512 cases. See result/nvidia-gpu/gpu/linalg_capability.md; eager routes differ)
   - eig/eigvals/full_piv_lu/full_piv_lu_solve
   - dynamic_update_slice
   - TensorReadLinalgExt solve_read/solve_read_into/triangular_solve_read/inv_read
