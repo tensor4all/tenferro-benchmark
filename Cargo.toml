@@ -55,6 +55,7 @@ strided-perm = { path = "extern/strided-rs/strided-perm", default-features = fal
 strided-view = { path = "extern/strided-rs/strided-view", optional = true }
 
 [features]
+allocation-diagnostics = []
 default = ["native"]
 # Gates the `hptt` participant in benchmark_permutation (cpu/permutation
 # suite). Builds the vendored HPTT C++ library via the `hptt` crate's cmake

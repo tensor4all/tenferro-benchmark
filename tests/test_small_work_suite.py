@@ -17,10 +17,10 @@ class SmallWorkSuiteTest(unittest.TestCase):
         with patch.dict(os.environ, {"BENCH_INSTANCE": ""}):
             cases, config = suite.selected_cases()
         self.assertGreater(len(cases), 0)
-        self.assertLess(len(cases), 166)
-        self.assertFalse(any(c["api_tier"].endswith(("-fresh", "-setup")) for c in cases))
+        self.assertLess(len(cases), 286)
+        self.assertFalse(any(c["api_tier"].endswith(("-fresh", "-setup")) for c in cases if not c["id"].startswith("nonad_")))
         with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_INCLUDE_SETUP_DIAGNOSTICS": "1"}):
-            self.assertEqual(len(suite.selected_cases()[0]), 166)
+            self.assertEqual(len(suite.selected_cases()[0]), 286)
         self.assertEqual(len({c['id'] for c in cases}), len(cases))
         self.assertEqual(config['runs'], 15)
         with patch.dict(os.environ, {"BENCH_INSTANCE": cases[0]['id']}):
@@ -29,8 +29,7 @@ class SmallWorkSuiteTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 suite.selected_cases()
 
-    def test_manifest_quick_is_the_previous_default_and_routes_are_labelled(self):
-        # Migration check: quick keeps exactly the old default filter.
+    def test_manifest_keeps_previous_steady_cases_and_adds_bounded_latency_lane(self):
         def old_diagnostic(c):
             return (c["api_tier"] in {"eager-no-ad", "eager-ad", "compiled-repeat"}
                     or c["api_tier"].endswith(("-fresh", "-setup"))
@@ -40,12 +39,16 @@ class SmallWorkSuiteTest(unittest.TestCase):
             every = suite.selected_cases()[0]
         with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_COVERAGE": "quick"}):
             quick = suite.selected_cases()[0]
-        self.assertEqual([c["id"] for c in quick], [c["id"] for c in every if not old_diagnostic(c)])
+        self.assertEqual([c["id"] for c in quick if not c["id"].startswith("nonad_")], [c["id"] for c in every if not c["id"].startswith("nonad_") and not old_diagnostic(c)])
+        latency = [c for c in quick if c["id"].startswith("nonad_")]
+        self.assertEqual(len(latency), 20)
+        self.assertEqual({c["api_tier"] for c in latency}, {"concrete-fresh", "concrete-shared", "eager-no-ad", "eager-shared"})
+        self.assertEqual({tuple(c["shape"]) for c in latency}, {(2, 2)})
         for case in every:
             route = suite.route_for(case)
             self.assertIn(route["measurement_scope"], {"steady_state", "session_entry_diagnostic",
                                                        "preparation_diagnostic"})
-        self.assertEqual({suite.route_for(c)["measurement_scope"] for c in quick}, {"steady_state"})
+        self.assertEqual({suite.route_for(c)["measurement_scope"] for c in quick}, {"steady_state", "session_entry_diagnostic"})
         self.assertNotIn("all 166", (Path(suite.ROOT) / "scripts/run_small_work.sh").read_text())
 
     def test_collect_writes_case_status(self):
@@ -119,6 +122,25 @@ class SmallWorkSuiteTest(unittest.TestCase):
             row = json.loads(output.read_text())
             self.assertEqual(row['samples'], [])
             self.assertEqual(row['correctness_status'], 'failed')
+
+    def test_nonad_matched_pairs_and_separate_allocation_rows(self):
+        case = dict(operation='qr', dtype='f64', shape=[2, 2], layout='col_major_contiguous',
+                    workflow='single', calls_per_workflow=1, threads=1, correctness_status='passed')
+        rows = [dict(case, case_id='nonad_qr_' + tier, api_tier=tier,
+                     samples=[dict(iterations=1000, elapsed_ns=duration)]*3)
+                for tier, duration in [('concrete-shared', 2_000_000), ('eager-shared', 2_200_000)]]
+        allocation = dict(rows[1], samples=[], allocation_samples=[dict(allocations=7, bytes=123)]*7)
+        with tempfile.TemporaryDirectory() as tmp, patch.object(suite, 'ROOT', Path(tmp).resolve()):
+            run = Path(tmp)/'data/results/amd-cpu/cpu/small_work/test'
+            run.mkdir(parents=True)
+            (run/'samples_t1.jsonl').write_text('\n'.join(map(json.dumps, rows)))
+            (run/'allocations_t1.jsonl').write_text(json.dumps(allocation))
+            suite.report(run, 'amd-cpu')
+            text = (run/'report.md').read_text()
+            self.assertIn('2000.00 | 2200.00 | 200.00 | 1.100', text)
+            self.assertIn('nonad_qr_eager-shared | 1 | 7 | 123 | passed', text)
+        clipped = dict(rows[0], samples=[dict(iterations=10, elapsed_ns=100)]*3)
+        self.assertIn('INCONCLUSIVE', suite.summary(clipped)[3])
 
 
 if __name__ == '__main__':

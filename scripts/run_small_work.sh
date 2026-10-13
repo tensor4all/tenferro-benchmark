@@ -28,7 +28,10 @@ TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
 RUN_DIR="$PROJECT_DIR/data/results/$BENCHMARK_TARGET_PROFILE/cpu/small_work/$TIMESTAMP"
 mkdir -p "$RUN_DIR"
 "$PYTHON" "$SCRIPT_DIR/collect_cpu_info.py" --markdown > "$RUN_DIR/cpu_info.md"
-export BENCHMARK_COMMIT="${BENCHMARK_COMMIT:-$(git rev-parse HEAD)}"
+if [[ -z "${BENCHMARK_COMMIT:-}" ]]; then
+    BENCHMARK_COMMIT="$(git rev-parse HEAD)"
+fi
+export BENCHMARK_COMMIT
 export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE TENFERRO_CPU_FEATURES BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
 failed=0
 for threads in "${THREAD_COUNTS[@]}"; do
@@ -61,6 +64,16 @@ PY
     assert_benchmark_host_idle
     "$PYTHON" "$SCRIPT_DIR/benchmark_small_work.py" --binary "$BINARY" \
         --threads "$threads" --output "$RUN_DIR/samples_t${threads}.jsonl" || failed=1
+done
+# Separate instrumented build: never replace or time the latency executable.
+DIAGNOSTIC_TARGET="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}-allocations"
+CARGO_TARGET_DIR="$DIAGNOSTIC_TARGET" cargo build --release --no-default-features \
+    --features "$TENFERRO_CPU_FEATURES,allocation-diagnostics" --bin small_work_case
+for threads in "${THREAD_COUNTS[@]}"; do
+    configure_cpu_thread_env "$threads"
+    "$PYTHON" "$SCRIPT_DIR/benchmark_small_work.py" --mode allocations \
+        --binary "$DIAGNOSTIC_TARGET/release/small_work_case" --threads "$threads" \
+        --output "$RUN_DIR/allocations_t${threads}.jsonl" || failed=1
 done
 cp "$RUN_DIR/run_t${THREAD_COUNTS[0]}.yaml" "$RUN_DIR/run.yaml"
 "$PYTHON" "$SCRIPT_DIR/benchmark_small_work.py" --report "$RUN_DIR" --target-profile "$BENCHMARK_TARGET_PROFILE"
