@@ -33,10 +33,11 @@ def make_fixtures(root, suite):
     for spec in suite["cases"]:
         if spec["op"] not in {"fft", "ifft", "rfft", "irfft"}:
             from gpu_public_api_ops import fixtures
+            from gpu_multi_output_verification import leaves
             inputs, y = fixtures(spec, DTYPES[spec["dtype"]])
             case = dict(spec)
             case.update(inputs=[save_array(root, f'{spec["id"]}_in{i}.bin', x) for i, x in enumerate(inputs)],
-                        outputs=[save_array(root, f'{spec["id"]}_out.bin', y)], reference="numpy/scipy double precision",
+                        outputs=[save_array(root, f'{spec["id"]}_out{i}.bin', v) for i, v in enumerate(leaves(y))], reference="numpy/scipy double precision; all requested outputs",
                         rtol=5e-4 if spec["dtype"].endswith("32") else 1e-9,
                         atol=5e-4 if spec["dtype"].endswith("32") else 1e-9)
             if spec.get("full_reduction") and spec["op"] in {"reduce_sum", "reduce_prod"}:
@@ -209,7 +210,8 @@ def run_python(backend, root, output):
                 hosts = [load_array(root, a) for a in case["inputs"]]
                 is_fft = case["op"] in {"fft", "ifft", "rfft", "irfft"}
                 x_host = load_array(root, case["inputs"][0])
-                expected = load_array(root, case["outputs"][0])
+                expected = [load_array(root, a) for a in case["outputs"]]
+                from gpu_multi_output_verification import leaves, verify_outputs, normalized_outputs
                 if backend == "pytorch-cuda":
                     inputs = [torch.from_numpy(np.ascontiguousarray(a) if a.ndim else a).to(f"cuda:{device}") for a in hosts]
                     if is_fft:
@@ -242,20 +244,21 @@ def run_python(backend, root, output):
                     row["synchronization"] = "jax.block_until_ready on all retained outputs; no D2H in timed region"
                 reuse = case["op"].endswith("_into")
                 probe = op(0) if reuse else op()
-                if backend == "pytorch-cuda":
-                    if probe.device.type != "cuda" or probe.device.index != device:
-                        raise RuntimeError("CPU fallback or wrong CUDA device")
-                elif probe.devices() != {gpu}:
-                    raise RuntimeError("CPU fallback or wrong JAX GPU")
+                for value in leaves(probe):
+                    if backend == "pytorch-cuda":
+                        if value.device.type != "cuda" or value.device.index != device:
+                            raise RuntimeError("CPU fallback or wrong CUDA device")
+                    elif value.devices() != {gpu}:
+                        raise RuntimeError("CPU fallback or wrong JAX GPU")
                 ready([probe])
-                error = verify(download(probe), expected, case)
+                error = verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify)
                 del probe
                 timing = None
                 if not verify_only:
-                    timing = measure(op, sync, ready, expected.nbytes, warmups, runs, reuse=reuse)
+                    timing = measure(op, sync, ready, sum(v.nbytes for v in expected), warmups, runs, reuse=reuse)
                     probe = op(timing["operations_per_sample"]-1) if reuse else op()
                     ready([probe])
-                    error = max(error, verify(download(probe), expected, case))
+                    error = max(error, verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify))
                     del probe
                 row.update(status="verification_only" if verify_only else "ok", timing=timing,
                            verification={"max_error_over_tolerance": error, "reference": case["reference"]})

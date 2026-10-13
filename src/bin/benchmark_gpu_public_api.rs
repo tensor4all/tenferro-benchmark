@@ -11,6 +11,8 @@ use tenferro_tensor::{BackendSession, BackendSessionHost, DType, Tensor};
 
 #[path = "benchmark_gpu_public_api/linalg.rs"]
 mod linalg;
+#[path = "benchmark_gpu_public_api/multi.rs"]
+mod multi;
 #[path = "benchmark_gpu_public_api/reuse.rs"]
 mod reuse;
 #[path = "benchmark_gpu_public_api/runtime_ops.rs"]
@@ -274,6 +276,9 @@ fn run(
     settings: &Settings,
     device: usize,
 ) -> Result<(Option<Value>, f64)> {
+    if matches!(case.op.as_str(), "svd_full" | "slogdet" | "householder_qr") {
+        return multi::run(root, case, mode, settings, device);
+    }
     let input_host = case
         .inputs
         .iter()
