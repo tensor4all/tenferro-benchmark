@@ -1,261 +1,349 @@
 # CPU shared-session matrix results
 
-Raw data and provenance: `data/results/amd-cpu/cpu/session_matrix/20261008_062752`.
+Raw data and provenance: `data/results/amd-cpu/cpu/session_matrix/20261013_102201`.
 
 ### run_t1
 
 ```yaml
-timestamp: '2026-10-08T06:27:52Z'
+timestamp: '2026-10-13T10:22:01Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+  commit: 8b13220c1e0397a29a27be65557c24105352a35b
   dirty: false
   features:
-  - system-mkl
+  - blas-mkl
   resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: 2cd0fd6445dcd9aad98990f76c17e33e773c4a7d
-  dirty: false
+  commit: b87c857a1e658102ec94436ec7c889ae8e8816ec
+  dirty: true
 collection:
-  command: 'BENCH_EFFORT=standard BENCH_COVERAGE=full TENFERRO_CPU_FEATURES=system-mkl
+  command: 'BENCH_EFFORT=standard BENCH_COVERAGE=full TENFERRO_CPU_FEATURES=blas-mkl
     BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_cpu_session.sh 1 4 '
   effort: standard
   warmups: 3
   runs: 15
   coverage: full
-  manifest_version: 3
+  manifest_version: 4
   selection_filter: null
-  expected_cases: 68
-  selected_cases: 68
+  expected_cases: 74
+  selected_cases: 74
 ```
 
 ### run_t4
 
 ```yaml
-timestamp: '2026-10-08T06:28:28Z'
+timestamp: '2026-10-13T10:22:58Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: 5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102
+  commit: 8b13220c1e0397a29a27be65557c24105352a35b
   dirty: false
   features:
-  - system-mkl
+  - blas-mkl
   resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: 2cd0fd6445dcd9aad98990f76c17e33e773c4a7d
-  dirty: false
+  commit: b87c857a1e658102ec94436ec7c889ae8e8816ec
+  dirty: true
 collection:
-  command: 'BENCH_EFFORT=standard BENCH_COVERAGE=full TENFERRO_CPU_FEATURES=system-mkl
+  command: 'BENCH_EFFORT=standard BENCH_COVERAGE=full TENFERRO_CPU_FEATURES=blas-mkl
     BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_cpu_session.sh 1 4 '
   effort: standard
   warmups: 3
   runs: 15
   coverage: full
-  manifest_version: 3
+  manifest_version: 4
   selection_filter: null
-  expected_cases: 68
-  selected_cases: 68
+  expected_cases: 74
+  selected_cases: 74
 ```
 
 ## Case status
 
-- Manifest: `cpu/session_matrix` version 3, coverage `full`, effort `standard`
-- Expected 176, selected 176, executed 170, unsupported 6, failed 0, missing 0, noisy 22.
-- Complete: **yes** — only executed cases count as covered; unsupported, failed, missing and unselected cases never do.
-- Unsupported: `bdot_f64_b1024_m4n4k4_direct_alloc_forced-outer-parallel[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_into_forced-outer-parallel[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_alloc_forced-whole-batch-vendor[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_into_forced-whole-batch-vendor[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_alloc_forced-whole-batch-vendor[faer]@t4`, `bdot_f64_b1024_m4n4k4_direct_into_forced-whole-batch-vendor[faer]@t4`
-- Noisy: `matmul_n2_count1024[blas]@t1`, `matmul_n2_count1024[pytorch]@t1`, `matmul_n4_count1024[blas]@t1`, `matmul_n4_count1024[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b16_m64n64k64_direct_into_auto[faer]@t1`, `bdot_f64_b320_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b4096_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096[faer]@t1`, `stream_f64_mixed_len32_einsum_alloc[faer]@t1`, `stream_f64_fresh_len32_einsum_alloc[faer]@t1`, `matmul_n2_count1024[faer]@t4`, `matmul_n4_count1024[faer]@t4`, `matmul_n32_count1024[blas]@t4`, `beinsum_f64_b1024_m4n4k4_direct_alloc_auto[faer]@t4`, `bdot_f64_b1024_m4n4k4_canonical_alloc_auto[faer]@t4`, `bdot_f64_b1024_m4n4k4_strided_alloc_auto[faer]@t4`, `bdot_c64_b1024_m4n4k4_strided_into_auto[faer]@t4`, `bdot_f64_b1024_m4n4k4_direct_into_forced-sequential[faer]@t4`, `hadamard_f64_m256n256_einsum_alloc[faer]@t4`, `chain3_f64_n4_einsum_alloc[faer]@t4`
+- Manifest: `cpu/session_matrix` version 4, coverage `full`, effort `standard`
+- Expected 200, selected 200, executed 52, unsupported 148, failed 0, missing 0, noisy 2.
+- Complete: **NO** — only executed cases count as covered; unsupported, failed, missing and unselected cases never do.
+- Unsupported: `matmul_n2_count1024[faer]@t1`, `matmul_n4_count1024[faer]@t1`, `matmul_n8_count1024[faer]@t1`, `matmul_n16_count1024[faer]@t1`, `matmul_n32_count1024[faer]@t1`, `solve_n2_count1024[faer]@t1`, `solve_n4_count1024[faer]@t1`, `solve_n8_count1024[faer]@t1`, `solve_n16_count1024[faer]@t1`, `solve_n32_count1024[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_into_auto[faer]@t1`, `beinsum_f64_b1024_m4n4k4_direct_alloc_auto[faer]@t1`, `beinsum_f64_b1024_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b64_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b64_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b16_m64n64k64_direct_alloc_auto[faer]@t1`, `bdot_f64_b16_m64n64k64_direct_into_auto[faer]@t1`, `bdot_f64_b64_m64n1k64_direct_alloc_auto[faer]@t1`, `bdot_f64_b64_m64n1k64_direct_into_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_canonical_alloc_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_canonical_into_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_strided_alloc_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_strided_into_auto[faer]@t1`, `bdot_c64_b1024_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_c64_b1024_m4n4k4_direct_into_auto[faer]@t1`, `bdot_c64_b1024_m4n4k4_strided_alloc_auto[faer]@t1`, `bdot_c64_b1024_m4n4k4_strided_into_auto[faer]@t1`, `beinsum_f64_b1024_m4n4k4_strided_alloc_auto[faer]@t1`, `beinsum_f64_b1024_m4n4k4_strided_into_auto[faer]@t1`, `bdot_f64_b256_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b256_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b320_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b320_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b4096_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b4096_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b64_m8n8k8_direct_alloc_auto[faer]@t1`, `bdot_f64_b64_m8n8k8_direct_into_auto[faer]@t1`, `bdot_f64_b64_m16n16k16_direct_alloc_auto[faer]@t1`, `bdot_f64_b64_m16n16k16_direct_into_auto[faer]@t1` (+108 more)
+- Noisy: `matmul_n32_count1024[blas]@t4`, `eager_stream_f64_fresh_len128_einsum3_alloc[blas]@t4`
 
 ## Loop of independent small calls
 
 Each sample executes 1024 independent, distinct f64 matrix pairs; one wall-clock interval covers the whole loop. All inputs, output-container allocation, session entry, and initialization are outside timing. Outputs remain alive until timer stop. Every output is checked after timing (solve uses the residual).
 
-tenferro enters exactly one backend session around all warmups and samples. Accelerate and faer use the same public operations and session scope. With tenferro-rs PR #1796 or later, managed BLAS and faer sessions both reuse the entered executor context. Earlier BLAS revisions included per-operation entry; consult the recorded tenferro commit. ProviderDefaultExclusive describes admission, not per-operation executor entry. The execution mode and worker count are recorded in each Rust row. 4-thread faer uses tenferro’s Rayon execution domain (inner kernel parallelism, not an outer parallel loop over matrices). PyTorch uses a Python loop over the same inputs, with its thread pools initialized before timing. Its Python dispatch cost is included. These are allocation-returning operations, not batched tensor APIs; the one-operation batched cases below are a different workload.
+tenferro enters exactly one backend session around all warmups and samples. Accelerate and faer use the same public operations and session scope. With tenferro-rs PR #1796 or later, managed BLAS and faer sessions both reuse the entered executor context. Earlier BLAS revisions included per-operation entry; consult the recorded tenferro commit. ProviderDefaultExclusive describes admission, not per-operation executor entry. The worker count is recorded in each Rust row; tenferro-rs #2004 no longer exposes an execution mode, so a row that records one is historical. 4-thread faer uses tenferro’s Rayon execution domain (inner kernel parallelism, not an outer parallel loop over matrices). PyTorch uses a Python loop over the same inputs, with its thread pools initialized before timing. Its Python dispatch cost is included. These are allocation-returning operations, not batched tensor APIs; the one-operation batched cases below are a different workload.
 
-EagerTensor and compiled trace are not labeled shared-session: their current public interfaces do not accept this borrowed session and create internal sessions during execution. The old single-call measurements remain diagnostic evidence only.
+This independent-call loop lane uses concrete Tensor routes. Borrowed eager-session shape streams are reported separately below. Compiled trace still uses runtime-internal session entry and is not a borrowed-session route.
 
 | Case ID | Operation | Matrix | Operations | Threads | Provider | Route | Execution mode | Median total ms | IQR total ms | Median ns/op | CoV | Check |
 |---|---|---|---:|---:|---|---|---|---:|---:|---:|---:|---|
-| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 2.38 | 0.01 | 2324.22 | 8.0% | passed |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | faer | shared-session | Managed | 1.73 | 0.01 | 1689.45 | 0.4% | passed |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 2.42 | 0.03 | 2363.28 | 6.0% | passed |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 2.39 | 0.02 | 2333.98 | 7.1% | passed |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | faer | shared-session | Managed | 1.78 | 0.00 | 1738.28 | 0.2% | passed |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 2.46 | 0.02 | 2402.34 | 5.1% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 1.04 | 0.00 | 1015.62 | 14.5% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | faer | shared-session | Managed | 0.82 | 0.01 | 800.78 | 1.1% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 1.57 | 0.17 | 1533.20 | 10.6% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 1.04 | 0.01 | 1015.62 | 3.6% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | faer | shared-session | Managed | 0.83 | 0.01 | 810.55 | 10.5% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 1.65 | 0.02 | 1611.33 | 7.6% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 7.43 | 0.09 | 7255.86 | 0.8% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | faer | shared-session | Managed | 4.57 | 0.09 | 4462.89 | 1.1% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 6.31 | 0.04 | 6162.11 | 3.2% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 7.78 | 1.94 | 7597.66 | 17.6% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | faer | shared-session | Managed | 4.63 | 0.12 | 4521.48 | 4.0% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 6.56 | 0.16 | 6406.25 | 9.3% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 1.10 | 0.01 | 1074.22 | 12.0% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | faer | shared-session | Managed | 0.88 | 0.02 | 859.38 | 14.6% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 1.55 | 0.02 | 1513.67 | 6.5% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 1.10 | 0.01 | 1074.22 | 8.5% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | faer | shared-session | Managed | 0.89 | 0.00 | 869.14 | 13.8% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 1.55 | 0.02 | 1513.67 | 7.4% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 1.31 | 0.01 | 1279.30 | 3.5% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | faer | shared-session | Managed | 1.01 | 0.01 | 986.33 | 0.5% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 1.65 | 0.01 | 1611.33 | 6.0% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 1.31 | 0.01 | 1279.30 | 0.6% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | faer | shared-session | Managed | 1.01 | 0.01 | 986.33 | 3.1% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 1.67 | 0.02 | 1630.86 | 7.9% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 4.77 | 0.01 | 4658.20 | 0.3% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 1 | faer | shared-session | Managed | 4.70 | 0.02 | 4589.84 | 0.3% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 17.01 | 0.04 | 16611.33 | 0.6% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 4.79 | 0.02 | 4677.73 | 3.0% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 4 | faer | shared-session | Managed | 4.73 | 0.03 | 4619.14 | 0.8% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 17.50 | 0.08 | 17089.84 | 1.7% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 1.22 | 0.01 | 1191.41 | 0.6% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 1 | faer | shared-session | Managed | 1.39 | 0.01 | 1357.42 | 0.5% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 13.63 | 0.06 | 13310.55 | 0.8% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 1.22 | 0.00 | 1191.41 | 0.3% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 4 | faer | shared-session | Managed | 1.39 | 0.00 | 1357.42 | 0.3% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 13.42 | 0.10 | 13105.47 | 0.8% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 18.60 | 0.12 | 18164.06 | 0.6% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 1 | faer | shared-session | Managed | 12.76 | 0.04 | 12460.94 | 0.4% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 30.42 | 0.15 | 29707.03 | 0.6% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 17.65 | 0.08 | 17236.33 | 0.4% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 4 | faer | shared-session | Managed | 12.67 | 0.08 | 12373.05 | 0.5% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 28.51 | 0.14 | 27841.80 | 0.6% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 1.31 | 0.01 | 1279.30 | 0.6% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 1 | faer | shared-session | Managed | 1.57 | 0.02 | 1533.20 | 1.6% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 13.45 | 0.07 | 13134.77 | 0.9% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 1.31 | 0.01 | 1279.30 | 0.7% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 4 | faer | shared-session | Managed | 1.60 | 0.01 | 1562.50 | 0.4% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 13.58 | 0.15 | 13261.72 | 1.0% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 1 | blas | shared-session | ProviderDefaultExclusive | 2.33 | 0.01 | 2275.39 | 0.4% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 1 | faer | shared-session | Managed | 2.35 | 0.02 | 2294.92 | 9.0% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 14.34 | 0.07 | 14003.91 | 0.6% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 4 | blas | shared-session | ProviderDefaultExclusive | 2.34 | 0.02 | 2285.16 | 2.1% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 4 | faer | shared-session | Managed | 2.36 | 0.01 | 2304.69 | 6.3% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 14.48 | 0.09 | 14140.62 | 1.1% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | blas | shared-session | not applicable | 9.16 | 0.35 | 8945.31 | 2.6% | passed |
+| matmul_n16_count1024 | matmul | n16 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 3.11 | 0.16 | 3037.11 | 4.0% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | blas | shared-session | not applicable | 9.15 | 0.14 | 8935.55 | 1.3% | passed |
+| matmul_n16_count1024 | matmul | n16 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 2.96 | 0.22 | 2890.62 | 5.3% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | blas | shared-session | not applicable | 8.04 | 0.12 | 7851.56 | 1.3% | passed |
+| matmul_n2_count1024 | matmul | n2 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 2.14 | 0.11 | 2089.84 | 7.0% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | blas | shared-session | not applicable | 8.31 | 0.18 | 8115.23 | 1.6% | passed |
+| matmul_n2_count1024 | matmul | n2 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 2.20 | 0.09 | 2148.44 | 4.2% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | blas | shared-session | not applicable | 11.48 | 0.33 | 11210.94 | 2.0% | passed |
+| matmul_n32_count1024 | matmul | n32 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 5.15 | 0.40 | 5029.30 | 4.6% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | blas | shared-session | not applicable | 14.48 | 1.28 | 14140.62 | 11.2% | passed |
+| matmul_n32_count1024 | matmul | n32 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 5.57 | 0.73 | 5439.45 | 7.5% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | blas | shared-session | not applicable | 8.66 | 0.29 | 8457.03 | 2.1% | passed |
+| matmul_n4_count1024 | matmul | n4 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 2.17 | 0.11 | 2119.14 | 5.4% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | blas | shared-session | not applicable | 8.27 | 0.22 | 8076.17 | 2.9% | passed |
+| matmul_n4_count1024 | matmul | n4 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 2.15 | 0.15 | 2099.61 | 4.7% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | blas | shared-session | not applicable | 8.21 | 0.30 | 8017.58 | 2.4% | passed |
+| matmul_n8_count1024 | matmul | n8 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 2.39 | 0.11 | 2333.98 | 6.2% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | blas | shared-session | not applicable | 8.46 | 0.20 | 8261.72 | 1.8% | passed |
+| matmul_n8_count1024 | matmul | n8 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 2.33 | 0.20 | 2275.39 | 7.7% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 1 | blas | shared-session | not applicable | 4.40 | 0.14 | 4296.88 | 4.1% | passed |
+| solve_n16_count1024 | solve | n16 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n16_count1024 | solve | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 23.89 | 0.98 | 23330.08 | 2.6% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 4 | blas | shared-session | not applicable | 4.41 | 0.13 | 4306.64 | 2.6% | passed |
+| solve_n16_count1024 | solve | n16 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n16_count1024 | solve | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 23.19 | 0.73 | 22646.48 | 2.0% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 1 | blas | shared-session | not applicable | 1.04 | 0.01 | 1015.62 | 2.8% | passed |
+| solve_n2_count1024 | solve | n2 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n2_count1024 | solve | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 19.11 | 0.62 | 18662.11 | 9.7% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 4 | blas | shared-session | not applicable | 1.09 | 0.04 | 1064.45 | 3.0% | passed |
+| solve_n2_count1024 | solve | n2 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n2_count1024 | solve | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 19.91 | 0.57 | 19443.36 | 2.0% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 1 | blas | shared-session | not applicable | 14.02 | 0.26 | 13691.41 | 1.5% | passed |
+| solve_n32_count1024 | solve | n32 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n32_count1024 | solve | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 36.84 | 0.93 | 35976.56 | 1.8% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 4 | blas | shared-session | not applicable | 13.85 | 0.30 | 13525.39 | 1.5% | passed |
+| solve_n32_count1024 | solve | n32 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n32_count1024 | solve | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 36.98 | 0.86 | 36113.28 | 2.3% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 1 | blas | shared-session | not applicable | 1.13 | 0.04 | 1103.52 | 4.1% | passed |
+| solve_n4_count1024 | solve | n4 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n4_count1024 | solve | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 19.16 | 0.56 | 18710.94 | 2.1% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 4 | blas | shared-session | not applicable | 1.11 | 0.03 | 1083.98 | 2.4% | passed |
+| solve_n4_count1024 | solve | n4 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n4_count1024 | solve | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 18.80 | 0.48 | 18359.38 | 1.9% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 1 | blas | shared-session | not applicable | 1.88 | 0.10 | 1835.94 | 4.7% | passed |
+| solve_n8_count1024 | solve | n8 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n8_count1024 | solve | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 19.85 | 0.43 | 19384.77 | 1.6% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 4 | blas | shared-session | not applicable | 1.93 | 0.06 | 1884.77 | 3.3% | passed |
+| solve_n8_count1024 | solve | n8 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
+| solve_n8_count1024 | solve | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 19.86 | 0.29 | 19394.53 | 1.3% | passed |
 
 ## One-operation batched routes (tenferro-rs #1946 B2)
 
-One public call per operation; many operations per wall-clock interval (calibrated toward the suite `min_runtime_ms`, bounded to 64 MiB of retained outputs); one entered backend session around warmup, calibration and all samples; policy overrides applied before session entry (backend) or around all samples (scoped). Allocating routes include their intrinsic output allocation; `_into` routes reuse one destination allocated outside timing. Inputs, views, the first validated call and all numerical checks are outside timing. Route columns come from the case manifest; provider-call/lane mechanics are in the separate `cpu/route_contract` diagnostics, never in these timings. NOISY (CoV > 10%) is descriptive only.
+One public call per operation; many operations per wall-clock interval (calibrated toward the suite `min_runtime_ms`, bounded to 64 MiB of retained outputs); one entered backend session around warmup, calibration and all samples. tenferro-rs #2004 removed the batch-policy API, so cases whose manifest policy is an override report `unsupported` instead of being measured with the compiled backend default, and the batched and stream cases are declared for the faer provider, so a build without it reports them `unsupported` too. Allocating routes include their intrinsic output allocation; `_into` routes reuse one destination allocated outside timing. Inputs, views, the first validated call and all numerical checks are outside timing. Route columns come from the case manifest, never from timing. NOISY (CoV > 10%) is descriptive only.
 
 | Case ID | Route (path / output / repr / layout) | Policy | Dtype | Batch×m×n×k | Threads | Workers | Ops/sample | Median ns/op | IQR ns/op | CoV | Status |
 |---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|
-| bdot_c64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | c64 | 1024×4×4×4 | 1 | 1 | 11 | 131059.55 | 1166.73 | 2.7% | passed |
-| bdot_c64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | c64 | 1024×4×4×4 | 4 | 4 | 14 | 52616.21 | 1865.29 | 3.3% | passed |
-| bdot_c64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | c64 | 1024×4×4×4 | 1 | 1 | 5 | 85320.60 | 574.00 | 0.5% | passed |
-| bdot_c64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | c64 | 1024×4×4×4 | 4 | 4 | 16 | 27284.50 | 298.66 | 1.7% | passed |
-| bdot_c64_b1024_m4n4k4_strided_alloc_auto | concrete / allocating / view / direct-strided | auto | c64 | 1024×4×4×4 | 1 | 1 | 7 | 127873.71 | 642.00 | 0.5% | passed |
-| bdot_c64_b1024_m4n4k4_strided_alloc_auto | concrete / allocating / view / direct-strided | auto | c64 | 1024×4×4×4 | 4 | 4 | 16 | 53454.38 | 2862.22 | 3.7% | passed |
-| bdot_c64_b1024_m4n4k4_strided_into_auto | concrete / reused / view / direct-strided | auto | c64 | 1024×4×4×4 | 1 | 1 | 10 | 87344.50 | 263.50 | 0.2% | passed |
-| bdot_c64_b1024_m4n4k4_strided_into_auto | concrete / reused / view / direct-strided | auto | c64 | 1024×4×4×4 | 4 | 4 | 12 | 27172.00 | 700.88 | 39.6% | passed (NOISY) |
-| bdot_f64_b1024_m4n4k4_canonical_alloc_auto | concrete / allocating / view / canonical-copy | auto | f64 | 1024×4×4×4 | 1 | 1 | 6 | 157282.83 | 1825.08 | 2.7% | passed |
-| bdot_f64_b1024_m4n4k4_canonical_alloc_auto | concrete / allocating / view / canonical-copy | auto | f64 | 1024×4×4×4 | 4 | 4 | 16 | 52876.44 | 3983.75 | 11.3% | passed (NOISY) |
-| bdot_f64_b1024_m4n4k4_canonical_into_auto | concrete / reused / view / canonical-copy | auto | f64 | 1024×4×4×4 | 1 | 1 | 7 | 135164.43 | 672.64 | 0.3% | passed |
-| bdot_f64_b1024_m4n4k4_canonical_into_auto | concrete / reused / view / canonical-copy | auto | f64 | 1024×4×4×4 | 4 | 4 | 8 | 40662.88 | 1043.19 | 5.2% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 7 | 83800.57 | 2036.71 | 27.5% | passed (NOISY) |
-| bdot_f64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 16 | 35543.19 | 1553.88 | 7.8% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096 | concrete / allocating / owned / direct | auto+backend(outer_min_items=4096) | f64 | 1024×4×4×4 | 1 | 1 | 13 | 85746.08 | 128.69 | 0.2% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096 | concrete / allocating / owned / direct | auto+backend(outer_min_items=4096) | f64 | 1024×4×4×4 | 4 | 4 | 14 | 84981.50 | 434.71 | 0.3% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_forced-outer-parallel | concrete / allocating / owned / direct | forced:OuterParallel | f64 | 1024×4×4×4 | 1 | 1 | — | — | — | — | unsupported: dot_general: unsupported operation: batch strategy OuterParallel is not available: the selected CPU  |
-| bdot_f64_b1024_m4n4k4_direct_alloc_forced-outer-parallel | concrete / allocating / owned / direct | forced:OuterParallel | f64 | 1024×4×4×4 | 4 | 4 | 13 | 34407.15 | 1024.19 | 2.4% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_forced-provider-items | concrete / allocating / owned / direct | forced:ProviderItems | f64 | 1024×4×4×4 | 1 | 1 | 14 | 85023.00 | 601.50 | 1.4% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_forced-provider-items | concrete / allocating / owned / direct | forced:ProviderItems | f64 | 1024×4×4×4 | 4 | 4 | 14 | 85445.21 | 538.50 | 0.7% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_forced-sequential | concrete / allocating / owned / direct | forced:Sequential | f64 | 1024×4×4×4 | 1 | 1 | 14 | 83943.79 | 315.57 | 0.6% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_forced-sequential | concrete / allocating / owned / direct | forced:Sequential | f64 | 1024×4×4×4 | 4 | 4 | 14 | 84821.86 | 593.21 | 1.0% | passed |
-| bdot_f64_b1024_m4n4k4_direct_alloc_forced-whole-batch-vendor | concrete / allocating / owned / direct | forced:WholeBatchVendor | f64 | 1024×4×4×4 | 1 | 1 | — | — | — | — | unsupported: dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavai |
-| bdot_f64_b1024_m4n4k4_direct_alloc_forced-whole-batch-vendor | concrete / allocating / owned / direct | forced:WholeBatchVendor | f64 | 1024×4×4×4 | 4 | 4 | — | — | — | — | unsupported: dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavai |
-| bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096 | concrete / allocating / owned / direct | auto+scoped(outer_min_items=4096) | f64 | 1024×4×4×4 | 1 | 1 | 14 | 84732.43 | 451.21 | 13.6% | passed (NOISY) |
-| bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096 | concrete / allocating / owned / direct | auto+scoped(outer_min_items=4096) | f64 | 1024×4×4×4 | 4 | 4 | 10 | 85348.80 | 1262.95 | 1.7% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 7 | 62461.86 | 483.71 | 0.5% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 19 | 22717.00 | 710.79 | 2.7% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096 | concrete / reused / owned / direct | auto+backend(outer_min_items=4096) | f64 | 1024×4×4×4 | 1 | 1 | 14 | 63241.21 | 200.39 | 13.8% | passed (NOISY) |
-| bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096 | concrete / reused / owned / direct | auto+backend(outer_min_items=4096) | f64 | 1024×4×4×4 | 4 | 4 | 14 | 63165.36 | 229.75 | 1.4% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_forced-outer-parallel | concrete / reused / owned / direct | forced:OuterParallel | f64 | 1024×4×4×4 | 1 | 1 | — | — | — | — | unsupported: dot_general: unsupported operation: batch strategy OuterParallel is not available: the selected CPU  |
-| bdot_f64_b1024_m4n4k4_direct_into_forced-outer-parallel | concrete / reused / owned / direct | forced:OuterParallel | f64 | 1024×4×4×4 | 4 | 4 | 17 | 22728.65 | 744.65 | 3.5% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_forced-provider-items | concrete / reused / owned / direct | forced:ProviderItems | f64 | 1024×4×4×4 | 1 | 1 | 14 | 63239.79 | 80.50 | 0.2% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_forced-provider-items | concrete / reused / owned / direct | forced:ProviderItems | f64 | 1024×4×4×4 | 4 | 4 | 14 | 63145.36 | 173.14 | 3.5% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_forced-sequential | concrete / reused / owned / direct | forced:Sequential | f64 | 1024×4×4×4 | 1 | 1 | 14 | 62891.29 | 128.46 | 0.5% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_forced-sequential | concrete / reused / owned / direct | forced:Sequential | f64 | 1024×4×4×4 | 4 | 4 | 14 | 63262.00 | 774.71 | 11.5% | passed (NOISY) |
-| bdot_f64_b1024_m4n4k4_direct_into_forced-whole-batch-vendor | concrete / reused / owned / direct | forced:WholeBatchVendor | f64 | 1024×4×4×4 | 1 | 1 | — | — | — | — | unsupported: dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavai |
-| bdot_f64_b1024_m4n4k4_direct_into_forced-whole-batch-vendor | concrete / reused / owned / direct | forced:WholeBatchVendor | f64 | 1024×4×4×4 | 4 | 4 | — | — | — | — | unsupported: dot_general: unsupported operation: configured CPU GEMM provider reported unsupported: RuntimeUnavai |
-| bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096 | concrete / reused / owned / direct | auto+scoped(outer_min_items=4096) | f64 | 1024×4×4×4 | 1 | 1 | 7 | 62071.14 | 438.71 | 0.5% | passed |
-| bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096 | concrete / reused / owned / direct | auto+scoped(outer_min_items=4096) | f64 | 1024×4×4×4 | 4 | 4 | 15 | 62451.60 | 154.93 | 0.9% | passed |
-| bdot_f64_b1024_m4n4k4_strided_alloc_auto | concrete / allocating / view / direct-strided | auto | f64 | 1024×4×4×4 | 1 | 1 | 14 | 85707.14 | 149.21 | 0.3% | passed |
-| bdot_f64_b1024_m4n4k4_strided_alloc_auto | concrete / allocating / view / direct-strided | auto | f64 | 1024×4×4×4 | 4 | 4 | 21 | 34813.62 | 1936.05 | 13.8% | passed (NOISY) |
-| bdot_f64_b1024_m4n4k4_strided_into_auto | concrete / reused / view / direct-strided | auto | f64 | 1024×4×4×4 | 1 | 1 | 15 | 59703.13 | 227.73 | 0.3% | passed |
-| bdot_f64_b1024_m4n4k4_strided_into_auto | concrete / reused / view / direct-strided | auto | f64 | 1024×4×4×4 | 4 | 4 | 16 | 22441.00 | 824.72 | 3.7% | passed |
-| bdot_f64_b16_m64n64k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 16×64×64×64 | 1 | 1 | 6 | 206350.33 | 2306.83 | 1.3% | passed |
-| bdot_f64_b16_m64n64k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 16×64×64×64 | 4 | 4 | 10 | 90900.20 | 4326.60 | 3.3% | passed |
-| bdot_f64_b16_m64n64k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 16×64×64×64 | 1 | 1 | 6 | 127568.67 | 2445.50 | 13.7% | passed (NOISY) |
-| bdot_f64_b16_m64n64k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 16×64×64×64 | 4 | 4 | 8 | 37528.12 | 437.00 | 1.9% | passed |
-| bdot_f64_b256_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 256×4×4×4 | 1 | 1 | 51 | 22477.02 | 237.59 | 5.7% | passed |
-| bdot_f64_b256_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 256×4×4×4 | 4 | 4 | 52 | 22699.08 | 283.53 | 1.7% | passed |
-| bdot_f64_b256_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 256×4×4×4 | 1 | 1 | 53 | 16799.94 | 29.68 | 0.4% | passed |
-| bdot_f64_b256_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 256×4×4×4 | 4 | 4 | 52 | 16797.21 | 111.74 | 0.4% | passed |
-| bdot_f64_b320_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 320×4×4×4 | 1 | 1 | 30 | 27677.43 | 360.67 | 10.1% | passed (NOISY) |
-| bdot_f64_b320_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 320×4×4×4 | 4 | 4 | 21 | 21006.24 | 1233.50 | 6.0% | passed |
-| bdot_f64_b320_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 320×4×4×4 | 1 | 1 | 43 | 20734.16 | 50.56 | 0.2% | passed |
-| bdot_f64_b320_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 320×4×4×4 | 4 | 4 | 43 | 16969.16 | 913.35 | 5.2% | passed |
-| bdot_f64_b4096_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 4096×4×4×4 | 1 | 1 | 3 | 248317.67 | 15223.83 | 8.3% | passed |
-| bdot_f64_b4096_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 4096×4×4×4 | 4 | 4 | 4 | 75314.50 | 6027.62 | 7.8% | passed |
-| bdot_f64_b4096_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 4096×4×4×4 | 1 | 1 | 3 | 254235.33 | 2524.67 | 11.6% | passed (NOISY) |
-| bdot_f64_b4096_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 4096×4×4×4 | 4 | 4 | 5 | 76191.40 | 6641.60 | 7.0% | passed |
-| bdot_f64_b64_m16n16k16_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×16×16×16 | 1 | 1 | 38 | 44184.26 | 93.20 | 0.3% | passed |
-| bdot_f64_b64_m16n16k16_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×16×16×16 | 4 | 4 | 17 | 36666.12 | 2193.29 | 6.2% | passed |
-| bdot_f64_b64_m16n16k16_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×16×16×16 | 1 | 1 | 40 | 21135.80 | 27.55 | 4.6% | passed |
-| bdot_f64_b64_m16n16k16_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×16×16×16 | 4 | 4 | 28 | 16531.86 | 810.46 | 2.9% | passed |
-| bdot_f64_b64_m32n32k32_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×32×32×32 | 1 | 1 | 10 | 155569.90 | 1156.15 | 0.7% | passed |
-| bdot_f64_b64_m32n32k32_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×32×32×32 | 4 | 4 | 6 | 80366.33 | 3834.83 | 3.9% | passed |
-| bdot_f64_b64_m32n32k32_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×32×32×32 | 1 | 1 | 10 | 75334.90 | 617.20 | 0.7% | passed |
-| bdot_f64_b64_m32n32k32_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×32×32×32 | 4 | 4 | 14 | 26371.86 | 429.00 | 2.7% | passed |
-| bdot_f64_b64_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×4×4×4 | 1 | 1 | 122 | 6946.85 | 43.40 | 0.4% | passed |
-| bdot_f64_b64_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×4×4×4 | 4 | 4 | 124 | 7008.03 | 33.17 | 1.3% | passed |
-| bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0 | concrete / allocating / owned / direct | auto+backend(lane_min_work_ns=0) | f64 | 64×4×4×4 | 1 | 1 | 124 | 6981.21 | 59.95 | 0.5% | passed |
-| bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0 | concrete / allocating / owned / direct | auto+backend(lane_min_work_ns=0) | f64 | 64×4×4×4 | 4 | 4 | 76 | 8830.32 | 161.16 | 3.9% | passed |
-| bdot_f64_b64_m4n4k4_direct_alloc_scoped-lane-min-work-0 | concrete / allocating / owned / direct | auto+scoped(lane_min_work_ns=0) | f64 | 64×4×4×4 | 1 | 1 | 129 | 7002.64 | 21.40 | 0.4% | passed |
-| bdot_f64_b64_m4n4k4_direct_alloc_scoped-lane-min-work-0 | concrete / allocating / owned / direct | auto+scoped(lane_min_work_ns=0) | f64 | 64×4×4×4 | 4 | 4 | 79 | 8796.81 | 110.34 | 3.2% | passed |
-| bdot_f64_b64_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×4×4×4 | 1 | 1 | 74 | 5176.50 | 35.74 | 0.6% | passed |
-| bdot_f64_b64_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×4×4×4 | 4 | 4 | 145 | 5238.69 | 14.48 | 9.4% | passed |
-| bdot_f64_b64_m4n4k4_direct_into_backend-lane-min-work-0 | concrete / reused / owned / direct | auto+backend(lane_min_work_ns=0) | f64 | 64×4×4×4 | 1 | 1 | 72 | 5211.33 | 38.34 | 0.6% | passed |
-| bdot_f64_b64_m4n4k4_direct_into_backend-lane-min-work-0 | concrete / reused / owned / direct | auto+backend(lane_min_work_ns=0) | f64 | 64×4×4×4 | 4 | 4 | 49 | 7628.45 | 120.12 | 2.5% | passed |
-| bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0 | concrete / reused / owned / direct | auto+scoped(lane_min_work_ns=0) | f64 | 64×4×4×4 | 1 | 1 | 142 | 5200.01 | 36.40 | 0.6% | passed |
-| bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0 | concrete / reused / owned / direct | auto+scoped(lane_min_work_ns=0) | f64 | 64×4×4×4 | 4 | 4 | 64 | 7791.23 | 85.71 | 2.5% | passed |
-| bdot_f64_b64_m64n1k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×64×1×64 | 1 | 1 | 15 | 60405.73 | 155.63 | 0.2% | passed |
-| bdot_f64_b64_m64n1k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×64×1×64 | 4 | 4 | 24 | 34560.08 | 730.96 | 3.8% | passed |
-| bdot_f64_b64_m64n1k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×64×1×64 | 1 | 1 | 13 | 54243.69 | 323.69 | 0.4% | passed |
-| bdot_f64_b64_m64n1k64_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×64×1×64 | 4 | 4 | 20 | 36883.45 | 708.85 | 8.8% | passed |
-| bdot_f64_b64_m8n8k8_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×8×8×8 | 1 | 1 | 105 | 12861.08 | 161.11 | 3.6% | passed |
-| bdot_f64_b64_m8n8k8_direct_alloc_auto | concrete / allocating / owned / direct | auto | f64 | 64×8×8×8 | 4 | 4 | 107 | 12709.07 | 148.36 | 3.6% | passed |
-| bdot_f64_b64_m8n8k8_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×8×8×8 | 1 | 1 | 114 | 6641.62 | 17.63 | 0.5% | passed |
-| bdot_f64_b64_m8n8k8_direct_into_auto | concrete / reused / owned / direct | auto | f64 | 64×8×8×8 | 4 | 4 | 58 | 6768.43 | 67.36 | 2.2% | passed |
-| beinsum_f64_b1024_m4n4k4_direct_alloc_auto | concrete-einsum / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 10 | 94508.90 | 366.70 | 3.1% | passed |
-| beinsum_f64_b1024_m4n4k4_direct_alloc_auto | concrete-einsum / allocating / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 14 | 42766.21 | 5160.43 | 20.6% | passed (NOISY) |
-| beinsum_f64_b1024_m4n4k4_direct_into_auto | concrete-einsum / reused / owned / direct | auto | f64 | 1024×4×4×4 | 1 | 1 | 14 | 62806.86 | 263.32 | 1.4% | passed |
-| beinsum_f64_b1024_m4n4k4_direct_into_auto | concrete-einsum / reused / owned / direct | auto | f64 | 1024×4×4×4 | 4 | 4 | 14 | 23313.93 | 601.50 | 1.9% | passed |
-| beinsum_f64_b1024_m4n4k4_strided_alloc_auto | concrete-einsum / allocating / view / direct-strided | auto | f64 | 1024×4×4×4 | 1 | 1 | 7 | 94674.00 | 680.50 | 0.5% | passed |
-| beinsum_f64_b1024_m4n4k4_strided_alloc_auto | concrete-einsum / allocating / view / direct-strided | auto | f64 | 1024×4×4×4 | 4 | 4 | 13 | 50212.23 | 1652.77 | 4.6% | passed |
-| beinsum_f64_b1024_m4n4k4_strided_into_auto | concrete-einsum / reused / view / direct-strided | auto | f64 | 1024×4×4×4 | 1 | 1 | 14 | 62666.57 | 677.71 | 2.6% | passed |
-| beinsum_f64_b1024_m4n4k4_strided_into_auto | concrete-einsum / reused / view / direct-strided | auto | f64 | 1024×4×4×4 | 4 | 4 | 14 | 24736.57 | 505.25 | 2.0% | passed |
-| chain3_f64_n4_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×4×4×4 | 1 | 1 | 25 | 22481.16 | 177.54 | 0.9% | passed |
-| chain3_f64_n4_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×4×4×4 | 4 | 4 | 11 | 22638.09 | 1416.36 | 11.2% | passed (NOISY) |
-| chain3_f64_n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×64×64×64 | 1 | 1 | 11 | 46164.18 | 486.86 | 0.9% | passed |
-| chain3_f64_n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×64×64×64 | 4 | 4 | 13 | 45585.77 | 475.15 | 1.7% | passed |
-| hadamard_f64_m256n256_dot_alloc | concrete / allocating / owned / direct | auto | f64 | 1×256×256×1 | 1 | 1 | 25 | 134990.20 | 6177.24 | 8.9% | passed |
-| hadamard_f64_m256n256_dot_alloc | concrete / allocating / owned / direct | auto | f64 | 1×256×256×1 | 4 | 4 | 12 | 146470.75 | 384.92 | 0.3% | passed |
-| hadamard_f64_m256n256_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×256×256×1 | 1 | 1 | 21 | 108558.71 | 3652.12 | 9.8% | passed |
-| hadamard_f64_m256n256_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×256×256×1 | 4 | 4 | 5 | 108434.20 | 23953.20 | 11.7% | passed (NOISY) |
-| hadamard_f64_m64n64_dot_alloc | concrete / allocating / owned / direct | auto | f64 | 1×64×64×1 | 1 | 1 | 77 | 10041.51 | 265.64 | 9.9% | passed |
-| hadamard_f64_m64n64_dot_alloc | concrete / allocating / owned / direct | auto | f64 | 1×64×64×1 | 4 | 4 | 137 | 10116.64 | 60.55 | 0.8% | passed |
-| hadamard_f64_m64n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×64×64×1 | 1 | 1 | 57 | 15030.23 | 155.04 | 0.8% | passed |
-| hadamard_f64_m64n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | f64 | 1×64×64×1 | 4 | 4 | 57 | 15062.05 | 148.70 | 9.6% | passed |
-| stream_f64_fixed_len32_einsum_alloc | concrete-einsum / allocating / view / direct | auto | f64 | None×None×None×None | 1 | 1 | 32 | 9532.62 | 113.17 | 0.7% | passed |
-| stream_f64_fixed_len32_einsum_alloc | concrete-einsum / allocating / view / direct | auto | f64 | None×None×None×None | 4 | 4 | 32 | 9517.94 | 95.02 | 2.9% | passed |
-| stream_f64_fresh_len32_einsum_alloc | concrete-einsum / allocating / view / direct | auto | f64 | None×None×None×None | 1 | 1 | 32 | 9595.56 | 227.62 | 34.7% | passed (NOISY) |
-| stream_f64_fresh_len32_einsum_alloc | concrete-einsum / allocating / view / direct | auto | f64 | None×None×None×None | 4 | 4 | 32 | 9503.84 | 203.81 | 2.4% | passed |
-| stream_f64_mixed_len32_einsum_alloc | concrete-einsum / allocating / view / direct | auto | f64 | None×None×None×None | 1 | 1 | 32 | 9538.56 | 166.39 | 34.2% | passed (NOISY) |
-| stream_f64_mixed_len32_einsum_alloc | concrete-einsum / allocating / view / direct | auto | f64 | None×None×None×None | 4 | 4 | 32 | 9409.28 | 93.12 | 1.2% | passed |
-| stream_f64_strides_len32_einsum_alloc | concrete-einsum / allocating / view / direct-strided | auto | f64 | None×None×None×None | 1 | 1 | 32 | 9517.59 | 115.20 | 1.0% | passed |
-| stream_f64_strides_len32_einsum_alloc | concrete-einsum / allocating / view / direct-strided | auto | f64 | None×None×None×None | 4 | 4 | 32 | 9509.47 | 105.05 | 1.2% | passed |
+| bdot_c64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_c64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_c64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_c64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_c64_b1024_m4n4k4_strided_alloc_auto | concrete / allocating / view / direct-strided | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_c64_b1024_m4n4k4_strided_alloc_auto | concrete / allocating / view / direct-strided | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_c64_b1024_m4n4k4_strided_into_auto | concrete / reused / view / direct-strided | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_c64_b1024_m4n4k4_strided_into_auto | concrete / reused / view / direct-strided | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_canonical_alloc_auto | concrete / allocating / view / canonical-copy | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_canonical_alloc_auto | concrete / allocating / view / canonical-copy | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_canonical_into_auto | concrete / reused / view / canonical-copy | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_canonical_into_auto | concrete / reused / view / canonical-copy | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096 | concrete / allocating / owned / direct | auto+backend(outer_min_items=4096) | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_backend-outer-min-items-4096 | concrete / allocating / owned / direct | auto+backend(outer_min_items=4096) | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_forced-outer-parallel | concrete / allocating / owned / direct | forced:OuterParallel | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_forced-outer-parallel | concrete / allocating / owned / direct | forced:OuterParallel | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_forced-provider-items | concrete / allocating / owned / direct | forced:ProviderItems | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_forced-provider-items | concrete / allocating / owned / direct | forced:ProviderItems | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_forced-sequential | concrete / allocating / owned / direct | forced:Sequential | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_forced-sequential | concrete / allocating / owned / direct | forced:Sequential | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_forced-whole-batch-vendor | concrete / allocating / owned / direct | forced:WholeBatchVendor | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_forced-whole-batch-vendor | concrete / allocating / owned / direct | forced:WholeBatchVendor | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096 | concrete / allocating / owned / direct | auto+scoped(outer_min_items=4096) | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_alloc_scoped-outer-min-items-4096 | concrete / allocating / owned / direct | auto+scoped(outer_min_items=4096) | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096 | concrete / reused / owned / direct | auto+backend(outer_min_items=4096) | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_backend-outer-min-items-4096 | concrete / reused / owned / direct | auto+backend(outer_min_items=4096) | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_forced-outer-parallel | concrete / reused / owned / direct | forced:OuterParallel | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_forced-outer-parallel | concrete / reused / owned / direct | forced:OuterParallel | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_forced-provider-items | concrete / reused / owned / direct | forced:ProviderItems | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_forced-provider-items | concrete / reused / owned / direct | forced:ProviderItems | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_forced-sequential | concrete / reused / owned / direct | forced:Sequential | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_forced-sequential | concrete / reused / owned / direct | forced:Sequential | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_forced-whole-batch-vendor | concrete / reused / owned / direct | forced:WholeBatchVendor | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_forced-whole-batch-vendor | concrete / reused / owned / direct | forced:WholeBatchVendor | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096 | concrete / reused / owned / direct | auto+scoped(outer_min_items=4096) | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_direct_into_scoped-outer-min-items-4096 | concrete / reused / owned / direct | auto+scoped(outer_min_items=4096) | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_strided_alloc_auto | concrete / allocating / view / direct-strided | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_strided_alloc_auto | concrete / allocating / view / direct-strided | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_strided_into_auto | concrete / reused / view / direct-strided | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b1024_m4n4k4_strided_into_auto | concrete / reused / view / direct-strided | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b16_m64n64k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b16_m64n64k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b16_m64n64k64_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b16_m64n64k64_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b256_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b256_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b256_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b256_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b320_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b320_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b320_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b320_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b4096_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b4096_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b4096_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b4096_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m16n16k16_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m16n16k16_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m16n16k16_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m16n16k16_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m32n32k32_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m32n32k32_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m32n32k32_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m32n32k32_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0 | concrete / allocating / owned / direct | auto+backend(lane_min_work_ns=0) | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_alloc_backend-lane-min-work-0 | concrete / allocating / owned / direct | auto+backend(lane_min_work_ns=0) | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_alloc_scoped-lane-min-work-0 | concrete / allocating / owned / direct | auto+scoped(lane_min_work_ns=0) | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_alloc_scoped-lane-min-work-0 | concrete / allocating / owned / direct | auto+scoped(lane_min_work_ns=0) | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_into_backend-lane-min-work-0 | concrete / reused / owned / direct | auto+backend(lane_min_work_ns=0) | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_into_backend-lane-min-work-0 | concrete / reused / owned / direct | auto+backend(lane_min_work_ns=0) | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0 | concrete / reused / owned / direct | auto+scoped(lane_min_work_ns=0) | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m4n4k4_direct_into_scoped-lane-min-work-0 | concrete / reused / owned / direct | auto+scoped(lane_min_work_ns=0) | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m64n1k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m64n1k64_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m64n1k64_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m64n1k64_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m8n8k8_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m8n8k8_direct_alloc_auto | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m8n8k8_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| bdot_f64_b64_m8n8k8_direct_into_auto | concrete / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| beinsum_f64_b1024_m4n4k4_direct_alloc_auto | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| beinsum_f64_b1024_m4n4k4_direct_alloc_auto | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| beinsum_f64_b1024_m4n4k4_direct_into_auto | concrete-einsum / reused / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| beinsum_f64_b1024_m4n4k4_direct_into_auto | concrete-einsum / reused / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| beinsum_f64_b1024_m4n4k4_strided_alloc_auto | concrete-einsum / allocating / view / direct-strided | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| beinsum_f64_b1024_m4n4k4_strided_alloc_auto | concrete-einsum / allocating / view / direct-strided | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| beinsum_f64_b1024_m4n4k4_strided_into_auto | concrete-einsum / reused / view / direct-strided | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| beinsum_f64_b1024_m4n4k4_strided_into_auto | concrete-einsum / reused / view / direct-strided | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| chain3_f64_n4_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| chain3_f64_n4_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| chain3_f64_n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| chain3_f64_n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| hadamard_f64_m256n256_dot_alloc | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| hadamard_f64_m256n256_dot_alloc | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| hadamard_f64_m256n256_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| hadamard_f64_m256n256_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| hadamard_f64_m64n64_dot_alloc | concrete / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| hadamard_f64_m64n64_dot_alloc | concrete / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| hadamard_f64_m64n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 1 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+| hadamard_f64_m64n64_einsum_alloc | concrete-einsum / allocating / owned / direct | auto | None | None×None×None×None | 4 | — | — | — | — | — | unsupported: harness compiled with the blas CPU backend; this case is declared for the faer provider |
+
+## Whole shape-sequence public-call diagnostics
+
+One sample is the entire ordered sequence, with required planning/cache lookup inside the clock. Inputs, views, wrapping, bindings and retention containers are prepared first; outputs survive clock stop. The initialization pass and warmups are separate. Exact keys and ordering for every pass are in the raw row. Cold mode clears only the declared eager extension caches outside each sequence; it does not bypass lookup or retention. Capacity thrash bounds that store to one entry with four revisited keys. Concrete and eager three-operand streams are distinct workloads.
+
+| Case | Provider | Threads | Calls/sequence | Median sequence ms | IQR ms | p90 ms | Maximum ms | CoV | Status |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| stream_f64_fixed_len32_einsum_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| stream_f64_mixed_len32_einsum_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| stream_f64_fresh_len32_einsum_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| stream_f64_strides_len32_einsum_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_fixed_len128_einsum3_alloc | blas | 1 | 128 | 3.65 | 0.07 | 3.750 | 3.789 | 2.1% | passed |
+| eager_stream_f64_fixed_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_mixed_len128_einsum3_alloc | blas | 1 | 128 | 3.57 | 0.12 | 3.687 | 3.861 | 2.5% | passed |
+| eager_stream_f64_mixed_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_fresh_len128_einsum3_alloc | blas | 1 | 128 | 9.02 | 0.33 | 9.273 | 9.464 | 2.5% | passed |
+| eager_stream_f64_fresh_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_strides_len128_einsum3_alloc | blas | 1 | 128 | 3.67 | 0.17 | 3.802 | 3.856 | 2.8% | passed |
+| eager_stream_f64_strides_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_thrash_len128_einsum3_alloc | blas | 1 | 128 | 8.53 | 0.22 | 8.733 | 9.154 | 2.8% | passed |
+| eager_stream_f64_thrash_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_cold_len128_einsum3_alloc | blas | 1 | 128 | 3.71 | 0.18 | 3.827 | 3.914 | 2.8% | passed |
+| eager_stream_f64_cold_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
+| stream_f64_fixed_len32_einsum_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+| stream_f64_mixed_len32_einsum_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+| stream_f64_fresh_len32_einsum_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+| stream_f64_strides_len32_einsum_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_fixed_len128_einsum3_alloc | blas | 4 | 128 | 3.74 | 0.10 | 3.838 | 3.979 | 2.3% | passed |
+| eager_stream_f64_fixed_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_mixed_len128_einsum3_alloc | blas | 4 | 128 | 3.74 | 0.18 | 3.941 | 4.020 | 3.1% | passed |
+| eager_stream_f64_mixed_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_fresh_len128_einsum3_alloc | blas | 4 | 128 | 9.82 | 1.14 | 11.908 | 13.055 | 12.2% | passed (NOISY; inconclusive) |
+| eager_stream_f64_fresh_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_strides_len128_einsum3_alloc | blas | 4 | 128 | 3.67 | 0.18 | 3.850 | 3.975 | 3.6% | passed |
+| eager_stream_f64_strides_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_thrash_len128_einsum3_alloc | blas | 4 | 128 | 8.55 | 0.25 | 8.824 | 8.959 | 2.1% | passed |
+| eager_stream_f64_thrash_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+| eager_stream_f64_cold_len128_einsum3_alloc | blas | 4 | 128 | 3.87 | 0.12 | 3.993 | 4.087 | 2.7% | passed |
+| eager_stream_f64_cold_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
+
+### Separate-process cache observations
+
+Public EagerRuntime extension-store counters only. Provider GEMM-analysis/indexed-plan caches and runtime prepared caches are outside this scope. No public plan-build counter exists; lookup misses are not treated as builds. These processes collect no latency samples. Hits/misses/evictions are measured-pass deltas; retained bytes are a logical estimate, not process RSS.
+
+| Case | Threads | Hits | Misses | Evictions | Final entries | Final retained bytes | Builds | Status |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| eager_stream_f64_fixed_len128_einsum3_alloc | 1 | 1920 | 0 | 0 | 1 | 1352 | unavailable | passed |
+| eager_stream_f64_mixed_len128_einsum3_alloc | 1 | 1920 | 0 | 0 | 4 | 5408 | unavailable | passed |
+| eager_stream_f64_fresh_len128_einsum3_alloc | 1 | 0 | 1920 | 1920 | 256 | 346112 | unavailable | passed |
+| eager_stream_f64_strides_len128_einsum3_alloc | 1 | 1920 | 0 | 0 | 1 | 1352 | unavailable | passed |
+| eager_stream_f64_thrash_len128_einsum3_alloc | 1 | 0 | 1920 | 1920 | 1 | 1352 | unavailable | passed |
+| eager_stream_f64_cold_len128_einsum3_alloc | 1 | 1905 | 15 | 0 | 1 | 1352 | unavailable | passed |
+| eager_stream_f64_fixed_len128_einsum3_alloc | 4 | 1920 | 0 | 0 | 1 | 1352 | unavailable | passed |
+| eager_stream_f64_mixed_len128_einsum3_alloc | 4 | 1920 | 0 | 0 | 4 | 5408 | unavailable | passed |
+| eager_stream_f64_fresh_len128_einsum3_alloc | 4 | 0 | 1920 | 1920 | 256 | 346112 | unavailable | passed |
+| eager_stream_f64_strides_len128_einsum3_alloc | 4 | 1920 | 0 | 0 | 1 | 1352 | unavailable | passed |
+| eager_stream_f64_thrash_len128_einsum3_alloc | 4 | 0 | 1920 | 1920 | 1 | 1352 | unavailable | passed |
+| eager_stream_f64_cold_len128_einsum3_alloc | 4 | 1905 | 15 | 0 | 1 | 1352 | unavailable | passed |
+
+Wall observations `wall_collection_t1.json`:
+```json
+{
+  "latency_case_processes_seconds": 50.536692274000416,
+  "separate_cache_diagnostics_seconds": 1.1589709910003876,
+  "collection_total_seconds": 51.695663686000444
+}
+```
+
+Wall observations `wall_collection_t4.json`:
+```json
+{
+  "latency_case_processes_seconds": 51.00619929200002,
+  "separate_cache_diagnostics_seconds": 1.20898766099981,
+  "collection_total_seconds": 52.215187134999724
+}
+```
+
+Wall observations `wall_command.json`:
+```json
+{
+  "command_seconds_before_final_report_write": 115.77448055,
+  "report_generation_seconds": 0.170141804,
+  "scope": "command startup through report generation; excludes final report file writes",
+  "budget_seconds": null,
+  "budget_status": "unconfigured"
+}
+```
+
+Wall observations `wall_phases.json`:
+```json
+{
+  "build_and_checkout_seconds": 0.817120477,
+  "validation_metadata_and_collection_seconds": 114.787218269,
+  "command_before_report_seconds": 115.604338746
+}
+```

@@ -47,7 +47,8 @@ Only rows that ran and passed count as executed (covered). Unsupported
 (typed `Unsupported` from the library, a provider absent from the build, or an
 API absent at the revision), failed (numerical, crash, compile/launch failure),
 timeouts (liveness) and missing cases are listed separately; `complete` is
-false whenever anything expected was not selected, missing or failed. Run
+false whenever anything expected was not selected, unsupported, missing or failed,
+or duplicate/unexpected rows were recorded. Run
 metadata records the coverage, manifest version, filter, expected/selected
 counts, effort, harness revision and dirty state, and the exact command.
 
