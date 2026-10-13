@@ -40,6 +40,7 @@ families:
     suite: benchmarks/gpu/structural.yaml
     routes: [TensorSessionOpsExt, EagerSession]
     contracts:
+      padding: Edge/interior insertion, negative edge cropping, and combined interior/crop F32/F64 at 32x32 and 1024x1024. JAX lax.pad uses a preuploaded zero; PyTorch functional.pad compares cropping only and interior insertion is explicitly unsupported.
       scatter: Additive, unique in-bounds I64 indices; torch.scatter_add and lax.scatter_add.
       slice: Materialized direct slice; eager lazy view explicitly excluded from this comparison.
       take_along_axis: Shared-index and batch-varying-index routes are separate cases.
@@ -55,7 +56,6 @@ families:
       dynamic_slice_other_domains: F32/F64 with I64 CUDA starts now has in-bounds and clamped rank-two cases; other index dtype/rank domains remain separate.
       reshape: Existing perf_issues cases are partial coverage; an ordinary materialization/reference contract remains to be added.
       stack_index_select_slice_axis_take_axis: Map each public lowering before assigning operation aliases; wrapper latency is separate.
-      pad_interior_crop: Current constant edge-padding cases do not cover interior padding or negative padding.
   linalg:
     cases: data/instances/gpu_linalg_public_api.json
     suite: benchmarks/gpu/linalg_public_api.yaml
