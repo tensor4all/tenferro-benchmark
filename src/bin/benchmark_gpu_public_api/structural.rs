@@ -43,6 +43,7 @@ pub(super) struct Arguments<'a> {
     slice: Option<SliceConfig>,
     scatter: Option<ScatterConfig>,
     gather: Option<GatherConfig>,
+    reshape: Option<Vec<usize>>,
 }
 
 pub(super) fn prepare(case: &Case) -> Arguments<'static> {
@@ -56,6 +57,7 @@ pub(super) fn prepare(case: &Case) -> Arguments<'static> {
                 rhs_batch_dims: case.rhs_batch_dims.clone().into(),
             })
         }
+        "reshape" => args.reshape = Some(case.output_shape.clone()),
         "pad" => args.pad = Some(pad(case)),
         "slice" => args.slice = Some(slice(&case.inputs[0].shape)),
         "scatter" => args.scatter = Some(scatter()),
@@ -78,6 +80,8 @@ pub(super) fn prepare(case: &Case) -> Arguments<'static> {
 
 pub(super) fn prepare_direct<'a>(case: &Case, inputs: &'a [Tensor]) -> Arguments<'a> {
     let mut args = prepare(case);
+    // Direct reshape borrows the persistent shape; eager consumes a prepared vector.
+    args.reshape = None;
     if matches!(
         case.op.as_str(),
         "vdot_read" | "norm_squared_read" | "dot_general_axes" | "dot_general_conj"
@@ -98,6 +102,8 @@ pub(super) fn direct(
 ) -> Result<Tensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
+        "reshape" => x.reshape(&case.output_shape, s)?,
+        "stack" => Tensor::stack(&[x, &inputs[1]], case.axis, s)?,
         "pad" => x.pad(args.pad.take().ok_or("missing prepared pad config")?, s)?,
         "slice" => x.slice(args.slice.take().ok_or("missing prepared slice config")?, s)?,
         "reverse" => x.reverse(&[1], s)?,
@@ -142,6 +148,13 @@ pub(super) fn eager(
 ) -> Result<EagerTensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
+        "reshape" => s.reshape(
+            x,
+            args.reshape
+                .take()
+                .ok_or("missing prepared reshape shape")?,
+        )?,
+        "stack" => s.stack(&[x, &inputs[1]], case.axis)?,
         "pad" => s.pad(x, args.pad.take().ok_or("missing prepared pad config")?)?,
         "slice" => s.slice(x, args.slice.take().ok_or("missing prepared slice config")?)?,
         "reverse" => s.reverse(x, &[1])?,
@@ -177,4 +190,63 @@ pub(super) fn eager(
         )?,
         _ => return super::linalg::eager(case, inputs, s, args),
     })
+}
+
+/// Inspect allocation identity only outside sampling, through the public raw seam.
+pub(super) fn verify_materialized(
+    case: &Case,
+    inputs: &[&Tensor],
+    output: &Tensor,
+    session: &mut dyn BackendSession,
+) -> Result<()> {
+    if !matches!(case.op.as_str(), "reshape" | "stack") {
+        return Ok(());
+    }
+    tenferro_gpu::cuda::with_cuda_exec_session(session, |cuda| {
+        cuda.with_raw("verification.materialized", |raw| {
+            macro_rules! check {
+                ($ty:ty) => {{
+                    let out = raw.tensor(output.as_typed::<$ty>().ok_or_else(|| {
+                        tenferro_tensor::Error::unsupported(
+                            "verification.materialized",
+                            "output dtype mismatch",
+                        )
+                    })?)?;
+                    for input in inputs {
+                        let src = raw.tensor(input.as_typed::<$ty>().ok_or_else(|| {
+                            tenferro_tensor::Error::unsupported(
+                                "verification.materialized",
+                                "input dtype mismatch",
+                            )
+                        })?)?;
+                        // SAFETY: compare addresses only while both public raw references
+                        // and their owning tensors remain alive; no pointer escapes the scope.
+                        if unsafe { src.raw_ptr() == out.raw_ptr() } {
+                            return Err(tenferro_tensor::Error::unsupported(
+                                "verification.materialized",
+                                "output aliases an input",
+                            ));
+                        }
+                    }
+                }};
+            }
+            match output.dtype() {
+                DType::F32 => check!(f32),
+                DType::F64 => check!(f64),
+                DType::C32 => check!(num_complex::Complex32),
+                DType::C64 => check!(num_complex::Complex64),
+                DType::I32 => check!(i32),
+                DType::I64 => check!(i64),
+                _ => {
+                    return Err(tenferro_tensor::Error::unsupported(
+                        "verification.materialized",
+                        "unselected dtype",
+                    ))
+                }
+            }
+            Ok(())
+        })
+    })
+    .ok_or("verification missing CUDA session")??;
+    Ok(())
 }

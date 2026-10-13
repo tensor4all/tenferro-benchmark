@@ -17,13 +17,17 @@ def fixtures(case, dtype):
         integer = ((i * 97 + 5) % 129).astype(np.int64).reshape(shape) - 64
         rhs = (((i * 73 + 3) % 17).astype(np.int64) + 1).reshape(shape)
         rhs *= np.where((i.reshape(shape) % 2) == 0, 1, -1)
-        if case["dtype"] == "i64" and op in {"neg", "abs", "sign", "maximum", "minimum", "reduce_max", "reduce_min"}:
+        if case["dtype"] == "i64" and op in {"neg", "abs", "sign", "maximum", "minimum", "reduce_max", "reduce_min", "reshape", "stack"}:
             integer += np.where(integer >= 0, 1 << 54, -(1 << 54))
             rhs += np.where(rhs > 0, 1 << 54, -(1 << 54))
         x, rhs = integer.astype(dtype), rhs.astype(dtype)
         unary = {"neg": np.negative, "abs": np.abs, "sign": np.sign}
         binary = {"add": np.add, "sub": np.subtract, "mul": np.multiply,
                   "maximum": np.maximum, "minimum": np.minimum}
+        if op == "reshape":
+            return [x], x.reshape(case["output_shape"], order="F").copy()
+        if op == "stack":
+            return [x, rhs], np.stack((x, rhs), axis=case["axis"])
         if op in unary:
             return [x], unary[op](x)
         if op in binary:
@@ -244,6 +248,11 @@ def fixtures(case, dtype):
         for axis, coord in enumerate(destination):
             valid &= (coord >= 0) & (coord < shape[axis])
         y[tuple(coord[valid] for coord in destination)] = a[valid]
+    elif op == "reshape":
+        y = a.reshape(case["output_shape"], order="F").copy()
+    elif op == "stack":
+        inputs.append(rhs)
+        y = np.stack((a, b), axis=case["axis"])
     elif op == "slice":
         y = a[:, :a.shape[1]//2]
     elif op == "reverse":
@@ -408,6 +417,19 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
             raise NotImplementedError("PyTorch pad has no single-call interior padding counterpart")
         widths = tuple(v for lo, hi, _ in reversed(padding) for v in (lo, hi))
         return lambda: torch.nn.functional.pad(x, widths)
+    if op == "reshape":
+        shape = tuple(case["output_shape"])
+        def operation():
+            return torch.view_copy(x, shape)
+        def inspect(output):
+            if output.data_ptr() == x.data_ptr():
+                raise ValueError("verification reshape must materialize a fresh output")
+            return output
+        operation.inspect = inspect
+        return operation
+    if op == "stack":
+        axis = case["axis"]
+        return lambda: torch.stack(inputs, dim=axis)
     if op == "slice":
         return lambda: torch.slice_copy(x, 1, 0, x.shape[1]//2)
     if op == "reverse":
@@ -477,6 +499,9 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
 
 
 def jax_operation(jax, jnp, case):
+    if case["op"] == "stack":
+        axis = case["axis"]
+        return lambda x, y: jnp.stack((x, y), axis=axis)
     if case["dtype"] in {"i32", "i64"} and case["op"] == "div":
         return lambda x, y: jax.lax.div(x, y)
     if case["dtype"] in {"i32", "i64"} and case["op"] == "reduce_sum":

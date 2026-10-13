@@ -502,3 +502,24 @@ Arithmetic fixtures stay within range, while I64 unary/order fixtures include
 values above 2**53 to catch loss of integer precision. Inputs, JIT and
 verification downloads remain untimed. Other integer operations/dtypes are
 independent capability domains, not aliases of these selected cases.
+
+Materializing reshape and stack use six dtypes (F32/F64/C32/C64/I32/I64), at
+32×32 and 1024×1024. Reshape adds a leading singleton dimension, preserving
+logical axis values across native layouts, and compares full owned copies with
+PyTorch view_copy. Direct/Torch allocation checks reject input aliasing outside
+timing. Eager reshape returns a descriptor view over an independently copied
+base; its original CUDA placement, shape and dtype are checked before a public
+`duplicate_value` inspection copy made outside timing. JAX reshape has no
+established matching owned-output guarantee and remains unsupported.
+
+Stack calls the actual public Tensor.stack/EagerSession.stack with two distinct
+inputs and axis 0 or 2; references call native Torch/JAX stack. Intermediate
+allocations inherent in this public operation remain inside execution. Snapshot
+copies used only for verification remain outside clocks.
+
+Rust single-output sampling takes its exact logical output byte size from the
+serialized reference file during setup. This avoids partial dtype tables (I64
+is eight bytes, Bool one). The earlier integer run 20261013_204849 exceeded the
+256 MiB retained-output cap in four Rust rows and has an explicit raw retention
+audit; those timings are superseded by corrected collection and must not be
+used as comparative evidence.

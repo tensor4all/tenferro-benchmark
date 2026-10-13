@@ -1362,6 +1362,606 @@
       "unavailable": {
         "pytorch-cuda": "PyTorch pad has no single-call interior padding counterpart"
       }
+    },
+    {
+      "id": "reshape_copy_f32_n1024",
+      "op": "reshape",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "output_shape": [
+        1,
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_f32_n1024",
+      "op": "stack",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_f32_n1024",
+      "op": "stack",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_f64_n1024",
+      "op": "reshape",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "output_shape": [
+        1,
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_f64_n1024",
+      "op": "stack",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_f64_n1024",
+      "op": "stack",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_c32_n1024",
+      "op": "reshape",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "output_shape": [
+        1,
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_c32_n1024",
+      "op": "stack",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_c32_n1024",
+      "op": "stack",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_c64_n1024",
+      "op": "reshape",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "output_shape": [
+        1,
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_c64_n1024",
+      "op": "stack",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_c64_n1024",
+      "op": "stack",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_i32_n1024",
+      "op": "reshape",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "output_shape": [
+        1,
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_i32_n1024",
+      "op": "stack",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_i32_n1024",
+      "op": "stack",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_i64_n1024",
+      "op": "reshape",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "output_shape": [
+        1,
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_i64_n1024",
+      "op": "stack",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_i64_n1024",
+      "op": "stack",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_f32_n1048576",
+      "op": "reshape",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "output_shape": [
+        1,
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_f32_n1048576",
+      "op": "stack",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_f32_n1048576",
+      "op": "stack",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_f64_n1048576",
+      "op": "reshape",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "output_shape": [
+        1,
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_f64_n1048576",
+      "op": "stack",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_f64_n1048576",
+      "op": "stack",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_c32_n1048576",
+      "op": "reshape",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "output_shape": [
+        1,
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_c32_n1048576",
+      "op": "stack",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_c32_n1048576",
+      "op": "stack",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_c64_n1048576",
+      "op": "reshape",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "output_shape": [
+        1,
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_c64_n1048576",
+      "op": "stack",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_c64_n1048576",
+      "op": "stack",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_i32_n1048576",
+      "op": "reshape",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "output_shape": [
+        1,
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_i32_n1048576",
+      "op": "stack",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_i32_n1048576",
+      "op": "stack",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "reshape_copy_i64_n1048576",
+      "op": "reshape",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "output_shape": [
+        1,
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {
+        "jax-cuda": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract.",
+        "jax-cuda-jit": "No established single-call JAX reshape API that guarantees owned output materialization; native reshape may alias input. Reshape plus copy is a different composed contract."
+      },
+      "materialization": "Full owned output copy with leading singleton dimension; metadata-only reshape excluded."
+    },
+    {
+      "id": "stack_axis0_i64_n1048576",
+      "op": "stack",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 0,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
+    },
+    {
+      "id": "stack_axis2_i64_n1048576",
+      "op": "stack",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "axis": 2,
+      "issue": 155,
+      "excluded": {},
+      "unavailable": {}
     }
   ]
 }
