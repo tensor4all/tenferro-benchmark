@@ -286,3 +286,14 @@ operands per call. Those paths are numerically verified but excluded from
 standard operation timing. From-factors uses host BLAS scalar arguments and
 has a separately verified standard path. Unsupported reference arms and
 unselected/failed cells never count as measured coverage.
+
+The `reuse_contraction` suite also selects `axpby_read_into_accum` on
+compact F32/F64/C32/C64 vectors of length 1024 and 1048576. Its contract is
+`y <- 0.5*x + y`, with distinct prepared inputs and caller-owned destinations.
+The native PyTorch counterpart is `y.add_(x, alpha=0.5)`; JAX and the eager
+wrapper have no matching public output-reuse arm. Restore every destination
+from the same GPU seed before each initialization, calibration, warmup and
+measured batch, and synchronize restoration before starting the clock.
+Restoration is device-to-device and is excluded from operation time. The
+compact CUDA path passes coefficients as host cuBLAS arguments; the strided
+source path uploads coefficients internally and is a separate contract.

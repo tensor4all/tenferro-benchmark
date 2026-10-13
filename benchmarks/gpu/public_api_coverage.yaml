@@ -77,10 +77,12 @@ families:
     suite: benchmarks/gpu/reuse_contraction.yaml
     routes: [TensorElementwise, TensorTensordotExt, EagerSessionEinsumExt, BackendSession]
     contracts: Preallocated output reuse is distinct from allocation-returning operations; JAX donation is not an equivalent arm.
+    selected_contracts:
+      axpby_read_into_accum: Compact F32/F64/C32/C64; y <- 0.5*x + y; destinations restored from a prepared GPU seed before every sample, including calibration and zero-warmup initialization. PyTorch Tensor.add_ is the matching single-call reference.
     deferred:
       generalized_conjugating_dot: General batch/contract axes and conjugation placement need separate fixtures.
       dot_general_into_accum_cached: Alpha/beta, cache state, destination restoration and matched addmm output reuse need dedicated cases.
-      axpby_read_into_accum: Only beta=1 has an established single-call PyTorch counterpart; arbitrary beta remains unmatched.
+      axpby_other_beta_or_layout: Beta=1 compact cases are selected; arbitrary beta lacks an established single-call reference, and strided sources internally upload coefficients and need a separate timing disposition.
       ConcreteEinsumPlan: Plan creation must be untimed; noncontiguous and into/accum variants need their own cases.
       TensorEinsumIntoExt: No general PyTorch/JAX einsum caller-owned-output counterpart.
       complex_norm_squared: Real result dtype differs from complex vdot; do not equate contracts.

@@ -133,6 +133,28 @@ class PublicGpuContracts(unittest.TestCase):
         self.assertEqual(alive, [])
         self.assertEqual(violations, [])
 
+    def test_accumulation_restores_destination_before_every_batch(self):
+        destination, prepared, stopped = [0.], [], [True]
+        tick = [0]
+        def prepare(count):
+            self.assertTrue(stopped[0])
+            destination[:] = [2.] * count
+            prepared.append(count)
+        def operation(i):
+            destination[i] += .5
+            self.assertEqual(destination[i], 2.5)
+            return destination[i]
+        operation.prepare = prepare
+        def clock():
+            stopped[0] = not stopped[0]
+            tick[0] += 1_000_000
+            return tick[0]
+        with patch.object(bench.time, "perf_counter_ns", clock):
+            result = bench.measure(operation, lambda: None, lambda outputs: None,
+                                   256 << 20, 0, 3, reuse=True)
+        self.assertEqual(prepared, [1] * 5)
+        self.assertEqual(len(result["batch_ms"]), 3)
+
     def test_publication_rejects_missing_duplicate_and_failed_rows(self):
         suite = {"suite_id": "gpu/fft", "cases": [{"id": "one"}], "backends": ["a"]}
         good = {"case_id": "one", "backend": "a", "status": "ok",

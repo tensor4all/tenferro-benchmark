@@ -81,6 +81,8 @@ def fixtures(case, dtype):
     if np.issubdtype(np.dtype(dtype), np.complexfloating):
         x = (raw + 1j * raw[::-1]).astype(dtype)
     rhs = (1.5 - raw).astype(dtype)
+    if op == "axpby_read_into_accum":
+        return [x, rhs], (rhs.astype(np.complex128 if np.iscomplexobj(x) else np.float64) + .5*x).astype(dtype)
     if op == "compare":
         rhs = np.roll(x, 1).copy()
         rhs.flat[::7] = x.flat[::7]
@@ -179,6 +181,16 @@ def fixtures(case, dtype):
 
 def torch_operation(torch, case, inputs, *, verify_only=False):
     x, op = inputs[0], case["op"]
+    if op == "axpby_read_into_accum":
+        count = 1 if verify_only else max(1, min(4096, (256 << 20) // (x.numel()*x.element_size())))
+        destinations = [torch.empty_like(x) for _ in range(count)]
+        def operation(i):
+            return destinations[i].add_(x, alpha=.5)
+        def prepare(count):
+            for destination in destinations[:count]:
+                destination.copy_(inputs[1])
+        operation.prepare = prepare
+        return operation
     if op.endswith("_into"):
         base = op.removesuffix("_into").removesuffix("_read")
         fn = torch.conj_physical if base == "conj" else getattr(torch, base)
