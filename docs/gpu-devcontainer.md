@@ -109,3 +109,27 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
 Collect the two reports sequentially on physical GPU0 after numerical checks.
 The runner isolates each physical card by UUID; all frameworks use local CUDA
 ordinal zero. `BENCH_RUNS` and `BENCH_WARMUPS` override the declared sample counts.
+
+## Performance diagnostic device selection
+
+`scripts/run_gpu_perf_issues.sh` also interprets `GPU_BENCH_DEVICE` as a physical
+`nvidia-smi` index. It masks that card by UUID and passes CUDA ordinal zero to
+the public API runner. Idle-process checks and hardware metadata use the
+physical index; metadata records the UUID mask. This also overrides a mask
+inherited from a preceding GPU0 command when selecting GPU1.
+
+Run an untimed planning/backend-lifetime probe on physical GPU1:
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'GPU_BENCH_DEVICE=1 GPU_BENCH_SKIP_LATEST=1 \
+    BENCH_COVERAGE=full BENCH_EFFORT=scan PERF_ISSUES_CORRECTNESS_ONLY=1 \
+    BENCH_INSTANCE=shape_stream_f64_n16_fixed-warm_counters,vendor_churn_f64_cycles8 \
+    ./scripts/run_gpu_perf_issues.sh'
+```
+
+`GPU_BENCH_SKIP_LATEST=1` keeps the maintained performance-issue report while
+retaining raw data, metadata and the probe report. The probe above passed both
+cases on GPU1 at tenferro-rs `9655b4e0`, with no timed samples; it is not
+operation-performance evidence. The runner refreshes an upstream `main`
+checkout before its mandatory rebuild and preserves detached/pinned revisions.

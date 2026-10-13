@@ -28,8 +28,15 @@ cd "$PROJECT_DIR"
 # diagnostic. A process that starts and finishes between snapshots is not
 # observable here.
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
+PHYSICAL_DEVICE_ORDINAL="$DEVICE_ORDINAL"
+if command -v nvidia-smi >/dev/null 2>&1; then
+    CUDA_VISIBLE_DEVICES="$(nvidia-smi -i "$PHYSICAL_DEVICE_ORDINAL" --query-gpu=uuid --format=csv,noheader)"
+    [[ "$CUDA_VISIBLE_DEVICES" == GPU-* && "$CUDA_VISIBLE_DEVICES" != *$'\n'* ]] || exit 1
+    export CUDA_VISIBLE_DEVICES GPU_BENCH_PHYSICAL_DEVICE="$PHYSICAL_DEVICE_ORDINAL"
+    DEVICE_ORDINAL=0
+fi
 gpu_compute_apps() {
-    nvidia-smi -i "$DEVICE_ORDINAL" \
+    nvidia-smi -i "$PHYSICAL_DEVICE_ORDINAL" \
         --query-compute-apps=pid,process_name,used_memory --format=csv,noheader \
         2>/dev/null | tr -d ' \r' || true
 }
@@ -39,8 +46,8 @@ REQUIRE_IDLE_SNAPSHOT=""
 require_idle_gpu() {
     local phase="$1"
     command -v nvidia-smi >/dev/null 2>&1 || return 0
-    echo "CUDA compute processes on device $DEVICE_ORDINAL $phase:"
-    nvidia-smi -i "$DEVICE_ORDINAL" --query-compute-apps=pid,process_name,used_memory --format=csv
+    echo "CUDA compute processes on physical device $PHYSICAL_DEVICE_ORDINAL $phase:"
+    nvidia-smi -i "$PHYSICAL_DEVICE_ORDINAL" --query-compute-apps=pid,process_name,used_memory --format=csv
     REQUIRE_IDLE_SNAPSHOT="$(gpu_compute_apps)"
     if [[ -n "$REQUIRE_IDLE_SNAPSHOT" ]]; then
         if [[ "${BENCHMARK_ALLOW_BUSY_GPU:-0}" != "1" ]]; then
@@ -64,6 +71,9 @@ PYTHON="$PROJECT_DIR/.venv/bin/python"
 "$PYTHON" "$SCRIPT_DIR/generate_perf_issue_cases.py" --check
 "$PYTHON" "$SCRIPT_DIR/validate_benchmark_suite.py" benchmarks/gpu/perf_issues.yaml
 # Always rebuild before measuring (AGENTS.md GPU timing fairness).
+if [[ -e extern/tenferro-rs/.git && "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
+    git -C extern/tenferro-rs -c 'url.https://github.com/.insteadOf=git@github.com:' pull --ff-only
+fi
 CUBECL_DEBUG_LOG=0 CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
     cargo build --release --features cuda --bin benchmark_gpu_perf_issues
 BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_perf_issues"
@@ -74,14 +84,14 @@ mkdir -p "$RUN_DIR"
 # snapshot it judged is the one recorded in run.yaml.
 require_idle_gpu "at measurement time"
 export BENCH_GPU_APPS_START="$REQUIRE_IDLE_SNAPSHOT"
-"$PYTHON" "$SCRIPT_DIR/collect_gpu_info.py" --device-ordinal "$DEVICE_ORDINAL" --markdown > "$RUN_DIR/gpu_info.md" || true
+"$PYTHON" "$SCRIPT_DIR/collect_gpu_info.py" --device-ordinal "$PHYSICAL_DEVICE_ORDINAL" --markdown > "$RUN_DIR/gpu_info.md" || true
 export BENCHMARK_COMMIT="${BENCHMARK_COMMIT:-$(git rev-parse HEAD)}"
 export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE GPU_BENCH_DEVICE BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE PERF_ISSUES_CORRECTNESS_ONLY BENCHMARK_ALLOW_BUSY_GPU; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
 "$PYTHON" "$SCRIPT_DIR/collect_run_metadata.py" \
     --suite-id gpu/perf_issues --target-profile "$BENCHMARK_TARGET_PROFILE" \
     --suite-file benchmarks/gpu/perf_issues.yaml --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     --tenferro-dir "$PROJECT_DIR/extern/tenferro-rs" --features cuda --blas none \
-    --cuda-device-ordinal "$DEVICE_ORDINAL" --output "$RUN_DIR/run_t1.yaml"
+    --cuda-device-ordinal "$PHYSICAL_DEVICE_ORDINAL" --output "$RUN_DIR/run_t1.yaml"
 "$PYTHON" - "$RUN_DIR/run_t1.yaml" <<'PY'
 import os, sys, subprocess, yaml
 from pathlib import Path
@@ -91,6 +101,8 @@ metadata['environment'].setdefault('env', {}).update({
     'BENCHMARK_COMMIT': os.environ['BENCHMARK_COMMIT'], 'BENCHMARK_BUILD_PROFILE': 'release',
     'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
     'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None,
+    'CUDA_VISIBLE_DEVICES': os.environ.get('CUDA_VISIBLE_DEVICES'),
+    'GPU_BENCH_PHYSICAL_DEVICE': os.environ.get('GPU_BENCH_PHYSICAL_DEVICE'),
     'BENCHMARK_ALLOW_BUSY_GPU': os.environ.get('BENCHMARK_ALLOW_BUSY_GPU') or None})
 metadata['environment']['gpu_compute_apps_at_start'] = (
     os.environ.get('BENCH_GPU_APPS_START', '').strip().splitlines())
@@ -118,8 +130,8 @@ CUBECL_DEBUG_LOG=0 LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBR
 # that shared the device with another process. The recorded and the enforced
 # list are the same reading, and the start snapshot is enforced too.
 if command -v nvidia-smi >/dev/null 2>&1; then
-    echo "CUDA compute processes on device $DEVICE_ORDINAL after the run:"
-    nvidia-smi -i "$DEVICE_ORDINAL" --query-compute-apps=pid,process_name,used_memory --format=csv
+    echo "CUDA compute processes on physical device $PHYSICAL_DEVICE_ORDINAL after the run:"
+    nvidia-smi -i "$PHYSICAL_DEVICE_ORDINAL" --query-compute-apps=pid,process_name,used_memory --format=csv
     GPU_APPS_AT_END="$(gpu_compute_apps)"
     export BENCH_GPU_APPS_END="$GPU_APPS_AT_END"
     "$PYTHON" - "$RUN_DIR/run_t1.yaml" "$RUN_DIR/run.yaml" <<'PY'
