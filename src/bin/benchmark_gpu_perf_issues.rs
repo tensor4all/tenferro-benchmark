@@ -1190,6 +1190,23 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
                 timed(it, &mut || run(s), &mut || Ok(rt.synchronize()?))
             })
         })?
+    } else if arm == "eager-session-streaming" {
+        // The same eager op, but each result is dropped before the next op, the
+        // way a decode loop consumes its intermediates: the output pool can then
+        // hand the buffer back instead of allocating a fresh one per op.
+        runtime.with_eager_session(|s| {
+            measure(timing, bytes as usize, |it| {
+                timed(
+                    it,
+                    &mut || {
+                        let output = run(s)?;
+                        drop(output);
+                        Ok(())
+                    },
+                    &mut || Ok(rt.synchronize()?),
+                )
+            })
+        })?
     } else if arm == "launch-only-floor" {
         // The same kernel with the per-op output allocation removed: what the
         // op costs when only the launch path is left. This is the floor the
@@ -1242,6 +1259,11 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
         timer: if arm == "eager-session" {
             vec![
                 "one eager op in a reused with_eager_session",
+                "one device synchronize at the batch edge",
+            ]
+        } else if arm == "eager-session-streaming" {
+            vec![
+                "one eager op in a reused with_eager_session, result dropped per op",
                 "one device synchronize at the batch edge",
             ]
         } else if arm == "launch-only-floor" {

@@ -113,9 +113,11 @@ problems:
   - raw_scope_entry_f64_sync-behind-queued-gemm
   - eager_op_f32_add_decode_eager-session
   - eager_op_f32_add_decode_eager-per-call
+  - eager_op_f32_add_decode_eager-session-streaming
   - eager_op_f32_add_decode_launch-only-floor
   - eager_op_f32_dot_general_decode_eager-session
   - eager_op_f32_dot_general_decode_eager-per-call
+  - eager_op_f32_dot_general_decode_eager-session-streaming
   - eager_op_f32_dot_general_decode_launch-only-floor
   - gather_embedding_f32_vocab8192_eager-gather
   - gather_embedding_f32_vocab8192_cudarc-row-copies

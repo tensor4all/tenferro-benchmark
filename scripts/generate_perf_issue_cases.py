@@ -565,6 +565,7 @@ def gpu_latency_cases(gpu):
         label = f"{shape.get('hidden', shape.get('in'))}x{shape.get('tokens', shape.get('len'))}"
         for arm, scope, ref in (("eager-session", "steady_state", None),
                                 ("eager-per-call", "session_entry_diagnostic", "eager-session"),
+                                ("eager-session-streaming", "steady_state", "eager-session"),
                                 ("launch-only-floor", "steady_state", "eager-session")):
             rows.append(case(
                 f"eager_op_f32_{op}_decode_{arm}", ("#2079",), "eager_op",
@@ -580,7 +581,10 @@ def gpu_latency_cases(gpu):
                         "op is a small fraction of the host cost, so these are latency rows, not "
                         "throughput. `launch-only-floor` runs the same elementwise kernel through "
                         "`add_read_into` on a reused output, i.e. with the per-op output allocation "
-                        "removed: the floor the eager per-op cost is compared against.")))
+                        "removed: the floor the eager per-op cost is compared against. "
+                        "`eager-session-streaming` drops each result before the next op, the way a "
+                        "decode loop consumes intermediates, so the output pool can hand the buffer "
+                        "back.")))
     return rows
 
 
