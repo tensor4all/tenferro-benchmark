@@ -109,8 +109,11 @@ missing rows, duplicates and invalid samples without replacing the latest report
   also prepared before each batch, including initialization with zero warmups.
   Earlier structural measurements constructed their move-only configurations
   inside the timer and are noncompliant; rerun them before using their ratios.
-* References use NumPy/SciPy double precision on the exact rounded inputs and
-  check every output element before and after measurement. Shapes and dtypes
+* Floating-point references use NumPy/SciPy double precision on the exact rounded
+  inputs. Integer references preserve I32/I64 and require exact equality without
+  floating-point conversion; division and remainder truncate toward zero, and
+  sum preserves the input dtype. Every output element is checked before and
+  after measurement. Shapes and dtypes
   must match; NaNs fail. Matched masked log-softmax negative infinities are
   accepted. FFT absolute tolerance scales as
   `32 * eps * ceil(log2(n)) * norm2(input) / normalization`, with a `1e-9`
@@ -157,18 +160,22 @@ JAX has no equivalent output-reuse arm. Axis-wise sum-of-squares lacks a single
 matching PyTorch/JAX operation; compositions are not timed as substitutes.
 Masked softmax lacks a matching stable PyTorch operation. JAX RMS normalization
 and eager tenferro values-only SVD are similarly explicit unsupported arms.
-Normalization uses no affine parameters, `eps=1e-5`, and nonempty finite inputs;
-pinv uses `atol=0`, `rtol=1e-5`, with framework tolerance tensors prepared and
+Normalization selects non-affine, weight-only, bias-only and weight-and-bias
+cases, with `eps=1e-5` and nonempty finite inputs. Framework cells without a
+matching affine contract remain explicitly unsupported.
+Pinv uses `atol=0`, `rtol=1e-5`, with framework tolerance tensors prepared and
 uploaded before timing; triangular solve is left/lower/non-transposed/non-unit.
 
-This first set covers compact F32/F64 paths, complex FFT/conjugation/contractions,
-Bool masks and I64 indices. Non-contiguous `TensorRead` routes are not aliases of
-compact routes. Stateful Householder updates, RRQR/rank outputs, LU output
-contracts, full-SVD gauge-invariant verification, dynamic slicing, cached
-accumulation/einsum destinations and new AD transformations require dedicated
-fixtures/contracts. Existing QR/SVD/eigh/solve, permutation, AD and perf-issue
-suites remain separate coverage; their presence does not count these remaining
-routes as measured. CUDA-unsupported eig/eigvals/full-pivot LU, grouped GEMM and
+Selected cases cover compact F32/F64 paths, complex FFT/conjugation/contractions,
+I32/I64 arithmetic, Bool masks and I64 indices. Dedicated fixtures also cover
+borrowed transposed reads, Householder state projections, all LU outputs,
+full-SVD reconstruction and nullspace orthogonality, dynamic slicing, and cached
+accumulation/einsum destinations. Each route's report records its measured or
+timing-excluded disposition. Additional layouts, RRQR/rank outputs and new AD
+transformations remain explicitly deferred in the coverage inventory.
+Non-contiguous `TensorRead` routes are not aliases of compact routes. Existing
+QR/SVD/eigh/solve, permutation, AD and perf-issue suites remain separate coverage.
+CUDA-unsupported eig/eigvals/full-pivot LU, grouped GEMM and
 unsupported read-linalg hooks remain excluded as documented in issue #155.
 
 ## Existing suites and JAX references
