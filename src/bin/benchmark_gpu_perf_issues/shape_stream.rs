@@ -79,6 +79,13 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
         references.push(expected);
     }
     rt.synchronize()?;
+    let retained_bytes = order
+        .iter()
+        .map(|&key| references[key].len() * 8)
+        .sum::<usize>();
+    if retained_bytes > 256 << 20 {
+        return Err("shape-stream retention exceeds 256 MiB".into());
+    }
     let reads = operands
         .iter()
         .enumerate()
@@ -126,7 +133,9 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
                     return Err("shape stream wrong CUDA placement".into());
                 }
                 let m = reads[key].0.shape()[0];
-                if out.shape() != [2, m, 3] || out.allocation_domain().is_none() {
+                if out.shape() != [2, m, 3]
+                    || TensorRead::from_tensor(out).allocation_domain().is_none()
+                {
                     return Err("shape stream output shape/domain mismatch".into());
                 }
                 let got = download_tensor(&rt, out)?;
@@ -221,7 +230,7 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
         outside_timer:vec!["backend/session/library initialization, input generation/upload and read-handle preparation",
             "controlled CUDA extension-cache reset and declared warm-key precondition",
             "full-output download/verification and output destruction"],
-        extra:json!({"sequence":sequence,"operations_per_sequence":order.len(),
+        extra:json!({"sequence":sequence,"operations_per_sequence":order.len(),"retained_output_bytes":retained_bytes,
             "cache_mode":mode,"plan_cache_capacity":64,"cache_reset_scope":"CUDA extension-owned plans/workspace; excludes CubeCL kernels, cuTENSOR handle and output/allocator pools",
             "instrumentation_only":instrument,"counter_observations":observations,
             "host_enqueue_samples_ns":measured_enqueue,
