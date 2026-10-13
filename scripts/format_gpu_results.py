@@ -18,6 +18,9 @@ PREFERRED_BACKENDS = [
     "tenferro-cuda-trace",
     "tenferro-cuda-eager",
     "pytorch-cuda",
+    "jax-cuda",
+    "jax-cuda-tree-jit",
+    "jax-cuda-eager",
     "cublaslt",
     "cutlass",
     "cusolver",
@@ -29,6 +32,9 @@ BACKEND_LABELS = {
     "tenferro-cuda-eager": "tenferro-rs CUDA eager",
     "tenferro-cuda-trace": "tenferro-rs CUDA trace",
     "pytorch-cuda": "PyTorch CUDA",
+    "jax-cuda": "JAX CUDA JIT",
+    "jax-cuda-tree-jit": "JAX CUDA tree JIT",
+    "jax-cuda-eager": "JAX CUDA eager",
     "cublaslt": "cuBLASLt",
     "cutlass": "CUTLASS",
     "cutlass-destination-reuse": "CUTLASS destination reuse",
@@ -83,7 +89,7 @@ def markdown_cell(value: object) -> str:
 
 
 def choose_duplicate_record(existing: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
-    return candidate
+    raise ValueError(f"Duplicate GPU result: {candidate['suite_id']}/{candidate['problem_id']}/{candidate['backend']}")
 
 
 def load_run_metadata(path: Path | None) -> dict[str, Any] | None:
@@ -112,6 +118,11 @@ def run_metadata_lines(metadata: dict[str, Any] | None) -> list[str]:
 def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] | None = None) -> str:
     if not records:
         return clean_markdown_eof("# GPU Benchmark Results\n\nNo GPU benchmark records found.")
+    if any(record["status"] == "verification_only" for record in records):
+        raise ValueError("Verification-only GPU records cannot be published as benchmark timings")
+    keys = [(record["suite_id"], record["problem_id"], record["backend"]) for record in records]
+    if len(keys) != len(set(keys)):
+        raise ValueError("Duplicate GPU (suite, problem, backend) rows")
 
     backends = backend_order(records)
     by_suite_op: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
@@ -165,6 +176,22 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
             lines.append("| " + " | ".join(row) + " |")
         lines.append("")
 
+    batched = []
+    for record in records:
+        try:
+            notes = json.loads(record["execution"].get("notes") or "null")
+        except (ValueError, TypeError):
+            continue
+        if isinstance(notes, dict) and notes.get("sampling"):
+            batched.append((record, notes))
+    if batched:
+        lines += ["## Python sampling", "", "JAX uses compiled JIT execution; compilation, planning and numerical checks are outside timing. PyTorch uses eager execution. Samples retain every output until native synchronization and clock stop. Values are normalized per declared operation.", "",
+                  "| Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |", "| --- | --- | ---: | --- | --- |"]
+        for record, notes in batched:
+            sample = notes["sampling"]
+            values = ", ".join(f"{value:.6g}" for value in sample["batch_ms"])
+            lines.append("| " + " | ".join(map(markdown_cell, [record["problem_id"], record["backend"], sample["operations_per_sample"], values, notes["setup"] + "; " + notes["precision"]])) + " |")
+        lines.append("")
     return clean_markdown_eof("\n".join(lines))
 
 

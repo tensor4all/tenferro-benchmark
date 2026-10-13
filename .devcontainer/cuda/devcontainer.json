@@ -5,7 +5,7 @@
     "context": "../.."
   },
   "remoteUser": "vscode",
-  "runArgs": ["--gpus", "all"],
+  "runArgs": ["--gpus", "all", "--memory=32g", "--memory-swap=34g"],
   "containerEnv": {
     "OPENBLAS_ROOT": "/opt/openblas",
     "USE_CUDA": "1",

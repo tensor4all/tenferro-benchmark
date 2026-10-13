@@ -27,6 +27,7 @@ backends:
 - tenferro-cuda-trace
 - tenferro-cuda-eager
 - pytorch-cuda
+- jax-cuda
 problems:
 - id: elementwise_chain_f64_1k
   family: elementwise

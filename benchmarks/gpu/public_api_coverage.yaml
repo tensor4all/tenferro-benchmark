@@ -82,7 +82,11 @@ cross_cutting:
   metadata_views: transpose_view/reshape_view/slice_view/slice_axis_view/broadcast_in_dim_view do no GPU numerical work; classify separately.
   autodiff: Existing scalar-loss JVP/VJP is partial coverage; each new differentiated operation needs matching arguments and forward/backward scope.
   runtime_transfer_lifecycle: Separate workflow/initialization diagnostics, tracked by issue 107 and perf_issues.
-  legacy_jax_reports: New suites select and measure JAX. Legacy dense/einsum/chain/TN runner refreshes still require their own timing audit and JAX selection update.
+  legacy_jax_reports: >-
+    Dense/einsum/chain select whole-operation JAX JIT; tensor-network additionally
+    selects distinct prepared tree-kernel JIT. Whole-tree JIT has verified host-OOM
+    exclusions. Framework timing, strict verification and held eager sessions are
+    implemented; refreshed full-size timing reports remain pending.
 cuda_unavailable_at_audit:
   - TensorLinalgExt inv/pinv_with_rtol (CUDA execution probe found internal host-scalar operands; eager routes differ)
   - eig/eigvals/full_piv_lu/full_piv_lu_solve

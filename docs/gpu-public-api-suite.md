@@ -144,6 +144,53 @@ suites remain separate coverage; their presence does not count these remaining
 routes as measured. CUDA-unsupported eig/eigvals/full-pivot LU, grouped GEMM and
 unsupported read-linalg hooks remain excluded as documented in issue #155.
 
+## Existing suites and JAX references
+
+`gpu/dense`, `gpu/einsum`, `gpu/elementwise`, and `gpu/tensornetwork`
+select JAX references. The Python runner prepares plans, explicitly compiles JAX
+functions, initializes libraries, asserts CUDA placement, and verifies outputs
+before bounded batched sampling. It verifies again after sampling. Skipped
+verification cannot become a successful measurement. Frameworks execute in
+separate processes, releasing their GPU allocator before the next starts.
+
+Use the complete declared shapes for numerical verification on physical GPU 1:
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'GPU_BENCH_VERIFY_ONLY=1 GPU_BENCH_DEVICE=1 \
+    GPU_BENCH_BACKENDS=tenferro-cuda-eager,pytorch-cuda,jax-cuda,jax-cuda-tree-jit \
+    GPU_BENCH_SUITE=benchmarks/gpu/dense.yaml,benchmarks/gpu/einsum.yaml,benchmarks/gpu/elementwise.yaml,benchmarks/gpu/tensornetwork.yaml \
+    ./scripts/run_gpu_suite.sh'
+```
+
+Verification-only records have no timing samples and cannot replace reports.
+`jax-cuda` means whole-operation compiled JIT. `jax-cuda-tree-jit` is a distinct
+tensor-network path: the complete original tree is preserved, each contraction
+is planned/compiled/initialized before timing, and the Python tree dispatches
+those kernels. All inputs and requested outputs match the PyTorch tree arm.
+
+Whole-tree JAX compilation on this host exhausted roughly 91 GiB of host memory.
+Guarded attempts also failed during compilation with a 32 GiB limit, including
+attempts disabling autotuning and constant folding. Those incomplete verification
+runs are retained and never count as measured coverage. The whole-tree JAX arm
+is explicitly skipped for this workload; it is not an alias of tree-kernel JIT.
+The CUDA devcontainer now caps host memory at 32 GiB (34 GiB including swap) to
+prevent a compiler process from exhausting the workstation. Per-arm notes record
+the active cgroup memory limit and any nondefault JAX compiler options.
+
+The constant-fill tensor-network fixture has an independent analytic reference:
+each contraction multiplies child constants and the number of summed index
+assignments. It uses exact rounded F32 input values and evaluates the result in
+F64, without allocating giant CPU intermediates. Small summed/free-axis trees
+are checked against dense NumPy contractions, and prepared JAX tree kernels are
+tested on nonconstant inputs.
+
+Tenferro eager sampling reuses one entered session for initialization, calibration
+and samples, with inactive AD recording. Standard tenferro trace rows are
+unsupported because `Runtime::run_prepared` still enters sessions during execution
+and exposes no caller-borrowed session route. Trace public-call latency belongs
+in separately named diagnostic suites, including the work in issue #107.
+
 ## Checks
 
 Run inside the same devcontainer before collecting:

@@ -23,12 +23,33 @@ PY
 )"
 
 SUITES_VALUE="${GPU_BENCH_SUITE:-benchmarks/gpu/dense.yaml,benchmarks/gpu/einsum.yaml,benchmarks/gpu/sparse.yaml,benchmarks/gpu/tensornetwork.yaml}"
-BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,cublaslt,cutlass,cusolver,cusparse,ginkgo}"
+BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda,jax-cuda-tree-jit,jax-cuda-eager,cublaslt,cutlass,cusolver,cusparse,ginkgo}"
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
+if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" == 1 ]]; then
+    DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-1}"
+    BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-pytorch-cuda,jax-cuda}"
+    RESULTS_ROOT="$PROJECT_DIR/data/verification"
+fi
+# Physical nvidia-smi index -> one visible UUID -> process-local ordinal zero.
+# Contract tests can supply fake runners on a host without nvidia-smi.
+PHYSICAL_DEVICE_ORDINAL="$DEVICE_ORDINAL"
+if command -v nvidia-smi >/dev/null 2>&1; then
+    export GPU_BENCH_PHYSICAL_DEVICE="$PHYSICAL_DEVICE_ORDINAL"
+    CUDA_VISIBLE_DEVICES="$(nvidia-smi -i "$PHYSICAL_DEVICE_ORDINAL" --query-gpu=uuid --format=csv,noheader)"
+    [[ "$CUDA_VISIBLE_DEVICES" == GPU-* && "$CUDA_VISIBLE_DEVICES" != *$'\n'* ]] || exit 1
+    export CUDA_VISIBLE_DEVICES
+    DEVICE_ORDINAL=0
+fi
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-1}" RAYON_NUM_THREADS="${RAYON_NUM_THREADS:-1}"
+export XLA_PYTHON_CLIENT_PREALLOCATE=false
 PROBLEM_FILTER="${GPU_BENCH_PROBLEM:-}"
 RUST_MIN_STACK="${RUST_MIN_STACK:-67108864}"
 
 cd "$PROJECT_DIR"
+
+if [[ -d extern/tenferro-rs/.git && "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
+    git -C extern/tenferro-rs -c 'url.https://github.com/.insteadOf=git@github.com:' pull --ff-only
+fi
 
 mkdir -p "$RESULTS_ROOT" "$REPORTS_DIR"
 
@@ -86,11 +107,11 @@ suite_id_for_file() {
 }
 
 suite_backends_for_file() {
-    awk '
-        /^backends:/ { in_backends = 1; next }
-        in_backends && /^  - / { print $2; next }
-        in_backends && /^[^[:space:]]/ { exit }
-    ' "$1"
+    "${PYTHON[@]}" - "$1" <<'PY'
+import sys, yaml
+for backend in yaml.safe_load(open(sys.argv[1]))["backends"]:
+    print(backend)
+PY
 }
 
 backends_for_suite() {
@@ -125,7 +146,7 @@ write_run_metadata() {
         --tenferro-dir "$tenferro_dir"
         --features cuda
         --blas none
-        --cuda-device-ordinal "$DEVICE_ORDINAL"
+        --cuda-device-ordinal "$PHYSICAL_DEVICE_ORDINAL"
         --output "$run_yaml"
     )
     if [[ -n "$tenferro_commit" ]]; then
@@ -232,26 +253,22 @@ for suite in "${SUITES[@]}"; do
     : > "$RESULT_JSONL"
     write_run_metadata "$suite_id" "$suite" "$RUN_YAML"
 
-    if [[ "$suite_id" == "gpu/tensornetwork" ]]; then
-        run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL"
-    else
-        # Run Python benchmark (pytorch-cuda and vendor backends)
-        if [[ ${#PYTHON_BACKENDS[@]} -gt 0 ]]; then
-            echo "Running Python benchmarks for $suite_id: ${PYTHON_BACKENDS[*]}"
-            run_python_backend "$suite" "$RESULT_JSONL" "${PYTHON_BACKENDS[@]}"
-        fi
-
-        # Run Rust benchmark (tenferro-cuda-eager, tenferro-cuda-trace)
-        if [[ ${#RUST_BACKENDS[@]} -gt 0 ]]; then
-            echo "Running Rust GPU benchmarks for $suite_id: ${RUST_BACKENDS[*]}"
-            : > "$RUST_JSONL"
-            run_rust_backend "$suite" "$RUST_JSONL" "${RUST_BACKENDS[@]}"
-            cat "$RUST_JSONL" >> "$RESULT_JSONL"
-        fi
-    fi
+    # Each framework releases its CUDA allocator before the next process starts.
+    run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL"
 
     if [[ ! -s "$RESULT_JSONL" ]]; then
         echo "No records generated for $suite_id; skipping report."
+        continue
+    fi
+    if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" == 1 ]]; then
+        "${PYTHON[@]}" - "$RESULT_JSONL" <<'PY'
+import json, sys
+rows = [json.loads(line) for line in open(sys.argv[1]) if line.strip()]
+failures = [row for row in rows if row["status"] not in {"verification_only", "unsupported"}]
+if failures:
+    raise SystemExit(f"GPU numerical verification failed: {failures}")
+print(f"Verified {sum(row['status']=='verification_only' for row in rows)} rows; no timing report published")
+PY
         continue
     fi
 

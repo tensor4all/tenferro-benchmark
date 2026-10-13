@@ -94,6 +94,8 @@ jobs:
             scripts/validate_benchmark_suite.py \
             scripts/collect_run_metadata.py \
             scripts/benchmark_gpu_public_api.py \
+            scripts/benchmark_gpu_python.py \
+            scripts/gpu_framework_runner.py \
             scripts/gpu_public_api_ops.py \
             scripts/format_gpu_public_api_results.py \
             scripts/public_api_candidates.py \
@@ -113,7 +115,7 @@ jobs:
       - name: Validate GPU public API fixtures and timing contracts without a GPU
         run: |
           bash -n scripts/run_gpu_public_api.sh
-          uv run python -m unittest tests.test_gpu_public_api
+          uv run python -m unittest tests.test_gpu_public_api tests.test_gpu_framework_runner
 
       - name: Cargo check
         run: cargo check --all-targets

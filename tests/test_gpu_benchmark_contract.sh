@@ -40,7 +40,6 @@ uv run python scripts/validate_benchmark_suite.py \
 
 rg -n 'RUST_MIN_STACK="\$\{RUST_MIN_STACK:-67108864\}"' scripts/run_gpu_suite.sh
 rg -n 'run_suite_serial_by_backend' scripts/run_gpu_suite.sh
-rg -n 'suite_id" == "gpu/tensornetwork"' scripts/run_gpu_suite.sh
 rg -n 'cuda-device-ordinal' scripts/run_gpu_suite.sh
 rg -n 'ARG CUTLASS_TAG=v3\.7\.0' .devcontainer/cuda/Dockerfile
 rg -n 'ARG GINKGO_TAG=v1\.8\.0' .devcontainer/cuda/Dockerfile
@@ -161,6 +160,7 @@ spec = importlib.util.spec_from_file_location(
     "benchmark_gpu_python", root / "scripts" / "benchmark_gpu_python.py"
 )
 mod = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = mod
 assert spec.loader is not None
 spec.loader.exec_module(mod)
 
@@ -172,8 +172,8 @@ class FakeConfig:
         pass
 
 def devices(backend=None):
-    if backend == "cuda":
-        raise RuntimeError("Unknown backend cuda. Available backends are ['cpu']")
+    if backend == "gpu":
+        raise RuntimeError("Unknown backend gpu. Available backends are ['cpu']")
     return []
 
 fake_jax.config = FakeConfig()
@@ -207,7 +207,7 @@ rec = mod._run_one(
     tc="tenferro",
 )
 assert rec["status"] == "not_configured", rec
-assert "Unknown backend cuda" in rec["execution"]["unsupported_reason"], rec
+assert "Unknown backend gpu" in rec["execution"]["unsupported_reason"], rec
 
 import numpy as np
 import torch

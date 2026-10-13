@@ -11,6 +11,7 @@ backends:
   - tenferro-cuda-trace
   - tenferro-cuda-eager
   - pytorch-cuda
+  - jax-cuda
   - cublaslt
   - cutlass
 problems:

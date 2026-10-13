@@ -105,6 +105,76 @@ def build_fill_value(fill_value: float | None = None) -> float:
     return DEFAULT_FILL_VALUE if fill_value is None else float(fill_value)
 
 
+def constant_tree_reference(network, bond_dim, fill_value):
+    """Exact constant-input tree result, without allocating intermediates.
+
+    Each entry is a product of child constants multiplied by the number of
+    summed assignments. Logarithms avoid intermediate overflow/underflow. The
+    input constant is rounded to F32 exactly as in the maintained CUDA fixture.
+    This oracle applies only to the declared constant-fill workload.
+    """
+    import numpy as np
+    value = float(np.float32(fill_value))
+    if value <= 0 or bond_dim < 1:
+        raise ValueError("constant-tree reference requires positive fill and dimension")
+
+    def evaluate(node):
+        if node.get("isleaf"):
+            axes = network["inputs"][int(node["tensorindex"]) - 1]
+            return float(np.log2(value)), len(axes)
+        children = [evaluate(child) for child in node["args"]]
+        ixs, iy = node["eins"]["ixs"], node["eins"]["iy"]
+        if len(children) != len(ixs) or any(rank != len(ix) for (_, rank), ix in zip(children, ixs)):
+            raise ValueError("constant-tree reference: inconsistent child ranks")
+        labels = {label for ix in ixs for label in ix}
+        if len(iy) != len(set(iy)) or not set(iy) <= labels:
+            raise ValueError("constant-tree reference: invalid output labels")
+        summed = len(labels - set(iy))
+        return sum(log_value for log_value, _ in children) + summed * float(np.log2(bond_dim)), len(iy)
+
+    logarithm, rank = evaluate(network["tree"])
+    return np.full((bond_dim,) * rank, np.exp2(logarithm), dtype=np.float64)
+
+
+def prepare_tree_jax_kernels(tree, inputs, compiler_options=None):
+    """Compile and initialize each tree contraction, preserving the full tree.
+
+    Planning, compilation and the representative initialization execution are
+    outside timing. Unlike whole-tree JIT, execution dispatches the prepared
+    kernels through the Python tree; callers must label these paths separately.
+    """
+    import jax
+    import opt_einsum as oe
+    prepared_nodes = [0]
+
+    def prepare(node):
+        if node.get("isleaf"):
+            index = int(node["tensorindex"]) - 1
+            return (lambda values: values[index]), inputs[index]
+        children = [prepare(child) for child in node["args"]]
+        ixs, iy = node["eins"]["ixs"], node["eins"]["iy"]
+        labels = sorted({label for ix in ixs for label in ix} | set(iy))
+        names = {label: oe.get_symbol(i) for i, label in enumerate(labels)}
+        expr = ",".join("".join(names[label] for label in ix) for ix in ixs) + "->" + "".join(names[label] for label in iy)
+        operands = tuple(value for _, value in children)
+        expression = oe.contract_expression(expr, *(value.shape for value in operands), optimize="greedy")
+        compiled = jax.jit(lambda *values: expression(*values, backend="jax")).lower(*operands).compile(compiler_options=compiler_options or {})
+        representative = jax.block_until_ready(compiled(*operands))
+        prepared_nodes[0] += 1
+        if prepared_nodes[0] % 32 == 0:
+            print(f"Prepared JAX tree kernels: {prepared_nodes[0]}", flush=True)
+        executors = tuple(run for run, _ in children)
+
+        def execute(values):
+            return compiled(*(child(values) for child in executors))
+
+        return execute, representative
+
+    execute, representative = prepare(tree)
+    del representative
+    return execute
+
+
 class IntegerLabelEinsumBackend:
     """Map integer index labels to ASCII einsum letters."""
 
