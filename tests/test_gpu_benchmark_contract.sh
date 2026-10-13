@@ -238,7 +238,17 @@ test -s "$MARKDOWN"
 test -s "$REPORT"
 
 uv run python scripts/validate_benchmark_suite.py --kind run "$RUN_YAML"
-grep -q 'single-call intervals; short GPU cases are diagnostics' "$RUN_YAML"
+uv run python - "$RUN_YAML" "$JSONL" <<'PYSAMPLING'
+import json, sys, yaml
+metadata = yaml.safe_load(open(sys.argv[1]))
+assert 'one interval over many operations' in metadata['timing_policy']['short_operation_sampling']
+for line in open(sys.argv[2]):
+    row = json.loads(line)
+    if row['status'] == 'ok' and row['backend'] == 'pytorch-cuda':
+        sample = json.loads(row['execution']['notes'])['sampling']
+        assert sample['operations_per_sample'] >= 1
+        assert len(sample['batch_ms']) == row['timing']['timed_runs']
+PYSAMPLING
 uv run python scripts/validate_benchmark_suite.py --kind result "$JSONL"
 if rg -q '"environment"' "$JSONL"; then
   echo "result records unexpectedly contained run-level environment" >&2

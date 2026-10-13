@@ -179,7 +179,7 @@
       "if": {
         "properties": {
           "status": {
-            "enum": ["unsupported", "not_configured", "compile_failed", "runtime_failed", "oom"]
+            "enum": ["not_configured", "compile_failed", "runtime_failed", "oom"]
           }
         },
         "required": ["status"]
@@ -204,6 +204,111 @@
           "verification": {
             "properties": {
               "status": { "enum": ["failed", "skipped", "not_applicable"] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "unsupported"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "verification": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "passed",
+                  "skipped",
+                  "not_applicable"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "unsupported"
+          },
+          "verification": {
+            "properties": {
+              "status": {
+                "const": "passed"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "verification"
+        ]
+      },
+      "then": {
+        "properties": {
+          "timing": {
+            "properties": {
+              "timed_runs": {
+                "const": 0
+              },
+              "first_run_ms": {
+                "type": "null"
+              },
+              "median_ms": {
+                "type": "null"
+              },
+              "min_ms": {
+                "type": "null"
+              },
+              "p95_ms": {
+                "type": "null"
+              },
+              "iqr_ms": {
+                "type": "null"
+              }
+            }
+          },
+          "verification": {
+            "properties": {
+              "reference_backend": {
+                "type": "string",
+                "minLength": 1
+              },
+              "max_abs_error": {
+                "type": "number",
+                "minimum": 0
+              },
+              "max_rel_error": {
+                "type": "number",
+                "minimum": 0
+              },
+              "residual": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "execution": {
+            "properties": {
+              "unsupported_reason": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           }
         }

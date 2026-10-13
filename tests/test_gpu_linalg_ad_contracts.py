@@ -9,6 +9,21 @@ from gpu_linalg_ad_contracts import cpu_reference, verify_arrays
 
 
 class AdVerification(unittest.TestCase):
+    def test_verified_timing_unsupported_rows_cannot_carry_operation_timings(self):
+        import json
+        import jsonschema
+        from benchmark_gpu_linalg_ad import stub
+        problem = dict(id="control", op="jvp")
+        row = stub("gpu/linalg_jvp_vjp", problem, "tenferro-cuda-trace", 0,
+                   status="unsupported", reason="cannot borrow entered session", path="control", ts=None, bc=None, tc=None)
+        row["verification"].update(status="passed", reference_backend="independent CPU control",
+                                   max_abs_error=0., max_rel_error=0., residual=0.)
+        schema = json.loads((Path(__file__).resolve().parents[1] / "schemas/benchmark-result.schema.json").read_text())
+        jsonschema.validate(row, schema)
+        row["timing"]["median_ms"] = 1.
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(row, schema)
+
     def test_rust_unsupported_prose_does_not_count_as_verified_outputs(self):
         from verify_gpu_linalg_ad_rust import validate
         row = dict(status="unsupported", execution=dict(notes="unsupported scalar broadcast"),
