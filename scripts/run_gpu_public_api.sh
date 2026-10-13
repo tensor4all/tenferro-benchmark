@@ -8,6 +8,15 @@ cd "$(dirname "$0")/.."
     exit 1
 }
 family="${1:-fft}"
+# The public API collection reuses family identities and never overlaps runners.
+if [[ "$family" == all ]]; then
+    case "${2:-}" in ''|--verify-only) ;; *) echo "Usage: $0 all [--verify-only]" >&2; exit 1;; esac
+    [[ $# -le 2 ]] || { echo "Too many arguments" >&2; exit 1; }
+    for member in fft nn isolated_ops structural linalg_public_api reuse_contraction lstsq; do
+        "$0" "$member" "${@:2}"
+    done
+    exit 0
+fi
 case "$family" in fft|nn|isolated_ops|structural|linalg_public_api|reuse_contraction|lstsq) ;; *) echo "Unknown family: $family" >&2; exit 1;; esac
 export GPU_API_VERIFY_ONLY=0
 case "${2:-}" in

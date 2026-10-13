@@ -12,9 +12,10 @@ forward-operation measurement.
 | `fft` | `FftExecutor::{fft,ifft,rfft,irfft}`, borrowed eager FFT | [FFT](../result/nvidia-gpu/gpu/fft.md) |
 | `nn` | sigmoid, silu, softplus, exact/tanh GELU, softmax/log-softmax including masks, layer/RMS normalization | [NN](../result/nvidia-gpu/gpu/nn.md) |
 | `isolated_ops` | arithmetic, analytic functions including erf, compare/select/clamp, axis-wise reductions | [Isolated operations](../result/nvidia-gpu/gpu/isolated_ops.md) |
-| `structural` | scatter, take_along_axis, pad, materialized slice, reverse, concatenate, diagonal extraction/embedding, triangular masks, cast | [Structural](../result/nvidia-gpu/gpu/structural.md) |
+| `structural` | scatter, take_along_axis, pad, materialized slice/reshape, stack, reverse, concatenate, diagonal extraction/embedding, triangular masks, cast | [Structural](../result/nvidia-gpu/gpu/structural.md) |
 | `linalg_public_api` | Cholesky, values-only SVD/eigh, pinv with explicit rtol, inverse, determinant, Frobenius norm, triangular solve | [Linear algebra](../result/nvidia-gpu/gpu/linalg_public_api.md) |
 | `reuse_contraction` | add/sub/mul/div/neg/conj `_into` and `_read_into`, tensordot, vdot_read, real norm_squared_read | [Output reuse and contractions](../result/nvidia-gpu/gpu/reuse_contraction.md) |
+| `lstsq` | Public eager solution-only least squares; numeric checks with explicit timing exclusions | [Least squares](../result/nvidia-gpu/gpu/lstsq.md) |
 
 The [coverage inventory](../benchmarks/gpu/public_api_coverage.yaml) maps selected,
 partially covered and deferred routes. The operation/route source of truth for
@@ -32,8 +33,22 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
   bash -lc 'GPU_BENCH_DEVICE=0 BENCH_RUNS=15 BENCH_WARMUPS=3 ./scripts/run_gpu_public_api.sh fft'
 ```
 
-Repeat verification and collection sequentially with `nn`, `isolated_ops`,
-`structural`, `linalg_public_api`, and `reuse_contraction`. Do not overlap timing commands or
+The maintained public API collection runs every family sequentially:
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc './scripts/run_gpu_public_api.sh all --verify-only'
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc './scripts/run_gpu_public_api.sh all'
+```
+
+`all` invokes fft, nn, isolated_ops, structural, linalg_public_api,
+reuse_contraction and lstsq in that order. It reuses each family's suite_id,
+case selection and report; it does not create duplicate combined timing tables.
+A failing family stops the collection. Individual family commands remain
+available for focused work. Repeat verification and collection sequentially
+with `nn`, `isolated_ops`, `structural`, `linalg_public_api`,
+`reuse_contraction`, and `lstsq`. Do not overlap timing commands or
 other GPU benchmark processes. The runner requires a CUDA container, fetches a
 `main` tenferro checkout while preserving pinned checkouts, and rebuilds its
 Rust binary before collection. Public GitHub fetches use HTTPS inside the image.
