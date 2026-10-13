@@ -39,6 +39,7 @@ def compiler_options_for(problem, backend):
 
 
 def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
+    case_start = time.monotonic_ns()
     import numpy as np
 
     is_jax = backend.startswith("jax-cuda")
@@ -86,6 +87,8 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             ready = lambda outputs: sync()
             download = lambda value: value.detach().cpu().numpy()
 
+        backend_end = time.monotonic_ns()
+
         if op == "tensor_network_contract":
             source, bond_dim, fill = legacy._tensor_network_spec(problem)
             network = legacy.tnc.load_tensor_network(source)
@@ -95,7 +98,7 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             if is_jax:
                 inputs = [jax.device_put(value, device) for value in hosts]
                 ready(inputs)
-                start = time.perf_counter()
+                start = time.monotonic_ns()
                 if backend == "jax-cuda-eager":
                     prepared = legacy.tnc.prepare_tree(network["tree"], inputs, "jax")
                     operation = lambda: prepared(inputs)
@@ -109,7 +112,7 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                     print(backend, problem["id"], "compiling whole-tree JIT", flush=True)
                     compiled = lowered.compile(compiler_options=compiler_options)
                     operation = lambda: compiled(inputs)
-                compile_ms = (time.perf_counter() - start) * 1000
+                compile_ms = None if backend == "jax-cuda-eager" else (time.monotonic_ns() - start) / 1e6
             else:
                 inputs = [torch.from_numpy(value).to(device) for value in hosts]
                 prepared = legacy.tnc.prepare_tree(network["tree"], inputs, "torch")
@@ -130,9 +133,9 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                 inputs = legacy._to_jax(data, device)
                 prepared, arguments = legacy._jax_fn(op, inputs)
                 ready(arguments)
-                start = time.perf_counter()
+                start = time.monotonic_ns()
                 compiled = prepared.lower(*arguments).compile(compiler_options=compiler_options)
-                compile_ms = (time.perf_counter() - start) * 1000
+                compile_ms = (time.monotonic_ns() - start) / 1e6
                 operation = lambda: compiled(*arguments)
                 # Factorizations use reconstruction/residual checks and do not
                 # require a redundant CPU factorization of large GPU fixtures.
@@ -194,22 +197,28 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 
         # Mandatory initialization, placement and numerical check also happen
         # when zero warmups or verification-only execution is requested.
+        setup_end = time.monotonic_ns()
         probe = operation()
         ready(probe)
         assert_placement(probe)
+        probe_ready = time.monotonic_ns()
         verification = check(probe)
+        verified = time.monotonic_ns()
         print(backend, problem["id"], "initial verification passed", flush=True)
         output_bytes = sum(int(value.size * value.dtype.itemsize) if is_jax else value.numel() * value.element_size() for value in leaves(probe))
         del probe
         sampling = None
+        final_wall_ns = 0
         if not verify_only:
             sampling = measure(operation, sync, ready, output_bytes, warmups, runs)
+            final_start = time.monotonic_ns()
             final = operation()
             ready(final)
             assert_placement(final)
             after = check(final)
             verification = ("passed", max(verification[1], after[1]), max(verification[2], after[2]))
             del final
+            final_wall_ns = time.monotonic_ns() - final_start
         stats = (None,) * 5 if verify_only else legacy._timing_stats([value / sampling["operations_per_sample"] for value in sampling["batch_ms"]])
         first, median, minimum, p95, iqr = stats
         record = legacy._ok_record(suite_id, problem, backend, device_ordinal, path=path,
@@ -225,6 +234,17 @@ def run(legacy, suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             "device_uuid": os.environ.get("CUDA_VISIBLE_DEVICES"), "verification_only": verify_only,
             "role": "debug" if verify_only else "benchmark",
             "host_memory_limit_bytes": open("/sys/fs/cgroup/memory.max").read().strip() if os.path.exists("/sys/fs/cgroup/memory.max") else None,
+            "wall_phases_ns": {
+                "backend_initialization": backend_end-case_start,
+                "input_reference_and_preparation": setup_end-backend_end-int((compile_ms or 0)*1e6),
+                "compilation": int((compile_ms or 0)*1e6),
+                "initialization_execution_and_placement": probe_ready-setup_end,
+                "initial_validation": verified-probe_ready,
+                "post_sampling_execution_and_validation": final_wall_ns,
+                "case_body_before_json_write": time.monotonic_ns()-case_start,
+                **({f"sampler_{k}":v for k,v in sampling["wall_phases_ns"].items()} if sampling else {}),
+            },
+            "wall_phase_scope": "case phases include preparation/cleanup; recorded outside operation clocks; process startup/JSONL writes excluded",
         }, sort_keys=True)
         if op == "tensor_network_contract":
             record["verification"]["reference_backend"] = "analytic_constant_tree_fp64_from_exact_f32_inputs"
