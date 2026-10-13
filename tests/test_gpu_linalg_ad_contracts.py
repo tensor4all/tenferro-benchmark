@@ -9,6 +9,19 @@ from gpu_linalg_ad_contracts import cpu_reference, verify_arrays
 
 
 class AdVerification(unittest.TestCase):
+    def test_rust_unsupported_prose_does_not_count_as_verified_outputs(self):
+        from verify_gpu_linalg_ad_rust import validate
+        row = dict(status="unsupported", execution=dict(notes="unsupported scalar broadcast"),
+                   verification=dict(status="skipped"))
+        self.assertIs(validate(row, {}), row)
+        self.assertEqual(row["verification"]["status"], "skipped")
+
+    def test_rust_success_without_numerical_artifact_is_rejected(self):
+        from verify_gpu_linalg_ad_rust import validate
+        for status in ("ok", "verification_only"):
+            with self.assertRaises(ValueError):
+                validate(dict(status=status, execution=dict(notes="{}")), {})
+
     def test_quadratic_jvp_and_vjp_match_independent_derivatives(self):
         x = np.array([[1., 2.], [-3., 4.]])
         t = np.array([[.2, -.4], [.1, .3]])

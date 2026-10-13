@@ -12,7 +12,16 @@ from gpu_linalg_ad_contracts import cpu_reference, verify_arrays
 
 
 def validate(row, problem):
-    notes = json.loads(row["execution"].get("notes") or "{}")
+    if row["status"] not in {"ok", "verification_only", "unsupported"}:
+        return row
+    try:
+        notes = json.loads(row["execution"].get("notes") or "{}")
+    except json.JSONDecodeError:
+        # Failed unsupported hooks have no output artifact. Their original
+        # explanatory notes are prose, and never count as verified execution.
+        if row["status"] == "unsupported":
+            return row
+        raise
     outputs = notes.pop("verification_outputs", None)
     if outputs is None:
         if row["status"] in {"ok", "verification_only"}:
