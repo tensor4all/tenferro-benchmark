@@ -11,7 +11,7 @@ import time
 
 import numpy as np
 
-DTYPES = {"bool": "|b1", "i64": "<i8", "f32": "<f4", "f64": "<f8", "c32": "<c8", "c64": "<c16"}
+DTYPES = {"bool": "|b1", "i32": "<i4", "i64": "<i8", "f32": "<f4", "f64": "<f8", "c32": "<c8", "c64": "<c16"}
 BACKENDS = ["tenferro-cuda-direct", "tenferro-cuda-eager", "pytorch-cuda", "jax-cuda", "jax-cuda-jit"]
 RETENTION_BUDGET = 256 << 20
 
@@ -60,6 +60,9 @@ def make_fixtures(root, suite):
                 case["atol"] = float(32 * eps * max(1, np.ceil(np.log2(spec["n"])))
                                      * np.linalg.norm(inputs[0].astype(np.float64)) / spec["n"])
                 case["tolerance_policy"] = "mean atol=32*eps*ceil(log2(n))*norm2(input)/n; base rtol"
+            if spec["dtype"] in {"i32", "i64"}:
+                case.update(rtol=0.0, atol=0.0, tolerance_policy="exact integer equality; no floating conversion",
+                            reference="NumPy exact integer arithmetic; truncating div/rem; all requested outputs")
             cases.append(case)
             continue
         op, dtype, n = spec["op"], spec["dtype"], spec["n"]
@@ -128,6 +131,10 @@ def make_fixtures(root, suite):
 def verify(actual, expected, case):
     if actual.shape != expected.shape or actual.dtype != expected.dtype:
         raise ValueError(f"verification shape/dtype mismatch: {actual.shape}/{actual.dtype} vs {expected.shape}/{expected.dtype}")
+    if np.issubdtype(expected.dtype, np.integer):
+        if not np.array_equal(actual, expected):
+            raise ValueError("verification exact integer mismatch")
+        return 0.0
     equal = actual == expected
     with np.errstate(invalid="ignore"):
         error = np.abs(actual.astype(np.complex128) - expected.astype(np.complex128))

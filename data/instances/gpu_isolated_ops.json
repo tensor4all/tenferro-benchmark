@@ -1944,11 +1944,10 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_real_f64_n1024",
@@ -1961,11 +1960,10 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_real_c32_n1024",
@@ -1978,11 +1976,10 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_real_c64_n1024",
@@ -1995,11 +1992,10 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_complex_c32_n1024",
@@ -2012,12 +2008,11 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
       "beta": 0.75,
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_complex_c64_n1024",
@@ -2030,12 +2025,11 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
       "beta": 0.75,
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_real_f32_n1048576",
@@ -2048,11 +2042,10 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_real_f64_n1048576",
@@ -2065,11 +2058,10 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_real_c32_n1048576",
@@ -2082,11 +2074,10 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_real_c64_n1048576",
@@ -2099,11 +2090,10 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_complex_c32_n1048576",
@@ -2116,12 +2106,11 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
       "beta": 0.75,
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
     },
     {
       "id": "scale_complex_c64_n1048576",
@@ -2134,12 +2123,687 @@
       "alpha": 0.5,
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route.",
+        "tenferro-cuda-eager": "Eager scale host-placement bug fixed by upstream 917d5341. API now uploads its internal scalar through constant_from_host; no public preuploaded factor parameter. Numerical validation only; internal scalar transfer excludes standard timing."
       },
       "beta": 0.75,
-      "unavailable": {
-        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
-      }
+      "unavailable": {}
+    },
+    {
+      "id": "add_i32_n1024",
+      "op": "add",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "sub_i32_n1024",
+      "op": "sub",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "mul_i32_n1024",
+      "op": "mul",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "div_i32_n1024",
+      "op": "div",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "rem_i32_n1024",
+      "op": "rem",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "maximum_i32_n1024",
+      "op": "maximum",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "minimum_i32_n1024",
+      "op": "minimum",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "neg_i32_n1024",
+      "op": "neg",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "abs_i32_n1024",
+      "op": "abs",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "sign_i32_n1024",
+      "op": "sign",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_sum_i32_n1024",
+      "op": "reduce_sum",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_max_i32_n1024",
+      "op": "reduce_max",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_min_i32_n1024",
+      "op": "reduce_min",
+      "dtype": "i32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "add_i64_n1024",
+      "op": "add",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "sub_i64_n1024",
+      "op": "sub",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "mul_i64_n1024",
+      "op": "mul",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "div_i64_n1024",
+      "op": "div",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "rem_i64_n1024",
+      "op": "rem",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "maximum_i64_n1024",
+      "op": "maximum",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "minimum_i64_n1024",
+      "op": "minimum",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "neg_i64_n1024",
+      "op": "neg",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "abs_i64_n1024",
+      "op": "abs",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "sign_i64_n1024",
+      "op": "sign",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_sum_i64_n1024",
+      "op": "reduce_sum",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_max_i64_n1024",
+      "op": "reduce_max",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_min_i64_n1024",
+      "op": "reduce_min",
+      "dtype": "i64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "add_i32_n1048576",
+      "op": "add",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "sub_i32_n1048576",
+      "op": "sub",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "mul_i32_n1048576",
+      "op": "mul",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "div_i32_n1048576",
+      "op": "div",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "rem_i32_n1048576",
+      "op": "rem",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "maximum_i32_n1048576",
+      "op": "maximum",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "minimum_i32_n1048576",
+      "op": "minimum",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "neg_i32_n1048576",
+      "op": "neg",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "abs_i32_n1048576",
+      "op": "abs",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "sign_i32_n1048576",
+      "op": "sign",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_sum_i32_n1048576",
+      "op": "reduce_sum",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_max_i32_n1048576",
+      "op": "reduce_max",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_min_i32_n1048576",
+      "op": "reduce_min",
+      "dtype": "i32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "add_i64_n1048576",
+      "op": "add",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "sub_i64_n1048576",
+      "op": "sub",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "mul_i64_n1048576",
+      "op": "mul",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "div_i64_n1048576",
+      "op": "div",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "rem_i64_n1048576",
+      "op": "rem",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "maximum_i64_n1048576",
+      "op": "maximum",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "minimum_i64_n1048576",
+      "op": "minimum",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "neg_i64_n1048576",
+      "op": "neg",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "abs_i64_n1048576",
+      "op": "abs",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "sign_i64_n1048576",
+      "op": "sign",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_sum_i64_n1048576",
+      "op": "reduce_sum",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_max_i64_n1048576",
+      "op": "reduce_max",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
+    },
+    {
+      "id": "reduce_min_i64_n1048576",
+      "op": "reduce_min",
+      "dtype": "i64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {},
+      "integer_contract": "Exact equality; division and remainder truncate toward zero; sum preserves input dtype; bounded arithmetic avoids overflow. I64 unary/order fixtures exceed 2**53."
     }
   ]
 }
