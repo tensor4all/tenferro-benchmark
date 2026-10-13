@@ -1,0 +1,60 @@
+schema_version: 1
+suite_id: gpu/structural
+title: CUDA public structural APIs
+description: Isolated public APIs and explicit unsupported timing contracts. Issue 155.
+defaults:
+  device: {kind: cuda, ordinal: 0}
+  run: {warmups: 3, runs: 15, min_runtime_ms: 2, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: numpy/scipy double precision, rtol: 0.0005, atol: 0.0005}
+backends: [tenferro-cuda-direct, tenferro-cuda-eager, pytorch-cuda, jax-cuda, jax-cuda-jit]
+problems:
+  source: data/instances/gpu_structural.json
+  include:
+    - pad_default_f32_n1024
+    - pad_default_f64_n1024
+    - slice_default_f32_n1024
+    - slice_default_f64_n1024
+    - reverse_default_f32_n1024
+    - reverse_default_f64_n1024
+    - concatenate_default_f32_n1024
+    - concatenate_default_f64_n1024
+    - extract_diag_default_f32_n1024
+    - extract_diag_default_f64_n1024
+    - embed_diag_default_f32_n32
+    - embed_diag_default_f64_n32
+    - tril_default_f32_n1024
+    - tril_default_f64_n1024
+    - triu_default_f32_n1024
+    - triu_default_f64_n1024
+    - take_along_axis_broadcast_indices_f32_n1024
+    - take_along_axis_batched_indices_f32_n1024
+    - take_along_axis_broadcast_indices_f64_n1024
+    - take_along_axis_batched_indices_f64_n1024
+    - scatter_default_f32_n1024
+    - scatter_default_f64_n1024
+    - cast_default_f32_n1024
+    - cast_default_f64_n1024
+    - pad_default_f32_n1048576
+    - pad_default_f64_n1048576
+    - slice_default_f32_n1048576
+    - slice_default_f64_n1048576
+    - reverse_default_f32_n1048576
+    - reverse_default_f64_n1048576
+    - concatenate_default_f32_n1048576
+    - concatenate_default_f64_n1048576
+    - extract_diag_default_f32_n1048576
+    - extract_diag_default_f64_n1048576
+    - embed_diag_default_f32_n1024
+    - embed_diag_default_f64_n1024
+    - tril_default_f32_n1048576
+    - tril_default_f64_n1048576
+    - triu_default_f32_n1048576
+    - triu_default_f64_n1048576
+    - take_along_axis_broadcast_indices_f32_n1048576
+    - take_along_axis_batched_indices_f32_n1048576
+    - take_along_axis_broadcast_indices_f64_n1048576
+    - take_along_axis_batched_indices_f64_n1048576
+    - scatter_default_f32_n1048576
+    - scatter_default_f64_n1048576
+    - cast_default_f32_n1048576
+    - cast_default_f64_n1048576

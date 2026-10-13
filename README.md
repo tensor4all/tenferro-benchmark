@@ -46,6 +46,10 @@ live in git history only.
 | `nvidia-gpu` | `gpu/permutation` | [result/nvidia-gpu/gpu/permutation.md](result/nvidia-gpu/gpu/permutation.md) |
 | `nvidia-gpu` | `gpu/perf_issues` | [result/nvidia-gpu/gpu/perf_issues.md](result/nvidia-gpu/gpu/perf_issues.md) |
 
+The [CUDA public API suites](docs/gpu-public-api-suite.md) add FFT, NN, isolated
+operations, structural operations, linear algebra and output reuse comparisons
+with PyTorch and JAX. Their family reports live under `result/nvidia-gpu/gpu/`.
+
 Raw runs (per-timestamp `run.yaml` + machine-readable outputs) are written to
 `data/results/<target_profile>/<suite_id>/<timestamp>/`; the tracked report in
 `result/` is regenerated from the newest run. See

@@ -1,0 +1,1433 @@
+{
+  "schema_version": 1,
+  "suite_id": "gpu/isolated_ops",
+  "backends": [
+    "tenferro-cuda-direct",
+    "tenferro-cuda-eager",
+    "pytorch-cuda",
+    "jax-cuda",
+    "jax-cuda-jit"
+  ],
+  "cases": [
+    {
+      "id": "add_f32_n1024",
+      "op": "add",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "add_f64_n1024",
+      "op": "add",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sub_f32_n1024",
+      "op": "sub",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sub_f64_n1024",
+      "op": "sub",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "mul_f32_n1024",
+      "op": "mul",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "mul_f64_n1024",
+      "op": "mul",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "div_f32_n1024",
+      "op": "div",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "div_f64_n1024",
+      "op": "div",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rem_f32_n1024",
+      "op": "rem",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rem_f64_n1024",
+      "op": "rem",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "pow_f32_n1024",
+      "op": "pow",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "pow_f64_n1024",
+      "op": "pow",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "maximum_f32_n1024",
+      "op": "maximum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "maximum_f64_n1024",
+      "op": "maximum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "minimum_f32_n1024",
+      "op": "minimum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "minimum_f64_n1024",
+      "op": "minimum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "neg_f32_n1024",
+      "op": "neg",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "neg_f64_n1024",
+      "op": "neg",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "abs_f32_n1024",
+      "op": "abs",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "abs_f64_n1024",
+      "op": "abs",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sign_f32_n1024",
+      "op": "sign",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sign_f64_n1024",
+      "op": "sign",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "conj_c32_n1024",
+      "op": "conj",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "conj_c64_n1024",
+      "op": "conj",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "exp_f32_n1024",
+      "op": "exp",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "exp_f64_n1024",
+      "op": "exp",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "expm1_f32_n1024",
+      "op": "expm1",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "expm1_f64_n1024",
+      "op": "expm1",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log_f32_n1024",
+      "op": "log",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log_f64_n1024",
+      "op": "log",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log1p_f32_n1024",
+      "op": "log1p",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log1p_f64_n1024",
+      "op": "log1p",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "erf_f32_n1024",
+      "op": "erf",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "erf_f64_n1024",
+      "op": "erf",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sin_f32_n1024",
+      "op": "sin",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sin_f64_n1024",
+      "op": "sin",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "cos_f32_n1024",
+      "op": "cos",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "cos_f64_n1024",
+      "op": "cos",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tanh_f32_n1024",
+      "op": "tanh",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tanh_f64_n1024",
+      "op": "tanh",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sqrt_f32_n1024",
+      "op": "sqrt",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sqrt_f64_n1024",
+      "op": "sqrt",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rsqrt_f32_n1024",
+      "op": "rsqrt",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rsqrt_f64_n1024",
+      "op": "rsqrt",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "compare_f32_n1024",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Numerically valid; steady-state sampling is not established: consecutive batch durations increase in repeated runs 20261013_101359 and 20261013_102038. Retained as diagnostics pending allocator/lifetime investigation."
+      }
+    },
+    {
+      "id": "compare_f64_n1024",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Numerically valid; steady-state sampling is not established: consecutive batch durations increase in repeated runs 20261013_101359 and 20261013_102038. Retained as diagnostics pending allocator/lifetime investigation."
+      }
+    },
+    {
+      "id": "where_select_f32_n1024",
+      "op": "where_select",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "where_select_f64_n1024",
+      "op": "where_select",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "clamp_f32_n1024",
+      "op": "clamp",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "clamp_f64_n1024",
+      "op": "clamp",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_sum_f32_n1024",
+      "op": "reduce_sum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_sum_f64_n1024",
+      "op": "reduce_sum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_prod_f32_n1024",
+      "op": "reduce_prod",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_prod_f64_n1024",
+      "op": "reduce_prod",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_max_f32_n1024",
+      "op": "reduce_max",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_max_f64_n1024",
+      "op": "reduce_max",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_min_f32_n1024",
+      "op": "reduce_min",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_min_f64_n1024",
+      "op": "reduce_min",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_sum_squares_f32_n1024",
+      "op": "reduce_sum_squares",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "pytorch-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda-jit": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm."
+      }
+    },
+    {
+      "id": "reduce_sum_squares_f64_n1024",
+      "op": "reduce_sum_squares",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "pytorch-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda-jit": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm."
+      }
+    },
+    {
+      "id": "reduce_mean_f32_n1024",
+      "op": "reduce_mean",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      }
+    },
+    {
+      "id": "reduce_mean_f64_n1024",
+      "op": "reduce_mean",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      }
+    },
+    {
+      "id": "add_f32_n1048576",
+      "op": "add",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "add_f64_n1048576",
+      "op": "add",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sub_f32_n1048576",
+      "op": "sub",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sub_f64_n1048576",
+      "op": "sub",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "mul_f32_n1048576",
+      "op": "mul",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "mul_f64_n1048576",
+      "op": "mul",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "div_f32_n1048576",
+      "op": "div",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "div_f64_n1048576",
+      "op": "div",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rem_f32_n1048576",
+      "op": "rem",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rem_f64_n1048576",
+      "op": "rem",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "pow_f32_n1048576",
+      "op": "pow",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "pow_f64_n1048576",
+      "op": "pow",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "maximum_f32_n1048576",
+      "op": "maximum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "maximum_f64_n1048576",
+      "op": "maximum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "minimum_f32_n1048576",
+      "op": "minimum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "minimum_f64_n1048576",
+      "op": "minimum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "neg_f32_n1048576",
+      "op": "neg",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "neg_f64_n1048576",
+      "op": "neg",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "abs_f32_n1048576",
+      "op": "abs",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "abs_f64_n1048576",
+      "op": "abs",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sign_f32_n1048576",
+      "op": "sign",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sign_f64_n1048576",
+      "op": "sign",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "conj_c32_n1048576",
+      "op": "conj",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "conj_c64_n1048576",
+      "op": "conj",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "exp_f32_n1048576",
+      "op": "exp",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "exp_f64_n1048576",
+      "op": "exp",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "expm1_f32_n1048576",
+      "op": "expm1",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "expm1_f64_n1048576",
+      "op": "expm1",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log_f32_n1048576",
+      "op": "log",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log_f64_n1048576",
+      "op": "log",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log1p_f32_n1048576",
+      "op": "log1p",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "log1p_f64_n1048576",
+      "op": "log1p",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "erf_f32_n1048576",
+      "op": "erf",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "erf_f64_n1048576",
+      "op": "erf",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sin_f32_n1048576",
+      "op": "sin",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sin_f64_n1048576",
+      "op": "sin",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "cos_f32_n1048576",
+      "op": "cos",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "cos_f64_n1048576",
+      "op": "cos",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tanh_f32_n1048576",
+      "op": "tanh",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "tanh_f64_n1048576",
+      "op": "tanh",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sqrt_f32_n1048576",
+      "op": "sqrt",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "sqrt_f64_n1048576",
+      "op": "sqrt",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rsqrt_f32_n1048576",
+      "op": "rsqrt",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "rsqrt_f64_n1048576",
+      "op": "rsqrt",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "compare_f32_n1048576",
+      "op": "compare",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "compare_f64_n1048576",
+      "op": "compare",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "where_select_f32_n1048576",
+      "op": "where_select",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "where_select_f64_n1048576",
+      "op": "where_select",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "clamp_f32_n1048576",
+      "op": "clamp",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "clamp_f64_n1048576",
+      "op": "clamp",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_sum_f32_n1048576",
+      "op": "reduce_sum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_sum_f64_n1048576",
+      "op": "reduce_sum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_prod_f32_n1048576",
+      "op": "reduce_prod",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_prod_f64_n1048576",
+      "op": "reduce_prod",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_max_f32_n1048576",
+      "op": "reduce_max",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_max_f64_n1048576",
+      "op": "reduce_max",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_min_f32_n1048576",
+      "op": "reduce_min",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_min_f64_n1048576",
+      "op": "reduce_min",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {}
+    },
+    {
+      "id": "reduce_sum_squares_f32_n1048576",
+      "op": "reduce_sum_squares",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "pytorch-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda-jit": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm."
+      }
+    },
+    {
+      "id": "reduce_sum_squares_f64_n1048576",
+      "op": "reduce_sum_squares",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "pytorch-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm.",
+        "jax-cuda-jit": "No equivalent single axis-wise sum-of-squares API; multiplying then reducing is not used as a synthetic reference arm."
+      }
+    },
+    {
+      "id": "reduce_mean_f32_n1048576",
+      "op": "reduce_mean",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      }
+    },
+    {
+      "id": "reduce_mean_f64_n1048576",
+      "op": "reduce_mean",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      }
+    }
+  ]
+}

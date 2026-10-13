@@ -1,0 +1,28 @@
+schema_version: 1
+suite_id: gpu/fft
+title: CUDA public FFT APIs
+description: FftExecutor and borrowed eager sessions, PyTorch, JAX eager and JAX JIT. Issue 155.
+defaults:
+  device: {kind: cuda, ordinal: 0}
+  run: {warmups: 3, runs: 15, min_runtime_ms: 2, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: numpy.fft in double precision, rtol: 0.0005, atol: 0.0005}
+backends: [tenferro-cuda-direct, tenferro-cuda-eager, pytorch-cuda, jax-cuda, jax-cuda-jit]
+problems:
+  source: data/instances/gpu_fft.json
+  include:
+    - fft_c32_n1024
+    - fft_c64_n1024
+    - ifft_c32_n1024
+    - ifft_c64_n1024
+    - rfft_f32_n1024
+    - rfft_f64_n1024
+    - irfft_c32_n1024
+    - irfft_c64_n1024
+    - fft_c32_n1048576
+    - fft_c64_n1048576
+    - ifft_c32_n1048576
+    - ifft_c64_n1048576
+    - rfft_f32_n1048576
+    - rfft_f64_n1048576
+    - irfft_c32_n1048576
+    - irfft_c64_n1048576
