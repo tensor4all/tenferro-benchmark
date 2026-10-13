@@ -234,3 +234,16 @@ bash -n scripts/run_gpu_public_api.sh
 bash tests/test_suite_result_layout.sh
 bash tests/test_run_all_docs_outputs.sh
 ```
+
+The full real-vector sum-of-squares cases use the single native `vdot(x,x)`
+PyTorch/JAX operation; axis-wise cases remain unsupported in those references.
+Full mean uses an input-size-dependent absolute roundoff policy so that the
+near-zero mean cannot pass as an all-zero result. The underlying tenferro mean
+API still constructs/uploads a scalar per call and stays timing-excluded.
+
+The structural additions distinguish checked lossless F32-to-F64 `convert`
+from general `cast`. Materialized rank-two singleton broadcast uses concrete
+`broadcast_in_dim`, `torch.expand_copy`, and `jax.lax.broadcast_in_dim`.
+Eager broadcast returns a lazy broadcast view and is excluded from this
+materializing comparison. Case selection alone is not measured coverage;
+only validated cells in the linked latest reports count.

@@ -112,6 +112,10 @@ def fixtures(case, dtype):
         inputs.extend([index[:, None], updates])
         y = a.copy()
         y[index] += updates
+    elif op == "broadcast_in_dim":
+        y = np.broadcast_to(a, case["output_shape"])
+    elif op == "convert":
+        return inputs, x.astype(np.float64)
     elif op == "cast":
         return inputs, x.astype(np.float64 if x.dtype == np.float32 else np.float32)
     elif op == "norm":
@@ -176,6 +180,11 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
     if op == "scatter":
         index = inputs[1].reshape(-1)  # metadata preparation before the timer
         return lambda: torch.scatter_add(x, 0, index, inputs[2])
+    if op == "broadcast_in_dim":
+        shape = tuple(case["output_shape"])
+        return lambda: torch.expand_copy(x, shape)
+    if op == "convert":
+        return lambda: x.to(dtype=torch.float64)
     if op == "cast":
         dtype = torch.float64 if x.dtype == torch.float32 else torch.float32
         return lambda: x.to(dtype=dtype)
@@ -190,6 +199,8 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
     if op == "vdot_read":
         return lambda: torch.vdot(x, inputs[1])
     if op == "norm_squared_read":
+        return lambda: torch.vdot(x, x)
+    if op == "reduce_sum_squares" and case.get("full_reduction"):
         return lambda: torch.vdot(x, x)
     if op.startswith("reduce_"):
         fn = {"reduce_sum": torch.sum, "reduce_prod": torch.prod, "reduce_max": torch.amax,
@@ -242,6 +253,11 @@ def jax_operation(jax, jnp, case):
     if op == "scatter":
         config = jax.lax.ScatterDimensionNumbers(update_window_dims=(), inserted_window_dims=(0,), scatter_dims_to_operand_dims=(0,))
         return lambda x, index, updates: jax.lax.scatter_add(x, index, updates, config, indices_are_sorted=True, unique_indices=True)
+    if op == "broadcast_in_dim":
+        shape, dims = tuple(case["output_shape"]), tuple(case["broadcast_dims"])
+        return lambda x: jax.lax.broadcast_in_dim(x, shape, dims)
+    if op == "convert":
+        return lambda x: x.astype(jnp.float64)
     if op == "cast":
         dtype = jnp.float64 if case["dtype"] == "f32" else jnp.float32
         return lambda x: x.astype(dtype)
@@ -259,6 +275,8 @@ def jax_operation(jax, jnp, case):
     if op == "vdot_read":
         return lambda x, y: jnp.vdot(x, y)
     if op == "norm_squared_read":
+        return lambda x: jnp.vdot(x, x)
+    if op == "reduce_sum_squares" and case.get("full_reduction"):
         return lambda x: jnp.vdot(x, x)
     if op.startswith("reduce_"):
         fn = getattr(jnp, op.removeprefix("reduce_"))

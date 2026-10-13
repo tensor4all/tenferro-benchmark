@@ -58,3 +58,9 @@ problems:
     - scatter_default_f64_n1048576
     - cast_default_f32_n1048576
     - cast_default_f64_n1048576
+    - broadcast_in_dim_f32_n1024
+    - broadcast_in_dim_f64_n1024
+    - convert_f32_f64_n1024
+    - broadcast_in_dim_f32_n1048576
+    - broadcast_in_dim_f64_n1048576
+    - convert_f32_f64_n1048576

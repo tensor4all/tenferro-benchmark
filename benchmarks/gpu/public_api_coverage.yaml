@@ -19,9 +19,10 @@ families:
     dtype_scope: F32/F64; C32/C64 materialized conjugation; Bool comparison/selection masks.
     limitations: Small direct compare cases pass numerical verification but repeated batches drift; exclude from standard timing pending allocator/lifetime investigation. Eager and large compare cases remain selected.
     selected_contracts:
-      full_reductions: Full sum/prod/max/min, F32/F64, n=1024 and 1048576; None axes in tenferro, omitted axis/dim in references.
+      full_reductions: Full sum/prod/max/min/mean/sum-of-squares, F32/F64, n=1024 and 1048576; None axes in tenferro, omitted axis/dim in references. Full real sum-of-squares uses the single public vdot(x,x) reference; mean retains scalar-setup exclusions.
       comparison_directions: Eq/Lt/Le/Gt/Ge with true, false and equality-boundary values; CompareDir has no Ne variant.
     latest_report: result/nvidia-gpu/gpu/isolated_ops.md; only validated measured cells count.
+    pending_measurements: New full mean/sum-of-squares selections require GPU verification and refreshed reports.
     deferred:
       scale_real_scale_complex: Public scalar setup must be separated before standard timing; ordinary tensor-tensor multiplication is a different case.
       noncontiguous_reads: Require separate strided TensorRead fixtures; no blanket aliases.
@@ -45,8 +46,8 @@ families:
       cast: Explicit F32-to-F64 and F64-to-F32 materialization.
     existing_partial: [gpu/permutation, gpu/perf_issues]
     deferred:
-      convert: Checked promotion differs from cast; requires a separate input/dtype contract.
-      broadcast_in_dim: Requires verified materializing counterpart and separate metadata-view classification.
+      convert_other_dtype_domains: F32-to-F64 checked lossless promotion has selected cases; other domains require separate checked contracts.
+      broadcast_other_mappings: Ordered rank-two singleton broadcasting has selected materializing direct/torch.expand_copy/JAX cases; eager lazy views are excluded. Other mappings remain separate.
       dynamic_slice: Device-resident start indices and matching clamping rules need dedicated fixtures.
       gather_reshape: Existing perf_issues cases are partial coverage; ordinary framework-comparison cases remain to be added.
       stack_index_select_slice_axis_take_axis: Map each public lowering before assigning operation aliases; wrapper latency is separate.

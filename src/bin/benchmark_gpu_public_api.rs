@@ -41,6 +41,10 @@ struct Case {
     #[serde(default)]
     compare_direction: String,
     #[serde(default)]
+    output_shape: Vec<usize>,
+    #[serde(default)]
+    broadcast_dims: Vec<usize>,
+    #[serde(default)]
     excluded: HashMap<String, String>,
     #[serde(default)]
     unavailable: HashMap<String, String>,

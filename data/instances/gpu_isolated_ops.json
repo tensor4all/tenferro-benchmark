@@ -1828,6 +1828,110 @@
       "issue": 155,
       "compare_direction": "ge",
       "excluded": {}
+    },
+    {
+      "id": "reduce_mean_full_f32_n1024",
+      "op": "reduce_mean",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "full_reduction": true
+    },
+    {
+      "id": "reduce_sum_squares_full_f32_n1024",
+      "op": "reduce_sum_squares",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true
+    },
+    {
+      "id": "reduce_mean_full_f64_n1024",
+      "op": "reduce_mean",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "full_reduction": true
+    },
+    {
+      "id": "reduce_sum_squares_full_f64_n1024",
+      "op": "reduce_sum_squares",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "full_reduction": true
+    },
+    {
+      "id": "reduce_mean_full_f32_n1048576",
+      "op": "reduce_mean",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "full_reduction": true
+    },
+    {
+      "id": "reduce_sum_squares_full_f32_n1048576",
+      "op": "reduce_sum_squares",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true
+    },
+    {
+      "id": "reduce_mean_full_f64_n1048576",
+      "op": "reduce_mean",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer.",
+        "tenferro-cuda-eager": "CUDA implementation checked numerically only: API creates and uploads scalar constants per call; public API cannot hoist this setup outside the timer."
+      },
+      "full_reduction": true
+    },
+    {
+      "id": "reduce_sum_squares_full_f64_n1048576",
+      "op": "reduce_sum_squares",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "full_reduction": true
     }
   ]
 }

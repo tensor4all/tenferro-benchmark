@@ -648,6 +648,116 @@
       "variant": "default",
       "issue": 155,
       "excluded": {}
+    },
+    {
+      "id": "broadcast_in_dim_f32_n1024",
+      "op": "broadcast_in_dim",
+      "dtype": "f32",
+      "n": 32,
+      "shape": [
+        32,
+        1
+      ],
+      "output_shape": [
+        32,
+        32
+      ],
+      "broadcast_dims": [
+        0,
+        1
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
+      }
+    },
+    {
+      "id": "broadcast_in_dim_f64_n1024",
+      "op": "broadcast_in_dim",
+      "dtype": "f64",
+      "n": 32,
+      "shape": [
+        32,
+        1
+      ],
+      "output_shape": [
+        32,
+        32
+      ],
+      "broadcast_dims": [
+        0,
+        1
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
+      }
+    },
+    {
+      "id": "convert_f32_f64_n1024",
+      "op": "convert",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "conversion_contract": "Checked lossless F32 to F64 promotion; every F32 fixture value is exactly representable in F64."
+    },
+    {
+      "id": "broadcast_in_dim_f32_n1048576",
+      "op": "broadcast_in_dim",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024,
+        1
+      ],
+      "output_shape": [
+        1024,
+        1024
+      ],
+      "broadcast_dims": [
+        0,
+        1
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
+      }
+    },
+    {
+      "id": "broadcast_in_dim_f64_n1048576",
+      "op": "broadcast_in_dim",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024,
+        1
+      ],
+      "output_shape": [
+        1024,
+        1024
+      ],
+      "broadcast_dims": [
+        0,
+        1
+      ],
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
+      }
+    },
+    {
+      "id": "convert_f32_f64_n1048576",
+      "op": "convert",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "conversion_contract": "Checked lossless F32 to F64 promotion; every F32 fixture value is exactly representable in F64."
     }
   ]
 }
