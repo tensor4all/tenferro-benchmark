@@ -12,9 +12,10 @@ forward-operation measurement.
 | `fft` | `FftExecutor::{fft,ifft,rfft,irfft}`, borrowed eager FFT | [FFT](../result/nvidia-gpu/gpu/fft.md) |
 | `nn` | sigmoid, silu, softplus, exact/tanh GELU, softmax/log-softmax including masks, layer/RMS normalization | [NN](../result/nvidia-gpu/gpu/nn.md) |
 | `isolated_ops` | arithmetic, analytic functions including erf, compare/select/clamp, axis-wise reductions | [Isolated operations](../result/nvidia-gpu/gpu/isolated_ops.md) |
-| `structural` | scatter, take_along_axis, pad, materialized slice, reverse, concatenate, diagonal extraction/embedding, triangular masks, cast | [Structural](../result/nvidia-gpu/gpu/structural.md) |
+| `structural` | scatter, take_along_axis, pad, materialized slice/reshape, stack, reverse, concatenate, diagonal extraction/embedding, triangular masks, cast | [Structural](../result/nvidia-gpu/gpu/structural.md) |
 | `linalg_public_api` | Cholesky, values-only SVD/eigh, pinv with explicit rtol, inverse, determinant, Frobenius norm, triangular solve | [Linear algebra](../result/nvidia-gpu/gpu/linalg_public_api.md) |
 | `reuse_contraction` | add/sub/mul/div/neg/conj `_into` and `_read_into`, tensordot, vdot_read, real norm_squared_read | [Output reuse and contractions](../result/nvidia-gpu/gpu/reuse_contraction.md) |
+| `lstsq` | Public eager solution-only least squares; numeric checks with explicit timing exclusions | [Least squares](../result/nvidia-gpu/gpu/lstsq.md) |
 
 The [coverage inventory](../benchmarks/gpu/public_api_coverage.yaml) maps selected,
 partially covered and deferred routes. The operation/route source of truth for
@@ -32,8 +33,22 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
   bash -lc 'GPU_BENCH_DEVICE=0 BENCH_RUNS=15 BENCH_WARMUPS=3 ./scripts/run_gpu_public_api.sh fft'
 ```
 
-Repeat verification and collection sequentially with `nn`, `isolated_ops`,
-`structural`, `linalg_public_api`, and `reuse_contraction`. Do not overlap timing commands or
+The maintained public API collection runs every family sequentially:
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc './scripts/run_gpu_public_api.sh all --verify-only'
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc './scripts/run_gpu_public_api.sh all'
+```
+
+`all` invokes fft, nn, isolated_ops, structural, linalg_public_api,
+reuse_contraction and lstsq in that order. It reuses each family's suite_id,
+case selection and report; it does not create duplicate combined timing tables.
+A failing family stops the collection. Individual family commands remain
+available for focused work. Repeat verification and collection sequentially
+with `nn`, `isolated_ops`, `structural`, `linalg_public_api`,
+`reuse_contraction`, and `lstsq`. Do not overlap timing commands or
 other GPU benchmark processes. The runner requires a CUDA container, fetches a
 `main` tenferro checkout while preserving pinned checkouts, and rebuilds its
 Rust binary before collection. Public GitHub fetches use HTTPS inside the image.
@@ -94,8 +109,11 @@ missing rows, duplicates and invalid samples without replacing the latest report
   also prepared before each batch, including initialization with zero warmups.
   Earlier structural measurements constructed their move-only configurations
   inside the timer and are noncompliant; rerun them before using their ratios.
-* References use NumPy/SciPy double precision on the exact rounded inputs and
-  check every output element before and after measurement. Shapes and dtypes
+* Floating-point references use NumPy/SciPy double precision on the exact rounded
+  inputs. Integer references preserve I32/I64 and require exact equality without
+  floating-point conversion; division and remainder truncate toward zero, and
+  sum preserves the input dtype. Every output element is checked before and
+  after measurement. Shapes and dtypes
   must match; NaNs fail. Matched masked log-softmax negative infinities are
   accepted. FFT absolute tolerance scales as
   `32 * eps * ceil(log2(n)) * norm2(input) / normalization`, with a `1e-9`
@@ -142,18 +160,22 @@ JAX has no equivalent output-reuse arm. Axis-wise sum-of-squares lacks a single
 matching PyTorch/JAX operation; compositions are not timed as substitutes.
 Masked softmax lacks a matching stable PyTorch operation. JAX RMS normalization
 and eager tenferro values-only SVD are similarly explicit unsupported arms.
-Normalization uses no affine parameters, `eps=1e-5`, and nonempty finite inputs;
-pinv uses `atol=0`, `rtol=1e-5`, with framework tolerance tensors prepared and
+Normalization selects non-affine, weight-only, bias-only and weight-and-bias
+cases, with `eps=1e-5` and nonempty finite inputs. Framework cells without a
+matching affine contract remain explicitly unsupported.
+Pinv uses `atol=0`, `rtol=1e-5`, with framework tolerance tensors prepared and
 uploaded before timing; triangular solve is left/lower/non-transposed/non-unit.
 
-This first set covers compact F32/F64 paths, complex FFT/conjugation/contractions,
-Bool masks and I64 indices. Non-contiguous `TensorRead` routes are not aliases of
-compact routes. Stateful Householder updates, RRQR/rank outputs, LU output
-contracts, full-SVD gauge-invariant verification, dynamic slicing, cached
-accumulation/einsum destinations and new AD transformations require dedicated
-fixtures/contracts. Existing QR/SVD/eigh/solve, permutation, AD and perf-issue
-suites remain separate coverage; their presence does not count these remaining
-routes as measured. CUDA-unsupported eig/eigvals/full-pivot LU, grouped GEMM and
+Selected cases cover compact F32/F64 paths, complex FFT/conjugation/contractions,
+I32/I64 arithmetic, Bool masks and I64 indices. Dedicated fixtures also cover
+borrowed transposed reads, Householder state projections, all LU outputs,
+full-SVD reconstruction and nullspace orthogonality, dynamic slicing, and cached
+accumulation/einsum destinations. Each route's report records its measured or
+timing-excluded disposition. Additional layouts, RRQR/rank outputs and new AD
+transformations remain explicitly deferred in the coverage inventory.
+Non-contiguous `TensorRead` routes are not aliases of compact routes. Existing
+QR/SVD/eigh/solve, permutation, AD and perf-issue suites remain separate coverage.
+CUDA-unsupported eig/eigvals/full-pivot LU, grouped GEMM and
 unsupported read-linalg hooks remain excluded as documented in issue #155.
 
 ## Existing suites and JAX references
