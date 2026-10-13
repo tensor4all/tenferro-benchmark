@@ -22,7 +22,7 @@ families:
       full_reductions: Full sum/prod/max/min/mean/sum-of-squares, F32/F64, n=1024 and 1048576; None axes in tenferro, omitted axis/dim in references. Full real sum-of-squares uses the single public vdot(x,x) reference; mean retains scalar-setup exclusions.
       comparison_directions: Eq/Lt/Le/Gt/Ge with true, false and equality-boundary values; CompareDir has no Ne variant.
     latest_report: result/nvidia-gpu/gpu/isolated_ops.md; only validated measured cells count.
-    pending_measurements: New full mean/sum-of-squares selections passed GPU1 numerical verification; refreshed GPU0 reports are pending.
+    measured_contracts: Full mean/sum-of-squares rows are in the latest GPU0 report; timing-excluded rows do not count as measured coverage.
     deferred:
       scale_real_scale_complex: Public scalar setup must be separated before standard timing; ordinary tensor-tensor multiplication is a different case.
       noncontiguous_reads: Require separate strided TensorRead fixtures; no blanket aliases.
