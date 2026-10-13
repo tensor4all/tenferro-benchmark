@@ -16,6 +16,19 @@ import generate_perf_issue_cases as gen  # noqa: E402
 
 
 class PerfIssueSuiteTest(unittest.TestCase):
+    def test_filtered_gpu_diagnostic_can_preserve_latest_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_dir = root / "data/results/nvidia-gpu/gpu/perf_issues/probe"
+            run_dir.mkdir(parents=True)
+            latest = root / "result/nvidia-gpu/gpu/perf_issues.md"
+            latest.parent.mkdir(parents=True)
+            latest.write_text("previous publication\n")
+            with patch.object(suite, "ROOT", root), patch.dict(os.environ, {"GPU_BENCH_SKIP_LATEST": "1"}):
+                suite.report(run_dir, "nvidia-gpu", "gpu")
+            self.assertTrue((run_dir / "report.md").is_file())
+            self.assertEqual(latest.read_text(), "previous publication\n")
+
     def test_generated_files_are_fresh(self):
         result = subprocess.run([sys.executable, str(ROOT / "scripts/generate_perf_issue_cases.py"), "--check"],
                                 capture_output=True, text=True)
@@ -114,7 +127,7 @@ class PerfIssueSuiteTest(unittest.TestCase):
         # recorded and checked, not just printed.
         self.assertIn('require_idle_gpu "at measurement time"', script)
         # The snapshot queries are scoped to the device the suite measures on.
-        self.assertIn('nvidia-smi -i "$DEVICE_ORDINAL"', script)
+        self.assertIn('nvidia-smi -i "$PHYSICAL_DEVICE_ORDINAL"', script)
         self.assertIn("gpu_compute_apps_at_start", script)
         self.assertIn("gpu_compute_apps_at_end", script)
         self.assertIn("not a clean measurement", script)
