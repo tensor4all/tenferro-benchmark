@@ -25,3 +25,9 @@ libm = "0.2"
 rayon = "1"
 strided-perm = { path = "../../extern/strided-rs/strided-perm", default-features = false, features = ["parallel"] }
 strided-view = { path = "../../extern/strided-rs/strided-view" }
+
+[profile.dev]
+debug = 0
+
+[profile.test]
+debug = 0
