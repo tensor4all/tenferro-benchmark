@@ -25,6 +25,8 @@ mod structural;
 mod read_layout;
 #[path = "benchmark_gpu_public_api/plan.rs"]
 mod plan;
+#[path = "benchmark_gpu_public_api/lifetime.rs"]
+mod lifetime;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -437,6 +439,12 @@ fn main() -> Result<()> {
         return Err("BENCH_RUNS must be positive".into());
     }
     let device = env_usize("GPU_BENCH_DEVICE", 0)?;
+    if env_usize("GPU_API_LIFETIME_COUNTERS", 0)? == 1 {
+        if mode != "tenferro-cuda-direct" || std::env::var("GPU_API_ROLE").as_deref() != Ok("debug") {
+            return Err("counter passes require direct API and debug GPU role".into());
+        }
+        return lifetime::run(root,&cases,Path::new(&output),device);
+    }
     let mut file = fs::OpenOptions::new()
         .create_new(true)
         .write(true)
