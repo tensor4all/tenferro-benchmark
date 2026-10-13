@@ -49,3 +49,17 @@ clocks. A filtered run records unselected cases and cannot establish complete
 coverage. Reports stay in `result/nvidia-gpu/gpu/perf_issues.md`; raw repetitions,
 selection accounting and metadata stay below `data/results/nvidia-gpu/gpu/perf_issues/`.
 Use the paired confirmation workflow before making a regression or speedup claim.
+
+The dedicated [shape-stream report](../result/nvidia-gpu/gpu/shape_stream.md)
+combines GPU0 sequence latency and a separate GPU1 untimed counter pass. Its
+formatter verifies case completeness within this family, numeric checks, matching
+operation source/sequence, GPU roles, and absence of counters in timed rows or
+timings in counter rows. It preserves the selected raw runs' revisions and effort.
+Regenerate from recorded runs, for example:
+
+```bash
+uv run python scripts/format_gpu_shape_stream_results.py \
+  --timing-run data/results/nvidia-gpu/gpu/perf_issues/20261013_221324 \
+  --counter-run data/verification/nvidia-gpu/gpu/shape_stream/20261013_215852 \
+  --output result/nvidia-gpu/gpu/shape_stream.md
+```

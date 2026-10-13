@@ -163,11 +163,16 @@ and `TENFERRO_CPU_FEATURES=blas-accelerate`; the routine
 
 ## GPU
 
-No GPU route cases were added and no GPU measurement was taken; GPU rows
-remain **unmeasured**, not validated. The CUDA and WebGPU runners were adapted
-to the session-side canonicalization and borrowed-session eager einsum, and
-`cargo check --features cuda --bins` / `--features webgpu --bins` pass against
-the repair (compile-only; no CUDA device was used).
+CUDA public-operation coverage and numerical checks are maintained in the
+[public API collection](gpu-public-api-suite.md). Whole-sequence CUDA shape/cache
+diagnostics are described in [the shape-stream workflow](gpu-shape-stream.md),
+with [GPU0 scan timings and separate GPU1 counters](../result/nvidia-gpu/gpu/shape_stream.md).
+Unsupported routes stay explicit and do not count as measured coverage.
+
+These GPU scan rows are workflow-latency diagnostics. They contain no paired
+baseline/candidate performance conclusion. GPU paired confirmation and
+quick/full command-wall budgeting remain tracked in #107; the CPU paired
+workflow above does not establish completion of those GPU requirements.
 
 ## Public eager shape streams (#107)
 
