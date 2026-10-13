@@ -123,6 +123,25 @@ class SmallWorkSuiteTest(unittest.TestCase):
             self.assertEqual(row['samples'], [])
             self.assertEqual(row['correctness_status'], 'failed')
 
+    def test_nonad_matched_pairs_and_separate_allocation_rows(self):
+        case = dict(operation='qr', dtype='f64', shape=[2, 2], layout='col_major_contiguous',
+                    workflow='single', calls_per_workflow=1, threads=1, correctness_status='passed')
+        rows = [dict(case, case_id='nonad_qr_' + tier, api_tier=tier,
+                     samples=[dict(iterations=1000, elapsed_ns=duration)]*3)
+                for tier, duration in [('concrete-shared', 2_000_000), ('eager-shared', 2_200_000)]]
+        allocation = dict(rows[1], samples=[], allocation_samples=[dict(allocations=7, bytes=123)]*7)
+        with tempfile.TemporaryDirectory() as tmp, patch.object(suite, 'ROOT', Path(tmp).resolve()):
+            run = Path(tmp)/'data/results/amd-cpu/cpu/small_work/test'
+            run.mkdir(parents=True)
+            (run/'samples_t1.jsonl').write_text('\n'.join(map(json.dumps, rows)))
+            (run/'allocations_t1.jsonl').write_text(json.dumps(allocation))
+            suite.report(run, 'amd-cpu')
+            text = (run/'report.md').read_text()
+            self.assertIn('2000.00 | 2200.00 | 200.00 | 1.100', text)
+            self.assertIn('nonad_qr_eager-shared | 1 | 7 | 123 | passed', text)
+        clipped = dict(rows[0], samples=[dict(iterations=10, elapsed_ns=100)]*3)
+        self.assertIn('INCONCLUSIVE', suite.summary(clipped)[3])
+
 
 if __name__ == '__main__':
     unittest.main()
