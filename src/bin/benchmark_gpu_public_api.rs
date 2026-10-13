@@ -313,7 +313,7 @@ fn run(
     if mode == "tenferro-cuda-direct" {
         let mut executor = FftExecutor::default();
         backend.with_backend_session(|session| {
-            if case.op.ends_with("_into") || case.op == "axpby_read_into_accum" {
+            if case.op.contains("_into") {
                 return reuse::run(case, &input, &expected, &rt, session, settings, bytes);
             }
             let probe = direct(
@@ -422,7 +422,7 @@ fn main() -> Result<()> {
             "device_ordinal":device,"session_policy":"one entered session for initialization, calibration and samples",
             "setup_policy":"fixtures, H2D, handles, plan initialization and output validation outside timing",
             "synchronization":"CudaRuntime::synchronize; no D2H in timed region"});
-        if case.op == "axpby_read_into_accum" {
+        if case.op.contains("_into_accum") {
             row["input_restoration"] = json!("GPU seed copied into each destination before every batch; synchronized outside timing");
             row["accumulation"] = json!({"alpha":0.5,"beta":1.0});
         }

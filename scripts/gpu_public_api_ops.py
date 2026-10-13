@@ -10,6 +10,14 @@ def fixtures(case, dtype):
     i = np.arange(n, dtype=np.uint64)
     raw = (((i * 2654435761 + 679) % 2001).astype(np.float64) / 2000 - .5).reshape(shape)
     x = raw.astype(dtype)
+    if op.startswith("dot_general"):
+        precision = np.complex128 if np.issubdtype(np.dtype(dtype), np.complexfloating) else np.float64
+        a = (raw + 1j*raw[::-1] if precision == np.complex128 else raw).astype(dtype)
+        b = (np.eye(shape[0]) + .1*np.roll(a, 1, axis=0)).astype(dtype)
+        seed = (np.roll(a, 3, axis=1) + .2).astype(dtype)
+        product = a.astype(precision) @ b.astype(precision)
+        expected = .5*product + seed.astype(precision) if "_into_accum" in case["op"] else product
+        return [a, b, seed], expected.astype(dtype)
     if op in {"householder_from_factors", "householder_append", "householder_r", "householder_q_columns"}:
         matrix = raw + 1j*raw[::-1] if np.issubdtype(np.dtype(dtype), np.complexfloating) else raw
         x = (np.eye(*shape) + .05*matrix).astype(dtype)
@@ -181,6 +189,19 @@ def fixtures(case, dtype):
 
 def torch_operation(torch, case, inputs, *, verify_only=False):
     x, op = inputs[0], case["op"]
+    if op.startswith("dot_general_read_into"):
+        count = 1 if verify_only else max(1, min(4096, (256 << 20) // (inputs[2].numel()*inputs[2].element_size())))
+        destinations = [torch.empty_like(inputs[2]) for _ in range(count)]
+        accumulating = "_into_accum" in op
+        alpha, beta = (.5, 1.) if accumulating else (1., 0.)
+        def operation(i):
+            return torch.addmm(destinations[i], x, inputs[1], beta=beta, alpha=alpha, out=destinations[i])
+        if accumulating:
+            def prepare(count):
+                for destination in destinations[:count]:
+                    destination.copy_(inputs[2])
+            operation.prepare = prepare
+        return operation
     if op == "axpby_read_into_accum":
         count = 1 if verify_only else max(1, min(4096, (256 << 20) // (x.numel()*x.element_size())))
         destinations = [torch.empty_like(x) for _ in range(count)]

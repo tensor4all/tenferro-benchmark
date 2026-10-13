@@ -1100,6 +1100,390 @@
         "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
         "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
       }
+    },
+    {
+      "id": "dot_general_read_into_f32_s16",
+      "op": "dot_general_read_into",
+      "dtype": "f32",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_f32_s16",
+      "op": "dot_general_read_into_accum",
+      "dtype": "f32",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_cached_f32_s16",
+      "op": "dot_general_read_into_accum_cached",
+      "dtype": "f32",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_f64_s16",
+      "op": "dot_general_read_into",
+      "dtype": "f64",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_f64_s16",
+      "op": "dot_general_read_into_accum",
+      "dtype": "f64",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_cached_f64_s16",
+      "op": "dot_general_read_into_accum_cached",
+      "dtype": "f64",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_c32_s16",
+      "op": "dot_general_read_into",
+      "dtype": "c32",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_c32_s16",
+      "op": "dot_general_read_into_accum",
+      "dtype": "c32",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_cached_c32_s16",
+      "op": "dot_general_read_into_accum_cached",
+      "dtype": "c32",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_c64_s16",
+      "op": "dot_general_read_into",
+      "dtype": "c64",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_c64_s16",
+      "op": "dot_general_read_into_accum",
+      "dtype": "c64",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_cached_c64_s16",
+      "op": "dot_general_read_into_accum_cached",
+      "dtype": "c64",
+      "n": 256,
+      "shape": [
+        16,
+        16
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_f32_s256",
+      "op": "dot_general_read_into",
+      "dtype": "f32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_f32_s256",
+      "op": "dot_general_read_into_accum",
+      "dtype": "f32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_cached_f32_s256",
+      "op": "dot_general_read_into_accum_cached",
+      "dtype": "f32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_f64_s256",
+      "op": "dot_general_read_into",
+      "dtype": "f64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_f64_s256",
+      "op": "dot_general_read_into_accum",
+      "dtype": "f64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_cached_f64_s256",
+      "op": "dot_general_read_into_accum_cached",
+      "dtype": "f64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_c32_s256",
+      "op": "dot_general_read_into",
+      "dtype": "c32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_c32_s256",
+      "op": "dot_general_read_into_accum",
+      "dtype": "c32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_cached_c32_s256",
+      "op": "dot_general_read_into_accum_cached",
+      "dtype": "c32",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_c64_s256",
+      "op": "dot_general_read_into",
+      "dtype": "c64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_c64_s256",
+      "op": "dot_general_read_into_accum",
+      "dtype": "c64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
+    },
+    {
+      "id": "dot_general_read_into_accum_cached_c64_s256",
+      "op": "dot_general_read_into_accum_cached",
+      "dtype": "c64",
+      "n": 65536,
+      "shape": [
+        256,
+        256
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts.",
+        "jax-cuda-jit": "No matching public caller-owned output API; allocation-returning dot and donation are different contracts."
+      }
     }
   ]
 }

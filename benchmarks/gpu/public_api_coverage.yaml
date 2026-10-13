@@ -79,9 +79,10 @@ families:
     contracts: Preallocated output reuse is distinct from allocation-returning operations; JAX donation is not an equivalent arm.
     selected_contracts:
       axpby_read_into_accum: Compact F32/F64/C32/C64; y <- 0.5*x + y; destinations restored from a prepared GPU seed before every sample, including calibration and zero-warmup initialization. PyTorch Tensor.add_ is the matching single-call reference.
+      dot_general_output_reuse: Square 16/256 F32/F64/C32/C64; overwrite and alpha=0.5/beta=1 accumulation, plus public SessionCachedDot accumulation with slot Some(0). PyTorch addmm with out is the matched reference. CUDA cached accumulation delegates to the ordinary accumulation hook; no separate cache-speed claim.
     deferred:
       generalized_conjugating_dot: General batch/contract axes and conjugation placement need separate fixtures.
-      dot_general_into_accum_cached: Alpha/beta, cache state, destination restoration and matched addmm output reuse need dedicated cases.
+      dot_general_other_accumulation_layouts: Compact square overwrite/accumulation/cached-wrapper cases are selected; other alpha/beta values, batch/contract axes and borrowed strided reads need separate cases.
       axpby_other_beta_or_layout: Beta=1 compact cases are selected; arbitrary beta lacks an established single-call reference, and strided sources internally upload coefficients and need a separate timing disposition.
       ConcreteEinsumPlan: Plan creation must be untimed; noncontiguous and into/accum variants need their own cases.
       TensorEinsumIntoExt: No general PyTorch/JAX einsum caller-owned-output counterpart.

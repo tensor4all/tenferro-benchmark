@@ -86,3 +86,27 @@ problems:
     - axpby_read_into_accum_f64_n1048576
     - axpby_read_into_accum_c32_n1048576
     - axpby_read_into_accum_c64_n1048576
+    - dot_general_read_into_f32_s16
+    - dot_general_read_into_accum_f32_s16
+    - dot_general_read_into_accum_cached_f32_s16
+    - dot_general_read_into_f64_s16
+    - dot_general_read_into_accum_f64_s16
+    - dot_general_read_into_accum_cached_f64_s16
+    - dot_general_read_into_c32_s16
+    - dot_general_read_into_accum_c32_s16
+    - dot_general_read_into_accum_cached_c32_s16
+    - dot_general_read_into_c64_s16
+    - dot_general_read_into_accum_c64_s16
+    - dot_general_read_into_accum_cached_c64_s16
+    - dot_general_read_into_f32_s256
+    - dot_general_read_into_accum_f32_s256
+    - dot_general_read_into_accum_cached_f32_s256
+    - dot_general_read_into_f64_s256
+    - dot_general_read_into_accum_f64_s256
+    - dot_general_read_into_accum_cached_f64_s256
+    - dot_general_read_into_c32_s256
+    - dot_general_read_into_accum_c32_s256
+    - dot_general_read_into_accum_cached_c32_s256
+    - dot_general_read_into_c64_s256
+    - dot_general_read_into_accum_c64_s256
+    - dot_general_read_into_accum_cached_c64_s256
