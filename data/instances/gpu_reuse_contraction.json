@@ -980,6 +980,126 @@
       "unavailable": {
         "tenferro-cuda-eager": "No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately."
       }
+    },
+    {
+      "id": "axpby_read_into_accum_f32_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+      }
+    },
+    {
+      "id": "axpby_read_into_accum_f64_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+      }
+    },
+    {
+      "id": "axpby_read_into_accum_c32_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+      }
+    },
+    {
+      "id": "axpby_read_into_accum_c64_n1024",
+      "op": "axpby_read_into_accum",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+      }
+    },
+    {
+      "id": "axpby_read_into_accum_f32_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+      }
+    },
+    {
+      "id": "axpby_read_into_accum_f64_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+      }
+    },
+    {
+      "id": "axpby_read_into_accum_c32_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+      }
+    },
+    {
+      "id": "axpby_read_into_accum_c64_n1048576",
+      "op": "axpby_read_into_accum",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "issue": 155,
+      "unavailable": {
+        "tenferro-cuda-eager": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda": "No matching public caller-owned accumulating output API; donation is not output reuse.",
+        "jax-cuda-jit": "No matching public caller-owned accumulating output API; donation is not output reuse."
+      }
     }
   ]
 }

@@ -78,3 +78,11 @@ problems:
     - vdot_read_c64_n262144
     - norm_squared_read_f32_n262144
     - norm_squared_read_f64_n262144
+    - axpby_read_into_accum_f32_n1024
+    - axpby_read_into_accum_f64_n1024
+    - axpby_read_into_accum_c32_n1024
+    - axpby_read_into_accum_c64_n1024
+    - axpby_read_into_accum_f32_n1048576
+    - axpby_read_into_accum_f64_n1048576
+    - axpby_read_into_accum_c32_n1048576
+    - axpby_read_into_accum_c64_n1048576
