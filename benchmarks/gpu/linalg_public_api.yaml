@@ -42,3 +42,43 @@ problems:
     - norm_f64_512x512
     - triangular_solve_f32_512x512
     - triangular_solve_f64_512x512
+    - svd_full_square_f32_32x32
+    - svd_full_tall_f32_64x32
+    - svd_full_wide_f32_32x64
+    - slogdet_positive_f32_32x32
+    - slogdet_negative_f32_32x32
+    - svd_full_square_f64_32x32
+    - svd_full_tall_f64_64x32
+    - svd_full_wide_f64_32x64
+    - slogdet_positive_f64_32x32
+    - slogdet_negative_f64_32x32
+    - svd_full_square_c32_32x32
+    - svd_full_tall_c32_64x32
+    - svd_full_wide_c32_32x64
+    - slogdet_positive_c32_32x32
+    - slogdet_negative_c32_32x32
+    - svd_full_square_c64_32x32
+    - svd_full_tall_c64_64x32
+    - svd_full_wide_c64_32x64
+    - slogdet_positive_c64_32x32
+    - slogdet_negative_c64_32x32
+    - svd_full_square_f32_256x256
+    - svd_full_tall_f32_512x256
+    - svd_full_wide_f32_256x512
+    - slogdet_positive_f32_256x256
+    - slogdet_negative_f32_256x256
+    - svd_full_square_f64_256x256
+    - svd_full_tall_f64_512x256
+    - svd_full_wide_f64_256x512
+    - slogdet_positive_f64_256x256
+    - slogdet_negative_f64_256x256
+    - svd_full_square_c32_256x256
+    - svd_full_tall_c32_512x256
+    - svd_full_wide_c32_256x512
+    - slogdet_positive_c32_256x256
+    - slogdet_negative_c32_256x256
+    - svd_full_square_c64_256x256
+    - svd_full_tall_c64_512x256
+    - svd_full_wide_c64_256x512
+    - slogdet_positive_c64_256x256
+    - slogdet_negative_c64_256x256

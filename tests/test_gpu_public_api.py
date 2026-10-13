@@ -61,10 +61,11 @@ class PublicGpuContracts(unittest.TestCase):
                     continue
                 arrays, expected = fixtures(case, bench.DTYPES[case["dtype"]])
                 self.assertTrue(np.all(np.isfinite(arrays[0])), case["id"])
-                self.assertFalse(np.any(np.isnan(expected)), case["id"])
+                from gpu_multi_output_verification import leaves
+                self.assertTrue(all(not np.any(np.isnan(v)) for v in leaves(expected)), case["id"])
                 with tempfile.TemporaryDirectory() as temp:
                     root = Path(temp)
-                    for i, a in enumerate([*arrays, expected]):
+                    for i, a in enumerate([*arrays, *leaves(expected)]):
                         spec = bench.save_array(root, str(i), a)
                         restored = bench.load_array(root, spec)
                         np.testing.assert_array_equal(restored, a)

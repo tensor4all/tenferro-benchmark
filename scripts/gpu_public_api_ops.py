@@ -10,6 +10,18 @@ def fixtures(case, dtype):
     i = np.arange(n, dtype=np.uint64)
     raw = (((i * 2654435761 + 679) % 2001).astype(np.float64) / 2000 - .5).reshape(shape)
     x = raw.astype(dtype)
+    if op in {"svd_full", "slogdet"}:
+        real_dtype = np.empty((), dtype=dtype).real.dtype
+        matrix = raw + 1j*raw[::-1] if np.issubdtype(np.dtype(dtype), np.complexfloating) else raw
+        if op == "svd_full":
+            x = (np.eye(*shape) + .05*matrix).astype(dtype)
+            values = np.linalg.svd(x.astype(np.complex128 if np.iscomplexobj(x) else np.float64), full_matrices=True)
+            return [x], tuple(v.astype(real_dtype if i == 1 else dtype) for i, v in enumerate(values))
+        x = (np.eye(shape[0]) + matrix @ matrix.conj().T / shape[0]).astype(dtype)
+        if case.get("variant") == "negative":
+            x[0] *= -1
+        sign, logabs = np.linalg.slogdet(x.astype(np.complex128 if np.iscomplexobj(x) else np.float64))
+        return [x], (np.asarray(sign, dtype=dtype), np.asarray(logabs, dtype=real_dtype))
     if op in {"cholesky", "svdvals", "eigvalsh", "pinv", "inv", "det", "triangular_solve"}:
         # SPD close to identity, so determinant does not overflow at large n.
         matrix = raw.astype(np.float64)
@@ -205,6 +217,10 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
         return lambda: getattr(torch.linalg, op)(x)
     if op == "pinv":
         return lambda: torch.linalg.pinv(x, atol=inputs[1], rtol=inputs[2])
+    if op == "svd_full":
+        return lambda: torch.linalg.svd(x, full_matrices=True)
+    if op == "slogdet":
+        return lambda: torch.linalg.slogdet(x)
     if op == "triangular_solve":
         return lambda: torch.linalg.solve_triangular(x, inputs[1], upper=False)
     if op == "tensordot":
@@ -288,6 +304,10 @@ def jax_operation(jax, jnp, case):
         return lambda x: jnp.linalg.svd(x, compute_uv=False)
     if op == "pinv":
         return lambda x, atol, rtol: jnp.linalg.pinv(x, rtol=rtol)
+    if op == "svd_full":
+        return lambda x: jnp.linalg.svd(x, full_matrices=True)
+    if op == "slogdet":
+        return lambda x: jnp.linalg.slogdet(x)
     if op == "triangular_solve":
         import jax.scipy.linalg
         return lambda x, rhs: jax.scipy.linalg.solve_triangular(x, rhs, lower=True)

@@ -95,6 +95,7 @@ jobs:
             scripts/collect_run_metadata.py \
             scripts/benchmark_gpu_linalg_ad.py \
             scripts/format_gpu_linalg_ad_results.py \
+            scripts/gpu_multi_output_verification.py \
             scripts/gpu_linalg_ad_contracts.py \
             scripts/verify_gpu_linalg_ad_rust.py \
             scripts/benchmark_gpu_public_api.py \
@@ -119,7 +120,7 @@ jobs:
       - name: Validate GPU public API fixtures and timing contracts without a GPU
         run: |
           bash -n scripts/run_gpu_public_api.sh
-          uv run python -m unittest tests.test_gpu_public_api tests.test_gpu_framework_runner tests.test_gpu_linalg_ad_contracts
+          uv run python -m unittest tests.test_gpu_public_api tests.test_gpu_framework_runner tests.test_gpu_linalg_ad_contracts tests.test_gpu_multi_output_verification
 
       - name: Cargo check
         run: cargo check --all-targets
