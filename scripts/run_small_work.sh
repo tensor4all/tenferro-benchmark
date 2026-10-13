@@ -28,7 +28,10 @@ TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
 RUN_DIR="$PROJECT_DIR/data/results/$BENCHMARK_TARGET_PROFILE/cpu/small_work/$TIMESTAMP"
 mkdir -p "$RUN_DIR"
 "$PYTHON" "$SCRIPT_DIR/collect_cpu_info.py" --markdown > "$RUN_DIR/cpu_info.md"
-export BENCHMARK_COMMIT="${BENCHMARK_COMMIT:-$(git rev-parse HEAD)}"
+if [[ -z "${BENCHMARK_COMMIT:-}" ]]; then
+    BENCHMARK_COMMIT="$(git rev-parse HEAD)"
+fi
+export BENCHMARK_COMMIT
 export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE TENFERRO_CPU_FEATURES BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
 failed=0
 for threads in "${THREAD_COUNTS[@]}"; do
