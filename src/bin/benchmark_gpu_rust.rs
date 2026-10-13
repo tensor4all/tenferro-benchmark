@@ -1512,6 +1512,7 @@ fn sample_eager(
                 sync_cubecl_runtime(rt)?;
                 assert_cuda_eager_outputs(&output, device_ordinal)?;
                 return Ok((Vec::new(), output, json!({"sampling":null,"verification_only":true,
+                    "wall_phases_ns":{"session_entry_and_initial_probe":sampler_start.elapsed().as_nanos()},
                     "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()})));
             }
             let mut batch = |count: usize| -> Result<_, String> {
