@@ -46,7 +46,8 @@ def account(selection, paths, verify_only=False):
     expected = selection["timing"] + selection["state"]
     status = dict(selection, expected=expected, selected=expected,
                   measured=[], observed=[], verification_only=[], missing=[], failed=[], noisy=[],
-                  duplicates=duplicates, unexpected=sorted(set(rows) - set(expected)), provenance=provenance)
+                  duplicates=duplicates, unexpected=sorted(set(rows) - set(expected)), provenance=provenance,
+                  timing_statistics={}, state_statistics={}, sequences={})
     revisions = {(item["tenferro_rs"]["commit"], tuple(item["tenferro_rs"]["features"]),
                   item["harness"]["commit"]) for item in provenance}
     status["provenance_mismatch"] = len(revisions) != 1
@@ -56,10 +57,27 @@ def account(selection, paths, verify_only=False):
             status["missing"].append(key)
             continue
         samples = row.get("samples", [])
+        if row.get("kind") == "shape_stream":
+            status["sequences"][key] = dict(cache_mode=row["cache_mode"],
+                                            reset=row["cache_reset_scope"], sequence=row["sequence"])
         if row.get("correctness_status") != "passed":
             status["failed"].append(key)
         elif key in selection["state"]:
             status["failed" if samples else "observed"].append(key)
+            if not samples and row.get("kind") == "shape_stream":
+                snapshots = row["counter_observations"]
+                first, last = snapshots[0]["stats"], snapshots[-1]["stats"]
+                status["state_statistics"][key] = dict(
+                    entries_before=first["plans"]["entries"], entries_after=last["plans"]["entries"],
+                    hits=last["plans"]["hits"]-first["plans"]["hits"],
+                    misses=last["plans"]["misses"]-first["plans"]["misses"],
+                    evictions=last["plans"]["evictions"]-first["plans"]["evictions"],
+                    plan_bytes=last["plans"]["retained_bytes"], workspace_bytes=last["workspace"]["bytes"],
+                    observed_in_flight_peak=max(item["stats"]["retirement"]["in_flight"] for item in snapshots))
+            elif not samples and row.get("kind") == "vendor_churn":
+                status["state_statistics"][key] = {field: row[field] for field in (
+                    "cycles", "rss_bytes_before", "rss_bytes_after", "rss_growth_bytes",
+                    "free_bytes_before", "free_bytes_after")}
         elif verify_only:
             status["failed" if samples else "verification_only"].append(key)
         elif not samples or any(not math.isfinite(sample["elapsed_ns"]) or
@@ -70,6 +88,14 @@ def account(selection, paths, verify_only=False):
         else:
             status["measured"].append(key)
             values = [sample["elapsed_ns"] / sample["iterations"] for sample in samples]
+            quartiles = statistics.quantiles(values, n=4, method="inclusive") if len(values) > 1 else [values[0]]*3
+            enqueue = row.get("host_enqueue_samples_ns")
+            status["timing_statistics"][key] = dict(
+                median_ns=statistics.median(values), iqr_ns=quartiles[2]-quartiles[0], samples=len(samples),
+                unit="sequence" if row.get("kind") == "shape_stream" else "allocation",
+                scope=row.get("measurement_scope"),
+                operations_per_sequence=row.get("operations_per_sequence"),
+                host_enqueue_median_ns=statistics.median(enqueue) if enqueue else None)
             if len(values) > 1 and statistics.stdev(values) / statistics.mean(values) > .10:
                 status["noisy"].append(key)
     status["complete"] = (not verify_only and len(status["measured"]) == len(selection["timing"])
@@ -87,12 +113,40 @@ def report(status, source):
              "Timing controls measured and state controls observed: " + ("yes" if status["complete"] else "no") + ".", "",
              "State/counter controls contain no timed samples. Verification-only and unselected cases "
              "are not measured coverage. These controls do not establish a paired regression conclusion.", "",
-             f"Provider/source mismatch across lanes: {status['provenance_mismatch']}.", ""]
+             f"Revision/features mismatch across lanes: {status['provenance_mismatch']}.", ""]
     for source in status["provenance"]:
         lines += [f"Raw run: `{source['raw_run']}`; tenferro-rs `{source['tenferro_rs']['commit']}`; "
                   f"harness `{source['harness']['commit']}`; GPU UUID `{source['cuda']['device_uuid']}`.", ""]
     lines += ["| Classification | Count |", "|---|---:|"]
     lines += [f"| {key} | {count} |" for key, count in status["counts"].items()]
+    lines += ["", "## Latency observations", "",
+              "Times are per declared unit, including host dispatch and native completion synchronization. "
+              "Whole-sequence samples include required planning; shared allocation and per-call session entry "
+              "are distinct scopes. Host enqueue is not device kernel time. Setup and validation are untimed.", "",
+              "| Case | Scope | Unit | Calls/sequence | Samples | Median µs | IQR µs | Host enqueue µs |",
+              "|---|---|---|---:|---:|---:|---:|---:|"]
+    for key, value in status["timing_statistics"].items():
+        enqueue = value["host_enqueue_median_ns"]
+        lines.append(f"| {key} | {value['scope']} | {value['unit']} | "
+                     f"{value['operations_per_sequence'] or '—'} | {value['samples']} | "
+                     f"{value['median_ns']/1000:.3f} | {value['iqr_ns']/1000:.3f} | "
+                     f"{enqueue/1000 if enqueue is not None else '—'} |")
+    lines += ["", "## Untimed state observations", "",
+              "Plan bytes and workspace describe public extension retention, not the whole allocator. "
+              "A separate plan-build count is unavailable; misses are not substituted for builds. "
+              "Observed in-flight peak uses snapshots and can miss activity between them. "
+              "RSS/free-memory changes alone do not establish a leak.", "",
+              "| Case | Public observation |", "|---|---|"]
+    for key, value in status["state_statistics"].items():
+        lines.append(f"| {key} | `{json.dumps(value, sort_keys=True)}` |")
+    lines += ["", "## Sequence/cache contracts", "",
+              "Key order is exact. Fixture definitions retain shapes and strides; full per-command "
+              "enqueue/completion/drop snapshots remain in the referenced raw runs.", ""]
+    for key, value in status["sequences"].items():
+        definitions = {json.dumps(item, sort_keys=True) for item in value["sequence"]}
+        lines += [f"- `{key}`: mode `{value['cache_mode']}`; reset `{value['reset']}`; "
+                  f"order `{[item['key'] for item in value['sequence']]}`; "
+                  f"fixtures `{' '.join(sorted(definitions))}`."]
     for key in ("expected", "selected", "measured", "observed", "verification_only", "failed", "missing",
                 "noisy", "unselected", "duplicates", "unexpected"):
         lines += ["", f"## {key}", ""] + ([f"- `{case}`" for case in status[key]] or ["None."])
