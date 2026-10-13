@@ -11,6 +11,17 @@ from benchmark_gpu_public_api import verify
 
 
 class MultiOutputVerification(unittest.TestCase):
+    def test_lstsq_fixture_is_overdetermined_with_nonzero_residual(self):
+        for dtype in (np.float64, np.complex128):
+            inputs, solution = fixtures(dict(op="lstsq", n=60, shape=[12, 5], rhs_cols=3), dtype)
+            a, b = inputs
+            self.assertEqual(solution.shape, (5, 3))
+            self.assertEqual(solution.dtype, np.dtype(dtype))
+            self.assertEqual(np.linalg.matrix_rank(a), 5)
+            residual = a @ solution - b
+            self.assertGreater(np.linalg.norm(residual), .1)
+            np.testing.assert_allclose(a.conj().T @ residual, 0, atol=1e-12)
+
     def test_lu_all_outputs_follow_pa_equals_lu_and_pivot_parity(self):
         for dtype in (np.float64, np.complex128):
             for shape in ([4, 4], [6, 4], [4, 6]):

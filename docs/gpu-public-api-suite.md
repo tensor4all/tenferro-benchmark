@@ -338,3 +338,23 @@ PyTorch/JAX candidates return three outputs and have no verified matching
 single-call P/L/U/parity operation, so those cells remain unsupported.
 The native cuSOLVER diagnostic-status read is intrinsic to the public LU
 call and remains included; benchmark output inspection downloads are untimed.
+
+Least-squares contract checks are a separate entrypoint:
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'GPU_BENCH_DEVICE=1 ./scripts/run_gpu_public_api.sh lstsq --verify-only'
+```
+
+`gpu/lstsq` selects full-column-rank tall F32/F64/C32/C64 matrices with
+32/256 columns and eight RHS columns. Its independent NumPy SVD-based
+least-squares oracle has a nonzero residual; fixture tests check the normal
+equations and full column rank. The selected public API is
+`EagerSessionLinalgExt::lstsq`, whose QR-based implementation creates and
+uploads scalar operands internally. It can be numerically verified on CUDA,
+but standard setup-free timing is excluded. The current direct
+`TensorLinalgExt` has no `lstsq` method. PyTorch/JAX native candidates return
+extra residual/rank/singular-value outputs; no matching single-call
+solution-only contract is established here. These explicit unsupported cells
+are not measured coverage. Wide and rank-deficient problems are outside the
+current eager QR-based API contract, not smaller replacements for these cases.

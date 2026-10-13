@@ -40,6 +40,7 @@ pub(super) fn eager(
     let x = &inputs[0];
     Ok(match case.op.as_str() {
         "tensordot" => s.tensordot(x, &inputs[1], TensorDotAxes::Count(1))?,
+        "lstsq" => s.lstsq(x, &inputs[1])?,
         "cholesky" => s.cholesky(x)?,
         "eigvalsh" => s.eigvalsh(x)?,
         "pinv" => s.pinv_with_rtol(x, 1e-5)?,
