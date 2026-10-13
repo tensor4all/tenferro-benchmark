@@ -32,7 +32,14 @@ def load_rows(suite, paths, *, verify_only=False):
                     if not isinstance(count, int) or count < 1 or not samples or any(not math.isfinite(v) or v <= 0 for v in samples):
                         raise ValueError(f"invalid sampling: {key}")
                     row["samples_us"] = np.asarray(samples) * 1000 / count
-            elif row["status"] != "unsupported":
+            elif row["status"] == "unsupported":
+                if not row.get("reason") or row.get("timing") is not None:
+                    raise ValueError(f"invalid unsupported disposition: {key}")
+                if row.get("cuda_implementation_verified"):
+                    error = row["verification"]["max_error_over_tolerance"]
+                    if not math.isfinite(error) or not 0 <= error <= 1:
+                        raise ValueError(f"invalid excluded verification: {key}")
+            else:
                 raise ValueError(f"cannot publish failed measurement {key}: {row.get('reason')}; raw run retained")
             rows[key] = row
     if rows.keys() != wanted:
@@ -43,7 +50,10 @@ def load_rows(suite, paths, *, verify_only=False):
 def render(suite, paths, metadata, timestamp):
     rows = load_rows(suite, paths)
     backends = suite["backends"]
+    measured = sum(row["status"] == "ok" for row in rows.values())
+    excluded_verified = sum(row["status"] == "unsupported" and bool(row.get("cuda_implementation_verified")) for row in rows.values())
     text = [f'# {suite["suite_id"]}: CUDA public API benchmark', "",
+            f'Measured cells: **{measured}**. Unsupported cells: **{len(rows)-measured}**, including **{excluded_verified}** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.', "",
             f'Raw run: `data/results/nvidia-gpu/{suite["suite_id"]}/{timestamp}/`.', "",
             'Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.', "",
             'Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.', "",

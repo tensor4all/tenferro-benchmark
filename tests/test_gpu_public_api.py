@@ -18,6 +18,23 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_excluded_verified_rows_cannot_hide_failed_validation_or_timings(self):
+        suite = {"suite_id": "gpu/lstsq", "cases": [{"id": "one"}], "backends": ["a"]}
+        row = dict(case_id="one", backend="a", status="unsupported", reason="internal setup",
+                   timing=None, cuda_implementation_verified=True,
+                   verification={"max_error_over_tolerance": 0.})
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "rows.jsonl"
+            path.write_text(json.dumps(row) + "\n")
+            report = formatter.render(suite, [path], {}, "test")
+            self.assertIn("Measured cells: **0**", report)
+            self.assertIn("**1** numerically verified but timing-excluded", report)
+            for bad in (dict(row, timing={"batch_ms": [1.]}), dict(row, reason=""),
+                        dict(row, verification={"max_error_over_tolerance": 1.1})):
+                path.write_text(json.dumps(bad) + "\n")
+                with self.assertRaises(ValueError):
+                    formatter.load_rows(suite, [path])
+
     def test_strided_rectangular_fixture_preserves_logical_axes(self):
         case = dict(op="reduce_sum_strided_read", read_op="reduce_sum",
                     n=1024, shape=[16, 64])
