@@ -45,10 +45,11 @@ selection. A scan can identify suspects; it cannot establish a performance
 regression. Command-wall observations and a budget must be measured separately
 from operation timings. The initial full command baseline and its scope are
 documented in [gpu-command-wall.md](gpu-command-wall.md). Dynamic-shape and
-lifetime diagnostic controls remain separate suites until their routine lane
-is validated; these 27 pairs alone do not complete issue #107.
+lifetime diagnostic controls run sequentially after the core matrix through
+[the routine control lane](gpu-routine-controls.md). These 27 core pairs alone
+do not complete issue #107.
 
-The first standard quick collection (`20261013_232208`, tenferro-rs `9655b4e0`,
+The first core-only standard quick collection (`20261013_232208`, tenferro-rs `9655b4e0`,
 harness `020332f`) executed all 27 pairs on physical RTX 3060 GPU0. All passed
 numerical verification and retained raw batch samples; none exceeded the
 descriptive noise threshold. The script clock through the final suite report

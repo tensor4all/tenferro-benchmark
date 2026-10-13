@@ -1,0 +1,71 @@
+schema_version: 1
+manifest_version: 1
+issue: 107
+source: data/instances/gpu_perf_issues.json
+coverage:
+  quick:
+    timing:
+    - shape_stream_f64_n16_fixed-warm_latency
+    - shape_stream_f64_n16_mixed-warm_latency
+    - shape_stream_f64_n16_fresh_latency
+    - shape_stream_f64_n64_fixed-warm_latency
+    - shape_stream_f64_n64_mixed-warm_latency
+    - shape_stream_f64_n64_fresh_latency
+    - alloc_zero_f64_alloc-zero-within-callback_16el
+    - alloc_zero_f64_alloc-zero-per-callback_16el
+    - alloc_zero_f64_alloc-zero-within-callback_32768el
+    - alloc_zero_f64_alloc-zero-per-callback_32768el
+    state:
+    - shape_stream_f64_n16_fixed-warm_counters
+    - shape_stream_f64_n16_mixed-warm_counters
+    - shape_stream_f64_n16_fresh_counters
+    - shape_stream_f64_n64_fixed-warm_counters
+    - shape_stream_f64_n64_mixed-warm_counters
+    - shape_stream_f64_n64_fresh_counters
+    - vendor_churn_f64_cycles8
+    - vendor_churn_f64_cycles64
+  full:
+    timing:
+    - shape_stream_f64_n16_fixed-warm_latency
+    - shape_stream_f64_n16_mixed-warm_latency
+    - shape_stream_f64_n16_fresh_latency
+    - shape_stream_f64_n16_capacity-thrash_latency
+    - shape_stream_f64_n16_equal-shape-strides_latency
+    - shape_stream_f64_n64_fixed-warm_latency
+    - shape_stream_f64_n64_mixed-warm_latency
+    - shape_stream_f64_n64_fresh_latency
+    - shape_stream_f64_n64_capacity-thrash_latency
+    - shape_stream_f64_n64_equal-shape-strides_latency
+    - alloc_zero_f64_alloc-zero-within-callback_0el
+    - alloc_zero_f64_alloc-zero-per-callback_0el
+    - alloc_zero_f64_host-zero-upload_0el
+    - alloc_zero_f64_alloc-fill-per-callback_0el
+    - alloc_zero_f64_alloc-zero-within-callback_16el
+    - alloc_zero_f64_alloc-zero-per-callback_16el
+    - alloc_zero_f64_host-zero-upload_16el
+    - alloc_zero_f64_alloc-fill-per-callback_16el
+    - alloc_zero_f64_alloc-zero-within-callback_512el
+    - alloc_zero_f64_alloc-zero-per-callback_512el
+    - alloc_zero_f64_host-zero-upload_512el
+    - alloc_zero_f64_alloc-fill-per-callback_512el
+    - alloc_zero_f64_alloc-zero-within-callback_32768el
+    - alloc_zero_f64_alloc-zero-per-callback_32768el
+    - alloc_zero_f64_host-zero-upload_32768el
+    - alloc_zero_f64_alloc-fill-per-callback_32768el
+    - alloc_zero_f64_alloc-zero-within-callback_2097152el
+    - alloc_zero_f64_alloc-zero-per-callback_2097152el
+    - alloc_zero_f64_host-zero-upload_2097152el
+    - alloc_zero_f64_alloc-fill-per-callback_2097152el
+    state:
+    - shape_stream_f64_n16_fixed-warm_counters
+    - shape_stream_f64_n16_mixed-warm_counters
+    - shape_stream_f64_n16_fresh_counters
+    - shape_stream_f64_n16_capacity-thrash_counters
+    - shape_stream_f64_n16_equal-shape-strides_counters
+    - shape_stream_f64_n64_fixed-warm_counters
+    - shape_stream_f64_n64_mixed-warm_counters
+    - shape_stream_f64_n64_fresh_counters
+    - shape_stream_f64_n64_capacity-thrash_counters
+    - shape_stream_f64_n64_equal-shape-strides_counters
+    - vendor_churn_f64_cycles8
+    - vendor_churn_f64_cycles64
