@@ -166,6 +166,17 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
             "scope": "steady_state_host_api_plus_device_sync"}
 
 
+def verify_device(outputs, backend, device):
+    """Check every output leaf before any verification download."""
+    from gpu_multi_output_verification import leaves
+    for value in leaves(outputs):
+        if backend == "pytorch-cuda":
+            if value.device.type != "cuda" or value.device.index != device:
+                raise RuntimeError("CPU fallback or wrong CUDA device")
+        elif value.devices() != {device}:
+            raise RuntimeError("CPU fallback or wrong JAX GPU")
+
+
 def run_python(backend, root, output):
     device = int(os.environ.get("GPU_BENCH_DEVICE", "0"))
     verify_only = os.environ.get("GPU_API_VERIFY_ONLY") == "1"
@@ -244,12 +255,7 @@ def run_python(backend, root, output):
                     row["synchronization"] = "jax.block_until_ready on all retained outputs; no D2H in timed region"
                 reuse = case["op"].endswith("_into")
                 probe = op(0) if reuse else op()
-                for value in leaves(probe):
-                    if backend == "pytorch-cuda":
-                        if value.device.type != "cuda" or value.device.index != device:
-                            raise RuntimeError("CPU fallback or wrong CUDA device")
-                    elif value.devices() != {gpu}:
-                        raise RuntimeError("CPU fallback or wrong JAX GPU")
+                verify_device(probe, backend, device if backend == "pytorch-cuda" else gpu)
                 ready([probe])
                 error = verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify)
                 del probe
@@ -257,6 +263,7 @@ def run_python(backend, root, output):
                 if not verify_only:
                     timing = measure(op, sync, ready, sum(v.nbytes for v in expected), warmups, runs, reuse=reuse)
                     probe = op(timing["operations_per_sample"]-1) if reuse else op()
+                    verify_device(probe, backend, device if backend == "pytorch-cuda" else gpu)
                     ready([probe])
                     error = max(error, verify_outputs(normalized_outputs([download(v) for v in leaves(probe)], case, backend), expected, case, hosts, verify))
                     del probe

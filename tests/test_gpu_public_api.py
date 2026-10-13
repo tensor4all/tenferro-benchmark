@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
@@ -17,6 +18,21 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_device_validation_rejects_fallback_in_any_output_leaf(self):
+        def torch_value(kind, index):
+            return SimpleNamespace(device=SimpleNamespace(type=kind, index=index))
+        good = torch_value("cuda", 0)
+        bench.verify_device((good, good), "pytorch-cuda", 0)
+        for bad in (torch_value("cpu", None), torch_value("cuda", 1)):
+            with self.assertRaisesRegex(RuntimeError, "fallback or wrong"):
+                bench.verify_device((good, bad), "pytorch-cuda", 0)
+        def jax_value(devices):
+            return SimpleNamespace(devices=lambda: devices)
+        bench.verify_device((jax_value({"gpu0"}),), "jax-cuda-jit", "gpu0")
+        for devices in ({"cpu"}, {"gpu1"}, {"gpu0", "gpu1"}):
+            with self.assertRaisesRegex(RuntimeError, "fallback or wrong"):
+                bench.verify_device((jax_value({"gpu0"}), jax_value(devices)), "jax-cuda-jit", "gpu0")
+
     def test_comparison_fixtures_include_equality_and_both_orderings(self):
         import gpu_public_api_ops as operations
         for direction in ("eq", "lt", "le", "gt", "ge"):
