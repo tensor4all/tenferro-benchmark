@@ -17,7 +17,7 @@ families:
     suite: benchmarks/gpu/isolated_ops.yaml
     routes: [TensorSessionOpsExt, EagerSession]
     dtype_scope: F32/F64; C32/C64 materialized conjugation; Bool comparison/selection masks.
-    limitations: Small direct compare cases pass numerical verification but repeated batches drift; exclude from standard timing pending allocator/lifetime investigation. Eager and large compare cases remain selected.
+    limitations: Small direct compare cases pass numerical verification. Current GPU1 recheck 20261013_192206 reproduces Gt F32 within-process batch-time growth across three fresh processes; other directions share the allocation path but their drift is not asserted. See result/nvidia-gpu/gpu/compare_lifetime.md. Keep excluded pending issue 107 instrumentation; eager and large cases remain selected.
     selected_contracts:
       full_reductions: Full sum/prod/max/min/mean/sum-of-squares, F32/F64, n=1024 and 1048576; None axes in tenferro, omitted axis/dim in references. Full real sum-of-squares uses the single public vdot(x,x) reference; mean retains scalar-setup exclusions.
       comparison_directions: Eq/Lt/Le/Gt/Ge with true, false and equality-boundary values; CompareDir has no Ne variant.
