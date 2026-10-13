@@ -165,6 +165,7 @@ problems:
   - hadamard_f32_1024x1024_multiply
   - contraction_plan_churn_f64_distinct-plans
   - contraction_plan_churn_f64_repeated-plan
+  - contraction_plan_churn_f64_below-capacity-varying-workspace
   - dot_general_destination_f64_owned-dst
   - dot_general_destination_f64_borrowed-dst
   - borrowed_input_gemm_f64_n8_owned-input

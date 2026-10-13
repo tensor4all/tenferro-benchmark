@@ -1280,6 +1280,22 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
             }
         }
         let error = check_tol(worst, 1e-6, "embedding gather")?;
+        // TEMP PROBE: split the eager host enqueue from the device drain.
+        runtime.with_eager_session(|s| {
+            for round in 0..4 {
+                let host_start = std::time::Instant::now();
+                let out = s.gather(&table_t, &index_t, cfg.clone())?;
+                let host_ns = host_start.elapsed().as_nanos();
+                let sync_start = std::time::Instant::now();
+                rt.synchronize()?;
+                let sync_ns = sync_start.elapsed().as_nanos();
+                eprintln!(
+                    "GATHER-PROBE round {round}: host={host_ns} ns sync={sync_ns} ns shape={:?}",
+                    out.shape()
+                );
+            }
+            Ok::<_, BoxError>(())
+        })?;
         let m = runtime.with_eager_session(|s| {
             measure(timing, bytes, |it| {
                 timed(
@@ -2202,10 +2218,12 @@ fn contraction_plan_churn(params: &Value, timing: &Timing, device: usize) -> Res
     let mut bk = backend(device)?;
     let rt = bk.runtime().clone();
     let cfg = matmul_cfg(&[1], &[0]);
-    // Distinct contraction-plan keys come from distinct extents; the count must
-    // exceed the backend's plan-cache capacity for the churn to evict anything.
+    // Distinct contraction-plan keys come from distinct extents (their
+    // workspace sizes vary with them). Above the backend's plan-cache capacity
+    // the churn evicts; below it every plan must survive, because workspaces are
+    // per stream slot and outside the plan budget.
     let mut plan_inputs = Vec::new();
-    if arm == "distinct-plans" {
+    if arm != "repeated-plan" {
         for index in 0..distinct {
             let (m, k) = (n + index, n);
             let a = upload_tensor(&rt, &host(vec![m, k], values(m * k, 90 + index as u64))?)?;

@@ -709,10 +709,12 @@ def gpu_contraction_cases(gpu):
                     "(every axis is a batch axis) vs the elementwise multiply. On the CPU backend "
                     "the former degenerated to one 1x1x1 GEMM per element (23x); the CUDA arm checks "
                     "whether the same shape routing holds on the device.")))
-    for arm, ref in (("distinct-plans", None), ("repeated-plan", "distinct-plans")):
+    for arm, ref, distinct in (("distinct-plans", None, 72),
+                               ("repeated-plan", "distinct-plans", 72),
+                               ("below-capacity-varying-workspace", "repeated-plan", 48)):
         rows.append(case(
             f"contraction_plan_churn_f64_{arm}", ("#1873", "#1805"), "contraction_plan_churn",
-            {"distinct": 72, "n": 64}, arm=arm, backend="tenferro-cuda", dtype="f64",
+            {"distinct": distinct, "n": 64}, arm=arm, backend="tenferro-cuda", dtype="f64",
             scope="issue_workflow_diagnostic",
             reference_for=ref and f"contraction_plan_churn_f64_{ref}", profiles=gpu,
             intent=("tenferro-rs #1873 / #1805: a cuTENSOR per-plan workspace can evict the "
@@ -725,7 +727,10 @@ def gpu_contraction_cases(gpu):
                     "repeated shape. A cache miss reconstructs the contraction plan and its "
                     "workspace inside the call, and the precondition cannot be batched, so this "
                     "is one isolated call per sample: a cache-miss diagnostic, not a steady-state "
-                    "operation row.")))
+                    "operation row. `below-capacity-varying-workspace` is the detector for the "
+                    "fix: 48 distinct shapes (below the 64-plan capacity) with varying workspace "
+                    "sizes must not evict a plan, so its re-run must not cost more than the "
+                    "repeated shape.")))
     for arm, ref in (("owned-dst", None), ("borrowed-dst", "owned-dst")):
         rows.append(case(
             f"dot_general_destination_f64_{arm}", ("#1949",), "owned_destination",
