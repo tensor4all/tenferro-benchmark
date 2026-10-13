@@ -20,11 +20,11 @@ families:
     limitations: Small direct compare cases pass numerical verification. Current GPU1 recheck 20261013_192206 reproduces Gt F32 within-process batch-time growth across three fresh processes; other directions share the allocation path but their drift is not asserted. See result/nvidia-gpu/gpu/compare_lifetime.md. Keep excluded pending issue 107 instrumentation; eager and large cases remain selected.
     selected_contracts:
       full_reductions: Full sum/prod/max/min/mean/sum-of-squares, F32/F64, n=1024 and 1048576; None axes in tenferro, omitted axis/dim in references. Full real sum-of-squares uses the single public vdot(x,x) reference; mean retains scalar-setup exclusions.
+      scalar_scale: scale_real F32/F64/C32/C64 and scale_complex C32/C64 at n=1024 and 1048576. Direct outputs pass current CUDA checks but internal scalar uploads exclude timing. Eager scale creates a host scalar and CUDA execution fails; raw probe 20261013_200158 records this as unavailable. Framework references use one multiply with a preuploaded same-dtype scalar; ordinary Tensor.mul remains a distinct route.
       comparison_directions: Eq/Lt/Le/Gt/Ge with true, false and equality-boundary values; CompareDir has no Ne variant.
     latest_report: result/nvidia-gpu/gpu/isolated_ops.md; only validated measured cells count.
     measured_contracts: Full mean/sum-of-squares rows are in the latest GPU0 report; timing-excluded rows do not count as measured coverage.
     deferred:
-      scale_real_scale_complex: Public scalar setup must be separated before standard timing; ordinary tensor-tensor multiplication is a different case.
       other_noncontiguous_reads: Transposed borrowed add/mul/neg/exp/tanh/conj/reduce_sum have selected independent cases under reuse_contraction; other read operations and layouts remain separate and are not aliases.
   neural:
     cases: data/instances/gpu_nn.json
@@ -103,7 +103,7 @@ cross_cutting:
     verification and held eager sessions are
     implemented; refreshed full-size GPU0 reports are linked under result/nvidia-gpu/gpu/.
 cuda_unavailable_at_audit:
-  - TensorLinalgExt inv/pinv_with_rtol (CUDA execution probe found internal host-scalar operands; eager routes differ)
+  - TensorLinalgExt inv/pinv_with_rtol (current dfbdf6b GPU1 recheck 20261013_200509 confirms internal host-scalar failures for all eight F32/F64 32x32/512x512 cases; see result/nvidia-gpu/gpu/linalg_capability.md; eager routes differ)
   - eig/eigvals/full_piv_lu/full_piv_lu_solve
   - dynamic_update_slice
   - TensorReadLinalgExt solve_read/solve_read_into/triangular_solve_read/inv_read
