@@ -39,6 +39,7 @@ class LegacyGpuContracts(unittest.TestCase):
         expected = tnc.prepare_tree(tree, hosts, "numpy")(hosts)
         inputs = [jax.device_put(value, jax.devices("cpu")[0]) for value in hosts]
         np.testing.assert_allclose(np.asarray(tnc.prepare_tree(tree, inputs, "jax")(inputs)), expected, rtol=1e-6)
+        np.testing.assert_allclose(np.asarray(tnc.prepare_tree_jax_kernels(tree, inputs)(inputs)), expected, rtol=1e-6)
 
     def test_constant_tree_oracle_matches_dense_reference_with_sums_and_free_axes(self):
         import numpy as np

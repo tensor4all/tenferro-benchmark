@@ -91,7 +91,7 @@ def _jax_binary_contract(ixs, iy, shapes, restore_output=True):
     return execute
 
 
-def prepare_tree_jax_native(tree, inputs):
+def prepare_tree_jax_native(tree, inputs, *, compile_nodes=False, compiler_options=None):
     """Keep intermediate native axis order, remapping subsequent node labels.
 
     The contraction tree is unchanged. Intermediate layout is private; only the
@@ -99,18 +99,20 @@ def prepare_tree_jax_native(tree, inputs):
     kernels between ordinary binary contractions.
     """
     import opt_einsum as oe
+    import jax
+    prepared_nodes = [0]
 
     def prepare(node):
         if node.get("isleaf"):
             index = int(node["tensorindex"]) - 1
             shape = tuple(inputs[index].shape)
-            return (lambda values: values[index]), shape, tuple(range(len(shape)))
+            return (lambda values: values[index]), shape, tuple(range(len(shape))), inputs[index] if compile_nodes else None
         children = [prepare(child) for child in node["args"]]
         declared = node["eins"]["ixs"]
         output = list(node["eins"]["iy"])
-        ixs = [[labels[i] for i in order] for labels, (_, _, order) in zip(declared, children)]
-        binary = _jax_binary_contract(ixs, output, [shape for _, shape, _ in children], restore_output=False)
-        sizes = {label: size for labels, (_, shape, _) in zip(ixs, children)
+        ixs = [[labels[i] for i in order] for labels, (_, _, order, _) in zip(declared, children)]
+        binary = _jax_binary_contract(ixs, output, [shape for _, shape, _, _ in children], restore_output=False)
+        sizes = {label: size for labels, (_, shape, _, _) in zip(ixs, children)
                  for label, size in zip(labels, shape)}
         if binary is not None:
             operation = binary
@@ -119,21 +121,31 @@ def prepare_tree_jax_native(tree, inputs):
             names = {label: oe.get_symbol(i) for i, label in enumerate(sorted(sizes))}
             expression = ",".join("".join(names[i] for i in labels) for labels in ixs)
             expression += "->" + "".join(names[i] for i in output)
-            contract = oe.contract_expression(expression, *(shape for _, shape, _ in children), optimize="greedy")
+            contract = oe.contract_expression(expression, *(shape for _, shape, _, _ in children), optimize="greedy")
             operation = lambda *operands: contract(*operands, backend="jax")
             actual_labels = output
-        executors = tuple(run for run, _, _ in children)
+        representative = None
+        if compile_nodes:
+            operands = tuple(value for _, _, _, value in children)
+            operation = jax.jit(operation).lower(*operands).compile(compiler_options=compiler_options or {})
+            representative = jax.block_until_ready(operation(*operands))
+            prepared_nodes[0] += 1
+            if prepared_nodes[0] % 32 == 0:
+                print(f"Prepared JAX tree kernels: {prepared_nodes[0]}", flush=True)
+        executors = tuple(run for run, _, _, _ in children)
 
         def execute(values):
             return operation(*(run(values) for run in executors))
 
-        return execute, tuple(sizes[i] for i in actual_labels), tuple(output.index(i) for i in actual_labels)
+        return execute, tuple(sizes[i] for i in actual_labels), tuple(output.index(i) for i in actual_labels), representative
 
-    execute, _, order = prepare(tree)
+    execute, shape, order, representative = prepare(tree)
+    del representative
     inverse = tuple(order.index(i) for i in range(len(order)))
     if inverse == tuple(range(len(order))):
         return execute
-    return lambda values: execute(values).transpose(inverse)
+    transpose = _prepare_compact_transpose(shape, inverse)
+    return lambda values: transpose(execute(values))
 
 
 def resolve_source_path(project_root: Path, source: str) -> Path:
@@ -261,38 +273,9 @@ def prepare_tree_jax_kernels(tree, inputs, compiler_options=None):
     outside timing. Unlike whole-tree JIT, execution dispatches the prepared
     kernels through the Python tree; callers must label these paths separately.
     """
-    import jax
-    import opt_einsum as oe
-    prepared_nodes = [0]
-
-    def prepare(node):
-        if node.get("isleaf"):
-            index = int(node["tensorindex"]) - 1
-            return (lambda values: values[index]), inputs[index]
-        children = [prepare(child) for child in node["args"]]
-        ixs, iy = node["eins"]["ixs"], node["eins"]["iy"]
-        labels = sorted({label for ix in ixs for label in ix} | set(iy))
-        names = {label: oe.get_symbol(i) for i, label in enumerate(labels)}
-        expr = ",".join("".join(names[label] for label in ix) for ix in ixs) + "->" + "".join(names[label] for label in iy)
-        operands = tuple(value for _, value in children)
-        expression = oe.contract_expression(expr, *(value.shape for value in operands), optimize="greedy")
-        binary = _jax_binary_contract(ixs, iy, [value.shape for value in operands])
-        operation = binary or (lambda *values: expression(*values, backend="jax"))
-        compiled = jax.jit(operation).lower(*operands).compile(compiler_options=compiler_options or {})
-        representative = jax.block_until_ready(compiled(*operands))
-        prepared_nodes[0] += 1
-        if prepared_nodes[0] % 32 == 0:
-            print(f"Prepared JAX tree kernels: {prepared_nodes[0]}", flush=True)
-        executors = tuple(run for run, _ in children)
-
-        def execute(values):
-            return compiled(*(child(values) for child in executors))
-
-        return execute, representative
-
-    execute, representative = prepare(tree)
-    del representative
-    return execute
+    return prepare_tree_jax_native(
+        tree, inputs, compile_nodes=True, compiler_options=compiler_options
+    )
 
 
 class IntegerLabelEinsumBackend:
