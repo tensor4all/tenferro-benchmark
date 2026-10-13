@@ -52,6 +52,13 @@ def make_fixtures(root, suite):
                 else:
                     case["rtol"] = max(case["rtol"], float(32 * eps * np.sqrt(spec["n"])))
                     case["tolerance_policy"] = "prod rtol=max(base,32*eps*sqrt(n)); base atol"
+            if spec.get("full_reduction") and spec["op"] == "reduce_mean":
+                # The mean of a cancellation-heavy vector can be tiny. A
+                # generic elementwise atol would even accept an all-zero result.
+                eps = np.finfo(inputs[0].dtype).eps
+                case["atol"] = float(32 * eps * max(1, np.ceil(np.log2(spec["n"])))
+                                     * np.linalg.norm(inputs[0].astype(np.float64)) / spec["n"])
+                case["tolerance_policy"] = "mean atol=32*eps*ceil(log2(n))*norm2(input)/n; base rtol"
             cases.append(case)
             continue
         op, dtype, n = spec["op"], spec["dtype"], spec["n"]
@@ -222,8 +229,9 @@ def run_python(backend, root, output):
                         operation = getattr(jnp.fft, case["op"])
                         fn = lambda value: operation(value, n=case["n"], axis=-1, norm="backward")
                     else:
-                        from gpu_public_api_ops import jax_operation
+                        from gpu_public_api_ops import jax_operation, prepare_jax_inputs
                         fn = jax_operation(jax, jnp, case)
+                        inputs = prepare_jax_inputs(case, inputs)
                     if backend.endswith("-jit"):
                         fn = jax.jit(fn).lower(*inputs).compile()
                     op = lambda: fn(*inputs)

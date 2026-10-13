@@ -166,3 +166,11 @@ problems:
     - compare_lt_f64_n1048576
     - compare_le_f64_n1048576
     - compare_ge_f64_n1048576
+    - reduce_mean_full_f32_n1024
+    - reduce_sum_squares_full_f32_n1024
+    - reduce_mean_full_f64_n1024
+    - reduce_sum_squares_full_f64_n1024
+    - reduce_mean_full_f32_n1048576
+    - reduce_sum_squares_full_f32_n1048576
+    - reduce_mean_full_f64_n1048576
+    - reduce_sum_squares_full_f64_n1048576

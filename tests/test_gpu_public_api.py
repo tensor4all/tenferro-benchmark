@@ -39,7 +39,7 @@ class PublicGpuContracts(unittest.TestCase):
     def test_large_reduction_policy_still_rejects_zero_or_percent_product_error(self):
         suite = {"cases": [dict(id=op, op=op, dtype="f32", n=1048576,
                                 shape=[1048576], full_reduction=True)
-                           for op in ("reduce_sum", "reduce_prod")]}
+                           for op in ("reduce_sum", "reduce_prod", "reduce_mean")]}
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "fixtures"
             bench.make_fixtures(root, suite)
