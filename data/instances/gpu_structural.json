@@ -667,7 +667,7 @@
         1
       ],
       "issue": 155,
-      "excluded": {
+      "unavailable": {
         "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
       }
     },
@@ -689,7 +689,7 @@
         1
       ],
       "issue": 155,
-      "excluded": {
+      "unavailable": {
         "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
       }
     },
@@ -722,7 +722,7 @@
         1
       ],
       "issue": 155,
-      "excluded": {
+      "unavailable": {
         "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
       }
     },
@@ -744,7 +744,7 @@
         1
       ],
       "issue": 155,
-      "excluded": {
+      "unavailable": {
         "tenferro-cuda-eager": "Eager broadcast returns a lazy broadcast view, not the materialized full output required by this case."
       }
     },
@@ -758,6 +758,286 @@
       ],
       "issue": 155,
       "conversion_contract": "Checked lossless F32 to F64 promotion; every F32 fixture value is exactly representable in F64."
+    },
+    {
+      "id": "dynamic_slice_in_bounds_f32_n1024",
+      "op": "dynamic_slice",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "slice_sizes": [
+        16,
+        16
+      ],
+      "starts": [
+        8,
+        10
+      ],
+      "variant": "in_bounds",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted."
+      }
+    },
+    {
+      "id": "dynamic_slice_clamped_f32_n1024",
+      "op": "dynamic_slice",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "slice_sizes": [
+        16,
+        16
+      ],
+      "starts": [
+        -3,
+        35
+      ],
+      "variant": "clamped",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted."
+      }
+    },
+    {
+      "id": "gather_axis0_f32_n1024",
+      "op": "gather",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "gather_axis": 0,
+      "issue": 155
+    },
+    {
+      "id": "gather_axis1_f32_n1024",
+      "op": "gather",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "gather_axis": 1,
+      "issue": 155
+    },
+    {
+      "id": "dynamic_slice_in_bounds_f64_n1024",
+      "op": "dynamic_slice",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "slice_sizes": [
+        16,
+        16
+      ],
+      "starts": [
+        8,
+        10
+      ],
+      "variant": "in_bounds",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted."
+      }
+    },
+    {
+      "id": "dynamic_slice_clamped_f64_n1024",
+      "op": "dynamic_slice",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "slice_sizes": [
+        16,
+        16
+      ],
+      "starts": [
+        -3,
+        35
+      ],
+      "variant": "clamped",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted."
+      }
+    },
+    {
+      "id": "gather_axis0_f64_n1024",
+      "op": "gather",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "gather_axis": 0,
+      "issue": 155
+    },
+    {
+      "id": "gather_axis1_f64_n1024",
+      "op": "gather",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        32,
+        32
+      ],
+      "gather_axis": 1,
+      "issue": 155
+    },
+    {
+      "id": "dynamic_slice_in_bounds_f32_n1048576",
+      "op": "dynamic_slice",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "slice_sizes": [
+        512,
+        512
+      ],
+      "starts": [
+        256,
+        341
+      ],
+      "variant": "in_bounds",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted."
+      }
+    },
+    {
+      "id": "dynamic_slice_clamped_f32_n1048576",
+      "op": "dynamic_slice",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "slice_sizes": [
+        512,
+        512
+      ],
+      "starts": [
+        -3,
+        1027
+      ],
+      "variant": "clamped",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted."
+      }
+    },
+    {
+      "id": "gather_axis0_f32_n1048576",
+      "op": "gather",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "gather_axis": 0,
+      "issue": 155
+    },
+    {
+      "id": "gather_axis1_f32_n1048576",
+      "op": "gather",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "gather_axis": 1,
+      "issue": 155
+    },
+    {
+      "id": "dynamic_slice_in_bounds_f64_n1048576",
+      "op": "dynamic_slice",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "slice_sizes": [
+        512,
+        512
+      ],
+      "starts": [
+        256,
+        341
+      ],
+      "variant": "in_bounds",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted."
+      }
+    },
+    {
+      "id": "dynamic_slice_clamped_f64_n1048576",
+      "op": "dynamic_slice",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "slice_sizes": [
+        512,
+        512
+      ],
+      "starts": [
+        -3,
+        1027
+      ],
+      "variant": "clamped",
+      "issue": 155,
+      "unavailable": {
+        "pytorch-cuda": "No matched single materializing multidimensional slice API with CUDA-resident start indices and clamping; index construction/composed slicing is not substituted."
+      }
+    },
+    {
+      "id": "gather_axis0_f64_n1048576",
+      "op": "gather",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "gather_axis": 0,
+      "issue": 155
+    },
+    {
+      "id": "gather_axis1_f64_n1048576",
+      "op": "gather",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1024,
+        1024
+      ],
+      "gather_axis": 1,
+      "issue": 155
     }
   ]
 }

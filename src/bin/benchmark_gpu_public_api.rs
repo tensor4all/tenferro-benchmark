@@ -45,6 +45,10 @@ struct Case {
     #[serde(default)]
     broadcast_dims: Vec<usize>,
     #[serde(default)]
+    slice_sizes: Vec<usize>,
+    #[serde(default)]
+    gather_axis: usize,
+    #[serde(default)]
     excluded: HashMap<String, String>,
     #[serde(default)]
     unavailable: HashMap<String, String>,

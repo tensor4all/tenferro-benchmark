@@ -229,8 +229,9 @@ def run_python(backend, root, output):
                         operation = getattr(jnp.fft, case["op"])
                         fn = lambda value: operation(value, n=case["n"], axis=-1, norm="backward")
                     else:
-                        from gpu_public_api_ops import jax_operation
+                        from gpu_public_api_ops import jax_operation, prepare_jax_inputs
                         fn = jax_operation(jax, jnp, case)
+                        inputs = prepare_jax_inputs(case, inputs)
                     if backend.endswith("-jit"):
                         fn = jax.jit(fn).lower(*inputs).compile()
                     op = lambda: fn(*inputs)

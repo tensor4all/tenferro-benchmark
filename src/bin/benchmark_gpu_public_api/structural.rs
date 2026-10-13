@@ -2,7 +2,7 @@ use super::{Case, Result};
 use tenferro_ad::{EagerSession, EagerTensor};
 use tenferro_runtime::TensorSessionOpsExt;
 use tenferro_tensor::{
-    BackendSession, DType, PadConfig, ScatterConfig, SliceConfig, Tensor, TensorRead,
+    BackendSession, DType, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor, TensorRead,
 };
 
 fn pad() -> PadConfig {
@@ -33,6 +33,7 @@ pub(super) struct Arguments<'a> {
     pad: Option<PadConfig>,
     slice: Option<SliceConfig>,
     scatter: Option<ScatterConfig>,
+    gather: Option<GatherConfig>,
 }
 
 pub(super) fn prepare(case: &Case) -> Arguments<'static> {
@@ -41,6 +42,18 @@ pub(super) fn prepare(case: &Case) -> Arguments<'static> {
         "pad" => args.pad = Some(pad()),
         "slice" => args.slice = Some(slice(&case.inputs[0].shape)),
         "scatter" => args.scatter = Some(scatter()),
+        "gather" => {
+            let axis = case.gather_axis;
+            let mut sizes = case.inputs[0].shape.clone();
+            sizes[axis] = 1;
+            args.gather = Some(GatherConfig {
+                offset_dims: vec![1 - axis],
+                collapsed_slice_dims: vec![axis],
+                start_index_map: vec![axis],
+                index_vector_dim: 1,
+                slice_sizes: sizes,
+            });
+        }
         _ => {}
     }
     args
@@ -71,6 +84,12 @@ pub(super) fn direct(
         "concatenate" => Tensor::concatenate(&[x, &inputs[1]], 1, s)?,
         "broadcast_in_dim" => x.broadcast_in_dim(&case.output_shape, &case.broadcast_dims, s)?,
         "convert" => x.convert(DType::F64, s)?,
+        "dynamic_slice" => x.dynamic_slice(&inputs[1], &case.slice_sizes, s)?,
+        "gather" => x.gather(
+            &inputs[1],
+            args.gather.take().ok_or("missing prepared gather config")?,
+            s,
+        )?,
         "extract_diag" => x.extract_diag(0, 1, s)?,
         "embed_diag" => x.embed_diag(0, 1, s)?,
         "tril" => x.tril(0, s)?,
@@ -109,6 +128,12 @@ pub(super) fn eager(
         "concatenate" => s.concatenate(&[x, &inputs[1]], 1)?,
         "broadcast_in_dim" => s.broadcast_in_dim(x, &case.output_shape, &case.broadcast_dims)?,
         "convert" => s.convert(x, DType::F64)?,
+        "dynamic_slice" => s.dynamic_slice(x, &inputs[1], &case.slice_sizes)?,
+        "gather" => s.gather(
+            x,
+            &inputs[1],
+            args.gather.take().ok_or("missing prepared gather config")?,
+        )?,
         "extract_diag" => s.extract_diag(x, 0, 1)?,
         "embed_diag" => s.embed_diag(x, 0, 1)?,
         "tril" => s.tril(x, 0)?,

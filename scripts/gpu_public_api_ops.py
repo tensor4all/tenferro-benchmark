@@ -114,6 +114,16 @@ def fixtures(case, dtype):
         y[index] += updates
     elif op == "broadcast_in_dim":
         y = np.broadcast_to(a, case["output_shape"])
+    elif op == "dynamic_slice":
+        starts = np.asarray(case["starts"], dtype=np.int64)
+        inputs.append(starts)
+        clamped = np.minimum(np.maximum(starts, 0), np.asarray(a.shape)-case["slice_sizes"])
+        y = a[tuple(slice(int(start), int(start)+size) for start, size in zip(clamped, case["slice_sizes"]))]
+    elif op == "gather":
+        axis = case["gather_axis"]
+        indices = (np.arange(a.shape[axis]//2, dtype=np.int64)*2)[:, None]
+        inputs.append(indices)
+        y = np.take(a, indices[:, 0], axis=axis)
     elif op == "convert":
         return inputs, x.astype(np.float64)
     elif op == "cast":
@@ -185,6 +195,9 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
         return lambda: torch.expand_copy(x, shape)
     if op == "convert":
         return lambda: x.to(dtype=torch.float64)
+    if op == "gather":
+        axis, indices = case["gather_axis"], inputs[1].reshape(-1)
+        return lambda: torch.index_select(x, axis, indices)
     if op == "cast":
         dtype = torch.float64 if x.dtype == torch.float32 else torch.float32
         return lambda: x.to(dtype=dtype)
@@ -258,6 +271,14 @@ def jax_operation(jax, jnp, case):
         return lambda x: jax.lax.broadcast_in_dim(x, shape, dims)
     if op == "convert":
         return lambda x: x.astype(jnp.float64)
+    if op == "dynamic_slice":
+        sizes = tuple(case["slice_sizes"])
+        return lambda x, *starts: jax.lax.dynamic_slice(x, starts, sizes, allow_negative_indices=False)
+    if op == "gather":
+        axis = case["gather_axis"]
+        dims = jax.lax.GatherDimensionNumbers(offset_dims=(1-axis,), collapsed_slice_dims=(axis,), start_index_map=(axis,))
+        sizes = tuple(1 if i == axis else n for i, n in enumerate(case["shape"]))
+        return lambda x, indices: jax.lax.gather(x, indices, dims, sizes, mode="promise_in_bounds")
     if op == "cast":
         dtype = jnp.float64 if case["dtype"] == "f32" else jnp.float32
         return lambda x: x.astype(dtype)
@@ -283,3 +304,10 @@ def jax_operation(jax, jnp, case):
         axis = None if case.get("full_reduction") else 1
         return lambda x: fn(x, axis=axis)
     raise ValueError(f"missing native JAX API: {op}")
+
+
+def prepare_jax_inputs(case, inputs):
+    """Adapt vector start indices to JAX's scalar-index API before any clock."""
+    if case["op"] == "dynamic_slice":
+        return [inputs[0], *(inputs[1][axis] for axis in range(len(case["slice_sizes"])))]
+    return inputs
