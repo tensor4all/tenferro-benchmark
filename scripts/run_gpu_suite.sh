@@ -29,7 +29,7 @@ BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,py
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" == 1 ]]; then
     DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-1}"
-    BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-pytorch-cuda,jax-cuda}"
+    BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-eager,pytorch-cuda,jax-cuda}"
     RESULTS_ROOT="$PROJECT_DIR/data/verification"
 fi
 # Physical nvidia-smi index -> one visible UUID -> process-local ordinal zero.
