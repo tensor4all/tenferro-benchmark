@@ -174,3 +174,15 @@ problems:
     - reduce_sum_squares_full_f32_n1048576
     - reduce_mean_full_f64_n1048576
     - reduce_sum_squares_full_f64_n1048576
+    - scale_real_f32_n1024
+    - scale_real_f64_n1024
+    - scale_real_c32_n1024
+    - scale_real_c64_n1024
+    - scale_complex_c32_n1024
+    - scale_complex_c64_n1024
+    - scale_real_f32_n1048576
+    - scale_real_f64_n1048576
+    - scale_real_c32_n1048576
+    - scale_real_c64_n1048576
+    - scale_complex_c32_n1048576
+    - scale_complex_c64_n1048576

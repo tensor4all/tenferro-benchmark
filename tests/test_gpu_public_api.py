@@ -18,6 +18,15 @@ from gpu_public_api_ops import fixtures
 
 
 class PublicGpuContracts(unittest.TestCase):
+    def test_complex_scale_checks_real_and_imaginary_cross_terms(self):
+        case = {"op": "scale_complex", "dtype": "c64", "n": 16, "shape": [16],
+                "alpha": .5, "beta": .75}
+        inputs, output = fixtures(case, "<c16")
+        real, imaginary = inputs[0].real, inputs[0].imag
+        np.testing.assert_allclose(output.real, .5*real - .75*imaginary)
+        np.testing.assert_allclose(output.imag, .75*real + .5*imaginary)
+        self.assertEqual(inputs[1].shape, ())
+
     def test_affine_normalization_parameters_have_independent_effects(self):
         for op in ("layer_norm", "rms_norm"):
             case = {"op": op, "dtype": "f64", "n": 32, "shape": [4, 8]}

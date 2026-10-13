@@ -168,7 +168,12 @@ def fixtures(case, dtype):
     binary = {"add": np.add, "sub": np.subtract, "mul": np.multiply, "div": np.divide,
               "rem": np.fmod, "pow": np.power, "maximum": np.maximum, "minimum": np.minimum,
               "compare": getattr(np, {"eq": "equal", "lt": "less", "le": "less_equal", "gt": "greater", "ge": "greater_equal"}[case.get("compare_direction", "gt")])}
-    if op in unary:
+    if op in {"scale_real", "scale_complex"}:
+        factor = case["alpha"] + (1j*case["beta"] if op == "scale_complex" else 0)
+        scalar = np.asarray(factor, dtype=dtype)
+        inputs.append(scalar)
+        y = a * scalar.astype(a.dtype)
+    elif op in unary:
         y = unary[op](a)
     elif op in binary:
         inputs.append(rhs)
@@ -347,6 +352,8 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
     binary = {"add": torch.add, "sub": torch.sub, "mul": torch.mul, "div": torch.div,
               "rem": torch.fmod, "pow": torch.pow, "maximum": torch.maximum,
               "minimum": torch.minimum, "compare": getattr(torch, case.get("compare_direction", "gt"))}
+    if op in {"scale_real", "scale_complex"}:
+        return lambda: torch.mul(x, inputs[1])
     if op in unary:
         return lambda: unary[op](x)
     if op in binary:
@@ -443,6 +450,8 @@ def torch_operation(torch, case, inputs, *, verify_only=False):
 
 
 def jax_operation(jax, jnp, case):
+    if case["op"] in {"scale_real", "scale_complex"}:
+        return lambda x, factor: jnp.multiply(x, factor)
     if case["op"].startswith("einsum_plan"):
         return lambda a,b: jnp.matmul(a,b)
     if case["op"] == "dot_general_axes":

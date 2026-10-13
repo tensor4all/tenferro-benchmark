@@ -1932,6 +1932,214 @@
       ],
       "issue": 155,
       "full_reduction": true
+    },
+    {
+      "id": "scale_real_f32_n1024",
+      "op": "scale_real",
+      "dtype": "f32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_real_f64_n1024",
+      "op": "scale_real",
+      "dtype": "f64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_real_c32_n1024",
+      "op": "scale_real",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_real_c64_n1024",
+      "op": "scale_real",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_complex_c32_n1024",
+      "op": "scale_complex",
+      "dtype": "c32",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "beta": 0.75,
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_complex_c64_n1024",
+      "op": "scale_complex",
+      "dtype": "c64",
+      "n": 1024,
+      "shape": [
+        1024
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "beta": 0.75,
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_real_f32_n1048576",
+      "op": "scale_real",
+      "dtype": "f32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_real_f64_n1048576",
+      "op": "scale_real",
+      "dtype": "f64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_real_c32_n1048576",
+      "op": "scale_real",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_real_c64_n1048576",
+      "op": "scale_real",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_complex_c32_n1048576",
+      "op": "scale_complex",
+      "dtype": "c32",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "beta": 0.75,
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
+    },
+    {
+      "id": "scale_complex_c64_n1048576",
+      "op": "scale_complex",
+      "dtype": "c64",
+      "n": 1048576,
+      "shape": [
+        1048576
+      ],
+      "alpha": 0.5,
+      "issue": 155,
+      "excluded": {
+        "tenferro-cuda-direct": "Public scalar-scale API creates and uploads the scalar internally; no preuploaded scalar argument exists. Numerically verified only; tensor-tensor mul is a distinct public route."
+      },
+      "beta": 0.75,
+      "unavailable": {
+        "tenferro-cuda-eager": "Current dfbdf6b CUDA probe 20261013_200158: EagerSession.scale creates a host scalar through constant_from, then mul fails in to_contiguous_read (expected CubeCL GPU tensor view, got host tensor). No public scale parameter can replace the internal scalar; execution unsupported, not numerically verified."
+      }
     }
   ]
 }

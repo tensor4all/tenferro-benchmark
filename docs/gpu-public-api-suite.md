@@ -459,3 +459,16 @@ PyTorch functional.layer_norm matches all variants; functional.rms_norm has a
 weight argument but no bias argument. No single-call JAX affine counterpart is
 established: timing standardize followed by multiply/add would change this
 isolated API contract. Unsupported and numerical-only rows remain explicit.
+
+Scalar-scale cases call the actual public `scale_real`/`scale_complex` methods.
+Direct CUDA outputs are checked, but internal scalar uploads exclude standard
+timing. Eager scale instead creates a host scalar through `constant_from`; the
+current CUDA `mul` rejects that operand, so those cells are unavailable and not
+numerically verified. PyTorch/JAX reference inputs include a preuploaded
+same-dtype scalar and call one native multiply. This does not alias the
+ordinary tenferro tensor-tensor `mul` route.
+
+The separate `linalg_capability.md` report rechecks previously unavailable
+concrete `inv`/`pinv_with_rtol` calls at the current tenferro revision. Its raw
+runtime errors are preserved without timing and never count as measured or
+numerical coverage. It does not classify the separate eager implementations.
