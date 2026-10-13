@@ -418,3 +418,23 @@ JAX matrix output reuse has no verified single-call public counterpart;
 Tensor/TensorRead, so the EagerTensor prepared-plan arm is explicitly
 unsupported. Other equations and execution routes are not aliases of these
 cases.
+
+GPU lifetime observations run separately from timing using
+`GPU_API_LIFETIME_COUNTERS=1` with `benchmark_gpu_public_api`, a prepared
+compare fixture manifest, direct backend, and `GPU_API_ROLE=debug` on GPU1.
+`GPU_LIFETIME_BATCHES`/`GPU_LIFETIME_OPS` control the declared workload.
+The counter path uses one entered session per case, retains each batch's
+outputs until native synchronization, validates first/last outputs, drops
+them, synchronizes again, and records observations without any clocks.
+Records have `status=instrumentation_only`, `timing=null` and a separate
+measurement scope; they must never be passed off as standard operation rows.
+
+Public observations include CUDA extension/cuTENSOR/permutation cache
+entries/bytes/hits/misses/evictions, retained workspace, workspace retirement
+counters and pending transfer retirements. Driver free/total bytes cover the
+whole device, not just this process or the output pool. The numeric/Bool
+output-pool stats and clear controls are unavailable through the public API;
+record that limitation rather than calling private hooks. After-enqueue
+queries can perturb execution and are observational, not completion barriers
+or measurements of enqueue latency. This is a separate diagnostic pass for
+#107; the original timing pass remains untouched.
