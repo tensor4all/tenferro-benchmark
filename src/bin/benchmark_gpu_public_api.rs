@@ -426,6 +426,12 @@ fn main() -> Result<()> {
             row["input_restoration"] = json!("GPU seed copied into each destination before every batch; synchronized outside timing");
             row["accumulation"] = json!({"alpha":0.5,"beta":1.0});
         }
+        if case.op == "dot_general_read_into" {
+            row["accumulation"] = json!({"alpha":1.0,"beta":0.0});
+        }
+        if case.op == "dot_general_read_into_accum_cached" {
+            row["cache_policy"] = json!("CUDA delegates to ordinary accumulation; session slot Some(0) is unused");
+        }
         if let Some(reason) = case.unavailable.get(&mode) {
             row["status"] = json!("unsupported");
             row["reason"] = json!(reason);

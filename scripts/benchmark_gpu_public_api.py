@@ -217,6 +217,8 @@ def run_python(backend, root, output):
             if "_into_accum" in case["op"]:
                 row["input_restoration"] = "GPU seed copied into each destination before every batch; synchronized outside timing"
                 row["accumulation"] = {"alpha": 0.5, "beta": 1.0}
+            if case["op"] == "dot_general_read_into":
+                row["accumulation"] = {"alpha": 1.0, "beta": 0.0}
             unavailable = {**case.get("excluded", {}), **case.get("unavailable", {})}
             if backend in unavailable:
                 row.update(status="unsupported", reason=unavailable[backend])
