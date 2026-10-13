@@ -29,7 +29,7 @@ BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,py
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" == 1 ]]; then
     DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-1}"
-    BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-pytorch-cuda,jax-cuda}"
+    BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-eager,pytorch-cuda,jax-cuda}"
     RESULTS_ROOT="$PROJECT_DIR/data/verification"
 fi
 # Physical nvidia-smi index -> one visible UUID -> process-local ordinal zero.
@@ -85,6 +85,19 @@ if command -v uv >/dev/null 2>&1; then
     PYTHON=(uv run python)
 fi
 
+if [[ -n "${BENCH_COVERAGE:-}" ]]; then
+    COVERAGE="$BENCH_COVERAGE"
+elif [[ -n "${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}" ]]; then
+    COVERAGE=full
+else
+    COVERAGE=quick
+fi
+SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection/$TIMESTAMP"
+mapfile -t SUITES < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
+    --coverage "$COVERAGE" --effort "${BENCH_EFFORT:-standard}" \
+    --backends "${GPU_BENCH_BACKENDS:-}" --problem "$PROBLEM_FILTER" \
+    --output "$SELECTION_DIR" "${SUITES[@]}")
+[[ ${#SUITES[@]} -gt 0 ]] || { echo "No GPU suites selected" >&2; exit 1; }
 "${VALIDATOR[@]}" "${SUITES[@]}"
 
 # Split backends: Rust-native vs Python
@@ -156,6 +169,18 @@ write_run_metadata() {
         args+=(--tenferro-commit "$tenferro_commit")
     fi
     "${METADATA[@]}" "${args[@]}"
+    "${PYTHON[@]}" - "$RUN_YAML" "$SELECTION_DIR/selection.json" <<'PY'
+import json, sys, yaml
+from pathlib import Path
+path = Path(sys.argv[1]); metadata = yaml.safe_load(path.read_text())
+plan = json.loads(Path(sys.argv[2]).read_text())
+metadata.setdefault('collection',{}).update({'coverage':plan['coverage'],'effort':plan['effort'],
+    'gpu_routine_manifest_version':plan['manifest_version'],
+    'gpu_routine_selection_file':sys.argv[2],
+    'expected_case_ids':plan['expected'],'selected_case_ids':plan['selected'],
+    'unselected_full_case_ids':plan['unselected']})
+path.write_text(yaml.safe_dump(metadata,sort_keys=False))
+PY
 }
 
 RUST_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_rust"
@@ -254,6 +279,7 @@ PY
     done
 }
 
+RESULT_PATHS=()
 for suite in "${SUITES[@]}"; do
     suite_id="$(suite_id_for_file "$suite")"
     if [[ ! "$suite_id" =~ ^gpu/[a-z0-9][a-z0-9_.-]*$ ]]; then
@@ -271,6 +297,7 @@ for suite in "${SUITES[@]}"; do
 
     mkdir -p "$RUN_DIR" "$(dirname "$REPORT_OUT")"
     : > "$RESULT_JSONL"
+    RESULT_PATHS+=("$RESULT_JSONL")
     : > "$RUN_DIR/wall_backends.jsonl"
     write_run_metadata "$suite_id" "$suite" "$RUN_YAML"
 
@@ -322,6 +349,14 @@ PY
     echo "Markdown: $MARKDOWN_OUT"
     echo "Report:   $REPORT_OUT"
 done
+
+"${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$SELECTION_DIR" --records "${RESULT_PATHS[@]}"
+"${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$SELECTION_DIR/case_status.json" \
+    --output "$SELECTION_DIR/report.md"
+if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
+    mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu"
+    cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+fi
 
 echo ""
 echo "GPU benchmark suites complete"

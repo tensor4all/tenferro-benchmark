@@ -2,9 +2,11 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/einsum`
-- Suite file: `benchmarks/gpu/einsum.yaml`
-- Timestamp: `2026-10-13T13:44:20.569187+00:00`
-- tenferro-rs commit: `dfbdf6b66d40162f4731da116ec42ed034da0dce`
+- Suite file: `/workspaces/tenferro-benchmark/.worktrees/gpu-routine/data/results/nvidia-gpu/gpu/routine_selection/20261013_232208/gpu_einsum.yaml`
+- Timestamp: `2026-10-13T23:22:08.157760+00:00`
+- tenferro-rs commit: `9655b4e0daced17e0aa35a30d35710b069e10644`
+- Coverage: `quick`; effort: `standard`; manifest version: `1`
+- Selection and case accounting: `/workspaces/tenferro-benchmark/.worktrees/gpu-routine/data/results/nvidia-gpu/gpu/routine_selection/20261013_232208/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
@@ -38,9 +40,9 @@ Non-`ok` cells show the structured backend status.
 
 ## gpu/einsum / einsum / allocating output
 
-| Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT |
-|---|---:|---:|---:|---:|
-| einsum_bin_matmul_3072_f64 | unsupported | 315.434 | 315.510 | 270.593 |
+| Problem | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT |
+|---|---:|---:|---:|
+| einsum_bin_matmul_3072_f64 | 315.400 | 315.429 | 271.650 |
 
 ## Python sampling
 
@@ -48,6 +50,6 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| einsum_bin_matmul_3072_f64 | tenferro-cuda-eager | 1 | 315.405, 315.451, 315.434, 315.434, 315.45, 315.435, 315.383 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| einsum_bin_matmul_3072_f64 | pytorch-cuda | 1 | 315.432, 315.497, 315.548, 315.51, 315.526, 315.512, 315.494 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| einsum_bin_matmul_3072_f64 | jax-cuda | 1 | 270.593, 270.574, 270.587, 270.508, 270.617, 270.613, 270.614 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| einsum_bin_matmul_3072_f64 | tenferro-cuda-eager | 1 | 315.4, 315.412, 315.39, 315.41, 315.364, 315.403, 315.388 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| einsum_bin_matmul_3072_f64 | pytorch-cuda | 1 | 315.438, 315.466, 315.427, 315.426, 315.429, 315.428, 315.443 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| einsum_bin_matmul_3072_f64 | jax-cuda | 1 | 271.649, 271.692, 271.575, 271.631, 271.7, 271.705, 271.65 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |

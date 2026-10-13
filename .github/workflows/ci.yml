@@ -120,7 +120,7 @@ jobs:
       - name: Validate GPU public API fixtures and timing contracts without a GPU
         run: |
           bash -n scripts/run_gpu_public_api.sh
-          uv run python -m unittest tests.test_gpu_public_api tests.test_gpu_framework_runner tests.test_gpu_linalg_ad_contracts tests.test_gpu_multi_output_verification
+          uv run python -m unittest tests.test_gpu_public_api tests.test_gpu_framework_runner tests.test_gpu_linalg_ad_contracts tests.test_gpu_multi_output_verification tests.test_gpu_routine_selection tests.test_gpu_routine_coverage_report
 
       - name: Cargo check
         run: cargo check --all-targets
