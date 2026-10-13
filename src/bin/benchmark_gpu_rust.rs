@@ -365,8 +365,10 @@ fn run_eager_tensor_network(
     let exec_path = "phase2-measured-tenferro-cuda-eager-tensornetwork";
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
+        let case_start = Instant::now();
         let spec = TensorNetworkSpec::from_problem(problem, std::path::Path::new("."))?;
         let network = load_tensor_network(&spec.source)?;
+        let network_end = case_start.elapsed().as_nanos();
         // A clone shares the backend's runtime and allocation domain.
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
@@ -377,14 +379,16 @@ fn run_eager_tensor_network(
         .map_err(|e| format!("compute backend: {e}"))?;
         let transfer_bk = compute_bk.clone();
         let ctx = EagerRuntime::with_cuda_backend(compute_bk).map_err(|e| e.to_string())?;
+        let backend_end = case_start.elapsed().as_nanos();
         let gpu_inputs =
             build_gpu_eager_inputs(&network, &spec, ctx.clone(), transfer_bk.runtime())?;
         sync_cubecl_runtime(transfer_bk.runtime())?;
         let prepared_tree =
             tenferro_einsum_benchmark::tensornetwork::PreparedEagerTree::new(&network.tree)?;
 
+        let setup_end = case_start.elapsed().as_nanos();
         let _guard = ctx.no_grad();
-        let (times_ms, outputs, sampling) = sample_eager(
+        let (times_ms, outputs, mut sampling) = sample_eager(
             &ctx,
             transfer_bk.runtime(),
             n_warmup,
@@ -396,11 +400,17 @@ fn run_eager_tensor_network(
                     .map(|out| vec![out])
             },
         )?;
+        let validation_start = case_start.elapsed().as_nanos();
         let cpu_scalar = constant_tree_scalar(&network.tree, &spec)?;
         let gpu_scalar = scalar_f32_from_eager_gpu(&outputs[0], transfer_bk.runtime())?;
         let (ver_status, max_abs, max_rel) =
             verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
 
+        sampling["case_wall_phases_ns"] = json!({"network_loading":network_end,
+            "backend_initialization":backend_end-network_end,
+            "input_generation_transfer_and_preparation":setup_end-backend_end,
+            "validation":case_start.elapsed().as_nanos()-validation_start,
+            "case_body_before_record_construction":case_start.elapsed().as_nanos()});
         Ok((times_ms, ver_status, max_abs, max_rel, sampling))
     }));
 
@@ -676,6 +686,7 @@ fn run_eager(
     let exec_path = "phase2-measured-tenferro-cuda-eager";
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
+        let case_start = Instant::now();
         // A clone shares the backend's runtime and allocation domain.
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
@@ -686,6 +697,7 @@ fn run_eager(
         .map_err(|e| format!("compute backend: {e}"))?;
         let transfer_bk = compute_bk.clone();
         let ctx = EagerRuntime::with_cuda_backend(compute_bk).map_err(|e| e.to_string())?;
+        let backend_end = case_start.elapsed().as_nanos();
 
         let seed = problem["data"]["seed"].as_u64().unwrap_or(0);
         let gen = problem["data"]["generator"].as_str().unwrap_or("normal");
@@ -709,7 +721,8 @@ fn run_eager(
 
         let _guard = ctx.no_grad();
         let refs = gpu_inputs.extra.iter().collect::<Vec<_>>();
-        let (times_ms, last, sampling) = sample_eager(
+        let setup_end = case_start.elapsed().as_nanos();
+        let (times_ms, last, mut sampling) = sample_eager(
             &ctx,
             transfer_bk.runtime(),
             n_warmup,
@@ -718,6 +731,7 @@ fn run_eager(
             |session, config| run_eager_op_in(session, op, &subscripts, config, &gpu_inputs, &refs),
         )?;
         let last_out = Some(last);
+        let validation_start = case_start.elapsed().as_nanos();
 
         // Verify last result against CPU reference
         let (ver_status, max_abs, max_rel) = if let Some(ref g) = last_out {
@@ -739,6 +753,10 @@ fn run_eager(
             ("skipped".to_string(), None, None)
         };
 
+        sampling["case_wall_phases_ns"] = json!({"backend_initialization":backend_end,
+            "input_generation_transfer_reference_and_preparation":setup_end-backend_end,
+            "validation":case_start.elapsed().as_nanos()-validation_start,
+            "case_body_before_record_construction":case_start.elapsed().as_nanos()});
         Ok((times_ms, ver_status, max_abs, max_rel, sampling))
     }));
 
@@ -1486,6 +1504,7 @@ fn sample_eager(
     device_ordinal: usize,
     mut op: impl FnMut(&mut EagerSession<'_>, DotGeneralConfig) -> Result<Vec<EagerTensor>, String>,
 ) -> Result<(Vec<f64>, Vec<EagerTensor>, Value), String> {
+    let sampler_start = Instant::now();
     ctx.with_eager_session(|session| {
         let result = (|| -> Result<_, String> {
             if verification_only() {
@@ -1516,10 +1535,13 @@ fn sample_eager(
                 view.shape().iter().product::<usize>() * width
             }).sum::<usize>().max(1);
             drop(initial);
+            let probe_end = sampler_start.elapsed().as_nanos();
             for _ in 0..warmups { drop(batch(1)?); }
+            let warmup_end = sampler_start.elapsed().as_nanos();
             let cap = ((256 << 20) / bytes).clamp(1, 4096);
             let mut count = 1;
             while batch(count)?.0 < 2. && count < cap { count = (count * 2).min(cap); }
+            let calibration_end = sampler_start.elapsed().as_nanos();
             let mut raw = Vec::with_capacity(runs);
             let mut last = None;
             for _ in 0..runs {
@@ -1528,11 +1550,16 @@ fn sample_eager(
                 raw.push(elapsed);
                 last = outputs.pop();
             }
+            let sampling_end = sampler_start.elapsed().as_nanos();
             let normalized = raw.iter().map(|time| time / count as f64).collect();
             let notes = json!({"sampling":{"operations_per_sample":count,"batch_ms":raw,
                 "target_batch_ms":2,"retention_budget_bytes":256<<20},
                 "setup":"one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks",
                 "precision":"native declared dtype; no AD recording",
+                "wall_phases_ns":{"session_entry_and_initial_probe":probe_end,
+                    "warmup":warmup_end-probe_end,"calibration":calibration_end-warmup_end,
+                    "sampling":sampling_end-calibration_end},
+                "wall_phase_scope":"phase wall time includes untimed preparation/cleanup; outside operation clocks",
                 "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()});
             let output = last.ok_or("no timed eager samples")?;
             assert_cuda_eager_outputs(&output, device_ordinal)?;
