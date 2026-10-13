@@ -69,6 +69,9 @@ def render(suite, paths, metadata, timestamp):
     if any(case.get("op") == "dot_general_axes" and case.get("variant") == "batch" for case in suite["cases"]):
         text[-2:-2] = [
             'Generalized batch dot preserves native output order: tenferro [m,n,b], PyTorch/JAX [b,m,n]. Input permutation views and dimension-number configurations are prepared before timing. Output axes are normalized only on downloaded CPU arrays for verification; no timed output transpose or copy is added.', ""]
+    if any(case.get("op", "").startswith("einsum_plan") for case in suite["cases"]):
+        text[-2:-2] = [
+            'Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once outside execution and sampling. Native matrix multiplication/reuse/accumulation references match the selected mathematical and output-ownership contracts; they do not assert an equivalent prepared-plan interface. Transposed input views/values, read/write handles and accumulation seed restoration are untimed.', ""]
     for case in suite["cases"]:
         cells = []
         for backend in backends:

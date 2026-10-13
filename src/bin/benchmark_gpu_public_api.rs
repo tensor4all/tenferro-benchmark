@@ -450,6 +450,12 @@ fn main() -> Result<()> {
             "device_ordinal":device,"session_policy":"one entered session for initialization, calibration and samples",
             "setup_policy":"fixtures, H2D, handles, plan initialization and output validation outside timing",
             "synchronization":"CudaRuntime::synchronize; no D2H in timed region"});
+        if case.op.starts_with("einsum_plan") {
+            row["plan_policy"] = json!("ConcreteEinsumPlan prepared once for ik,kj->ij outside execution and sampling; one entered session");
+            row["input_layout_policy"] = json!(if case.op.contains("strided") {
+                "transposed borrowed CUDA views and input handles prepared outside timing"
+            } else { "compact CUDA inputs; input handles prepared outside timing" });
+        }
         if matches!(case.op.as_str(), "dot_general_axes" | "dot_general_conj") {
             row["dot_configuration"] = json!({"lhs_contracting_dims":case.lhs_contracting_dims,"rhs_contracting_dims":case.rhs_contracting_dims,"lhs_batch_dims":case.lhs_batch_dims,"rhs_batch_dims":case.rhs_batch_dims,"lhs_conj":case.lhs_conj,"rhs_conj":case.rhs_conj});
             row["batch_output_policy"] = json!("native batch-last; reference axis normalization only during untimed CPU verification");
