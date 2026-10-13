@@ -9,10 +9,16 @@ use tenferro_fft::{EagerSessionFftExt, FftExecutor, FftNorm};
 use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaBackend, CudaDeviceId, CudaRuntime};
 use tenferro_tensor::{BackendSession, BackendSessionHost, DType, Tensor};
 
+#[path = "benchmark_gpu_public_api/lifetime.rs"]
+mod lifetime;
 #[path = "benchmark_gpu_public_api/linalg.rs"]
 mod linalg;
 #[path = "benchmark_gpu_public_api/multi.rs"]
 mod multi;
+#[path = "benchmark_gpu_public_api/plan.rs"]
+mod plan;
+#[path = "benchmark_gpu_public_api/read_layout.rs"]
+mod read_layout;
 #[path = "benchmark_gpu_public_api/reuse.rs"]
 mod reuse;
 #[path = "benchmark_gpu_public_api/runtime_ops.rs"]
@@ -21,12 +27,6 @@ mod runtime_ops;
 mod state;
 #[path = "benchmark_gpu_public_api/structural.rs"]
 mod structural;
-#[path = "benchmark_gpu_public_api/read_layout.rs"]
-mod read_layout;
-#[path = "benchmark_gpu_public_api/plan.rs"]
-mod plan;
-#[path = "benchmark_gpu_public_api/lifetime.rs"]
-mod lifetime;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -48,6 +48,8 @@ struct Case {
     reference: String,
     #[serde(default)]
     full_reduction: bool,
+    #[serde(default)]
+    padding: Vec<(i64, i64, i64)>,
     #[serde(default)]
     compare_direction: String,
     #[serde(default)]
@@ -305,7 +307,7 @@ fn run(
     device: usize,
 ) -> Result<(Option<Value>, f64)> {
     if case.op.starts_with("einsum_plan") {
-        return plan::run(root,case,settings,device);
+        return plan::run(root, case, settings, device);
     }
     if matches!(
         case.op.as_str(),
@@ -316,7 +318,10 @@ fn run(
     ) {
         return state::run(root, case, mode, settings, device);
     }
-    if matches!(case.op.as_str(), "svd_full" | "slogdet" | "householder_qr" | "lu") {
+    if matches!(
+        case.op.as_str(),
+        "svd_full" | "slogdet" | "householder_qr" | "lu"
+    ) {
         return multi::run(root, case, mode, settings, device);
     }
     let input_host = case
@@ -344,7 +349,9 @@ fn run(
                 return read_layout::run(case, &input, &expected, &rt, session, settings, bytes);
             }
             if case.op.contains("_into") {
-                return reuse::run(case, &input, &expected, &rt, session, settings, bytes, None, None);
+                return reuse::run(
+                    case, &input, &expected, &rt, session, settings, bytes, None, None,
+                );
             }
             let probe = direct(
                 case,
@@ -440,10 +447,11 @@ fn main() -> Result<()> {
     }
     let device = env_usize("GPU_BENCH_DEVICE", 0)?;
     if env_usize("GPU_API_LIFETIME_COUNTERS", 0)? == 1 {
-        if mode != "tenferro-cuda-direct" || std::env::var("GPU_API_ROLE").as_deref() != Ok("debug") {
+        if mode != "tenferro-cuda-direct" || std::env::var("GPU_API_ROLE").as_deref() != Ok("debug")
+        {
             return Err("counter passes require direct API and debug GPU role".into());
         }
-        return lifetime::run(root,&cases,Path::new(&output),device);
+        return lifetime::run(root, &cases, Path::new(&output), device);
     }
     let mut file = fs::OpenOptions::new()
         .create_new(true)
@@ -462,7 +470,9 @@ fn main() -> Result<()> {
             row["plan_policy"] = json!("ConcreteEinsumPlan prepared once for ik,kj->ij outside execution and sampling; one entered session");
             row["input_layout_policy"] = json!(if case.op.contains("strided") {
                 "transposed borrowed CUDA views and input handles prepared outside timing"
-            } else { "compact CUDA inputs; input handles prepared outside timing" });
+            } else {
+                "compact CUDA inputs; input handles prepared outside timing"
+            });
         }
         if matches!(case.op.as_str(), "dot_general_axes" | "dot_general_conj") {
             row["dot_configuration"] = json!({"lhs_contracting_dims":case.lhs_contracting_dims,"rhs_contracting_dims":case.rhs_contracting_dims,"lhs_batch_dims":case.lhs_batch_dims,"rhs_batch_dims":case.rhs_batch_dims,"lhs_conj":case.lhs_conj,"rhs_conj":case.rhs_conj});
@@ -473,13 +483,15 @@ fn main() -> Result<()> {
         }
         if case.op.contains("_into_accum") {
             row["input_restoration"] = json!("GPU seed copied into each destination before every batch; synchronized outside timing");
-            row["accumulation"] = json!({"alpha":case.alpha.unwrap_or(0.5),"beta":case.beta.unwrap_or(1.0)});
+            row["accumulation"] =
+                json!({"alpha":case.alpha.unwrap_or(0.5),"beta":case.beta.unwrap_or(1.0)});
         }
         if case.op == "dot_general_read_into" {
             row["accumulation"] = json!({"alpha":1.0,"beta":0.0});
         }
         if case.op == "dot_general_read_into_accum_cached" {
-            row["cache_policy"] = json!("CUDA delegates to ordinary accumulation; session slot Some(0) is unused");
+            row["cache_policy"] =
+                json!("CUDA delegates to ordinary accumulation; session slot Some(0) is unused");
         }
         if let Some(reason) = case.unavailable.get(&mode) {
             row["status"] = json!("unsupported");

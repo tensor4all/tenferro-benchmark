@@ -6,7 +6,14 @@ use tenferro_tensor::{
     Tensor, TensorRead,
 };
 
-fn pad() -> PadConfig {
+fn pad(case: &Case) -> PadConfig {
+    if !case.padding.is_empty() {
+        return PadConfig {
+            edge_padding_low: case.padding.iter().map(|p| p.0).collect(),
+            edge_padding_high: case.padding.iter().map(|p| p.1).collect(),
+            interior_padding: case.padding.iter().map(|p| p.2).collect(),
+        };
+    }
     PadConfig {
         edge_padding_low: vec![0, 8],
         edge_padding_high: vec![0, 8],
@@ -49,7 +56,7 @@ pub(super) fn prepare(case: &Case) -> Arguments<'static> {
                 rhs_batch_dims: case.rhs_batch_dims.clone().into(),
             })
         }
-        "pad" => args.pad = Some(pad()),
+        "pad" => args.pad = Some(pad(case)),
         "slice" => args.slice = Some(slice(&case.inputs[0].shape)),
         "scatter" => args.scatter = Some(scatter()),
         "gather" => {

@@ -80,3 +80,15 @@ problems:
     - dynamic_slice_clamped_f64_n1048576
     - gather_axis0_f64_n1048576
     - gather_axis1_f64_n1048576
+    - pad_interior_f32_n1024
+    - pad_crop_f32_n1024
+    - pad_interior_crop_f32_n1024
+    - pad_interior_f64_n1024
+    - pad_crop_f64_n1024
+    - pad_interior_crop_f64_n1024
+    - pad_interior_f32_n1048576
+    - pad_crop_f32_n1048576
+    - pad_interior_crop_f32_n1048576
+    - pad_interior_f64_n1048576
+    - pad_crop_f64_n1048576
+    - pad_interior_crop_f64_n1048576
