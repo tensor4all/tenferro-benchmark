@@ -735,7 +735,7 @@ fn run_eager(
 
         // Verify last result against CPU reference
         let (ver_status, max_abs, max_rel) = if let Some(ref g) = last_out {
-            let cpu_out = if op == "solve" {
+            let cpu_out = if matches!(op, "qr" | "solve" | "svd" | "eigh") {
                 Vec::new()
             } else {
                 run_eager_op(op, &subscripts, batched_matmul_cfg(), &cpu_inputs).unwrap_or_default()
@@ -1818,7 +1818,55 @@ fn verify_tensors(
     let Some((actual, expected)) = comparison else {
         return ("skipped".to_string(), None, None);
     };
-    compare_vectors(&actual, &expected, rtol, atol)
+    let mut result = compare_vectors(&actual, &expected, rtol, atol);
+    let checks = match op {
+        "qr" => gpu.first().and_then(|q| orthogonality(q, false)).map(|x| vec![x]),
+        "svd" => gpu.first().and_then(|u| orthogonality(u, false)).and_then(|u| {
+            gpu.get(2).and_then(|v| orthogonality(v, true)).map(|v| vec![u, v])
+        }),
+        "eigh" => gpu.get(1).and_then(|v| orthogonality(v, false)).map(|x| vec![x]),
+        _ => Some(Vec::new()),
+    };
+    let Some(checks) = checks else { return ("failed".into(), None, None); };
+    for (actual, expected) in checks {
+        let check = compare_vectors(&actual, &expected, rtol, atol);
+        if check.0 != "passed" { result.0 = "failed".into(); }
+        result.1 = result.1.zip(check.1).map(|(a,b)| a.max(b));
+        result.2 = result.2.zip(check.2).map(|(a,b)| a.max(b));
+    }
+    if op == "qr" {
+        let Some((shape,r)) = gpu.get(1).and_then(tensor_f64_parts) else { return ("failed".into(),None,None); };
+        let (m,n) = (shape[0],shape[1]);
+        let lower = (0..n).flat_map(|j| (j+1..m).map(move |i| i+m*j))
+            .map(|index| r[index]).collect::<Vec<_>>();
+        let check = compare_vectors(&lower,&vec![0.0;lower.len()],rtol,atol);
+        if check.0 != "passed" { result.0 = "failed".into(); }
+        result.1 = result.1.zip(check.1).map(|(a,b)| a.max(b));
+        result.2 = result.2.zip(check.2).map(|(a,b)| a.max(b));
+    }
+    if matches!(op,"svd"|"eigh") {
+        let index = if op == "svd" {1} else {0};
+        let Some((_,values)) = gpu.get(index).and_then(tensor_f64_parts) else { return ("failed".into(),None,None); };
+        if values.iter().any(|v| !v.is_finite() || (op == "svd" && *v < 0.0)) ||
+            values.windows(2).any(|w| if op == "svd" {w[0]<w[1]}else{w[0]>w[1]}) {
+            result.0 = "failed".into();
+        }
+    }
+    result
+}
+
+fn orthogonality(tensor: &Tensor, rows_are_vectors: bool) -> Option<(Vec<f64>, Vec<f64>)> {
+    let (shape, data) = tensor_f64_parts(tensor)?;
+    if shape.len() != 2 || shape[0].checked_mul(shape[1])? != data.len() { return None; }
+    let (m,n) = (shape[0],shape[1]);
+    let mut transpose = vec![0.0; data.len()];
+    for j in 0..n { for i in 0..m { transpose[j+n*i] = data[i+m*j]; } }
+    let (gram,size) = if rows_are_vectors {
+        (matmul_col_major(&data,m,n,&transpose,n,m)?,m)
+    } else { (matmul_col_major(&transpose,n,m,&data,m,n)?,n) };
+    let mut identity = vec![0.0; size.checked_mul(size)?];
+    for i in 0..size { identity[i+size*i] = 1.0; }
+    Some((gram,identity))
 }
 
 fn verify_solve(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f64>)> {
@@ -1843,10 +1891,11 @@ fn verify_solve(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<
 fn verify_qr(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f64>)> {
     let (q_shape, q) = gpu.first().and_then(tensor_f64_parts)?;
     let (r_shape, r) = gpu.get(1).and_then(tensor_f64_parts)?;
-    let (_, a) = cpu_inputs.first().and_then(tensor_f64_parts)?;
+    let (a_shape, a) = cpu_inputs.first().and_then(tensor_f64_parts)?;
     if q_shape.len() != 2 || r_shape.len() != 2 {
         return None;
     }
+    if a_shape.as_slice() != [q_shape[0],r_shape[1]] { return None; }
     let recon = matmul_col_major(&q, q_shape[0], q_shape[1], &r, r_shape[0], r_shape[1])?;
     Some((recon, a))
 }
@@ -1908,18 +1957,19 @@ fn matmul_col_major(
     b_rows: usize,
     b_cols: usize,
 ) -> Option<Vec<f64>> {
-    if a_cols != b_rows || a.len() != a_rows * a_cols || b.len() != b_rows * b_cols {
+    if a_cols != b_rows || a.len() != a_rows.checked_mul(a_cols)? || b.len() != b_rows.checked_mul(b_cols)? {
         return None;
     }
-    let mut out = vec![0.0; a_rows * b_cols];
-    for col in 0..b_cols {
-        for row in 0..a_rows {
-            let mut acc = 0.0;
-            for k in 0..a_cols {
-                acc += a[row + a_rows * k] * b[k + b_rows * col];
-            }
-            out[row + a_rows * col] = acc;
-        }
+    let mut out = vec![0.0; a_rows.checked_mul(b_cols)?];
+    let a_stride = isize::try_from(a_rows).ok()?;
+    let b_stride = isize::try_from(b_rows).ok()?;
+    if a_rows == 0 || b_cols == 0 || a_cols == 0 { return Some(out); }
+    // Bounds were checked above. Inputs may alias each other, but the newly
+    // allocated destination cannot alias either input. All layouts are compact
+    // column-major. This independent blocked CPU product is verification only.
+    unsafe {
+        matrixmultiply::dgemm(a_rows, a_cols, b_cols, 1.0,
+            a.as_ptr(),1,a_stride,b.as_ptr(),1,b_stride,0.0,out.as_mut_ptr(),1,a_stride);
     }
     Some(out)
 }
@@ -1932,6 +1982,9 @@ fn compare_vectors(
 ) -> (String, Option<f64>, Option<f64>) {
     if actual.len() != expected.len() {
         return ("skipped".to_string(), None, None);
+    }
+    if actual.iter().chain(expected).any(|value| !value.is_finite()) {
+        return ("failed".into(), None, None);
     }
     let max_abs = actual
         .iter()
@@ -1950,6 +2003,53 @@ fn compare_vectors(
         Some(max_abs),
         Some(max_rel),
     )
+}
+
+#[cfg(test)]
+mod verification_tests {
+    use super::*;
+    fn matrix(data: Vec<f64>) -> Tensor { Tensor::from_vec_col_major(vec![2,2],data).unwrap() }
+    fn copy(t: &Tensor) -> Tensor { Tensor::from_vec_col_major(t.shape().to_vec(),t.as_slice::<f64>().unwrap().to_vec()).unwrap() }
+    fn identity() -> Tensor { matrix(vec![1.,0.,0.,1.]) }
+
+    #[test]
+    fn blocked_product_respects_rectangular_column_major_layout() {
+        let result = matmul_col_major(&[1.,4.,2.,5.,3.,6.],2,3,&[7.,9.,11.,8.,10.,12.],3,2).unwrap();
+        assert_eq!(result,vec![58.,139.,64.,154.]);
+        assert!(matmul_col_major(&[],usize::MAX,2,&[],2,1).is_none());
+    }
+    #[test]
+    fn nan_cannot_disappear_in_max_error_fold() {
+        assert_eq!(compare_vectors(&[f64::NAN],&[0.],1e-8,1e-10).0,"failed");
+    }
+    #[test]
+    fn qr_checks_orthogonality_and_triangularity() {
+        let r = matrix(vec![2.,0.,1.,3.]);
+        assert_eq!(verify_tensors("qr",&[identity(),copy(&r)],&[],&[r],1e-8,1e-10).0,"passed");
+        let a = matrix(vec![2.,0.,1.,3.]);
+        let scaled_q = matrix(vec![2.,0.,0.,2.]);
+        let scaled_r = matrix(vec![1.,0.,0.5,1.5]);
+        assert_eq!(verify_tensors("qr",&[scaled_q,scaled_r],&[],&[a],1e-8,1e-10).0,"failed");
+        let dense = matrix(vec![2.,1.,1.,3.]);
+        assert_eq!(verify_tensors("qr",&[identity(),copy(&dense)],&[],&[dense],1e-8,1e-10).0,"failed");
+    }
+    #[test]
+    fn eigh_rejects_zero_vectors_and_unsorted_spectrum() {
+        let a = matrix(vec![2.,0.,0.,3.]);
+        let w = Tensor::from_vec_col_major(vec![2],vec![2.,3.]).unwrap();
+        assert_eq!(verify_tensors("eigh",&[copy(&w),identity()],&[],&[copy(&a)],1e-8,1e-10).0,"passed");
+        assert_eq!(verify_tensors("eigh",&[w,matrix(vec![0.;4])],&[],&[copy(&a)],1e-8,1e-10).0,"failed");
+        let reverse = Tensor::from_vec_col_major(vec![2],vec![3.,2.]).unwrap();
+        assert_eq!(verify_tensors("eigh",&[reverse,matrix(vec![0.,1.,1.,0.])],&[],&[a],1e-8,1e-10).0,"failed");
+    }
+    #[test]
+    fn svd_rejects_negative_singular_values_despite_reconstruction() {
+        let a = matrix(vec![3.,0.,0.,2.]);
+        let s = Tensor::from_vec_col_major(vec![2],vec![3.,2.]).unwrap();
+        assert_eq!(verify_tensors("svd",&[identity(),s,identity()],&[],&[copy(&a)],1e-8,1e-10).0,"passed");
+        let negative = Tensor::from_vec_col_major(vec![2],vec![-3.,-2.]).unwrap();
+        assert_eq!(verify_tensors("svd",&[matrix(vec![-1.,0.,0.,-1.]),negative,identity()],&[],&[a],1e-8,1e-10).0,"failed");
+    }
 }
 
 // ---------------------------------------------------------------------------
