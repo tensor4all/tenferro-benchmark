@@ -125,3 +125,34 @@ problems:
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
     only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+
+  - id: dense_batched_matmul_f64_b16_32
+    family: dense
+    op: batched_matmul
+    dtype:
+      a: f64
+      b: f64
+      c: f64
+      accum: f64
+    layout:
+      tenferro: col_major
+      framework: row_major_contiguous
+    data:
+      generator: normal
+      seed: 2
+    batched_matmul:
+      batch: 16
+      m: 32
+      n: 32
+      k: 32
+      batch_layout: leading
+    run:
+      warmups: 3
+      runs: 7
+      timing_scope: steady_state_host_api_plus_device_sync
+    verify:
+      reference: cpu_fp64
+      rtol: 1.0e-08
+      atol: 1.0e-10
+    skip_backends:
+    - cusolver
