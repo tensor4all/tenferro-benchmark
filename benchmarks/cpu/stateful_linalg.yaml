@@ -1,0 +1,38 @@
+schema_version: 1
+suite_id: cpu/stateful_linalg
+title: Stateful incremental QR public-boundary workflows
+description: >-
+  F64 m=64,128,256, initial rank 5, nine width-3 appends, final rank 32.
+  Seven fresh processes in alternating path order; three warmups and three
+  64-workflow intervals per process. Interleaved append, R and new Q columns;
+  shared and per-operation sessions, eager runtime reuse and BCGS2 diagnostic.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  run: {warmups: 3, runs: 3, timing_scope: steady_state_host_api}
+  verify: {reference: reconstruction-and-orthogonality, rtol: 1.0e-10, atol: 1.0e-10}
+backends:
+  - tenferro-rs
+problems:
+  source: data/instances/stateful_linalg.json
+  include:
+  - incremental_qr_m64_shared
+  - incremental_qr_m64_fresh
+  - incremental_qr_m64_eager-fresh
+  - incremental_qr_m64_eager-shared
+  - incremental_qr_m64_attributed
+  - incremental_qr_m64_bcgs2
+  - incremental_qr_m64_bcgs2-attributed
+  - incremental_qr_m128_shared
+  - incremental_qr_m128_fresh
+  - incremental_qr_m128_eager-fresh
+  - incremental_qr_m128_eager-shared
+  - incremental_qr_m128_attributed
+  - incremental_qr_m128_bcgs2
+  - incremental_qr_m128_bcgs2-attributed
+  - incremental_qr_m256_shared
+  - incremental_qr_m256_fresh
+  - incremental_qr_m256_eager-fresh
+  - incremental_qr_m256_eager-shared
+  - incremental_qr_m256_attributed
+  - incremental_qr_m256_bcgs2
+  - incremental_qr_m256_bcgs2-attributed

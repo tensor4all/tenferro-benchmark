@@ -89,7 +89,7 @@ coverage:
     disposition: measured
     benchmarks: cpu/linalg_uncovered/householder_qr
     issues: ["tenferro-benchmark#133"]
-    reason: Compact state initialization only; Q/R extraction is untimed validation. Compiled trace cannot return the opaque state without additional extraction operations.
+    reason: Compact state initialization only; Q/R extraction is untimed validation. Compiled trace cannot return the opaque state without additional extraction operations. Stateful append/R/new-Q workflows and session latency are measured separately by cpu/stateful_linalg (tenferro-benchmark#94).
   - family: rank_revealing_qr
     tenferro_apis:
       - TensorLinalgExt::rank_revealing_qr
