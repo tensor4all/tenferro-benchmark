@@ -351,6 +351,12 @@ PY
 done
 
 "${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$SELECTION_DIR" --records "${RESULT_PATHS[@]}"
+"${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$SELECTION_DIR/case_status.json" \
+    --output "$SELECTION_DIR/report.md"
+if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
+    mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu"
+    cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+fi
 
 echo ""
 echo "GPU benchmark suites complete"

@@ -14,7 +14,7 @@ does not imply complete measured coverage.
 
 ```bash
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
-  bash -lc 'GPU_BENCH_DEVICE=0 GPU_BENCH_SKIP_LATEST=1 \
+  bash -lc 'GPU_BENCH_DEVICE=0 GPU_BENCH_SKIP_LATEST=1 BENCH_COVERAGE=full \
     BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
 ```
 
@@ -52,3 +52,7 @@ functional success. No budget is declared for this initial full baseline.
 Routine coverage and effort changes must retain explicit case identities and
 be measured before a budget is chosen. GPU paired confirmation remains separate
 from these workflow-cost observations.
+
+The subsequent quick/full selection is documented in
+[gpu-routine-coverage.md](gpu-routine-coverage.md). Use explicit `full` when
+repeating the broad baseline; an unfiltered routine command selects quick.
