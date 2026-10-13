@@ -90,6 +90,10 @@ missing rows, duplicates and invalid samples without replacing the latest report
   cases prepare distinct destinations and move-only write handles before each
   batch and reuse the same destination allocations across samples; PyTorch's
   `out=` arm uses the same destination schedule. JAX donation is not output reuse.
+  Rust pad/slice/scatter configurations and vdot/norm borrowed read handles are
+  also prepared before each batch, including initialization with zero warmups.
+  Earlier structural measurements constructed their move-only configurations
+  inside the timer and are noncompliant; rerun them before using their ratios.
 * References use NumPy/SciPy double precision on the exact rounded inputs and
   check every output element before and after measurement. Shapes and dtypes
   must match; NaNs fail. Matched masked log-softmax negative infinities are

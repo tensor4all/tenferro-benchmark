@@ -23,7 +23,12 @@ fn direction(case: &Case) -> Result<CompareDir> {
     })
 }
 
-pub(super) fn direct(case: &Case, inputs: &[Tensor], s: &mut dyn BackendSession) -> Result<Tensor> {
+pub(super) fn direct(
+    case: &Case,
+    inputs: &[Tensor],
+    s: &mut dyn BackendSession,
+    args: super::structural::Arguments<'_>,
+) -> Result<Tensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
         "neg" => x.neg(s)?,
@@ -68,13 +73,14 @@ pub(super) fn direct(case: &Case, inputs: &[Tensor], s: &mut dyn BackendSession)
         "masked_log_softmax" => x.masked_log_softmax(&inputs[1], 1, s)?,
         "layer_norm" => x.layer_norm(1, None, None, 1e-5, s)?,
         "rms_norm" => x.rms_norm(1, None, None, 1e-5, s)?,
-        _ => return super::structural::direct(case, inputs, s),
+        _ => return super::structural::direct(case, inputs, s, args),
     })
 }
 pub(super) fn eager(
     case: &Case,
     inputs: &[EagerTensor],
     s: &mut EagerSession<'_>,
+    args: super::structural::Arguments<'_>,
 ) -> Result<EagerTensor> {
     let x = &inputs[0];
     Ok(match case.op.as_str() {
@@ -120,6 +126,6 @@ pub(super) fn eager(
         "masked_log_softmax" => s.masked_log_softmax(x, &inputs[1], 1)?,
         "layer_norm" => s.layer_norm(x, 1, None, None, 1e-5)?,
         "rms_norm" => s.rms_norm(x, 1, None, None, 1e-5)?,
-        _ => return super::structural::eager(case, inputs, s),
+        _ => return super::structural::eager(case, inputs, s, args),
     })
 }
