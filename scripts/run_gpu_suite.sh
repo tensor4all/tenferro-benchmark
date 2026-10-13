@@ -358,5 +358,35 @@ if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]
     cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
 fi
 
+CONTROLS="${GPU_BENCH_ROUTINE_CONTROLS:-}"
+if [[ -z "$CONTROLS" ]]; then
+    if [[ -z "${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}" ]]; then
+        CONTROLS=1
+    else
+        CONTROLS=0
+    fi
+fi
+[[ "$CONTROLS" == 0 || "$CONTROLS" == 1 ]] || { echo "Invalid GPU_BENCH_ROUTINE_CONTROLS" >&2; exit 1; }
+if [[ "$CONTROLS" == 1 ]]; then
+    BENCH_COVERAGE="$COVERAGE" GPU_BENCH_TIMESTAMP="$TIMESTAMP" \
+        bash "$SCRIPT_DIR/run_gpu_routine_controls.sh"
+fi
+COMMAND_COMPLETE_NS="$(wall_now)"
+"${PYTHON[@]}" - "$SELECTION_DIR/wall_command_complete.json" "$COMMAND_START_NS" "$COMMAND_COMPLETE_NS" "$CONTROLS" <<'PY'
+import json, sys
+from pathlib import Path
+Path(sys.argv[1]).write_text(json.dumps({
+    'script_seconds_before_final_wall_record_write': (int(sys.argv[3])-int(sys.argv[2]))/1e9,
+    'routine_controls_selected': sys.argv[4] == '1',
+    'scope': 'script clock read through core and control collection, validation, accounting and report writes; excludes devcontainer CLI startup and final wall metadata/report formatting'
+}, indent=2)+'\n')
+PY
+if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
+    "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$SELECTION_DIR" --output "$SELECTION_DIR/wall_report.md"
+    if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
+        cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
+    fi
+fi
+
 echo ""
 echo "GPU benchmark suites complete"

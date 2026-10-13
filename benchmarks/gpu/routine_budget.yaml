@@ -1,0 +1,10 @@
+schema_version: 1
+target_profile: nvidia-gpu
+device_name: NVIDIA GeForce RTX 3060
+coverage: quick
+effort: standard
+script_seconds: 300
+scope: core and routine controls through accounting/reporting; devcontainer CLI startup and final wall metadata/report formatting excluded
+reference_run: data/results/nvidia-gpu/gpu/routine_selection/20261013_234113
+cache_conditions: existing CUDA devcontainer and dependency cache; mandatory Rust binary rebuilds included
+policy: descriptive observation only; never a functional failure or a regression conclusion
