@@ -23,6 +23,36 @@ class EinsumBackend(Protocol):
 T = TypeVar("T")
 
 
+def _jax_binary_contract(ixs, iy):
+    """Lower ordinary binary contractions directly, with no einsum optimizer.
+
+    Shared output labels are batch axes. Other shared labels are contracted;
+    the final transpose restores the tree's declared output ordering.
+    """
+    if len(ixs) != 2 or any(len(ix) != len(set(ix)) for ix in ixs):
+        return None
+    left, right = map(list, ixs)
+    output = list(iy)
+    shared = set(left) & set(right)
+    if set(left) | set(right) != set(output) | shared:
+        return None  # unilateral reductions require a different lowering
+    batches = [label for label in output if label in shared]
+    summed = [label for label in left if label in shared and label not in output]
+    remaining_left = [label for label in left if label not in shared]
+    remaining_right = [label for label in right if label not in shared]
+    native = batches + remaining_left + remaining_right
+    permutation = tuple(native.index(label) for label in output)
+    dimensions = ((tuple(left.index(i) for i in summed), tuple(right.index(i) for i in summed)),
+                  (tuple(left.index(i) for i in batches), tuple(right.index(i) for i in batches)))
+
+    def execute(a, b):
+        import jax
+        result = jax.lax.dot_general(a, b, dimensions, precision=jax.lax.Precision.HIGHEST)
+        return result if permutation == tuple(range(len(native))) else result.transpose(permutation)
+
+    return execute
+
+
 def resolve_source_path(project_root: Path, source: str) -> Path:
     path = Path(source)
     if not path.is_absolute():
@@ -80,6 +110,7 @@ def prepare_tree(tree: dict[str, Any], inputs: Sequence[Any], backend_name: str)
         )
         shapes = [shape for _, shape in children]
         contract = oe.contract_expression(expression, *shapes, optimize="greedy")
+        binary = _jax_binary_contract(ixs, iy) if backend_name == "jax" else None
         sizes = {
             label: size
             for ix, shape in zip(ixs, shapes)
@@ -88,6 +119,8 @@ def prepare_tree(tree: dict[str, Any], inputs: Sequence[Any], backend_name: str)
 
         def execute(values):
             operands = [run(values) for run, _ in children]
+            if binary is not None:
+                return binary(*operands)
             return contract(*operands, backend=backend_name)
 
         return execute, tuple(sizes[i] for i in iy)
@@ -158,7 +191,9 @@ def prepare_tree_jax_kernels(tree, inputs, compiler_options=None):
         expr = ",".join("".join(names[label] for label in ix) for ix in ixs) + "->" + "".join(names[label] for label in iy)
         operands = tuple(value for _, value in children)
         expression = oe.contract_expression(expr, *(value.shape for value in operands), optimize="greedy")
-        compiled = jax.jit(lambda *values: expression(*values, backend="jax")).lower(*operands).compile(compiler_options=compiler_options or {})
+        binary = _jax_binary_contract(ixs, iy)
+        operation = binary or (lambda *values: expression(*values, backend="jax"))
+        compiled = jax.jit(operation).lower(*operands).compile(compiler_options=compiler_options or {})
         representative = jax.block_until_ready(compiled(*operands))
         prepared_nodes[0] += 1
         if prepared_nodes[0] % 32 == 0:

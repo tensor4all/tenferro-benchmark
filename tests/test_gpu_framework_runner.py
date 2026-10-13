@@ -12,6 +12,18 @@ from gpu_framework_runner import require_verification
 
 
 class LegacyGpuContracts(unittest.TestCase):
+    def test_binary_jax_lowering_matches_batch_contraction_and_output_order(self):
+        import jax
+        import numpy as np
+        import tensornetwork_contract as tnc
+        cpu = jax.devices("cpu")[0]
+        a = np.arange(24, dtype=np.float32).reshape(2, 3, 4) / 20
+        b = np.arange(40, dtype=np.float32).reshape(2, 4, 5) / 30
+        operation = tnc._jax_binary_contract([[0, 1, 2], [0, 2, 3]], [3, 0, 1])
+        actual = operation(jax.device_put(a, cpu), jax.device_put(b, cpu))
+        np.testing.assert_allclose(np.asarray(actual), np.einsum("bik,bkj->jbi", a, b), rtol=1e-6)
+        self.assertIsNone(tnc._jax_binary_contract([[0, 1], [1, 2]], [2]))
+
     def test_constant_tree_oracle_matches_dense_reference_with_sums_and_free_axes(self):
         import numpy as np
         import tensornetwork_contract as tnc
