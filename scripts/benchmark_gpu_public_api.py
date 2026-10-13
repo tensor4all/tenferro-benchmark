@@ -163,19 +163,29 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
         # Keep all outputs alive through synchronization and the stopped clock.
         return elapsed
 
+    phase_start = time.monotonic_ns()
     first = batch(1)  # explicit lazy initialization, including with zero warmups
+    probe_end = time.monotonic_ns()
     for _ in range(warmups):
         batch(1)
+    warmup_end = time.monotonic_ns()
     cap = max(1, min(4096, RETENTION_BUDGET // max(1, nbytes + getattr(op, "synchronization_bytes_per_operation", 0))))
     count = 1
     while batch(count) < 2_000_000 and count < cap:
         count = min(count * 2, cap)
+    calibration_end = time.monotonic_ns()
     samples = [batch(count) / 1e6 for _ in range(runs)]
+    sampling_end = time.monotonic_ns()
     return {"operations_per_sample": count, "batch_ms": samples,
             "first_run_ms": first / 1e6, "retention_budget_bytes": RETENTION_BUDGET,
             "target_batch_ms": 2, "warmups": warmups,
             "scope": "steady_state_host_api_plus_device_sync",
-            "completion_token_bytes_per_operation": getattr(op, "synchronization_bytes_per_operation", 0)}
+            "completion_token_bytes_per_operation": getattr(op, "synchronization_bytes_per_operation", 0),
+            "wall_phases_ns": {"initial_probe": probe_end-phase_start,
+                               "warmup": warmup_end-probe_end,
+                               "calibration": calibration_end-warmup_end,
+                               "sampling": sampling_end-calibration_end},
+            "wall_phase_scope": "end-to-end phase wall time, including untimed batch preparation/cleanup; outside operation clocks"}
 
 
 def verify_device(outputs, backend, device):
