@@ -19,10 +19,10 @@ class LegacyGpuContracts(unittest.TestCase):
         cpu = jax.devices("cpu")[0]
         a = np.arange(24, dtype=np.float32).reshape(2, 3, 4) / 20
         b = np.arange(40, dtype=np.float32).reshape(2, 4, 5) / 30
-        operation = tnc._jax_binary_contract([[0, 1, 2], [0, 2, 3]], [3, 0, 1])
+        operation = tnc._jax_binary_contract([[0, 1, 2], [0, 2, 3]], [3, 0, 1], [a.shape, b.shape])
         actual = operation(jax.device_put(a, cpu), jax.device_put(b, cpu))
         np.testing.assert_allclose(np.asarray(actual), np.einsum("bik,bkj->jbi", a, b), rtol=1e-6)
-        self.assertIsNone(tnc._jax_binary_contract([[0, 1], [1, 2]], [2]))
+        self.assertIsNone(tnc._jax_binary_contract([[0, 1], [1, 2]], [2], [(2, 3), (3, 4)]))
 
     def test_native_jax_tree_propagates_permuted_intermediate_axes(self):
         import jax

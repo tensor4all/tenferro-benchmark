@@ -23,7 +23,25 @@ class EinsumBackend(Protocol):
 T = TypeVar("T")
 
 
-def _jax_binary_contract(ixs, iy, restore_output=True):
+def _prepare_compact_transpose(shape, permutation):
+    """Coalesce consecutive source axes before a physical permutation."""
+    from math import prod
+    if tuple(permutation) == tuple(range(len(shape))):
+        return lambda value: value
+    groups = []
+    for axis in permutation:
+        if groups and axis == groups[-1][-1] + 1:
+            groups[-1].append(axis)
+        else:
+            groups.append([axis])
+    source = sorted(groups, key=lambda group: group[0])
+    compact_shape = tuple(prod(shape[i] for i in group) for group in source)
+    group_order = tuple(source.index(group) for group in groups)
+    target_shape = tuple(shape[i] for i in permutation)
+    return lambda value: value.reshape(compact_shape).transpose(group_order).reshape(target_shape)
+
+
+def _jax_binary_contract(ixs, iy, shapes, restore_output=True):
     """Lower ordinary binary contractions directly, with no einsum optimizer.
 
     Shared output labels are batch axes. Other shared labels are contracted;
@@ -42,13 +60,32 @@ def _jax_binary_contract(ixs, iy, restore_output=True):
     remaining_right = [label for label in right if label not in shared]
     native = batches + remaining_left + remaining_right
     permutation = tuple(native.index(label) for label in output)
-    dimensions = ((tuple(left.index(i) for i in summed), tuple(right.index(i) for i in summed)),
-                  (tuple(left.index(i) for i in batches), tuple(right.index(i) for i in batches)))
+    import jax
+    from math import prod
+    sizes = dict(zip(left, shapes[0]))
+    sizes.update(zip(right, shapes[1]))
+    a_order = tuple(left.index(i) for i in batches + remaining_left + summed)
+    b_order = tuple(right.index(i) for i in batches + summed + remaining_right)
+    transpose_a = _prepare_compact_transpose(shapes[0], a_order)
+    transpose_b = _prepare_compact_transpose(shapes[1], b_order)
+    m = prod(sizes[i] for i in remaining_left)
+    k = prod(sizes[i] for i in summed)
+    n = prod(sizes[i] for i in remaining_right)
+    if batches:
+        batch = prod(sizes[i] for i in batches)
+        a_shape, b_shape = (batch, m, k), (batch, k, n)
+        dims = (((2,), (1,)), ((0,), (0,)))
+    else:
+        a_shape, b_shape = (m, k), (k, n)
+        dims = (((1,), (0,)), ((), ()))
+    native_shape = tuple(sizes[i] for i in native)
+    transpose_output = _prepare_compact_transpose(native_shape, permutation) if restore_output else (lambda value: value)
 
     def execute(a, b):
-        import jax
-        result = jax.lax.dot_general(a, b, dimensions, precision=jax.lax.Precision.HIGHEST)
-        return result if not restore_output or permutation == tuple(range(len(native))) else result.transpose(permutation)
+        a = transpose_a(a).reshape(a_shape)
+        b = transpose_b(b).reshape(b_shape)
+        result = jax.lax.dot_general(a, b, dims, precision=jax.lax.Precision.HIGHEST)
+        return transpose_output(result.reshape(native_shape))
 
     execute.output_labels = native
     return execute
@@ -72,7 +109,7 @@ def prepare_tree_jax_native(tree, inputs):
         declared = node["eins"]["ixs"]
         output = list(node["eins"]["iy"])
         ixs = [[labels[i] for i in order] for labels, (_, _, order) in zip(declared, children)]
-        binary = _jax_binary_contract(ixs, output, restore_output=False)
+        binary = _jax_binary_contract(ixs, output, [shape for _, shape, _ in children], restore_output=False)
         sizes = {label: size for labels, (_, shape, _) in zip(ixs, children)
                  for label, size in zip(labels, shape)}
         if binary is not None:
@@ -158,7 +195,7 @@ def prepare_tree(tree: dict[str, Any], inputs: Sequence[Any], backend_name: str)
         )
         shapes = [shape for _, shape in children]
         contract = oe.contract_expression(expression, *shapes, optimize="greedy")
-        binary = _jax_binary_contract(ixs, iy) if backend_name == "jax" else None
+        binary = _jax_binary_contract(ixs, iy, shapes) if backend_name == "jax" else None
         sizes = {
             label: size
             for ix, shape in zip(ixs, shapes)
@@ -239,7 +276,7 @@ def prepare_tree_jax_kernels(tree, inputs, compiler_options=None):
         expr = ",".join("".join(names[label] for label in ix) for ix in ixs) + "->" + "".join(names[label] for label in iy)
         operands = tuple(value for _, value in children)
         expression = oe.contract_expression(expr, *(value.shape for value in operands), optimize="greedy")
-        binary = _jax_binary_contract(ixs, iy)
+        binary = _jax_binary_contract(ixs, iy, [value.shape for value in operands])
         operation = binary or (lambda *values: expression(*values, backend="jax"))
         compiled = jax.jit(operation).lower(*operands).compile(compiler_options=compiler_options or {})
         representative = jax.block_until_ready(compiled(*operands))
