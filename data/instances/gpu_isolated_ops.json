@@ -502,7 +502,9 @@
         1024
       ],
       "issue": 155,
-      "excluded": {}
+      "excluded": {
+        "tenferro-cuda-direct": "Numerically valid; steady-state sampling is not established: consecutive batch durations increase in repeated runs 20261013_101359 and 20261013_102038. Retained as diagnostics pending allocator/lifetime investigation."
+      }
     },
     {
       "id": "compare_f64_n1024",
@@ -513,7 +515,9 @@
         1024
       ],
       "issue": 155,
-      "excluded": {}
+      "excluded": {
+        "tenferro-cuda-direct": "Numerically valid; steady-state sampling is not established: consecutive batch durations increase in repeated runs 20261013_101359 and 20261013_102038. Retained as diagnostics pending allocator/lifetime investigation."
+      }
     },
     {
       "id": "where_select_f32_n1024",

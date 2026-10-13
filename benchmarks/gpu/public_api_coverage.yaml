@@ -17,6 +17,7 @@ families:
     suite: benchmarks/gpu/isolated_ops.yaml
     routes: [TensorSessionOpsExt, EagerSession]
     dtype_scope: F32/F64; C32/C64 materialized conjugation; Bool comparison/selection masks.
+    limitations: Small direct compare cases pass numerical verification but repeated batches drift; exclude from standard timing pending allocator/lifetime investigation. Eager and large compare cases remain selected.
     deferred:
       scale_real_scale_complex: Public scalar setup must be separated before standard timing; ordinary tensor-tensor multiplication is a different case.
       full_reductions: Axis-wise cases do not claim full-reduction route coverage; full real norm_squared_read has separate cases.

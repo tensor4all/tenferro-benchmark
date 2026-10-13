@@ -118,6 +118,15 @@ are marked unavailable. Eager execution succeeds numerically but its internal
 setup remains excluded from standard timing. Unexpected numerical execution
 failures still prevent publication rather than becoming performance measurements.
 
+Small direct `compare` cases (F32/F64, n=1024) pass numerical verification, but
+their consecutive batch times increase in both raw runs `20261013_101359` and
+`20261013_102038`. Those records are retained as diagnostics; the latest standard
+report excludes these two arms because steady-state sampling has not been
+established. Eager and large compare cases remain selected. Source inspection
+found that `alloc_bool_output` requests fresh CubeCL handles while dropped
+buffers enter the bounded output pool; its causal role in the drift still needs
+allocator/lifetime investigation. No upstream regression is asserted.
+
 JAX has no equivalent output-reuse arm. Axis-wise sum-of-squares lacks a single
 matching PyTorch/JAX operation; compositions are not timed as substitutes.
 Masked softmax lacks a matching stable PyTorch operation. JAX RMS normalization
