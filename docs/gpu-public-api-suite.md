@@ -472,3 +472,23 @@ The separate `linalg_capability.md` report rechecks previously unavailable
 concrete `inv`/`pinv_with_rtol` calls at the current tenferro revision. Its raw
 runtime errors are preserved without timing and never count as measured or
 numerical coverage. It does not classify the separate eager implementations.
+
+Borrowed transposed reads now include sub/div/rem/pow/maximum/minimum,
+abs/sign/expm1/log/log1p/erf/sin/cos/sqrt/rsqrt, and axis-1
+prod/max/min/sum-of-squares on 16×64 and 512×2048 F32/F64 inputs. They call each
+actual public read method; rectangular fixtures keep the logical axis distinct
+from the physical storage axis. PyTorch uses prepared transpose views, while
+JAX uses the same logical values in its native representation. Real
+sum-of-squares uses public vecdot along axis 1 as a single-call reference.
+EagerTensor is not an equivalent borrowed TensorRead input contract and remains
+explicitly unsupported. Offset/sliced layouts and comparison/select/clamp read
+routes remain separate coverage dimensions.
+
+The executed public inverse/pseudoinverse MWE is maintained at
+`examples/cuda_linalg_host_scalars.rs`; it reproduces upstream
+[tenferro-rs #2147](https://github.com/tensor4all/tenferro-rs/issues/2147) using
+only public CUDA upload, held session and TensorLinalgExt methods. It is an
+untimed functional reproducer, not a performance benchmark. Run it on debug
+GPU1 inside the CUDA devcontainer with `cargo run --release --features cuda
+--example cuda_linalg_host_scalars`; physical-device selection uses the same
+UUID mask as other debug commands. It exits 1 when the public calls fail.
