@@ -174,7 +174,7 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
             if instrument {
                 observations.push(json!({"phase":"before","stats":counters(&observer)?}));
             }
-            let start = (!instrument).then(Instant::now);
+            let start = (!instrument && timing.samples > 0).then(Instant::now);
             for (index, item) in prepared.iter_mut().enumerate() {
                 let (a, b) = item.take().ok_or("missing prepared read")?;
                 outputs.push(s.dot_general_read(a, b, &cfg)?);
@@ -200,7 +200,7 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
             }
             Ok(elapsed)
         };
-        if instrument {
+        if instrument || timing.samples == 0 {
             batch()?;
             Ok(None)
         } else {
