@@ -241,7 +241,9 @@ using Batched = cutlass::gemm::device::GemmBatched<double, cutlass::layout::RowM
 class CutlassPrepared {
     torch::Tensor a_, b_, workspace_;
     Gemm gemm_;
+    Gemm::Arguments gemm_arguments_;
     Batched batched_;
+    Batched::Arguments batched_arguments_;
     int m_, n_, k_, batch_;
     bool is_batched_;
     std::vector<int64_t> output_shape_;
@@ -273,17 +275,23 @@ public:
         auto c = torch::empty(output_shape_, a.options());
         auto stream = at::cuda::getCurrentCUDAStream(a.get_device()).stream();
         size_t bytes;
-        if (is_batched_) { auto v=batch_args(c); check(batched_.can_implement(v)); bytes=Batched::get_workspace_size(v); }
-        else { auto v=args(c); check(gemm_.can_implement(v)); bytes=Gemm::get_workspace_size(v); }
+        if (is_batched_) { batched_arguments_=batch_args(c); check(batched_.can_implement(batched_arguments_)); bytes=Batched::get_workspace_size(batched_arguments_); }
+        else { gemm_arguments_=args(c); check(gemm_.can_implement(gemm_arguments_)); bytes=Gemm::get_workspace_size(gemm_arguments_); }
         if (bytes) workspace_=torch::empty({int64_t(bytes)}, a.options().dtype(torch::kUInt8));
-        if (is_batched_) check(batched_.initialize(batch_args(c),workspace(),stream));
-        else check(gemm_.initialize(args(c),workspace(),stream));
+        if (is_batched_) check(batched_.initialize(batched_arguments_,workspace(),stream));
+        else check(gemm_.initialize(gemm_arguments_,workspace(),stream));
     }
     torch::Tensor run() {
         auto c = torch::empty(output_shape_, a_.options());
         auto stream = at::cuda::getCurrentCUDAStream(a_.get_device()).stream();
-        if (is_batched_) { check(batched_.update(batch_args(c),workspace())); check(batched_.run(stream)); }
-        else { check(gemm_.update(args(c),workspace())); check(gemm_.run(stream)); }
+        auto pointer=c.data_ptr<double>();
+        if (is_batched_) {
+            batched_arguments_.ref_C.reset(pointer); batched_arguments_.ref_D.reset(pointer);
+            check(batched_.update(batched_arguments_,workspace())); check(batched_.run(stream));
+        } else {
+            gemm_arguments_.ref_C.reset(pointer); gemm_arguments_.ref_D.reset(pointer);
+            check(gemm_.update(gemm_arguments_,workspace())); check(gemm_.run(stream));
+        }
         return c;
     }
 };
@@ -315,7 +323,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     return _CUTLASS_EXT
 
 
-def _sample_vendor(operation, sync, check, device, warmups, runs):
+def _sample_vendor(operation, sync, check, device, warmups, runs, phases=None):
     from benchmark_gpu_public_api import measure
     import torch
     torch.set_num_threads(int(os.environ.get("OMP_NUM_THREADS", "1")))
@@ -329,17 +337,25 @@ def _sample_vendor(operation, sync, check, device, warmups, runs):
         if result[0] != "passed":
             raise RuntimeError(f"verification: {result}")
         return result
+    phases = {} if phases is None else phases
+    initial_start = time.monotonic_ns()
     probe = operation()
     sync()
+    probe_ready = time.monotonic_ns()
     verified = validate(probe)
+    phases.update(initialization_execution_and_placement=probe_ready-initial_start,
+                  initial_validation=time.monotonic_ns()-probe_ready)
     nbytes = tensor(probe).numel()*tensor(probe).element_size()
     del probe
     if os.environ.get("GPU_BENCH_VERIFY_ONLY") == "1":
         return None, verified
     sampling = measure(operation, sync, lambda outputs: sync(), nbytes, warmups, runs)
+    final_start = time.monotonic_ns()
     final = operation()
     sync()
     after = validate(final)
+    phases.update(post_sampling_execution_and_validation=time.monotonic_ns()-final_start,
+                  **{f"sampler_{key}":value for key,value in sampling["wall_phases_ns"].items()})
     return sampling, ("passed",max(verified[1],after[1]),max(verified[2],after[2]))
 
 
@@ -348,10 +364,12 @@ def _vendor_stats(sampling):
             _timing_stats([value/sampling["operations_per_sample"] for value in sampling["batch_ms"]]))
 
 
-def _vendor_record(record, sampling, framework):
+def _vendor_record(record, sampling, framework, phases=None):
     record["execution"]["notes"] = json.dumps(dict(sampling=sampling,
         setup="inputs, layouts, native operators/workspaces, initialization and validation outside clocks",
         precision="native float64; no dtype conversion in clocks",
+        wall_phases_ns=phases or {},
+        wall_phase_scope="case phases outside operation clocks; backend initialization includes extension load/compile; interpreter startup and JSON writes excluded",
         framework_version=framework, native_index_dtype="int32" if record["backend"] == "ginkgo" else None, verification_only=sampling is None, device_uuid=os.environ.get("CUDA_VISIBLE_DEVICES"),
         physical_device_index=os.environ.get("GPU_BENCH_PHYSICAL_DEVICE")))
     if sampling is None:
@@ -361,6 +379,7 @@ def _vendor_record(record, sampling, framework):
 
 def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     """CUTLASS backend: f64 GEMM via JIT-compiled cutlass::gemm::device::Gemm<double,...,Sm80>."""
+    case_start = time.monotonic_ns()
     import torch
     kw = dict(ts=ts, bc=bc, tc=tc)
 
@@ -381,6 +400,7 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     path = "prepared-cutlass-gemm-or-gemm-batched"
     device = torch.device(f"cuda:{device_ordinal}")
     torch.cuda.set_device(device)
+    backend_end = time.monotonic_ns()
 
     try:
         data = _make_data_np(problem)
@@ -404,8 +424,10 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         cpu_data = _to_torch_cpu_f64(data)
         reference = _torch_fn(op, cpu_data)()
         check = lambda result: _verify_torch(op, result, reference, data, rtol, atol)
+        phases = dict(backend_initialization=backend_end-case_start,
+                      input_reference_and_preparation=time.monotonic_ns()-backend_end)
         sampling, verification = _sample_vendor(prepared.run, lambda: torch.cuda.synchronize(device),
-                                                 check, device, n_warmup, n_runs)
+                                                 check, device, n_warmup, n_runs, phases=phases)
         ver_status, max_abs, max_rel = verification
     except Exception as exc:
         return _stub(suite_id, problem, backend, device_ordinal,
@@ -423,6 +445,7 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         "framework_version": f"cutlass-v3.7 / torch={torch.__version__}",
     })
 
+    phases["case_body_before_json_write"] = time.monotonic_ns()-case_start
     record = _ok_record(suite_id, problem, backend, device_ordinal,
                       path=path,
                       warmup_runs=n_warmup if sampling else 0, timed_runs=n_runs if sampling else 0,
@@ -433,7 +456,7 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                       env=env)
 
     record["execution"]["synchronization"] = "torch.cuda.synchronize"
-    return _vendor_record(record, sampling, env["framework_version"])
+    return _vendor_record(record, sampling, env["framework_version"], phases)
 
 
 # ---------------------------------------------------------------------------
@@ -483,11 +506,14 @@ class GinkgoSpmm {
     std::unique_ptr<Csr> matrix_;
     std::unique_ptr<Dense> input_;
     int64_t rows_, rhs_;
+    gko::dim<2> output_size_;
+    std::vector<int64_t> output_shape_;
 public:
     GinkgoSpmm(torch::Tensor row_ptrs, torch::Tensor col_idxs,
                torch::Tensor values, torch::Tensor x, int64_t rows, int64_t cols)
         : row_ptrs_(row_ptrs), col_idxs_(col_idxs), values_(values), x_(x),
-          rows_(rows), rhs_(x.numel() / cols) {
+          rows_(rows), rhs_(x.numel() / cols), output_size_(rows_,rhs_) {
+        output_shape_=x_.dim()==1 ? std::vector<int64_t>{rows_} : std::vector<int64_t>{rows_,rhs_};
         TORCH_CHECK(row_ptrs.is_cuda() && col_idxs.is_cuda() && values.is_cuda() && x.is_cuda(),
                     "GinkgoSpmm requires CUDA inputs");
         exec_ = gko::CudaExecutor::create(x.get_device(), gko::ReferenceExecutor::create());
@@ -502,8 +528,8 @@ public:
     void synchronize() { exec_->synchronize(); }
     std::shared_ptr<GinkgoOutput> run() {
         // Only the operation's fresh output is allocated in the measured call.
-        auto y = x_.dim() == 1 ? torch::empty({rows_}, x_.options()) : torch::empty({rows_, rhs_}, x_.options());
-        auto output = Dense::create(exec_, gko::dim<2>{(gko::size_type)rows_, (gko::size_type)rhs_},
+        auto y = torch::empty(output_shape_, x_.options());
+        auto output = Dense::create(exec_, output_size_,
             gko::make_array_view(exec_, y.numel(), y.data_ptr<ValueType>()), rhs_);
         matrix_->apply(input_.get(), output.get());
         return std::make_shared<GinkgoOutput>(std::move(y), std::move(output));
@@ -544,6 +570,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 
 def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     """Ginkgo backend: CSR SpMV/SpMM via libginkgo CUDA executor."""
+    case_start = time.monotonic_ns()
     import torch
     kw = dict(ts=ts, bc=bc, tc=tc)
 
@@ -564,6 +591,7 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     path = "prepared-ginkgo-csr-apply"
     device = torch.device(f"cuda:{device_ordinal}")
     torch.cuda.set_device(device)
+    backend_end = time.monotonic_ns()
 
     try:
         data = _make_data_np(problem)
@@ -597,7 +625,9 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
             max_rel = float(np.max(np.abs(actual-reference)/np.maximum(np.abs(reference),1e-10)))
             passed = np.isfinite(actual).all() and max_abs <= atol+rtol*max(float(np.max(np.abs(reference))),1.0)
             return ("passed" if passed else "failed", max_abs, max_rel)
-        sampling, verification = _sample_vendor(prepared.run, prepared.synchronize, check, device, n_warmup, n_runs)
+        phases = dict(backend_initialization=backend_end-case_start,
+                      input_reference_and_preparation=time.monotonic_ns()-backend_end)
+        sampling, verification = _sample_vendor(prepared.run, prepared.synchronize, check, device, n_warmup, n_runs, phases=phases)
         ver_status, max_abs, max_rel = verification
     except Exception as exc:
         return _stub(suite_id, problem, backend, device_ordinal,
@@ -613,6 +643,7 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         "framework_version": "ginkgo-v1.8",
     })
 
+    phases["case_body_before_json_write"] = time.monotonic_ns()-case_start
     record = _ok_record(suite_id, problem, backend, device_ordinal,
                       path=path,
                       warmup_runs=n_warmup if sampling else 0, timed_runs=n_runs if sampling else 0,
@@ -623,7 +654,7 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
                       env=env)
 
     record["execution"]["synchronization"] = "Ginkgo Executor::synchronize"
-    return _vendor_record(record, sampling, env["framework_version"])
+    return _vendor_record(record, sampling, env["framework_version"], phases)
 
 
 # ---------------------------------------------------------------------------
