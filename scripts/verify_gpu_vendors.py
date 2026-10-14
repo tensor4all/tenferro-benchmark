@@ -29,9 +29,10 @@ def main():
     for op,backends in [('matmul',['cutlass','cublaslt']),('batched_matmul',['cutlass']),('qr',['cusolver'])]:
         case=copy.deepcopy(next(p for p in dense['problems'] if p['op']==op))
         case['id']='vendor_verify_'+op
-        case['shape'].update(m=32,n=32)
-        if op in ('matmul','batched_matmul'):case['shape']['k']=32
-        if op=='batched_matmul':case['shape']['batch']=16
+        dimensions=case['linalg'] if op=='qr' else case[op]
+        dimensions.update(m=32,n=32)
+        if op in ('matmul','batched_matmul'):dimensions['k']=32
+        if op=='batched_matmul':dimensions['batch']=16
         case['run'].update(warmups=0,runs=3)
         for backend in backends:probes.append((dense,case,backend))
     for op in ('spmv','spmm'):
