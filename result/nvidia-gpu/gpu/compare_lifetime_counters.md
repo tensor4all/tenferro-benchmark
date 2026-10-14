@@ -1,6 +1,6 @@
 # Public CUDA lifetime counters
 
-Raw observations: `data/verification/nvidia-gpu/gpu/compare_recheck/20261013_192206/lifetime_counters.jsonl`.
+Raw observations: `data/verification/nvidia-gpu/gpu/compare_recheck/20261014_010820/lifetime_counters.jsonl`.
 
 These observations were collected separately from timing on debug GPU1. They are not performance measurements or standard operation coverage. Each case uses one entered backend session and retains outputs until native completion.
 

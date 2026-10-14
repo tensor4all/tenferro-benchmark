@@ -36,7 +36,7 @@ def render(root):
                 raise ValueError("invalid diagnostic samples")
             first, last = statistics.median(samples[:10]), statistics.median(samples[-10:])
             text.append(f"| {trial} | {row['case_id']} | {count} | {statistics.median(samples)*1000/count:.3f} | {first:.3f} | {last:.3f} | {last/first:.3f} |")
-    text += ["", "Source observation: at the recorded tenferro revision, `cubecl/dispatch.rs::alloc_bool_output` calls `client.empty` directly; numeric `alloc_output` first consults `take_output_handle`. This difference is a hypothesis for allocator/lifetime investigation, not an established cause. Cache/retirement instrumentation and controlled confirmations remain part of issue #107.", "",
+    text += ["", "Source observation: at the recorded tenferro revision, `cubecl/dispatch.rs::alloc_bool_output` calls `client.empty` directly; numeric `alloc_output` first consults `take_output_handle`. This difference is a hypothesis for allocator/lifetime investigation, not an established cause. The separate untimed public-counter pass is published in `compare_lifetime_counters.md`. Public output-pool statistics and clear controls remain unavailable; upstream tenferro-rs #1928 tracks the investigation. These observations do not establish the cause or a memory leak.", "",
              "Run metadata was collected immediately after the probes with the same checkout and GPU environment; it is not a per-phase timing record.", "", "```yaml", yaml.safe_dump(metadata, sort_keys=False).rstrip(), "```", ""]
     return "\n".join(text)
 

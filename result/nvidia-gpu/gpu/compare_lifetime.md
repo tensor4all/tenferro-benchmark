@@ -2,7 +2,7 @@
 
 Diagnostic only: these nonstationary samples are not steady-state operation coverage or a regression/speedup claim. Physical GPU1 was used for debugging; no GPU0 publication timings are replaced.
 
-Raw diagnostic: `data/verification/nvidia-gpu/gpu/compare_recheck/20261013_192206/`. Three independent processes ran the same case sequence, each with 3 warmups and 30 batched samples. Setup and validation are untimed; each batch retains outputs through native device synchronization and clock stop.
+Raw diagnostic: `data/verification/nvidia-gpu/gpu/compare_recheck/20261014_010820/`. Three independent processes ran the same case sequence, each with 3 warmups and 30 batched samples. Setup and validation are untimed; each batch retains outputs through native device synchronization and clock stop.
 
 Sequence: `compare_f32_n1024`, `compare_f64_n1024`, `compare_eq_f32_n1024`, `compare_lt_f32_n1024`, `compare_le_f32_n1024`, `compare_ge_f32_n1024`, `compare_eq_f64_n1024`, `compare_lt_f64_n1024`, `compare_le_f64_n1024`, `compare_ge_f64_n1024`.
 
@@ -10,38 +10,38 @@ Each case creates a backend, but process-global device allocation state can surv
 
 | Trial | Case | Ops/sample | Median µs/op | First ten median batch ms | Last ten median batch ms | Last/first |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| 1 | compare_f32_n1024 | 128 | 104.221 | 6.165 | 15.769 | 2.558 |
-| 1 | compare_f64_n1024 | 16 | 172.463 | 2.590 | 2.927 | 1.130 |
-| 1 | compare_eq_f32_n1024 | 16 | 189.334 | 2.942 | 3.107 | 1.056 |
-| 1 | compare_lt_f32_n1024 | 16 | 206.465 | 3.186 | 3.335 | 1.047 |
-| 1 | compare_le_f32_n1024 | 16 | 219.772 | 3.486 | 3.754 | 1.077 |
-| 1 | compare_ge_f32_n1024 | 16 | 250.486 | 3.946 | 4.013 | 1.017 |
-| 1 | compare_eq_f64_n1024 | 8 | 260.713 | 2.057 | 2.212 | 1.075 |
-| 1 | compare_lt_f64_n1024 | 8 | 262.619 | 2.079 | 2.127 | 1.023 |
-| 1 | compare_le_f64_n1024 | 8 | 270.293 | 2.144 | 2.175 | 1.015 |
-| 1 | compare_ge_f64_n1024 | 8 | 278.308 | 2.208 | 2.254 | 1.021 |
-| 2 | compare_f32_n1024 | 128 | 99.163 | 6.001 | 15.096 | 2.516 |
-| 2 | compare_f64_n1024 | 16 | 172.231 | 2.542 | 2.798 | 1.101 |
-| 2 | compare_eq_f32_n1024 | 16 | 185.899 | 2.907 | 3.036 | 1.045 |
-| 2 | compare_lt_f32_n1024 | 16 | 203.311 | 3.129 | 3.380 | 1.080 |
-| 2 | compare_le_f32_n1024 | 16 | 214.439 | 3.375 | 3.526 | 1.045 |
-| 2 | compare_ge_f32_n1024 | 16 | 232.664 | 3.600 | 3.790 | 1.053 |
-| 2 | compare_eq_f64_n1024 | 16 | 247.213 | 3.858 | 4.025 | 1.043 |
-| 2 | compare_lt_f64_n1024 | 8 | 267.507 | 2.091 | 2.147 | 1.027 |
-| 2 | compare_le_f64_n1024 | 8 | 295.908 | 2.390 | 2.361 | 0.988 |
-| 2 | compare_ge_f64_n1024 | 8 | 289.556 | 2.293 | 2.249 | 0.981 |
-| 3 | compare_f32_n1024 | 128 | 111.762 | 6.338 | 17.719 | 2.796 |
-| 3 | compare_f64_n1024 | 16 | 173.869 | 2.711 | 2.800 | 1.033 |
-| 3 | compare_eq_f32_n1024 | 16 | 190.686 | 3.149 | 3.045 | 0.967 |
-| 3 | compare_lt_f32_n1024 | 16 | 201.186 | 3.134 | 3.320 | 1.059 |
-| 3 | compare_le_f32_n1024 | 16 | 215.684 | 3.359 | 3.543 | 1.055 |
-| 3 | compare_ge_f32_n1024 | 16 | 231.174 | 3.628 | 3.775 | 1.040 |
-| 3 | compare_eq_f64_n1024 | 16 | 246.724 | 3.886 | 4.046 | 1.041 |
-| 3 | compare_lt_f64_n1024 | 8 | 286.128 | 2.351 | 2.170 | 0.923 |
-| 3 | compare_le_f64_n1024 | 8 | 281.233 | 2.174 | 2.236 | 1.029 |
-| 3 | compare_ge_f64_n1024 | 8 | 280.502 | 2.220 | 2.254 | 1.015 |
+| 1 | compare_f32_n1024 | 128 | 108.954 | 6.275 | 18.212 | 2.902 |
+| 1 | compare_f64_n1024 | 16 | 185.200 | 2.883 | 3.059 | 1.061 |
+| 1 | compare_eq_f32_n1024 | 16 | 202.251 | 3.135 | 3.306 | 1.054 |
+| 1 | compare_lt_f32_n1024 | 16 | 218.918 | 3.416 | 3.574 | 1.046 |
+| 1 | compare_le_f32_n1024 | 16 | 236.779 | 3.688 | 4.069 | 1.103 |
+| 1 | compare_ge_f32_n1024 | 8 | 266.379 | 2.180 | 2.051 | 0.941 |
+| 1 | compare_eq_f64_n1024 | 8 | 263.098 | 2.076 | 2.124 | 1.023 |
+| 1 | compare_lt_f64_n1024 | 8 | 273.986 | 2.221 | 2.195 | 0.989 |
+| 1 | compare_le_f64_n1024 | 8 | 280.300 | 2.215 | 2.278 | 1.029 |
+| 1 | compare_ge_f64_n1024 | 8 | 289.479 | 2.303 | 2.333 | 1.013 |
+| 2 | compare_f32_n1024 | 256 | 154.847 | 17.231 | 61.237 | 3.554 |
+| 2 | compare_f64_n1024 | 32 | 109.481 | 3.087 | 3.809 | 1.234 |
+| 2 | compare_eq_f32_n1024 | 16 | 146.553 | 2.248 | 2.433 | 1.082 |
+| 2 | compare_lt_f32_n1024 | 16 | 164.178 | 2.527 | 2.692 | 1.065 |
+| 2 | compare_le_f32_n1024 | 16 | 181.419 | 2.806 | 2.957 | 1.054 |
+| 2 | compare_ge_f32_n1024 | 16 | 211.920 | 3.046 | 3.700 | 1.215 |
+| 2 | compare_eq_f64_n1024 | 16 | 213.030 | 3.413 | 3.459 | 1.013 |
+| 2 | compare_lt_f64_n1024 | 16 | 229.588 | 3.696 | 3.682 | 0.996 |
+| 2 | compare_le_f64_n1024 | 16 | 246.937 | 3.973 | 3.960 | 0.997 |
+| 2 | compare_ge_f64_n1024 | 8 | 262.492 | 2.072 | 2.135 | 1.031 |
+| 3 | compare_f32_n1024 | 128 | 84.828 | 6.184 | 16.760 | 2.710 |
+| 3 | compare_f64_n1024 | 16 | 180.378 | 2.761 | 2.986 | 1.081 |
+| 3 | compare_eq_f32_n1024 | 16 | 208.666 | 3.234 | 3.476 | 1.075 |
+| 3 | compare_lt_f32_n1024 | 16 | 220.137 | 3.479 | 3.565 | 1.025 |
+| 3 | compare_le_f32_n1024 | 16 | 229.122 | 3.548 | 3.718 | 1.048 |
+| 3 | compare_ge_f32_n1024 | 8 | 247.410 | 1.963 | 1.986 | 1.012 |
+| 3 | compare_eq_f64_n1024 | 8 | 255.944 | 2.029 | 2.059 | 1.015 |
+| 3 | compare_lt_f64_n1024 | 8 | 264.853 | 2.079 | 2.124 | 1.022 |
+| 3 | compare_le_f64_n1024 | 8 | 275.361 | 2.231 | 2.181 | 0.978 |
+| 3 | compare_ge_f64_n1024 | 8 | 279.981 | 2.207 | 2.248 | 1.019 |
 
-Source observation: at the recorded tenferro revision, `cubecl/dispatch.rs::alloc_bool_output` calls `client.empty` directly; numeric `alloc_output` first consults `take_output_handle`. This difference is a hypothesis for allocator/lifetime investigation, not an established cause. Cache/retirement instrumentation and controlled confirmations remain part of issue #107.
+Source observation: at the recorded tenferro revision, `cubecl/dispatch.rs::alloc_bool_output` calls `client.empty` directly; numeric `alloc_output` first consults `take_output_handle`. This difference is a hypothesis for allocator/lifetime investigation, not an established cause. The separate untimed public-counter pass is published in `compare_lifetime_counters.md`. Public output-pool statistics and clear controls remain unavailable; upstream tenferro-rs #1928 tracks the investigation. These observations do not establish the cause or a memory leak.
 
 Run metadata was collected immediately after the probes with the same checkout and GPU environment; it is not a per-phase timing record.
 
@@ -50,17 +50,17 @@ schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/isolated_ops
 suite_file: benchmarks/gpu/isolated_ops.yaml
-timestamp: '2026-10-13T19:22:06Z'
+timestamp: '2026-10-14T01:08:20Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: dfbdf6b66d40162f4731da116ec42ed034da0dce
+  commit: 9655b4e0daced17e0aa35a30d35710b069e10644
   dirty: false
   features:
   - cuda
-  resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
+  resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-confirm-baseline
 harness:
-  path: /workspaces/tenferro-benchmark
-  commit: cb9662645f99cc70b4c488c48be85dd96f59fddb
+  path: /workspaces/tenferro-benchmark/.worktrees/gpu-vendors
+  commit: b66fb4ec081468dd62f07ab392e25d0200665aff
   dirty: false
 environment:
   hostname: 737f43342de3
@@ -73,7 +73,9 @@ environment:
     OPENBLAS_ROOT: /opt/openblas
     OPENBLAS_NUM_THREADS: '1'
     CUDA_HOME: /usr/local/cuda
+    CUDA_PATH: /usr/local/cuda
     TENFERRO_CUTENSOR_PATH: /usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2
+    CARGO_TARGET_DIR: /workspaces/tenferro-benchmark/target
     BENCH_RUNS: '30'
     BENCH_WARMUPS: '3'
     USE_CUDA: '1'
