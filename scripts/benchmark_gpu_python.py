@@ -348,7 +348,14 @@ def _sample_vendor(operation, sync, check, device, warmups, runs, phases=None):
     nbytes = tensor(probe).numel()*tensor(probe).element_size()
     del probe
     if os.environ.get("GPU_BENCH_VERIFY_ONLY") == "1":
-        return None, verified
+        retained = [operation() for _ in range(3)]
+        sync()
+        checks = [validate(value) for value in retained]
+        pointers = [tensor(value).data_ptr() for value in retained if hasattr(tensor(value), "data_ptr")]
+        if pointers and len(set(pointers)) != len(retained):
+            raise RuntimeError("verification: allocating vendor operation reused a live output")
+        return None, ("passed", max([verified[1]]+[value[1] for value in checks]),
+                              max([verified[2]]+[value[2] for value in checks]))
     sampling = measure(operation, sync, lambda outputs: sync(), nbytes, warmups, runs)
     final_start = time.monotonic_ns()
     final = operation()
