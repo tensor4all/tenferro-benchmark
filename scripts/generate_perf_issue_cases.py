@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 5
+MANIFEST_VERSION = 6
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -318,7 +318,90 @@ def b1_op_cases():
 
 
 def generate_cases():
-    return decode_cases() + other_cases() + b1_op_cases() + cpu_gap_cases() + cpu_followup_cases()
+    return decode_cases() + other_cases() + b1_op_cases() + cpu_gap_cases() + cpu_followup_cases() + cpu_umbrella_cases()
+
+
+def cpu_umbrella_cases():
+    """#177: missing public routes in the #2139–#2143 CPU umbrellas."""
+    rows = []
+
+    def pair(cid, issue, kind, params, *, reference="host", scope="steady_state",
+             threads=(1,), intent):
+        for arm in ("tenferro", reference):
+            row = case(cid if arm == "tenferro" else f"{cid}_{arm}", (issue,),
+                       "umbrella_" + kind, params, arm=arm,
+                       backend={"tenferro": "tenferro-rs", "host": "rust-loop",
+                                "pytorch": "pytorch-cpu", "direct": "tenferro-rs"}[arm], dtype="f64", scope=scope,
+                       reference_for=None if arm == "tenferro" else cid,
+                       profiles=("amd-cpu", "mac-cpu"),
+                       intent=f"tenferro-rs {issue}: {intent}")
+            row["thread_counts"] = list(threads)
+            rows.append(row)
+
+    for n in (16, 256, 4096):
+        for route in ("held", "scoped", "into_held"):
+            name = (f"typed_elemwise_f64_add_into_held_len{n}" if route == "into_held"
+                    else f"typed_elemwise_f64_add_{route}_len{n}")
+            pair(name, "#2139", "add", dict(n=n, route=route), reference="pytorch",
+                 scope="session_entry_diagnostic" if route == "scoped" else "steady_state",
+                 intent="TypedTensorSessionOpsExt::add in an open held session or scoped entry; "
+                        "into uses the public add_read_into with typed reads and caller output, "
+                        "not a nonexistent typed add_into extension. PyTorch add/out= matches "
+                        "output ownership; its no-session reference is labelled explicitly.")
+    for n in (64, 4096, 65536):
+        pair(f"typed_container_construct_f64_r2_len{n}", "#2139", "construct", dict(n=n),
+             scope="counter_diagnostic", intent="Rank<2>, Host container construction from a "
+             "preallocated Vec (payload allocation excluded); separate construction-time and "
+             "Rust allocation passes, retained outputs and size_of. Host descriptor owns the "
+             "same prepared Vec. Construction is diagnostic, not an operation timing.")
+    pair("tiny_matmul_2x2_typed_held", "#2139", "matmul", dict(n=2), reference="pytorch",
+         intent="Allocating typed matmul in one held CPU session; all four values checked "
+                "against an independent scalar product; PyTorch matmul also allocates.")
+    pair("tiny_matmul_2x2_typed_held_counter", "#2139", "matmul_counter", dict(n=2),
+         scope="counter_diagnostic", intent="Separate untimed Rust allocator pass for the "
+         "typed 2x2 matmul versus an allocating scalar 2x2 product; foreign allocations unavailable.")
+    for route in ("scoped", "held"):
+        pair(f"session_entry_cpu_{route}_empty", "#2139", "entry", dict(route=route),
+             scope="session_entry_diagnostic", intent="Explicit empty scoped entry or held "
+             "open/close cost (backend initialized outside); direct host empty callback baseline. "
+             "Held entry is not the cost of with_session on an already-open session.")
+    for mib in (8, 32):
+        pair(f"analytic_neg_f64_sweep_{mib}MiB_t1", "#2139", "neg", dict(n=mib*1024*1024//8),
+             reference="pytorch", intent="#2095 guard: typed allocating neg over exact 8/32 MiB "
+             "input buffers, one thread, complete numerical verification before sampling.")
+    pair("einsum_prepared_repeat_f64_counter", "#2141", "prepared_counter", dict(n=32),
+         reference="direct", scope="counter_diagnostic", intent="#1899: repeated ConcreteEinsumPlan::execute_into "
+         "versus public dot_general_read_into, fixed prepared inputs/output. Record Rust "
+         "allocations and public descriptor-cache snapshots; unavailable binary plan-build "
+         "counts stay null and the requested build-count probe is explicitly unsupported.")
+    pair("gemm_bound_f64_t1_t8_scaling", "#2141", "gemm", dict(n=1536),
+         reference="pytorch", threads=(1,8), intent="#1863: a prepared 1536 cubed GEMM-bound "
+         "contraction, allocating output, identical logical inputs and 1T/8T. No automatic "
+         "t8/t1 pass threshold or performance claim from a short scan.")
+    for n in (8,16):
+        for op in ("factor", "solve"):
+            pair(f"lu_batched_f64_{op}_n{n}_b1024", "#2142", "lu", dict(n=n,batch=1024,op=op),
+                 reference="host" if op == "factor" else "pytorch", threads=(1,4),
+                 intent="#1884: public LinalgBackend packed LU factor (packed/pivots/parity) "
+                 "or prepared-factor solve (one RHS); factorization is outside solve timing. "
+                 "Factor reference is an independent scalar partial-pivot LU returning all "
+                 "three outputs; solve reference is torch.linalg.lu_solve. 1T/4T metadata "
+                 "records the compiled provider, not an inferred speedup.")
+    pair("linalg_lane_plan_counter", "#2142", "lane_counter", dict(n=16,batch=16,op="factor"),
+         scope="counter_diagnostic", threads=(1,4), intent="#2000: execute batched LU in a "
+         "separate allocator diagnostic. Actual internal lanes/item-threads have no public "
+         "observer; report this probe as unsupported, never inferred from requested threads. "
+         "Host scalar reference has one explicit serial lane.")
+    pair("axpby_accum_strided_dest_f64_block", "#2143", "axpby", dict(n=64),
+         intent="#1838: alpha=1 beta=1 on a 64x64 offset block with padded column strides; "
+         "all independent destinations restored and validated outside every sample, no staging. "
+         "Direct host strided accumulation matches the operation and output reuse.")
+    for op in ("transpose", "slice", "reshape"):
+        pair(f"metadata_view_alloc_counter_{op}", "#2143", "view_counter", dict(op=op,n=4096),
+             scope="counter_diagnostic", intent="#2040/#1917: separate Rust allocation count "
+             "for a borrowed Host typed view operation versus a plain borrowing descriptor. "
+             "Check shape/strides/offset and pointer aliasing; metadata only, no payload copy.")
+    return rows
 
 
 def cpu_gap_cases():

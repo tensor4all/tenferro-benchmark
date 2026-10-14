@@ -47,7 +47,7 @@ for threads in "${THREAD_COUNTS[@]}"; do
         --suite-file benchmarks/cpu/perf_issues.yaml --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
         --tenferro-dir "$PROJECT_DIR/extern/tenferro-rs" --features "$TENFERRO_CPU_FEATURES" \
         --blas "$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")" --output "$RUN_DIR/run_t${threads}.yaml"
-    "$PYTHON" - "$RUN_DIR/run_t${threads}.yaml" <<'PY'
+    "$PYTHON" - "$RUN_DIR/run_t${threads}.yaml" "$threads" <<'PY'
 import os, sys, subprocess, yaml
 from pathlib import Path
 path = Path(sys.argv[1])
@@ -59,7 +59,7 @@ metadata['environment'].setdefault('env', {}).update({
     'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None})
 sys.path.insert(0, 'scripts')
 import benchmark_perf_issues as suite
-_, _, manifest, coverage, expected, selected, raw = suite.plan()
+_, _, manifest, coverage, expected, selected, raw = suite.plan(threads=int(sys.argv[2]))
 metadata['collection'] = {
     'command': os.environ.get('BENCH_COMMAND', ''), 'coverage': coverage,
     'manifest_version': manifest['manifest_version'], 'selection_filter': raw,

@@ -16,6 +16,45 @@ import generate_perf_issue_cases as gen  # noqa: E402
 
 
 class PerfIssueSuiteTest(unittest.TestCase):
+    def test_umbrella_thread_domains_and_reference_arms(self):
+        rows = gen.cpu_umbrella_cases()
+        cases = {row['id']: row for row in rows}
+        self.assertEqual(len(rows), len(cases))
+        self.assertTrue({'#2139', '#2141', '#2142', '#2143'} <=
+                        {issue for row in rows for issue in row['issues']})
+        for row in rows:
+            if row['arm'] == 'tenferro':
+                references = [c for c in rows if c.get('reference_for') == row['id']]
+                self.assertEqual(len(references), 1, row['id'])
+                self.assertEqual(references[0]['thread_counts'], row['thread_counts'])
+                self.assertEqual(references[0]['measurement_scope'], row['measurement_scope'])
+        with patch.dict(os.environ, {'BENCH_COVERAGE':'full', 'BENCH_INSTANCE':''}):
+            _, _, _, _, expected1, _, _ = suite.plan(threads=1)
+            _, _, _, _, expected4, _, _ = suite.plan(threads=4)
+            _, _, _, _, expected8, _, _ = suite.plan(threads=8)
+        self.assertIn('typed_elemwise_f64_add_held_len16', expected1)
+        self.assertNotIn('typed_elemwise_f64_add_held_len16', expected4)
+        self.assertIn('lu_batched_f64_factor_n8_b1024', expected4)
+        self.assertNotIn('lu_batched_f64_factor_n8_b1024', expected8)
+        self.assertIn('gemm_bound_f64_t1_t8_scaling', expected8)
+
+    def test_unavailable_public_counter_is_not_successful_coverage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            binary = Path(tmp) / 'counter'
+            binary.write_text('#!/bin/sh\ncat <<\'JSON\'\n' + json.dumps(dict(
+                correctness_status='unsupported', samples=[],
+                unsupported_reason='no public lane observer', actual_lanes=None)) + '\nJSON\n')
+            binary.chmod(0o755)
+            output = Path(tmp) / 'samples_t4.jsonl'
+            with patch.dict(os.environ, {'BENCH_COVERAGE':'full',
+                                          'BENCH_INSTANCE':'linalg_lane_plan_counter'}):
+                self.assertFalse(suite.collect(binary, output, 4))
+            status = json.loads((Path(tmp)/'case_status_t4.json').read_text())
+            self.assertFalse(status['complete'])
+            self.assertEqual(status['executed'], [])
+            self.assertEqual(status['failed'], [])
+            self.assertEqual(status['unsupported'], ['linalg_lane_plan_counter@t4'])
+
     def test_filtered_gpu_diagnostic_can_preserve_latest_report(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
