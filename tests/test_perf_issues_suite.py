@@ -55,6 +55,27 @@ class PerfIssueSuiteTest(unittest.TestCase):
             self.assertEqual(status['failed'], [])
             self.assertEqual(status['unsupported'], ['linalg_lane_plan_counter@t4'])
 
+    def test_counter_report_preserves_unavailable_observations_and_metadata_ratio(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_dir = root / 'data/verification/amd-cpu/cpu/perf_issues/probe'
+            run_dir.mkdir(parents=True)
+            row = dict(gen.cpu_umbrella_cases()[0], case_id='counter-probe',
+                       measurement_scope='counter_diagnostic', threads=1,
+                       correctness_status='unsupported', samples=[],
+                       unsupported_reason='no public plan-build observer',
+                       binary_plan_builds_per_call=None,
+                       counters=[dict(op='metadata', output_bytes=0,
+                                      host_allocations_per_op=0., host_allocated_bytes_per_op=0.,
+                                      allocated_bytes_over_output_bytes=None)])
+            (run_dir/'samples_t1.jsonl').write_text(json.dumps(row)+'\n')
+            with patch.object(suite, 'ROOT', root):
+                suite.report(run_dir, 'amd-cpu')
+            text = (run_dir/'report.md').read_text()
+            self.assertIn('UNSUPPORTED: no public plan-build observer', text)
+            self.assertIn('binary_plan_builds_per_call: `null`', text)
+            self.assertIn('| metadata | 0 | 0.00 | 0 | — |', text)
+
     def test_filtered_gpu_diagnostic_can_preserve_latest_report(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
