@@ -6804,5 +6804,1540 @@
   ],
   "intent": "tenferro-rs #2040: metadata.reshape_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
   "execution_path": "metadata-host-static"
+ },
+ {
+  "id": "typed_elemwise_f64_add_held_len16",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "route": "held",
+   "kind": "umbrella_add",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_held_len16_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "route": "held",
+   "kind": "umbrella_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "reference_for": "typed_elemwise_f64_add_held_len16",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_scoped_len16",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "route": "scoped",
+   "kind": "umbrella_add",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_scoped_len16_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "route": "scoped",
+   "kind": "umbrella_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "reference_for": "typed_elemwise_f64_add_scoped_len16",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_into_held_len16",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "route": "into_held",
+   "kind": "umbrella_add",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_into_held_len16_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "route": "into_held",
+   "kind": "umbrella_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "reference_for": "typed_elemwise_f64_add_into_held_len16",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_held_len256",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 256,
+   "route": "held",
+   "kind": "umbrella_add",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_held_len256_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 256,
+   "route": "held",
+   "kind": "umbrella_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "reference_for": "typed_elemwise_f64_add_held_len256",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_scoped_len256",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 256,
+   "route": "scoped",
+   "kind": "umbrella_add",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_scoped_len256_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 256,
+   "route": "scoped",
+   "kind": "umbrella_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "reference_for": "typed_elemwise_f64_add_scoped_len256",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_into_held_len256",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 256,
+   "route": "into_held",
+   "kind": "umbrella_add",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_into_held_len256_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 256,
+   "route": "into_held",
+   "kind": "umbrella_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "reference_for": "typed_elemwise_f64_add_into_held_len256",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_held_len4096",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "route": "held",
+   "kind": "umbrella_add",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_held_len4096_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "route": "held",
+   "kind": "umbrella_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "reference_for": "typed_elemwise_f64_add_held_len4096",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_scoped_len4096",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "route": "scoped",
+   "kind": "umbrella_add",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_scoped_len4096_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "route": "scoped",
+   "kind": "umbrella_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "reference_for": "typed_elemwise_f64_add_scoped_len4096",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_into_held_len4096",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "route": "into_held",
+   "kind": "umbrella_add",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_elemwise_f64_add_into_held_len4096_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "route": "into_held",
+   "kind": "umbrella_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: TypedTensorSessionOpsExt::add in an open held session or scoped entry; into uses the public add_read_into with typed reads and caller output, not a nonexistent typed add_into extension. PyTorch add/out= matches output ownership; its no-session reference is labelled explicitly.",
+  "reference_for": "typed_elemwise_f64_add_into_held_len4096",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_container_construct_f64_r2_len64",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_construct",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "kind": "umbrella_construct",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Rank<2>, Host container construction from a preallocated Vec (payload allocation excluded); separate construction-time and Rust allocation passes, retained outputs and size_of. Host descriptor owns the same prepared Vec. Construction is diagnostic, not an operation timing.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_container_construct_f64_r2_len64_host",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_construct",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "kind": "umbrella_construct",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Rank<2>, Host container construction from a preallocated Vec (payload allocation excluded); separate construction-time and Rust allocation passes, retained outputs and size_of. Host descriptor owns the same prepared Vec. Construction is diagnostic, not an operation timing.",
+  "reference_for": "typed_container_construct_f64_r2_len64",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_container_construct_f64_r2_len4096",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_construct",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "kind": "umbrella_construct",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Rank<2>, Host container construction from a preallocated Vec (payload allocation excluded); separate construction-time and Rust allocation passes, retained outputs and size_of. Host descriptor owns the same prepared Vec. Construction is diagnostic, not an operation timing.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_container_construct_f64_r2_len4096_host",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_construct",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "kind": "umbrella_construct",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Rank<2>, Host container construction from a preallocated Vec (payload allocation excluded); separate construction-time and Rust allocation passes, retained outputs and size_of. Host descriptor owns the same prepared Vec. Construction is diagnostic, not an operation timing.",
+  "reference_for": "typed_container_construct_f64_r2_len4096",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_container_construct_f64_r2_len65536",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_construct",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 65536,
+   "kind": "umbrella_construct",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Rank<2>, Host container construction from a preallocated Vec (payload allocation excluded); separate construction-time and Rust allocation passes, retained outputs and size_of. Host descriptor owns the same prepared Vec. Construction is diagnostic, not an operation timing.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "typed_container_construct_f64_r2_len65536_host",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_construct",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 65536,
+   "kind": "umbrella_construct",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Rank<2>, Host container construction from a preallocated Vec (payload allocation excluded); separate construction-time and Rust allocation passes, retained outputs and size_of. Host descriptor owns the same prepared Vec. Construction is diagnostic, not an operation timing.",
+  "reference_for": "typed_container_construct_f64_r2_len65536",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "tiny_matmul_2x2_typed_held",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_matmul",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 2,
+   "kind": "umbrella_matmul",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Allocating typed matmul in one held CPU session; all four values checked against an independent scalar product; PyTorch matmul also allocates.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "tiny_matmul_2x2_typed_held_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_matmul",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 2,
+   "kind": "umbrella_matmul",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Allocating typed matmul in one held CPU session; all four values checked against an independent scalar product; PyTorch matmul also allocates.",
+  "reference_for": "tiny_matmul_2x2_typed_held",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "tiny_matmul_2x2_typed_held_counter",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_matmul_counter",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 2,
+   "kind": "umbrella_matmul_counter",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Separate untimed Rust allocator pass for the typed 2x2 matmul versus an allocating scalar 2x2 product; foreign allocations unavailable.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "tiny_matmul_2x2_typed_held_counter_host",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_matmul_counter",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 2,
+   "kind": "umbrella_matmul_counter",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Separate untimed Rust allocator pass for the typed 2x2 matmul versus an allocating scalar 2x2 product; foreign allocations unavailable.",
+  "reference_for": "tiny_matmul_2x2_typed_held_counter",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "session_entry_cpu_scoped_empty",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_entry",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "scoped",
+   "kind": "umbrella_entry",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Explicit empty scoped entry or held open/close cost (backend initialized outside); direct host empty callback baseline. Held entry is not the cost of with_session on an already-open session.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "session_entry_cpu_scoped_empty_host",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_entry",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "route": "scoped",
+   "kind": "umbrella_entry",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Explicit empty scoped entry or held open/close cost (backend initialized outside); direct host empty callback baseline. Held entry is not the cost of with_session on an already-open session.",
+  "reference_for": "session_entry_cpu_scoped_empty",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "session_entry_cpu_held_empty",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_entry",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "held",
+   "kind": "umbrella_entry",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Explicit empty scoped entry or held open/close cost (backend initialized outside); direct host empty callback baseline. Held entry is not the cost of with_session on an already-open session.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "session_entry_cpu_held_empty_host",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_entry",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "route": "held",
+   "kind": "umbrella_entry",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "session_entry_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: Explicit empty scoped entry or held open/close cost (backend initialized outside); direct host empty callback baseline. Held entry is not the cost of with_session on an already-open session.",
+  "reference_for": "session_entry_cpu_held_empty",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "analytic_neg_f64_sweep_8MiB_t1",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_neg",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 1048576,
+   "kind": "umbrella_neg",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: #2095 guard: typed allocating neg over exact 8/32 MiB input buffers, one thread, complete numerical verification before sampling.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "analytic_neg_f64_sweep_8MiB_t1_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_neg",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 1048576,
+   "kind": "umbrella_neg",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: #2095 guard: typed allocating neg over exact 8/32 MiB input buffers, one thread, complete numerical verification before sampling.",
+  "reference_for": "analytic_neg_f64_sweep_8MiB_t1",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "analytic_neg_f64_sweep_32MiB_t1",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_neg",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 4194304,
+   "kind": "umbrella_neg",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: #2095 guard: typed allocating neg over exact 8/32 MiB input buffers, one thread, complete numerical verification before sampling.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "analytic_neg_f64_sweep_32MiB_t1_pytorch",
+  "issues": [
+   "#2139"
+  ],
+  "kind": "umbrella_neg",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 4194304,
+   "kind": "umbrella_neg",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2139: #2095 guard: typed allocating neg over exact 8/32 MiB input buffers, one thread, complete numerical verification before sampling.",
+  "reference_for": "analytic_neg_f64_sweep_32MiB_t1",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "einsum_prepared_repeat_f64_counter",
+  "issues": [
+   "#2141"
+  ],
+  "kind": "umbrella_prepared_counter",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "kind": "umbrella_prepared_counter",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2141: #1899: repeated ConcreteEinsumPlan::execute_into versus public dot_general_read_into, fixed prepared inputs/output. Record Rust allocations and public descriptor-cache snapshots; unavailable binary plan-build counts stay null and the requested build-count probe is explicitly unsupported.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "einsum_prepared_repeat_f64_counter_direct",
+  "issues": [
+   "#2141"
+  ],
+  "kind": "umbrella_prepared_counter",
+  "arm": "direct",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "kind": "umbrella_prepared_counter",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2141: #1899: repeated ConcreteEinsumPlan::execute_into versus public dot_general_read_into, fixed prepared inputs/output. Record Rust allocations and public descriptor-cache snapshots; unavailable binary plan-build counts stay null and the requested build-count probe is explicitly unsupported.",
+  "reference_for": "einsum_prepared_repeat_f64_counter",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "gemm_bound_f64_t1_t8_scaling",
+  "issues": [
+   "#2141"
+  ],
+  "kind": "umbrella_gemm",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 1536,
+   "kind": "umbrella_gemm",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2141: #1863: a prepared 1536 cubed GEMM-bound contraction, allocating output, identical logical inputs and 1T/8T. No automatic t8/t1 pass threshold or performance claim from a short scan.",
+  "thread_counts": [
+   1,
+   8
+  ]
+ },
+ {
+  "id": "gemm_bound_f64_t1_t8_scaling_pytorch",
+  "issues": [
+   "#2141"
+  ],
+  "kind": "umbrella_gemm",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 1536,
+   "kind": "umbrella_gemm",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2141: #1863: a prepared 1536 cubed GEMM-bound contraction, allocating output, identical logical inputs and 1T/8T. No automatic t8/t1 pass threshold or performance claim from a short scan.",
+  "reference_for": "gemm_bound_f64_t1_t8_scaling",
+  "thread_counts": [
+   1,
+   8
+  ]
+ },
+ {
+  "id": "lu_batched_f64_factor_n8_b1024",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lu",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "batch": 1024,
+   "op": "factor",
+   "kind": "umbrella_lu",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #1884: public LinalgBackend packed LU factor (packed/pivots/parity) or prepared-factor solve (one RHS); factorization is outside solve timing. Factor reference is an independent scalar partial-pivot LU returning all three outputs; solve reference is torch.linalg.lu_solve. 1T/4T metadata records the compiled provider, not an inferred speedup.",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "lu_batched_f64_factor_n8_b1024_host",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lu",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "batch": 1024,
+   "op": "factor",
+   "kind": "umbrella_lu",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #1884: public LinalgBackend packed LU factor (packed/pivots/parity) or prepared-factor solve (one RHS); factorization is outside solve timing. Factor reference is an independent scalar partial-pivot LU returning all three outputs; solve reference is torch.linalg.lu_solve. 1T/4T metadata records the compiled provider, not an inferred speedup.",
+  "reference_for": "lu_batched_f64_factor_n8_b1024",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "lu_batched_f64_solve_n8_b1024",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lu",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "batch": 1024,
+   "op": "solve",
+   "kind": "umbrella_lu",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #1884: public LinalgBackend packed LU factor (packed/pivots/parity) or prepared-factor solve (one RHS); factorization is outside solve timing. Factor reference is an independent scalar partial-pivot LU returning all three outputs; solve reference is torch.linalg.lu_solve. 1T/4T metadata records the compiled provider, not an inferred speedup.",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "lu_batched_f64_solve_n8_b1024_pytorch",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lu",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "batch": 1024,
+   "op": "solve",
+   "kind": "umbrella_lu",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #1884: public LinalgBackend packed LU factor (packed/pivots/parity) or prepared-factor solve (one RHS); factorization is outside solve timing. Factor reference is an independent scalar partial-pivot LU returning all three outputs; solve reference is torch.linalg.lu_solve. 1T/4T metadata records the compiled provider, not an inferred speedup.",
+  "reference_for": "lu_batched_f64_solve_n8_b1024",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "lu_batched_f64_factor_n16_b1024",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lu",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "batch": 1024,
+   "op": "factor",
+   "kind": "umbrella_lu",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #1884: public LinalgBackend packed LU factor (packed/pivots/parity) or prepared-factor solve (one RHS); factorization is outside solve timing. Factor reference is an independent scalar partial-pivot LU returning all three outputs; solve reference is torch.linalg.lu_solve. 1T/4T metadata records the compiled provider, not an inferred speedup.",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "lu_batched_f64_factor_n16_b1024_host",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lu",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "batch": 1024,
+   "op": "factor",
+   "kind": "umbrella_lu",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #1884: public LinalgBackend packed LU factor (packed/pivots/parity) or prepared-factor solve (one RHS); factorization is outside solve timing. Factor reference is an independent scalar partial-pivot LU returning all three outputs; solve reference is torch.linalg.lu_solve. 1T/4T metadata records the compiled provider, not an inferred speedup.",
+  "reference_for": "lu_batched_f64_factor_n16_b1024",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "lu_batched_f64_solve_n16_b1024",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lu",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "batch": 1024,
+   "op": "solve",
+   "kind": "umbrella_lu",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #1884: public LinalgBackend packed LU factor (packed/pivots/parity) or prepared-factor solve (one RHS); factorization is outside solve timing. Factor reference is an independent scalar partial-pivot LU returning all three outputs; solve reference is torch.linalg.lu_solve. 1T/4T metadata records the compiled provider, not an inferred speedup.",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "lu_batched_f64_solve_n16_b1024_pytorch",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lu",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "batch": 1024,
+   "op": "solve",
+   "kind": "umbrella_lu",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #1884: public LinalgBackend packed LU factor (packed/pivots/parity) or prepared-factor solve (one RHS); factorization is outside solve timing. Factor reference is an independent scalar partial-pivot LU returning all three outputs; solve reference is torch.linalg.lu_solve. 1T/4T metadata records the compiled provider, not an inferred speedup.",
+  "reference_for": "lu_batched_f64_solve_n16_b1024",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "linalg_lane_plan_counter",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lane_counter",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "batch": 16,
+   "op": "factor",
+   "kind": "umbrella_lane_counter",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #2000: execute batched LU in a separate allocator diagnostic. Actual internal lanes/item-threads have no public observer; report this probe as unsupported, never inferred from requested threads. Host scalar reference has one explicit serial lane.",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "linalg_lane_plan_counter_host",
+  "issues": [
+   "#2142"
+  ],
+  "kind": "umbrella_lane_counter",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 16,
+   "batch": 16,
+   "op": "factor",
+   "kind": "umbrella_lane_counter",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2142: #2000: execute batched LU in a separate allocator diagnostic. Actual internal lanes/item-threads have no public observer; report this probe as unsupported, never inferred from requested threads. Host scalar reference has one explicit serial lane.",
+  "reference_for": "linalg_lane_plan_counter",
+  "thread_counts": [
+   1,
+   4
+  ]
+ },
+ {
+  "id": "axpby_accum_strided_dest_f64_block",
+  "issues": [
+   "#2143"
+  ],
+  "kind": "umbrella_axpby",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "kind": "umbrella_axpby",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2143: #1838: alpha=1 beta=1 on a 64x64 offset block with padded column strides; all independent destinations restored and validated outside every sample, no staging. Direct host strided accumulation matches the operation and output reuse.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "axpby_accum_strided_dest_f64_block_host",
+  "issues": [
+   "#2143"
+  ],
+  "kind": "umbrella_axpby",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 64,
+   "kind": "umbrella_axpby",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2143: #1838: alpha=1 beta=1 on a 64x64 offset block with padded column strides; all independent destinations restored and validated outside every sample, no staging. Direct host strided accumulation matches the operation and output reuse.",
+  "reference_for": "axpby_accum_strided_dest_f64_block",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "metadata_view_alloc_counter_transpose",
+  "issues": [
+   "#2143"
+  ],
+  "kind": "umbrella_view_counter",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "transpose",
+   "n": 4096,
+   "kind": "umbrella_view_counter",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2143: #2040/#1917: separate Rust allocation count for a borrowed Host typed view operation versus a plain borrowing descriptor. Check shape/strides/offset and pointer aliasing; metadata only, no payload copy.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "metadata_view_alloc_counter_transpose_host",
+  "issues": [
+   "#2143"
+  ],
+  "kind": "umbrella_view_counter",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "op": "transpose",
+   "n": 4096,
+   "kind": "umbrella_view_counter",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2143: #2040/#1917: separate Rust allocation count for a borrowed Host typed view operation versus a plain borrowing descriptor. Check shape/strides/offset and pointer aliasing; metadata only, no payload copy.",
+  "reference_for": "metadata_view_alloc_counter_transpose",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "metadata_view_alloc_counter_slice",
+  "issues": [
+   "#2143"
+  ],
+  "kind": "umbrella_view_counter",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "slice",
+   "n": 4096,
+   "kind": "umbrella_view_counter",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2143: #2040/#1917: separate Rust allocation count for a borrowed Host typed view operation versus a plain borrowing descriptor. Check shape/strides/offset and pointer aliasing; metadata only, no payload copy.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "metadata_view_alloc_counter_slice_host",
+  "issues": [
+   "#2143"
+  ],
+  "kind": "umbrella_view_counter",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "op": "slice",
+   "n": 4096,
+   "kind": "umbrella_view_counter",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2143: #2040/#1917: separate Rust allocation count for a borrowed Host typed view operation versus a plain borrowing descriptor. Check shape/strides/offset and pointer aliasing; metadata only, no payload copy.",
+  "reference_for": "metadata_view_alloc_counter_slice",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "metadata_view_alloc_counter_reshape",
+  "issues": [
+   "#2143"
+  ],
+  "kind": "umbrella_view_counter",
+  "arm": "tenferro",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "reshape",
+   "n": 4096,
+   "kind": "umbrella_view_counter",
+   "arm": "tenferro",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2143: #2040/#1917: separate Rust allocation count for a borrowed Host typed view operation versus a plain borrowing descriptor. Check shape/strides/offset and pointer aliasing; metadata only, no payload copy.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "metadata_view_alloc_counter_reshape_host",
+  "issues": [
+   "#2143"
+  ],
+  "kind": "umbrella_view_counter",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "op": "reshape",
+   "n": 4096,
+   "kind": "umbrella_view_counter",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "counter_diagnostic",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2143: #2040/#1917: separate Rust allocation count for a borrowed Host typed view operation versus a plain borrowing descriptor. Check shape/strides/offset and pointer aliasing; metadata only, no payload copy.",
+  "reference_for": "metadata_view_alloc_counter_reshape",
+  "thread_counts": [
+   1
+  ]
  }
 ]

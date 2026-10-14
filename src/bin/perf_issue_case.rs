@@ -34,6 +34,9 @@ use tenferro_tensor::{
 #[path = "../../examples/cpu_gap_mwe.rs"]
 mod cpu_gap_mwe;
 
+#[path = "perf_issue_case/umbrella.rs"]
+mod umbrella;
+
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
 
@@ -142,10 +145,8 @@ fn measure<O>(
     retained_bytes: usize,
     mut op: impl FnMut() -> Result<O>,
 ) -> Result<Measurement> {
-    for _ in 0..timing.warmups.max(1) {
-        black_box(op()?);
-    }
-    let cap = (RETENTION_BUDGET_BYTES / retained_bytes.max(1)).clamp(1, CALIBRATION_MAX_ITERATIONS);
+    // Explicit initialization is independent of configured warmups.
+    black_box(op()?);
     let mut batch = |iterations: usize| -> Result<u128> {
         let mut outputs = Vec::with_capacity(iterations);
         let start = Instant::now();
@@ -157,6 +158,28 @@ fn measure<O>(
         drop(outputs);
         Ok(elapsed)
     };
+    measure_batches(timing, retained_bytes, &mut batch)
+}
+
+/// A batch callback prepares/restores its inputs before starting its clock.
+/// Used for consuming constructors and mutable strided outputs as well as
+/// ordinary operations. Correctness-only mode never calibrates or samples.
+fn measure_batches(
+    timing: &Timing,
+    retained_bytes: usize,
+    mut batch: impl FnMut(usize) -> Result<u128>,
+) -> Result<Measurement> {
+    if timing.samples == 0 {
+        return Ok(Measurement {
+            iterations: 0,
+            calibrated_ns: 0,
+            samples: vec![],
+        });
+    }
+    let cap = (RETENTION_BUDGET_BYTES / retained_bytes.max(1)).clamp(1, CALIBRATION_MAX_ITERATIONS);
+    for _ in 0..timing.warmups {
+        batch(1)?;
+    }
     let calibration_start = Instant::now();
     let mut iterations = 1usize;
     let calibrated_ns = loop {
@@ -1774,6 +1797,7 @@ fn main() -> Result<()> {
         "softmax" => softmax_case(&params, &timing),
         "reduce_mean" => reduce_mean_case(&params, &timing),
         "take_along_axis" => take_along_axis_case(&params, &timing),
+        kind if kind.starts_with("umbrella_") => umbrella::run(&params, &timing, threads),
         _ => Err(format!("unknown case kind {kind}").into()),
     }?;
     let mut output = json!({

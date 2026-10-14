@@ -2,7 +2,7 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 5
+manifest_version: 6
 suite_id: cpu/perf_issues
 source: data/instances/perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -237,6 +237,36 @@ coverage:
   - followup_metadata_reshape_view_julia-base
   - followup_metadata_reshape_view_metadata-host-dyn
   - followup_metadata_reshape_view_metadata-host-static
+  - typed_elemwise_f64_add_held_len16
+  - typed_elemwise_f64_add_held_len16_pytorch
+  - typed_elemwise_f64_add_into_held_len16
+  - typed_elemwise_f64_add_into_held_len16_pytorch
+  - typed_elemwise_f64_add_held_len256
+  - typed_elemwise_f64_add_held_len256_pytorch
+  - typed_elemwise_f64_add_into_held_len256
+  - typed_elemwise_f64_add_into_held_len256_pytorch
+  - typed_elemwise_f64_add_held_len4096
+  - typed_elemwise_f64_add_held_len4096_pytorch
+  - typed_elemwise_f64_add_into_held_len4096
+  - typed_elemwise_f64_add_into_held_len4096_pytorch
+  - tiny_matmul_2x2_typed_held
+  - tiny_matmul_2x2_typed_held_pytorch
+  - analytic_neg_f64_sweep_8MiB_t1
+  - analytic_neg_f64_sweep_8MiB_t1_pytorch
+  - analytic_neg_f64_sweep_32MiB_t1
+  - analytic_neg_f64_sweep_32MiB_t1_pytorch
+  - gemm_bound_f64_t1_t8_scaling
+  - gemm_bound_f64_t1_t8_scaling_pytorch
+  - lu_batched_f64_factor_n8_b1024
+  - lu_batched_f64_factor_n8_b1024_host
+  - lu_batched_f64_solve_n8_b1024
+  - lu_batched_f64_solve_n8_b1024_pytorch
+  - lu_batched_f64_factor_n16_b1024
+  - lu_batched_f64_factor_n16_b1024_host
+  - lu_batched_f64_solve_n16_b1024
+  - lu_batched_f64_solve_n16_b1024_pytorch
+  - axpby_accum_strided_dest_f64_block
+  - axpby_accum_strided_dest_f64_block_host
   full:
   - decode_proj_f32_eager-shared_in1024_out1024_len8
   - decode_proj_f32_eager-per-call_in1024_out1024_len8
@@ -481,3 +511,61 @@ coverage:
   - followup_metadata_reshape_view_julia-base
   - followup_metadata_reshape_view_metadata-host-dyn
   - followup_metadata_reshape_view_metadata-host-static
+  - typed_elemwise_f64_add_held_len16
+  - typed_elemwise_f64_add_held_len16_pytorch
+  - typed_elemwise_f64_add_scoped_len16
+  - typed_elemwise_f64_add_scoped_len16_pytorch
+  - typed_elemwise_f64_add_into_held_len16
+  - typed_elemwise_f64_add_into_held_len16_pytorch
+  - typed_elemwise_f64_add_held_len256
+  - typed_elemwise_f64_add_held_len256_pytorch
+  - typed_elemwise_f64_add_scoped_len256
+  - typed_elemwise_f64_add_scoped_len256_pytorch
+  - typed_elemwise_f64_add_into_held_len256
+  - typed_elemwise_f64_add_into_held_len256_pytorch
+  - typed_elemwise_f64_add_held_len4096
+  - typed_elemwise_f64_add_held_len4096_pytorch
+  - typed_elemwise_f64_add_scoped_len4096
+  - typed_elemwise_f64_add_scoped_len4096_pytorch
+  - typed_elemwise_f64_add_into_held_len4096
+  - typed_elemwise_f64_add_into_held_len4096_pytorch
+  - typed_container_construct_f64_r2_len64
+  - typed_container_construct_f64_r2_len64_host
+  - typed_container_construct_f64_r2_len4096
+  - typed_container_construct_f64_r2_len4096_host
+  - typed_container_construct_f64_r2_len65536
+  - typed_container_construct_f64_r2_len65536_host
+  - tiny_matmul_2x2_typed_held
+  - tiny_matmul_2x2_typed_held_pytorch
+  - tiny_matmul_2x2_typed_held_counter
+  - tiny_matmul_2x2_typed_held_counter_host
+  - session_entry_cpu_scoped_empty
+  - session_entry_cpu_scoped_empty_host
+  - session_entry_cpu_held_empty
+  - session_entry_cpu_held_empty_host
+  - analytic_neg_f64_sweep_8MiB_t1
+  - analytic_neg_f64_sweep_8MiB_t1_pytorch
+  - analytic_neg_f64_sweep_32MiB_t1
+  - analytic_neg_f64_sweep_32MiB_t1_pytorch
+  - einsum_prepared_repeat_f64_counter
+  - einsum_prepared_repeat_f64_counter_direct
+  - gemm_bound_f64_t1_t8_scaling
+  - gemm_bound_f64_t1_t8_scaling_pytorch
+  - lu_batched_f64_factor_n8_b1024
+  - lu_batched_f64_factor_n8_b1024_host
+  - lu_batched_f64_solve_n8_b1024
+  - lu_batched_f64_solve_n8_b1024_pytorch
+  - lu_batched_f64_factor_n16_b1024
+  - lu_batched_f64_factor_n16_b1024_host
+  - lu_batched_f64_solve_n16_b1024
+  - lu_batched_f64_solve_n16_b1024_pytorch
+  - linalg_lane_plan_counter
+  - linalg_lane_plan_counter_host
+  - axpby_accum_strided_dest_f64_block
+  - axpby_accum_strided_dest_f64_block_host
+  - metadata_view_alloc_counter_transpose
+  - metadata_view_alloc_counter_transpose_host
+  - metadata_view_alloc_counter_slice
+  - metadata_view_alloc_counter_slice_host
+  - metadata_view_alloc_counter_reshape
+  - metadata_view_alloc_counter_reshape_host

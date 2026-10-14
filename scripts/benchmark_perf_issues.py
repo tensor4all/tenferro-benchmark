@@ -37,7 +37,7 @@ SUITES = {
 RETENTION_BUDGET_BYTES = 512 << 20
 
 
-def plan(suite_key="cpu"):
+def plan(suite_key="cpu", threads=None):
     suite_path, manifest_path, _ = SUITES[suite_key]
     suite = yaml.safe_load(suite_path.read_text())
     cases = {c["id"]: c for c in json.loads((ROOT / suite["problems"]["source"]).read_text())}
@@ -46,6 +46,10 @@ def plan(suite_key="cpu"):
         raise bench_selection.SelectionError("perf_issues manifest full list != suite include list")
     coverage = bench_selection.resolve_coverage()
     expected, selected, raw = bench_selection.select(manifest, coverage)
+    if threads is not None:
+        eligible = lambda cid: threads in cases[cid].get("thread_counts", [threads])
+        expected = [cid for cid in expected if eligible(cid)]
+        selected = [cid for cid in selected if eligible(cid)]
     return suite, cases, manifest, coverage, expected, selected, raw
 
 
@@ -63,6 +67,9 @@ def torch_case(case):
 
     p = case["params"]
     kind = case["kind"]
+    if kind.startswith("umbrella_"):
+        from cpu_umbrella_references import torch_case as umbrella_torch_case
+        return umbrella_torch_case(case)
     if kind == "cpu_gap_mwe":
         from cpu_gap_mwe_python import fixture
         op, validate, retained = fixture(p["operation"])
@@ -247,7 +254,7 @@ def run_torch(case, threads, config, correctness_only):
 # ---------------------------------------------------------------------------
 
 def collect(binary, output, threads, correctness_only=False, suite_key="cpu", device=0):
-    suite, all_cases, manifest, coverage, expected, selected, raw = plan(suite_key)
+    suite, all_cases, manifest, coverage, expected, selected, raw = plan(suite_key, threads)
     suite_id = SUITES[suite_key][2]
     config = dict(suite["defaults"]["run"])
     effort = bench_selection.resolve_effort(config, suite["defaults"].get("effort"))
@@ -289,7 +296,7 @@ def collect(binary, output, threads, correctness_only=False, suite_key="cpu", de
             if suite_key == "gpu":
                 row["case_process_and_validation_wall_ns"] = time.monotonic_ns() - case_wall_start
             row["status"] = row["correctness_status"]
-            failed |= row["status"] != "passed"
+            failed |= row["status"] not in ("passed", "unsupported")
             values = [s["elapsed_ns"] / s["iterations"] for s in row["samples"]]
             row["cov"] = cs.coefficient_of_variation(values) if row["status"] == "passed" else None
             fh.write(json.dumps(row) + "\n")
@@ -305,6 +312,8 @@ def collect(binary, output, threads, correctness_only=False, suite_key="cpu", de
 
 
 def summary(row):
+    if row["correctness_status"] == "unsupported":
+        return "—", "—", "—", "UNSUPPORTED"
     if row["correctness_status"] != "passed":
         return "—", "—", "—", "FAILED"
     values = [s["elapsed_ns"] / s["iterations"] for s in row["samples"]]
@@ -405,7 +414,9 @@ def report(run_dir, target, suite_key="cpu"):
         lines += ["", "## Counter diagnostics (no timing)", ""]
         for row in counters:
             lines += [f"### {row['case_id']} ({' '.join(row['issues'])}, {row['threads']} threads)", ""]
-            if row["correctness_status"] != "passed":
+            if row["correctness_status"] == "unsupported":
+                lines += [f"UNSUPPORTED: {row.get('unsupported_reason', 'public counter unavailable')}", ""]
+            elif row["correctness_status"] != "passed":
                 lines += ["FAILED", ""]
                 continue
             if row.get("kind") == "shape_stream":
@@ -426,8 +437,15 @@ def report(run_dir, target, suite_key="cpu"):
                       "| Op | Output bytes | Host allocations/op | Allocated bytes/op | Allocated/output |",
                       "|---|---:|---:|---:|---:|"]
             for c in row.get("counters", []):
+                ratio = c['allocated_bytes_over_output_bytes']
+                ratio_text = "—" if ratio is None else f"{ratio:.2f}"
                 lines.append(f"| {c['op']} | {c['output_bytes']} | {c['host_allocations_per_op']:.2f} | "
-                             f"{c['host_allocated_bytes_per_op']:.0f} | {c['allocated_bytes_over_output_bytes']:.2f} |")
+                             f"{c['host_allocated_bytes_per_op']:.0f} | {ratio_text} |")
+            for field in ("size_of_bytes", "diagnostic_timing", "descriptor_cache_before",
+                          "descriptor_cache_after", "binary_plan_builds_per_call",
+                          "requested_threads", "actual_lanes", "actual_item_threads", "operation_requires_session"):
+                if field in row:
+                    lines += ["", f"{field}: `{json.dumps(row[field], separators=(',', ':'))}`"]
             lines.append("")
     states = [r for r in rows if r["measurement_scope"] == "state_diagnostic"]
     if states:
