@@ -503,7 +503,7 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
@@ -516,7 +516,7 @@
       ],
       "issue": 155,
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
@@ -1488,7 +1488,7 @@
       "issue": 155,
       "compare_direction": "eq",
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
@@ -1502,7 +1502,7 @@
       "issue": 155,
       "compare_direction": "lt",
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
@@ -1516,7 +1516,7 @@
       "issue": 155,
       "compare_direction": "le",
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
@@ -1530,7 +1530,7 @@
       "issue": 155,
       "compare_direction": "ge",
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
@@ -1592,7 +1592,7 @@
       "issue": 155,
       "compare_direction": "eq",
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
@@ -1606,7 +1606,7 @@
       "issue": 155,
       "compare_direction": "lt",
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
@@ -1620,7 +1620,7 @@
       "issue": 155,
       "compare_direction": "le",
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
@@ -1634,7 +1634,7 @@
       "issue": 155,
       "compare_direction": "ge",
       "excluded": {
-        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. Latest GPU1 diagnostic 20261013_192206 on dfbdf6b reproduced Gt F32 last/first-ten batch growth of 2.516\u20132.796 in three independent processes. Other directions share the allocation path but are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md; excluded pending issue 107 instrumentation, not a numerical-support failure."
+        "tenferro-cuda-direct": "Numerically valid; small Bool allocation lifetime remains nonstationary. GPU1 diagnostic 20261014_010820 on 9655b4e0 (published CubeCL provider) reproduced initial Gt F32 last/first-ten batch growth of 2.902, 3.554 and 2.710 in three independent processes. Other directions are not individually asserted to have that growth. See result/nvidia-gpu/gpu/compare_lifetime.md and compare_lifetime_counters.md. Keep excluded from steady-state timing; upstream tenferro-rs #1928 investigation remains open, not a numerical-support failure."
       }
     },
     {
