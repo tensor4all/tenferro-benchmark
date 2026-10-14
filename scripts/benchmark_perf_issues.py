@@ -256,6 +256,7 @@ def collect(binary, output, threads, correctness_only=False, suite_key="cpu", de
     rows = []
     with output.open("w") as fh:
         for case in (all_cases[i] for i in selected):
+            case_wall_start = time.monotonic_ns()
             row = dict(case, threads=threads, case_id=case["id"], samples=[],
                        case_key=cs.case_key(case["id"], threads), effort=effort["effort"])
             if case["kind"] == "cpu_followup_mwe" or "followup_mwe" in case:
@@ -285,6 +286,8 @@ def collect(binary, output, threads, correctness_only=False, suite_key="cpu", de
                         row.update(json.loads(result.stdout))
                     except (ValueError, TypeError) as error:
                         row.update(correctness_status="failed", error=f"invalid case output: {error}")
+            if suite_key == "gpu":
+                row["case_process_and_validation_wall_ns"] = time.monotonic_ns() - case_wall_start
             row["status"] = row["correctness_status"]
             failed |= row["status"] != "passed"
             values = [s["elapsed_ns"] / s["iterations"] for s in row["samples"]]

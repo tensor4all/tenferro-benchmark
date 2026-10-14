@@ -1,0 +1,40 @@
+# Declare after A/A and BEFORE candidate collection. Keep a frozen copy beside raw runs.
+# CUDA identity must include device_uuid, device_name, driver_version and runtime_version.
+confirmation_config_version: 1
+status: placeholder
+declared_before_candidate_results: null
+library:
+  baseline_commit: null
+  candidate_commit: null
+harness_commit: null
+build:
+  profile: release
+  features: native,cuda
+host:
+  target_profile: nvidia-gpu
+  hostname: null
+  affinity: null
+  provider: null
+  cuda: null
+threads:
+- 1
+cases:
+  suite_id: gpu/perf_issues
+  manifest_version: null
+  coverage: null
+  case_ids: null
+timing:
+  scope: null
+  cache_pool_state: null
+repetitions:
+  warmups: null
+  runs: null
+  rounds: null
+statistic: null
+thresholds:
+  relative: null
+  absolute_ns: null
+noise:
+  max_cov: null
+  max_aa_relative_spread: null
+  host_idle_guard: null
