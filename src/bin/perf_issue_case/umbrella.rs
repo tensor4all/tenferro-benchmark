@@ -12,9 +12,13 @@ use tenferro_tensor::{
 
 fn outcome(
     measurement: Option<Measurement>,
-    extra: Value,
+    mut extra: Value,
     timer: Vec<&'static str>,
 ) -> CaseOutcome {
+    // Validators check every value/alias but do not return an aggregate maximum.
+    // Do not publish the CaseOutcome sentinel as an exact measured zero.
+    extra["max_rel_error"] = Value::Null;
+    extra["validation_method"] = json!("complete elementwise or metadata/alias checks before sampling; aggregate maximum not recorded");
     CaseOutcome {
         max_rel_error: 0.0,
         measurement,
