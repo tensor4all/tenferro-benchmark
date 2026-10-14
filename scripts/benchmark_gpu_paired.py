@@ -166,8 +166,13 @@ def run(args):
                              cases=dict(suite_id='gpu/perf_issues', case_ids=ids), repetitions=reps))
     with environment(dict(BENCH_COVERAGE=coverage, BENCH_INSTANCE=','.join(ids))):
         _, cases, manifest, _, _, selected, _ = suite.plan('gpu')
+    if len(ids) != len(set(ids)):
+        raise ValueError('duplicate declared case IDs')
     if set(selected) != set(ids) or any(cases[key]['measurement_scope'] in {'counter_diagnostic', 'state_diagnostic'} for key in ids):
         raise ValueError('confirmation accepts selected latency cases only')
+    if config and selected != ids:
+        raise ValueError('declare the source execution order recorded by A/A')
+    ids = selected
     if config and config['cases']['manifest_version'] != manifest['manifest_version']:
         raise ValueError('manifest differs from declaration')
     uuid = output(['nvidia-smi', '-i', args.device, '--query-gpu=uuid', '--format=csv,noheader'])
