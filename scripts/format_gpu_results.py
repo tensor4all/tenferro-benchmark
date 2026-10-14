@@ -35,11 +35,11 @@ BACKEND_LABELS = {
     "jax-cuda": "JAX CUDA JIT",
     "jax-cuda-tree-jit": "JAX CUDA tree JIT",
     "jax-cuda-eager": "JAX CUDA eager",
-    "cublaslt": "cuBLASLt",
+    "cublaslt": "PyTorch (cuBLASLt preferred)",
     "cutlass": "CUTLASS",
     "cutlass-destination-reuse": "CUTLASS destination reuse",
-    "cusolver": "cuSOLVER",
-    "cusparse": "cuSPARSE",
+    "cusolver": "PyTorch (cuSOLVER preferred)",
+    "cusparse": "PyTorch CSR (cuSPARSE)",
     "ginkgo": "Ginkgo",
 }
 
@@ -193,12 +193,25 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
         if isinstance(notes, dict) and notes.get("sampling"):
             batched.append((record, notes))
     if batched:
-        lines += ["## Python sampling", "", "JAX uses compiled JIT execution; compilation, planning and numerical checks are outside timing. PyTorch uses eager execution. Samples retain every output until native synchronization and clock stop. Values are normalized per declared operation.", "",
+        lines += ["## Sampling", "", "JAX uses compiled JIT execution; compilation, planning and numerical checks are outside timing. PyTorch uses eager execution. Samples retain every output until native synchronization and clock stop. Values are normalized per declared operation.", "",
                   "| Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |", "| --- | --- | ---: | --- | --- |"]
         for record, notes in batched:
             sample = notes["sampling"]
             values = ", ".join(f"{value:.6g}" for value in sample["batch_ms"])
             lines.append("| " + " | ".join(map(markdown_cell, [record["problem_id"], record["backend"], sample["operations_per_sample"], values, notes["setup"] + "; " + notes["precision"]])) + " |")
+        lines.append("")
+    oversized = [(record, notes["sampling"]) for record, notes in batched
+                 if notes["sampling"].get("single_output_exceeds_configured_budget")]
+    if oversized:
+        lines += ["## Output retention bounds", "",
+                  "These intrinsic single outputs exceed the configured batch budget. Samples contain one operation; "
+                  "the effective bound is raised explicitly to that one output, without shrinking the workload.", "",
+                  "| Problem | Backend | Bytes/output | Configured budget | Effective bound | Ops/sample |",
+                  "|---|---|---:|---:|---:|---:|"]
+        for record, sample in oversized:
+            lines.append("| " + " | ".join(map(str, [record["problem_id"], record["backend"],
+                sample["retained_bytes_per_operation"], sample["retention_budget_bytes"],
+                sample["effective_retention_bound_bytes"], sample["operations_per_sample"]])) + " |")
         lines.append("")
     return clean_markdown_eof("\n".join(lines))
 

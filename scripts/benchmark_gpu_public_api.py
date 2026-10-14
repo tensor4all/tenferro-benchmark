@@ -169,7 +169,8 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
     for _ in range(warmups):
         batch(1)
     warmup_end = time.monotonic_ns()
-    cap = max(1, min(4096, RETENTION_BUDGET // max(1, nbytes + getattr(op, "synchronization_bytes_per_operation", 0))))
+    bytes_per_operation = max(1, nbytes + getattr(op, "synchronization_bytes_per_operation", 0))
+    cap = max(1, min(4096, RETENTION_BUDGET // bytes_per_operation))
     count = 1
     while batch(count) < 2_000_000 and count < cap:
         count = min(count * 2, cap)
@@ -178,6 +179,9 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
     sampling_end = time.monotonic_ns()
     return {"operations_per_sample": count, "batch_ms": samples,
             "first_run_ms": first / 1e6, "retention_budget_bytes": RETENTION_BUDGET,
+            "retained_bytes_per_operation": bytes_per_operation,
+            "effective_retention_bound_bytes": max(RETENTION_BUDGET, bytes_per_operation),
+            "single_output_exceeds_configured_budget": bytes_per_operation > RETENTION_BUDGET,
             "target_batch_ms": 2, "warmups": warmups,
             "scope": "steady_state_host_api_plus_device_sync",
             "completion_token_bytes_per_operation": getattr(op, "synchronization_bytes_per_operation", 0),

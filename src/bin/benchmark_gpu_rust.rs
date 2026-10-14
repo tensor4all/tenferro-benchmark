@@ -1554,7 +1554,10 @@ fn sample_eager(
             let sampling_end = sampler_start.elapsed().as_nanos();
             let normalized = raw.iter().map(|time| time / count as f64).collect();
             let notes = json!({"sampling":{"operations_per_sample":count,"batch_ms":raw,
-                "target_batch_ms":2,"retention_budget_bytes":256<<20},
+                "target_batch_ms":2,"retention_budget_bytes":256<<20,
+                "retained_bytes_per_operation":bytes,
+                "effective_retention_bound_bytes":bytes.max(256<<20),
+                "single_output_exceeds_configured_budget":bytes > (256<<20)},
                 "setup":"one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks",
                 "precision":"native declared dtype; no AD recording",
                 "wall_phases_ns":{"session_entry_and_initial_probe":probe_end,

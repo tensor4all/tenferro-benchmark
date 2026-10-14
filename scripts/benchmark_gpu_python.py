@@ -210,11 +210,12 @@ def _run_jax(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 
 _CUTLASS_EXT = None
 _CUTLASS_AVAILABLE = None
+_CUTLASS_ERROR = None
 
 
 def _load_cutlass_ext():
     """JIT-compile and cache the CUTLASS f64 GEMM extension."""
-    global _CUTLASS_EXT, _CUTLASS_AVAILABLE
+    global _CUTLASS_EXT, _CUTLASS_AVAILABLE, _CUTLASS_ERROR
     if _CUTLASS_AVAILABLE is not None:
         return _CUTLASS_EXT
     import os
@@ -227,61 +228,79 @@ def _load_cutlass_ext():
         return None
 
     cuda_src = r"""
-#include <cutlass/gemm/device/gemm.h>
-#include <cuda_runtime.h>
-#include <stdexcept>
-#include <string>
-
-using CutlassGemmF64 = cutlass::gemm::device::Gemm<
-    double, cutlass::layout::RowMajor,
-    double, cutlass::layout::RowMajor,
-    double, cutlass::layout::RowMajor,
-    double,
-    cutlass::arch::OpClassTensorOp,
-    cutlass::arch::Sm80
->;
-
-torch::Tensor cutlass_gemm_f64(torch::Tensor A, torch::Tensor B) {
-    TORCH_CHECK(A.is_cuda() && B.is_cuda(), "cutlass_gemm_f64: inputs must be on CUDA");
-    TORCH_CHECK(A.dim() == 2 && B.dim() == 2, "cutlass_gemm_f64: 2D inputs required");
-    int m = A.size(0), n = B.size(1), k = A.size(1);
-    auto C = torch::zeros({m, n}, A.options());
-
-    double alpha = 1.0, beta = 0.0;
-    CutlassGemmF64 gemm_op;
-    CutlassGemmF64::Arguments args(
-        {m, n, k},
-        {A.data_ptr<double>(), k},
-        {B.data_ptr<double>(), n},
-        {C.data_ptr<double>(), n},
-        {C.data_ptr<double>(), n},
-        {alpha, beta}
-    );
-
-    auto status = gemm_op.can_implement(args);
-    if (status != cutlass::Status::kSuccess) {
-        throw std::runtime_error(
-            std::string("CUTLASS cannot implement this GEMM: ") +
-            cutlass::cutlassGetStatusString(status)
-        );
-    }
-    status = gemm_op(args);
-    if (status != cutlass::Status::kSuccess) {
-        throw std::runtime_error(
-            std::string("CUTLASS GEMM failed: ") +
-            cutlass::cutlassGetStatusString(status)
-        );
-    }
-    return C;
-}
-"""
-    cpp_src = """
 #include <torch/extension.h>
-torch::Tensor cutlass_gemm_f64(torch::Tensor A, torch::Tensor B);
+#include <ATen/cuda/CUDAContext.h>
+#include <cutlass/gemm/device/gemm.h>
+#include <cutlass/gemm/device/gemm_batched.h>
+using Gemm = cutlass::gemm::device::Gemm<double, cutlass::layout::RowMajor,
+    double, cutlass::layout::RowMajor, double, cutlass::layout::RowMajor,
+    double, cutlass::arch::OpClassTensorOp, cutlass::arch::Sm80>;
+using Batched = cutlass::gemm::device::GemmBatched<double, cutlass::layout::RowMajor,
+    double, cutlass::layout::RowMajor, double, cutlass::layout::RowMajor,
+    double, cutlass::arch::OpClassTensorOp, cutlass::arch::Sm80>;
+class CutlassPrepared {
+    torch::Tensor a_, b_, workspace_;
+    Gemm gemm_;
+    Gemm::Arguments gemm_arguments_;
+    Batched batched_;
+    Batched::Arguments batched_arguments_;
+    int m_, n_, k_, batch_;
+    bool is_batched_;
+    std::vector<int64_t> output_shape_;
+    void check(cutlass::Status status) {
+        TORCH_CHECK(status == cutlass::Status::kSuccess, cutlass::cutlassGetStatusString(status));
+    }
+    void* workspace() { return workspace_.defined() ? workspace_.data_ptr() : nullptr; }
+    Gemm::Arguments args(torch::Tensor const& c) {
+        return {{m_, n_, k_}, {a_.data_ptr<double>(), k_}, {b_.data_ptr<double>(), n_},
+                {c.data_ptr<double>(), n_}, {c.data_ptr<double>(), n_}, {1.0, 0.0}};
+    }
+    Batched::Arguments batch_args(torch::Tensor const& c) {
+        return {{m_, n_, k_}, {a_.data_ptr<double>(), k_}, a_.stride(0),
+                {b_.data_ptr<double>(), n_}, b_.stride(0),
+                {c.data_ptr<double>(), n_}, int64_t(m_)*n_,
+                {c.data_ptr<double>(), n_}, int64_t(m_)*n_, {1.0, 0.0}, batch_};
+    }
+public:
+    CutlassPrepared(torch::Tensor a, torch::Tensor b): a_(a), b_(b) {
+        TORCH_CHECK(a.is_cuda() && b.is_cuda() && a.device() == b.device());
+        TORCH_CHECK(a.scalar_type() == torch::kFloat64 && b.scalar_type() == torch::kFloat64);
+        TORCH_CHECK(a.is_contiguous() && b.is_contiguous());
+        TORCH_CHECK((a.dim() == 2 || a.dim() == 3) && b.dim() == a.dim());
+        is_batched_ = a.dim() == 3;
+        m_=a.size(-2); k_=a.size(-1); n_=b.size(-1);
+        batch_=is_batched_ ? a.size(0) : 1;
+        TORCH_CHECK(b.size(-2) == k_ && (!is_batched_ || b.size(0) == batch_));
+        output_shape_ = is_batched_ ? std::vector<int64_t>{batch_,m_,n_} : std::vector<int64_t>{m_,n_};
+        auto c = torch::empty(output_shape_, a.options());
+        auto stream = at::cuda::getCurrentCUDAStream(a.get_device()).stream();
+        size_t bytes;
+        if (is_batched_) { batched_arguments_=batch_args(c); check(batched_.can_implement(batched_arguments_)); bytes=Batched::get_workspace_size(batched_arguments_); }
+        else { gemm_arguments_=args(c); check(gemm_.can_implement(gemm_arguments_)); bytes=Gemm::get_workspace_size(gemm_arguments_); }
+        if (bytes) workspace_=torch::empty({int64_t(bytes)}, a.options().dtype(torch::kUInt8));
+        if (is_batched_) check(batched_.initialize(batched_arguments_,workspace(),stream));
+        else check(gemm_.initialize(gemm_arguments_,workspace(),stream));
+    }
+    torch::Tensor run() {
+        auto c = torch::empty(output_shape_, a_.options());
+        auto stream = at::cuda::getCurrentCUDAStream(a_.get_device()).stream();
+        auto pointer=c.data_ptr<double>();
+        if (is_batched_) {
+            batched_arguments_.ref_C.reset(pointer); batched_arguments_.ref_D.reset(pointer);
+            check(batched_.update(batched_arguments_,workspace())); check(batched_.run(stream));
+        } else {
+            gemm_arguments_.ref_C.reset(pointer); gemm_arguments_.ref_D.reset(pointer);
+            check(gemm_.update(gemm_arguments_,workspace())); check(gemm_.run(stream));
+        }
+        return c;
+    }
+};
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-    m.def("cutlass_gemm_f64", &cutlass_gemm_f64, "CUTLASS f64 GEMM (Sm80)");
+    pybind11::class_<CutlassPrepared>(m,"CutlassPrepared")
+        .def(pybind11::init<torch::Tensor,torch::Tensor>()).def("run",&CutlassPrepared::run);
 }
 """
+    cpp_src = ""
     try:
         ext = load_inline(
             name="cutlass_gemm_f64",
@@ -298,21 +317,84 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         _CUTLASS_EXT = ext
         _CUTLASS_AVAILABLE = True
     except Exception as e:
+        _CUTLASS_ERROR = str(e)
         _CUTLASS_AVAILABLE = False
         _CUTLASS_EXT = None
     return _CUTLASS_EXT
 
 
+def _sample_vendor(operation, sync, check, device, warmups, runs, phases=None):
+    from benchmark_gpu_public_api import measure
+    import torch
+    torch.set_num_threads(int(os.environ.get("OMP_NUM_THREADS", "1")))
+    def tensor(value):
+        return value.tensor if hasattr(value, "tensor") else value
+    def validate(value):
+        value = tensor(value)
+        if value.device != device or value.dtype != torch.float64:
+            raise RuntimeError("verification: vendor output device/dtype mismatch")
+        result = check(value)
+        if result[0] != "passed":
+            raise RuntimeError(f"verification: {result}")
+        return result
+    phases = {} if phases is None else phases
+    initial_start = time.monotonic_ns()
+    probe = operation()
+    sync()
+    probe_ready = time.monotonic_ns()
+    verified = validate(probe)
+    phases.update(initialization_execution_and_placement=probe_ready-initial_start,
+                  initial_validation=time.monotonic_ns()-probe_ready)
+    nbytes = tensor(probe).numel()*tensor(probe).element_size()
+    del probe
+    if os.environ.get("GPU_BENCH_VERIFY_ONLY") == "1":
+        retained = [operation() for _ in range(3)]
+        sync()
+        checks = [validate(value) for value in retained]
+        pointers = [tensor(value).data_ptr() for value in retained if hasattr(tensor(value), "data_ptr")]
+        if pointers and len(set(pointers)) != len(retained):
+            raise RuntimeError("verification: allocating vendor operation reused a live output")
+        return None, ("passed", max([verified[1]]+[value[1] for value in checks]),
+                              max([verified[2]]+[value[2] for value in checks]))
+    sampling = measure(operation, sync, lambda outputs: sync(), nbytes, warmups, runs)
+    final_start = time.monotonic_ns()
+    final = operation()
+    sync()
+    after = validate(final)
+    phases.update(post_sampling_execution_and_validation=time.monotonic_ns()-final_start,
+                  **{f"sampler_{key}":value for key,value in sampling["wall_phases_ns"].items()})
+    return sampling, ("passed",max(verified[1],after[1]),max(verified[2],after[2]))
+
+
+def _vendor_stats(sampling):
+    return ((None,)*5 if sampling is None else
+            _timing_stats([value/sampling["operations_per_sample"] for value in sampling["batch_ms"]]))
+
+
+def _vendor_record(record, sampling, framework, phases=None):
+    record["execution"]["notes"] = json.dumps(dict(sampling=sampling,
+        setup="inputs, layouts, native operators/workspaces, initialization and validation outside clocks",
+        precision="native float64; no dtype conversion in clocks",
+        wall_phases_ns=phases or {},
+        wall_phase_scope="case phases outside operation clocks; backend initialization includes extension load/compile; interpreter startup and JSON writes excluded",
+        framework_version=framework, native_index_dtype="int32" if record["backend"] == "ginkgo" else None, verification_only=sampling is None, device_uuid=os.environ.get("CUDA_VISIBLE_DEVICES"),
+        physical_device_index=os.environ.get("GPU_BENCH_PHYSICAL_DEVICE")))
+    if sampling is None:
+        record["status"] = "verification_only"
+    return record
+
+
 def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     """CUTLASS backend: f64 GEMM via JIT-compiled cutlass::gemm::device::Gemm<double,...,Sm80>."""
+    case_start = time.monotonic_ns()
     import torch
     kw = dict(ts=ts, bc=bc, tc=tc)
 
     ext = _load_cutlass_ext()
     if ext is None:
         return _stub(suite_id, problem, backend, device_ordinal,
-                     status="not_configured",
-                     reason="CUTLASS headers not found; set CUTLASS_DIR=/opt/cutlass",
+                     status="runtime_failed" if _CUTLASS_ERROR else "not_configured",
+                     reason=_CUTLASS_ERROR or "CUTLASS headers not found; set CUTLASS_DIR=/opt/cutlass",
                      path="phase2-runner", **kw)
 
     op = problem["op"]
@@ -322,8 +404,10 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     verify_spec = problem.get("verify", {})
     rtol = float(verify_spec.get("rtol", 1e-5))
     atol = float(verify_spec.get("atol", 1e-8))
-    path = "phase2-measured-cutlass"
+    path = "prepared-cutlass-gemm-or-gemm-batched"
     device = torch.device(f"cuda:{device_ordinal}")
+    torch.cuda.set_device(device)
+    backend_end = time.monotonic_ns()
 
     try:
         data = _make_data_np(problem)
@@ -332,65 +416,31 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         return _stub(suite_id, problem, backend, device_ordinal,
                      status="runtime_failed", reason=f"data generation: {exc}", path=path, **kw)
 
-    # Build CUTLASS-specific callable
-    # Normalize inputs once, before any measured dispatch.
-    if op == "matmul":
-        a = gpu_data["A"].T if gpu_data.get("transpose_a", False) else gpu_data["A"]
-        b = gpu_data["B"].T if gpu_data.get("transpose_b", False) else gpu_data["B"]
-        pairs = [(a.contiguous(), b.contiguous())]
-    elif op == "batched_matmul":
-        pairs = [(a.contiguous(), b.contiguous()) for a, b in zip(gpu_data["A"], gpu_data["B"])]
-    elif op == "einsum" and len(gpu_data["tensors"]) == 2:
-        pairs = [tuple(t.contiguous() for t in gpu_data["tensors"])]
-    else:
-        return _stub(suite_id, problem, backend, device_ordinal,
-                     status="unsupported", reason="no equivalent CUTLASS operation", path=path, **kw)
-
-    def cutlass_fn():
-        results = [ext.cutlass_gemm_f64(a, b) for a, b in pairs]
-        return [torch.stack(results, dim=0)] if op == "batched_matmul" else results
-
     try:
-        # Warmup
-        for _ in range(max(n_warmup, 1)):
-            cutlass_fn()
-            torch.cuda.synchronize(device)
-
-        # Timed runs
-        times_ms: list[float] = []
-        result = None
-        for _ in range(n_runs):
-            torch.cuda.synchronize(device)
-            result = None
-            t0 = time.perf_counter()
-            result = cutlass_fn()
-            torch.cuda.synchronize(device)
-            times_ms.append((time.perf_counter() - t0) * 1000.0)
-
-    except torch.cuda.OutOfMemoryError as exc:
-        return _stub(suite_id, problem, backend, device_ordinal,
-                     status="oom", reason=str(exc)[:500], path=path, **kw)
+        if op == "matmul":
+            a = gpu_data["A"].T if gpu_data.get("transpose_a", False) else gpu_data["A"]
+            b = gpu_data["B"].T if gpu_data.get("transpose_b", False) else gpu_data["B"]
+        elif op == "batched_matmul":
+            a, b = gpu_data["A"], gpu_data["B"]
+        elif op == "einsum" and len(gpu_data["tensors"]) == 2:
+            a, b = gpu_data["tensors"]
+        else:
+            return _stub(suite_id, problem, backend, device_ordinal,
+                         status="unsupported", reason="no equivalent CUTLASS operation", path=path, **kw)
+        prepared = ext.CutlassPrepared(a.contiguous(), b.contiguous())
+        cpu_data = _to_torch_cpu_f64(data)
+        reference = _torch_fn(op, cpu_data)()
+        check = lambda result: _verify_torch(op, result, reference, data, rtol, atol)
+        phases = dict(backend_initialization=backend_end-case_start,
+                      input_reference_and_preparation=time.monotonic_ns()-backend_end)
+        sampling, verification = _sample_vendor(prepared.run, lambda: torch.cuda.synchronize(device),
+                                                 check, device, n_warmup, n_runs, phases=phases)
+        ver_status, max_abs, max_rel = verification
     except Exception as exc:
         return _stub(suite_id, problem, backend, device_ordinal,
-                     status="runtime_failed", reason=str(exc)[:500], path=path, **kw)
-
-    # Verify against CPU reference
-    try:
-        cpu_data = _to_torch_cpu_f64(data)
-        cpu_fn = _torch_fn(op, cpu_data)
-        cpu_result = cpu_fn()
-        ver_status, max_abs, max_rel = _verify_torch(op, result[0] if result else None,
-                                                       cpu_result, data, rtol, atol)
-    except Exception:
-        ver_status, max_abs, max_rel = "skipped", None, None
-
-    if ver_status == "failed":
-        return _stub(suite_id, problem, backend, device_ordinal,
-                     status="verification_failed",
-                     reason=f"max_abs={max_abs:.3e} max_rel={max_rel:.3e}",
-                     path=path, **kw)
-
-    first, med, min_t, p95, iqr = _timing_stats(times_ms)
+                     status="verification_failed" if str(exc).startswith("verification") else "runtime_failed",
+                     reason=str(exc), path=path, **kw)
+    first, med, min_t, p95, iqr = _vendor_stats(sampling)
 
     props = torch.cuda.get_device_properties(device)
     env = _base_env(device_ordinal, ts, bc, tc)
@@ -402,14 +452,18 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         "framework_version": f"cutlass-v3.7 / torch={torch.__version__}",
     })
 
-    return _ok_record(suite_id, problem, backend, device_ordinal,
+    phases["case_body_before_json_write"] = time.monotonic_ns()-case_start
+    record = _ok_record(suite_id, problem, backend, device_ordinal,
                       path=path,
-                      warmup_runs=n_warmup, timed_runs=n_runs,
+                      warmup_runs=n_warmup if sampling else 0, timed_runs=n_runs if sampling else 0,
                       first_run_ms=first, median_ms=med, min_ms=min_t, p95_ms=p95, iqr_ms=iqr,
                       compile_time_ms=None,
                       ver_status=ver_status, max_abs=max_abs, max_rel=max_rel,
                       rtol=rtol, atol=atol,
                       env=env)
+
+    record["execution"]["synchronization"] = "torch.cuda.synchronize"
+    return _vendor_record(record, sampling, env["framework_version"], phases)
 
 
 # ---------------------------------------------------------------------------
@@ -418,11 +472,12 @@ def _run_cutlass(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 
 _GINKGO_EXT = None
 _GINKGO_AVAILABLE = None
+_GINKGO_ERROR = None
 
 
 def _load_ginkgo_ext():
     """JIT-compile and cache the Ginkgo CSR SpMM extension."""
-    global _GINKGO_EXT, _GINKGO_AVAILABLE
+    global _GINKGO_EXT, _GINKGO_AVAILABLE, _GINKGO_ERROR
     if _GINKGO_AVAILABLE is not None:
         return _GINKGO_EXT
     import os
@@ -441,7 +496,13 @@ def _load_ginkgo_ext():
 #include <memory>
 
 // CSR SpMM/SpMV: y = A @ x, where A is CSR (rows x cols), x is dense (cols x rhs).
-// All inputs are CUDA tensors. Returns y as a (rows x rhs) CUDA tensor.
+// Retain both the native output descriptor and Tensor through synchronization/clock stop.
+struct GinkgoOutput {
+    torch::Tensor tensor;
+    std::unique_ptr<gko::matrix::Dense<double>> native;
+    GinkgoOutput(torch::Tensor value, std::unique_ptr<gko::matrix::Dense<double>> dense)
+        : tensor(std::move(value)), native(std::move(dense)) {}
+};
 class GinkgoSpmm {
     using ValueType = double;
     using IndexType = int;
@@ -452,11 +513,14 @@ class GinkgoSpmm {
     std::unique_ptr<Csr> matrix_;
     std::unique_ptr<Dense> input_;
     int64_t rows_, rhs_;
+    gko::dim<2> output_size_;
+    std::vector<int64_t> output_shape_;
 public:
     GinkgoSpmm(torch::Tensor row_ptrs, torch::Tensor col_idxs,
                torch::Tensor values, torch::Tensor x, int64_t rows, int64_t cols)
         : row_ptrs_(row_ptrs), col_idxs_(col_idxs), values_(values), x_(x),
-          rows_(rows), rhs_(x.numel() / cols) {
+          rows_(rows), rhs_(x.numel() / cols), output_size_(rows_,rhs_) {
+        output_shape_=x_.dim()==1 ? std::vector<int64_t>{rows_} : std::vector<int64_t>{rows_,rhs_};
         TORCH_CHECK(row_ptrs.is_cuda() && col_idxs.is_cuda() && values.is_cuda() && x.is_cuda(),
                     "GinkgoSpmm requires CUDA inputs");
         exec_ = gko::CudaExecutor::create(x.get_device(), gko::ReferenceExecutor::create());
@@ -468,21 +532,23 @@ public:
             gko::make_array_view(exec_, x.numel(), x.data_ptr<ValueType>()), rhs_);
         exec_->synchronize();
     }
-    torch::Tensor run() {
+    void synchronize() { exec_->synchronize(); }
+    std::shared_ptr<GinkgoOutput> run() {
         // Only the operation's fresh output is allocated in the measured call.
-        auto y = torch::empty({rows_, rhs_}, x_.options());
-        auto output = Dense::create(exec_, gko::dim<2>{(gko::size_type)rows_, (gko::size_type)rhs_},
+        auto y = torch::empty(output_shape_, x_.options());
+        auto output = Dense::create(exec_, output_size_,
             gko::make_array_view(exec_, y.numel(), y.data_ptr<ValueType>()), rhs_);
         matrix_->apply(input_.get(), output.get());
-        exec_->synchronize();
-        return y;
+        return std::make_shared<GinkgoOutput>(std::move(y), std::move(output));
     }
 };
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+    pybind11::class_<GinkgoOutput, std::shared_ptr<GinkgoOutput>>(m, "GinkgoOutput")
+        .def_readonly("tensor", &GinkgoOutput::tensor);
     pybind11::class_<GinkgoSpmm>(m, "GinkgoSpmm")
         .def(pybind11::init<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, int64_t, int64_t>())
-        .def("run", &GinkgoSpmm::run);
+        .def("run", &GinkgoSpmm::run).def("synchronize", &GinkgoSpmm::synchronize);
 }
 
 """
@@ -502,7 +568,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         )
         _GINKGO_EXT = ext
         _GINKGO_AVAILABLE = True
-    except Exception:
+    except Exception as e:
+        _GINKGO_ERROR = str(e)
         _GINKGO_AVAILABLE = False
         _GINKGO_EXT = None
     return _GINKGO_EXT
@@ -510,14 +577,15 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 
 def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     """Ginkgo backend: CSR SpMV/SpMM via libginkgo CUDA executor."""
+    case_start = time.monotonic_ns()
     import torch
     kw = dict(ts=ts, bc=bc, tc=tc)
 
     ext = _load_ginkgo_ext()
     if ext is None:
         return _stub(suite_id, problem, backend, device_ordinal,
-                     status="not_configured",
-                     reason="Ginkgo library not found; set GINKGO_DIR=/opt/ginkgo",
+                     status="runtime_failed" if _GINKGO_ERROR else "not_configured",
+                     reason=_GINKGO_ERROR or "Ginkgo library not found; set GINKGO_DIR=/opt/ginkgo",
                      path="phase2-runner", **kw)
 
     op = problem["op"]
@@ -527,8 +595,10 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     verify_spec = problem.get("verify", {})
     rtol = float(verify_spec.get("rtol", 1e-5))
     atol = float(verify_spec.get("atol", 1e-8))
-    path = "phase2-measured-ginkgo"
+    path = "prepared-ginkgo-csr-apply"
     device = torch.device(f"cuda:{device_ordinal}")
+    torch.cuda.set_device(device)
+    backend_end = time.monotonic_ns()
 
     try:
         data = _make_data_np(problem)
@@ -548,64 +618,29 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         ccol = csr.col_indices().to(torch.int32).to(device)
         cval = csr.values().to(torch.float64).to(device)
 
-        # x: (cols,) for spmv → reshape to (cols, 1); (cols, rhs) for spmm
         x_np = data["x"]
-        if op == "spmv":
-            x = torch.as_tensor(x_np, dtype=torch.float64, device=device).reshape(cols, 1).contiguous()
-        else:
-            x = torch.as_tensor(x_np, dtype=torch.float64, device=device).contiguous()
-
+        x = torch.as_tensor(x_np, dtype=torch.float64, device=device).contiguous()
         prepared = ext.GinkgoSpmm(crow, ccol, cval, x, rows, cols)
-        ginkgo_fn = prepared.run
-
-        # Warmup
-        for _ in range(max(n_warmup, 1)):
-            ginkgo_fn()
-            torch.cuda.synchronize(device)
-
-        # Timed runs
-        times_ms: list[float] = []
-        result = None
-        for _ in range(n_runs):
-            torch.cuda.synchronize(device)
-            result = None
-            t0 = time.perf_counter()
-            result = ginkgo_fn()
-            torch.cuda.synchronize(device)
-            times_ms.append((time.perf_counter() - t0) * 1000.0)
-
-    except torch.cuda.OutOfMemoryError as exc:
-        return _stub(suite_id, problem, backend, device_ordinal,
-                     status="oom", reason=str(exc)[:500], path=path, **kw)
+        reference = torch.sparse.mm(csr, torch.as_tensor(x_np, dtype=torch.float64).reshape(cols, -1)).numpy().ravel()
+        expected_shape = (rows,) if op == "spmv" else (rows, x.shape[1])
+        def check(result):
+            import numpy as np
+            if tuple(result.shape) != expected_shape:
+                raise RuntimeError("verification: wrong Ginkgo output shape")
+            actual = result.detach().cpu().numpy().ravel()
+            max_abs = float(np.max(np.abs(actual-reference)))
+            max_rel = float(np.max(np.abs(actual-reference)/np.maximum(np.abs(reference),1e-10)))
+            passed = np.isfinite(actual).all() and max_abs <= atol+rtol*max(float(np.max(np.abs(reference))),1.0)
+            return ("passed" if passed else "failed", max_abs, max_rel)
+        phases = dict(backend_initialization=backend_end-case_start,
+                      input_reference_and_preparation=time.monotonic_ns()-backend_end)
+        sampling, verification = _sample_vendor(prepared.run, prepared.synchronize, check, device, n_warmup, n_runs, phases=phases)
+        ver_status, max_abs, max_rel = verification
     except Exception as exc:
         return _stub(suite_id, problem, backend, device_ordinal,
-                     status="runtime_failed", reason=str(exc)[:500], path=path, **kw)
-
-    # Verify against torch CSR reference without densifying large sparse inputs.
-    try:
-        coo_cpu = torch.sparse_coo_tensor(torch.stack([row_idx, col_idx]), vals, (rows, cols)).coalesce()
-        csr_cpu = coo_cpu.to_sparse_csr()
-        x_ref = torch.as_tensor(x.detach().cpu().numpy(), dtype=torch.float64)
-        ref = torch.sparse.mm(csr_cpu, x_ref)
-        res_cpu = result.detach().cpu().to(torch.float64)
-        import numpy as np
-        a = res_cpu.numpy().ravel()
-        b = ref.numpy().ravel()
-        max_abs = float(np.max(np.abs(a - b)))
-        max_rel = float(np.max(np.abs(a - b) / np.maximum(np.abs(b), 1e-10)))
-        norm = float(np.max(np.abs(b)))
-        passed = max_abs <= atol + rtol * max(norm, 1.0)
-        ver_status = "passed" if passed else "failed"
-    except Exception:
-        ver_status, max_abs, max_rel = "skipped", None, None
-
-    if ver_status == "failed":
-        return _stub(suite_id, problem, backend, device_ordinal,
-                     status="verification_failed",
-                     reason=f"max_abs={max_abs:.3e} max_rel={max_rel:.3e}",
-                     path=path, **kw)
-
-    first, med, min_t, p95, iqr = _timing_stats(times_ms)
+                     status="verification_failed" if str(exc).startswith("verification") else "runtime_failed",
+                     reason=str(exc), path=path, **kw)
+    first, med, min_t, p95, iqr = _vendor_stats(sampling)
     props = torch.cuda.get_device_properties(device)
     env = _base_env(device_ordinal, ts, bc, tc)
     env.update({
@@ -615,44 +650,48 @@ def _run_ginkgo(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         "framework_version": "ginkgo-v1.8",
     })
 
-    return _ok_record(suite_id, problem, backend, device_ordinal,
+    phases["case_body_before_json_write"] = time.monotonic_ns()-case_start
+    record = _ok_record(suite_id, problem, backend, device_ordinal,
                       path=path,
-                      warmup_runs=n_warmup, timed_runs=n_runs,
+                      warmup_runs=n_warmup if sampling else 0, timed_runs=n_runs if sampling else 0,
                       first_run_ms=first, median_ms=med, min_ms=min_t, p95_ms=p95, iqr_ms=iqr,
                       compile_time_ms=None,
                       ver_status=ver_status, max_abs=max_abs, max_rel=max_rel,
                       rtol=rtol, atol=atol,
                       env=env)
 
+    record["execution"]["synchronization"] = "Ginkgo Executor::synchronize"
+    return _vendor_record(record, sampling, env["framework_version"], phases)
+
 
 # ---------------------------------------------------------------------------
 # cuBLAS LT runner (matmul/batched_matmul/einsum via torch.mm on CUDA)
 # ---------------------------------------------------------------------------
 
-def _run_cublaslt(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
-    """cuBLAS LT backend: runs GEMM ops through PyTorch CUDA dispatch.
+def _annotate_vendor(record, path, description):
+    execution = record.get("execution")
+    if isinstance(execution, dict):
+        notes = json.loads(execution.get("notes") or "{}")
+        if not isinstance(notes, dict):
+            raise ValueError("vendor annotation requires structured sampling notes")
+        notes["vendor_path"] = description
+        execution["execution_path"] = path
+        execution["notes"] = json.dumps(notes)
+    return record
 
-    On Ampere+ GPUs, torch.mm/bmm dispatches to cuBLAS LT automatically.
-    TF32 is disabled to enforce full float64 precision through the LT path.
-    """
+
+def _run_cublaslt(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
+    """PyTorch GEMM with cuBLASLt preferred; the framework may fall back."""
     import torch
     kw = dict(ts=ts, bc=bc, tc=tc)
-
-    prev_tf32 = torch.backends.cuda.matmul.allow_tf32
-    torch.backends.cuda.matmul.allow_tf32 = False
+    previous = torch.backends.cuda.preferred_blas_library()
     try:
+        torch.backends.cuda.preferred_blas_library("cublaslt")
         rec = _run_pytorch(suite_id, problem, backend, device_ordinal, **kw)
     finally:
-        torch.backends.cuda.matmul.allow_tf32 = prev_tf32
-
-    # Relabel execution path
-    if isinstance(rec.get("execution"), dict):
-        rec["execution"]["execution_path"] = "phase2-measured-cublaslt"
-        rec["execution"]["notes"] = (
-            "torch.mm/bmm on CUDA Ampere+ dispatches to cuBLAS LT; "
-            "allow_tf32=False to enforce full float64 precision"
-        )
-    return rec
+        torch.backends.cuda.preferred_blas_library(previous)
+    return _annotate_vendor(rec, "pytorch-cublaslt-preferred",
+                            "PyTorch preferred_blas_library=cublaslt; fallback remains possible; not a raw cuBLASLt API")
 
 
 # ---------------------------------------------------------------------------
@@ -679,21 +718,8 @@ def _run_cusolver(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
     finally:
         torch.backends.cuda.preferred_linalg_library(prev_pref)
 
-    if isinstance(rec.get("execution"), dict):
-        rec["execution"]["execution_path"] = "phase2-measured-cusolver"
-        if problem.get("op") == "svd":
-            rec["execution"]["notes"] = (
-                "torch.linalg.svd with preferred_linalg_library=cusolver and driver=gesvd; "
-                "this is a QR-based cuSOLVER comparison, while tenferro-rs CUDA SVD uses "
-                "its backend default driver policy; this remains a torch.linalg path "
-                "rather than a raw cuSOLVER API benchmark"
-            )
-        else:
-            rec["execution"]["notes"] = (
-                "torch.linalg ops with preferred_linalg_library=cusolver; "
-                "this is not the raw cuSOLVER API path used by tenferro-rs"
-            )
-    return rec
+    return _annotate_vendor(rec, "pytorch-cusolver-preferred",
+        "torch.linalg preferred_linalg_library=cusolver; SVD driver=gesvd; not a raw cuSOLVER API")
 
 
 # ---------------------------------------------------------------------------
@@ -711,12 +737,8 @@ def _run_cusparse(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         warnings.simplefilter("ignore")
         rec = _run_pytorch(suite_id, problem, backend, device_ordinal, **kw)
 
-    if isinstance(rec.get("execution"), dict):
-        rec["execution"]["execution_path"] = "phase2-measured-cusparse"
-        rec["execution"]["notes"] = (
-            "torch.sparse CSR tensor on CUDA dispatches to cuSPARSE SpMV/SpMM"
-        )
-    return rec
+    return _annotate_vendor(rec, "pytorch-csr-cusparse",
+        "PyTorch native CSR mv/mm CUDA dispatch; not a raw cuSPARSE API")
 
 
 # ---------------------------------------------------------------------------
@@ -943,8 +965,7 @@ def _torch_fn(op: str, d: dict):
         return lambda: torch.linalg.eigh(d["A"])
     if op == "spmv":
         # CSR @ vector via real sparse kernel (cuSPARSE on CUDA).
-        x = d["x"].unsqueeze(1)
-        return lambda: torch.sparse.mm(d["sp"], x).squeeze(1)
+        return lambda: torch.mv(d["sp"], d["x"])
     if op == "spmm":
         # CSR @ dense matrix via real sparse kernel (cuSPARSE on CUDA).
         return lambda: torch.sparse.mm(d["sp"], d["x"])
