@@ -58,8 +58,8 @@ def render(selection_dir, budget):
         lines += ["Observation: budget not evaluated for this hardware, selection or incomplete/unmeasured run.", ""]
     lines += ["Budget status is descriptive and never changes functional success. A cold dependency build "
               "or busy host can exceed it; retain the observation rather than treating it as a confirmed regression. "
-              "Detailed core case phases are in `routine_command_wall.md`; complete sequences and public state "
-              "observations are in `routine_controls.md`. These observations establish no implementation speedup.", ""]
+              "Detailed core case phases and control observations are published separately for the same coverage "
+              "profile and raw-run identity. These observations establish no implementation speedup.", ""]
     return "\n".join(lines)
 
 
