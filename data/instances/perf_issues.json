@@ -8339,5 +8339,282 @@
   "thread_counts": [
    1
   ]
+ },
+ {
+  "id": "pool_miss_f64_bins0",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "miss",
+   "bins": 0,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_miss_f64_bins100",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "miss",
+   "bins": 100,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_miss_f64_bins1000",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "miss",
+   "bins": 1000,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_miss_f64_bins10000",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "miss",
+   "bins": 10000,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_hit_f64_bins0",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "hit",
+   "bins": 0,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_hit_f64_bins100",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "hit",
+   "bins": 100,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_hit_f64_bins1000",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "hit",
+   "bins": 1000,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_hit_f64_bins10000",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "hit",
+   "bins": 10000,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_miss_f64_bins10000_cap8mib",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "miss",
+   "bins": 10000,
+   "len": 1,
+   "cap_bytes": 8388608,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_cycle_f64_len64",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "cycle",
+   "bins": 0,
+   "len": 64,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_in_flight_f64_bins1000",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "in_flight",
+   "bins": 1000,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "pool_in_flight_f64_bins10000",
+  "issues": [
+   "#2170"
+  ],
+  "kind": "umbrella_pool_state",
+  "arm": "pool-state",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "route": "in_flight",
+   "bins": 10000,
+   "len": 1,
+   "kind": "umbrella_pool_state",
+   "arm": "pool-state",
+   "dtype": "f64"
+  },
+  "measurement_scope": "state_diagnostic",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
  }
 ]

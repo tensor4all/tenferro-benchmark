@@ -14,6 +14,11 @@ tenferro-runtime  = { path = "extern/tenferro-rs/crates/tenferro-runtime", defau
 tenferro-tensor   = { path = "extern/tenferro-rs/crates/tenferro-tensor", default-features = false }
 tenferro-gpu      = { path = "extern/tenferro-rs/crates/tenferro-gpu", default-features = false, optional = true }
 tenferro-cpu      = { path = "extern/tenferro-rs/crates/tenferro-cpu", default-features = false, optional = true }
+# The buffer-pool reproducer of tenferro-rs #2170 (cpu/perf_issues state
+# diagnostics): the issue's minimal reproduction drives this published crate's
+# public pool surface directly, because no tenferro-rs operation exposes it.
+# Non-optional: it is a tiny host-side crate and needs no backend feature.
+tenferro-cpu-basic = { path = "extern/tenferro-rs/crates/tenferro-cpu-basic", default-features = false }
 num-complex = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

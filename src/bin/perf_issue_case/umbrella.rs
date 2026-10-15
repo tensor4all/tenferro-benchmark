@@ -85,11 +85,12 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
         "umbrella_lu" | "umbrella_lane_counter" => lu(p, timing, threads),
         "umbrella_axpby" => axpby(p, timing, threads),
         "umbrella_view_counter" => views(p),
+        "umbrella_pool_state" => pool_state(p, timing),
         _ => Err("unregistered umbrella kind".into()),
     }?;
     if matches!(
         param_str(p, "kind")?,
-        "umbrella_construct" | "umbrella_view_counter"
+        "umbrella_construct" | "umbrella_view_counter" | "umbrella_pool_state"
     ) {
         row.extra["operation_requires_session"] = json!(false);
     } else if param_str(p, "arm")? == "host" {
@@ -563,6 +564,139 @@ fn validate_blocks(
         }
     }
     Ok(())
+}
+
+/// tenferro-rs #2170: the buffer pool's acquisition cost against the number of
+/// distinct capacities the run has seen. This is the issue's own minimal
+/// reproducer at the published pool crate's public surface, and a state
+/// diagnostic: the capacity history is built outside the timed batches and the
+/// measured operation is the pool call itself.
+fn pool_state(p: &Value, timing: &Timing) -> Result<CaseOutcome> {
+    use tenferro_cpu_basic::buffer_pool::{BufferPool, PoolScalar};
+
+    let route = param_str(p, "route")?;
+    let bins = param_usize(p, "bins")?;
+    let len = p["len"].as_u64().map(|v| v as usize).unwrap_or(1);
+    let cap_bytes = p["cap_bytes"]
+        .as_u64()
+        .map(|v| v as usize)
+        .unwrap_or(usize::MAX);
+
+    let mut pool = BufferPool::with_max_retained_capacity_bytes(cap_bytes);
+    let mut capacities = Vec::with_capacity(bins);
+    for index in 0..bins {
+        let buffer = pool.acquire_with_capacity::<f64>(1 + index);
+        capacities.push(buffer.capacity());
+        <f64 as PoolScalar>::pool_release(&mut pool, buffer);
+    }
+
+    // The reporter's reproducer checks every pooled buffer out and holds it, so
+    // the capacity bins stay behind empty and a request nothing can serve walks
+    // them. The other routes keep their bins served.
+    let mut held: Vec<Vec<f64>> = Vec::new();
+    if route == "miss" {
+        held = capacities
+            .iter()
+            .rev()
+            .map(|&capacity| pool.acquire_with_capacity::<f64>(capacity))
+            .collect();
+    }
+    // The retained accounting must be identical before and after the timed
+    // batches, so the rows measure a steady state rather than a state shift. The
+    // snapshot is taken after each route's own warm-up probe.
+    let steady;
+
+    let (measurement, check) = match route {
+        "miss" => {
+            let served_before = pool.stats().buffers;
+            let probe = pool.acquire_with_capacity::<f64>(len);
+            let probe_capacity = probe.capacity();
+            if probe_capacity < len {
+                return Err("the unservable request returned a short buffer".into());
+            }
+            if pool.stats().buffers > served_before {
+                return Err("the unservable request was served from the pool".into());
+            }
+            steady = pool.stats();
+            let measurement =
+                measure(timing, len * 8, || Ok(pool.acquire_with_capacity::<f64>(len)))?;
+            (measurement, json!({"probe_capacity": probe_capacity}))
+        }
+        "hit" | "cycle" => {
+            let capacity = if route == "hit" {
+                *capacities
+                    .first()
+                    .ok_or("the hit route needs a retained capacity")?
+            } else {
+                len
+            };
+            let probe = pool.acquire_with_capacity::<f64>(capacity);
+            let pointer = probe.as_ptr();
+            <f64 as PoolScalar>::pool_release(&mut pool, probe);
+            let again = pool.acquire_with_capacity::<f64>(capacity);
+            if again.as_ptr() != pointer {
+                return Err("the reuse control did not reuse a retained buffer".into());
+            }
+            <f64 as PoolScalar>::pool_release(&mut pool, again);
+            steady = pool.stats();
+            let measurement = measure(timing, capacity * 8, || {
+                let buffer = pool.acquire_with_capacity::<f64>(capacity);
+                <f64 as PoolScalar>::pool_release(&mut pool, buffer);
+                Ok(())
+            })?;
+            (measurement, json!({"reused_capacity": capacity}))
+        }
+        "in_flight" => {
+            // Acquire/release cycling across the capacity history: the tracked
+            // path, so every cycle passes through the in-flight bookkeeping.
+            let mut step = 0usize;
+            // Warm-up probe before the measured closure takes the pool.
+            let probe = pool.acquire_with_capacity::<f64>(len);
+            <f64 as PoolScalar>::pool_release(&mut pool, probe);
+            steady = pool.stats();
+            let cycle = || {
+                let capacity = capacities
+                    .get(step % capacities.len().max(1))
+                    .copied()
+                    .unwrap_or(len);
+                step += 1;
+                let buffer = pool.acquire_with_capacity::<f64>(capacity);
+                <f64 as PoolScalar>::pool_release(&mut pool, buffer);
+                Ok(())
+            };
+            let measurement = measure(timing, 8, cycle)?;
+            (measurement, json!({"cycled_capacities": capacities.len()}))
+        }
+        other => return Err(format!("unknown pool route {other}").into()),
+    };
+
+    let after = pool.stats();
+    let cache = pool.cache_stats();
+    if after.buffers != steady.buffers || after.capacity_bytes != steady.capacity_bytes {
+        return Err("the measured pool route changed the retained accounting".into());
+    }
+    drop(held);
+    Ok(outcome(
+        Some(measurement),
+        json!({
+            "route": route,
+            "history_capacities": capacities.len(),
+            "retention_cap_bytes": if cap_bytes == usize::MAX { None } else { Some(cap_bytes) },
+            "retained_buffers": after.buffers,
+            "retained_capacity_bytes": after.capacity_bytes,
+            "steady_buffers": steady.buffers,
+            "steady_capacity_bytes": steady.capacity_bytes,
+            "cache_entries": cache.entries,
+            "cache_retained_bytes": cache.retained_bytes,
+            "check": check,
+            "pool_single_threaded": true,
+            "unavailable": [
+                "emptied-bin count and the resulting scan length inside the pool                  (tenferro-cpu-basic exposes no observation point outside its own tests)",
+                "allocator-level buffer reuse behind the returned vectors",
+            ],
+        }),
+        vec!["one pool acquisition, or one acquire/release cycle"],
+    ))
 }
 
 fn views(p: &Value) -> Result<CaseOutcome> {

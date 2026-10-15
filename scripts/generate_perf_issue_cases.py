@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 6
+MANIFEST_VERSION = 7
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -317,8 +317,49 @@ def b1_op_cases():
     return rows
 
 
+def pool_state_cases():
+    """#2170: buffer-pool acquisition against the number of distinct capacities."""
+    issues = ("#2170",)
+    intent = ("tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct "
+              "capacities the run has seen, driven through the published pool crate's public "
+              "surface (the issue's own minimal reproducer). State diagnostic: the capacity "
+              "history is built outside the timed batches, and the emptied-bin count inside the "
+              "pool has no public observation point, so it is reported as unavailable.")
+    rows = []
+    # A request nothing retained can serve, after 0 / 100 / 1,000 / 10,000 distinct
+    # capacities were pooled and checked out; and a successful-reuse control at the
+    # same histories, so a run cannot pass by merely missing the route.
+    for route in ("miss", "hit"):
+        for bins in (0, 100, 1_000, 10_000):
+            rows.append(case(
+                f"pool_{route}_f64_bins{bins}", issues, "umbrella_pool_state",
+                {"route": route, "bins": bins, "len": 1}, arm="pool-state", dtype="f64",
+                scope="state_diagnostic", intent=intent))
+    # A finite retention cap evicts through smallest_pool_candidate, so the
+    # empty-bin history and the retention accounting are exercised together.
+    rows.append(case(
+        "pool_miss_f64_bins10000_cap8mib", issues, "umbrella_pool_state",
+        {"route": "miss", "bins": 10_000, "len": 1, "cap_bytes": 8 << 20},
+        arm="pool-state", dtype="f64", scope="state_diagnostic", intent=intent))
+    # The steady acquire/release cycle at one size: the route #1831 optimized, and
+    # the control for how long an emptied bin is retained.
+    rows.append(case(
+        "pool_cycle_f64_len64", issues, "umbrella_pool_state",
+        {"route": "cycle", "bins": 0, "len": 64}, arm="pool-state", dtype="f64",
+        scope="state_diagnostic", intent=intent))
+    # Tracked acquisition/release across the capacity history: the in-flight
+    # bookkeeping route, not only take_best_fit.
+    for bins in (1_000, 10_000):
+        rows.append(case(
+            f"pool_in_flight_f64_bins{bins}", issues, "umbrella_pool_state",
+            {"route": "in_flight", "bins": bins, "len": 1}, arm="pool-state", dtype="f64",
+            scope="state_diagnostic", intent=intent))
+    return rows
+
+
 def generate_cases():
-    return decode_cases() + other_cases() + b1_op_cases() + cpu_gap_cases() + cpu_followup_cases() + cpu_umbrella_cases()
+    return (decode_cases() + other_cases() + b1_op_cases() + cpu_gap_cases()
+            + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases())
 
 
 def cpu_umbrella_cases():
