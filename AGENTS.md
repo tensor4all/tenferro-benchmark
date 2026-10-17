@@ -475,6 +475,7 @@ Run these after changing benchmark scripts:
 ```bash
 uv run python scripts/validate_benchmark_suite.py benchmarks/cpu/einsum.yaml
 uv run python scripts/validate_benchmark_suite.py benchmarks/gpu/dense.yaml benchmarks/gpu/einsum.yaml benchmarks/gpu/sparse.yaml benchmarks/gpu/linalg_jvp_vjp.yaml
+uv run python -m unittest tests.test_generate_dashboard
 bash tests/test_suite_result_layout.sh
 bash tests/test_run_all_docs_outputs.sh
 bash tests/test_cpu_ops_linalg_ad.sh

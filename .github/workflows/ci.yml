@@ -90,7 +90,9 @@ jobs:
       - name: Check Python scripts compile
         run: |
           uv run python -m py_compile \
-            scripts/generate_results_index.py \
+            scripts/generate_dashboard.py \
+            scripts/report_summary.py \
+            scripts/regenerate_report_summaries.py \
             scripts/validate_benchmark_suite.py \
             scripts/collect_run_metadata.py \
             scripts/benchmark_gpu_linalg_ad.py \
