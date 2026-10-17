@@ -1,22 +1,20 @@
 # GPU routine command wall
 
-Raw selection: `data/results/nvidia-gpu/gpu/routine_selection/20261014_005047`.
+Raw selection: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116`.
 
-tenferro-rs `9655b4e0daced17e0aa35a30d35710b069e10644`; harness `25f190048045c01cb363384ba45b2a0b0b640db8`. GPU: NVIDIA GeForce RTX 3060 (`GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`).
+tenferro-rs `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`; harness `f94171e1f76a246bdaee4f2e008ffc74149a6d5f`. GPU: NVIDIA A100 80GB PCIe (`GPU-530977e1-4968-9283-4129-9fbec3e66542`).
 
-Coverage `full`, effort `scan`; core measured 63/95. Routine controls selected: True.
+Coverage `full`, effort `standard`; core measured 63/95. Routine controls selected: True.
 
 Controls measured 30/30; state observations 12/12. Untimed states are not operation timings.
 
 | Command checkpoint/phase | Seconds |
 |---|---:|
-| Core through final suite report | 865.537 |
-| Remaining controls/accounting/reporting | 86.360 |
-| Script through final wall checkpoint | 951.897 |
+| Core through final suite report | 795.782 |
+| Remaining controls/accounting/reporting | 70.742 |
+| Script through final wall checkpoint | 866.524 |
 
 Scope: script clock read through core and control collection, validation, accounting and report writes; excludes devcontainer CLI startup and final wall metadata/report formatting.
-
-External devcontainer command including CLI startup and final writes: **952.71 seconds**; tool `GNU /usr/bin/time`. This is an independently measured enclosing interval, not an additive phase.
 
 Reference budget: **300 seconds** for NVIDIA GeForce RTX 3060, quick/standard. Conditions: existing CUDA devcontainer and dependency cache; mandatory Rust binary rebuilds included.
 

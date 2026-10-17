@@ -1,6 +1,6 @@
 # GPU routine coverage
 
-Source accounting: `/workspaces/tenferro-benchmark/.worktrees/gpu-lane/data/results/nvidia-gpu/gpu/routine_selection/20261013_234113/case_status.json`.
+Source accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_234450/case_status.json`.
 
 Manifest version: 1; coverage: quick; effort: standard.
 

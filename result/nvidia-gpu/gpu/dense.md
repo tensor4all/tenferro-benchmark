@@ -2,33 +2,33 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/dense`
-- Suite file: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/routine_selection/20261014_005047/gpu_dense.yaml`
-- Timestamp: `2026-10-14T00:50:47.476431+00:00`
-- tenferro-rs commit: `9655b4e0daced17e0aa35a30d35710b069e10644`
-- Coverage: `full`; effort: `scan`; manifest version: `1`
-- Selection and case accounting: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/routine_selection/20261014_005047/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
+- Suite file: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116/gpu_dense.yaml`
+- Timestamp: `2026-10-16T23:51:16.689453+00:00`
+- tenferro-rs commit: `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`
+- Coverage: `full`; effort: `standard`; manifest version: `1`
+- Selection and case accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
 - Device: `cuda:0`
-- Name: `NVIDIA GeForce RTX 3060`
-- UUID: `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`
-- Memory: `12 GiB`
-- Driver version: `580.178.04`
+- Name: `NVIDIA A100 80GB PCIe`
+- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
+- Memory: `80 GiB`
+- Driver version: `580.126.09`
 - CUDA version: `13.0`
 - CUDA runtime: `12.9`
 - cuDNN version: `92700`
 
 ## CPU Information
 
-- Model: `Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz`
-- Vendor: `GenuineIntel`
-- Logical CPUs: `36`
+- Model: `AMD EPYC 7713P 64-Core Processor`
+- Vendor: `AuthenticAMD`
+- Logical CPUs: `64`
 - Sockets: `1`
-- Cores per socket: `18`
-- Threads per core: `2`
+- Cores per socket: `64`
+- Threads per core: `1`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-146-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -42,36 +42,36 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT | PyTorch (cuBLASLt preferred) | CUTLASS | PyTorch (cuSOLVER preferred) |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| dense_batched_matmul_f64_b1024_256 | unsupported | 186.372 | 187.507 | 161.301 | 186.366 | 187.506 | unsupported |
-| dense_batched_matmul_f64_b16_32 | unsupported | 0.045 | 0.025 | 0.080 | 0.023 | 0.180 | unsupported |
+| dense_batched_matmul_f64_b1024_256 | unsupported | 2.103 | 2.086 | 2.292 | 2.086 | 2.102 | unsupported |
+| dense_batched_matmul_f64_b16_32 | unsupported | 0.037 | 0.014 | 0.050 | 0.014 | 0.013 | unsupported |
 
 ## gpu/dense / eigh / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT | PyTorch (cuBLASLt preferred) | CUTLASS | PyTorch (cuSOLVER preferred) |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| dense_eigh_f64_1024 | unsupported | 74.329 | 75.052 | 75.457 | unsupported | unsupported | 74.291 |
+| dense_eigh_f64_1024 | unsupported | 14.427 | 14.320 | 14.105 | unsupported | unsupported | 14.410 |
 
 ## gpu/dense / matmul / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT | PyTorch (cuBLASLt preferred) | CUTLASS | PyTorch (cuSOLVER preferred) |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| dense_matmul_f64_3072 | unsupported | 313.711 | 313.685 | 271.637 | 313.692 | 319.476 | unsupported |
+| dense_matmul_f64_3072 | unsupported | 3.139 | 3.127 | 3.242 | 3.132 | 3.448 | unsupported |
 
 ## gpu/dense / qr / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT | PyTorch (cuBLASLt preferred) | CUTLASS | PyTorch (cuSOLVER preferred) |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| dense_qr_f64_1536 | unsupported | 95.293 | 95.771 | 96.981 | unsupported | unsupported | 94.554 |
+| dense_qr_f64_1536 | unsupported | 11.936 | 11.747 | 12.031 | unsupported | unsupported | 11.851 |
 
 ## gpu/dense / solve / allocating output
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT | PyTorch (cuBLASLt preferred) | CUTLASS | PyTorch (cuSOLVER preferred) |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| dense_solve_f64_1024_rhs16 | unsupported | 11.124 | 10.613 | 11.121 | unsupported | unsupported | 10.514 |
-| dense_solve_f64_2048_rhs128 | unsupported | 54.720 | 53.798 | 54.462 | unsupported | unsupported | 53.213 |
-| dense_solve_f64_2048_rhs16 | unsupported | 48.412 | 48.236 | 48.834 | unsupported | unsupported | 47.722 |
-| dense_solve_f64_4096_rhs16 | unsupported | 287.912 | 289.151 | 290.112 | unsupported | unsupported | 286.184 |
-| dense_solve_f64_512_rhs16 | unsupported | 3.951 | 3.009 | 3.458 | unsupported | unsupported | 2.951 |
+| dense_solve_f64_1024_rhs16 | unsupported | 4.823 | 4.426 | 4.658 | unsupported | unsupported | 4.462 |
+| dense_solve_f64_2048_rhs128 | unsupported | 9.736 | 9.144 | 9.465 | unsupported | unsupported | 9.157 |
+| dense_solve_f64_2048_rhs16 | unsupported | 10.499 | 10.224 | 10.783 | unsupported | unsupported | 10.322 |
+| dense_solve_f64_4096_rhs16 | unsupported | 27.910 | 27.531 | 28.175 | unsupported | unsupported | 27.701 |
+| dense_solve_f64_512_rhs16 | unsupported | 2.527 | 2.066 | 2.231 | unsupported | unsupported | 2.073 |
 
 ## gpu/dense / svd / allocating output
 
@@ -79,7 +79,7 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT | PyTorch (cuBLASLt preferred) | CUTLASS | PyTorch (cuSOLVER preferred) |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| dense_svd_f64_256 | unsupported | 81.779 | 84.387 | 82.555 | unsupported | unsupported | 27.318 |
+| dense_svd_f64_256 | unsupported | 12.075 | 12.190 | 11.934 | unsupported | unsupported | 23.143 |
 
 ## Sampling
 
@@ -87,53 +87,53 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| dense_matmul_f64_3072 | tenferro-cuda-eager | 1 | 313.711, 313.718, 313.709 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_batched_matmul_f64_b1024_256 | tenferro-cuda-eager | 1 | 186.398, 186.37, 186.372 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_qr_f64_1536 | tenferro-cuda-eager | 1 | 95.2926, 95.2836, 95.2966 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_solve_f64_512_rhs16 | tenferro-cuda-eager | 1 | 3.94802, 3.95127, 3.9747 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_solve_f64_1024_rhs16 | tenferro-cuda-eager | 1 | 11.2057, 11.1244, 11.0865 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_solve_f64_2048_rhs16 | tenferro-cuda-eager | 1 | 48.42, 48.4124, 48.3856 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_solve_f64_4096_rhs16 | tenferro-cuda-eager | 1 | 287.912, 287.93, 287.89 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_solve_f64_2048_rhs128 | tenferro-cuda-eager | 1 | 54.7201, 54.7467, 54.7146 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_svd_f64_256 | tenferro-cuda-eager | 1 | 81.7596, 81.7954, 81.7787 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_eigh_f64_1024 | tenferro-cuda-eager | 1 | 76.294, 74.3287, 74.3141 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_batched_matmul_f64_b16_32 | tenferro-cuda-eager | 64 | 2.89721, 2.85005, 2.82484 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| dense_matmul_f64_3072 | pytorch-cuda | 1 | 313.677, 313.685, 313.69 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_batched_matmul_f64_b1024_256 | pytorch-cuda | 1 | 187.508, 187.507, 187.501 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_qr_f64_1536 | pytorch-cuda | 1 | 95.7712, 95.7659, 95.774 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_512_rhs16 | pytorch-cuda | 1 | 3.03009, 3.00932, 3.00776 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_1024_rhs16 | pytorch-cuda | 1 | 10.6364, 10.6101, 10.6127 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_2048_rhs16 | pytorch-cuda | 1 | 48.2059, 48.2365, 48.2471 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_4096_rhs16 | pytorch-cuda | 1 | 289.15, 289.151, 289.182 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_2048_rhs128 | pytorch-cuda | 1 | 53.8056, 53.7984, 53.7788 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_svd_f64_256 | pytorch-cuda | 1 | 84.3921, 84.383, 84.3871 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_eigh_f64_1024 | pytorch-cuda | 1 | 75.1058, 75.0523, 75.0422 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_batched_matmul_f64_b16_32 | pytorch-cuda | 128 | 3.17693, 3.16658, 3.25604 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_matmul_f64_3072 | jax-cuda | 1 | 271.655, 271.63, 271.637 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_batched_matmul_f64_b1024_256 | jax-cuda | 1 | 161.301, 161.282, 161.323 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_qr_f64_1536 | jax-cuda | 1 | 96.9171, 96.9805, 97.1109 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_512_rhs16 | jax-cuda | 1 | 3.3962, 3.45881, 3.45812 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_1024_rhs16 | jax-cuda | 1 | 11.1069, 11.1214, 11.1292 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_2048_rhs16 | jax-cuda | 1 | 48.764, 48.8339, 48.8678 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_4096_rhs16 | jax-cuda | 1 | 290.255, 290.112, 289.952 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_2048_rhs128 | jax-cuda | 1 | 54.4583, 54.4999, 54.4618 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_svd_f64_256 | jax-cuda | 1 | 82.5924, 82.5553, 82.5427 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_eigh_f64_1024 | jax-cuda | 1 | 75.4566, 75.326, 75.5547 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_batched_matmul_f64_b16_32 | jax-cuda | 32 | 2.58553, 2.55184, 2.55438 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_matmul_f64_3072 | cublaslt | 1 | 313.683, 313.692, 313.695 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_batched_matmul_f64_b1024_256 | cublaslt | 1 | 186.379, 186.366, 186.361 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_batched_matmul_f64_b16_32 | cublaslt | 128 | 3.33568, 2.90349, 2.91529 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_matmul_f64_3072 | cutlass | 1 | 319.47, 319.477, 319.476 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
-| dense_batched_matmul_f64_b1024_256 | cutlass | 1 | 187.506, 187.507, 187.501 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
-| dense_batched_matmul_f64_b16_32 | cutlass | 16 | 2.88003, 2.87918, 2.87918 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
-| dense_qr_f64_1536 | cusolver | 1 | 94.5635, 94.5535, 94.5497 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_512_rhs16 | cusolver | 1 | 2.95772, 2.94987, 2.95083 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_1024_rhs16 | cusolver | 1 | 10.5171, 10.5139, 10.5107 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_2048_rhs16 | cusolver | 1 | 47.7323, 47.7146, 47.7223 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_4096_rhs16 | cusolver | 1 | 286.014, 286.26, 286.184 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_solve_f64_2048_rhs128 | cusolver | 1 | 53.2128, 53.2142, 53.2009 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_svd_f64_256 | cusolver | 1 | 27.3666, 27.3181, 27.2871 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| dense_eigh_f64_1024 | cusolver | 1 | 74.2914, 74.2639, 74.3494 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_matmul_f64_3072 | tenferro-cuda-eager | 1 | 3.14339, 3.14138, 3.13752, 3.13594, 3.13655, 3.14303, 3.13908 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_batched_matmul_f64_b1024_256 | tenferro-cuda-eager | 1 | 2.10437, 2.10323, 2.1024, 2.10211, 2.10299, 2.1032, 2.10466 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_qr_f64_1536 | tenferro-cuda-eager | 1 | 11.9363, 11.9349, 11.9319, 11.9765, 11.9535 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_solve_f64_512_rhs16 | tenferro-cuda-eager | 1 | 2.52387, 2.52693, 2.5171, 2.54744, 2.55244 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_solve_f64_1024_rhs16 | tenferro-cuda-eager | 1 | 4.83715, 4.816, 4.81487, 4.82268, 4.82367 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_solve_f64_2048_rhs16 | tenferro-cuda-eager | 1 | 10.5161, 10.4674, 10.4722, 10.4986, 10.5016 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_solve_f64_4096_rhs16 | tenferro-cuda-eager | 1 | 27.8763, 27.9933, 27.8838, 27.9564, 27.9099 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_solve_f64_2048_rhs128 | tenferro-cuda-eager | 1 | 9.75648, 9.72352, 9.73571, 9.73006, 9.74428 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_svd_f64_256 | tenferro-cuda-eager | 1 | 12.0918, 12.1224, 12.0753, 12.0545, 12.0637 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_eigh_f64_1024 | tenferro-cuda-eager | 1 | 14.3881, 14.4599, 14.4483, 14.4269, 14.4095 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_batched_matmul_f64_b16_32 | tenferro-cuda-eager | 64 | 2.35889, 2.29623, 2.41794, 2.3003, 2.38111, 2.2771, 2.36131 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| dense_matmul_f64_3072 | pytorch-cuda | 1 | 3.12909, 3.13013, 3.12632, 3.12719, 3.12753, 3.12708, 3.1273 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_batched_matmul_f64_b1024_256 | pytorch-cuda | 1 | 2.08738, 2.0862, 2.08647, 2.08412, 2.08503, 2.08635, 2.09305 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_qr_f64_1536 | pytorch-cuda | 1 | 11.767, 11.7439, 11.7474, 11.8425, 11.7362 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_512_rhs16 | pytorch-cuda | 1 | 2.05412, 2.06578, 2.17212, 2.07118, 2.06046 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_1024_rhs16 | pytorch-cuda | 1 | 4.66464, 4.42614, 4.43731, 4.42247, 4.42399 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_2048_rhs16 | pytorch-cuda | 1 | 10.2385, 10.213, 10.2096, 10.2241, 10.3391 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_4096_rhs16 | pytorch-cuda | 1 | 27.531, 27.5737, 27.5182, 27.5552, 27.503 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_2048_rhs128 | pytorch-cuda | 1 | 9.14144, 9.1516, 9.14376, 9.16298, 9.13548 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_svd_f64_256 | pytorch-cuda | 1 | 12.2069, 12.1742, 12.1899, 12.183, 12.1918 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_eigh_f64_1024 | pytorch-cuda | 1 | 14.3117, 14.3459, 14.2974, 14.3203, 14.3505 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_batched_matmul_f64_b16_32 | pytorch-cuda | 128 | 1.70825, 1.76374, 1.77592, 1.81131, 1.76997, 1.78344, 1.76636 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_matmul_f64_3072 | jax-cuda | 1 | 3.23079, 3.24402, 3.23827, 3.24005, 3.26625, 3.24172, 3.2536 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_batched_matmul_f64_b1024_256 | jax-cuda | 1 | 2.2915, 2.31997, 2.29084, 2.2921, 2.32542, 2.31744, 2.28285 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_qr_f64_1536 | jax-cuda | 1 | 12.0567, 12.0287, 12.0312, 12.0533, 12.0176 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_512_rhs16 | jax-cuda | 1 | 2.2401, 2.25735, 2.23124, 2.22191, 2.22884 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_1024_rhs16 | jax-cuda | 1 | 4.65765, 4.67249, 4.6488, 4.66291, 4.64712 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_2048_rhs16 | jax-cuda | 1 | 10.7827, 10.811, 10.8369, 10.7611, 10.7569 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_4096_rhs16 | jax-cuda | 1 | 28.1755, 28.1263, 28.1578, 28.2273, 28.1972 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_2048_rhs128 | jax-cuda | 1 | 9.42903, 9.45631, 9.53516, 9.46499, 9.48351 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_svd_f64_256 | jax-cuda | 1 | 11.9608, 11.9339, 11.9311, 11.9343, 11.9468 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_eigh_f64_1024 | jax-cuda | 1 | 14.1244, 14.0925, 14.1011, 14.1046, 14.1569 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_batched_matmul_f64_b16_32 | jax-cuda | 64 | 3.25731, 3.24902, 3.22076, 3.25995, 3.22971, 3.20465, 3.22677 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_matmul_f64_3072 | cublaslt | 1 | 3.13965, 3.13606, 3.12996, 3.1324, 3.13182, 3.13156, 3.13141 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_batched_matmul_f64_b1024_256 | cublaslt | 1 | 2.0958, 2.08943, 2.08659, 2.08437, 2.08646, 2.08475, 2.08582 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_batched_matmul_f64_b16_32 | cublaslt | 128 | 1.74073, 1.73096, 1.8108, 1.73806, 1.75035, 1.77648, 1.86539 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_matmul_f64_3072 | cutlass | 1 | 3.4493, 3.4467, 3.44821, 3.45912, 3.44746, 3.44354, 3.45005 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
+| dense_batched_matmul_f64_b1024_256 | cutlass | 1 | 2.10512, 2.10371, 2.10242, 2.10118, 2.10167, 2.09849, 2.10121 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
+| dense_batched_matmul_f64_b16_32 | cutlass | 256 | 3.4133, 3.41263, 3.41157, 3.41228, 3.41744, 3.41261, 3.41247 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
+| dense_qr_f64_1536 | cusolver | 1 | 11.8798, 11.8422, 11.8313, 11.871, 11.8514 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_512_rhs16 | cusolver | 1 | 2.08749, 2.07462, 2.06915, 2.06594, 2.0734 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_1024_rhs16 | cusolver | 1 | 4.45358, 4.47299, 4.45873, 4.48708, 4.46242 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_2048_rhs16 | cusolver | 1 | 10.2929, 10.3147, 10.3297, 10.3342, 10.322 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_4096_rhs16 | cusolver | 1 | 27.7011, 27.6908, 27.7154, 27.719, 27.6646 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_solve_f64_2048_rhs128 | cusolver | 1 | 9.13728, 9.15738, 9.1565, 9.15777, 9.14361 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_svd_f64_256 | cusolver | 1 | 23.3661, 23.1217, 23.1427, 23.1435, 23.1058 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| dense_eigh_f64_1024 | cusolver | 1 | 14.3712, 14.4096, 14.3967, 14.429, 14.4772 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
 
 ## Output retention bounds
 

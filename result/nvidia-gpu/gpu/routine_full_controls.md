@@ -1,8 +1,8 @@
 # GPU routine latency and state controls
 
-Source: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/routine_controls/20261014_005047`.
+Source: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_controls/20261016_235116`.
 
-Manifest 1; coverage full; effort scan.
+Manifest 1; coverage full; effort standard.
 
 Timing controls measured and state controls observed: yes.
 
@@ -10,9 +10,9 @@ State/counter controls contain no timed samples. Verification-only and unselecte
 
 Revision/features mismatch across lanes: False.
 
-Raw run: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/perf_issues/20261014_005047_timing`; tenferro-rs `9655b4e0daced17e0aa35a30d35710b069e10644`; harness `25f190048045c01cb363384ba45b2a0b0b640db8`; GPU UUID `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`.
+Raw run: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/perf_issues/20261016_235116_timing`; tenferro-rs `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`; harness `f94171e1f76a246bdaee4f2e008ffc74149a6d5f`; GPU UUID `GPU-530977e1-4968-9283-4129-9fbec3e66542`.
 
-Raw run: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/perf_issues/20261014_005047_state`; tenferro-rs `9655b4e0daced17e0aa35a30d35710b069e10644`; harness `25f190048045c01cb363384ba45b2a0b0b640db8`; GPU UUID `GPU-ed896702-ca5c-93f6-2537-06fffdac4a91`.
+Raw run: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/perf_issues/20261016_235116_state`; tenferro-rs `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`; harness `f94171e1f76a246bdaee4f2e008ffc74149a6d5f`; GPU UUID `GPU-530977e1-4968-9283-4129-9fbec3e66542`.
 
 | Classification | Count |
 |---|---:|
@@ -36,36 +36,36 @@ Times are per declared unit, including host dispatch and native completion synch
 
 | Case | Scope | Unit | Calls/sequence | Samples | Median µs | IQR µs | Host enqueue µs |
 |---|---|---|---:|---:|---:|---:|---:|
-| shape_stream_f64_n16_fixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 3 | 901.386 | 46.537 | 891.7 |
-| shape_stream_f64_n16_mixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 3 | 879.968 | 10.655 | 870.115 |
-| shape_stream_f64_n16_fresh_latency | shape_stream_diagnostic | sequence | 8 | 3 | 642.964 | 14.973 | 627.797 |
-| shape_stream_f64_n16_capacity-thrash_latency | shape_stream_diagnostic | sequence | 73 | 3 | 5316.040 | 75.566 | 5291.871 |
-| shape_stream_f64_n16_equal-shape-strides_latency | shape_stream_diagnostic | sequence | 32 | 3 | 930.873 | 9.790 | 920.998 |
-| shape_stream_f64_n64_fixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 3 | 844.515 | 6.490 | 833.648 |
-| shape_stream_f64_n64_mixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 3 | 830.603 | 12.230 | 821.761 |
-| shape_stream_f64_n64_fresh_latency | shape_stream_diagnostic | sequence | 8 | 3 | 549.571 | 5.587 | 536.657 |
-| shape_stream_f64_n64_capacity-thrash_latency | shape_stream_diagnostic | sequence | 73 | 3 | 5469.088 | 332.582 | 5461.512 |
-| shape_stream_f64_n64_equal-shape-strides_latency | shape_stream_diagnostic | sequence | 32 | 3 | 958.991 | 16.315 | 949.596 |
-| alloc_zero_f64_alloc-zero-within-callback_0el | steady_state | allocation | — | 3 | 5.572 | 0.151 | — |
-| alloc_zero_f64_alloc-zero-per-callback_0el | session_entry_diagnostic | allocation | — | 3 | 12.832 | 0.525 | — |
-| alloc_zero_f64_host-zero-upload_0el | steady_state | allocation | — | 3 | 4.271 | 0.117 | — |
-| alloc_zero_f64_alloc-fill-per-callback_0el | session_entry_diagnostic | allocation | — | 3 | 12.275 | 0.021 | — |
-| alloc_zero_f64_alloc-zero-within-callback_16el | steady_state | allocation | — | 3 | 10.337 | 0.067 | — |
-| alloc_zero_f64_alloc-zero-per-callback_16el | session_entry_diagnostic | allocation | — | 3 | 17.252 | 0.117 | — |
-| alloc_zero_f64_host-zero-upload_16el | steady_state | allocation | — | 3 | 26.967 | 4.939 | — |
-| alloc_zero_f64_alloc-fill-per-callback_16el | session_entry_diagnostic | allocation | — | 3 | 20.660 | 1.218 | — |
-| alloc_zero_f64_alloc-zero-within-callback_512el | steady_state | allocation | — | 3 | 8.975 | 0.052 | — |
-| alloc_zero_f64_alloc-zero-per-callback_512el | session_entry_diagnostic | allocation | — | 3 | 18.755 | 0.493 | — |
-| alloc_zero_f64_host-zero-upload_512el | steady_state | allocation | — | 3 | 28.827 | 5.411 | — |
-| alloc_zero_f64_alloc-fill-per-callback_512el | session_entry_diagnostic | allocation | — | 3 | 19.307 | 0.754 | — |
-| alloc_zero_f64_alloc-zero-within-callback_32768el | steady_state | allocation | — | 3 | 10.930 | 0.117 | — |
-| alloc_zero_f64_alloc-zero-per-callback_32768el | session_entry_diagnostic | allocation | — | 3 | 21.186 | 0.961 | — |
-| alloc_zero_f64_host-zero-upload_32768el | steady_state | allocation | — | 3 | 128.910 | 3.243 | — |
-| alloc_zero_f64_alloc-fill-per-callback_32768el | session_entry_diagnostic | allocation | — | 3 | 22.192 | 0.573 | — |
-| alloc_zero_f64_alloc-zero-within-callback_2097152el | steady_state | allocation | — | 3 | 51.436 | 0.091 | — |
-| alloc_zero_f64_alloc-zero-per-callback_2097152el | session_entry_diagnostic | allocation | — | 3 | 51.959 | 0.248 | — |
-| alloc_zero_f64_host-zero-upload_2097152el | steady_state | allocation | — | 3 | 2377.011 | 40.841 | — |
-| alloc_zero_f64_alloc-fill-per-callback_2097152el | session_entry_diagnostic | allocation | — | 3 | 51.614 | 0.100 | — |
+| shape_stream_f64_n16_fixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 653.155 | 23.885 | 642.084 |
+| shape_stream_f64_n16_mixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 639.315 | 9.919 | 628.705 |
+| shape_stream_f64_n16_fresh_latency | shape_stream_diagnostic | sequence | 8 | 7 | 360.494 | 5.820 | 347.804 |
+| shape_stream_f64_n16_capacity-thrash_latency | shape_stream_diagnostic | sequence | 73 | 7 | 3257.715 | 171.966 | 3245.934 |
+| shape_stream_f64_n16_equal-shape-strides_latency | shape_stream_diagnostic | sequence | 32 | 7 | 708.647 | 5.394 | 695.076 |
+| shape_stream_f64_n64_fixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 753.619 | 24.776 | 741.729 |
+| shape_stream_f64_n64_mixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 640.845 | 8.415 | 630.134 |
+| shape_stream_f64_n64_fresh_latency | shape_stream_diagnostic | sequence | 8 | 7 | 340.093 | 9.296 | 326.593 |
+| shape_stream_f64_n64_capacity-thrash_latency | shape_stream_diagnostic | sequence | 73 | 7 | 3007.966 | 302.721 | 2996.665 |
+| shape_stream_f64_n64_equal-shape-strides_latency | shape_stream_diagnostic | sequence | 32 | 7 | 664.255 | 3.020 | 652.985 |
+| alloc_zero_f64_alloc-zero-within-callback_0el | steady_state | allocation | — | 7 | 3.052 | 0.168 | — |
+| alloc_zero_f64_alloc-zero-per-callback_0el | session_entry_diagnostic | allocation | — | 7 | 11.476 | 0.182 | — |
+| alloc_zero_f64_host-zero-upload_0el | steady_state | allocation | — | 7 | 3.939 | 0.065 | — |
+| alloc_zero_f64_alloc-fill-per-callback_0el | session_entry_diagnostic | allocation | — | 7 | 13.067 | 0.596 | — |
+| alloc_zero_f64_alloc-zero-within-callback_16el | steady_state | allocation | — | 7 | 11.688 | 0.834 | — |
+| alloc_zero_f64_alloc-zero-per-callback_16el | session_entry_diagnostic | allocation | — | 7 | 16.384 | 0.906 | — |
+| alloc_zero_f64_host-zero-upload_16el | steady_state | allocation | — | 7 | 31.347 | 16.003 | — |
+| alloc_zero_f64_alloc-fill-per-callback_16el | session_entry_diagnostic | allocation | — | 7 | 18.493 | 0.172 | — |
+| alloc_zero_f64_alloc-zero-within-callback_512el | steady_state | allocation | — | 7 | 11.354 | 0.115 | — |
+| alloc_zero_f64_alloc-zero-per-callback_512el | session_entry_diagnostic | allocation | — | 7 | 19.201 | 0.271 | — |
+| alloc_zero_f64_host-zero-upload_512el | steady_state | allocation | — | 7 | 24.100 | 11.719 | — |
+| alloc_zero_f64_alloc-fill-per-callback_512el | session_entry_diagnostic | allocation | — | 7 | 20.574 | 1.431 | — |
+| alloc_zero_f64_alloc-zero-within-callback_32768el | steady_state | allocation | — | 7 | 11.652 | 0.149 | — |
+| alloc_zero_f64_alloc-zero-per-callback_32768el | session_entry_diagnostic | allocation | — | 7 | 18.909 | 0.374 | — |
+| alloc_zero_f64_host-zero-upload_32768el | steady_state | allocation | — | 7 | 158.631 | 0.523 | — |
+| alloc_zero_f64_alloc-fill-per-callback_32768el | session_entry_diagnostic | allocation | — | 7 | 21.792 | 0.622 | — |
+| alloc_zero_f64_alloc-zero-within-callback_2097152el | steady_state | allocation | — | 7 | 14.451 | 1.053 | — |
+| alloc_zero_f64_alloc-zero-per-callback_2097152el | session_entry_diagnostic | allocation | — | 7 | 20.125 | 0.490 | — |
+| alloc_zero_f64_host-zero-upload_2097152el | steady_state | allocation | — | 7 | 1077.326 | 3.015 | — |
+| alloc_zero_f64_alloc-fill-per-callback_2097152el | session_entry_diagnostic | allocation | — | 7 | 24.103 | 0.767 | — |
 
 ## Untimed state observations
 
@@ -83,8 +83,8 @@ Plan bytes and workspace describe public extension retention, not the whole allo
 | shape_stream_f64_n64_fresh_counters | `{"entries_after": 8, "entries_before": 0, "evictions": 0, "hits": 0, "misses": 8, "observed_in_flight_peak": 0, "plan_bytes": 6232, "workspace_bytes": 16777216}` |
 | shape_stream_f64_n64_capacity-thrash_counters | `{"entries_after": 64, "entries_before": 0, "evictions": 9, "hits": 0, "misses": 73, "observed_in_flight_peak": 0, "plan_bytes": 49016, "workspace_bytes": 16777216}` |
 | shape_stream_f64_n64_equal-shape-strides_counters | `{"entries_after": 2, "entries_before": 2, "evictions": 0, "hits": 32, "misses": 0, "observed_in_flight_peak": 0, "plan_bytes": 1648, "workspace_bytes": 16777216}` |
-| vendor_churn_f64_cycles8 | `{"cycles": 8, "free_bytes_after": 11825446912, "free_bytes_before": 11844321280, "rss_bytes_after": 728494080, "rss_bytes_before": 727916544, "rss_growth_bytes": 577536}` |
-| vendor_churn_f64_cycles64 | `{"cycles": 64, "free_bytes_after": 11768823808, "free_bytes_before": 11844321280, "rss_bytes_after": 728231936, "rss_bytes_before": 727523328, "rss_growth_bytes": 708608}` |
+| vendor_churn_f64_cycles8 | `{"cycles": 8, "free_bytes_after": 84493008896, "free_bytes_before": 84509786112, "rss_bytes_after": 738738176, "rss_bytes_before": 738168832, "rss_growth_bytes": 569344}` |
+| vendor_churn_f64_cycles64 | `{"cycles": 64, "free_bytes_after": 84493008896, "free_bytes_before": 84509786112, "rss_bytes_after": 738533376, "rss_bytes_before": 737943552, "rss_growth_bytes": 589824}` |
 
 ## Sequence/cache contracts
 

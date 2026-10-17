@@ -1,6 +1,6 @@
 # GPU routine latency and state controls
 
-Source: `/workspaces/tenferro-benchmark/.worktrees/gpu-lane/data/results/nvidia-gpu/gpu/routine_controls/20261013_234113`.
+Source: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_controls/20261016_234450`.
 
 Manifest 1; coverage quick; effort standard.
 
@@ -10,9 +10,9 @@ State/counter controls contain no timed samples. Verification-only and unselecte
 
 Revision/features mismatch across lanes: False.
 
-Raw run: `/workspaces/tenferro-benchmark/.worktrees/gpu-lane/data/results/nvidia-gpu/gpu/perf_issues/20261013_234113_timing`; tenferro-rs `9655b4e0daced17e0aa35a30d35710b069e10644`; harness `9e89674e200526e294a01595152425befafd53f5`; GPU UUID `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`.
+Raw run: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/perf_issues/20261016_234450_timing`; tenferro-rs `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`; harness `f94171e1f76a246bdaee4f2e008ffc74149a6d5f`; GPU UUID `GPU-530977e1-4968-9283-4129-9fbec3e66542`.
 
-Raw run: `/workspaces/tenferro-benchmark/.worktrees/gpu-lane/data/results/nvidia-gpu/gpu/perf_issues/20261013_234113_state`; tenferro-rs `9655b4e0daced17e0aa35a30d35710b069e10644`; harness `9e89674e200526e294a01595152425befafd53f5`; GPU UUID `GPU-ed896702-ca5c-93f6-2537-06fffdac4a91`.
+Raw run: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/perf_issues/20261016_234450_state`; tenferro-rs `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`; harness `f94171e1f76a246bdaee4f2e008ffc74149a6d5f`; GPU UUID `GPU-530977e1-4968-9283-4129-9fbec3e66542`.
 
 | Classification | Count |
 |---|---:|
@@ -26,7 +26,7 @@ Raw run: `/workspaces/tenferro-benchmark/.worktrees/gpu-lane/data/results/nvidia
 | verification_only | 0 |
 | missing | 0 |
 | failed | 0 |
-| noisy | 0 |
+| noisy | 1 |
 | duplicates | 0 |
 | unexpected | 0 |
 
@@ -36,16 +36,16 @@ Times are per declared unit, including host dispatch and native completion synch
 
 | Case | Scope | Unit | Calls/sequence | Samples | Median µs | IQR µs | Host enqueue µs |
 |---|---|---|---:|---:|---:|---:|---:|
-| shape_stream_f64_n16_fixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 785.383 | 70.959 | 776.767 |
-| shape_stream_f64_n16_mixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 813.807 | 12.607 | 803.876 |
-| shape_stream_f64_n16_fresh_latency | shape_stream_diagnostic | sequence | 8 | 7 | 520.794 | 18.157 | 508.945 |
-| shape_stream_f64_n64_fixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 817.924 | 19.279 | 809.364 |
-| shape_stream_f64_n64_mixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 869.455 | 57.114 | 861.072 |
-| shape_stream_f64_n64_fresh_latency | shape_stream_diagnostic | sequence | 8 | 7 | 526.355 | 14.366 | 515.889 |
-| alloc_zero_f64_alloc-zero-within-callback_16el | steady_state | allocation | — | 7 | 8.924 | 0.767 | — |
-| alloc_zero_f64_alloc-zero-per-callback_16el | session_entry_diagnostic | allocation | — | 7 | 18.897 | 0.425 | — |
-| alloc_zero_f64_alloc-zero-within-callback_32768el | steady_state | allocation | — | 7 | 11.370 | 0.645 | — |
-| alloc_zero_f64_alloc-zero-per-callback_32768el | session_entry_diagnostic | allocation | — | 7 | 21.055 | 1.672 | — |
+| shape_stream_f64_n16_fixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 833.900 | 78.377 | 819.93 |
+| shape_stream_f64_n16_mixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 801.230 | 35.312 | 789.869 |
+| shape_stream_f64_n16_fresh_latency | shape_stream_diagnostic | sequence | 8 | 7 | 422.715 | 15.971 | 415.545 |
+| shape_stream_f64_n64_fixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 657.344 | 26.560 | 646.454 |
+| shape_stream_f64_n64_mixed-warm_latency | shape_stream_diagnostic | sequence | 32 | 7 | 638.123 | 8.125 | 627.953 |
+| shape_stream_f64_n64_fresh_latency | shape_stream_diagnostic | sequence | 8 | 7 | 355.283 | 7.495 | 340.963 |
+| alloc_zero_f64_alloc-zero-within-callback_16el | steady_state | allocation | — | 7 | 11.756 | 0.067 | — |
+| alloc_zero_f64_alloc-zero-per-callback_16el | session_entry_diagnostic | allocation | — | 7 | 14.917 | 0.699 | — |
+| alloc_zero_f64_alloc-zero-within-callback_32768el | steady_state | allocation | — | 7 | 15.048 | 2.649 | — |
+| alloc_zero_f64_alloc-zero-per-callback_32768el | session_entry_diagnostic | allocation | — | 7 | 28.166 | 0.382 | — |
 
 ## Untimed state observations
 
@@ -59,8 +59,8 @@ Plan bytes and workspace describe public extension retention, not the whole allo
 | shape_stream_f64_n64_fixed-warm_counters | `{"entries_after": 1, "entries_before": 1, "evictions": 0, "hits": 32, "misses": 0, "observed_in_flight_peak": 0, "plan_bytes": 884, "workspace_bytes": 16777216}` |
 | shape_stream_f64_n64_mixed-warm_counters | `{"entries_after": 3, "entries_before": 3, "evictions": 0, "hits": 32, "misses": 0, "observed_in_flight_peak": 0, "plan_bytes": 2412, "workspace_bytes": 16777216}` |
 | shape_stream_f64_n64_fresh_counters | `{"entries_after": 8, "entries_before": 0, "evictions": 0, "hits": 0, "misses": 8, "observed_in_flight_peak": 0, "plan_bytes": 6232, "workspace_bytes": 16777216}` |
-| vendor_churn_f64_cycles8 | `{"cycles": 8, "free_bytes_after": 11825446912, "free_bytes_before": 11844321280, "rss_bytes_after": 729649152, "rss_bytes_before": 729075712, "rss_growth_bytes": 573440}` |
-| vendor_churn_f64_cycles64 | `{"cycles": 64, "free_bytes_after": 11768823808, "free_bytes_before": 11844321280, "rss_bytes_after": 728559616, "rss_bytes_before": 727908352, "rss_growth_bytes": 651264}` |
+| vendor_churn_f64_cycles8 | `{"cycles": 8, "free_bytes_after": 84493008896, "free_bytes_before": 84509786112, "rss_bytes_after": 737939456, "rss_bytes_before": 737304576, "rss_growth_bytes": 634880}` |
+| vendor_churn_f64_cycles64 | `{"cycles": 64, "free_bytes_after": 84493008896, "free_bytes_before": 84509786112, "rss_bytes_after": 738598912, "rss_bytes_before": 738025472, "rss_growth_bytes": 573440}` |
 
 ## Sequence/cache contracts
 
@@ -159,7 +159,7 @@ None.
 
 ## noisy
 
-None.
+- `alloc_zero_f64_alloc-zero-within-callback_32768el`
 
 ## unselected
 

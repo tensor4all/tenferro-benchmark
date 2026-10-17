@@ -1,8 +1,8 @@
 # GPU routine coverage
 
-Source accounting: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/routine_selection/20261014_005047/case_status.json`.
+Source accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116/case_status.json`.
 
-Manifest version: 1; coverage: full; effort: scan.
+Manifest version: 1; coverage: full; effort: standard.
 
 Measured coverage complete: no.
 
@@ -14,7 +14,7 @@ Verification-only, unsupported, missing and unselected rows are not measured cov
 | unsupported | 32 |
 | failed | 0 |
 | missing | 0 |
-| noisy | 0 |
+| noisy | 1 |
 | verification_only | 0 |
 | raw_samples_unavailable | 0 |
 | expected | 95 |
@@ -338,7 +338,7 @@ None.
 
 ## noisy
 
-None.
+- `gpu/sparse:sparse_synthetic_4m_64m_spmv_f64:ginkgo`
 
 ## unselected
 
