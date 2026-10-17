@@ -4,16 +4,10 @@ import unittest
 from pathlib import Path
 
 from scripts.ci.check_gpu_run import bundle_run, validate_records
+from scripts.ci.collect_gpu_pages_results import publish_bundle
 
 
-class GpuRunBundleTests(unittest.TestCase):
-    """The RunPod workflow still builds a validated artifact bundle.
-
-    The bundle is no longer overlaid on the GitHub Pages dashboard (the site
-    publishes the repository's A100 results under result/nvidia-gpu), but the
-    build-time validation is still exercised here.
-    """
-
+class PublicationTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -39,11 +33,12 @@ class GpuRunBundleTests(unittest.TestCase):
         bundle_run(self.root, self.timestamp, [Path('dense.yaml')],
                    ['tenferro-cuda-trace'], self.bundle)
 
-    def test_complete_run_bundles_report_and_raw_data(self):
+    def test_complete_run_publishes_report_and_raw_data(self):
         self.build()
-        self.assertTrue((self.bundle / 'publication.json').exists())
-        self.assertEqual((self.bundle / 'result/nvidia-gpu/gpu/dense.md').read_text(), 'new measured report')
-        self.assertTrue((self.bundle / 'data/results/nvidia-gpu/gpu/dense' / self.timestamp / 'records.jsonl').exists())
+        site = self.root / 'site'
+        self.assertEqual(publish_bundle(self.bundle, site, {}), 1)
+        self.assertEqual((site / 'result/nvidia-gpu/gpu/dense.md').read_text(), 'new measured report')
+        self.assertTrue((site / 'raw/nvidia-gpu/gpu/dense' / self.timestamp / 'records.jsonl').exists())
 
     def test_runtime_failed_run_keeps_diagnostics_without_publication_receipt(self):
         self.row['status'] = 'runtime_failed'
@@ -68,6 +63,46 @@ class GpuRunBundleTests(unittest.TestCase):
             bundle_run(self.root, self.timestamp, [Path('dense.yaml')],
                        ['tenferro-cuda-trace', 'pytorch-cuda'], self.bundle)
 
+    def test_requested_backend_not_declared_by_suite_is_not_expected(self):
+        self.suite.write_text('suite_id: gpu/dense\nbackends: [tenferro-cuda-trace]\n'
+                              'problems: [{id: matmul}]\n')
+        bundle_run(self.root, self.timestamp, [Path('dense.yaml')],
+                   ['tenferro-cuda-trace', 'pytorch-cuda'], self.bundle)
+        self.assertTrue((self.bundle / 'publication.json').exists())
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_modified_report_is_rejected(self):
+        self.build()
+        (self.bundle / 'result/nvidia-gpu/gpu/dense.md').write_text('unverified report')
+        with self.assertRaises(ValueError):
+            publish_bundle(self.bundle, self.root / 'site', {})
+
+    def test_older_bundle_cannot_overwrite_newer_suite(self):
+        self.build()
+        site = self.root / 'site'
+        seen = {}
+        publish_bundle(self.bundle, site, seen)
+        self.assertEqual(publish_bundle(self.bundle, site, seen), 0)
+
+    def test_old_unchecked_snapshot_is_not_published(self):
+        self.assertEqual(publish_bundle(self.root, self.root / 'site', {}), 0)
+
+    def test_rerun_with_newer_measurements_replaces_older_suite(self):
+        self.build()
+        site = self.root / 'site'
+        seen = {}
+        publish_bundle(self.bundle, site, seen)
+        receipt = self.bundle / 'publication.json'
+        # A workflow rerun retains its old creation date but samples at a new timestamp.
+        import shutil
+        newer = '20261009_120000'
+        old_run = self.bundle / 'data/results/nvidia-gpu/gpu/dense' / self.timestamp
+        new_run = old_run.with_name(newer)
+        shutil.copytree(old_run, new_run)
+        manifest = json.loads(receipt.read_text())
+        manifest['timestamp'] = newer
+        entry = manifest['suites'][0]
+        entry['files'] = {path.replace(self.timestamp, newer): digest
+                          for path, digest in entry['files'].items()}
+        receipt.write_text(json.dumps(manifest))
+        self.assertEqual(publish_bundle(self.bundle, site, seen), 1)
+        self.assertEqual(seen['gpu/dense'], newer)

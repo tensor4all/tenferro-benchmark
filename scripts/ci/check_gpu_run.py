@@ -67,7 +67,9 @@ def bundle_run(root: Path, timestamp: str, suites: list[Path], backends: list[st
         target = bundle / run_relative
         # Preserve diagnostics even if validation below rejects this invocation.
         shutil.copytree(run, target, dirs_exist_ok=True)
-        expected = {(p['id'], b) for p in suite['problems'] for b in backends}
+        # A suite only runs the requested backends it declares (run_gpu_suite.sh).
+        declared = suite.get('backends', backends)
+        expected = {(p['id'], b) for p in suite['problems'] for b in backends if b in declared}
         validate_records(run / 'records.jsonl', suite_id, expected)
         report_relative = Path('result/nvidia-gpu') / f'{suite_id}.md'
         report = bundle / report_relative
