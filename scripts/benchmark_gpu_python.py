@@ -745,6 +745,81 @@ def _run_cusparse(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
 # Data generation (numpy-based, framework-agnostic)
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Synthetic sparse-matrix cache
+#
+# The large synthetic CSR fixtures are deterministic, but each backend runs in
+# its own process (scripts/run_gpu_suite.sh), so without a cache every backend
+# regenerates the same multi-GB CSR matrix. Cache it keyed by problem id + seed
+# + shape under GPU_BENCH_SPARSE_CACHE_DIR (set by the runner to
+# <run-dir>/cache) or data/cache/gpu_sparse, and verify the stored identity
+# before reuse. Generation and cache I/O happen outside any timed region.
+# ---------------------------------------------------------------------------
+
+def _sparse_cache_dir() -> Path:
+    override = os.environ.get("GPU_BENCH_SPARSE_CACHE_DIR")
+    if override:
+        return Path(override)
+    return PROJECT_DIR / "data" / "cache" / "gpu_sparse"
+
+
+def _sparse_cache_meta(problem: dict) -> dict[str, int]:
+    spec = problem["sparse"]
+    return {
+        "seed": int(problem.get("data", {}).get("seed", 0)),
+        "rows": int(spec["rows"]),
+        "cols": int(spec["cols"]),
+        "nnz": int(spec["nnz"]),
+        "rhs_cols": int(spec.get("rhs_cols", 1)) if problem["op"] == "spmm" else 0,
+    }
+
+
+def _sparse_cache_path(problem: dict) -> Path:
+    meta = _sparse_cache_meta(problem)
+    name = (f"{problem['id']}_seed{meta['seed']}_{meta['rows']}x{meta['cols']}"
+            f"_nnz{meta['nnz']}.npz")
+    return _sparse_cache_dir() / name
+
+
+def _load_sparse_cache(problem: dict):
+    import numpy as np
+    path = _sparse_cache_path(problem)
+    if not path.exists():
+        return None
+    meta = _sparse_cache_meta(problem)
+    try:
+        with np.load(path) as archive:
+            stored = {key: int(archive[key].item())
+                      for key in ("seed", "rows", "cols", "nnz", "rhs_cols")}
+            if stored != meta:
+                return None
+            row_idx = archive["row_idx"]
+            col_idx = archive["col_idx"]
+            values = archive["values"]
+            x = archive["x"]
+    except (OSError, KeyError, ValueError):
+        return None
+    if row_idx.shape != (meta["nnz"],) or col_idx.shape != (meta["nnz"],) or values.shape != (meta["nnz"],):
+        return None
+    return {"op": problem["op"], "rows": meta["rows"], "cols": meta["cols"],
+            "row_idx": row_idx, "col_idx": col_idx, "values": values, "x": x}
+
+
+def _store_sparse_cache(problem: dict, data: dict) -> None:
+    import numpy as np
+    path = _sparse_cache_path(problem)
+    meta = _sparse_cache_meta(problem)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp.npz")
+    np.savez(
+        tmp,
+        row_idx=data["row_idx"], col_idx=data["col_idx"], values=data["values"], x=data["x"],
+        seed=np.array(meta["seed"]), rows=np.array(meta["rows"]), cols=np.array(meta["cols"]),
+        nnz=np.array(meta["nnz"]), rhs_cols=np.array(meta["rhs_cols"]),
+    )
+    os.replace(tmp, path)
+
+
 def _make_data_np(problem: dict) -> dict:
     """Return raw numpy arrays + metadata for a problem."""
     import numpy as np
@@ -838,6 +913,9 @@ def _make_data_np(problem: dict) -> dict:
         return {"op": op, "A": A}
 
     if op in ("spmv", "spmm"):
+        cached = _load_sparse_cache(problem)
+        if cached is not None:
+            return cached
         p = problem["sparse"]
         rows, cols, nnz = p["rows"], p["cols"], p["nnz"]
         rhs_cols = p.get("rhs_cols", 1) if op == "spmm" else None
@@ -846,8 +924,10 @@ def _make_data_np(problem: dict) -> dict:
         col_idx = rng.integers(0, cols, nnz)
         values = rng.standard_normal(nnz).astype(f64)
         x = rng.standard_normal(cols).astype(f64) if op == "spmv" else rng.standard_normal((cols, rhs_cols)).astype(f64)
-        return {"op": op, "rows": rows, "cols": cols,
+        data = {"op": op, "rows": rows, "cols": cols,
                 "row_idx": row_idx, "col_idx": col_idx, "values": values, "x": x}
+        _store_sparse_cache(problem, data)
+        return data
 
     raise ValueError(f"unsupported op: {op}")
 

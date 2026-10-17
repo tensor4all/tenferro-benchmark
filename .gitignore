@@ -214,6 +214,7 @@ plans/
 # Benchmark results (machine-specific)
 data/results/
 data/verification/
+data/cache/
 result/**
 !result/
 !result/**/
