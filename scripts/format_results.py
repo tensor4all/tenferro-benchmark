@@ -296,6 +296,7 @@ def build_summary(
                 iqr=iqr_ms if status == "ok" else None,
                 group=group,
                 verified=status == "ok",
+                reason="harness SKIP" if status == "skipped" else None,
             )
         )
     return report_summary.build_document(

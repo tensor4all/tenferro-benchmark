@@ -34,7 +34,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_512",
@@ -60,7 +61,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_256",
@@ -86,7 +88,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_512",
@@ -112,7 +115,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_jvp_f64_256",
@@ -138,7 +142,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_jvp_f64_512",
@@ -164,7 +169,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_vjp_f64_256",
@@ -190,7 +196,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_lu_vjp_f64_512",
@@ -216,7 +223,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
@@ -242,7 +250,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_jvp_f64_512",
@@ -268,7 +277,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
@@ -294,7 +304,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_qr_vjp_f64_512",
@@ -320,7 +331,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_jvp_f64_256",
@@ -346,7 +358,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_jvp_f64_512",
@@ -372,7 +385,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_vjp_f64_256",
@@ -398,7 +412,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_solve_vjp_f64_512",
@@ -424,7 +439,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_256",
@@ -450,7 +466,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_512",
@@ -476,7 +493,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_256",
@@ -502,7 +520,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     },
     {
       "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_512",
@@ -528,7 +547,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": true
+      "verified": true,
+      "reason": "run_prepared cannot borrow an entered session; standard operation timing would include internal setup"
     }
   ]
 }

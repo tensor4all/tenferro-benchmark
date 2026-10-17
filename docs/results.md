@@ -97,6 +97,12 @@ The sidecar uses schema version 1 (`summary-schema-v1`):
 }
 ```
 
+A row may also carry `"reason": "..."` when a backend is `unsupported` for
+a recorded harness-policy reason (for example tenferro trace
+`trace-session-setup-unavailable`). The dashboard treats those as neutral
+"not measured" rows rather than anomalies; an `unsupported` row without a
+recorded reason stays an anomaly.
+
 Backends keep their report column ids (`tenferro-cuda-eager`,
 `tenferro-cuda-trace`, `pytorch-cuda`, `jax-cuda`, `cublaslt`, ...; CPU suites
 their own ids and thread counts). `unit` is `ms` for the dense/linalg/permutation
@@ -115,12 +121,25 @@ listed without a summary; the dashboard shows a report link only.
 ## Dashboard
 
 `scripts/generate_dashboard.py` renders the static GitHub Pages dashboard
-(`index.html` plus one page per report). It reads the summaries, computes
-geometric-mean tenferro/reference ratios per suite, and flags per-case anomalies
-(`eager/torch >= 1.5`, `eager/jax >= 3`, `trace/eager >= 1.3`, a non-`ok`
-tenferro status, or a `>= 1.25x` regression against the previous committed
-summary for the same suite and hardware). The Pages publish workflow checks out
-with `fetch-depth: 0` so the regression comparison can walk `git log`.
+(`index.html` plus one page per report). It reads the summaries and computes
+geometric-mean tenferro/reference ratios from one per-suite mapping table:
+
+- Operation suites default to `vs PyTorch` and `vs JAX` over the tenferro
+eager/trace arms.
+- `gpu/permutation` uses `vs PyTorch` and `vs cuTENSOR` over the
+`tenferro-cuda-transpose`, `to_contiguous`, and `destination-reuse` arms.
+- `gpu/perf_issues` uses `vs reference`, pairing each tenferro case with its
+`reference_for` arm from `data/instances/gpu_perf_issues.json`; the suite page
+lists the worst ratios.
+- `gpu/sparse` has no tenferro column and stays `-`.
+
+Anomaly flags are `eager/torch >= 1.5`, `eager/jax >= 3`, `trace/eager >= 1.3`,
+a genuine tenferro status anomaly (failed/error/verification failure/missing or
+an `unsupported` row without a recorded reason), or a `>= 1.25x` regression
+against the previous committed summary for the same suite and hardware. Policy
+`unsupported` rows are counted separately in the neutral "not measured" column.
+The Pages publish workflow checks out with `fetch-depth: 0` so the regression
+comparison can walk `git log`.
 
 ```bash
 uv run python scripts/generate_dashboard.py --result-dir result --output-dir _site

@@ -373,6 +373,7 @@ def build_summary(run_dir, target, suite_key="cpu"):
                 iqr=iqr,
                 group=row.get("measurement_scope"),
                 verified=row.get("correctness_status") == "passed",
+                reason=(row.get("unsupported_reason") or row.get("error")) if status != "ok" else None,
             )
         )
     return report_summary.build_document(

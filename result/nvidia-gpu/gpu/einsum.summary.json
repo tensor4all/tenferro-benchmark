@@ -61,7 +61,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     }
   ]
 }

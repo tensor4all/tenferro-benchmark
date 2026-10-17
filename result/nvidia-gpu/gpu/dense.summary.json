@@ -25,7 +25,8 @@
       "backend": "cusolver",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cusolver not selected for dense_batched_matmul_f64_b1024_256: "
     },
     {
       "case": "dense_batched_matmul_f64_b1024_256",
@@ -69,7 +70,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_batched_matmul_f64_b16_32",
@@ -86,7 +88,8 @@
       "backend": "cusolver",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cusolver not selected for dense_batched_matmul_f64_b16_32: "
     },
     {
       "case": "dense_batched_matmul_f64_b16_32",
@@ -130,7 +133,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_eigh_f64_1024",
@@ -138,7 +142,8 @@
       "backend": "cublaslt",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cublaslt not selected for dense_eigh_f64_1024"
     },
     {
       "case": "dense_eigh_f64_1024",
@@ -155,7 +160,8 @@
       "backend": "cutlass",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cutlass not selected for dense_eigh_f64_1024"
     },
     {
       "case": "dense_eigh_f64_1024",
@@ -190,7 +196,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_matmul_f64_3072",
@@ -207,7 +214,8 @@
       "backend": "cusolver",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cusolver not selected for dense_matmul_f64_3072: "
     },
     {
       "case": "dense_matmul_f64_3072",
@@ -251,7 +259,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_qr_f64_1536",
@@ -259,7 +268,8 @@
       "backend": "cublaslt",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cublaslt not selected for dense_qr_f64_1536"
     },
     {
       "case": "dense_qr_f64_1536",
@@ -276,7 +286,8 @@
       "backend": "cutlass",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cutlass not selected for dense_qr_f64_1536"
     },
     {
       "case": "dense_qr_f64_1536",
@@ -311,7 +322,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_solve_f64_1024_rhs16",
@@ -319,7 +331,8 @@
       "backend": "cublaslt",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cublaslt not selected for dense_solve_f64_1024_rhs16"
     },
     {
       "case": "dense_solve_f64_1024_rhs16",
@@ -336,7 +349,8 @@
       "backend": "cutlass",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cutlass not selected for dense_solve_f64_1024_rhs16"
     },
     {
       "case": "dense_solve_f64_1024_rhs16",
@@ -371,7 +385,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_solve_f64_2048_rhs128",
@@ -379,7 +394,8 @@
       "backend": "cublaslt",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cublaslt not selected for dense_solve_f64_2048_rhs128"
     },
     {
       "case": "dense_solve_f64_2048_rhs128",
@@ -396,7 +412,8 @@
       "backend": "cutlass",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cutlass not selected for dense_solve_f64_2048_rhs128"
     },
     {
       "case": "dense_solve_f64_2048_rhs128",
@@ -431,7 +448,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_solve_f64_2048_rhs16",
@@ -439,7 +457,8 @@
       "backend": "cublaslt",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cublaslt not selected for dense_solve_f64_2048_rhs16"
     },
     {
       "case": "dense_solve_f64_2048_rhs16",
@@ -456,7 +475,8 @@
       "backend": "cutlass",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cutlass not selected for dense_solve_f64_2048_rhs16"
     },
     {
       "case": "dense_solve_f64_2048_rhs16",
@@ -491,7 +511,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_solve_f64_4096_rhs16",
@@ -499,7 +520,8 @@
       "backend": "cublaslt",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cublaslt not selected for dense_solve_f64_4096_rhs16"
     },
     {
       "case": "dense_solve_f64_4096_rhs16",
@@ -516,7 +538,8 @@
       "backend": "cutlass",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cutlass not selected for dense_solve_f64_4096_rhs16"
     },
     {
       "case": "dense_solve_f64_4096_rhs16",
@@ -551,7 +574,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_solve_f64_512_rhs16",
@@ -559,7 +583,8 @@
       "backend": "cublaslt",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cublaslt not selected for dense_solve_f64_512_rhs16"
     },
     {
       "case": "dense_solve_f64_512_rhs16",
@@ -576,7 +601,8 @@
       "backend": "cutlass",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cutlass not selected for dense_solve_f64_512_rhs16"
     },
     {
       "case": "dense_solve_f64_512_rhs16",
@@ -611,7 +637,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     },
     {
       "case": "dense_svd_f64_256",
@@ -619,7 +646,8 @@
       "backend": "cublaslt",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cublaslt not selected for dense_svd_f64_256"
     },
     {
       "case": "dense_svd_f64_256",
@@ -636,7 +664,8 @@
       "backend": "cutlass",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "cutlass not selected for dense_svd_f64_256"
     },
     {
       "case": "dense_svd_f64_256",
@@ -671,7 +700,8 @@
       "backend": "tenferro-cuda-trace",
       "median": null,
       "status": "unsupported",
-      "verified": false
+      "verified": false,
+      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
     }
   ]
 }

@@ -29,6 +29,7 @@ import math
 import shutil
 import subprocess
 import sys
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
@@ -80,6 +81,69 @@ EAGER_TORCH_FLAG = 1.5
 EAGER_JAX_FLAG = 3.0
 TRACE_EAGER_FLAG = 1.3
 REGRESSION_FLAG = 1.25
+
+
+@dataclass(frozen=True)
+class Arm:
+    """A tenferro column arm, resolved to the first backend id present."""
+
+    label: str
+    backends: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class RatioRule:
+    """One landing-page ratio column for a suite.
+
+    ``reference_backends`` is the set of competitor ids; the best (smallest)
+    successful median of that set is the denominator.  ``per_case_reference``
+    resolves the denominator per case from the perf-issue reference map
+    instead of a fixed backend set.
+    """
+
+    column: str
+    reference_backends: tuple[str, ...]
+    arms: tuple[Arm, ...]
+    per_case_reference: bool = False
+
+
+EAGER_TRACE_ARMS = (
+    Arm("eager", (TENFERRO_EAGER, "tenferro-eager")),
+    Arm("trace", (TENFERRO_TRACE, "tenferro-trace")),
+)
+PERMUTATION_ARMS = (
+    Arm("transpose", ("tenferro-cuda-transpose",)),
+    Arm("to_contiguous", ("tenferro-cuda-to-contiguous",)),
+    Arm("copy_into", ("tenferro-cuda-destination-reuse",)),
+)
+DEFAULT_RATIO_RULES = (
+    RatioRule("vs PyTorch", tuple(sorted(PYTORCH_BACKENDS)), EAGER_TRACE_ARMS),
+    RatioRule("vs JAX", tuple(sorted(JAX_BACKENDS)), EAGER_TRACE_ARMS),
+)
+# suite_id -> ratio columns.  Anything not listed uses DEFAULT_RATIO_RULES;
+# an explicit empty tuple means the suite has no tenferro comparison column.
+RATIO_RULES: dict[str, tuple[RatioRule, ...]] = {
+    "gpu/permutation": (
+        RatioRule("vs PyTorch", ("pytorch-cuda",), PERMUTATION_ARMS),
+        RatioRule("vs cuTENSOR", ("cutensor",), PERMUTATION_ARMS),
+    ),
+    "gpu/perf_issues": (RatioRule("vs reference", (), (), per_case_reference=True),),
+    "gpu/sparse": (),
+}
+RATIO_COLUMN_ORDER = ("vs PyTorch", "vs JAX", "vs cuTENSOR", "vs reference")
+# The perf-issue cases declare their reference arms in this instance file.
+GPU_PERF_ISSUES_INSTANCES = Path("data/instances/gpu_perf_issues.json")
+
+
+def ratio_rules_for(suite_id: str) -> tuple[RatioRule, ...]:
+    return RATIO_RULES.get(suite_id, DEFAULT_RATIO_RULES)
+
+
+def ratio_columns(suite_ids: Iterable[str]) -> list[str]:
+    present = {rule.column for suite_id in suite_ids for rule in ratio_rules_for(suite_id)}
+    return [column for column in RATIO_COLUMN_ORDER if column in present] + sorted(
+        present - set(RATIO_COLUMN_ORDER)
+    )
 
 REPORT_QUALITY_NOTICE = (
     "<strong>Reference-quality indicators only.</strong> These numbers were "
@@ -166,39 +230,148 @@ def geometric_mean(values: Iterable[float]) -> float | None:
     return math.exp(sum(math.log(value) for value in values) / len(values))
 
 
-def suite_ratios(document: dict[str, Any]) -> dict[str, Any]:
-    """Geometric-mean tenferro/reference ratios for a summary.
+def is_tenferro(row: dict[str, Any]) -> bool:
+    return str(row.get("backend", "")).startswith("tenferro")
 
-    Returns ``{"pytorch": {"eager": r, "trace": r, "count": n}, ...}``; a
-    ratio key is missing when no comparable case exists.
-    """
-    result: dict[str, Any] = {}
-    for label, references in (("pytorch", PYTORCH_BACKENDS), ("jax", JAX_BACKENDS)):
-        entry: dict[str, Any] = {}
-        for key, backend in (("eager", TENFERRO_EAGER), ("trace", TENFERRO_TRACE)):
-            ratios = []
-            for rows in case_rows(document).values():
-                numerator = row_median(rows, backend)
-                denominator = best_reference(rows, references)
-                if numerator is not None and denominator is not None and numerator > 0:
-                    ratios.append(numerator / denominator)
-            if ratios:
-                entry[key] = geometric_mean(ratios)
-        if entry:
-            entry["count"] = max(
-                sum(
-                    1
-                    for rows in case_rows(document).values()
-                    if any(
-                        row_median(rows, backend) is not None
-                        and best_reference(rows, references) is not None
-                        for backend in (TENFERRO_EAGER, TENFERRO_TRACE)
-                    )
-                ),
-                0,
-            )
-            result[label] = entry
+
+def is_neutral_unsupported(row: dict[str, Any]) -> bool:
+    """A tenferro row the harness explicitly did not measure by policy."""
+    return row.get("status") == "unsupported" and bool(row.get("reason"))
+
+
+def is_tenferro_anomaly(row: dict[str, Any]) -> bool:
+    """True when a tenferro row is a genuine anomaly, not a policy skip."""
+    if not is_tenferro(row):
+        return False
+    status = row.get("status")
+    if status == "ok":
+        return row.get("verified") is False
+    if status == "unsupported":
+        return not bool(row.get("reason"))
+    return True
+
+
+def not_measured_cases(document: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    """Cases with tenferro rows that carry a harness-policy unsupported reason."""
+    result: dict[str, list[dict[str, Any]]] = {}
+    for case, rows in case_rows(document).items():
+        entries = [row for row in rows if is_tenferro(row) and is_neutral_unsupported(row)]
+        if entries:
+            result[case] = entries
     return result
+
+
+def arm_median(rows: list[dict[str, Any]], arm: Arm) -> float | None:
+    for backend in arm.backends:
+        value = row_median(rows, backend)
+        if value is not None:
+            return value
+    return None
+
+
+def load_perf_reference_map(path: Path) -> dict[str, list[str]]:
+    """Map a perf-issue tenferro case id to its reference case ids."""
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    references: dict[str, list[str]] = {}
+    for entry in data:
+        target = entry.get("reference_for")
+        if target:
+            references.setdefault(target, []).append(entry["id"])
+    return references
+
+
+def case_ratio_entries(
+    rows: list[dict[str, Any]],
+    case: str,
+    rule: RatioRule,
+    reference_map: dict[str, list[str]],
+    grouped: dict[str, list[dict[str, Any]]],
+) -> dict[str, float]:
+    """Return ``{arm_label: tenferro/reference ratio}`` for one case and rule."""
+    entries: dict[str, float] = {}
+    if rule.per_case_reference:
+        reference_values: list[float] = []
+        for reference_case in reference_map.get(case, []):
+            for row in grouped.get(reference_case, []):
+                if row.get("status") == "ok" and row.get("median"):
+                    reference_values.append(float(row["median"]))
+        if not reference_values:
+            return entries
+        denominator = min(reference_values)
+        for row in rows:
+            if is_tenferro(row) and row.get("status") == "ok" and row.get("median"):
+                entries[str(row.get("backend"))] = float(row["median"]) / denominator
+        return entries
+    references = set(rule.reference_backends)
+    for arm in rule.arms:
+        numerator = arm_median(rows, arm)
+        denominator = best_reference(rows, references)
+        if numerator is not None and denominator:
+            entries[arm.label] = numerator / denominator
+    return entries
+
+
+def suite_ratios(
+    document: dict[str, Any],
+    suite_id: str,
+    reference_map: dict[str, list[str]] | None = None,
+) -> dict[str, Any]:
+    """Geometric-mean tenferro/reference ratios per landing column.
+
+    Returns ``{column: {"arms": {arm_label: ratio}, "count": n}}``.
+    """
+    grouped = case_rows(document)
+    result: dict[str, Any] = {}
+    for rule in ratio_rules_for(suite_id):
+        arm_values: dict[str, list[float]] = {}
+        count = 0
+        for case, rows in grouped.items():
+            entries = case_ratio_entries(rows, case, rule, reference_map or {}, grouped)
+            if entries:
+                count += 1
+            for label, value in entries.items():
+                arm_values.setdefault(label, []).append(value)
+        if arm_values:
+            result[rule.column] = {
+                "arms": {
+                    label: geometric_mean(values) for label, values in arm_values.items() if values
+                },
+                "count": count,
+            }
+    return result
+
+
+def perf_reference_details(
+    document: dict[str, Any],
+    reference_map: dict[str, list[str]],
+) -> list[dict[str, Any]]:
+    """Per-case tenferro/reference ratios for perf-issue suites, worst first."""
+    grouped = case_rows(document)
+    details: list[dict[str, Any]] = []
+    for case, rows in grouped.items():
+        for row in rows:
+            if not is_tenferro(row) or row.get("status") != "ok" or row.get("median") is None:
+                continue
+            reference_values: list[tuple[float, str]] = []
+            for reference_case in reference_map.get(case, []):
+                for reference_row in grouped.get(reference_case, []):
+                    if reference_row.get("status") == "ok" and reference_row.get("median"):
+                        reference_values.append((float(reference_row["median"]), reference_case))
+            if not reference_values:
+                continue
+            denominator, reference_case = min(reference_values)
+            details.append({
+                "case": case,
+                "backend": str(row.get("backend")),
+                "median": float(row["median"]),
+                "reference_case": reference_case,
+                "reference": denominator,
+                "ratio": float(row["median"]) / denominator,
+            })
+    return sorted(details, key=lambda item: item["ratio"], reverse=True)
 
 
 def compute_case_flags(
@@ -221,10 +394,7 @@ def compute_case_flags(
         flags.append("eager/jax")
     if eager is not None and trace is not None and trace / eager >= TRACE_EAGER_FLAG:
         flags.append("trace/eager")
-    if any(
-        str(row.get("backend", "")).startswith("tenferro") and row.get("status") != "ok"
-        for row in rows
-    ):
+    if any(is_tenferro_anomaly(row) for row in rows):
         flags.append("status")
     if previous_rows:
         for row in rows:
@@ -361,16 +531,14 @@ def esc(value: Any) -> str:
 
 
 def render_ratio_cell(entry: dict[str, Any] | None) -> str:
-    if not entry:
+    if not entry or not entry.get("arms"):
         return '<td class="ratio-none">-</td>'
     parts = []
-    for key in ("eager", "trace"):
-        value = entry.get(key)
+    for label, value in entry["arms"].items():
         if value is None:
             continue
-        label = "eager" if key == "eager" else "trace"
         parts.append(
-            f'<span class="ratio {ratio_class(value)}">{label} {fmt_ratio(value)}</span>'
+            f'<span class="ratio {ratio_class(value)}">{esc(label)} {fmt_ratio(value)}</span>'
         )
     if not parts:
         return '<td class="ratio-none">-</td>'
@@ -490,6 +658,7 @@ thead th { position: sticky; top: 0; }
   display: inline-block; background: var(--flag-bg); color: var(--flag-fg);
   border-radius: 999px; padding: 0 .5rem; font-size: .78rem; margin: 0 .15rem .15rem 0;
 }
+.not-measured { color: var(--muted); font-weight: 600; }
 .bars { display: block; max-width: 100%; height: auto; margin: .4rem 0 1.2rem; }
 .chart-label { font-size: 11px; fill: var(--fg); font-family: inherit; }
 .chart-value { font-size: 11px; fill: var(--muted); font-family: inherit; }
@@ -561,30 +730,43 @@ def profile_header(profile: str, summaries: dict[tuple[str, str], dict[str, Any]
     return '<div class="profile-head">' + "".join(f"<span>{piece}</span>" for piece in pieces) + "</div>"
 
 
-def landing_ratios(
+def render_flags_cell(flags: dict[str, list[str]]) -> str:
+    if not flags:
+        return '<td><span class="muted">none</span></td>'
+    counts: dict[str, int] = {}
+    for case_flags in flags.values():
+        for flag in case_flags:
+            counts[flag] = counts.get(flag, 0) + 1
+    return (
+        f'<td><strong>{len(flags)}</strong> case(s): '
+        + " ".join(f'<span class="flag">{esc(flag)}×{count}</span>' for flag, count in sorted(counts.items()))
+        + "</td>"
+    )
+
+
+def render_not_measured_cell(neutral: dict[str, list[dict[str, Any]]]) -> str:
+    if not neutral:
+        return '<td><span class="muted">0</span></td>'
+    return f'<td><span class="not-measured">{len(neutral)}</span></td>'
+
+
+def landing_ratio_cells(
     document: dict[str, Any] | None,
-    previous_rows: list[dict[str, Any]] | None,
-) -> tuple[str, str, str]:
-    if document is None:
-        return '<td class="ratio-none">-</td>', '<td class="ratio-none">-</td>', '<td class="muted">-</td>'
-    ratios = suite_ratios(document)
-    flags = suite_flags(document, previous_rows)
-    flag_cells = '<span class="muted">none</span>'
-    if flags:
-        counts: dict[str, int] = {}
-        for case_flags in flags.values():
-            for flag in case_flags:
-                counts[flag] = counts.get(flag, 0) + 1
-        flag_cells = f'<strong>{len(flags)}</strong> case(s): ' + " ".join(
-            f'<span class="flag">{esc(flag)}×{count}</span>' for flag, count in sorted(counts.items())
-        )
-    return render_ratio_cell(ratios.get("pytorch")), render_ratio_cell(ratios.get("jax")), f"<td>{flag_cells}</td>"
+    suite_id: str,
+    reference_map: dict[str, list[str]],
+) -> dict[str, str]:
+    ratios = suite_ratios(document, suite_id, reference_map) if document else {}
+    return {
+        rule.column: render_ratio_cell(ratios.get(rule.column))
+        for rule in ratio_rules_for(suite_id)
+    }
 
 
 def render_landing(
     reports: list[tuple[str, str, Path]],
     summaries: dict[tuple[str, str], dict[str, Any]],
     previous_by_key: dict[tuple[str, str], list[dict[str, Any]] | None],
+    reference_map: dict[str, list[str]],
 ) -> str:
     profiles = ordered_profiles({profile for profile, _suite, _path in reports})
     all_diagnostics: dict[str, list[tuple[str, str, Path]]] = {}
@@ -616,22 +798,33 @@ def render_landing(
         if profile in GITHUB_HOSTED_PROFILES:
             body.append(f'<p class="notice">{REPORT_QUALITY_NOTICE}</p>')
         if maintained:
+            columns = ratio_columns(suite_id for _profile, suite_id, _report in maintained)
             body.append('<div class="table-wrap"><table>')
             body.append(
-                "<thead><tr><th>suite</th><th>tenferro vs PyTorch</th>"
-                "<th>tenferro vs JAX</th><th>flags</th><th>report</th></tr></thead>"
+                "<thead><tr><th>suite</th>"
+                + "".join(f"<th>{esc(column)}</th>" for column in columns)
+                + "<th>flags</th><th>not measured</th><th>report</th></tr></thead>"
             )
             body.append("<tbody>")
             for _profile, suite_id, report in sorted(maintained):
                 document = summaries.get((profile, suite_id))
-                pytorch_cell, jax_cell, flags_cell = landing_ratios(
-                    document, previous_by_key.get((profile, suite_id))
+                cells = landing_ratio_cells(document, suite_id, reference_map)
+                ratio_html = "".join(
+                    cells.get(column, '<td class="ratio-none">-</td>') for column in columns
                 )
+                flags = suite_flags(document, previous_by_key.get((profile, suite_id))) if document else {}
+                neutral = not_measured_cases(document) if document else {}
+                if document is None:
+                    flags_cell = '<td class="ratio-none">-</td>'
+                    neutral_cell = '<td class="ratio-none">-</td>'
+                else:
+                    flags_cell = render_flags_cell(flags)
+                    neutral_cell = render_not_measured_cell(neutral)
                 suite_dir = suite_id.split("/", 1)[0]
                 href = f"{profile}/{suite_dir}/{Path(report).stem}.html"
                 body.append(
                     f'<tr><td><code>{esc(suite_id)}</code></td>'
-                    f"{pytorch_cell}{jax_cell}{flags_cell}"
+                    f"{ratio_html}{flags_cell}{neutral_cell}"
                     f'<td><a href="{esc(href)}">report</a></td></tr>'
                 )
             body.append("</tbody></table></div>")
@@ -673,46 +866,60 @@ def render_diagnostics(diagnostics: dict[str, list[tuple[str, str, Path]]]) -> s
 # Suite page
 # ---------------------------------------------------------------------------
 
-def render_case_table(document: dict[str, Any], previous_rows: list[dict[str, Any]] | None) -> str:
-    unit = document.get("unit", "ms")
+def render_case_table(
+    document: dict[str, Any],
+    suite_id: str,
+    previous_rows: list[dict[str, Any]] | None,
+    reference_map: dict[str, list[str]],
+) -> str:
     flags = suite_flags(document, previous_rows)
+    neutral = not_measured_cases(document)
     grouped = case_rows(document)
+    rules = ratio_rules_for(suite_id)
     rows = []
     for case in sorted(grouped):
         rows_for_case = grouped[case]
-        eager, trace = tenferro_median(rows_for_case)
-        pytorch = best_reference(rows_for_case, PYTORCH_BACKENDS)
-        jax = best_reference(rows_for_case, JAX_BACKENDS)
-        eager_torch = eager / pytorch if eager is not None and pytorch else None
-        eager_jax = eager / jax if eager is not None and jax else None
-        trace_eager = trace / eager if trace is not None and eager else None
-        statuses = sorted(
-            {str(row.get("status")) for row in rows_for_case if str(row.get("backend", "")).startswith("tenferro")}
-        )
-        status_text = ", ".join(statuses) if statuses else "-"
+        cells = []
+        for rule in rules:
+            entries = case_ratio_entries(rows_for_case, case, rule, reference_map, grouped)
+            cells.append(render_ratio_cell({"arms": entries} if entries else None))
+        if case in neutral:
+            reasons = "; ".join(
+                f"{esc(row.get('backend'))}: {esc(row.get('reason') or '')}" for row in neutral[case]
+            )
+            note = f'<span class="not-measured">not measured</span> <span class="muted">{reasons}</span>'
+        else:
+            note = '<span class="muted">-</span>'
         flags_text = flag_badges(flags.get(case, [])) or '<span class="muted">-</span>'
         rows.append(
             f"<tr><td><code>{esc(case)}</code></td>"
             f"<td>{esc(rows_for_case[0].get('group', '') or '-')}</td>"
-            f'<td class="ratio {ratio_class(eager_torch)}">{fmt_ratio(eager_torch)}</td>'
-            f'<td class="ratio {ratio_class(eager_jax)}">{fmt_ratio(eager_jax)}</td>'
-            f'<td class="ratio {ratio_class(trace_eager)}">{fmt_ratio(trace_eager)}</td>'
-            f"<td>{status_text}</td><td>{flags_text}</td></tr>"
+            + "".join(cells)
+            + f"<td>{note}</td><td>{flags_text}</td></tr>"
         )
     flagged = [(case, flags[case]) for case in sorted(flags)]
-    flagged_html = ""
+    sections = []
     if flagged:
         items = "".join(
             f"<li><code>{esc(case)}</code> {flag_badges(case_flags)}</li>" for case, case_flags in flagged
         )
-        flagged_html = f"<h2>Flagged cases ({len(flagged)})</h2><ul>{items}</ul>"
+        sections.append(f"<h2>Flagged cases ({len(flagged)})</h2><ul>{items}</ul>")
+    if neutral:
+        items = "".join(
+            f"<li><code>{esc(case)}</code> <span class=\"not-measured\">not measured</span>: "
+            + "; ".join(f"{esc(row.get('backend'))} \u2014 {esc(row.get('reason') or '')}" for row in rows_)
+            + "</li>"
+            for case, rows_ in sorted(neutral.items())
+        )
+        sections.append(f"<h2>Not measured (harness policy) ({len(neutral)})</h2><ul>{items}</ul>")
     table = (
         '<div class="table-wrap"><table><thead><tr>'
-        "<th>case</th><th>group</th><th>eager/PyTorch</th><th>eager/JAX</th>"
-        "<th>trace/eager</th><th>tenferro status</th><th>flags</th>"
+        "<th>case</th><th>group</th>"
+        + "".join(f"<th>{esc(rule.column)}</th>" for rule in rules)
+        + "<th>not measured</th><th>flags</th>"
         "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>"
     )
-    return flagged_html + "<h2>Case ratios</h2>" + table
+    return "".join(sections) + "<h2>Case ratios</h2>" + table
 
 
 def render_charts(document: dict[str, Any]) -> str:
@@ -725,12 +932,39 @@ def render_charts(document: dict[str, Any]) -> str:
     return "".join(parts)
 
 
+def render_perf_reference_table(
+    document: dict[str, Any],
+    reference_map: dict[str, list[str]],
+    limit: int = 10,
+) -> str:
+    details = perf_reference_details(document, reference_map)
+    if not details:
+        return ""
+    unit = document.get("unit", "ns/op")
+    rows = "".join(
+        f"<tr><td><code>{esc(item['case'])}</code></td><td>{esc(item['backend'])}</td>"
+        f"<td>{fmt_median(item['median'], unit)}</td>"
+        f"<td><code>{esc(item['reference_case'])}</code></td>"
+        f"<td>{fmt_median(item['reference'], unit)}</td>"
+        f'<td class="ratio {ratio_class(item["ratio"])}">{fmt_ratio(item["ratio"])}</td></tr>'
+        for item in details[:limit]
+    )
+    return (
+        f"<h2>Worst ratios vs reference (top {min(limit, len(details))} of {len(details)})</h2>"
+        '<div class="table-wrap"><table><thead><tr>'
+        "<th>tenferro case</th><th>backend</th><th>tenferro</th>"
+        "<th>reference case</th><th>reference</th><th>ratio</th>"
+        "</tr></thead><tbody>" + rows + "</tbody></table></div>"
+    )
+
+
 def render_suite_page(
     profile: str,
     suite_id: str,
     report: Path,
     document: dict[str, Any] | None,
     previous_rows: list[dict[str, Any]] | None,
+    reference_map: dict[str, list[str]],
     markdown_html: str,
 ) -> str:
     body = [f"<p><a href=\"../../index.html\">&larr; all results</a></p>", f"<h1>{esc(suite_id)}</h1>"]
@@ -753,7 +987,9 @@ def render_suite_page(
     if profile in GITHUB_HOSTED_PROFILES:
         body.append(f'<p class="notice">{REPORT_QUALITY_NOTICE}</p>')
     if document:
-        body.append(render_case_table(document, previous_rows))
+        body.append(render_case_table(document, suite_id, previous_rows, reference_map))
+        if any(rule.per_case_reference for rule in ratio_rules_for(suite_id)):
+            body.append(render_perf_reference_table(document, reference_map))
         body.append(render_charts(document))
     body.append("<h2>Original report</h2>")
     body.append(markdown_html)
@@ -782,12 +1018,14 @@ def generate(
     baseline_dir: Path | None = None,
     git_repo: Path | None = None,
     git_result_dir: str = "result",
+    instances_dir: Path = GPU_PERF_ISSUES_INSTANCES.parent,
 ) -> int:
     reports = discover_reports(result_dir)
     if not reports:
         print(f"error: no reports found under {result_dir}", file=sys.stderr)
         return 1
     summaries = load_summaries(result_dir)
+    reference_map = load_perf_reference_map(instances_dir / GPU_PERF_ISSUES_INSTANCES.name)
     previous_by_key: dict[tuple[str, str], list[dict[str, Any]] | None] = {}
     for profile, suite_id, _report in reports:
         if (profile, suite_id) in MAINTAINED:
@@ -808,12 +1046,13 @@ def generate(
             report,
             document,
             previous_by_key.get((profile, suite_id)),
+            reference_map,
             render_markdown(report.read_text(encoding="utf-8")),
         )
         (target / f"{report.stem}.html").write_text(page_html, encoding="utf-8")
         shutil.copy2(report, target / report.name)
 
-    landing = render_landing(reports, summaries, previous_by_key)
+    landing = render_landing(reports, summaries, previous_by_key, reference_map)
     (output_dir / "index.html").write_text(landing, encoding="utf-8")
     print(f"generated dashboard in {output_dir} with {len(reports)} reports")
     return 0
@@ -827,6 +1066,7 @@ def main() -> int:
                         help="read previous summaries from this tree instead of git history")
     parser.add_argument("--git-repo", type=Path, default=Path("."))
     parser.add_argument("--git-result-dir", default="result")
+    parser.add_argument("--instances-dir", type=Path, default=GPU_PERF_ISSUES_INSTANCES.parent)
     args = parser.parse_args()
     return generate(
         args.result_dir,
@@ -834,6 +1074,7 @@ def main() -> int:
         args.baseline_dir,
         args.git_repo if args.baseline_dir is None else None,
         args.git_result_dir,
+        args.instances_dir,
     )
 
 

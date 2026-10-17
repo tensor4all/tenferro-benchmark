@@ -61,6 +61,7 @@ def make_row(
     iqr: float | None = None,
     group: str | None = None,
     verified: bool = False,
+    reason: str | None = None,
 ) -> dict[str, Any]:
     row: dict[str, Any] = {"case": str(case)}
     if group not in (None, ""):
@@ -71,6 +72,8 @@ def make_row(
         row["iqr"] = float(iqr)
     row["status"] = str(status)
     row["verified"] = bool(verified)
+    if reason:
+        row["reason"] = str(reason)
     return row
 
 
@@ -157,11 +160,18 @@ def rows_from_gpu_records(
         status = str(record.get("status", "unknown"))
         timing = record.get("timing") or {}
         verification = record.get("verification") or {}
+        execution = record.get("execution") or {}
         median = timing.get("median_ms")
         iqr = timing.get("iqr_ms")
         if status != "ok":
             median = None
             iqr = None
+        reason = None
+        if status == "unsupported":
+            reason = execution.get("unsupported_reason")
+            path = execution.get("execution_path")
+            if not reason and path and "unavailable" in str(path):
+                reason = str(path)
         case = record.get("problem_id") or record.get("case") or record.get("case_id")
         grp = group(record) if group is not None else record.get("op")
         rows.append(
@@ -173,6 +183,7 @@ def rows_from_gpu_records(
                 iqr=iqr,
                 group=grp,
                 verified=verification.get("status") == "passed",
+                reason=reason,
             )
         )
     return rows

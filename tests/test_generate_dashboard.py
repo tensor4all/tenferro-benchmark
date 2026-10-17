@@ -28,8 +28,8 @@ def summary_document(rows, *, hardware=None, timestamp="2026-10-17T00:00:00+00:0
     }
 
 
-def row(case, backend, median, status="ok", group="matmul"):
-    return {
+def row(case, backend, median, status="ok", group="matmul", reason=None):
+    result = {
         "case": case,
         "group": group,
         "backend": backend,
@@ -37,6 +37,9 @@ def row(case, backend, median, status="ok", group="matmul"):
         "status": status,
         "verified": status == "ok",
     }
+    if reason is not None:
+        result["reason"] = reason
+    return result
 
 
 class DashboardTests(unittest.TestCase):
@@ -83,13 +86,14 @@ class DashboardTests(unittest.TestCase):
             output,
             baseline_dir=self.baseline,
             git_repo=None,
+            instances_dir=self.root / "instances",
         )
 
     def test_two_summaries_produce_expected_ratios_and_flags(self):
         current = json.loads((self.result / "nvidia-gpu/gpu/dense.summary.json").read_text())
-        ratios = dashboard.suite_ratios(current)
-        self.assertAlmostEqual(ratios["pytorch"]["eager"], 1.0, places=6)
-        self.assertAlmostEqual(ratios["jax"]["eager"], (4.0 * 0.2) ** 0.5, places=6)
+        ratios = dashboard.suite_ratios(current, "gpu/dense")
+        self.assertAlmostEqual(ratios["vs PyTorch"]["arms"]["eager"], 1.0, places=6)
+        self.assertAlmostEqual(ratios["vs JAX"]["arms"]["eager"], (4.0 * 0.2) ** 0.5, places=6)
 
         grouped = dashboard.case_rows(current)
         flags_a = dashboard.compute_case_flags(grouped["case_a"], [row("case_a", "tenferro-cuda-eager", 10.0)])
@@ -99,6 +103,47 @@ class DashboardTests(unittest.TestCase):
         )
         flags_b = dashboard.compute_case_flags(grouped["case_b"])
         self.assertEqual(flags_b, ["status"])
+
+    def test_status_policy_is_not_an_anomaly(self):
+        neutral = row("case_n", "tenferro-cuda-trace", None, status="unsupported",
+                      reason="trace-session-setup-unavailable")
+        unexpected = row("case_u", "tenferro-cuda-eager", None, status="unsupported")
+        failed = row("case_f", "tenferro-cuda", None, status="failed", reason="bad launch")
+        self.assertTrue(dashboard.is_neutral_unsupported(neutral))
+        self.assertFalse(dashboard.is_tenferro_anomaly(neutral))
+        self.assertTrue(dashboard.is_tenferro_anomaly(unexpected))
+        self.assertTrue(dashboard.is_tenferro_anomaly(failed))
+        self.assertEqual(dashboard.compute_case_flags([neutral]), [])
+        self.assertEqual(dashboard.compute_case_flags([unexpected]), ["status"])
+        document = summary_document([neutral, unexpected, failed])
+        self.assertEqual(set(dashboard.not_measured_cases(document)), {"case_n"})
+        self.assertEqual(set(dashboard.suite_flags(document, None)), {"case_u", "case_f"})
+
+    def test_permutation_and_perf_issue_ratio_mapping(self):
+        permutation = summary_document([
+            row("pat", "tenferro-cuda-transpose", 2.0, group="pat"),
+            row("pat", "tenferro-cuda-to-contiguous", 1.0, group="pat"),
+            row("pat", "pytorch-cuda", 4.0, group="pat"),
+            row("pat", "cutensor", 2.0, group="pat"),
+        ])
+        ratios = dashboard.suite_ratios(permutation, "gpu/permutation")
+        self.assertEqual(set(ratios), {"vs PyTorch", "vs cuTENSOR"})
+        self.assertAlmostEqual(ratios["vs PyTorch"]["arms"]["transpose"], 0.5)
+        self.assertAlmostEqual(ratios["vs PyTorch"]["arms"]["to_contiguous"], 0.25)
+        self.assertAlmostEqual(ratios["vs cuTENSOR"]["arms"]["transpose"], 1.0)
+        self.assertAlmostEqual(ratios["vs cuTENSOR"]["arms"]["to_contiguous"], 0.5)
+
+        perf = summary_document([
+            row("transfer_tenferro_8B", "tenferro-cuda", 10.0, group="steady_state"),
+            row("transfer_cudarc_8B", "cudarc", 5.0, group="steady_state"),
+        ])
+        reference_map = {"transfer_tenferro_8B": ["transfer_cudarc_8B"]}
+        ratios = dashboard.suite_ratios(perf, "gpu/perf_issues", reference_map)
+        self.assertAlmostEqual(ratios["vs reference"]["arms"]["tenferro-cuda"], 2.0)
+        details = dashboard.perf_reference_details(perf, reference_map)
+        self.assertEqual(len(details), 1)
+        self.assertAlmostEqual(details[0]["ratio"], 2.0)
+        self.assertEqual(details[0]["reference_case"], "transfer_cudarc_8B")
 
     def test_landing_and_suite_pages_render(self):
         output = self.root / "site"

@@ -316,7 +316,8 @@
       "backend": "tenferro-cuda",
       "median": null,
       "status": "failed",
-      "verified": false
+      "verified": false,
+      "reason": "Error: \"unknown #2079 floor op dot_general\""
     },
     {
       "case": "eigh_batched_c64_n128_auto",

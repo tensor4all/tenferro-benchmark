@@ -350,6 +350,7 @@ def build_summary(
                 iqr=iqr,
                 group=record.get("label"),
                 verified=record.get("correctness") == "passed",
+                reason=(record.get("notes") if status != "ok" else None),
             )
         )
     return report_summary.build_document(
