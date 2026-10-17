@@ -9,7 +9,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def render(selection_dir, budget, controls_dir=None):
+def render(selection_dir, budget):
     plan = json.loads((selection_dir / "selection.json").read_text())
     wall = json.loads((selection_dir / "wall_command_complete.json").read_text())
     core = json.loads((selection_dir / "case_status.json").read_text())
@@ -24,9 +24,7 @@ def render(selection_dir, budget, controls_dir=None):
     core_seconds = max(value["command_seconds_through_this_suite"] for value in checkpoints)
     controls = None
     if wall["routine_controls_selected"]:
-        controls_root = (Path(controls_dir) if controls_dir is not None
-                         else gpu_root / "routine_controls" / selection_dir.name)
-        controls = json.loads((controls_root / "case_status.json").read_text())
+        controls = json.loads((gpu_root / "routine_controls" / selection_dir.name / "case_status.json").read_text())
     applicable = (plan["coverage"] == budget["coverage"] and plan["effort"] == budget["effort"]
                   and metadata["target_profile"] == budget["target_profile"]
                   and metadata["cuda"]["device_name"] == budget["device_name"]
@@ -69,12 +67,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("selection_dir", type=Path)
     parser.add_argument("--budget", type=Path, default=ROOT / "benchmarks/gpu/routine_budget.yaml")
-    parser.add_argument("--controls", type=Path, default=None,
-                        help="controls run directory; defaults to gpu/routine_controls/<selection name>")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(render(args.selection_dir, yaml.safe_load(args.budget.read_text()), args.controls))
+    args.output.write_text(render(args.selection_dir, yaml.safe_load(args.budget.read_text())))
 
 
 if __name__ == "__main__":

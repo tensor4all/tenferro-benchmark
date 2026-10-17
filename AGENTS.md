@@ -377,12 +377,13 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
 ```
 
 An unfiltered `BENCH_COVERAGE=full` run also writes the quick-profile routine
-reports (`routine_coverage.md`, `routine_controls.md`, `routine_workflow.md`)
-from the same records restricted to the quick manifest selection, so one full
-run regenerates both report families. The full-profile reports are the
-`routine_full_*.md` variants. The diagnostic `jax-cuda-eager` tensor-network
-path is opt-in via `GPU_BENCH_BACKENDS=jax-cuda-eager` (see
-`docs/gpu-routine-coverage.md`).
+coverage and control reports (`routine_coverage.md`, `routine_controls.md`)
+from the same records restricted to the quick manifest selection; the
+full-profile reports are the `routine_full_*.md` variants. The quick
+`routine_workflow.md` wall-time observation is not derived from a full run
+(its clocks would be the full campaign's), so a full run never overwrites it.
+The diagnostic `jax-cuda-eager` tensor-network path is opt-in via
+`GPU_BENCH_BACKENDS=jax-cuda-eager` (see `docs/gpu-routine-coverage.md`).
 
 For the GPU linalg JVP/VJP report (CPU `linalg_jvp_vjp` parity on CUDA):
 

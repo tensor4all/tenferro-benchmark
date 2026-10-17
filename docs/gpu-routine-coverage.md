@@ -35,15 +35,20 @@ session-entry cost next to the one-session-per-batch eager arm and the
 caller-held trace session. Unsupported implementations remain
 unsupported; selection does not establish implementation availability.
 
-An unfiltered `BENCH_COVERAGE=full` run also regenerates the quick-profile
-report family from the same records restricted to the quick manifest
-selection: `routine_coverage.md`, `routine_controls.md` and
-`routine_workflow.md` are the quick-profile reports, while the full-profile
-reports are mirrored to `routine_full_coverage.md`,
-`routine_full_controls.md` and `routine_full_workflow.md`. The quick selection
-itself is unchanged; a filterless quick run continues to write the quick
-reports only. This lets one full collection refresh both families instead of
-running the 27-pair quick profile only to rewrite its reports.
+An unfiltered `BENCH_COVERAGE=full` run also regenerates the derivable
+quick-profile results from the same records restricted to the quick manifest
+selection: `routine_coverage.md` (coverage accounting) and
+`routine_controls.md` (latency/state controls) are recomputed for the quick
+selection, while the full-profile reports are mirrored to
+`routine_full_coverage.md`, `routine_full_controls.md` and
+`routine_full_workflow.md`. The quick `routine_workflow.md` wall-time
+observation is **not** derived from a full run: its checkpoints would be the
+full campaign's clocks, so evaluating them against the quick budget would be a
+counterfactual. `routine_workflow.md` therefore keeps the last real quick
+campaign and a full run never overwrites it. The quick selection itself is
+unchanged; a filterless quick run writes the full quick report family. This
+lets one full collection refresh the quick coverage/controls instead of
+running the 27-pair quick profile only to rewrite them.
 
 The synthetic sparse fixtures are cached per run and reused across the
 `pytorch-cuda`, `cusparse` and `ginkgo` backend processes. `run_gpu_suite.sh`

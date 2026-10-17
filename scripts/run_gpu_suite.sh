@@ -104,7 +104,6 @@ if [[ "$COVERAGE" == full && "$FILTERED" == 0 && "${GPU_BENCH_VERIFY_ONLY:-0}" !
 fi
 SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection/$TIMESTAMP"
 QUICK_SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection_quick/$TIMESTAMP"
-QUICK_CONTROLS_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_controls_quick/$TIMESTAMP"
 mapfile -t SUITES < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
     --coverage "$COVERAGE" --effort "${BENCH_EFFORT:-standard}" \
     --backends "${GPU_BENCH_BACKENDS:-}" --problem "$PROBLEM_FILTER" \
@@ -344,6 +343,12 @@ PY
     "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
     if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
         cp "$MARKDOWN_OUT" "$REPORT_OUT"
+        # The formatter writes a dashboard summary sidecar next to the raw
+        # report; publish it next to the maintained Markdown under the same
+        # condition so the dashboard never shows a stale summary.
+        if [[ -f "${MARKDOWN_OUT%.md}.summary.json" ]]; then
+            cp "${MARKDOWN_OUT%.md}.summary.json" "${REPORT_OUT%.md}.summary.json"
+        fi
     fi
     "${PYTHON[@]}" - "$RUN_DIR/wall_command.json" "$COMMAND_START_NS" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$REPORT_START_NS" "$(wall_now)" <<'PY'
 import json, sys
@@ -411,11 +416,13 @@ if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
     "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$SELECTION_DIR" --output "$SELECTION_DIR/wall_report.md"
     if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
         if [[ "$QUICK_FROM_FULL" == 1 ]]; then
+            # A full campaign has no quick wall clock of its own. Publish the
+            # full-profile workflow report and leave the quick
+            # `routine_workflow.md` (from the last real quick campaign)
+            # untouched: a derived quick wall time would be a counterfactual,
+            # not a measurement, and must not be evaluated against the quick
+            # budget.
             cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_full_workflow.md"
-            cp "$SELECTION_DIR/wall_command_complete.json" "$QUICK_SELECTION_DIR/wall_command_complete.json"
-            "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$QUICK_SELECTION_DIR" \
-                --controls "$QUICK_CONTROLS_DIR" --output "$QUICK_SELECTION_DIR/wall_report.md"
-            cp "$QUICK_SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
         else
             cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
         fi
