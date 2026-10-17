@@ -90,12 +90,13 @@ The formatter rejects skipped verification, failed/debug rows, duplicate cells,
 missing selected cells and invalid sampling. Older AD reports containing only
 successful-execution checks are not numerically validated performance evidence.
 
-`Runtime::run_prepared` cannot borrow an entered session. Its standard large
-operation rows are timing-unsupported even if numerical execution passes.
-`gpu/linalg_ad_latency` explicitly measures repeated public calls including
-internal session entry, using `public_path_latency_including_internal_session_entry`.
-These small rows are latency diagnostics, not shared-session or GPU throughput
-comparisons.
+The standard operation rows run the prepared graph in one caller-held CUDA
+session (`Runtime::run_prepared_in`); each timed call includes the run's own
+stream-retirement barrier, so standard large-operation rows are timed without
+the public-path session entry. `gpu/linalg_ad_latency` separately measures
+repeated public calls including internal session entry, using
+`public_path_latency_including_internal_session_entry`. These small rows are
+latency diagnostics, not shared-session or GPU throughput comparisons.
 
 Check both suites on physical GPU1 without collecting operation timings or
 updating maintained reports:

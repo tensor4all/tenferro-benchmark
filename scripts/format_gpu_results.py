@@ -20,6 +20,7 @@ import report_summary
 PREFERRED_BACKENDS = [
     "tenferro-cuda-trace",
     "tenferro-cuda-eager",
+    "tenferro-cuda-eager-per-call-session",
     "pytorch-cuda",
     "jax-cuda",
     "jax-cuda-tree-jit",
@@ -33,6 +34,7 @@ PREFERRED_BACKENDS = [
 
 BACKEND_LABELS = {
     "tenferro-cuda-eager": "tenferro-rs CUDA eager",
+    "tenferro-cuda-eager-per-call-session": "tenferro-rs CUDA eager (per-call session)",
     "tenferro-cuda-trace": "tenferro-rs CUDA trace",
     "pytorch-cuda": "PyTorch CUDA",
     "jax-cuda": "JAX CUDA JIT",

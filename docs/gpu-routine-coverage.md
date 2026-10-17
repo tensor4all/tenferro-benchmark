@@ -27,7 +27,12 @@ with
 `GPU_BENCH_SUITE=benchmarks/gpu/tensornetwork.yaml GPU_BENCH_BACKENDS=jax-cuda-eager
 ./scripts/run_gpu_suite.sh` (an explicit filter selects full coverage). Optional
 elementwise suites
-participate when explicitly requested. Unsupported implementations remain
+participate when explicitly requested. The diagnostic
+`tenferro-cuda-eager-per-call-session` backend is also opt-in, not part of the
+default quick/full backend lists; request it with an explicit
+`GPU_BENCH_BACKENDS=tenferro-cuda-eager-per-call-session` filter to see
+session-entry cost next to the one-session-per-batch eager arm and the
+caller-held trace session. Unsupported implementations remain
 unsupported; selection does not establish implementation availability.
 
 An unfiltered `BENCH_COVERAGE=full` run also regenerates the quick-profile

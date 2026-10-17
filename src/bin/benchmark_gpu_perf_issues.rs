@@ -21,7 +21,8 @@ use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_gpu::cuda::cudarc::cublas::{result as cublas, sys as cublas_sys};
 use tenferro_gpu::cuda::{
-    download_tensor, upload_tensor, with_cuda_exec_session, CudaBackend, CudaDeviceId,
+    download_tensor, download_tensor_into, upload_tensor, with_cuda_exec_session, CudaBackend,
+    CudaDeviceId,
 };
 use tenferro_linalg::{EighDriver, EighOptions, SvdDriver, SvdOptions, TensorLinalgExt};
 use tenferro_runtime::TensorSessionOpsExt;
@@ -371,6 +372,96 @@ fn transfer(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
                         "host output allocation",
                     ]
                 },
+            )
+        }
+        "tenferro-into" => {
+            if up {
+                return Err("tenferro-into is a download (direction=down) arm".into());
+            }
+            let bk = backend(device)?;
+            let rt = bk.runtime().clone();
+            let host_t = host(vec![n], data.clone())?;
+            let resident = upload_tensor(&rt, &host_t)?;
+            rt.synchronize()?;
+            // Move the same Vec out and back on every call: `Option::take`
+            // preserves its capacity, so `download_tensor_into` refills one
+            // allocation instead of first-touching a new one.
+            let mut reuse: Option<Vec<f64>> = Some(Vec::new());
+            let buffer = reuse.take().expect("reuse buffer present");
+            reuse = Some(
+                download_tensor_into(&rt, &resident, buffer)
+                    .map_err(|e| format!("download_tensor_into round trip: {e}"))?,
+            );
+            let error = check_tol(
+                max_rel(reuse.as_deref().unwrap_or(&[]), &data),
+                0.0,
+                "round trip into a reused buffer",
+            )?;
+            let m = measure(timing, bytes, |it| {
+                timed(
+                    it,
+                    &mut || -> Result<()> {
+                        let buffer = reuse.take().expect("reused buffer retained");
+                        reuse = Some(
+                            download_tensor_into(&rt, &resident, buffer).map_err(
+                                |e| -> BoxError { format!("download_tensor_into: {e}").into() },
+                            )?,
+                        );
+                        Ok(())
+                    },
+                    &mut || Ok(()),
+                )
+            })?;
+            (
+                error,
+                m,
+                vec![
+                    "download_tensor_into into one caller-owned Vec reused across calls",
+                    "the copy synchronizes itself",
+                ],
+            )
+        }
+        "cudarc-pageable-fresh" => {
+            if up {
+                return Err("cudarc-pageable-fresh is a download (direction=down) arm".into());
+            }
+            let ctx = CudaContext::new(device)?;
+            let stream = ctx.new_stream()?;
+            let mut dev_buf = unsafe { stream.alloc::<f64>(n) }?;
+            let pageable = data.clone();
+            stream.memcpy_htod(&pageable, &mut dev_buf)?;
+            let mut check = vec![0.0; n];
+            stream.memcpy_dtoh(&dev_buf, &mut check)?;
+            stream.synchronize()?;
+            check_tol(
+                max_rel(&check, &data),
+                0.0,
+                "cudarc pageable fresh round trip",
+            )?;
+            let m = measure(timing, bytes, |it| {
+                timed(
+                    it,
+                    &mut || -> Result<Vec<f64>> {
+                        // A fresh destination per call, matching download_tensor's
+                        // fresh output allocation; this is the apples-to-apples
+                        // cudarc reference for the tenferro download arms.
+                        let mut back = vec![0.0; n];
+                        stream.memcpy_dtoh(&dev_buf, &mut back)?;
+                        Ok(back)
+                    },
+                    &mut || {
+                        stream.synchronize()?;
+                        Ok(())
+                    },
+                )
+            })?;
+            (
+                0.0,
+                m,
+                vec![
+                    "cudarc memcpy_dtoh into a freshly allocated Vec per call",
+                    "stream.synchronize per call",
+                ],
             )
         }
         "cudarc-pageable" | "cudarc-pinned" => {

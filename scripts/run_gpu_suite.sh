@@ -116,7 +116,7 @@ mapfile -t SUITES < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
 RUST_BACKENDS=()
 PYTHON_BACKENDS=()
 for b in "${BACKENDS[@]}"; do
-    if [[ "$b" == "tenferro-cuda-trace" || "$b" == "tenferro-cuda-eager" ]]; then
+    if [[ "$b" == "tenferro-cuda-trace" || "$b" == "tenferro-cuda-eager" || "$b" == "tenferro-cuda-eager-per-call-session" ]]; then
         RUST_BACKENDS+=("$b")
     else
         PYTHON_BACKENDS+=("$b")
@@ -269,7 +269,7 @@ run_suite_serial_by_backend() {
         backend_start="$(wall_now)"
         build_before="$RUST_BUILD_NS"
 
-        if [[ "$backend" == "tenferro-cuda-eager" || "$backend" == "tenferro-cuda-trace" ]]; then
+        if [[ "$backend" == "tenferro-cuda-eager" || "$backend" == "tenferro-cuda-eager-per-call-session" || "$backend" == "tenferro-cuda-trace" ]]; then
             run_rust_backend "$suite" "$chunk" "$backend"
         else
             run_python_backend "$suite" "$chunk" "$backend"

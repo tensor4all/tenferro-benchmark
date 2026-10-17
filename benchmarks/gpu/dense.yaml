@@ -10,6 +10,7 @@ defaults:
 backends:
   - tenferro-cuda-trace
   - tenferro-cuda-eager
+  - tenferro-cuda-eager-per-call-session
   - pytorch-cuda
   - jax-cuda
   - cublaslt
@@ -47,7 +48,7 @@ problems:
     linalg: {m: 1536, n: 1536, full_matrices: false}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, tenferro-cuda-eager-per-call-session, pytorch-cuda, jax-cuda, cusolver]
 
   - id: dense_solve_f64_512_rhs16
     family: dense
@@ -58,7 +59,7 @@ problems:
     linalg: {n: 512, rhs_cols: 16}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
-    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, tenferro-cuda-eager-per-call-session, pytorch-cuda, jax-cuda, cusolver]
 
   - id: dense_solve_f64_1024_rhs16
     family: dense
@@ -69,7 +70,7 @@ problems:
     linalg: {n: 1024, rhs_cols: 16}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
-    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, tenferro-cuda-eager-per-call-session, pytorch-cuda, jax-cuda, cusolver]
 
   - id: dense_solve_f64_2048_rhs16
     family: dense
@@ -80,7 +81,7 @@ problems:
     linalg: {n: 2048, rhs_cols: 16}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
-    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, tenferro-cuda-eager-per-call-session, pytorch-cuda, jax-cuda, cusolver]
 
   - id: dense_solve_f64_4096_rhs16
     family: dense
@@ -91,7 +92,7 @@ problems:
     linalg: {n: 4096, rhs_cols: 16}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
-    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, tenferro-cuda-eager-per-call-session, pytorch-cuda, jax-cuda, cusolver]
 
   - id: dense_solve_f64_2048_rhs128
     family: dense
@@ -102,7 +103,7 @@ problems:
     linalg: {n: 2048, rhs_cols: 128}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
-    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, tenferro-cuda-eager-per-call-session, pytorch-cuda, jax-cuda, cusolver]
 
   - id: dense_svd_f64_256
     family: dense
@@ -113,7 +114,7 @@ problems:
     linalg: {m: 256, n: 256, full_matrices: false}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
-    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, tenferro-cuda-eager-per-call-session, pytorch-cuda, jax-cuda, cusolver]
 
   - id: dense_eigh_f64_1024
     family: dense
@@ -124,7 +125,7 @@ problems:
     linalg: {n: 1024}
     run: {warmups: 2, runs: 5, timing_scope: steady_state_host_api_plus_device_sync}
     verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10, residual_rtol: 1.0e-8}
-    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, pytorch-cuda, jax-cuda, cusolver]
+    only_backends: [tenferro-cuda-trace, tenferro-cuda-eager, tenferro-cuda-eager-per-call-session, pytorch-cuda, jax-cuda, cusolver]
 
   - id: dense_batched_matmul_f64_b16_32
     family: dense

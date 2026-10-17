@@ -98,8 +98,8 @@ The sidecar uses schema version 1 (`summary-schema-v1`):
 ```
 
 A row may also carry `"reason": "..."` when a backend is `unsupported` for
-a recorded harness-policy reason (for example tenferro trace
-`trace-session-setup-unavailable`). The dashboard treats those as neutral
+a recorded harness-policy reason (for example a backend with no equivalent
+public operation). The dashboard treats those as neutral
 "not measured" rows rather than anomalies; an `unsupported` row without a
 recorded reason stays an anomaly.
 

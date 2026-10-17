@@ -156,12 +156,22 @@ fn dispatch(
         );
     }
     match backend {
-        "tenferro-cuda-eager" => run_eager(suite_id, problem, backend, device_ordinal, ts, bc, tc),
-        "tenferro-cuda-trace" if !matches!(suite_id, "gpu/public_path_latency" | "gpu/planning_latency") => stub(
-            suite_id, problem, backend, device_ordinal, "unsupported",
-            "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate.",
-            "trace-session-setup-unavailable", ts, bc, tc),
-        "tenferro-cuda-trace" => run_trace(suite_id, problem, backend, device_ordinal, ts, bc, tc),
+        "tenferro-cuda-eager" | "tenferro-cuda-eager-per-call-session" => {
+            run_eager(suite_id, problem, backend, device_ordinal, ts, bc, tc)
+        }
+        // Public-call latency suites keep the public `run_prepared` scope
+        // (internal session entry included); every standard operation row runs
+        // the prepared graph in one caller-held session instead.
+        "tenferro-cuda-trace" => run_trace(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            ts,
+            bc,
+            tc,
+            !matches!(suite_id, "gpu/public_path_latency" | "gpu/planning_latency"),
+        ),
         _ => stub(
             suite_id,
             problem,
@@ -485,6 +495,99 @@ fn run_eager_tensor_network(
     }
 }
 
+/// Run a prepared graph repeatedly through the public `Runtime::run_prepared`
+/// scope. This preserves the public-call latency semantics used by
+/// `gpu/public_path_latency` and `gpu/planning_latency`: internal session entry
+/// is inside each timed call.
+fn sample_trace_public(
+    runtime: &Runtime,
+    prepared: &tenferro_runtime::PreparedCompiledGraph,
+    inputs: &[&Tensor],
+    n_warmup: usize,
+    n_runs: usize,
+    sync_rt: &CudaRuntime,
+) -> Result<(Vec<f64>, Vec<Tensor>), String> {
+    for _ in 0..n_warmup.max(1) {
+        let out = runtime
+            .run_prepared(prepared, inputs)
+            .map_err(|e| format!("warmup: {e}"))?;
+        sync_cubecl_runtime(sync_rt)?;
+        black_box(out.len());
+    }
+    let mut times_ms = Vec::with_capacity(n_runs);
+    let mut last_out: Option<Vec<Tensor>> = None;
+    for _ in 0..n_runs {
+        let t0 = Instant::now();
+        let out = runtime
+            .run_prepared(prepared, inputs)
+            .map_err(|e| format!("run: {e}"))?;
+        sync_cubecl_runtime(sync_rt)?;
+        times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
+        last_out = Some(out);
+    }
+    Ok((times_ms, last_out.ok_or("no timed prepared run")?))
+}
+
+/// Run a prepared graph repeatedly in one caller-held CUDA session.
+///
+/// Session entry, compilation and preparation happen outside timing. Each
+/// `Runtime::run_prepared_in` call retires its own device work before returning,
+/// so the per-call clock already contains the run's stream-retirement barrier;
+/// the batch-edge synchronize after the loop is a safety net only. No output is
+/// downloaded inside timing.
+#[allow(clippy::too_many_arguments)]
+fn sample_trace_held(
+    backend: &mut CudaBackend,
+    runtime: &Runtime,
+    prepared: &tenferro_runtime::PreparedCompiledGraph,
+    inputs: &[&Tensor],
+    n_warmup: usize,
+    n_runs: usize,
+    sync_rt: &CudaRuntime,
+) -> Result<(Vec<f64>, Vec<Tensor>), String> {
+    let mut session = backend
+        .open_session()
+        .map_err(|e| format!("open held session: {e}"))?;
+    for _ in 0..n_warmup.max(1) {
+        let out = session
+            .with_session(|s| runtime.run_prepared_in(s, prepared, inputs))
+            .map_err(|e| format!("held session entry: {e}"))?
+            .map_err(|e| format!("warmup: {e}"))?;
+        black_box(out.len());
+    }
+    let mut times_ms = Vec::with_capacity(n_runs);
+    let mut last_out: Option<Vec<Tensor>> = None;
+    for _ in 0..n_runs {
+        let t0 = Instant::now();
+        let out = session
+            .with_session(|s| runtime.run_prepared_in(s, prepared, inputs))
+            .map_err(|e| format!("held session entry: {e}"))?
+            .map_err(|e| format!("run: {e}"))?;
+        times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
+        last_out = Some(out);
+    }
+    sync_cubecl_runtime(sync_rt)?;
+    session
+        .close()
+        .map_err(|e| format!("close held session: {e}"))?;
+    Ok((times_ms, last_out.ok_or("no timed prepared run")?))
+}
+
+/// Execution notes that record the caller-held-session scope of a trace row.
+fn trace_execution_notes(op: &str, held_session: bool) -> String {
+    if held_session {
+        format!(
+            "{}; each timed call runs the prepared graph in one caller-held CUDA session \
+             (Runtime::run_prepared_in) and includes the run's own stream-retirement barrier, \
+             with no output download inside timing",
+            tenferro_notes(op)
+        )
+    } else {
+        tenferro_notes(op).to_string()
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
 fn run_trace_tensor_network(
     suite_id: &str,
     problem: &serde_yaml::Value,
@@ -493,12 +596,17 @@ fn run_trace_tensor_network(
     ts: &str,
     bc: Option<&str>,
     tc: Option<&str>,
+    held_session: bool,
 ) -> Value {
     let n_warmup = yaml_usize(&problem["run"]["warmups"], 3);
     let n_runs = yaml_usize(&problem["run"]["runs"], 10);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-4);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-5);
-    let exec_path = "phase2-measured-tenferro-cuda-trace-tensornetwork";
+    let exec_path = if held_session {
+        "trace-run-prepared-in-held-session-tensornetwork"
+    } else {
+        "phase2-measured-tenferro-cuda-trace-tensornetwork"
+    };
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
         let spec = TensorNetworkSpec::from_problem(problem, std::path::Path::new("."))?;
@@ -507,7 +615,7 @@ fn run_trace_tensor_network(
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
         // backend are rejected by the compute engine and by the traced runtime.
-        let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
+        let mut compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
         .map_err(|e| format!("compute backend: {e}"))?;
@@ -541,27 +649,29 @@ fn run_trace_tensor_network(
             .prepare_compiled(&program, &gpu_inputs)
             .map_err(|e| format!("prepare: {e}"))?;
 
-        for _ in 0..n_warmup.max(1) {
-            let out = runtime
-                .run_prepared(&prepared, &gpu_inputs)
-                .map_err(|e| format!("warmup: {e}"))?;
-            sync_cubecl_runtime(compute_bk.runtime())?;
-            black_box(out.len());
-        }
-
-        let mut times_ms = Vec::with_capacity(n_runs);
-        let mut gpu_scalar = None;
-        for _ in 0..n_runs {
-            let t0 = Instant::now();
-            let out = runtime
-                .run_prepared(&prepared, &gpu_inputs)
-                .map_err(|e| format!("run: {e}"))?;
-            sync_cubecl_runtime(compute_bk.runtime())?;
-            times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
-            let downloaded = download_tensor(transfer_bk.runtime(), &out[0])
-                .map_err(|e| format!("download: {e}"))?;
-            gpu_scalar = Some(scalar_f32_tensor(&downloaded)?);
-        }
+        let (times_ms, last_out) = if held_session {
+            sample_trace_held(
+                &mut compute_bk,
+                &runtime,
+                &prepared,
+                &gpu_inputs,
+                n_warmup,
+                n_runs,
+                transfer_bk.runtime(),
+            )?
+        } else {
+            sample_trace_public(
+                &runtime,
+                &prepared,
+                &gpu_inputs,
+                n_warmup,
+                n_runs,
+                transfer_bk.runtime(),
+            )?
+        };
+        let downloaded = download_tensor(transfer_bk.runtime(), &last_out[0])
+            .map_err(|e| format!("download: {e}"))?;
+        let gpu_scalar = Some(scalar_f32_tensor(&downloaded)?);
 
         let cpu_ctx =
             EagerRuntime::with_cpu_backend(CpuBackend::default()).expect("CPU reference runtime");
@@ -591,7 +701,7 @@ fn run_trace_tensor_network(
                 );
             }
             let stats = timing_stats(&times_ms);
-            ok_record(
+            let mut record = ok_record(
                 suite_id,
                 problem,
                 backend,
@@ -608,7 +718,10 @@ fn run_trace_tensor_network(
                 ts,
                 bc,
                 tc,
-            )
+            );
+            record["execution"]["notes"] =
+                json!(trace_execution_notes("tensor_network_contract", held_session));
+            record
         }
         Ok(Err(msg)) => stub(
             suite_id,
@@ -651,7 +764,22 @@ fn run_eager(
     tc: Option<&str>,
 ) -> Value {
     let op = problem["op"].as_str().unwrap_or("");
+    let per_call_session = backend == "tenferro-cuda-eager-per-call-session";
     if op == "tensor_network_contract" {
+        if per_call_session {
+            return stub(
+                suite_id,
+                problem,
+                backend,
+                device_ordinal,
+                "unsupported",
+                "the per-call-session diagnostic is defined for single-op dense/einsum eager rows, not the tree workflow",
+                "phase2-measured-tenferro-cuda-eager-per-call-session",
+                ts,
+                bc,
+                tc,
+            );
+        }
         return run_eager_tensor_network(suite_id, problem, backend, device_ordinal, ts, bc, tc);
     }
     let supported = [
@@ -683,7 +811,11 @@ fn run_eager(
     let n_runs = yaml_usize(&problem["run"]["runs"], 7);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
-    let exec_path = "phase2-measured-tenferro-cuda-eager";
+    let exec_path = if per_call_session {
+        "phase2-measured-tenferro-cuda-eager-per-call-session"
+    } else {
+        "phase2-measured-tenferro-cuda-eager"
+    };
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
         let case_start = Instant::now();
@@ -720,16 +852,28 @@ fn run_eager(
         let subscripts = (&parsed).into();
 
         let _guard = ctx.no_grad();
-        let refs = gpu_inputs.extra.iter().collect::<Vec<_>>();
         let setup_end = case_start.elapsed().as_nanos();
-        let (times_ms, last, mut sampling) = sample_eager(
-            &ctx,
-            transfer_bk.runtime(),
-            n_warmup,
-            n_runs,
-            device_ordinal,
-            |session, config| run_eager_op_in(session, op, &subscripts, config, &gpu_inputs, &refs),
-        )?;
+        let (times_ms, last, mut sampling) = if per_call_session {
+            sample_eager_per_call(
+                transfer_bk.runtime(),
+                n_warmup,
+                n_runs,
+                device_ordinal,
+                || run_eager_op(op, &subscripts, batched_matmul_cfg(), &gpu_inputs),
+            )?
+        } else {
+            let refs = gpu_inputs.extra.iter().collect::<Vec<_>>();
+            sample_eager(
+                &ctx,
+                transfer_bk.runtime(),
+                n_warmup,
+                n_runs,
+                device_ordinal,
+                |session, config| {
+                    run_eager_op_in(session, op, &subscripts, config, &gpu_inputs, &refs)
+                },
+            )?
+        };
         let last_out = Some(last);
         let validation_start = case_start.elapsed().as_nanos();
 
@@ -833,6 +977,7 @@ fn run_eager(
 // Trace runner
 // ---------------------------------------------------------------------------
 
+#[allow(clippy::too_many_arguments)]
 fn run_semantic_trace_einsum(
     suite_id: &str,
     problem: &serde_yaml::Value,
@@ -841,12 +986,17 @@ fn run_semantic_trace_einsum(
     ts: &str,
     bc: Option<&str>,
     tc: Option<&str>,
+    held_session: bool,
 ) -> Value {
     let n_warmup = yaml_usize(&problem["run"]["warmups"], 3);
     let n_runs = yaml_usize(&problem["run"]["runs"], 7);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
-    let exec_path = "phase2-measured-tenferro-cuda-trace";
+    let exec_path = if held_session {
+        "trace-run-prepared-in-held-session-einsum"
+    } else {
+        "phase2-measured-tenferro-cuda-trace"
+    };
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
         let seed = problem["data"]["seed"].as_u64().unwrap_or(0);
@@ -882,48 +1032,49 @@ fn run_semantic_trace_einsum(
             .compile_traced_graph(&graph)
             .map_err(|e| format!("compile: {e}"))?;
 
-        let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
+        let mut compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
         .map_err(|e| format!("compute backend: {e}"))?;
+        let transfer_bk = compute_bk.clone();
         let gpu_inputs = cpu_inputs
             .iter()
             .map(|tensor| {
-                upload_tensor(compute_bk.runtime(), tensor).map_err(|e| format!("upload: {e}"))
+                upload_tensor(transfer_bk.runtime(), tensor).map_err(|e| format!("upload: {e}"))
             })
             .collect::<Result<Vec<_>, _>>()?;
-        sync_cubecl_runtime(compute_bk.runtime())?;
+        sync_cubecl_runtime(transfer_bk.runtime())?;
         let gpu_input_refs: Vec<&Tensor> = gpu_inputs.iter().collect();
         let runtime = cuda_runtime_with_extensions(&compute_bk, false)?;
         let prepared = runtime
             .prepare_compiled(&program, &gpu_input_refs)
             .map_err(|e| format!("prepare: {e}"))?;
 
-        for _ in 0..n_warmup.max(1) {
-            let out = runtime
-                .run_prepared(&prepared, &gpu_input_refs)
-                .map_err(|e| format!("warmup: {e}"))?;
-            sync_cubecl_runtime(compute_bk.runtime())?;
-            black_box(out.len());
-        }
-
-        let mut times_ms = Vec::with_capacity(n_runs);
-        let mut last_out = None;
-        for _ in 0..n_runs {
-            let t0 = Instant::now();
-            let out = runtime
-                .run_prepared(&prepared, &gpu_input_refs)
-                .map_err(|e| format!("run: {e}"))?;
-            sync_cubecl_runtime(compute_bk.runtime())?;
-            times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
-            last_out = Some(out);
-        }
+        let (times_ms, last_out) = if held_session {
+            sample_trace_held(
+                &mut compute_bk,
+                &runtime,
+                &prepared,
+                &gpu_input_refs,
+                n_warmup,
+                n_runs,
+                transfer_bk.runtime(),
+            )?
+        } else {
+            sample_trace_public(
+                &runtime,
+                &prepared,
+                &gpu_input_refs,
+                n_warmup,
+                n_runs,
+                transfer_bk.runtime(),
+            )?
+        };
 
         let gpu_outputs = last_out
-            .ok_or("missing timed einsum result")?
             .iter()
             .map(|tensor| {
-                download_tensor(compute_bk.runtime(), tensor)
+                download_tensor(transfer_bk.runtime(), tensor)
                     .map_err(|e| format!("download result: {e}"))
             })
             .collect::<Result<Vec<_>, _>>()?;
@@ -959,7 +1110,7 @@ fn run_semantic_trace_einsum(
                     tc,
                 );
             }
-            ok_record(
+            let mut record = ok_record(
                 suite_id,
                 problem,
                 backend,
@@ -976,7 +1127,10 @@ fn run_semantic_trace_einsum(
                 ts,
                 bc,
                 tc,
-            )
+            );
+            record["execution"]["notes"] =
+                json!(trace_execution_notes("einsum", held_session));
+            record
         }
         Ok(Err(msg)) => stub(
             suite_id,
@@ -1005,6 +1159,7 @@ fn run_semantic_trace_einsum(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn run_trace(
     suite_id: &str,
     problem: &serde_yaml::Value,
@@ -1013,13 +1168,18 @@ fn run_trace(
     ts: &str,
     bc: Option<&str>,
     tc: Option<&str>,
+    held_session: bool,
 ) -> Value {
     let op = problem["op"].as_str().unwrap_or("");
     if op == "tensor_network_contract" {
-        return run_trace_tensor_network(suite_id, problem, backend, device_ordinal, ts, bc, tc);
+        return run_trace_tensor_network(
+            suite_id, problem, backend, device_ordinal, ts, bc, tc, held_session,
+        );
     }
     if op == "einsum" {
-        return run_semantic_trace_einsum(suite_id, problem, backend, device_ordinal, ts, bc, tc);
+        return run_semantic_trace_einsum(
+            suite_id, problem, backend, device_ordinal, ts, bc, tc, held_session,
+        );
     }
     let supported = [
         "matmul",
@@ -1049,7 +1209,11 @@ fn run_trace(
     let n_runs = yaml_usize(&problem["run"]["runs"], 7);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
-    let exec_path = "phase2-measured-tenferro-cuda-trace";
+    let exec_path = if held_session {
+        "trace-run-prepared-in-held-session"
+    } else {
+        "phase2-measured-tenferro-cuda-trace"
+    };
 
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| -> Result<_, String> {
         let seed = problem["data"]["seed"].as_u64().unwrap_or(0);
@@ -1061,7 +1225,7 @@ fn run_trace(
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
         // backend are rejected by the compute engine and by the traced runtime.
-        let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
+        let mut compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
         .map_err(|e| format!("compute backend: {e}"))?;
@@ -1081,48 +1245,44 @@ fn run_trace(
         let prepared = runtime
             .prepare_compiled(&program, &[])
             .map_err(|e| format!("prepare: {e}"))?;
-        // Warmup (triggers JIT compilation on first run)
-        for _ in 0..n_warmup.max(1) {
-            let out = runtime
-                .run_prepared(&prepared, &[])
-                .map_err(|e| format!("warmup: {e}"))?;
-            sync_cubecl_runtime(compute_bk.runtime())?;
-            black_box(out.len());
-        }
-
-        // Timed runs
-        let mut times_ms = Vec::with_capacity(n_runs);
-        let mut last_out: Option<Vec<Tensor>> = None;
-        for _ in 0..n_runs {
-            let t0 = Instant::now();
-            let out = runtime
-                .run_prepared(&prepared, &[])
-                .map_err(|e| format!("run: {e}"))?;
-            sync_cubecl_runtime(compute_bk.runtime())?;
-            times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
-            last_out = Some(out);
-        }
+        let (times_ms, last_out) = if held_session {
+            sample_trace_held(
+                &mut compute_bk,
+                &runtime,
+                &prepared,
+                &[],
+                n_warmup,
+                n_runs,
+                transfer_bk.runtime(),
+            )?
+        } else {
+            sample_trace_public(
+                &runtime,
+                &prepared,
+                &[],
+                n_warmup,
+                n_runs,
+                transfer_bk.runtime(),
+            )?
+        };
 
         // Verify via download + CPU reference
-        let (ver_status, max_abs, max_rel) = if let Some(ref gpu_out) = last_out {
-            let gpu_tensors: Vec<Tensor> = gpu_out
-                .iter()
-                .filter_map(|t| download_tensor(transfer_bk.runtime(), t).ok())
-                .collect();
-            let cpu_out = if op == "solve" {
-                Vec::new()
-            } else {
-                run_cpu_trace(op, problem, seed, gen).unwrap_or_default()
-            };
-            let cpu_inputs: Vec<Tensor> = cpu_inputs
-                .iter()
-                .map(|(_, t)| t.duplicate())
-                .collect::<Result<_, _>>()
-                .map_err(|e| e.to_string())?;
-            verify_tensors(op, &gpu_tensors, &cpu_out, &cpu_inputs, rtol, atol)
+        let gpu_tensors: Vec<Tensor> = last_out
+            .iter()
+            .filter_map(|t| download_tensor(transfer_bk.runtime(), t).ok())
+            .collect();
+        let cpu_out = if op == "solve" {
+            Vec::new()
         } else {
-            ("skipped".to_string(), None, None)
+            run_cpu_trace(op, problem, seed, gen).unwrap_or_default()
         };
+        let cpu_inputs: Vec<Tensor> = cpu_inputs
+            .iter()
+            .map(|(_, t)| t.duplicate())
+            .collect::<Result<_, _>>()
+            .map_err(|e| e.to_string())?;
+        let (ver_status, max_abs, max_rel) =
+            verify_tensors(op, &gpu_tensors, &cpu_out, &cpu_inputs, rtol, atol);
 
         Ok((times_ms, ver_status, max_abs, max_rel))
     }));
@@ -1144,7 +1304,7 @@ fn run_trace(
                 );
             }
             let stats = timing_stats(&times_ms);
-            ok_record(
+            let mut record = ok_record(
                 suite_id,
                 problem,
                 backend,
@@ -1161,7 +1321,9 @@ fn run_trace(
                 ts,
                 bc,
                 tc,
-            )
+            );
+            record["execution"]["notes"] = json!(trace_execution_notes(op, held_session));
+            record
         }
         Ok(Err(msg)) => stub(
             suite_id,
@@ -1496,6 +1658,80 @@ fn run_eager_op_in(
     result.map_err(|e| e.to_string())
 }
 
+fn sample_eager_ops(
+    rt: &CudaRuntime,
+    sampler_start: Instant,
+    warmups: usize,
+    runs: usize,
+    device_ordinal: usize,
+    setup_note: &str,
+    mut op: impl FnMut() -> Result<Vec<EagerTensor>, String>,
+) -> Result<(Vec<f64>, Vec<EagerTensor>, Value), String> {
+    let result = (|| -> Result<_, String> {
+        if verification_only() {
+            let output = op()?;
+            sync_cubecl_runtime(rt)?;
+            assert_cuda_eager_outputs(&output, device_ordinal)?;
+            return Ok((Vec::new(), output, json!({"sampling":null,"verification_only":true,
+                "wall_phases_ns":{"session_entry_and_initial_probe":sampler_start.elapsed().as_nanos()},
+                "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()})));
+        }
+        let mut batch = |count: usize| -> Result<_, String> {
+            let mut outputs = Vec::with_capacity(count);
+            sync_cubecl_runtime(rt)?;
+            let start = Instant::now();
+            for _ in 0..count {
+                outputs.push(op()?);
+            }
+            sync_cubecl_runtime(rt)?;
+            let elapsed = start.elapsed().as_secs_f64() * 1000.;
+            black_box(&outputs);
+            Ok((elapsed, outputs))
+        };
+        let (_, initial) = batch(1)?;
+        assert_cuda_eager_outputs(&initial[0], device_ordinal)?;
+        let bytes = initial[0].iter().map(|value| {
+            let view = value.tensor_read();
+            let width = match view.dtype() { DType::F32 => 4, DType::C64 => 16, _ => 8 };
+            view.shape().iter().product::<usize>() * width
+        }).sum::<usize>().max(1);
+        drop(initial);
+        let probe_end = sampler_start.elapsed().as_nanos();
+        for _ in 0..warmups { drop(batch(1)?); }
+        let warmup_end = sampler_start.elapsed().as_nanos();
+        let cap = ((256 << 20) / bytes).clamp(1, 4096);
+        let mut count = 1;
+        while batch(count)?.0 < 2. && count < cap { count = (count * 2).min(cap); }
+        let calibration_end = sampler_start.elapsed().as_nanos();
+        let mut raw = Vec::with_capacity(runs);
+        let mut last = None;
+        for _ in 0..runs {
+            drop(last.take());
+            let (elapsed, mut outputs) = batch(count)?;
+            raw.push(elapsed);
+            last = outputs.pop();
+        }
+        let sampling_end = sampler_start.elapsed().as_nanos();
+        let normalized = raw.iter().map(|time| time / count as f64).collect();
+        let notes = json!({"sampling":{"operations_per_sample":count,"batch_ms":raw,
+            "target_batch_ms":2,"retention_budget_bytes":256<<20,
+            "retained_bytes_per_operation":bytes,
+            "effective_retention_bound_bytes":bytes.max(256<<20),
+            "single_output_exceeds_configured_budget":bytes > (256<<20)},
+            "setup":setup_note,
+            "precision":"native declared dtype; no AD recording",
+            "wall_phases_ns":{"session_entry_and_initial_probe":probe_end,
+                "warmup":warmup_end-probe_end,"calibration":calibration_end-warmup_end,
+                "sampling":sampling_end-calibration_end},
+            "wall_phase_scope":"phase wall time includes untimed preparation/cleanup; outside operation clocks",
+            "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()});
+        let output = last.ok_or("no timed eager samples")?;
+        assert_cuda_eager_outputs(&output, device_ordinal)?;
+        Ok((normalized, output, notes))
+    })();
+    result
+}
+
 fn sample_eager(
     ctx: &std::sync::Arc<EagerRuntime>,
     rt: &CudaRuntime,
@@ -1506,71 +1742,40 @@ fn sample_eager(
 ) -> Result<(Vec<f64>, Vec<EagerTensor>, Value), String> {
     let sampler_start = Instant::now();
     ctx.with_eager_session(|session| {
-        let result = (|| -> Result<_, String> {
-            if verification_only() {
-                let output = op(session, batched_matmul_cfg())?;
-                sync_cubecl_runtime(rt)?;
-                assert_cuda_eager_outputs(&output, device_ordinal)?;
-                return Ok((Vec::new(), output, json!({"sampling":null,"verification_only":true,
-                    "wall_phases_ns":{"session_entry_and_initial_probe":sampler_start.elapsed().as_nanos()},
-                    "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()})));
-            }
-            let mut batch = |count: usize| -> Result<_, String> {
-                let mut outputs = Vec::with_capacity(count);
-                let mut configs = (0..count).map(|_| Some(batched_matmul_cfg())).collect::<Vec<_>>();
-                sync_cubecl_runtime(rt)?;
-                let start = Instant::now();
-                for config in &mut configs {
-                    outputs.push(op(session, config.take().unwrap())?);
-                }
-                sync_cubecl_runtime(rt)?;
-                let elapsed = start.elapsed().as_secs_f64() * 1000.;
-                black_box(&outputs);
-                Ok((elapsed, outputs))
-            };
-            let (_, initial) = batch(1)?;
-            assert_cuda_eager_outputs(&initial[0], device_ordinal)?;
-            let bytes = initial[0].iter().map(|value| {
-                let view = value.tensor_read();
-                let width = match view.dtype() { DType::F32 => 4, DType::C64 => 16, _ => 8 };
-                view.shape().iter().product::<usize>() * width
-            }).sum::<usize>().max(1);
-            drop(initial);
-            let probe_end = sampler_start.elapsed().as_nanos();
-            for _ in 0..warmups { drop(batch(1)?); }
-            let warmup_end = sampler_start.elapsed().as_nanos();
-            let cap = ((256 << 20) / bytes).clamp(1, 4096);
-            let mut count = 1;
-            while batch(count)?.0 < 2. && count < cap { count = (count * 2).min(cap); }
-            let calibration_end = sampler_start.elapsed().as_nanos();
-            let mut raw = Vec::with_capacity(runs);
-            let mut last = None;
-            for _ in 0..runs {
-                drop(last.take());
-                let (elapsed, mut outputs) = batch(count)?;
-                raw.push(elapsed);
-                last = outputs.pop();
-            }
-            let sampling_end = sampler_start.elapsed().as_nanos();
-            let normalized = raw.iter().map(|time| time / count as f64).collect();
-            let notes = json!({"sampling":{"operations_per_sample":count,"batch_ms":raw,
-                "target_batch_ms":2,"retention_budget_bytes":256<<20,
-                "retained_bytes_per_operation":bytes,
-                "effective_retention_bound_bytes":bytes.max(256<<20),
-                "single_output_exceeds_configured_budget":bytes > (256<<20)},
-                "setup":"one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks",
-                "precision":"native declared dtype; no AD recording",
-                "wall_phases_ns":{"session_entry_and_initial_probe":probe_end,
-                    "warmup":warmup_end-probe_end,"calibration":calibration_end-warmup_end,
-                    "sampling":sampling_end-calibration_end},
-                "wall_phase_scope":"phase wall time includes untimed preparation/cleanup; outside operation clocks",
-                "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()});
-            let output = last.ok_or("no timed eager samples")?;
-            assert_cuda_eager_outputs(&output, device_ordinal)?;
-            Ok((normalized, output, notes))
-        })();
-        result.map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
-    }).map_err(|e| e.to_string())
+        sample_eager_ops(
+            rt,
+            sampler_start,
+            warmups,
+            runs,
+            device_ordinal,
+            "one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks",
+            || op(session, batched_matmul_cfg()),
+        )
+        .map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
+    })
+    .map_err(|e| e.to_string())
+}
+
+/// Diagnostic eager arm: enters and leaves an eager session per operation, so
+/// session-entry cost sits next to the one-session-per-batch eager arm and the
+/// caller-held trace session.
+fn sample_eager_per_call(
+    rt: &CudaRuntime,
+    warmups: usize,
+    runs: usize,
+    device_ordinal: usize,
+    op: impl FnMut() -> Result<Vec<EagerTensor>, String>,
+) -> Result<(Vec<f64>, Vec<EagerTensor>, Value), String> {
+    let sampler_start = Instant::now();
+    sample_eager_ops(
+        rt,
+        sampler_start,
+        warmups,
+        runs,
+        device_ordinal,
+        "one eager session entered and left per operation; input wrapping, transfers, argument handles, initialization and validation outside clocks",
+        op,
+    )
 }
 
 fn assert_cuda_eager_outputs(outputs: &[EagerTensor], device_ordinal: usize) -> Result<(), String> {

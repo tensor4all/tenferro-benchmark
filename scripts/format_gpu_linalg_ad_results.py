@@ -168,7 +168,7 @@ def format_markdown(
         "`torch.func.jvp` / `vjp` on CUDA."
     )
     lines.append("JAX uses an explicitly lowered/compiled whole-operation JIT; compilation and lazy initialization occur before sampling. Primal loss and first-order derivatives with respect to A are both returned and checked against CPU F64 AD, whose directional derivative is checked by central differences. RHS and derivative seeds are prepared before timing.")
-    lines.append("Standard tenferro trace rows are unsupported when run_prepared cannot borrow an entered session. Small trace rows are separately labelled public-path latency diagnostics including internal session entry. Each unsupported row retains its actual reason in the raw records.")
+    lines.append("Standard tenferro trace rows run the prepared graph in one caller-held CUDA session (Runtime::run_prepared_in); each timed call includes the run's own stream-retirement barrier. Small trace rows are separately labelled public-path latency diagnostics including internal session entry. Any unsupported row retains its actual reason in the raw records.")
     lines.append(
         "Inputs are uploaded to the GPU before timed runs; initial host-to-device "
         "transfer is outside the timed region."

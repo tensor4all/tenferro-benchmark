@@ -119,3 +119,7 @@ full_only_reasons:
     path, about 235 seconds.
   einsum: Keep the 3072 matmul-shaped einsum in quick because its public einsum/planning dispatch differs
     from the direct dot route of dense matmul.
+  per_call_session: The diagnostic tenferro-cuda-eager-per-call-session backend (one eager session
+    entered and left per operation) is not part of default quick or full coverage. It stays
+    available through an explicit GPU_BENCH_BACKENDS filter, next to the one-session-per-batch
+    eager arm and the caller-held trace session.
