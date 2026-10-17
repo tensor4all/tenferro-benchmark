@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from scripts.ci.check_gpu_run import bundle_run, validate_records
-from scripts.ci.collect_gpu_pages_results import publish_bundle
+from scripts.ci.collect_gpu_pages_results import artifact_unavailable, publish_bundle
 
 
 class PublicationTests(unittest.TestCase):
@@ -166,3 +166,10 @@ class PublicationTests(unittest.TestCase):
         site = self.root / 'site'
         self.assertEqual(publish_bundle(self.bundle, site, {}), 0)
         self.assertFalse((site / 'result/nvidia-gpu/gpu/dense.md').exists())
+
+class ArtifactAvailabilityTests(unittest.TestCase):
+    def test_missing_or_expired_artifacts_are_skipped_but_other_errors_are_not(self):
+        self.assertTrue(artifact_unavailable('no valid artifacts found to download'))
+        self.assertTrue(artifact_unavailable('no artifact matches any of the names or patterns provided'))
+        self.assertTrue(artifact_unavailable('Artifact has expired'))
+        self.assertFalse(artifact_unavailable('HTTP 502: Bad Gateway'))
