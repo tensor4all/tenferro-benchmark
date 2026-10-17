@@ -394,7 +394,8 @@ def compute_case_flags(
 
     Flags: ``eager/torch``, ``eager/jax``, ``trace/eager``, ``status`` and
     ``regression``.  The regression check matches the same backend and needs a
-    previous summary for the same hardware (passed as ``previous_rows``).
+    previous summary for the same hardware (passed as ``previous_rows``); only
+    tenferro rows count - a slower reference backend is not a tenferro regression.
     """
     flags: list[str] = []
     eager, trace = tenferro_median(rows)
@@ -410,7 +411,7 @@ def compute_case_flags(
         flags.append("status")
     if previous_rows:
         for row in rows:
-            if row.get("status") != "ok" or row.get("median") is None:
+            if not is_tenferro(row) or row.get("status") != "ok" or row.get("median") is None:
                 continue
             backend = row.get("backend")
             previous = next(

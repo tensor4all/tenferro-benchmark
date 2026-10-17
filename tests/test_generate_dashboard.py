@@ -105,6 +105,13 @@ class DashboardTests(unittest.TestCase):
         flags_b = dashboard.compute_case_flags(grouped["case_b"])
         self.assertEqual(flags_b, ["status"])
 
+    def test_slower_reference_backend_is_not_a_regression(self):
+        previous = [row("case", "tenferro-cuda-trace", 0.55), row("case", "pytorch-cuda", 0.36)]
+        current = [row("case", "tenferro-cuda-trace", 0.54), row("case", "pytorch-cuda", 0.47)]
+        self.assertNotIn("regression", dashboard.compute_case_flags(current, previous))
+        slower = [row("case", "tenferro-cuda-trace", 0.70), row("case", "pytorch-cuda", 0.36)]
+        self.assertIn("regression", dashboard.compute_case_flags(slower, previous))
+
     def test_status_policy_is_not_an_anomaly(self):
         neutral = row("case_n", "tenferro-cuda-trace", None, status="unsupported",
                       reason="trace-session-setup-unavailable")
