@@ -53,9 +53,8 @@ env:
   TENFERRO_CPU_FEATURES: none
   UV_NO_SYNC: "1"
   BENCHMARK_TARGET_PROFILE: nvidia-gpu
-  # Scheduled runs have no inputs; these fall back to the weekly defaults.
-  BENCH_SUITE: ${{ inputs.suite || 'all' }}
-  BENCH_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda' }}
+  # Scheduled runs have no inputs; jobs fall back to the weekly defaults
+  # (suite=all, default backends, A100).
   BENCH_GPU_TYPE: ${{ inputs.gpu_type || 'NVIDIA A100 80GB PCIe' }}
   # Hard cap on one pod's lifetime, enforced by the pod itself (see startup).
   # Budget: <=7 min startup (startup_timeout_seconds) + 45 min benchmark job
@@ -145,7 +144,7 @@ jobs:
     outputs:
       sha256: ${{ steps.identity.outputs.sha256 }}
     env:
-      GPU_BENCH_BACKENDS: ${{ env.BENCH_BACKENDS }}
+      GPU_BENCH_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -357,8 +356,8 @@ jobs:
     # Part of the one-hour rental budget; see POD_MAX_LIFETIME_SECONDS.
     timeout-minutes: 45
     env:
-      GPU_BENCH_BACKENDS: ${{ env.BENCH_BACKENDS }}
-      REQUESTED_SUITE: ${{ env.BENCH_SUITE }}
+      GPU_BENCH_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda' }}
+      REQUESTED_SUITE: ${{ inputs.suite || 'all' }}
       TENFERRO_REF: ${{ needs.prepare-benchmark.outputs.tenferro_commit }}
       TENFERRO_UPDATE: "1"
       GPU_BENCH_PREBUILT_RUST: "1"
