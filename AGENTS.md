@@ -114,6 +114,7 @@ Expected latest report paths:
 - `result/nvidia-gpu/gpu/einsum.md`
 - `result/nvidia-gpu/gpu/elementwise.md`
 - `result/nvidia-gpu/gpu/sparse.md`
+- `result/nvidia-gpu/gpu/tensornetwork.md`
 - `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`
 - `result/nvidia-gpu/gpu/linalg_ad_latency.md`
 - `result/nvidia-gpu/gpu/permutation.md`

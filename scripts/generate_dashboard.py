@@ -58,6 +58,7 @@ MAINTAINED: set[tuple[str, str]] = {
     ("linux-cpu", "cpu/linalg_jvp_jvp"),
     ("nvidia-gpu", "gpu/dense"),
     ("nvidia-gpu", "gpu/einsum"),
+    ("nvidia-gpu", "gpu/tensornetwork"),
     ("nvidia-gpu", "gpu/elementwise"),
     ("nvidia-gpu", "gpu/sparse"),
     ("nvidia-gpu", "gpu/linalg_jvp_vjp"),
