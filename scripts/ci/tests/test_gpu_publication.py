@@ -63,6 +63,13 @@ class PublicationTests(unittest.TestCase):
             bundle_run(self.root, self.timestamp, [Path('dense.yaml')],
                        ['tenferro-cuda-trace', 'pytorch-cuda'], self.bundle)
 
+    def test_requested_backend_not_declared_by_suite_is_not_expected(self):
+        self.suite.write_text('suite_id: gpu/dense\nbackends: [tenferro-cuda-trace]\n'
+                              'problems: [{id: matmul}]\n')
+        bundle_run(self.root, self.timestamp, [Path('dense.yaml')],
+                   ['tenferro-cuda-trace', 'pytorch-cuda'], self.bundle)
+        self.assertTrue((self.bundle / 'publication.json').exists())
+
     def test_modified_report_is_rejected(self):
         self.build()
         (self.bundle / 'result/nvidia-gpu/gpu/dense.md').write_text('unverified report')
