@@ -16,7 +16,8 @@ devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.js
 ```
 
 The image includes CUTLASS v3.7.0 and CUDA-enabled Ginkgo v1.8.0 under
-`/opt`. The default Ginkgo build targets CUDA architecture 86 (RTX 30-series).
+`/opt`. The default Ginkgo build targets CUDA architecture 80 (A100, the standard
+`nvidia-gpu` benchmark hardware).
 Override the `GINKGO_CUDA_ARCHITECTURES` Docker build argument when building
 for a different architecture.
 

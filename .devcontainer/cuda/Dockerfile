@@ -13,9 +13,9 @@ ARG OPENBLAS_DYNAMIC_ARCH=1
 ARG CUTLASS_TAG=v3.7.0
 ARG GINKGO_TAG=v1.8.0
 # Docker builds do not have GPU access, so make the target architecture explicit.
-# 86 matches the RTX 30-series benchmark hosts; override this build arg for a
-# different NVIDIA architecture.
-ARG GINKGO_CUDA_ARCHITECTURES=86
+# 80 matches the A100 benchmark host; override this build arg for a
+# different NVIDIA architecture (e.g. 86 for RTX 30-series).
+ARG GINKGO_CUDA_ARCHITECTURES=80
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

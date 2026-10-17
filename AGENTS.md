@@ -355,7 +355,13 @@ sequential: one devcontainer benchmark command at a time, with no concurrent
 
 Use the CUDA devcontainer for NVIDIA GPU measurements.
 
-On the local two-RTX-3060 host, reserve physical GPU 0 for benchmark collection
+Collect `nvidia-gpu` reports on the NVIDIA A100 80GB PCIe host (the standard
+GPU benchmark hardware since 2026-10-17); do not mix in results from other GPU
+models. That host has a single GPU (physical GPU 0): verification-only lanes
+default to GPU 1, so pass `GPU_BENCH_DEVICE=0` there and never run them
+concurrently with timing collection.
+
+On a two-GPU host, reserve physical GPU 0 for benchmark collection
 and GPU 1 for debugging/numerical verification. The public API suite implements
 this split with `./scripts/run_gpu_public_api.sh <family> --verify-only` (GPU 1)
 and `./scripts/run_gpu_public_api.sh <family>` (GPU 0). It selects the physical

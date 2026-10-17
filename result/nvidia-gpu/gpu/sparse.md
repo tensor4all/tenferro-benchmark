@@ -2,33 +2,33 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/sparse`
-- Suite file: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/routine_selection/20261014_005047/gpu_sparse.yaml`
-- Timestamp: `2026-10-14T00:50:47.476431+00:00`
-- tenferro-rs commit: `9655b4e0daced17e0aa35a30d35710b069e10644`
-- Coverage: `full`; effort: `scan`; manifest version: `1`
-- Selection and case accounting: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/routine_selection/20261014_005047/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
+- Suite file: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116/gpu_sparse.yaml`
+- Timestamp: `2026-10-16T23:51:16.689453+00:00`
+- tenferro-rs commit: `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`
+- Coverage: `full`; effort: `standard`; manifest version: `1`
+- Selection and case accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
 - Device: `cuda:0`
-- Name: `NVIDIA GeForce RTX 3060`
-- UUID: `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`
-- Memory: `12 GiB`
-- Driver version: `580.178.04`
+- Name: `NVIDIA A100 80GB PCIe`
+- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
+- Memory: `80 GiB`
+- Driver version: `580.126.09`
 - CUDA version: `13.0`
 - CUDA runtime: `12.9`
 - cuDNN version: `92700`
 
 ## CPU Information
 
-- Model: `Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz`
-- Vendor: `GenuineIntel`
-- Logical CPUs: `36`
+- Model: `AMD EPYC 7713P 64-Core Processor`
+- Vendor: `AuthenticAMD`
+- Logical CPUs: `64`
 - Sockets: `1`
-- Cores per socket: `18`
-- Threads per core: `2`
+- Cores per socket: `64`
+- Threads per core: `1`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-146-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -42,13 +42,13 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | PyTorch CUDA | PyTorch CSR (cuSPARSE) | Ginkgo |
 |---|---:|---:|---:|
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | 108.275 | 108.289 | 1175.152 |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | 14.935 | 15.005 | 220.827 |
 
 ## gpu/sparse / spmv / allocating output
 
 | Problem | PyTorch CUDA | PyTorch CSR (cuSPARSE) | Ginkgo |
 |---|---:|---:|---:|
-| sparse_synthetic_4m_64m_spmv_f64 | 19.705 | 19.703 | 20.906 |
+| sparse_synthetic_4m_64m_spmv_f64 | 2.300 | 2.294 | 2.577 |
 
 ## Sampling
 
@@ -56,12 +56,12 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| sparse_synthetic_4m_64m_spmv_f64 | pytorch-cuda | 1 | 19.7072, 19.7054, 19.6997 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | pytorch-cuda | 1 | 108.275, 108.275, 108.267 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_4m_64m_spmv_f64 | cusparse | 1 | 19.7033, 19.7025, 19.7061 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | cusparse | 1 | 108.289, 108.275, 108.291 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_4m_64m_spmv_f64 | ginkgo | 1 | 20.9019, 20.9062, 20.9311 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | ginkgo | 1 | 1175.08, 1175.15, 1175.22 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
+| sparse_synthetic_4m_64m_spmv_f64 | pytorch-cuda | 1 | 2.31174, 2.29654, 2.29987, 2.30467, 2.29845, 2.30672, 2.28448 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | pytorch-cuda | 1 | 14.9187, 14.9175, 14.9348, 14.982, 14.93, 15.0187, 15.0382 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_4m_64m_spmv_f64 | cusparse | 1 | 2.29212, 2.29207, 2.29058, 2.29671, 2.29774, 2.29381, 2.29853 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | cusparse | 1 | 15.0041, 15.0189, 15.0299, 14.9998, 15.0048, 15.0048, 15.0009 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_4m_64m_spmv_f64 | ginkgo | 1 | 2.57678, 2.58623, 2.57385, 3.31524, 2.5598, 2.58129, 2.57371 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | ginkgo | 1 | 220.857, 220.844, 220.824, 220.881, 220.827, 220.807, 220.803 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
 
 ## Output retention bounds
 

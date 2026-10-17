@@ -2,33 +2,33 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/einsum`
-- Suite file: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/routine_selection/20261014_005047/gpu_einsum.yaml`
-- Timestamp: `2026-10-14T00:50:47.476431+00:00`
-- tenferro-rs commit: `9655b4e0daced17e0aa35a30d35710b069e10644`
-- Coverage: `full`; effort: `scan`; manifest version: `1`
-- Selection and case accounting: `/workspaces/tenferro-benchmark/.worktrees/gpu-vendors/data/results/nvidia-gpu/gpu/routine_selection/20261014_005047/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
+- Suite file: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116/gpu_einsum.yaml`
+- Timestamp: `2026-10-16T23:51:16.689453+00:00`
+- tenferro-rs commit: `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`
+- Coverage: `full`; effort: `standard`; manifest version: `1`
+- Selection and case accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
 - Device: `cuda:0`
-- Name: `NVIDIA GeForce RTX 3060`
-- UUID: `GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e`
-- Memory: `12 GiB`
-- Driver version: `580.178.04`
+- Name: `NVIDIA A100 80GB PCIe`
+- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
+- Memory: `80 GiB`
+- Driver version: `580.126.09`
 - CUDA version: `13.0`
 - CUDA runtime: `12.9`
 - cuDNN version: `92700`
 
 ## CPU Information
 
-- Model: `Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz`
-- Vendor: `GenuineIntel`
-- Logical CPUs: `36`
+- Model: `AMD EPYC 7713P 64-Core Processor`
+- Vendor: `AuthenticAMD`
+- Logical CPUs: `64`
 - Sockets: `1`
-- Cores per socket: `18`
-- Threads per core: `2`
+- Cores per socket: `64`
+- Threads per core: `1`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-146-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -42,7 +42,7 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT | PyTorch (cuBLASLt preferred) | CUTLASS |
 |---|---:|---:|---:|---:|---:|---:|
-| einsum_bin_matmul_3072_f64 | unsupported | 312.048 | 312.153 | 268.671 | 312.197 | 317.886 |
+| einsum_bin_matmul_3072_f64 | unsupported | 3.159 | 3.208 | 3.569 | 3.171 | 3.439 |
 
 ## Sampling
 
@@ -50,8 +50,8 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| einsum_bin_matmul_3072_f64 | tenferro-cuda-eager | 1 | 312.055, 312.046, 312.048 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| einsum_bin_matmul_3072_f64 | pytorch-cuda | 1 | 312.161, 312.153, 312.102 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| einsum_bin_matmul_3072_f64 | jax-cuda | 1 | 268.66, 268.673, 268.671 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| einsum_bin_matmul_3072_f64 | cublaslt | 1 | 312.187, 312.197, 312.209 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| einsum_bin_matmul_3072_f64 | cutlass | 1 | 317.886, 317.879, 317.9 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
+| einsum_bin_matmul_3072_f64 | tenferro-cuda-eager | 1 | 3.1594, 3.15641, 3.16204, 3.15834, 3.16485, 3.15912, 3.15631 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| einsum_bin_matmul_3072_f64 | pytorch-cuda | 1 | 3.21249, 3.19694, 3.20113, 3.20063, 3.21234, 3.20778, 3.2115 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| einsum_bin_matmul_3072_f64 | jax-cuda | 1 | 3.89996, 4.39882, 3.56865, 3.39216, 3.83011, 3.42894, 3.4566 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| einsum_bin_matmul_3072_f64 | cublaslt | 1 | 3.17119, 3.17327, 3.17168, 3.16914, 3.17091, 3.16901, 3.16634 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| einsum_bin_matmul_3072_f64 | cutlass | 1 | 3.4447, 3.44557, 3.43826, 3.43882, 3.43676, 3.43907, 3.43856 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
