@@ -31,8 +31,10 @@ set -euo pipefail
 #   scripts/benchmark_gpu_permutation_python.py.
 # - PERMUTATION_FULL_VERIFY=1: keep the legacy full host reference +
 #   elementwise compare. The default (`sampled`) correctness gate checks a
-#   fixed set of corners plus 1M seeded positions against the source index
-#   mapping, in both runners. The mode is recorded in run.yaml and the report.
+#   fixed set of corners plus roughly 1M seeded output elements against the
+#   source index mapping, in both runners; each backend gathers/copies only
+#   those sampled elements on the device. The mode is recorded in run.yaml and
+#   the report.
 # - GPU_BENCH_DEVICE: CUDA device ordinal (default 0).
 # - GPU_BENCH_BACKEND_SLEEP: pause in seconds between per-backend Python
 #   processes (default 2, same as scripts/run_gpu_suite.sh).
@@ -192,7 +194,7 @@ path = Path(sys.argv[1])
 text = path.read_text().rstrip()
 text += (
     "\n\nCorrectness gate: exact **%s** verification. `sampled` checks a fixed set of "
-    "per-axis corners plus 1M seeded positions against the host source index mapping; "
+    "per-axis corners plus roughly 1M seeded output elements against the host source index mapping; "
     "`full` downloads the whole output and compares it elementwise against a full host "
     "transpose. Set `PERMUTATION_FULL_VERIFY=1` to request the full gate.\n"
 ) % sys.argv[2]

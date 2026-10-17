@@ -455,7 +455,8 @@ This is a standalone entry point, like `scripts/run_permutation.sh` is for
 `cpu/permutation`: it is not wired into `scripts/run_gpu_suite.sh`. Run it
 sequentially; do not overlap it with other GPU benchmark processes. The
 correctness gate defaults to exact sampled verification (per-axis corners plus
-1M seeded positions); set `PERMUTATION_FULL_VERIFY=1` to restore the full host
+roughly 1M seeded output elements, gathered on device with a small readback);
+set `PERMUTATION_FULL_VERIFY=1` to restore the full host
 reference. The mode is recorded in `run.yaml` and the report.
 
 If vendor libraries are needed:
