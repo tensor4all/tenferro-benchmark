@@ -72,6 +72,10 @@ def collect(root: Path, threshold: float) -> dict:
     return {'threshold': threshold, 'runs': runs, 'findings': findings}
 
 
+def ms(value) -> str:
+    return 'n/a' if value is None else f'{value:.4g}'
+
+
 def to_markdown(result: dict) -> str:
     lines = [f"# tenferro-rs GPU rows slower than the fastest reference (ratio >= {result['threshold']})", '']
     for run in result['runs']:
@@ -81,8 +85,8 @@ def to_markdown(result: dict) -> str:
               '|---|---|---|---|---|---|---|']
     for f in result['findings']:
         lines.append(f"| {f['suite_id']} | {f['problem_id']} | {f['backend']} | {f['median_ms']:.4g} "
-                     f"({f['iqr_ms']}) | {f['reference_backend']} | {f['reference_median_ms']:.4g} "
-                     f"({f['reference_iqr_ms']}) | {f['ratio']:.2f}x |")
+                     f"({ms(f['iqr_ms'])}) | {f['reference_backend']} | {f['reference_median_ms']:.4g} "
+                     f"({ms(f['reference_iqr_ms'])}) | {f['ratio']:.2f}x |")
     if not result['findings']:
         lines.append('| (none) | | | | | | |')
     return '\n'.join(lines) + '\n'
