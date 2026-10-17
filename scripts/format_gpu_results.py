@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown
 from collect_gpu_info import markdown as gpu_info_markdown, resolve_gpu_info
@@ -13,6 +14,8 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+
+import report_summary
 
 PREFERRED_BACKENDS = [
     "tenferro-cuda-trace",
@@ -224,14 +227,42 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def build_summary(
+    records: list[dict[str, Any]],
+    run_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Machine-readable sidecar for the same records the Markdown is built from."""
+    header = report_summary.metadata_from_run_metadata(run_metadata)
+    hardware = dict(header["hardware"])
+    gpu_info = resolve_gpu_info(records, run_metadata)
+    if gpu_info.get("Name"):
+        hardware.setdefault("gpu", gpu_info["Name"])
+    return report_summary.build_document(
+        report_summary.rows_from_gpu_records(records, group=lambda record: record.get("op")),
+        target_profile=header["target_profile"],
+        suite_id=header["suite_id"],
+        timestamp=header["timestamp"],
+        tenferro_commit=header["tenferro_commit"],
+        hardware=hardware,
+        unit="ms",
+    )
+
+
 def main() -> int:
     args = parse_args()
-    markdown = format_markdown(load_records(args.results), load_run_metadata(args.run_metadata))
+    records = load_records(args.results)
+    run_metadata = load_run_metadata(args.run_metadata)
+    markdown = format_markdown(records, run_metadata)
+    summary = build_summary(records, run_metadata)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(markdown)
+        report_summary.write_document(
+            report_summary.summary_path_for_report(args.output), summary
+        )
     else:
         sys.stdout.write(markdown)
+    report_summary.maybe_write(None if args.output else summary, env=os.environ)
     return 0
 
 

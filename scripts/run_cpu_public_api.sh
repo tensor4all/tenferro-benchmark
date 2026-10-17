@@ -299,6 +299,10 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     CSVS+=("$CSV")
 done
 
+# Summary sidecar env: kept outside the formatter-dispatch block so the
+# dispatch test can source that block without run metadata set.
+export BENCHMARK_RUN_METADATA="$RUN_YAML"
+export BENCHMARK_REPORT_SUMMARY="$RUN_DIR/$REPORT_NAME.summary.json"
 if command -v uv >/dev/null 2>&1; then
     uv run python "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" > "$TABLE" \
         || python3 "$SCRIPT_DIR/format_cpu_ops_results.py" "${CSVS[@]}" > "$TABLE"
@@ -404,6 +408,9 @@ if [[ "$REPORT_NAME" != "public_api" ]]; then
     "$PROJECT_DIR/.venv/bin/python" "$SCRIPT_DIR/format_public_api_candidate_report.py" "$REPORT"
 fi
 cp "$REPORT" "$LATEST_REPORT"
+if [ -f "$RUN_DIR/$REPORT_NAME.summary.json" ]; then
+    cp "$RUN_DIR/$REPORT_NAME.summary.json" "$(dirname "$LATEST_REPORT")/$REPORT_NAME.summary.json"
+fi
 
 echo ""
 echo "CPU public API benchmark complete."

@@ -10,8 +10,13 @@ Supports log formats produced by:
   - pytorch-cpu / jax-cpu — columns: Instance Tensors log10FLOPS log2SIZE Median IQR
 """
 
+import argparse
+import os
 import re
 import sys
+from pathlib import Path
+
+import report_summary
 
 
 def clean_markdown_eof(markdown: str) -> str:
@@ -264,21 +269,79 @@ def format_markdown_table(
     return clean_markdown_eof("\n".join(lines))
 
 
+def build_summary(
+    all_results: dict[tuple[str, str, str], tuple[float | None, float | None]],
+    metadata: dict[str, str],
+    run_metadata: dict | None = None,
+) -> dict:
+    """Machine-readable sidecar for the same parsed log results."""
+    header = report_summary.metadata_from_run_metadata(run_metadata)
+    hardware = dict(header["hardware"])
+    if not hardware.get("cpu"):
+        cpu_model = (run_metadata or {}).get("environment", {}).get("cpu") if run_metadata else None
+        hardware["cpu"] = cpu_model or "unknown"
+    threads = sorted({int(value) for value in metadata.values() if str(value).isdigit()})
+    if threads:
+        hardware["threads"] = threads
+    rows = []
+    for (instance, strategy, mode), (median_ms, iqr_ms) in all_results.items():
+        status = "ok" if median_ms is not None else "skipped"
+        group = strategy if not threads else f"Threads: {threads[0]} / {strategy}"
+        rows.append(
+            report_summary.make_row(
+                instance,
+                mode,
+                median_ms if status == "ok" else None,
+                status=status,
+                iqr=iqr_ms if status == "ok" else None,
+                group=group,
+                verified=status == "ok",
+            )
+        )
+    return report_summary.build_document(
+        rows,
+        target_profile=header["target_profile"],
+        suite_id=header["suite_id"] or "cpu/einsum",
+        timestamp=header["timestamp"],
+        tenferro_commit=header["tenferro_commit"],
+        hardware=hardware,
+        unit="ms",
+    )
+
+
 def main() -> None:
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <logfile1> [logfile2] ...")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("logfiles", nargs="+")
+    parser.add_argument("--run-metadata", type=Path, default=None)
+    parser.add_argument("--output", type=Path, default=None)
+    args = parser.parse_args()
 
     all_results: dict[
         tuple[str, str, str], tuple[float | None, float | None]
     ] = {}
     all_metadata: dict[str, str] = {}
-    for filepath in sys.argv[1:]:
+    for filepath in args.logfiles:
         results, metadata = parse_log(filepath)
         all_results.update(results)
         all_metadata.update(metadata)
 
-    sys.stdout.write(format_markdown_table(all_results, all_metadata))
+    markdown = format_markdown_table(all_results, all_metadata)
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(markdown)
+    else:
+        sys.stdout.write(markdown)
+
+    run_metadata = (
+        report_summary.load_run_metadata(args.run_metadata)
+        if args.run_metadata
+        else report_summary.env_run_metadata()
+    )
+    report_summary.maybe_write(
+        build_summary(all_results, all_metadata, run_metadata),
+        summary_path=report_summary.summary_path_for_report(args.output) if args.output else None,
+        env=os.environ,
+    )
 
 
 if __name__ == "__main__":
