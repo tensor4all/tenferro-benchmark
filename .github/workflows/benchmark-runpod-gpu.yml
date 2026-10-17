@@ -297,10 +297,17 @@ jobs:
           {
           cat <<STARTUP
           # Rental cap independent of GitHub: delete this pod after the budget
-          # even if the workflow or its cleanup job never runs. RunPod injects
-          # a pod-scoped RUNPOD_API_KEY and RUNPOD_POD_ID for runpodctl.
-          if [[ -n "\${RUNPOD_POD_ID:-}" ]] && command -v runpodctl >/dev/null; then
-            nohup bash -c 'sleep ${POD_MAX_LIFETIME_SECONDS}; runpodctl remove pod "\$RUNPOD_POD_ID"' >/tmp/pod-watchdog.log 2>&1 &
+          # even if the workflow or its cleanup job never runs, using the
+          # pod-scoped RUNPOD_API_KEY and RUNPOD_POD_ID that RunPod injects.
+          # The status file records only which prerequisites exist.
+          echo "RUNPOD_POD_ID=\${RUNPOD_POD_ID:+set} RUNPOD_API_KEY=\${RUNPOD_API_KEY:+set}" \
+            "runpodctl=\$(command -v runpodctl || echo missing) curl=\$(command -v curl || echo missing)" \
+            > /tmp/pod-watchdog.status
+          if [[ -n "\${RUNPOD_POD_ID:-}" && -n "\${RUNPOD_API_KEY:-}" ]]; then
+            nohup bash -c 'sleep ${POD_MAX_LIFETIME_SECONDS}
+              runpodctl remove pod "\$RUNPOD_POD_ID" ||
+                curl -fsS -X DELETE "https://rest.runpod.io/v1/pods/\$RUNPOD_POD_ID" \
+                  -H "Authorization: Bearer \$RUNPOD_API_KEY"' >/tmp/pod-watchdog.log 2>&1 &
             echo \$! > /tmp/pod-watchdog.pid
           fi
           STARTUP
@@ -368,7 +375,16 @@ jobs:
       - name: Verify pod lifetime watchdog is armed
         run: |
           set -euo pipefail
+          cat /tmp/pod-watchdog.status
           kill -0 "$(cat /tmp/pod-watchdog.pid)"
+          # Prove the pod-scoped credentials reach this pod via the API the
+          # watchdog uses (read-only).
+          if command -v runpodctl >/dev/null; then
+            runpodctl get pod "$RUNPOD_POD_ID" >/dev/null
+          else
+            curl -fsS -o /dev/null "https://rest.runpod.io/v1/pods/$RUNPOD_POD_ID" \
+              -H "Authorization: Bearer $RUNPOD_API_KEY"
+          fi
           echo "Pod deletes itself ${POD_MAX_LIFETIME_SECONDS}s after startup."
 
       - name: Checkout benchmark harness
