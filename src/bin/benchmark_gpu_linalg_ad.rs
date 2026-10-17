@@ -145,81 +145,44 @@ fn dispatch(
             .prepare_compiled(&program, &[])
             .map_err(|e| format!("prepare: {e}"))?;
 
-        let probe = runtime
-            .run_prepared(&prepared, &[])
-            .map_err(|e| format!("initial run: {e}"))?;
-        sync_runtime(compute_bk.runtime())?;
-        let initial = export_outputs(compute_bk.runtime(), &probe, device_ordinal)?;
-        let bytes = probe
-            .iter()
-            .map(|v| v.shape().iter().product::<usize>() * 8)
-            .sum::<usize>();
-        drop(probe);
         let mut times_ms = Vec::new();
         let mut batch_ms = Vec::new();
         let mut count = 1;
-        if diagnostic && !verify_only {
-            // Runtime cannot borrow an entered session. This is explicitly
-            // public-path latency, never a shared-session operation benchmark.
-            let batch = |count: usize| -> Result<f64, String> {
-                let mut retained = Vec::with_capacity(count);
-                sync_runtime(compute_bk.runtime())?;
-                let start = Instant::now();
-                for _ in 0..count {
-                    retained.push(
-                        runtime
-                            .run_prepared(&prepared, &[])
-                            .map_err(|e| format!("run: {e}"))?,
-                    );
-                }
-                sync_runtime(compute_bk.runtime())?;
-                let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-                black_box(&retained);
-                Ok(elapsed)
-            };
-            for _ in 0..n_warmup {
-                batch(1)?;
-            }
-            let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
-            while batch(count)? < 2.0 && count < cap {
-                count = (count * 2).min(cap);
-            }
-            for _ in 0..n_runs {
-                let duration = batch(count)?;
-                batch_ms.push(duration);
-                times_ms.push(duration / count as f64);
-            }
-        } else if !diagnostic && !verify_only {
-            // One caller-held CUDA session for every prepared run. Each
-            // `run_prepared_in` call retires its own device work before
-            // returning, so the per-call clock already contains the run's
-            // stream-retirement barrier and no result is downloaded in timing.
-            let mut session = compute_bk
-                .open_session()
-                .map_err(|e| format!("open held session: {e}"))?;
-            for _ in 0..n_warmup {
-                let out = session
-                    .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
-                    .map_err(|e| format!("held session entry: {e}"))?
-                    .map_err(|e| format!("warmup: {e}"))?;
-                black_box(out.len());
-            }
-            {
-                let mut batch = |count: usize| -> Result<f64, String> {
+        let initial;
+        let final_values;
+        if diagnostic {
+            // Public-path latency: the public `run_prepared` scope, including
+            // its internal session entry, is the declared measurement.
+            let probe = runtime
+                .run_prepared(&prepared, &[])
+                .map_err(|e| format!("initial run: {e}"))?;
+            sync_runtime(transfer_bk.runtime())?;
+            initial = export_outputs(transfer_bk.runtime(), &probe, device_ordinal)?;
+            let bytes = probe
+                .iter()
+                .map(|v| v.shape().iter().product::<usize>() * 8)
+                .sum::<usize>();
+            drop(probe);
+            if !verify_only {
+                let batch = |count: usize| -> Result<f64, String> {
                     let mut retained = Vec::with_capacity(count);
+                    sync_runtime(transfer_bk.runtime())?;
                     let start = Instant::now();
                     for _ in 0..count {
                         retained.push(
-                            session
-                                .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
-                                .map_err(|e| format!("held session entry: {e}"))?
+                            runtime
+                                .run_prepared(&prepared, &[])
                                 .map_err(|e| format!("run: {e}"))?,
                         );
                     }
+                    sync_runtime(transfer_bk.runtime())?;
                     let elapsed = start.elapsed().as_secs_f64() * 1000.0;
                     black_box(&retained);
                     Ok(elapsed)
                 };
+                for _ in 0..n_warmup {
+                    batch(1)?;
+                }
                 let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
                 while batch(count)? < 2.0 && count < cap {
                     count = (count * 2).min(cap);
@@ -230,15 +193,85 @@ fn dispatch(
                     times_ms.push(duration / count as f64);
                 }
             }
+            let final_outputs = runtime
+                .run_prepared(&prepared, &[])
+                .map_err(|e| format!("final run: {e}"))?;
+            sync_runtime(transfer_bk.runtime())?;
+            final_values = export_outputs(transfer_bk.runtime(), &final_outputs, device_ordinal)?;
+        } else {
+            // Standard operation rows: one caller-held CUDA session executes
+            // every run, including both verification runs. Each
+            // `run_prepared_in` call retires its own device work before
+            // returning, so the per-call barrier stays inside the timed batch.
+            let mut session = compute_bk
+                .open_session()
+                .map_err(|e| format!("open held session: {e}"))?;
+            let initial_out = session
+                .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
+                .map_err(|e| format!("held session entry: {e}"))?
+                .map_err(|e| format!("initial run: {e}"))?;
+            sync_runtime(transfer_bk.runtime())?;
+            initial = export_outputs(transfer_bk.runtime(), &initial_out, device_ordinal)?;
+            let bytes = initial_out
+                .iter()
+                .map(|v| v.shape().iter().product::<usize>() * 8)
+                .sum::<usize>();
+            drop(initial_out);
+            let mut last_timed: Option<Vec<Tensor>> = None;
+            if verify_only {
+                // Verification-only lane: no clocks, same held-session route.
+                last_timed = Some(
+                    session
+                        .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
+                        .map_err(|e| format!("held session entry: {e}"))?
+                        .map_err(|e| format!("verification run: {e}"))?,
+                );
+            } else {
+                for _ in 0..n_warmup {
+                    let out = session
+                        .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
+                        .map_err(|e| format!("held session entry: {e}"))?
+                        .map_err(|e| format!("warmup: {e}"))?;
+                    black_box(out.len());
+                }
+                {
+                    let mut batch = |count: usize| -> Result<f64, String> {
+                        let mut retained = Vec::with_capacity(count);
+                        let start = Instant::now();
+                        for _ in 0..count {
+                            retained.push(
+                                session
+                                    .with_session(|s| {
+                                        runtime.run_prepared_in(s, &prepared, &[])
+                                    })
+                                    .map_err(|e| format!("held session entry: {e}"))?
+                                    .map_err(|e| format!("run: {e}"))?,
+                            );
+                        }
+                        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+                        black_box(&retained);
+                        last_timed = retained.pop();
+                        Ok(elapsed)
+                    };
+                    let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
+                    while batch(count)? < 2.0 && count < cap {
+                        count = (count * 2).min(cap);
+                    }
+                    for _ in 0..n_runs {
+                        let duration = batch(count)?;
+                        batch_ms.push(duration);
+                        times_ms.push(duration / count as f64);
+                    }
+                }
+            }
             session
                 .close()
                 .map_err(|e| format!("close held session: {e}"))?;
+            let final_outputs =
+                last_timed.ok_or("no held-session result available for verification")?;
+            final_values =
+                export_outputs(transfer_bk.runtime(), &final_outputs, device_ordinal)?;
         }
-        let final_outputs = runtime
-            .run_prepared(&prepared, &[])
-            .map_err(|e| format!("final run: {e}"))?;
-        sync_runtime(compute_bk.runtime())?;
-        let final_values = export_outputs(compute_bk.runtime(), &final_outputs, device_ordinal)?;
         Ok((
             times_ms,
             json!({"initial": initial, "final": final_values}),

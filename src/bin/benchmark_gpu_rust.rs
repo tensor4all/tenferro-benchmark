@@ -239,7 +239,7 @@ fn verification_only() -> bool {
     std::env::var("GPU_BENCH_VERIFY_ONLY").as_deref() == Ok("1")
 }
 
-fn apply_eager_sampling_record(record: &mut Value, sampling: &Value) {
+fn apply_sampling_record(record: &mut Value, sampling: &Value) {
     record["execution"]["notes"] = json!(sampling.to_string());
     if verification_only() {
         record["status"] = json!("verification_only");
@@ -463,7 +463,7 @@ fn run_eager_tensor_network(
                 bc,
                 tc,
             );
-            apply_eager_sampling_record(&mut record, &sampling);
+            apply_sampling_record(&mut record, &sampling);
             record["verification"]["reference_backend"] =
                 json!("analytic_constant_tree_fp64_from_exact_f32_inputs");
             record
@@ -495,6 +495,111 @@ fn run_eager_tensor_network(
     }
 }
 
+/// Resident bytes of one prepared-run output set, used to bound batch retention.
+fn trace_output_bytes(outputs: &[Tensor]) -> usize {
+    outputs
+        .iter()
+        .map(|tensor| {
+            let width = match tensor.dtype() {
+                DType::F32 | DType::I32 => 4,
+                DType::C64 => 16,
+                DType::Bool => 1,
+                _ => 8,
+            };
+            tensor.shape().iter().product::<usize>() * width
+        })
+        .sum::<usize>()
+        .max(1)
+}
+
+/// Batch prepared-graph calls in one wall-clock interval, retaining every output
+/// until the interval's native synchronization.
+///
+/// Both `run_prepared` and `run_prepared_in` retire their own device work before
+/// returning, so each call's stream-retirement barrier stays inside the batch
+/// interval. This is the same sampling contract as the eager arm: session entry,
+/// input handles and compilation are outside the clock, operations per sample and
+/// raw batch durations are recorded, and outputs stay alive until the interval
+/// ends. With `GPU_BENCH_VERIFY_ONLY=1` one call runs through the same route with
+/// no clocks and returns the verification-only record contract.
+fn sample_trace_batches(
+    rt: &CudaRuntime,
+    setup_note: &str,
+    n_warmup: usize,
+    n_runs: usize,
+    mut call: impl FnMut() -> Result<Vec<Tensor>, String>,
+) -> Result<(Vec<f64>, Vec<Tensor>, Value), String> {
+    let sampler_start = Instant::now();
+    if verification_only() {
+        sync_cubecl_runtime(rt)?;
+        let output = call()?;
+        sync_cubecl_runtime(rt)?;
+        return Ok((
+            Vec::new(),
+            output,
+            json!({"sampling":null,"verification_only":true,
+                "setup":setup_note,
+                "wall_phases_ns":{"session_entry_and_initial_probe":sampler_start.elapsed().as_nanos()},
+                "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()}),
+        ));
+    }
+    sync_cubecl_runtime(rt)?;
+    let probe = call()?;
+    sync_cubecl_runtime(rt)?;
+    let bytes = trace_output_bytes(&probe);
+    drop(probe);
+    let probe_end = sampler_start.elapsed().as_nanos();
+    let mut time_batch = |count: usize| -> Result<(f64, Vec<Vec<Tensor>>), String> {
+        let mut retained = Vec::with_capacity(count);
+        sync_cubecl_runtime(rt)?;
+        let start = Instant::now();
+        for _ in 0..count {
+            retained.push(call()?);
+        }
+        sync_cubecl_runtime(rt)?;
+        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+        Ok((elapsed, retained))
+    };
+    for _ in 0..n_warmup.max(1) {
+        let (_, retained) = time_batch(1)?;
+        black_box(retained.len());
+    }
+    let warmup_end = sampler_start.elapsed().as_nanos();
+    let cap = ((256usize << 20) / bytes).clamp(1, 4096);
+    let mut count = 1;
+    while time_batch(count)?.0 < 2.0 && count < cap {
+        count = (count * 2).min(cap);
+    }
+    let calibration_end = sampler_start.elapsed().as_nanos();
+    let mut raw = Vec::with_capacity(n_runs);
+    let mut last = None;
+    for _ in 0..n_runs {
+        drop(last.take());
+        let (elapsed, mut retained) = time_batch(count)?;
+        raw.push(elapsed);
+        last = retained.pop();
+        black_box(&retained);
+    }
+    let sampling_end = sampler_start.elapsed().as_nanos();
+    let normalized = raw.iter().map(|time| time / count as f64).collect();
+    let notes = json!({
+        "sampling":{"operations_per_sample":count,"batch_ms":raw,
+            "target_batch_ms":2,"retention_budget_bytes":256<<20,
+            "retained_bytes_per_operation":bytes,
+            "effective_retention_bound_bytes":bytes.max(256<<20),
+            "single_output_exceeds_configured_budget":bytes > (256<<20)},
+        "setup":setup_note,
+        "precision":"native declared dtype; no AD recording",
+        "wall_phases_ns":{"session_entry_and_initial_probe":probe_end,
+            "warmup":warmup_end-probe_end,"calibration":calibration_end-warmup_end,
+            "sampling":sampling_end-calibration_end},
+        "wall_phase_scope":"phase wall time includes untimed preparation/cleanup; outside operation clocks",
+        "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok(),
+    });
+    let output = last.ok_or("no timed prepared run")?;
+    Ok((normalized, output, notes))
+}
+
 /// Run a prepared graph repeatedly through the public `Runtime::run_prepared`
 /// scope. This preserves the public-call latency semantics used by
 /// `gpu/public_path_latency` and `gpu/planning_latency`: internal session entry
@@ -506,35 +611,27 @@ fn sample_trace_public(
     n_warmup: usize,
     n_runs: usize,
     sync_rt: &CudaRuntime,
-) -> Result<(Vec<f64>, Vec<Tensor>), String> {
-    for _ in 0..n_warmup.max(1) {
-        let out = runtime
-            .run_prepared(prepared, inputs)
-            .map_err(|e| format!("warmup: {e}"))?;
-        sync_cubecl_runtime(sync_rt)?;
-        black_box(out.len());
-    }
-    let mut times_ms = Vec::with_capacity(n_runs);
-    let mut last_out: Option<Vec<Tensor>> = None;
-    for _ in 0..n_runs {
-        let t0 = Instant::now();
-        let out = runtime
-            .run_prepared(prepared, inputs)
-            .map_err(|e| format!("run: {e}"))?;
-        sync_cubecl_runtime(sync_rt)?;
-        times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
-        last_out = Some(out);
-    }
-    Ok((times_ms, last_out.ok_or("no timed prepared run")?))
+) -> Result<(Vec<f64>, Vec<Tensor>, Value), String> {
+    sample_trace_batches(
+        sync_rt,
+        "public Runtime::run_prepared per operation; internal session entry and each run's stream-retirement barrier inside the batch interval; inputs, plans and compilation outside clocks",
+        n_warmup,
+        n_runs,
+        || {
+            runtime
+                .run_prepared(prepared, inputs)
+                .map_err(|e| format!("run: {e}"))
+        },
+    )
 }
 
 /// Run a prepared graph repeatedly in one caller-held CUDA session.
 ///
 /// Session entry, compilation and preparation happen outside timing. Each
 /// `Runtime::run_prepared_in` call retires its own device work before returning,
-/// so the per-call clock already contains the run's stream-retirement barrier;
-/// the batch-edge synchronize after the loop is a safety net only. No output is
-/// downloaded inside timing.
+/// so its stream-retirement barrier stays inside the batch interval; the
+/// batch-edge synchronize is a safety net only. No output is downloaded inside
+/// timing.
 #[allow(clippy::too_many_arguments)]
 fn sample_trace_held(
     backend: &mut CudaBackend,
@@ -544,47 +641,26 @@ fn sample_trace_held(
     n_warmup: usize,
     n_runs: usize,
     sync_rt: &CudaRuntime,
-) -> Result<(Vec<f64>, Vec<Tensor>), String> {
+) -> Result<(Vec<f64>, Vec<Tensor>, Value), String> {
     let mut session = backend
         .open_session()
         .map_err(|e| format!("open held session: {e}"))?;
-    for _ in 0..n_warmup.max(1) {
-        let out = session
-            .with_session(|s| runtime.run_prepared_in(s, prepared, inputs))
-            .map_err(|e| format!("held session entry: {e}"))?
-            .map_err(|e| format!("warmup: {e}"))?;
-        black_box(out.len());
-    }
-    let mut times_ms = Vec::with_capacity(n_runs);
-    let mut last_out: Option<Vec<Tensor>> = None;
-    for _ in 0..n_runs {
-        let t0 = Instant::now();
-        let out = session
-            .with_session(|s| runtime.run_prepared_in(s, prepared, inputs))
-            .map_err(|e| format!("held session entry: {e}"))?
-            .map_err(|e| format!("run: {e}"))?;
-        times_ms.push(t0.elapsed().as_secs_f64() * 1000.0);
-        last_out = Some(out);
-    }
-    sync_cubecl_runtime(sync_rt)?;
+    let result = sample_trace_batches(
+        sync_rt,
+        "one caller-held CUDA session entered before sampling; each Runtime::run_prepared_in call includes its own stream-retirement barrier inside the batch interval; inputs, plans, compilation and session entry outside clocks",
+        n_warmup,
+        n_runs,
+        || {
+            session
+                .with_session(|s| runtime.run_prepared_in(s, prepared, inputs))
+                .map_err(|e| format!("held session entry: {e}"))?
+                .map_err(|e| format!("run: {e}"))
+        },
+    );
     session
         .close()
         .map_err(|e| format!("close held session: {e}"))?;
-    Ok((times_ms, last_out.ok_or("no timed prepared run")?))
-}
-
-/// Execution notes that record the caller-held-session scope of a trace row.
-fn trace_execution_notes(op: &str, held_session: bool) -> String {
-    if held_session {
-        format!(
-            "{}; each timed call runs the prepared graph in one caller-held CUDA session \
-             (Runtime::run_prepared_in) and includes the run's own stream-retirement barrier, \
-             with no output download inside timing",
-            tenferro_notes(op)
-        )
-    } else {
-        tenferro_notes(op).to_string()
-    }
+    result
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -649,7 +725,7 @@ fn run_trace_tensor_network(
             .prepare_compiled(&program, &gpu_inputs)
             .map_err(|e| format!("prepare: {e}"))?;
 
-        let (times_ms, last_out) = if held_session {
+        let (times_ms, last_out, sampling) = if held_session {
             sample_trace_held(
                 &mut compute_bk,
                 &runtime,
@@ -681,11 +757,11 @@ fn run_trace_tensor_network(
         let (ver_status, max_abs, max_rel) =
             verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
 
-        Ok((times_ms, ver_status, max_abs, max_rel))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
             if ver_status == "failed" {
                 return stub(
                     suite_id,
@@ -700,7 +776,11 @@ fn run_trace_tensor_network(
                     tc,
                 );
             }
-            let stats = timing_stats(&times_ms);
+            let stats = if verification_only() {
+                (0., 0., 0., 0., 0.)
+            } else {
+                timing_stats(&times_ms)
+            };
             let mut record = ok_record(
                 suite_id,
                 problem,
@@ -719,8 +799,7 @@ fn run_trace_tensor_network(
                 bc,
                 tc,
             );
-            record["execution"]["notes"] =
-                json!(trace_execution_notes("tensor_network_contract", held_session));
+            apply_sampling_record(&mut record, &sampling);
             record
         }
         Ok(Err(msg)) => stub(
@@ -859,7 +938,10 @@ fn run_eager(
                 n_warmup,
                 n_runs,
                 device_ordinal,
-                || run_eager_op(op, &subscripts, batched_matmul_cfg(), &gpu_inputs),
+                &gpu_inputs,
+                |config, refs| {
+                    run_eager_op_prepared(op, &subscripts, config, &gpu_inputs, refs)
+                },
             )?
         } else {
             let refs = gpu_inputs.extra.iter().collect::<Vec<_>>();
@@ -943,7 +1025,7 @@ fn run_eager(
                 bc,
                 tc,
             );
-            apply_eager_sampling_record(&mut record, &sampling);
+            apply_sampling_record(&mut record, &sampling);
             record
         }
         Ok(Err(msg)) => stub(
@@ -1050,7 +1132,7 @@ fn run_semantic_trace_einsum(
             .prepare_compiled(&program, &gpu_input_refs)
             .map_err(|e| format!("prepare: {e}"))?;
 
-        let (times_ms, last_out) = if held_session {
+        let (times_ms, last_out, sampling) = if held_session {
             sample_trace_held(
                 &mut compute_bk,
                 &runtime,
@@ -1091,11 +1173,11 @@ fn run_semantic_trace_einsum(
             atol,
         );
 
-        Ok((times_ms, ver_status, max_abs, max_rel))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
             if ver_status == "failed" {
                 return stub(
                     suite_id,
@@ -1110,6 +1192,11 @@ fn run_semantic_trace_einsum(
                     tc,
                 );
             }
+            let stats = if verification_only() {
+                (0., 0., 0., 0., 0.)
+            } else {
+                timing_stats(&times_ms)
+            };
             let mut record = ok_record(
                 suite_id,
                 problem,
@@ -1118,7 +1205,7 @@ fn run_semantic_trace_einsum(
                 exec_path,
                 n_warmup,
                 n_runs,
-                timing_stats(&times_ms),
+                stats,
                 &ver_status,
                 max_abs,
                 max_rel,
@@ -1128,8 +1215,7 @@ fn run_semantic_trace_einsum(
                 bc,
                 tc,
             );
-            record["execution"]["notes"] =
-                json!(trace_execution_notes("einsum", held_session));
+            apply_sampling_record(&mut record, &sampling);
             record
         }
         Ok(Err(msg)) => stub(
@@ -1245,7 +1331,7 @@ fn run_trace(
         let prepared = runtime
             .prepare_compiled(&program, &[])
             .map_err(|e| format!("prepare: {e}"))?;
-        let (times_ms, last_out) = if held_session {
+        let (times_ms, last_out, sampling) = if held_session {
             sample_trace_held(
                 &mut compute_bk,
                 &runtime,
@@ -1284,11 +1370,11 @@ fn run_trace(
         let (ver_status, max_abs, max_rel) =
             verify_tensors(op, &gpu_tensors, &cpu_out, &cpu_inputs, rtol, atol);
 
-        Ok((times_ms, ver_status, max_abs, max_rel))
+        Ok((times_ms, ver_status, max_abs, max_rel, sampling))
     }));
 
     match result {
-        Ok(Ok((times_ms, ver_status, max_abs, max_rel))) => {
+        Ok(Ok((times_ms, ver_status, max_abs, max_rel, sampling))) => {
             if ver_status == "failed" {
                 return stub(
                     suite_id,
@@ -1303,7 +1389,11 @@ fn run_trace(
                     tc,
                 );
             }
-            let stats = timing_stats(&times_ms);
+            let stats = if verification_only() {
+                (0., 0., 0., 0., 0.)
+            } else {
+                timing_stats(&times_ms)
+            };
             let mut record = ok_record(
                 suite_id,
                 problem,
@@ -1322,7 +1412,7 @@ fn run_trace(
                 bc,
                 tc,
             );
-            record["execution"]["notes"] = json!(trace_execution_notes(op, held_session));
+            apply_sampling_record(&mut record, &sampling);
             record
         }
         Ok(Err(msg)) => stub(
@@ -1586,25 +1676,35 @@ fn build_cpu_eager_inputs(
     }
 }
 
-fn run_eager_op(
+fn run_eager_op_prepared(
     op: &str,
     subscripts: &tenferro_einsum::EinsumSubscripts,
     batched_config: DotGeneralConfig,
     inputs: &EagerInputs,
+    refs: &[&EagerTensor],
 ) -> Result<Vec<EagerTensor>, String> {
     let anchor = if op == "einsum" {
         &inputs.extra[0]
     } else {
         &inputs.a
     };
-    let refs = inputs.extra.iter().collect::<Vec<_>>();
     anchor
         .runtime()
         .with_eager_session(|session| {
-            run_eager_op_in(session, op, subscripts, batched_config, inputs, &refs)
+            run_eager_op_in(session, op, subscripts, batched_config, inputs, refs)
                 .map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
         })
         .map_err(|e| e.to_string())
+}
+
+fn run_eager_op(
+    op: &str,
+    subscripts: &tenferro_einsum::EinsumSubscripts,
+    batched_config: DotGeneralConfig,
+    inputs: &EagerInputs,
+) -> Result<Vec<EagerTensor>, String> {
+    let refs = inputs.extra.iter().collect::<Vec<_>>();
+    run_eager_op_prepared(op, subscripts, batched_config, inputs, &refs)
 }
 
 fn run_eager_op_in(
@@ -1658,18 +1758,19 @@ fn run_eager_op_in(
     result.map_err(|e| e.to_string())
 }
 
-fn sample_eager_ops(
+fn sample_eager_ops<P>(
     rt: &CudaRuntime,
     sampler_start: Instant,
     warmups: usize,
     runs: usize,
     device_ordinal: usize,
     setup_note: &str,
-    mut op: impl FnMut() -> Result<Vec<EagerTensor>, String>,
+    mut prepare: impl FnMut() -> P,
+    mut op: impl FnMut(P) -> Result<Vec<EagerTensor>, String>,
 ) -> Result<(Vec<f64>, Vec<EagerTensor>, Value), String> {
     let result = (|| -> Result<_, String> {
         if verification_only() {
-            let output = op()?;
+            let output = op(prepare())?;
             sync_cubecl_runtime(rt)?;
             assert_cuda_eager_outputs(&output, device_ordinal)?;
             return Ok((Vec::new(), output, json!({"sampling":null,"verification_only":true,
@@ -1677,11 +1778,14 @@ fn sample_eager_ops(
                 "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()})));
         }
         let mut batch = |count: usize| -> Result<_, String> {
-            let mut outputs = Vec::with_capacity(count);
+            // Per-sample argument setup (configs, input handles) stays outside
+            // the clock, as the pre-refactor batched eager sampler did.
+            let prepared: Vec<P> = (0..count).map(|_| prepare()).collect();
             sync_cubecl_runtime(rt)?;
             let start = Instant::now();
-            for _ in 0..count {
-                outputs.push(op()?);
+            let mut outputs = Vec::with_capacity(count);
+            for args in prepared {
+                outputs.push(op(args)?);
             }
             sync_cubecl_runtime(rt)?;
             let elapsed = start.elapsed().as_secs_f64() * 1000.;
@@ -1749,7 +1853,8 @@ fn sample_eager(
             runs,
             device_ordinal,
             "one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks",
-            || op(session, batched_matmul_cfg()),
+            batched_matmul_cfg,
+            |config| op(session, config),
         )
         .map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
     })
@@ -1758,13 +1863,16 @@ fn sample_eager(
 
 /// Diagnostic eager arm: enters and leaves an eager session per operation, so
 /// session-entry cost sits next to the one-session-per-batch eager arm and the
-/// caller-held trace session.
-fn sample_eager_per_call(
+/// caller-held trace session. Only the operation call and its session entry are
+/// inside the clock; the config and input-reference handles are prepared
+/// before the batch starts.
+fn sample_eager_per_call<'a>(
     rt: &CudaRuntime,
     warmups: usize,
     runs: usize,
     device_ordinal: usize,
-    op: impl FnMut() -> Result<Vec<EagerTensor>, String>,
+    inputs: &'a EagerInputs,
+    mut op: impl FnMut(DotGeneralConfig, &[&'a EagerTensor]) -> Result<Vec<EagerTensor>, String>,
 ) -> Result<(Vec<f64>, Vec<EagerTensor>, Value), String> {
     let sampler_start = Instant::now();
     sample_eager_ops(
@@ -1774,7 +1882,8 @@ fn sample_eager_per_call(
         runs,
         device_ordinal,
         "one eager session entered and left per operation; input wrapping, transfers, argument handles, initialization and validation outside clocks",
-        op,
+        || (batched_matmul_cfg(), inputs.extra.iter().collect::<Vec<_>>()),
+        |(config, refs)| op(config, &refs),
     )
 }
 
