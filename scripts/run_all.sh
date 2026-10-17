@@ -35,6 +35,10 @@ set -euo pipefail
 # RUN_SMALL_WORK_SUITE=0 to skip them. BENCH_COVERAGE=quick|full and BENCH_EFFORT=scan|standard|confirm
 # apply to these suites.
 #
+# cpu/overhead_smoke (scripts/run_overhead_smoke.sh, one run thread, a few
+# minutes) runs once after them by default; set RUN_OVERHEAD_SMOKE_SUITE=0 to
+# skip it.
+#
 # Set RUN_PERMUTATION_SUITE=1 to also run scripts/run_permutation.sh (the
 # cpu/permutation suite) sequentially after everything above completes; see
 # docs/permutation-suite.md. Off by default.
@@ -77,6 +81,11 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     if [[ "${RUN_SMALL_WORK_SUITE:-1}" == "1" ]]; then
         "$SCRIPT_DIR/run_small_work.sh" "${THREAD_COUNTS[@]}"
         "$SCRIPT_DIR/run_cpu_session.sh" "${THREAD_COUNTS[@]}"
+    fi
+
+    if [[ "${RUN_OVERHEAD_SMOKE_SUITE:-1}" == "1" ]]; then
+        # Single-threaded by design; runs once whatever the thread-count list.
+        "$SCRIPT_DIR/run_overhead_smoke.sh"
     fi
 
     if [[ "${RUN_PERMUTATION_SUITE:-1}" == "1" ]]; then
@@ -708,6 +717,10 @@ fi
 if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_SMALL_WORK_SUITE:-1}" == "1" ]]; then
     SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_small_work.sh" "$NUM_THREADS"
     "$SCRIPT_DIR/run_cpu_session.sh" "$NUM_THREADS"
+fi
+
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_OVERHEAD_SMOKE_SUITE:-1}" == "1" ]]; then
+    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_overhead_smoke.sh"
 fi
 
 # Opt-in: cpu/permutation suite, run sequentially after every suite above.
