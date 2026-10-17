@@ -1,6 +1,14 @@
 name: benchmark-runpod-gpu
 
 on:
+  # Weekly collection with weekend retry slots. The first slot that succeeds
+  # provides that week's results; later slots skip before renting a GPU
+  # (scripts/ci/weekly_gate.py). Times are UTC.
+  schedule:
+    - cron: "0 8 * * 6"
+    - cron: "0 14 * * 6"
+    - cron: "0 20 * * 6"
+    - cron: "0 8 * * 0"
   workflow_dispatch:
     inputs:
       suite:
@@ -24,9 +32,9 @@ on:
         default: false
         type: boolean
       gpu_type:
-        description: Optional RunPod GPU type ID (empty uses configured candidates)
+        description: RunPod GPU type ID (standard nvidia-gpu hardware is the A100 80GB PCIe)
         required: false
-        default: ''
+        default: NVIDIA A100 80GB PCIe
         type: string
 
 permissions:
@@ -45,10 +53,39 @@ env:
   TENFERRO_CPU_FEATURES: none
   UV_NO_SYNC: "1"
   BENCHMARK_TARGET_PROFILE: nvidia-gpu
+  # Scheduled runs have no inputs; these fall back to the weekly defaults.
+  BENCH_SUITE: ${{ inputs.suite || 'all' }}
+  BENCH_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda' }}
+  BENCH_GPU_TYPE: ${{ inputs.gpu_type || 'NVIDIA A100 80GB PCIe' }}
+  # Hard cap on one pod's lifetime, enforced by the pod itself (see startup).
+  # Budget: <=7 min startup (startup_timeout_seconds) + 45 min benchmark job
+  # timeout + cleanup stays below it.
+  POD_MAX_LIFETIME_SECONDS: "3300"
 
 jobs:
+  weekly-gate:
+    name: Skip if this week's GPU results already exist
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      proceed: ${{ steps.gate.outputs.proceed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check for this week's successful scheduled run
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.ci.weekly_gate --repository "$GITHUB_REPOSITORY" --event "$GITHUB_EVENT_NAME" --run-id "$GITHUB_RUN_ID"
+
   prepare-benchmark:
     name: Build GPU benchmark before renting GPU
+    needs: weekly-gate
+    if: needs.weekly-gate.outputs.proceed == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     outputs:
@@ -101,12 +138,14 @@ jobs:
 
   prepare-environment:
     name: Prepare runtime before renting GPU
+    needs: weekly-gate
+    if: needs.weekly-gate.outputs.proceed == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     outputs:
       sha256: ${{ steps.identity.outputs.sha256 }}
     env:
-      GPU_BENCH_BACKENDS: ${{ inputs.backends }}
+      GPU_BENCH_BACKENDS: ${{ env.BENCH_BACKENDS }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -248,7 +287,7 @@ jobs:
         id: create_pod
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
-          RUNPOD_GPU_TYPE: ${{ inputs.gpu_type }}
+          RUNPOD_GPU_TYPE: ${{ env.BENCH_GPU_TYPE }}
           PROVISION_GH_TOKEN: ${{ steps.app-token.outputs.token }}
           PROVISION_ORG: ${{ github.repository_owner }}
           PROVISION_RUNNER_GROUP_ID: ${{ vars.RUNPOD_RUNNER_GROUP_ID || '4' }}
@@ -256,7 +295,16 @@ jobs:
           PYTHONUNBUFFERED: "1"
         run: |
           set -euo pipefail
-          cat > /tmp/runpod-startup.sh <<'STARTUP'
+          cat > /tmp/runpod-startup.sh <<STARTUP
+          # Rental cap independent of GitHub: delete this pod after the budget
+          # even if the workflow or its cleanup job never runs. RunPod injects
+          # a pod-scoped RUNPOD_API_KEY and RUNPOD_POD_ID for runpodctl.
+          if [[ -n "\${RUNPOD_POD_ID:-}" ]] && command -v runpodctl >/dev/null; then
+            nohup bash -c 'sleep ${POD_MAX_LIFETIME_SECONDS}; runpodctl remove pod "\$RUNPOD_POD_ID"' >/tmp/pod-watchdog.log 2>&1 &
+            echo \$! > /tmp/pod-watchdog.pid
+          fi
+          STARTUP
+          cat >> /tmp/runpod-startup.sh <<'STARTUP'
           set -euo pipefail
           export DEBIAN_FRONTEND=noninteractive
           export RUNNER_ALLOW_RUNASROOT=1
@@ -306,15 +354,22 @@ jobs:
     runs-on:
       - self-hosted
       - ${{ needs.start-runpod.outputs.runner_label }}
-    timeout-minutes: 360
+    # Part of the one-hour rental budget; see POD_MAX_LIFETIME_SECONDS.
+    timeout-minutes: 45
     env:
-      GPU_BENCH_BACKENDS: ${{ inputs.backends }}
-      REQUESTED_SUITE: ${{ inputs.suite }}
+      GPU_BENCH_BACKENDS: ${{ env.BENCH_BACKENDS }}
+      REQUESTED_SUITE: ${{ env.BENCH_SUITE }}
       TENFERRO_REF: ${{ needs.prepare-benchmark.outputs.tenferro_commit }}
       TENFERRO_UPDATE: "1"
       GPU_BENCH_PREBUILT_RUST: "1"
       GPU_RUNTIME_SHA256: ${{ needs.prepare-environment.outputs.sha256 }}
     steps:
+      - name: Verify pod lifetime watchdog is armed
+        run: |
+          set -euo pipefail
+          kill -0 "$(cat /tmp/pod-watchdog.pid)"
+          echo "Pod deletes itself ${POD_MAX_LIFETIME_SECONDS}s after startup."
+
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
         with:

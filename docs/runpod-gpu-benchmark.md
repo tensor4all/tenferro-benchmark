@@ -16,9 +16,36 @@ The workflow registers runners in organization runner group `4`
 access settings, including public repositories. To use a different group,
 set the repository Actions variable `RUNPOD_RUNNER_GROUP_ID` to its numeric ID.
 
-The pod receives only the single-use JIT runner configuration. The workflow is
-manual-dispatch only for now; it does not add RunPod credentials to pull
-request jobs. It uses the same RunPod image and provisioning modules as
+The pod receives only the single-use JIT runner configuration. The workflow
+runs weekly and on manual dispatch; it does not add RunPod credentials to pull
+request jobs.
+
+## Weekly schedule, GPU type, and rental cap
+
+The schedule fires four retry slots across the weekend (UTC): Saturday 08:00,
+14:00, 20:00, and Sunday 08:00. `scripts/ci/weekly_gate.py` lets a scheduled
+slot proceed only when no scheduled run has succeeded since Saturday 00:00 UTC,
+so the first slot that obtains a GPU and completes provides that week's
+results, and a slot that cannot obtain a card is retried by the next one
+without renting anything in between. Manual dispatches always proceed.
+Scheduled runs use `suite=all` and the default backends.
+
+Both scheduled and dispatched runs request only `NVIDIA A100 80GB PCIe`, the
+standard `nvidia-gpu` hardware. Passing a different reviewed `gpu_type` is
+for diagnostics only; such results must not replace maintained A100 reports.
+
+One pod's rental is capped below one hour (`POD_MAX_LIFETIME_SECONDS`, 3300 s):
+
+- The pod startup script arms a watchdog that deletes the pod with
+  `runpodctl remove pod "$RUNPOD_POD_ID"` (RunPod's pod-scoped credentials)
+  after the budget, independently of GitHub. The benchmark job's first step
+  fails unless that watchdog is running.
+- On the GitHub side, startup is bounded by `startup_timeout_seconds` (420 s),
+  the benchmark job by `timeout-minutes: 45`, and the cleanup job deletes the
+  pod after success, failure, timeout, or cancellation.
+
+If the standard suites outgrow the 45-minute job budget, split them across
+dispatches rather than raising the cap. It uses the same RunPod image and provisioning modules as
 `tenferro-rs`, adapted for this repository. Imported modules and tests are
 covered by `scripts/ci/LICENSE-tenferro-MIT`.
 
@@ -44,9 +71,10 @@ wheel uses CUDA 13.0. Provisioning requests CUDA 13.0-capable hosts and startup
 rejects older drivers before transferring the runtime. Hosted preparation checks
 the wheel's CUDA version so dependency upgrades cannot bypass this requirement.
 
-The optional `gpu_type` input restricts diagnostics to one reviewed GPU ID.
-The accepted GPU is recorded in benchmark metadata; comparisons must use the
-actual device, rather than treating all RunPod runs as the same hardware.
+The `gpu_type` input (default `NVIDIA A100 80GB PCIe`) restricts provisioning
+to one reviewed GPU ID. The accepted GPU is recorded in benchmark metadata;
+comparisons must use the actual device, rather than treating all RunPod runs
+as the same hardware.
 
 Before renting a GPU, a hosted Ubuntu 24.04 job builds a fresh Rust CUDA
 benchmark and archives it with both source commits and its SHA-256 digest.
@@ -103,6 +131,7 @@ Run a first GPU benchmark from GitHub Actions, or with:
 gh workflow run benchmark-runpod-gpu.yml --repo tensor4all/tenferro-benchmark \
   -f suite=benchmarks/gpu/dense.yaml \
   -f backends=tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda \
+  -f gpu_type="NVIDIA A100 80GB PCIe" \
   -f keep_failed_pod=false
 ```
 
