@@ -163,7 +163,7 @@ cat > "$TMP/scripts/run_cpu_public_api.sh" <<'SH'
 set -euo pipefail
 printf '%s\n' "${PUBLICATION_GATE_PROFILE:-missing}" >> "$(dirname "$0")/../public_profile_calls.log"
 SH
-for runner in run_small_work run_cpu_session; do
+for runner in run_small_work run_cpu_session run_overhead_smoke; do
   cat > "$TMP/scripts/$runner.sh" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -261,7 +261,9 @@ done
     ./scripts/run_all.sh 1 >>"$TMP/run_all_docs_test.out"
 )
 test "$(cat "$TMP/public_profile_calls.log")" = "$(printf 'quick\nquick\nquick\nfull')"
-test "$(cat "$TMP/small_suite_calls.log")" = "$(printf 'run_small_work.sh 1\nrun_cpu_session.sh 1\nrun_small_work.sh 4\nrun_cpu_session.sh 4\nrun_small_work.sh 1\nrun_cpu_session.sh 1')"
+# overhead_smoke is single-threaded: no thread-count argument, once per invocation
+# (including the RUN_SMALL_WORK_SUITE=0 multi-thread run).
+test "$(cat "$TMP/small_suite_calls.log")" = "$(printf 'run_small_work.sh 1\nrun_cpu_session.sh 1\nrun_overhead_smoke.sh \nrun_small_work.sh 4\nrun_cpu_session.sh 4\nrun_overhead_smoke.sh \nrun_overhead_smoke.sh \nrun_small_work.sh 1\nrun_cpu_session.sh 1\nrun_overhead_smoke.sh ')"
 for report in einsum cpu_ops; do
   test -s "$TMP/result/mac-cpu/cpu/$report.md"
   grep -q 'BLAS implementation: `accelerate`' "$TMP/result/mac-cpu/cpu/$report.md"

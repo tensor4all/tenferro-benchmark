@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 7
+MANIFEST_VERSION = 8
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -442,6 +442,25 @@ def cpu_umbrella_cases():
              scope="counter_diagnostic", intent="#2040/#1917: separate Rust allocation count "
              "for a borrowed Host typed view operation versus a plain borrowing descriptor. "
              "Check shape/strides/offset and pointer aliasing; metadata only, no payload copy.")
+    # #2178 item 8: allocation-free provider APIs. Pooled steady state (output dropped
+    # after each call), thread budgets 1 and 2; timing stays on typed_elemwise_f64_add_*.
+    for cid, op, intent in (
+        ("typed_elemwise_f64_add_bcast_counter", "bcast", "typed add with a rank-0 scalar rhs "
+         "(stride-0 operand) at n=16 and 8x8x8; 16 allocations from the strided-basic planner on 0.5."),
+        ("typed_elemwise_f64_add_permuted_view_counter", "permuted_view", "public add_read with a "
+         "permuted lhs view (perm [2,0,1]) at 8x8x8, next to an identity-view control row."),
+        ("permute_materialize_f64_r4_counter", "permute_r4", "materializing rank-4 typed transpose "
+         "(perm [3,1,0,2]) at 4x4x4x4 and 8x8x8x8."),
+        ("fused_elemwise_f64_serial_counter", "fused", "traced two-op program a*b+c through "
+         "run_prepared at 8x8x8 and 32x32x32 (strided-rs#305 setting at budget 1). Region execution "
+         "counts record whether the runtime fused the region or declined to per-op dispatch."),
+        ("reduce_axis_f64_counter", "reduce_axis", "typed reduce_sum over axis 1 at 4x4 and 8x8x8 "
+         "(ErasedReducePlan::compile_axes per call, 11 allocations on 0.5)."),
+    ):
+        pair(cid, "#2178", "alloc_counter", dict(op=op), scope="counter_diagnostic",
+             threads=(1, 2), intent=f"{intent} Separate Rust allocator pass over 64 public calls "
+             "after pool warmup, outputs dropped between calls; the host arm is a loop into a "
+             "caller-owned buffer. Expected 0 once the allocation-free provider APIs are pinned.")
     return rows
 
 

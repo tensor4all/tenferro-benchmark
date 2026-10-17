@@ -1,0 +1,215 @@
+[
+ {
+  "id": "typed_elemwise_f64_add_bcast_n16",
+  "refs": [
+   "tenferro-rs#2178"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "add_rank0_scalar_n16",
+  "backend_thread_budget": 1,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "bcast",
+   "fixture": "add_rank0_scalar_n16",
+   "timed": true
+  },
+  "note": "typed add, rank-0 scalar rhs (stride-0 operand)",
+  "counter_case": "cpu/perf_issues:typed_elemwise_f64_add_bcast_counter"
+ },
+ {
+  "id": "typed_elemwise_f64_add_bcast_8x8x8",
+  "refs": [
+   "tenferro-rs#2178"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "add_rank0_scalar_8x8x8",
+  "backend_thread_budget": 1,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "bcast",
+   "fixture": "add_rank0_scalar_8x8x8",
+   "timed": true
+  },
+  "note": "typed add, rank-0 scalar rhs (stride-0 operand)",
+  "counter_case": "cpu/perf_issues:typed_elemwise_f64_add_bcast_counter"
+ },
+ {
+  "id": "typed_elemwise_f64_add_permuted_view_8x8x8",
+  "refs": [
+   "tenferro-rs#2178"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "add_read_permuted_lhs_8x8x8",
+  "backend_thread_budget": 1,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "permuted_view",
+   "fixture": "add_read_permuted_lhs_8x8x8",
+   "timed": true
+  },
+  "note": "add_read, lhs a permuted view (perm [2,0,1])",
+  "counter_case": "cpu/perf_issues:typed_elemwise_f64_add_permuted_view_counter"
+ },
+ {
+  "id": "permute_materialize_f64_r4_4x4x4x4",
+  "refs": [
+   "tenferro-rs#2178"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "transpose_r4_4x4x4x4",
+  "backend_thread_budget": 1,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "permute_r4",
+   "fixture": "transpose_r4_4x4x4x4",
+   "timed": true
+  },
+  "note": "materializing rank-4 transpose (perm [3,1,0,2])",
+  "counter_case": "cpu/perf_issues:permute_materialize_f64_r4_counter"
+ },
+ {
+  "id": "fused_elemwise_f64_budget1_32x32x32",
+  "refs": [
+   "tenferro-rs#2178",
+   "strided-rs#305"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "run_prepared_mul_add_32x32x32",
+  "backend_thread_budget": 1,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "fused",
+   "fixture": "run_prepared_mul_add_32x32x32",
+   "timed": true,
+   "budget": 1
+  },
+  "note": "traced a*b+c via run_prepared, backend thread budget 1",
+  "counter_case": "cpu/perf_issues:fused_elemwise_f64_serial_counter"
+ },
+ {
+  "id": "fused_elemwise_f64_budget2_32x32x32",
+  "refs": [
+   "tenferro-rs#2178",
+   "strided-rs#305"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "run_prepared_mul_add_32x32x32",
+  "backend_thread_budget": 2,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "fused",
+   "fixture": "run_prepared_mul_add_32x32x32",
+   "timed": true,
+   "budget": 2
+  },
+  "note": "traced a*b+c via run_prepared, backend thread budget 2",
+  "counter_case": "cpu/perf_issues:fused_elemwise_f64_serial_counter"
+ },
+ {
+  "id": "reduce_axis_f64_8x8x8",
+  "refs": [
+   "tenferro-rs#2178"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "reduce_sum_axis1_8x8x8",
+  "backend_thread_budget": 1,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "reduce_axis",
+   "fixture": "reduce_sum_axis1_8x8x8",
+   "timed": true
+  },
+  "note": "typed reduce_sum over axis 1",
+  "counter_case": "cpu/perf_issues:reduce_axis_f64_counter"
+ },
+ {
+  "id": "concatenate_axis1_f64_8x8x8",
+  "refs": [
+   "tenferro-rs#2178"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "concatenate_axis1_8x8x8",
+  "backend_thread_budget": 1,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "concat",
+   "fixture": "concatenate_axis1_8x8x8",
+   "timed": true
+  },
+  "note": "concatenate two 8x8x8 tensors along axis 1"
+ },
+ {
+  "id": "einsum_prepared_f64_n2",
+  "refs": [
+   "tenferro-rs#2178",
+   "tenferro-rs#1899"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "einsum_prepared_execute_into_n2",
+  "backend_thread_budget": 1,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "einsum_prepared",
+   "fixture": "einsum_prepared_execute_into_n2",
+   "timed": true
+  },
+  "note": "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)"
+ },
+ {
+  "id": "einsum_prepared_f64_n4",
+  "refs": [
+   "tenferro-rs#2178",
+   "tenferro-rs#1899"
+  ],
+  "kind": "umbrella_alloc_counter",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "fixture": "einsum_prepared_execute_into_n4",
+  "backend_thread_budget": 1,
+  "params": {
+   "kind": "umbrella_alloc_counter",
+   "arm": "tenferro",
+   "dtype": "f64",
+   "op": "einsum_prepared",
+   "fixture": "einsum_prepared_execute_into_n4",
+   "timed": true
+  },
+  "note": "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)"
+ }
+]
