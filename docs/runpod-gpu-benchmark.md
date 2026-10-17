@@ -36,10 +36,13 @@ for diagnostics only; such results must not replace maintained A100 reports.
 
 One pod's rental is capped below one hour (`POD_MAX_LIFETIME_SECONDS`, 3300 s):
 
-- The pod startup script arms a watchdog that deletes the pod with
-  `runpodctl remove pod "$RUNPOD_POD_ID"` (RunPod's pod-scoped credentials)
-  after the budget, independently of GitHub. The benchmark job's first step
-  fails unless that watchdog is running.
+- The pod startup script arms a watchdog that deletes the pod after the
+  budget, independently of GitHub, using the pod-scoped `RUNPOD_POD_ID` and
+  `RUNPOD_API_KEY` that RunPod injects: `runpodctl remove pod` when present,
+  otherwise `DELETE https://rest.runpod.io/v1/pods/$RUNPOD_POD_ID` (the pinned
+  image has no `runpodctl`). The benchmark job's first step prints which
+  prerequisites exist, fails unless the watchdog is running, and proves the
+  pod-scoped credentials with a read-only API call.
 - On the GitHub side, startup is bounded by `startup_timeout_seconds` (420 s),
   the benchmark job by `timeout-minutes: 45`, and the cleanup job deletes the
   pod after success, failure, timeout, or cancellation.
