@@ -57,6 +57,7 @@ fi
 mkdir -p "$RESULTS_ROOT" "$REPORTS_DIR"
 
 IFS=',' read -r -a SUITES <<< "$SUITES_VALUE"
+REQUESTED_SUITE_FILES=("${SUITES[@]}")
 IFS=',' read -r -a BACKENDS <<< "$BACKENDS_VALUE"
 
 echo "============================================"
@@ -92,7 +93,18 @@ elif [[ -n "${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}" ]
 else
     COVERAGE=quick
 fi
+# A filtered invocation is a targeted probe, never a routine profile refresh.
+FILTERED=0
+[[ -n "${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}" ]] && FILTERED=1
+# On an unfiltered full run, also write the quick-profile report family from the
+# same records (quick selection is a subset of full; see docs/gpu-routine-coverage.md).
+QUICK_FROM_FULL=0
+if [[ "$COVERAGE" == full && "$FILTERED" == 0 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
+    QUICK_FROM_FULL=1
+fi
 SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection/$TIMESTAMP"
+QUICK_SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection_quick/$TIMESTAMP"
+QUICK_CONTROLS_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_controls_quick/$TIMESTAMP"
 mapfile -t SUITES < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
     --coverage "$COVERAGE" --effort "${BENCH_EFFORT:-standard}" \
     --backends "${GPU_BENCH_BACKENDS:-}" --problem "$PROBLEM_FILTER" \
@@ -226,6 +238,9 @@ run_python_backend() {
     local suite="$1"
     local chunk_jsonl="$2"
     shift 2
+    # Per-run synthetic sparse cache shared by every backend process (the
+    # fixtures are identical across pytorch-cuda/cusparse/ginkgo).
+    GPU_BENCH_SPARSE_CACHE_DIR="${GPU_BENCH_SPARSE_CACHE_DIR:-$(dirname "$chunk_jsonl")/cache}" \
     "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_python.py" \
         "$chunk_jsonl" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
         "$@" -- "$suite"
@@ -355,7 +370,18 @@ done
     --output "$SELECTION_DIR/report.md"
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
     mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu"
-    cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+    if [[ "$QUICK_FROM_FULL" == 1 ]]; then
+        cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_full_coverage.md"
+        "${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --coverage quick --effort "${BENCH_EFFORT:-standard}" \
+            --output "$QUICK_SELECTION_DIR" "${REQUESTED_SUITE_FILES[@]}" >/dev/null
+        "${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$QUICK_SELECTION_DIR" \
+            --records "${RESULT_PATHS[@]}" --restrict
+        "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$QUICK_SELECTION_DIR/case_status.json" \
+            --output "$QUICK_SELECTION_DIR/report.md"
+        cp "$QUICK_SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+    else
+        cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+    fi
 fi
 
 CONTROLS="${GPU_BENCH_ROUTINE_CONTROLS:-}"
@@ -384,7 +410,15 @@ PY
 if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
     "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$SELECTION_DIR" --output "$SELECTION_DIR/wall_report.md"
     if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
-        cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
+        if [[ "$QUICK_FROM_FULL" == 1 ]]; then
+            cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_full_workflow.md"
+            cp "$SELECTION_DIR/wall_command_complete.json" "$QUICK_SELECTION_DIR/wall_command_complete.json"
+            "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$QUICK_SELECTION_DIR" \
+                --controls "$QUICK_CONTROLS_DIR" --output "$QUICK_SELECTION_DIR/wall_report.md"
+            cp "$QUICK_SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
+        else
+            cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
+        fi
     fi
 fi
 

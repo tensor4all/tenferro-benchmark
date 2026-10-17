@@ -20,10 +20,32 @@ The versioned manifest is `benchmarks/gpu/manifests/routine.yaml`. Quick selects
 and one complete tensor-network contraction tree, each with tenferro eager,
 PyTorch and JAX. The small batched matmul retains the reported overhead regime;
 512/2048 solves retain distinct size regimes. Full preserves the broad vendor
-matrix, large batch, larger/adjacent solves, sparse references and alternate
-JAX tensor-network execution paths (95 pairs). Optional elementwise suites
+matrix, large batch, larger/adjacent solves, sparse references and the
+node-JIT JAX tensor-network path (94 pairs). The diagnostic `jax-cuda-eager`
+tensor-network path is opt-in, not part of default full coverage; request it
+with
+`GPU_BENCH_SUITE=benchmarks/gpu/tensornetwork.yaml GPU_BENCH_BACKENDS=jax-cuda-eager
+./scripts/run_gpu_suite.sh` (an explicit filter selects full coverage). Optional
+elementwise suites
 participate when explicitly requested. Unsupported implementations remain
 unsupported; selection does not establish implementation availability.
+
+An unfiltered `BENCH_COVERAGE=full` run also regenerates the quick-profile
+report family from the same records restricted to the quick manifest
+selection: `routine_coverage.md`, `routine_controls.md` and
+`routine_workflow.md` are the quick-profile reports, while the full-profile
+reports are mirrored to `routine_full_coverage.md`,
+`routine_full_controls.md` and `routine_full_workflow.md`. The quick selection
+itself is unchanged; a filterless quick run continues to write the quick
+reports only. This lets one full collection refresh both families instead of
+running the 27-pair quick profile only to rewrite its reports.
+
+The synthetic sparse fixtures are cached per run and reused across the
+`pytorch-cuda`, `cusparse` and `ginkgo` backend processes. `run_gpu_suite.sh`
+points `GPU_BENCH_SPARSE_CACHE_DIR` at `<suite run dir>/cache`; direct runner
+invocations fall back to `data/cache/gpu_sparse`. The cache is keyed by problem
+id + seed + shape and its stored identity (shape/nnz/seed) is verified before
+reuse. Generation and cache I/O happen outside any timed region.
 
 Every invocation writes effective suite YAMLs and `selection.json` under
 `data/results/nvidia-gpu/gpu/routine_selection/<timestamp>/`. The selection

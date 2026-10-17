@@ -21,11 +21,25 @@ class RoutineSelectionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             quick=self.plan(Path(tmp)/"quick"); full=self.plan(Path(tmp)/"full","full")
             self.assertEqual(len(quick["selected"]),27)
-            self.assertEqual(len(full["selected"]),95)
+            self.assertEqual(len(full["selected"]),94)
             self.assertTrue(set(quick["selected"])<=set(full["selected"]))
             self.assertTrue(any("b16_32" in key for key in quick["selected"]))
             self.assertTrue(any("tensornetwork" in key for key in quick["selected"]))
             self.assertFalse(any("gpu/sparse:" in key or "4096" in key for key in quick["selected"]))
+            # The diagnostic eager JAX tensor-network path is opt-in, not default full.
+            self.assertFalse(any(key.endswith(":jax-cuda-eager") for key in full["selected"]))
+
+    def test_jax_cuda_eager_tensor_network_is_opt_in(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = self.plan(
+                Path(tmp), "full",
+                backend_override="jax-cuda-eager",
+                problem="tensornetwork_permutation_optimized_f32",
+            )
+            self.assertEqual(
+                plan["selected"],
+                ["gpu/tensornetwork:tensornetwork_permutation_optimized_f32:jax-cuda-eager"],
+            )
 
     def test_effort_does_not_change_case_selection(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -57,6 +71,21 @@ class RoutineSelectionTest(unittest.TestCase):
             self.assertEqual(result["raw_samples_unavailable"],["s:c:b"])
             self.assertEqual(result["missing"],["s:d:b"])
             self.assertFalse(result["complete"])
+
+    def test_restricted_accounting_ignores_full_only_records(self):
+        plan = dict(manifest_version=1, coverage="quick", effort="standard",
+                    expected=["s:a:b"], selected=["s:a:b"], unselected=["s:c:b"])
+        def row(problem):
+            return json.dumps(dict(suite_id="s", problem_id=problem, backend="b", status="ok",
+                                   verification=dict(status="passed"),
+                                   execution=dict(notes=json.dumps({"sampling": {"batch_ms": [1.0]}}))))
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "records.jsonl"
+            path.write_text(row("a") + "\n" + row("c") + "\n")
+            self.assertEqual(selection.account(plan, [path])["unexpected"], ["s:c:b"])
+            restricted = selection.account(plan, [path], restrict=True)
+            self.assertEqual(restricted["unexpected"], [])
+            self.assertEqual(restricted["executed"], ["s:a:b"])
 
 
 if __name__ == "__main__": unittest.main()

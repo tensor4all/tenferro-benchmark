@@ -376,6 +376,14 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
 ```
 
+An unfiltered `BENCH_COVERAGE=full` run also writes the quick-profile routine
+reports (`routine_coverage.md`, `routine_controls.md`, `routine_workflow.md`)
+from the same records restricted to the quick manifest selection, so one full
+run regenerates both report families. The full-profile reports are the
+`routine_full_*.md` variants. The diagnostic `jax-cuda-eager` tensor-network
+path is opt-in via `GPU_BENCH_BACKENDS=jax-cuda-eager` (see
+`docs/gpu-routine-coverage.md`).
+
 For the GPU linalg JVP/VJP report (CPU `linalg_jvp_vjp` parity on CUDA):
 
 ```bash
@@ -445,7 +453,10 @@ result/nvidia-gpu/gpu/permutation.md
 
 This is a standalone entry point, like `scripts/run_permutation.sh` is for
 `cpu/permutation`: it is not wired into `scripts/run_gpu_suite.sh`. Run it
-sequentially; do not overlap it with other GPU benchmark processes.
+sequentially; do not overlap it with other GPU benchmark processes. The
+correctness gate defaults to exact sampled verification (per-axis corners plus
+1M seeded positions); set `PERMUTATION_FULL_VERIFY=1` to restore the full host
+reference. The mode is recorded in `run.yaml` and the report.
 
 If vendor libraries are needed:
 
