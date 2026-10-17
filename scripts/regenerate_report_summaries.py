@@ -77,8 +77,20 @@ def run_dir_from_report(report: Path, suite_dir: Path) -> Path | None:
     pattern = re.compile(r"data/results/[^\s`)]+")
     for match in pattern.findall(text):
         candidate = Path(match.rstrip(".,;"))
-        if candidate.is_dir() and candidate.parent.resolve() == suite_dir.resolve():
-            return candidate
+        if not RUN_DIR_RE.fullmatch(candidate.name):
+            continue
+        same_suite = (
+            candidate.parent.name == suite_dir.name
+            and candidate.parent.parent.name == suite_dir.parent.name
+        )
+        if not same_suite:
+            continue
+        declared = suite_dir / candidate.name
+        if declared.is_dir():
+            return declared
+        raise FileNotFoundError(
+            f"{report} names run {declared}, which is not available locally"
+        )
     stamp = re.search(r"^-\s*Timestamp:\s*`([^`]+)`", text, re.MULTILINE)
     if stamp:
         try:

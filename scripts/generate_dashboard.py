@@ -196,6 +196,19 @@ def case_rows(document: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
     return grouped
 
 
+def workload_key(row: dict[str, Any]) -> tuple[str, str]:
+    """Full workload identity: benchmark name plus dtype/shape/threads group."""
+    return (str(row.get("case")), str(row.get("group", "")))
+
+
+def grouped_workloads(document: dict[str, Any]) -> dict[tuple[str, str], list[dict[str, Any]]]:
+    """Group rows by ``(case, group)`` so 1T/4T or dtype variants stay distinct."""
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for row in document.get("rows", []):
+        grouped.setdefault(workload_key(row), []).append(row)
+    return grouped
+
+
 def row_median(rows: list[dict[str, Any]], backend: str) -> float | None:
     for row in rows:
         if row.get("backend") == backend and row.get("status") == "ok" and row.get("median") is not None:
@@ -212,11 +225,6 @@ def best_reference(rows: list[dict[str, Any]], backends: set[str]) -> float | No
 def tenferro_median(rows: list[dict[str, Any]]) -> tuple[float | None, float | None]:
     """Return (eager, trace) tenferro medians for a case."""
     return row_median(rows, TENFERRO_EAGER), row_median(rows, TENFERRO_TRACE)
-
-
-def primary_tenferro(rows: list[dict[str, Any]]) -> float | None:
-    eager, trace = tenferro_median(rows)
-    return eager if eager is not None else trace
 
 
 # ---------------------------------------------------------------------------
@@ -251,13 +259,15 @@ def is_tenferro_anomaly(row: dict[str, Any]) -> bool:
     return True
 
 
-def not_measured_cases(document: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
-    """Cases with tenferro rows that carry a harness-policy unsupported reason."""
-    result: dict[str, list[dict[str, Any]]] = {}
-    for case, rows in case_rows(document).items():
+def not_measured_cases(
+    document: dict[str, Any],
+) -> dict[tuple[str, str], list[dict[str, Any]]]:
+    """Workloads with tenferro rows that carry a harness-policy unsupported reason."""
+    result: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for key, rows in grouped_workloads(document).items():
         entries = [row for row in rows if is_tenferro(row) and is_neutral_unsupported(row)]
         if entries:
-            result[case] = entries
+            result[key] = entries
     return result
 
 
@@ -323,13 +333,14 @@ def suite_ratios(
 
     Returns ``{column: {"arms": {arm_label: ratio}, "count": n}}``.
     """
-    grouped = case_rows(document)
+    grouped = grouped_workloads(document)
+    by_case = case_rows(document)
     result: dict[str, Any] = {}
     for rule in ratio_rules_for(suite_id):
         arm_values: dict[str, list[float]] = {}
         count = 0
-        for case, rows in grouped.items():
-            entries = case_ratio_entries(rows, case, rule, reference_map or {}, grouped)
+        for (case, _group), rows in grouped.items():
+            entries = case_ratio_entries(rows, case, rule, reference_map or {}, by_case)
             if entries:
                 count += 1
             for label, value in entries.items():
@@ -349,15 +360,16 @@ def perf_reference_details(
     reference_map: dict[str, list[str]],
 ) -> list[dict[str, Any]]:
     """Per-case tenferro/reference ratios for perf-issue suites, worst first."""
-    grouped = case_rows(document)
+    grouped = grouped_workloads(document)
+    by_case = case_rows(document)
     details: list[dict[str, Any]] = []
-    for case, rows in grouped.items():
+    for (case, _group), rows in grouped.items():
         for row in rows:
             if not is_tenferro(row) or row.get("status") != "ok" or row.get("median") is None:
                 continue
             reference_values: list[tuple[float, str]] = []
             for reference_case in reference_map.get(case, []):
-                for reference_row in grouped.get(reference_case, []):
+                for reference_row in by_case.get(reference_case, []):
                     if reference_row.get("status") == "ok" and reference_row.get("median"):
                         reference_values.append((float(reference_row["median"]), reference_case))
             if not reference_values:
@@ -438,7 +450,6 @@ def previous_rows_for(
     that tree.  Otherwise it walks ``git log`` for the summary path and returns
     the most recent earlier committed version whose hardware name matches.
     """
-    suite_name = suite_id.split("/", 1)[1] if "/" in suite_id else suite_id
     hardware = hardware_name(document)
     if baseline_dir is not None:
         candidate = baseline_dir / profile / f"{suite_id}.summary.json"
@@ -479,18 +490,18 @@ def previous_rows_for(
 def suite_flags(
     document: dict[str, Any] | None,
     previous_rows: list[dict[str, Any]] | None,
-) -> dict[str, list[str]]:
+) -> dict[tuple[str, str], list[str]]:
     if not document:
         return {}
-    grouped = case_rows(document)
-    previous_by_case: dict[str, list[dict[str, Any]]] = {}
+    grouped = grouped_workloads(document)
+    previous_by_workload: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for row in previous_rows or []:
-        previous_by_case.setdefault(str(row.get("case")), []).append(row)
-    flags: dict[str, list[str]] = {}
-    for case, rows in grouped.items():
-        case_flags = compute_case_flags(rows, previous_by_case.get(case))
+        previous_by_workload.setdefault(workload_key(row), []).append(row)
+    flags: dict[tuple[str, str], list[str]] = {}
+    for key, rows in grouped.items():
+        case_flags = compute_case_flags(rows, previous_by_workload.get(key))
         if case_flags:
-            flags[case] = case_flags
+            flags[key] = case_flags
     return flags
 
 
@@ -573,9 +584,15 @@ def svg_bar_chart(rows: list[dict[str, Any]], unit: str) -> str:
     points.sort(key=lambda item: item[1])
     values = [value for _, value in points]
     use_log = max(values) / min(values) > 10
-    transformed = [math.log10(value) if use_log else value for value in values]
-    low, high = min(transformed), max(transformed)
-    span = high - low or 1.0
+    if use_log:
+        low = math.log10(min(values))
+        high = math.log10(max(values))
+        span = high - low or 1.0
+        fractions = [(math.log10(value) - low) / span for value in values]
+    else:
+        # Linear bars must start at zero, not at the smallest median.
+        span = max(values) or 1.0
+        fractions = [value / span for value in values]
 
     height = len(points) * (BAR_HEIGHT + BAR_GAP) + 8
     parts = [
@@ -583,10 +600,9 @@ def svg_bar_chart(rows: list[dict[str, Any]], unit: str) -> str:
         f'width="100%" role="img" aria-label="median by backend">'
     ]
     if use_log:
-        parts.append('<text x="0" y="10" class="chart-note">log scale</text>')
-    for index, ((backend, value), transformed_value) in enumerate(zip(points, transformed)):
+        parts.append('<text x="0" y="10" class="chart-note">log scale (baseline = smallest median)</text>')
+    for index, ((backend, value), fraction) in enumerate(zip(points, fractions)):
         y = index * (BAR_HEIGHT + BAR_GAP) + (16 if use_log else 4)
-        fraction = (transformed_value - low) / span if not use_log else (transformed_value - low) / span
         width = max(2.0, fraction * BAR_AREA_WIDTH)
         cls = "bar-tenferro" if backend.startswith("tenferro") else "bar-reference"
         parts.append(
@@ -874,42 +890,45 @@ def render_case_table(
 ) -> str:
     flags = suite_flags(document, previous_rows)
     neutral = not_measured_cases(document)
-    grouped = case_rows(document)
+    grouped = grouped_workloads(document)
+    by_case = case_rows(document)
     rules = ratio_rules_for(suite_id)
     rows = []
-    for case in sorted(grouped):
-        rows_for_case = grouped[case]
+    for case, group in sorted(grouped):
+        rows_for_case = grouped[(case, group)]
         cells = []
         for rule in rules:
-            entries = case_ratio_entries(rows_for_case, case, rule, reference_map, grouped)
+            entries = case_ratio_entries(rows_for_case, case, rule, reference_map, by_case)
             cells.append(render_ratio_cell({"arms": entries} if entries else None))
-        if case in neutral:
+        if (case, group) in neutral:
             reasons = "; ".join(
-                f"{esc(row.get('backend'))}: {esc(row.get('reason') or '')}" for row in neutral[case]
+                f"{esc(row.get('backend'))}: {esc(row.get('reason') or '')}" for row in neutral[(case, group)]
             )
             note = f'<span class="not-measured">not measured</span> <span class="muted">{reasons}</span>'
         else:
             note = '<span class="muted">-</span>'
-        flags_text = flag_badges(flags.get(case, [])) or '<span class="muted">-</span>'
+        flags_text = flag_badges(flags.get((case, group), [])) or '<span class="muted">-</span>'
         rows.append(
             f"<tr><td><code>{esc(case)}</code></td>"
-            f"<td>{esc(rows_for_case[0].get('group', '') or '-')}</td>"
+            f"<td>{esc(group or '-')}</td>"
             + "".join(cells)
             + f"<td>{note}</td><td>{flags_text}</td></tr>"
         )
-    flagged = [(case, flags[case]) for case in sorted(flags)]
+    flagged = [(key, flags[key]) for key in sorted(flags)]
     sections = []
     if flagged:
         items = "".join(
-            f"<li><code>{esc(case)}</code> {flag_badges(case_flags)}</li>" for case, case_flags in flagged
+            f"<li><code>{esc(case)}</code> <span class=\"muted\">{esc(group)}</span> {flag_badges(case_flags)}</li>"
+            for (case, group), case_flags in flagged
         )
         sections.append(f"<h2>Flagged cases ({len(flagged)})</h2><ul>{items}</ul>")
     if neutral:
         items = "".join(
-            f"<li><code>{esc(case)}</code> <span class=\"not-measured\">not measured</span>: "
-            + "; ".join(f"{esc(row.get('backend'))} \u2014 {esc(row.get('reason') or '')}" for row in rows_)
+            f"<li><code>{esc(case)}</code> <span class=\"muted\">{esc(group)}</span> "
+            + '<span class="not-measured">not measured</span>: '
+            + "; ".join(f"{esc(row.get('backend'))} — {esc(row.get('reason') or '')}" for row in rows_)
             + "</li>"
-            for case, rows_ in sorted(neutral.items())
+            for (case, group), rows_ in sorted(neutral.items())
         )
         sections.append(f"<h2>Not measured (harness policy) ({len(neutral)})</h2><ul>{items}</ul>")
     table = (
@@ -924,11 +943,14 @@ def render_case_table(
 
 def render_charts(document: dict[str, Any]) -> str:
     unit = document.get("unit", "ms")
-    grouped = case_rows(document)
+    grouped = grouped_workloads(document)
     parts = ["<h2>Per-case medians</h2>"]
-    for case in sorted(grouped):
-        parts.append(f"<h3><code>{esc(case)}</code></h3>")
-        parts.append(svg_bar_chart(grouped[case], unit))
+    for case, group in sorted(grouped):
+        title = f"<code>{esc(case)}</code>"
+        if group:
+            title += f' <span class="muted">{esc(group)}</span>'
+        parts.append(f"<h3>{title}</h3>")
+        parts.append(svg_bar_chart(grouped[(case, group)], unit))
     return "".join(parts)
 
 
@@ -1002,14 +1024,6 @@ def render_suite_page(
 
 def render_markdown(text: str) -> str:
     return markdown.markdown(text, extensions=["tables", "fenced_code"])
-
-
-def standalone_report_page(report: Path) -> str:
-    return page(
-        report.stem,
-        f'<p><a href="../../index.html">&larr; all results</a></p>'
-        + render_markdown(report.read_text(encoding="utf-8")),
-    )
 
 
 def generate(

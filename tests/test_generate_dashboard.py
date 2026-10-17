@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -116,8 +117,46 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(dashboard.compute_case_flags([neutral]), [])
         self.assertEqual(dashboard.compute_case_flags([unexpected]), ["status"])
         document = summary_document([neutral, unexpected, failed])
-        self.assertEqual(set(dashboard.not_measured_cases(document)), {"case_n"})
-        self.assertEqual(set(dashboard.suite_flags(document, None)), {"case_u", "case_f"})
+        self.assertEqual(
+            {key[0] for key in dashboard.not_measured_cases(document)}, {"case_n"}
+        )
+        self.assertEqual(
+            {key[0] for key in dashboard.suite_flags(document, None)}, {"case_u", "case_f"}
+        )
+
+    def test_thread_counts_do_not_produce_false_regression(self):
+        previous = summary_document([
+            row("case", "tenferro-trace", 1.0, group="Threads: 1 / opt"),
+            row("case", "pytorch-cpu", 1.0, group="Threads: 1 / opt"),
+        ])
+        current = summary_document([
+            row("case", "tenferro-trace", 1.0, group="Threads: 1 / opt"),
+            row("case", "tenferro-trace", 4.0, group="Threads: 4 / opt"),
+            row("case", "pytorch-cpu", 1.0, group="Threads: 1 / opt"),
+            row("case", "pytorch-cpu", 4.0, group="Threads: 4 / opt"),
+        ])
+        # The 4T workload has no previous 4T row; it must not be compared to 1T.
+        self.assertEqual(dashboard.suite_flags(current, previous["rows"]), {})
+        # The same workload still flags a real regression.
+        regressed = summary_document([
+            row("case", "tenferro-trace", 4.0, group="Threads: 1 / opt"),
+        ])
+        self.assertEqual(
+            dashboard.suite_flags(regressed, previous["rows"]),
+            {("case", "Threads: 1 / opt"): ["regression"]},
+        )
+
+    def test_linear_bars_use_a_zero_baseline(self):
+        rows = [row("c", "backend-a", 1.0), row("c", "backend-b", 1.01)]
+        svg = dashboard.svg_bar_chart(rows, "ms")
+        widths = [float(width) for width in re.findall(r'<rect[^>]*width="([0-9.]+)"', svg)]
+        self.assertEqual(len(widths), 2)
+        # 1.00 and 1.01 are nearly equal with a zero baseline, not 2 px vs 440 px.
+        self.assertLess(max(widths) / min(widths), 1.1)
+        self.assertNotIn("log scale", svg)
+        # A >10x spread switches to a labelled log scale.
+        log_svg = dashboard.svg_bar_chart([row("c", "a", 1.0), row("c", "b", 100.0)], "ms")
+        self.assertIn("log scale", log_svg)
 
     def test_permutation_and_perf_issue_ratio_mapping(self):
         permutation = summary_document([
@@ -250,6 +289,26 @@ class RegenerateSummariesTests(unittest.TestCase):
         self.assertEqual(document["hardware"]["gpu"], "NVIDIA A100 80GB PCIe")
         self.assertEqual(document["rows"][0]["case"], "dense_matmul_f64_16")
         self.assertFalse((self.result / "mac-cpu/cpu/permutation.summary.json").exists())
+
+    def test_missing_declared_raw_run_never_falls_back_to_a_newer_run(self):
+        import regenerate_report_summaries as regenerate
+
+        record = {
+            "problem_id": "dense_matmul_f64_16",
+            "backend": "tenferro-cuda-eager",
+            "status": "ok",
+            "timing": {"median_ms": 1.25, "iqr_ms": 0.1},
+            "verification": {"status": "passed"},
+        }
+        # The tracked report names R1, which is gone; a newer unpublished R2 exists.
+        self.write_run("nvidia-gpu", "gpu/dense", "20261017_000000", [record])
+        (self.result / "nvidia-gpu/gpu").mkdir(parents=True)
+        (self.result / "nvidia-gpu/gpu/dense.md").write_text(
+            "# GPU Dense\n\n- Raw run: `data/results/nvidia-gpu/gpu/dense/20261016_235116`\n"
+        )
+        written = regenerate.regenerate(self.result, self.data)
+        self.assertEqual(written, [])
+        self.assertFalse((self.result / "nvidia-gpu/gpu/dense.summary.json").exists())
 
 
 class SummaryHelperTests(unittest.TestCase):
