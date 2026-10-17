@@ -355,6 +355,14 @@ sequential: one devcontainer benchmark command at a time, with no concurrent
 
 Use the CUDA devcontainer for NVIDIA GPU measurements.
 
+The CUDA devcontainer mounts a container-only named volume over
+`<workspace>/.venv`, so the host and container Python environments are separate.
+A host `uv run`/`uv sync` cannot rewrite the container's CUDA PyTorch/JAX wheels
+or interpreter. Run Python inside the container for GPU work; use host `python3`
+only for pure-Python checks that do not import `torch`. The CPU devcontainers
+deliberately keep a resettable bind-mounted `.venv` instead, because their
+collection scripts delete and recreate it.
+
 Collect `nvidia-gpu` reports on the NVIDIA A100 80GB PCIe host (the standard
 GPU benchmark hardware since 2026-10-17); do not mix in results from other GPU
 models. That host has a single GPU (physical GPU 0): verification-only lanes

@@ -25,6 +25,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import tensornetwork_contract as tnc
+import torch_extension_lock
 
 # Number of chained elementwise steps in `elementwise_chain` problems; must
 # match `ELEMENTWISE_CHAIN_STEPS` in src/bin/benchmark_gpu_rust.rs.
@@ -302,6 +303,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 """
     cpp_src = ""
     try:
+        # A killed build leaves torch's FileBaton lock behind and the next
+        # load() hangs forever. Clear provably stale locks first.
+        torch_extension_lock.ensure_build_lock_clear("cutlass_gemm_f64")
         ext = load_inline(
             name="cutlass_gemm_f64",
             cpp_sources=cpp_src,
@@ -553,6 +557,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 
 """
     try:
+        # Same FileBaton hazard as the CUTLASS extension above.
+        torch_extension_lock.ensure_build_lock_clear("ginkgo_csr_spmm")
         ext = load_inline(
             name="ginkgo_csr_spmm",
             cpp_sources=cpp_src,
