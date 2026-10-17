@@ -384,7 +384,8 @@ if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]
         "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$QUICK_SELECTION_DIR/case_status.json" \
             --output "$QUICK_SELECTION_DIR/report.md"
         cp "$QUICK_SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
-    else
+    elif [[ "$FILTERED" == 0 ]]; then
+        # A filtered probe is not a routine profile refresh: its accounting stays in the raw selection dir.
         cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
     fi
 fi
@@ -423,7 +424,7 @@ if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
             # not a measurement, and must not be evaluated against the quick
             # budget.
             cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_full_workflow.md"
-        else
+        elif [[ "$FILTERED" == 0 ]]; then
             cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
         fi
     fi
