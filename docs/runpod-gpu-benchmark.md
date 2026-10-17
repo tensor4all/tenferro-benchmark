@@ -159,6 +159,16 @@ artifacts, then takes the latest validated GPU artifact separately for each
 suite. Running one GPU suite therefore preserves other suites' latest reports.
 Manual publication and the daily schedule remain available.
 
+GPU publication is a per-suite choice between the repository's committed A100
+report/summary and the latest successful weekly RunPod bundle. The RunPod bundle
+wins only when it is newer than the summary already copied into the site's
+`result/nvidia-gpu` tree and is eligible; a bundle is eligible only when its
+recorded GPU is an NVIDIA A100 and it contains the dashboard `*.summary.json`
+sidecar produced by the current harness. Non-A100 bundles and older-harness
+bundles without a summary are skipped with one log line, leaving the repository
+A100 results in place. The chosen report `.md`, summary `.json`, and raw run are
+copied into the Pages tree before the dashboard generator runs.
+
 GPU publication requires every requested problem/backend row to be present,
 with finite measurements and passing verification. Explicit unsupported rows
 remain labeled unsupported; runtime failures, unconfigured backends, missing

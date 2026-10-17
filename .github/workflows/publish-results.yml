@@ -88,6 +88,11 @@ jobs:
             cp -r "_artifacts/linux-cpu/data/results/amd-cpu" "_site/raw/linux-cpu"
           fi
 
+      - name: Collect latest successful GPU results by suite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run python scripts/ci/collect_gpu_pages_results.py --repository "$GITHUB_REPOSITORY" --site-dir _site
+
       - name: Generate results dashboard
         run: |
           uv run python scripts/generate_dashboard.py \

@@ -75,13 +75,24 @@ def bundle_run(root: Path, timestamp: str, suites: list[Path], backends: list[st
         report = bundle / report_relative
         report.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(run / 'report.md', report)
-        files = [report, *sorted(p for p in target.rglob('*') if p.is_file())]
+        # Dashboard summary sidecar.  The Pages collector only lets a bundle
+        # carrying it override the repository report, so older-harness runs
+        # without a summary never replace maintained results.
+        run_summary = run / 'report.summary.json'
+        if not run_summary.exists():
+            raise ValueError(f'{suite_id}: report.summary.json is missing from the run')
+        summary_relative = Path('result/nvidia-gpu') / f'{suite_id}.summary.json'
+        summary = bundle / summary_relative
+        shutil.copy2(run_summary, summary)
+        files = [report, summary, *sorted(p for p in target.rglob('*') if p.is_file())]
         entries.append({'suite_id': suite_id, 'expected_rows': sorted(expected),
                         'files': {str(p.relative_to(bundle)): digest(p) for p in files}})
     if not entries:
         raise ValueError('No GPU suites selected')
+    # Schema 2 adds the required dashboard summary sidecar to each entry; the
+    # Pages collector accepts both 1 (pre-summary harness) and 2.
     (bundle / 'publication.json').write_text(json.dumps({
-        'schema_version': 1, 'timestamp': timestamp, 'suites': entries,
+        'schema_version': 2, 'timestamp': timestamp, 'suites': entries,
     }, indent=2) + '\n')
     print(f'Validated {len(entries)} GPU suites for publication')
 

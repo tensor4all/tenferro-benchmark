@@ -146,5 +146,14 @@ uv run python scripts/generate_dashboard.py --result-dir result --output-dir _si
 ```
 
 The GPU sections publish the repository's A100 results under `result/nvidia-gpu`.
-The legacy step that overlaid RunPod artifacts onto the Pages tree has been
-removed; RunPod results remain available as workflow artifacts.
+GPU Pages data is chosen per suite: the publish workflow starts from the
+committed repository report and summary, then overlays the latest successful
+weekly RunPod `benchmark-runpod-gpu.yml` bundle for that suite only when it is
+newer. A RunPod bundle is eligible only when its recorded GPU is an NVIDIA A100
+(the summary's `hardware.gpu`, falling back to `run.yaml`'s `cuda.device_name`)
+and it carries the dashboard `*.summary.json` sidecar produced by the current
+harness; non-A100 diagnostics and older-harness bundles without a summary are
+skipped with one log line and never replace the maintained data. The overlay
+runs before the dashboard generator, so the dashboard renders whichever report
+and summary won, and expired RunPod artifacts simply leave the repository
+reports in place.
