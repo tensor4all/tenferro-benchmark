@@ -54,6 +54,13 @@ def publish_bundle(bundle: Path, site: Path, seen: dict[str, str]) -> int:
     return count
 
 
+def artifact_unavailable(stderr: str) -> bool:
+    # Expired artifacts, and successful runs that never produced one (weekly-gate
+    # skips, prepare_only), are expected; any other download error is not.
+    message = stderr.lower()
+    return any(text in message for text in ('no artifact', 'no valid artifacts', 'expired'))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--repository', required=True)
@@ -75,7 +82,7 @@ def main() -> None:
                 '--name', f'runpod-gpu-benchmark-{run_id}', '--dir', str(bundle),
             ], text=True, capture_output=True)
             if download.returncode:
-                if 'no artifact' in download.stderr.lower() or 'expired' in download.stderr.lower():
+                if artifact_unavailable(download.stderr):
                     print(f'Artifact unavailable for {run_id}; preserving maintained reports')
                     continue
                 raise RuntimeError(download.stderr)
