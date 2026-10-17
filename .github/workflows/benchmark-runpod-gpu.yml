@@ -294,7 +294,8 @@ jobs:
           PYTHONUNBUFFERED: "1"
         run: |
           set -euo pipefail
-          cat > /tmp/runpod-startup.sh <<STARTUP
+          {
+          cat <<STARTUP
           # Rental cap independent of GitHub: delete this pod after the budget
           # even if the workflow or its cleanup job never runs. RunPod injects
           # a pod-scoped RUNPOD_API_KEY and RUNPOD_POD_ID for runpodctl.
@@ -303,7 +304,7 @@ jobs:
             echo \$! > /tmp/pod-watchdog.pid
           fi
           STARTUP
-          cat >> /tmp/runpod-startup.sh <<'STARTUP'
+          cat <<'STARTUP'
           set -euo pipefail
           export DEBIAN_FRONTEND=noninteractive
           export RUNNER_ALLOW_RUNASROOT=1
@@ -312,8 +313,8 @@ jobs:
           nvidia-smi
           cat > /tmp/cuda_smoke_test.py <<'SMOKE'
           STARTUP
-          cat scripts/ci/cuda_smoke_test.py >> /tmp/runpod-startup.sh
-          cat >> /tmp/runpod-startup.sh <<'STARTUP'
+          cat scripts/ci/cuda_smoke_test.py
+          cat <<'STARTUP'
           SMOKE
           env -u RUNNER_JIT_CONFIG python3 /tmp/cuda_smoke_test.py \
             --min-runtime-version 12.8 --full-runtime-version 12.8 --min-driver-version 13.0 --min-vram-gb 8 --skip-nvrtc-install
@@ -329,6 +330,7 @@ jobs:
           ./bin/installdependencies.sh
           ./run.sh --jitconfig "${RUNNER_JIT_CONFIG}"
           STARTUP
+          } > /tmp/runpod-startup.sh
           python3 -m scripts.ci.runpod_provision \
             --config scripts/ci/runpod_config.json \
             --startup-script /tmp/runpod-startup.sh \
