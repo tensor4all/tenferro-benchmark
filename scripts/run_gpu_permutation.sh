@@ -29,6 +29,10 @@ set -euo pipefail
 # - PATTERN_ID / BENCH_RUNS / BENCH_WARMUPS: forwarded to both runners, as
 #   in src/bin/benchmark_gpu_permutation.rs /
 #   scripts/benchmark_gpu_permutation_python.py.
+# - PERMUTATION_FULL_VERIFY=1: keep the legacy full host reference +
+#   elementwise compare. The default (`sampled`) correctness gate checks a
+#   fixed set of corners plus 1M seeded positions against the source index
+#   mapping, in both runners. The mode is recorded in run.yaml and the report.
 # - GPU_BENCH_DEVICE: CUDA device ordinal (default 0).
 # - GPU_BENCH_BACKEND_SLEEP: pause in seconds between per-backend Python
 #   processes (default 2, same as scripts/run_gpu_suite.sh).
@@ -56,6 +60,13 @@ SUITE_ID="gpu/permutation"
 SUITE_FILE="$PROJECT_DIR/benchmarks/gpu/permutation.yaml"
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 RUST_MIN_STACK="${RUST_MIN_STACK:-67108864}"
+
+# Correctness gate recorded in run.yaml and the generated report. Both runners
+# read the same PERMUTATION_FULL_VERIFY environment variable.
+PERMUTATION_VERIFICATION_MODE="sampled"
+if [[ "${PERMUTATION_FULL_VERIFY:-0}" == "1" ]]; then
+    PERMUTATION_VERIFICATION_MODE="full"
+fi
 
 # Same cuTENSOR search path baked into .devcontainer/cuda/devcontainer.json;
 # exported here too so this script also works outside that devcontainer as
@@ -109,6 +120,18 @@ metadata_args=(
 [[ -n "$tenferro_commit" ]] && metadata_args+=(--tenferro-commit "$tenferro_commit")
 "${METADATA[@]}" "${metadata_args[@]}"
 
+# Record the correctness-gate mode with the run metadata so sampled and full
+# runs are distinguishable from the raw run alone.
+"${PYTHON[@]}" - "$RUN_YAML" "$PERMUTATION_VERIFICATION_MODE" <<'PY'
+import sys
+import yaml
+from pathlib import Path
+path = Path(sys.argv[1])
+doc = yaml.safe_load(path.read_text())
+doc.setdefault("collection", {})["permutation_verification_mode"] = sys.argv[2]
+path.write_text(yaml.safe_dump(doc, sort_keys=False))
+PY
+
 echo "============================================"
 echo " GPU permutation benchmark suite"
 echo "============================================"
@@ -160,6 +183,21 @@ echo "Formatting gpu/permutation results as markdown..."
     "${INPUTS[@]}" \
     --run-metadata "$RUN_YAML" \
     --output "$LATEST_REPORT"
+
+# Record the correctness-gate mode in the maintained report text too.
+"${PYTHON[@]}" - "$LATEST_REPORT" "$PERMUTATION_VERIFICATION_MODE" <<'PY'
+import sys
+from pathlib import Path
+path = Path(sys.argv[1])
+text = path.read_text().rstrip()
+text += (
+    "\n\nCorrectness gate: exact **%s** verification. `sampled` checks a fixed set of "
+    "per-axis corners plus 1M seeded positions against the host source index mapping; "
+    "`full` downloads the whole output and compares it elementwise against a full host "
+    "transpose. Set `PERMUTATION_FULL_VERIFY=1` to request the full gate.\n"
+) % sys.argv[2]
+path.write_text(text)
+PY
 
 echo ""
 echo "GPU permutation benchmark suite complete: $SUITE_ID"

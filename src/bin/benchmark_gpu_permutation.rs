@@ -208,40 +208,134 @@ unsafe fn naive_strided_copy(
     }
 }
 
+/// Default number of seeded random output positions checked by the sampled
+/// correctness gate. Large enough that a wrong permutation is caught almost
+/// surely, small enough to avoid a full host reference transpose.
+const DEFAULT_SAMPLE_POSITIONS: usize = 1_000_000;
+/// Fixed seed for the sampled positions, shared with the Python runner so both
+/// languages check the identical coordinate set.
+const SAMPLE_SEED: u64 = 0x9E37_79B9_7F4A_7C15;
+
+/// Per-pattern host setup shared by every participant: the deterministic
+/// source, its layout strides, the output shape/strides, and either the full
+/// host reference (`PERMUTATION_FULL_VERIFY=1`) or the sampled positions used
+/// by the cheap exact correctness gate.
 struct PreparedPattern {
     src_data: Vec<f64>,
     src_strides: Vec<isize>,
+    src_perm_strides: Vec<isize>,
     out_shape: Vec<usize>,
     dst_strides: Vec<isize>,
-    reference: Vec<f64>,
+    reference: Option<Vec<f64>>,
+    sample_positions: Vec<Vec<usize>>,
+    total: usize,
+}
+
+fn full_verify_enabled() -> bool {
+    matches!(env::var("PERMUTATION_FULL_VERIFY").as_deref(), Ok("1"))
+}
+
+fn verification_mode_label() -> &'static str {
+    if full_verify_enabled() {
+        "full"
+    } else {
+        "sampled"
+    }
+}
+
+fn splitmix64(state: &mut u64) -> u64 {
+    *state = state.wrapping_add(SAMPLE_SEED);
+    let mut z = *state;
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+    z ^ (z >> 31)
+}
+
+/// Deterministic set of output coordinates: every per-axis corner plus up to
+/// `DEFAULT_SAMPLE_POSITIONS` seeded random coordinates. Shared with the Python
+/// runner so the same positions are exercised on both sides.
+fn generate_sample_positions(out_shape: &[usize]) -> Vec<Vec<usize>> {
+    let rank = out_shape.len();
+    let total: usize = out_shape.iter().product();
+    let count = DEFAULT_SAMPLE_POSITIONS.min(total);
+    let mut positions = Vec::with_capacity(count + 2 * rank + 2);
+
+    positions.push(vec![0usize; rank]);
+    positions.push(out_shape.iter().map(|&d| d.saturating_sub(1)).collect());
+    for axis in 0..rank {
+        let mut corner = vec![0usize; rank];
+        corner[axis] = out_shape[axis].saturating_sub(1);
+        positions.push(corner);
+        let mut corner: Vec<usize> = out_shape.iter().map(|&d| d.saturating_sub(1)).collect();
+        corner[axis] = 0;
+        positions.push(corner);
+    }
+
+    let mut state = 0u64;
+    for _ in 0..count {
+        let mut coord = Vec::with_capacity(rank);
+        for &extent in out_shape {
+            let value = splitmix64(&mut state);
+            coord.push((value % extent as u64) as usize);
+        }
+        positions.push(coord);
+    }
+    positions
 }
 
 fn prepare_pattern(pattern: &PermutePattern) -> PreparedPattern {
     let src_strides = layout_strides(&pattern.shape, &pattern.src_layout);
-    let total: usize = pattern.shape.iter().product();
-    let src_data = deterministic_data(total);
+    let src_total: usize = pattern.shape.iter().product();
+    let src_data = deterministic_data(src_total);
 
     let src_perm_strides: Vec<isize> = pattern.perm.iter().map(|&axis| src_strides[axis]).collect();
     let out_shape = output_shape(pattern);
     let dst_strides = col_major_strides(&out_shape);
+    let total: usize = out_shape.iter().product();
 
-    let mut reference = vec![0.0f64; out_shape.iter().product()];
-    unsafe {
-        naive_strided_copy(
-            src_data.as_ptr(),
-            reference.as_mut_ptr(),
-            &out_shape,
-            &src_perm_strides,
-            &dst_strides,
-        );
-    }
+    let (reference, sample_positions) = if full_verify_enabled() {
+        let mut reference = vec![0.0f64; total];
+        unsafe {
+            naive_strided_copy(
+                src_data.as_ptr(),
+                reference.as_mut_ptr(),
+                &out_shape,
+                &src_perm_strides,
+                &dst_strides,
+            );
+        }
+        (Some(reference), Vec::new())
+    } else {
+        (None, generate_sample_positions(&out_shape))
+    };
 
     PreparedPattern {
         src_data,
         src_strides,
+        src_perm_strides,
         out_shape,
         dst_strides,
         reference,
+        sample_positions,
+        total,
+    }
+}
+
+impl PreparedPattern {
+    /// Exact correctness gate: full elementwise compare in `PERMUTATION_FULL_VERIFY=1`
+    /// mode, otherwise the cheap exact sampled compare.
+    fn verify(&self, actual: &[f64]) -> Result<(), String> {
+        match &self.reference {
+            Some(reference) => verify_output(actual, reference),
+            None => sampled_verify(
+                actual,
+                &self.src_data,
+                &self.src_perm_strides,
+                &self.dst_strides,
+                &self.out_shape,
+                &self.sample_positions,
+            ),
+        }
     }
 }
 
@@ -256,6 +350,43 @@ fn verify_output(actual: &[f64], expected: &[f64]) -> Result<(), String> {
     for (i, (&a, &e)) in actual.iter().zip(expected).enumerate() {
         if a != e {
             return Err(format!("mismatch at element {i}: {a} != {e}"));
+        }
+    }
+    Ok(())
+}
+
+/// Exact (bit-for-bit) sampled correctness gate. For every output coordinate it
+/// recomputes the value from the source index mapping (`out[i] = src[i_perm]`)
+/// and compares it against the downloaded output at that coordinate, so a wrong
+/// permutation is detected even though no full host reference is materialized.
+fn sampled_verify(
+    actual: &[f64],
+    src_data: &[f64],
+    src_perm_strides: &[isize],
+    dst_strides: &[isize],
+    out_shape: &[usize],
+    positions: &[Vec<usize>],
+) -> Result<(), String> {
+    let total: usize = out_shape.iter().product();
+    if actual.len() != total {
+        return Err(format!(
+            "length mismatch {} != {total}",
+            actual.len()
+        ));
+    }
+    for coord in positions {
+        let mut src_off = 0isize;
+        let mut dst_off = 0isize;
+        for (axis, &index) in coord.iter().enumerate() {
+            src_off += index as isize * src_perm_strides[axis];
+            dst_off += index as isize * dst_strides[axis];
+        }
+        let expected = src_data[src_off as usize];
+        let got = actual[dst_off as usize];
+        if got != expected {
+            return Err(format!(
+                "mismatch at output coordinate {coord:?}: {got} != {expected}"
+            ));
         }
     }
     Ok(())
@@ -357,6 +488,7 @@ struct ResultRecord {
     device: String,
     status: &'static str,
     correctness: &'static str,
+    verification_mode: &'static str,
     per_call_allocation: bool,
     warmup: Option<usize>,
     iters: Option<usize>,
@@ -446,6 +578,7 @@ fn base_record(
         device: device.to_string(),
         status,
         correctness,
+        verification_mode: verification_mode_label(),
         per_call_allocation,
         warmup: None,
         iters: None,
@@ -934,7 +1067,7 @@ fn run_tenferro_cuda_transpose(
     backend: &mut CudaBackend,
     sink: &mut RecordSink,
 ) {
-    let total = prepared.reference.len();
+    let total = prepared.total;
     let name: &'static str = "tenferro-cuda-transpose";
     if !matches!(pattern.src_layout, LayoutPattern::ColMajor) {
         finish_skip(
@@ -971,7 +1104,7 @@ fn run_tenferro_cuda_transpose(
     let actual = downloaded
         .as_slice::<f64>()
         .expect("tenferro-cuda-transpose output must be f64");
-    if let Err(msg) = verify_output(actual, &prepared.reference) {
+    if let Err(msg) = prepared.verify(actual) {
         finish_skip(
             base_record(
                 pattern,
@@ -1030,6 +1163,7 @@ fn cuda_to_contiguous(
         .expect("a CUDA backend session is a CUDA execution session")
 }
 
+#[allow(clippy::too_many_arguments)]
 fn run_tenferro_cuda_to_contiguous(
     pattern: &PermutePattern,
     prepared: &PreparedPattern,
@@ -1040,7 +1174,7 @@ fn run_tenferro_cuda_to_contiguous(
     backend: &mut CudaBackend,
     sink: &mut RecordSink,
 ) {
-    let total = prepared.reference.len();
+    let total = prepared.total;
     let name: &'static str = "tenferro-cuda-to-contiguous";
 
     let flat_host = Tensor::from_vec_col_major(vec![total], prepared.src_data.clone())
@@ -1071,7 +1205,7 @@ fn run_tenferro_cuda_to_contiguous(
     let actual = downloaded
         .as_slice::<f64>()
         .expect("tenferro-cuda-to-contiguous output must be f64");
-    if let Err(msg) = verify_output(actual, &prepared.reference) {
+    if let Err(msg) = prepared.verify(actual) {
         finish_skip(
             base_record(
                 pattern,
@@ -1126,7 +1260,7 @@ fn run_tenferro_cuda_destination_reuse(
     backend: &mut CudaBackend,
     sink: &mut RecordSink,
 ) {
-    let total = prepared.reference.len();
+    let total = prepared.total;
     let name: &'static str = "tenferro-cuda-destination-reuse";
     if !matches!(pattern.src_layout, LayoutPattern::ColMajor) {
         finish_skip(
@@ -1152,7 +1286,7 @@ fn run_tenferro_cuda_destination_reuse(
         upload_tensor(backend.runtime(), &host_source).expect("source upload must succeed");
     let host_destination = Tensor::from_vec_col_major(
         prepared.out_shape.clone(),
-        vec![0.0_f64; prepared.reference.len()],
+        vec![0.0_f64; prepared.total],
     )
     .expect("building destination tensor must succeed");
     let mut gpu_destination = upload_tensor(backend.runtime(), &host_destination)
@@ -1186,7 +1320,7 @@ fn run_tenferro_cuda_destination_reuse(
     let actual = downloaded
         .as_slice::<f64>()
         .expect("tenferro-cuda-destination-reuse output must be f64");
-    if let Err(msg) = verify_output(actual, &prepared.reference) {
+    if let Err(msg) = prepared.verify(actual) {
         finish_skip(
             base_record(
                 pattern,
@@ -1242,7 +1376,7 @@ fn run_cutensor(
     cutensor: Option<&CutensorLib>,
     sink: &mut RecordSink,
 ) {
-    let total = prepared.reference.len();
+    let total = prepared.total;
     let name: &'static str = "cutensor";
 
     if cutensor.is_none() {
@@ -1352,10 +1486,13 @@ fn run_cutensor(
                         return Ok(());
                     }
                     raw.synchronize()?;
-                    drop(dst_ref);
+                    // End the mutable borrow of `flat_dst` before the immutable
+                    // download borrow. `TensorMut` is not `Drop`, so a scope is
+                    // clearer than `drop` here.
+                    let _ = dst_ref;
                     let downloaded = raw.download_tensor(&flat_dst, "cutensor verification")?;
                     let actual = downloaded.as_slice().expect("cutensor output must be f64");
-                    if let Err(msg) = verify_output(actual, &prepared.reference) {
+                    if let Err(msg) = prepared.verify(actual) {
                         finish_skip(
                             base_record(
                                 pattern,
@@ -1423,7 +1560,7 @@ fn run_pattern(
     sink: &mut RecordSink,
 ) {
     let prepared = prepare_pattern(pattern);
-    let total = prepared.reference.len();
+    let total = prepared.total;
     let bytes = total * std::mem::size_of::<f64>() * 2;
     let (warmup, iters) = timing_counts_env(total);
 
@@ -1577,4 +1714,79 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Done.");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sampled_verify_accepts_correct_and_rejects_wrong_permutation() {
+        // shape [3, 4], perm [1, 0] -> out_shape [4, 3], all col-major.
+        let shape = [3usize, 4];
+        let out_shape = [4usize, 3];
+        let src_strides = col_major_strides(&shape);
+        let dst_strides = col_major_strides(&out_shape);
+        // out axis 0 <- source axis 1, out axis 1 <- source axis 0.
+        let src_perm_strides = vec![src_strides[1], src_strides[0]];
+        let src_data = deterministic_data(shape.iter().product::<usize>());
+
+        let mut reference = vec![0.0f64; out_shape.iter().product::<usize>()];
+        unsafe {
+            naive_strided_copy(
+                src_data.as_ptr(),
+                reference.as_mut_ptr(),
+                &out_shape,
+                &src_perm_strides,
+                &dst_strides,
+            );
+        }
+        let positions = generate_sample_positions(&out_shape);
+
+        sampled_verify(
+            &reference,
+            &src_data,
+            &src_perm_strides,
+            &dst_strides,
+            &out_shape,
+            &positions,
+        )
+        .expect("the correct permutation must pass the sampled gate");
+
+        // A corrupted corner is caught by the always-checked corner positions.
+        let mut corrupted = reference.clone();
+        corrupted[0] = -12345.0;
+        assert!(sampled_verify(
+            &corrupted,
+            &src_data,
+            &src_perm_strides,
+            &dst_strides,
+            &out_shape,
+            &positions,
+        )
+        .is_err());
+
+        // A deliberately wrong permutation (identity instead of [1, 0]) must fail.
+        let identity_strides = vec![src_strides[0], src_strides[1]];
+        let mut wrong = vec![0.0f64; out_shape.iter().product::<usize>()];
+        unsafe {
+            naive_strided_copy(
+                src_data.as_ptr(),
+                wrong.as_mut_ptr(),
+                &out_shape,
+                &identity_strides,
+                &dst_strides,
+            );
+        }
+        assert!(wrong != reference, "fixture must distinguish the two permutations");
+        assert!(sampled_verify(
+            &wrong,
+            &src_data,
+            &src_perm_strides,
+            &dst_strides,
+            &out_shape,
+            &positions,
+        )
+        .is_err());
+    }
 }
