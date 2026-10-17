@@ -2,7 +2,7 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 7
+manifest_version: 8
 suite_id: cpu/perf_issues
 source: data/instances/perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -569,6 +569,16 @@ coverage:
   - metadata_view_alloc_counter_slice_host
   - metadata_view_alloc_counter_reshape
   - metadata_view_alloc_counter_reshape_host
+  - typed_elemwise_f64_add_bcast_counter
+  - typed_elemwise_f64_add_bcast_counter_host
+  - typed_elemwise_f64_add_permuted_view_counter
+  - typed_elemwise_f64_add_permuted_view_counter_host
+  - permute_materialize_f64_r4_counter
+  - permute_materialize_f64_r4_counter_host
+  - fused_elemwise_f64_serial_counter
+  - fused_elemwise_f64_serial_counter_host
+  - reduce_axis_f64_counter
+  - reduce_axis_f64_counter_host
   - pool_miss_f64_bins0
   - pool_miss_f64_bins100
   - pool_miss_f64_bins1000
