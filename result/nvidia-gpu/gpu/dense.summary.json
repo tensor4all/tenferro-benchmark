@@ -2,11 +2,11 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/dense",
-  "timestamp": "2026-10-16T23:51:16.689453+00:00",
-  "tenferro_commit": "2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e",
+  "timestamp": "2026-10-17T10:44:41.382612+00:00",
+  "tenferro_commit": "88daa885a5bb09e07f3031814bbb1a21f7a74e62",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "host": "4ba652984ab5"
+    "host": "60145713b7ef"
   },
   "unit": "ms",
   "rows": [
@@ -14,8 +14,8 @@
       "case": "dense_batched_matmul_f64_b1024_256",
       "group": "batched_matmul",
       "backend": "cublaslt",
-      "median": 2.086456,
-      "iqr": 0.005059999999999842,
+      "median": 2.08202,
+      "iqr": 0.004410000000000025,
       "status": "ok",
       "verified": true
     },
@@ -32,8 +32,8 @@
       "case": "dense_batched_matmul_f64_b1024_256",
       "group": "batched_matmul",
       "backend": "cutlass",
-      "median": 2.101667,
-      "iqr": 0.005220000000000002,
+      "median": 2.09889,
+      "iqr": 0.005139000000000227,
       "status": "ok",
       "verified": true
     },
@@ -41,8 +41,8 @@
       "case": "dense_batched_matmul_f64_b1024_256",
       "group": "batched_matmul",
       "backend": "jax-cuda",
-      "median": 2.292103,
-      "iqr": 0.037121000000000404,
+      "median": 2.260295,
+      "iqr": 0.007781000000000038,
       "status": "ok",
       "verified": true
     },
@@ -50,8 +50,8 @@
       "case": "dense_batched_matmul_f64_b1024_256",
       "group": "batched_matmul",
       "backend": "pytorch-cuda",
-      "median": 2.086346,
-      "iqr": 0.0032600000000000406,
+      "median": 2.08064,
+      "iqr": 0.0020400000000000418,
       "status": "ok",
       "verified": true
     },
@@ -59,8 +59,8 @@
       "case": "dense_batched_matmul_f64_b1024_256",
       "group": "batched_matmul",
       "backend": "tenferro-cuda-eager",
-      "median": 2.103196,
-      "iqr": 0.001971000000000611,
+      "median": 2.1038699999999997,
+      "iqr": 0.0027400000000001867,
       "status": "ok",
       "verified": true
     },
@@ -68,17 +68,17 @@
       "case": "dense_batched_matmul_f64_b1024_256",
       "group": "batched_matmul",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 2.131651,
+      "iqr": 0.0048800000000004395,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_batched_matmul_f64_b16_32",
       "group": "batched_matmul",
       "backend": "cublaslt",
-      "median": 0.013674640625,
-      "iqr": 0.0006236953125000003,
+      "median": 0.01011771484375,
+      "iqr": 4.9531250000000096e-05,
       "status": "ok",
       "verified": true
     },
@@ -95,8 +95,8 @@
       "case": "dense_batched_matmul_f64_b16_32",
       "group": "batched_matmul",
       "backend": "cutlass",
-      "median": 0.0133305234375,
-      "iqr": 6.761718749999715e-06,
+      "median": 0.01424666015625,
+      "iqr": 0.0014606640625000004,
       "status": "ok",
       "verified": true
     },
@@ -104,8 +104,8 @@
       "case": "dense_batched_matmul_f64_b16_32",
       "group": "batched_matmul",
       "backend": "jax-cuda",
-      "median": 0.050464171875,
-      "iqr": 0.0008228437499999963,
+      "median": 0.0508200625,
+      "iqr": 0.0015748906250000055,
       "status": "ok",
       "verified": true
     },
@@ -113,8 +113,8 @@
       "case": "dense_batched_matmul_f64_b16_32",
       "group": "batched_matmul",
       "backend": "pytorch-cuda",
-      "median": 0.0138278515625,
-      "iqr": 0.0005874453124999988,
+      "median": 0.0102863515625,
+      "iqr": 0.0001307890625000009,
       "status": "ok",
       "verified": true
     },
@@ -122,8 +122,8 @@
       "case": "dense_batched_matmul_f64_b16_32",
       "group": "batched_matmul",
       "backend": "tenferro-cuda-eager",
-      "median": 0.03685759375,
-      "iqr": 0.0013261562500000018,
+      "median": 0.025979890624999998,
+      "iqr": 0.00010078124999999757,
       "status": "ok",
       "verified": true
     },
@@ -131,10 +131,10 @@
       "case": "dense_batched_matmul_f64_b16_32",
       "group": "batched_matmul",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 0.049200015625,
+      "iqr": 0.0003757812499999985,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_eigh_f64_1024",
@@ -149,8 +149,8 @@
       "case": "dense_eigh_f64_1024",
       "group": "eigh",
       "backend": "cusolver",
-      "median": 14.409563,
-      "iqr": 0.05780099999999955,
+      "median": 13.975085,
+      "iqr": 0.02926099999999998,
       "status": "ok",
       "verified": true
     },
@@ -167,8 +167,8 @@
       "case": "dense_eigh_f64_1024",
       "group": "eigh",
       "backend": "jax-cuda",
-      "median": 14.104603,
-      "iqr": 0.03188100000000027,
+      "median": 14.490999,
+      "iqr": 0.057000999999999635,
       "status": "ok",
       "verified": true
     },
@@ -176,8 +176,8 @@
       "case": "dense_eigh_f64_1024",
       "group": "eigh",
       "backend": "pytorch-cuda",
-      "median": 14.320281,
-      "iqr": 0.04842200000000041,
+      "median": 14.269773,
+      "iqr": 0.36617000000000033,
       "status": "ok",
       "verified": true
     },
@@ -185,8 +185,8 @@
       "case": "dense_eigh_f64_1024",
       "group": "eigh",
       "backend": "tenferro-cuda-eager",
-      "median": 14.426896,
-      "iqr": 0.03878199999999943,
+      "median": 14.361965000000001,
+      "iqr": 0.015700000000000713,
       "status": "ok",
       "verified": true
     },
@@ -194,17 +194,17 @@
       "case": "dense_eigh_f64_1024",
       "group": "eigh",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 14.042606,
+      "iqr": 0.03852000000000011,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_matmul_f64_3072",
       "group": "matmul",
       "backend": "cublaslt",
-      "median": 3.131824,
-      "iqr": 0.006099999999999994,
+      "median": 3.12854,
+      "iqr": 0.002378999999999909,
       "status": "ok",
       "verified": true
     },
@@ -221,8 +221,8 @@
       "case": "dense_matmul_f64_3072",
       "group": "matmul",
       "backend": "cutlass",
-      "median": 3.448205,
-      "iqr": 0.0065109999999997115,
+      "median": 3.43479,
+      "iqr": 0.0008200000000000429,
       "status": "ok",
       "verified": true
     },
@@ -230,8 +230,8 @@
       "case": "dense_matmul_f64_3072",
       "group": "matmul",
       "backend": "jax-cuda",
-      "median": 3.241718,
-      "iqr": 0.02281000000000022,
+      "median": 3.377628,
+      "iqr": 0.025351000000000123,
       "status": "ok",
       "verified": true
     },
@@ -239,8 +239,8 @@
       "case": "dense_matmul_f64_3072",
       "group": "matmul",
       "backend": "pytorch-cuda",
-      "median": 3.127304,
-      "iqr": 0.002769999999999939,
+      "median": 3.128231,
+      "iqr": 0.003961000000000325,
       "status": "ok",
       "verified": true
     },
@@ -248,8 +248,8 @@
       "case": "dense_matmul_f64_3072",
       "group": "matmul",
       "backend": "tenferro-cuda-eager",
-      "median": 3.1390849999999997,
-      "iqr": 0.006479999999999375,
+      "median": 3.143061,
+      "iqr": 0.001980000000000093,
       "status": "ok",
       "verified": true
     },
@@ -257,10 +257,10 @@
       "case": "dense_matmul_f64_3072",
       "group": "matmul",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 3.177691,
+      "iqr": 0.005640000000000089,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_qr_f64_1536",
@@ -275,8 +275,8 @@
       "case": "dense_qr_f64_1536",
       "group": "qr",
       "backend": "cusolver",
-      "median": 11.85145,
-      "iqr": 0.03966200000000164,
+      "median": 11.790562,
+      "iqr": 0.0282909999999994,
       "status": "ok",
       "verified": true
     },
@@ -293,8 +293,8 @@
       "case": "dense_qr_f64_1536",
       "group": "qr",
       "backend": "jax-cuda",
-      "median": 12.031227,
-      "iqr": 0.035760999999999044,
+      "median": 12.008407,
+      "iqr": 0.08642299999999992,
       "status": "ok",
       "verified": true
     },
@@ -302,8 +302,8 @@
       "case": "dense_qr_f64_1536",
       "group": "qr",
       "backend": "pytorch-cuda",
-      "median": 11.747378,
-      "iqr": 0.03077099999999966,
+      "median": 11.76626,
+      "iqr": 0.01874000000000109,
       "status": "ok",
       "verified": true
     },
@@ -311,8 +311,8 @@
       "case": "dense_qr_f64_1536",
       "group": "qr",
       "backend": "tenferro-cuda-eager",
-      "median": 11.936265,
-      "iqr": 0.01859000000000144,
+      "median": 11.883612999999999,
+      "iqr": 0.010209999999997166,
       "status": "ok",
       "verified": true
     },
@@ -320,10 +320,10 @@
       "case": "dense_qr_f64_1536",
       "group": "qr",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 11.959805000000001,
+      "iqr": 0.003289999999999793,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_solve_f64_1024_rhs16",
@@ -338,8 +338,8 @@
       "case": "dense_solve_f64_1024_rhs16",
       "group": "solve",
       "backend": "cusolver",
-      "median": 4.462422,
-      "iqr": 0.019410999999999845,
+      "median": 4.423889,
+      "iqr": 0.01898099999999925,
       "status": "ok",
       "verified": true
     },
@@ -356,8 +356,8 @@
       "case": "dense_solve_f64_1024_rhs16",
       "group": "solve",
       "backend": "jax-cuda",
-      "median": 4.657649,
-      "iqr": 0.01578999999999997,
+      "median": 4.632125,
+      "iqr": 0.034111000000000224,
       "status": "ok",
       "verified": true
     },
@@ -365,8 +365,8 @@
       "case": "dense_solve_f64_1024_rhs16",
       "group": "solve",
       "backend": "pytorch-cuda",
-      "median": 4.426141,
-      "iqr": 0.014841000000000548,
+      "median": 4.416918,
+      "iqr": 0.014610999999999486,
       "status": "ok",
       "verified": true
     },
@@ -374,8 +374,8 @@
       "case": "dense_solve_f64_1024_rhs16",
       "group": "solve",
       "backend": "tenferro-cuda-eager",
-      "median": 4.822675,
-      "iqr": 0.007671000000000205,
+      "median": 4.698226,
+      "iqr": 0.13993399999999934,
       "status": "ok",
       "verified": true
     },
@@ -383,10 +383,10 @@
       "case": "dense_solve_f64_1024_rhs16",
       "group": "solve",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 4.785258,
+      "iqr": 0.030441000000000606,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_solve_f64_2048_rhs128",
@@ -401,8 +401,8 @@
       "case": "dense_solve_f64_2048_rhs128",
       "group": "solve",
       "backend": "cusolver",
-      "median": 9.156502,
-      "iqr": 0.020100999999998592,
+      "median": 9.149326,
+      "iqr": 0.2676979999999993,
       "status": "ok",
       "verified": true
     },
@@ -419,8 +419,8 @@
       "case": "dense_solve_f64_2048_rhs128",
       "group": "solve",
       "backend": "jax-cuda",
-      "median": 9.464994,
-      "iqr": 0.054480999999999113,
+      "median": 9.508695,
+      "iqr": 0.01853999999999978,
       "status": "ok",
       "verified": true
     },
@@ -428,8 +428,8 @@
       "case": "dense_solve_f64_2048_rhs128",
       "group": "solve",
       "backend": "pytorch-cuda",
-      "median": 9.143763,
-      "iqr": 0.016119999999999024,
+      "median": 9.123734,
+      "iqr": 0.01205999999999996,
       "status": "ok",
       "verified": true
     },
@@ -437,8 +437,8 @@
       "case": "dense_solve_f64_2048_rhs128",
       "group": "solve",
       "backend": "tenferro-cuda-eager",
-      "median": 9.735714,
-      "iqr": 0.014220999999999151,
+      "median": 9.763472,
+      "iqr": 0.014020000000000366,
       "status": "ok",
       "verified": true
     },
@@ -446,10 +446,10 @@
       "case": "dense_solve_f64_2048_rhs128",
       "group": "solve",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 9.730951,
+      "iqr": 0.016761000000000692,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_solve_f64_2048_rhs16",
@@ -464,8 +464,8 @@
       "case": "dense_solve_f64_2048_rhs16",
       "group": "solve",
       "backend": "cusolver",
-      "median": 10.321995,
-      "iqr": 0.03679099999999913,
+      "median": 10.269168,
+      "iqr": 0.018500000000001293,
       "status": "ok",
       "verified": true
     },
@@ -482,8 +482,8 @@
       "case": "dense_solve_f64_2048_rhs16",
       "group": "solve",
       "backend": "jax-cuda",
-      "median": 10.782682,
-      "iqr": 0.05403300000000044,
+      "median": 10.71949,
+      "iqr": 0.04809200000000047,
       "status": "ok",
       "verified": true
     },
@@ -491,8 +491,8 @@
       "case": "dense_solve_f64_2048_rhs16",
       "group": "solve",
       "backend": "pytorch-cuda",
-      "median": 10.224072,
-      "iqr": 0.02882100000000065,
+      "median": 10.220046,
+      "iqr": 0.027579999999998606,
       "status": "ok",
       "verified": true
     },
@@ -500,8 +500,8 @@
       "case": "dense_solve_f64_2048_rhs16",
       "group": "solve",
       "backend": "tenferro-cuda-eager",
-      "median": 10.498572,
-      "iqr": 0.029341000000000506,
+      "median": 10.550334999999999,
+      "iqr": 0.04483199999999954,
       "status": "ok",
       "verified": true
     },
@@ -509,10 +509,10 @@
       "case": "dense_solve_f64_2048_rhs16",
       "group": "solve",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 10.447072,
+      "iqr": 0.02461100000000016,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_solve_f64_4096_rhs16",
@@ -527,8 +527,8 @@
       "case": "dense_solve_f64_4096_rhs16",
       "group": "solve",
       "backend": "cusolver",
-      "median": 27.701115,
-      "iqr": 0.05072200000000038,
+      "median": 28.2991,
+      "iqr": 0.7118309999999965,
       "status": "ok",
       "verified": true
     },
@@ -545,8 +545,8 @@
       "case": "dense_solve_f64_4096_rhs16",
       "group": "solve",
       "backend": "jax-cuda",
-      "median": 28.175465,
-      "iqr": 0.07097200000000115,
+      "median": 28.133044,
+      "iqr": 0.09174199999999999,
       "status": "ok",
       "verified": true
     },
@@ -554,8 +554,8 @@
       "case": "dense_solve_f64_4096_rhs16",
       "group": "solve",
       "backend": "pytorch-cuda",
-      "median": 27.530962,
-      "iqr": 0.05219200000000157,
+      "median": 27.527677,
+      "iqr": 0.07628199999999907,
       "status": "ok",
       "verified": true
     },
@@ -563,8 +563,8 @@
       "case": "dense_solve_f64_4096_rhs16",
       "group": "solve",
       "backend": "tenferro-cuda-eager",
-      "median": 27.909876,
-      "iqr": 0.07265299999999897,
+      "median": 27.887566,
+      "iqr": 0.03535100000000213,
       "status": "ok",
       "verified": true
     },
@@ -572,10 +572,10 @@
       "case": "dense_solve_f64_4096_rhs16",
       "group": "solve",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 27.827894,
+      "iqr": 0.03605999999999909,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_solve_f64_512_rhs16",
@@ -590,8 +590,8 @@
       "case": "dense_solve_f64_512_rhs16",
       "group": "solve",
       "backend": "cusolver",
-      "median": 2.073396,
-      "iqr": 0.008680000000000021,
+      "median": 2.027639,
+      "iqr": 0.016760000000000108,
       "status": "ok",
       "verified": true
     },
@@ -608,8 +608,8 @@
       "case": "dense_solve_f64_512_rhs16",
       "group": "solve",
       "backend": "jax-cuda",
-      "median": 2.231241,
-      "iqr": 0.018191999999999986,
+      "median": 2.219085,
+      "iqr": 0.046421000000000046,
       "status": "ok",
       "verified": true
     },
@@ -617,8 +617,8 @@
       "case": "dense_solve_f64_512_rhs16",
       "group": "solve",
       "backend": "pytorch-cuda",
-      "median": 2.065785,
-      "iqr": 0.01705000000000023,
+      "median": 2.04997,
+      "iqr": 0.021391000000000382,
       "status": "ok",
       "verified": true
     },
@@ -626,8 +626,8 @@
       "case": "dense_solve_f64_512_rhs16",
       "group": "solve",
       "backend": "tenferro-cuda-eager",
-      "median": 2.526932,
-      "iqr": 0.02357100000000001,
+      "median": 2.403969,
+      "iqr": 0.014250000000000096,
       "status": "ok",
       "verified": true
     },
@@ -635,10 +635,10 @@
       "case": "dense_solve_f64_512_rhs16",
       "group": "solve",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 2.801371,
+      "iqr": 0.01873099999999983,
+      "status": "ok",
+      "verified": true
     },
     {
       "case": "dense_svd_f64_256",
@@ -653,8 +653,8 @@
       "case": "dense_svd_f64_256",
       "group": "svd",
       "backend": "cusolver",
-      "median": 23.14275,
-      "iqr": 0.03773000000000337,
+      "median": 22.999547,
+      "iqr": 0.1613030000000002,
       "status": "ok",
       "verified": true
     },
@@ -671,8 +671,8 @@
       "case": "dense_svd_f64_256",
       "group": "svd",
       "backend": "jax-cuda",
-      "median": 11.934274,
-      "iqr": 0.01576999999999984,
+      "median": 11.997317,
+      "iqr": 0.008839999999999293,
       "status": "ok",
       "verified": true
     },
@@ -680,8 +680,8 @@
       "case": "dense_svd_f64_256",
       "group": "svd",
       "backend": "pytorch-cuda",
-      "median": 12.189904,
-      "iqr": 0.0176400000000001,
+      "median": 12.138501,
+      "iqr": 0.008580000000000254,
       "status": "ok",
       "verified": true
     },
@@ -689,8 +689,8 @@
       "case": "dense_svd_f64_256",
       "group": "svd",
       "backend": "tenferro-cuda-eager",
-      "median": 12.075289,
-      "iqr": 0.028061999999998477,
+      "median": 12.069039,
+      "iqr": 0.045391999999999655,
       "status": "ok",
       "verified": true
     },
@@ -698,10 +698,10 @@
       "case": "dense_svd_f64_256",
       "group": "svd",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 12.053438,
+      "iqr": 0.001440000000000552,
+      "status": "ok",
+      "verified": true
     }
   ]
 }

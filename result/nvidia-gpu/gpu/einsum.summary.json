@@ -2,11 +2,11 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/einsum",
-  "timestamp": "2026-10-16T23:51:16.689453+00:00",
-  "tenferro_commit": "2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e",
+  "timestamp": "2026-10-17T10:44:41.382612+00:00",
+  "tenferro_commit": "88daa885a5bb09e07f3031814bbb1a21f7a74e62",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "host": "4ba652984ab5"
+    "host": "60145713b7ef"
   },
   "unit": "ms",
   "rows": [
@@ -14,8 +14,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "cublaslt",
-      "median": 3.170915,
-      "iqr": 0.0053399999999999,
+      "median": 3.172502,
+      "iqr": 0.004290000000000127,
       "status": "ok",
       "verified": true
     },
@@ -23,8 +23,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "cutlass",
-      "median": 3.438824,
-      "iqr": 0.007940999999999754,
+      "median": 3.43441,
+      "iqr": 0.000560000000000116,
       "status": "ok",
       "verified": true
     },
@@ -32,8 +32,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "jax-cuda",
-      "median": 3.56865,
-      "iqr": 0.5077979999999997,
+      "median": 3.390199,
+      "iqr": 0.08979300000000023,
       "status": "ok",
       "verified": true
     },
@@ -41,8 +41,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "pytorch-cuda",
-      "median": 3.207776,
-      "iqr": 0.01540000000000008,
+      "median": 3.171793,
+      "iqr": 0.0018199999999999328,
       "status": "ok",
       "verified": true
     },
@@ -50,8 +50,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "tenferro-cuda-eager",
-      "median": 3.1591240000000003,
-      "iqr": 0.005639999999999645,
+      "median": 3.1519719999999998,
+      "iqr": 0.0006099999999999994,
       "status": "ok",
       "verified": true
     },
@@ -59,10 +59,10 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "tenferro-cuda-trace",
-      "median": null,
-      "status": "unsupported",
-      "verified": false,
-      "reason": "Runtime::run_prepared enters backend sessions during execution and has no caller-borrowed session route; standard operation timing cannot exclude this setup. Public-call latency diagnostics are separate."
+      "median": 3.175462,
+      "iqr": 0.0040399999999998215,
+      "status": "ok",
+      "verified": true
     }
   ]
 }

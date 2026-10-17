@@ -1,18 +1,18 @@
 # GPU routine command wall
 
-Raw selection: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116`.
+Raw selection: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261017_104441`.
 
-tenferro-rs `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`; harness `f94171e1f76a246bdaee4f2e008ffc74149a6d5f`. GPU: NVIDIA A100 80GB PCIe (`GPU-530977e1-4968-9283-4129-9fbec3e66542`).
+tenferro-rs `88daa885a5bb09e07f3031814bbb1a21f7a74e62`; harness `2f15f3d00b8565b86873285e6c39d65d15941b3f`. GPU: NVIDIA A100 80GB PCIe (`GPU-530977e1-4968-9283-4129-9fbec3e66542`).
 
-Coverage `full`, effort `standard`; core measured 63/95. Routine controls selected: True.
+Coverage `full`, effort `standard`; core measured 75/94. Routine controls selected: True.
 
 Controls measured 30/30; state observations 12/12. Untimed states are not operation timings.
 
 | Command checkpoint/phase | Seconds |
 |---|---:|
-| Core through final suite report | 795.782 |
-| Remaining controls/accounting/reporting | 70.742 |
-| Script through final wall checkpoint | 866.524 |
+| Core through final suite report | 458.837 |
+| Remaining controls/accounting/reporting | 75.272 |
+| Script through final wall checkpoint | 534.109 |
 
 Scope: script clock read through core and control collection, validation, accounting and report writes; excludes devcontainer CLI startup and final wall metadata/report formatting.
 
