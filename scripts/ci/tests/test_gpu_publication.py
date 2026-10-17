@@ -22,6 +22,8 @@ class PublicationTests(unittest.TestCase):
                     'verification': {'status': 'passed'}}
         (self.run / 'run.yaml').write_text('suite_id: gpu/dense\n')
         (self.run / 'report.md').write_text('new measured report')
+        self.summary = self.run / 'report.summary.json'
+        self.write_summary()
         self.records = self.run / 'records.jsonl'
         self.write_rows([self.row])
         self.bundle = self.root / 'bundle'
@@ -29,15 +31,35 @@ class PublicationTests(unittest.TestCase):
     def write_rows(self, rows):
         self.records.write_text(''.join(json.dumps(r) + '\n' for r in rows))
 
+    def write_summary(self, gpu='NVIDIA A100 80GB PCIe',
+                      timestamp='2026-10-08T12:00:00+00:00'):
+        self.summary.write_text(json.dumps({
+            'schema_version': 1, 'target_profile': 'nvidia-gpu',
+            'suite_id': 'gpu/dense', 'timestamp': timestamp,
+            'tenferro_commit': 'deadbeef', 'hardware': {'gpu': gpu},
+            'unit': 'ms', 'rows': [],
+        }) + '\n')
+
     def build(self):
         bundle_run(self.root, self.timestamp, [Path('dense.yaml')],
                    ['tenferro-cuda-trace'], self.bundle)
+
+    def site_summary(self, site, timestamp, gpu='NVIDIA A100 80GB PCIe'):
+        path = site / 'result/nvidia-gpu/gpu/dense.summary.json'
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({
+            'schema_version': 1, 'target_profile': 'nvidia-gpu',
+            'suite_id': 'gpu/dense', 'timestamp': timestamp,
+            'hardware': {'gpu': gpu}, 'unit': 'ms', 'rows': [],
+        }) + '\n')
+        return path
 
     def test_complete_run_publishes_report_and_raw_data(self):
         self.build()
         site = self.root / 'site'
         self.assertEqual(publish_bundle(self.bundle, site, {}), 1)
         self.assertEqual((site / 'result/nvidia-gpu/gpu/dense.md').read_text(), 'new measured report')
+        self.assertTrue((site / 'result/nvidia-gpu/gpu/dense.summary.json').exists())
         self.assertTrue((site / 'raw/nvidia-gpu/gpu/dense' / self.timestamp / 'records.jsonl').exists())
 
     def test_runtime_failed_run_keeps_diagnostics_without_publication_receipt(self):
@@ -107,6 +129,43 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(publish_bundle(self.bundle, site, seen), 1)
         self.assertEqual(seen['gpu/dense'], newer)
 
+    def test_newer_a100_bundle_replaces_repository_suite(self):
+        self.build()
+        site = self.root / 'site'
+        repository = self.site_summary(site, '2026-10-01T00:00:00+00:00')
+        self.assertEqual(publish_bundle(self.bundle, site, {}), 1)
+        self.assertEqual((site / 'result/nvidia-gpu/gpu/dense.md').read_text(), 'new measured report')
+        published = json.loads(repository.read_text())
+        self.assertEqual(published['timestamp'], '2026-10-08T12:00:00+00:00')
+
+    def test_bundle_older_than_repository_summary_is_skipped(self):
+        self.build()
+        site = self.root / 'site'
+        repository = self.site_summary(site, '2026-10-09T12:00:00+00:00')
+        self.assertEqual(publish_bundle(self.bundle, site, {}), 0)
+        self.assertFalse((site / 'result/nvidia-gpu/gpu/dense.md').exists())
+        # The repository summary is untouched, not replaced by the older bundle.
+        self.assertEqual(json.loads(repository.read_text())['timestamp'],
+                         '2026-10-09T12:00:00+00:00')
+
+    def test_non_a100_bundle_is_skipped(self):
+        self.write_summary(gpu='NVIDIA H100 80GB HBM3')
+        self.build()
+        site = self.root / 'site'
+        self.assertEqual(publish_bundle(self.bundle, site, {}), 0)
+        self.assertFalse((site / 'result/nvidia-gpu/gpu/dense.md').exists())
+
+    def test_bundle_without_summary_is_skipped(self):
+        self.build()
+        summary_relative = 'result/nvidia-gpu/gpu/dense.summary.json'
+        (self.bundle / summary_relative).unlink()
+        receipt = self.bundle / 'publication.json'
+        manifest = json.loads(receipt.read_text())
+        del manifest['suites'][0]['files'][summary_relative]
+        receipt.write_text(json.dumps(manifest))
+        site = self.root / 'site'
+        self.assertEqual(publish_bundle(self.bundle, site, {}), 0)
+        self.assertFalse((site / 'result/nvidia-gpu/gpu/dense.md').exists())
 
 class ArtifactAvailabilityTests(unittest.TestCase):
     def test_missing_or_expired_artifacts_are_skipped_but_other_errors_are_not(self):

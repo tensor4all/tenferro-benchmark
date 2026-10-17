@@ -67,3 +67,93 @@ The benchmark repository commit is intentionally not stored in `run.yaml`; the
 result file's git history already records it. A dirty `extern/tenferro-rs`
 checkout is valid for benchmark runs. `tenferro_rs.dirty` records that state
 alongside the measured tenferro commit.
+
+## Machine-readable summaries
+
+Each maintained report has a machine-readable sidecar written by the same
+formatter that writes the Markdown, from the same records:
+
+```text
+result/nvidia-gpu/gpu/dense.summary.json
+result/mac-cpu/cpu/einsum.summary.json
+```
+
+The sidecar uses schema version 1 (`summary-schema-v1`):
+
+```json
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/dense",
+  "timestamp": "2026-10-16T23:51:16.689453+00:00",
+  "tenferro_commit": "2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e",
+  "hardware": {"gpu": "NVIDIA A100 80GB PCIe"},
+  "unit": "ms",
+  "rows": [
+    {"case": "dense_matmul_f64_3072", "group": "matmul",
+     "backend": "tenferro-cuda-eager", "median": 1.23,
+     "iqr": 0.01, "status": "ok", "verified": true}
+  ]
+}
+```
+
+A row may also carry `"reason": "..."` when a backend is `unsupported` for
+a recorded harness-policy reason (for example a backend with no equivalent
+public operation). The dashboard treats those as neutral
+"not measured" rows rather than anomalies; an `unsupported` row without a
+recorded reason stays an anomaly.
+
+Backends keep their report column ids (`tenferro-cuda-eager`,
+`tenferro-cuda-trace`, `pytorch-cuda`, `jax-cuda`, `cublaslt`, ...; CPU suites
+their own ids and thread counts). `unit` is `ms` for the dense/linalg/permutation
+suites and `ns/op` for `*/perf_issues`. Rebuild the sidecars from the local raw
+runs (gitignored) with:
+
+```bash
+uv run python scripts/regenerate_report_summaries.py
+uv run python scripts/regenerate_report_summaries.py --profile nvidia-gpu
+uv run python scripts/regenerate_report_summaries.py --dry-run
+```
+
+Reports whose raw run is not available locally keep the Markdown report and are
+listed without a summary; the dashboard shows a report link only.
+
+## Dashboard
+
+`scripts/generate_dashboard.py` renders the static GitHub Pages dashboard
+(`index.html` plus one page per report). It reads the summaries and computes
+geometric-mean tenferro/reference ratios from one per-suite mapping table:
+
+- Operation suites default to `vs PyTorch` and `vs JAX` over the tenferro
+eager/trace arms.
+- `gpu/permutation` uses `vs PyTorch` and `vs cuTENSOR` over the
+`tenferro-cuda-transpose`, `to_contiguous`, and `destination-reuse` arms.
+- `gpu/perf_issues` uses `vs reference`, pairing each tenferro case with its
+`reference_for` arm from `data/instances/gpu_perf_issues.json`; the suite page
+lists the worst ratios.
+- `gpu/sparse` has no tenferro column and stays `-`.
+
+Anomaly flags are `eager/torch >= 1.5`, `eager/jax >= 3`, `trace/eager >= 1.3`,
+a genuine tenferro status anomaly (failed/error/verification failure/missing or
+an `unsupported` row without a recorded reason), or a `>= 1.25x` regression
+against the previous committed summary for the same suite and hardware. Policy
+`unsupported` rows are counted separately in the neutral "not measured" column.
+The Pages publish workflow checks out with `fetch-depth: 0` so the regression
+comparison can walk `git log`.
+
+```bash
+uv run python scripts/generate_dashboard.py --result-dir result --output-dir _site
+```
+
+The GPU sections publish the repository's A100 results under `result/nvidia-gpu`.
+GPU Pages data is chosen per suite: the publish workflow starts from the
+committed repository report and summary, then overlays the latest successful
+weekly RunPod `benchmark-runpod-gpu.yml` bundle for that suite only when it is
+newer. A RunPod bundle is eligible only when its recorded GPU is an NVIDIA A100
+(the summary's `hardware.gpu`, falling back to `run.yaml`'s `cuda.device_name`)
+and it carries the dashboard `*.summary.json` sidecar produced by the current
+harness; non-A100 diagnostics and older-harness bundles without a summary are
+skipped with one log line and never replace the maintained data. The overlay
+runs before the dashboard generator, so the dashboard renders whichever report
+and summary won, and expired RunPod artifacts simply leave the repository
+reports in place.

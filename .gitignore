@@ -214,11 +214,13 @@ plans/
 # Benchmark results (machine-specific)
 data/results/
 data/verification/
+data/cache/
 result/**
 !result/
 !result/**/
 !result/*.md
 !result/**/*.md
+!result/**/*.summary.json
 
 # Repo-local external checkouts
 extern/

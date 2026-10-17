@@ -100,7 +100,7 @@ def make_fixtures(root, suite):
         metadata = yaml.safe_load(metadata_path.read_text())
         metadata["timing_policy"].update(
             setup="fixtures, H2D, runtime/session/handles, plans and compilation outside every timer",
-            trace_execution="tenferro trace excluded: run_prepared cannot borrow the entered session; JAX JIT compilation outside timing",
+            trace_execution="tenferro trace excluded: this suite compares immediate per-op calls, while trace executes a prepared graph in one caller-held session (run_prepared_in); JAX JIT compilation outside timing",
             short_operation_sampling="adaptive batches target 2 ms, at most 4096 operations and 256 MiB retained output; output-reuse destinations prepared before timing")
         verify_only = os.environ.get("GPU_API_VERIFY_ONLY") == "1"
         physical_device = os.environ.get("GPU_BENCH_PHYSICAL_DEVICE", os.environ.get("GPU_BENCH_DEVICE", "0"))

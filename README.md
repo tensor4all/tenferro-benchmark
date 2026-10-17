@@ -55,6 +55,14 @@ Raw runs (per-timestamp `run.yaml` + machine-readable outputs) are written to
 `result/` is regenerated from the newest run. See
 [docs/results.md](docs/results.md) for the full layout.
 
+A live dashboard is published to GitHub Pages at
+<https://tensor4all.org/tenferro-benchmark/> (`scripts/generate_dashboard.py`).
+It reads machine-readable `result/<profile>/<suite>.summary.json` sidecars
+written next to each maintained report (schema `summary-schema-v1`), shows the
+A100 `nvidia-gpu` results first, and flags per-case anomalies. Rebuild the
+sidecars for a local checkout from the raw runs with
+`uv run python scripts/regenerate_report_summaries.py`.
+
 ## Prerequisites
 
 All profiles:

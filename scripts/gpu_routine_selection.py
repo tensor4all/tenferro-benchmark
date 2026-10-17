@@ -66,7 +66,7 @@ def materialize(manifest_path, requested, output, coverage, backend_override="",
     return plan
 
 
-def account(plan, paths):
+def account(plan, paths, restrict=False):
     by_id, duplicates = {}, []
     for path in paths:
         for line in path.read_text().splitlines():
@@ -75,6 +75,13 @@ def account(plan, paths):
             key = f"{row['suite_id']}:{row['problem_id']}:{row['backend']}"
             if key in by_id: duplicates.append(key)
             by_id[key] = row
+    if restrict:
+        # Quick-from-full: account a full run's record set against the quick
+        # selection, ignoring records outside that selection instead of
+        # reporting every full-only pair as unexpected.
+        allowed = set(plan["selected"])
+        by_id = {key: row for key, row in by_id.items() if key in allowed}
+        duplicates = []
     result = {name:[] for name in ("executed","unsupported","failed","missing","noisy","verification_only","raw_samples_unavailable")}
     for key in plan["selected"]:
         row = by_id.get(key)
@@ -116,11 +123,13 @@ def main():
     parser.add_argument("--problem",default="")
     parser.add_argument("--effort",default="standard")
     parser.add_argument("--records",type=Path,nargs="*")
+    parser.add_argument("--restrict",action="store_true",
+        help="ignore records outside the selection (used for quick-from-full accounting)")
     parser.add_argument("suites",nargs="*")
     args = parser.parse_args()
     if args.records is not None:
         plan = json.loads((args.output/"selection.json").read_text())
-        status = account(plan,args.records)
+        status = account(plan,args.records,restrict=args.restrict)
         (args.output/"case_status.json").write_text(json.dumps(status,indent=2)+"\n")
         if status["failed"] or status["missing"] or status["duplicates"] or status["unexpected"]:
             raise SystemExit("GPU collection has failed/missing/duplicate/unexpected cases")

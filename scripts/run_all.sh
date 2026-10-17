@@ -648,30 +648,43 @@ LOGS=()
 if [ ${#LOGS[@]} -gt 0 ]; then
     echo "Formatting einsum results as markdown..."
     mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")" "$(dirname "$CPU_OPS_LATEST_REPORT")" "$(dirname "$CPU_LINALG_AD_LATEST_REPORT")"
+    export BENCHMARK_RUN_METADATA="$CPU_RUN_YAML"
+    export BENCHMARK_REPORT_SUMMARY="$CPU_RUN_DIR/einsum.summary.json"
     if command -v uv >/dev/null 2>&1; then
         uv run python "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE" \
             || python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE"
     else
         python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE"
     fi
+    unset BENCHMARK_REPORT_SUMMARY BENCHMARK_RUN_METADATA
 
     write_einsum_report "$EINSUM_REPORT"
     cp "$EINSUM_REPORT" "$CPU_LATEST_REPORT"
+    if [ -f "$CPU_RUN_DIR/einsum.summary.json" ]; then
+        cp "$CPU_RUN_DIR/einsum.summary.json" "$(dirname "$CPU_LATEST_REPORT")/einsum.summary.json"
+    fi
     echo ""
 fi
 
 if [ -f "$CPU_OPS_LOG" ]; then
     echo "Formatting CPU ops results as markdown..."
     mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_OPS_LATEST_REPORT")" "$(dirname "$CPU_LINALG_AD_LATEST_REPORT")"
+    export BENCHMARK_RUN_METADATA="$CPU_RUN_YAML"
+    export BENCHMARK_REPORT_SUMMARY="$CPU_RUN_DIR/cpu_ops.summary.json"
     if command -v uv >/dev/null 2>&1; then
         uv run python "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD" \
             || python3 "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD"
     else
         python3 "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD"
     fi
+    unset BENCHMARK_REPORT_SUMMARY
     write_cpu_report "$CPU_REPORT"
     cp "$CPU_REPORT" "$CPU_OPS_LATEST_REPORT"
+    if [ -f "$CPU_RUN_DIR/cpu_ops.summary.json" ]; then
+        cp "$CPU_RUN_DIR/cpu_ops.summary.json" "$(dirname "$CPU_OPS_LATEST_REPORT")/cpu_ops.summary.json"
+    fi
 
+    export BENCHMARK_REPORT_SUMMARY="$CPU_RUN_DIR/linalg_jvp_vjp.summary.json"
     if grep -Eq '_jvp,|_vjp,' "$CPU_OPS_LOG"; then
         if command -v uv >/dev/null 2>&1; then
             uv run python "$PROJECT_DIR/scripts/format_linalg_ad_results.py" "$CPU_OPS_LOG" | tee "$LINALG_AD_MD" \
@@ -679,9 +692,14 @@ if [ -f "$CPU_OPS_LOG" ]; then
         else
             python3 "$PROJECT_DIR/scripts/format_linalg_ad_results.py" "$CPU_OPS_LOG" | tee "$LINALG_AD_MD"
         fi
+        unset BENCHMARK_REPORT_SUMMARY BENCHMARK_RUN_METADATA
         write_linalg_ad_report "$LINALG_AD_REPORT"
         cp "$LINALG_AD_REPORT" "$CPU_LINALG_AD_LATEST_REPORT"
+        if [ -f "$CPU_RUN_DIR/linalg_jvp_vjp.summary.json" ]; then
+            cp "$CPU_RUN_DIR/linalg_jvp_vjp.summary.json" "$(dirname "$CPU_LINALG_AD_LATEST_REPORT")/linalg_jvp_vjp.summary.json"
+        fi
     else
+        unset BENCHMARK_REPORT_SUMMARY BENCHMARK_RUN_METADATA
         echo "WARNING: no linalg JVP/VJP rows in $CPU_OPS_LOG; skipping linalg_jvp_vjp report." >&2
     fi
     echo ""

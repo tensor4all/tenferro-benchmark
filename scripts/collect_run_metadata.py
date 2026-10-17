@@ -642,7 +642,7 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
                 if args.suite_id.startswith("gpu/")
                 else "many operations per interval; shared session where supported; see docs/short-operation-sessions.md"
             ),
-            "trace_execution": "prepare_compiled outside timing; run_prepared inside",
+            "trace_execution": "prepare_compiled and caller-held session entry outside timing; run_prepared_in inside",
             "setup_diagnostics": os.environ.get("BENCH_INCLUDE_SETUP_DIAGNOSTICS") == "1",
         },
     }

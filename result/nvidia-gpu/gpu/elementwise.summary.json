@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/elementwise",
+  "timestamp": "2026-10-17T11:01:08.148886+00:00",
+  "tenferro_commit": "88daa885a5bb09e07f3031814bbb1a21f7a74e62",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "60145713b7ef"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "elementwise_chain_f64_1k",
+      "group": "elementwise_chain",
+      "backend": "jax-cuda",
+      "median": 0.1000076875,
+      "iqr": 0.0019110312499999865,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "elementwise_chain_f64_1k",
+      "group": "elementwise_chain",
+      "backend": "pytorch-cuda",
+      "median": 0.140281125,
+      "iqr": 0.0006088125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "elementwise_chain_f64_1k",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.2284846875,
+      "iqr": 0.00991918750000001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "elementwise_chain_f64_1k",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-trace",
+      "median": 0.089612625,
+      "iqr": 0.0011463125000000102,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "elementwise_chain_f64_1m",
+      "group": "elementwise_chain",
+      "backend": "jax-cuda",
+      "median": 0.094795625,
+      "iqr": 0.007432812499999997,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "elementwise_chain_f64_1m",
+      "group": "elementwise_chain",
+      "backend": "pytorch-cuda",
+      "median": 0.319886375,
+      "iqr": 0.0015938749999999668,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "elementwise_chain_f64_1m",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-eager",
+      "median": 0.35340662500000003,
+      "iqr": 0.0036151249999999413,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "elementwise_chain_f64_1m",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-trace",
+      "median": 0.1584594375,
+      "iqr": 0.0009900624999999996,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}

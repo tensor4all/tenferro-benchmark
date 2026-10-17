@@ -52,21 +52,33 @@ problems:
   - transfer_down_f64_tenferro_8B
   - transfer_down_f64_cudarc-pageable_8B
   - transfer_down_f64_cudarc-pinned_8B
+  - transfer_down_f64_tenferro-into_8B
+  - transfer_down_f64_cudarc-pageable-fresh_8B
   - transfer_down_f64_tenferro_4096B
   - transfer_down_f64_cudarc-pageable_4096B
   - transfer_down_f64_cudarc-pinned_4096B
+  - transfer_down_f64_tenferro-into_4096B
+  - transfer_down_f64_cudarc-pageable-fresh_4096B
   - transfer_down_f64_tenferro_65536B
   - transfer_down_f64_cudarc-pageable_65536B
   - transfer_down_f64_cudarc-pinned_65536B
+  - transfer_down_f64_tenferro-into_65536B
+  - transfer_down_f64_cudarc-pageable-fresh_65536B
   - transfer_down_f64_tenferro_1048576B
   - transfer_down_f64_cudarc-pageable_1048576B
   - transfer_down_f64_cudarc-pinned_1048576B
+  - transfer_down_f64_tenferro-into_1048576B
+  - transfer_down_f64_cudarc-pageable-fresh_1048576B
   - transfer_down_f64_tenferro_16777216B
   - transfer_down_f64_cudarc-pageable_16777216B
   - transfer_down_f64_cudarc-pinned_16777216B
+  - transfer_down_f64_tenferro-into_16777216B
+  - transfer_down_f64_cudarc-pageable-fresh_16777216B
   - transfer_down_f64_tenferro_268435456B
   - transfer_down_f64_cudarc-pageable_268435456B
   - transfer_down_f64_cudarc-pinned_268435456B
+  - transfer_down_f64_tenferro-into_268435456B
+  - transfer_down_f64_cudarc-pageable-fresh_268435456B
   - alloc_zero_f64_alloc-zero-within-callback_0el
   - alloc_zero_f64_alloc-zero-per-callback_0el
   - alloc_zero_f64_host-zero-upload_0el

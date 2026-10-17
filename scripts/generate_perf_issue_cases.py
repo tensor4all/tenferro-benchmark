@@ -49,7 +49,7 @@ SUITE_ID = "cpu/perf_issues"
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 5
+GPU_MANIFEST_VERSION = 6
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
@@ -583,6 +583,26 @@ def generate_gpu_cases():
                             "destination while the tenferro arms allocate their output, so the "
                             "cudarc rows are an output-reuse lower bound for the transport, not an "
                             "allocation-equivalent comparison.")))
+            if direction == "down":
+                # Download-only allocation-equivalence arms: tenferro-into reuses
+                # one caller-owned Vec, and cudarc-pageable-fresh first-touches a
+                # new Vec per call to match download_tensor. Both are references
+                # for the existing tenferro download case, so the dashboard
+                # compares the fresh-allocation route against reuse and against
+                # the allocation-equivalent cudarc arm.
+                for arm, backend, ref in (("tenferro-into", "tenferro-cuda", "tenferro"),
+                                          ("cudarc-pageable-fresh", "cudarc", "tenferro")):
+                    rows.append(case(
+                        f"transfer_{direction}_f64_{arm}_{size}B", ("#2009",), "transfer",
+                        {"bytes": size, "direction": direction}, arm=arm, backend=backend,
+                        dtype="f64",
+                        reference_for=ref and f"transfer_{direction}_f64_{ref}_{size}B", profiles=gpu,
+                        intent=("tenferro-rs #2009 allocation-equivalence arms for the download "
+                                "direction: `tenferro-into` reuses one caller-owned Vec through "
+                                "download_tensor_into, and `cudarc-pageable-fresh` allocates a "
+                                "fresh pageable Vec per memcpy_dtoh call. Every call includes its "
+                                "own synchronize; both are references for the tenferro download "
+                                "case, which allocates its output through download_tensor.")))
     for elements in (0, 16, 512, 32768, 2 << 20):
         for arm, ref in (("alloc-zero-within-callback", None), ("alloc-zero-per-callback", None),
                          ("host-zero-upload", "alloc-zero-per-callback"),

@@ -1,0 +1,1268 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/perf_issues",
+  "timestamp": "2026-10-17T11:03:42Z",
+  "tenferro_commit": "88daa885a5bb09e07f3031814bbb1a21f7a74e62",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "60145713b7ef",
+    "threads": [
+      1
+    ]
+  },
+  "unit": "ns/op",
+  "rows": [
+    {
+      "case": "alloc_zero_f64_alloc-fill-per-callback_0el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 13315.51953125,
+      "iqr": 339.40625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-fill-per-callback_16el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 20615.6484375,
+      "iqr": 306.14453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-fill-per-callback_2097152el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 23182.15625,
+      "iqr": 413.921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-fill-per-callback_32768el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 21817.4921875,
+      "iqr": 1279.69921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-fill-per-callback_512el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 18534.3125,
+      "iqr": 80.12109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-per-callback_0el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 11669.28125,
+      "iqr": 177.427734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-per-callback_16el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 18119.53125,
+      "iqr": 238.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-per-callback_2097152el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 23357.15625,
+      "iqr": 330.8125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-per-callback_32768el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 20429.3046875,
+      "iqr": 821.98828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-per-callback_512el",
+      "group": "session_entry_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 18932.53125,
+      "iqr": 87.46875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_0el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3000.29296875,
+      "iqr": 17.041015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_16el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 10599.12109375,
+      "iqr": 218.9921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_2097152el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 16395.625,
+      "iqr": 298.140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_32768el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 13644.828125,
+      "iqr": 864.5234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_alloc-zero-within-callback_512el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 11758.89453125,
+      "iqr": 219.068359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_0el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4087.404296875,
+      "iqr": 57.1328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_16el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 28795.92578125,
+      "iqr": 14353.1953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_2097152el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 1187261.5,
+      "iqr": 34923.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_32768el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 172255.375,
+      "iqr": 1168.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "alloc_zero_f64_host-zero-upload_512el",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 27270.75,
+      "iqr": 13843.994140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_qr_f64_batched_n32_b16",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 2387703.0,
+      "iqr": 7790.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_qr_f64_batched_n32_b256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 35145209.0,
+      "iqr": 34631.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_qr_f64_loop_n32_b16",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 5329197.0,
+      "iqr": 22611.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_qr_f64_loop_n32_b256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 91873497.0,
+      "iqr": 149615.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_svd_f64_batched_n32_b16",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 14306214.0,
+      "iqr": 76408.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_svd_f64_batched_n32_b256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 225899632.0,
+      "iqr": 251419.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_svd_f64_loop_n32_b16",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 16836492.0,
+      "iqr": 71992.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "batched_svd_f64_loop_n32_b256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 285038467.0,
+      "iqr": 6034436.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_add_decode_eager-session",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 9916.1640625,
+      "iqr": 150.591796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_add_decode_eager-session-streaming",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 9399.11328125,
+      "iqr": 85.509765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_add_decode_launch-only-floor",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 6464.72265625,
+      "iqr": 32.1494140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_dot_general_decode_eager-session",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 29262.84375,
+      "iqr": 663.93359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_dot_general_decode_eager-session-streaming",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 29577.9375,
+      "iqr": 1161.37109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_op_f32_dot_general_decode_launch-only-floor",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "Error: \"unknown #2079 floor op dot_general\""
+    },
+    {
+      "case": "eigh_batched_c64_n128_auto",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3197181.0,
+      "iqr": 6530.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n128_syevd",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3178380.0,
+      "iqr": 4670.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n128_syevj",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 49259692.0,
+      "iqr": 83463.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n16_auto",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 314867.0,
+      "iqr": 2616.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n16_syevd",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 312138.125,
+      "iqr": 936.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n16_syevj",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 277740.625,
+      "iqr": 923.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n32_auto",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 469307.875,
+      "iqr": 7545.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n32_syevd",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 469151.5,
+      "iqr": 1265.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_c64_n32_syevj",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 652837.25,
+      "iqr": 7456.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n128_auto",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 1957889.5,
+      "iqr": 8400.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n128_syevd",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 1953239.0,
+      "iqr": 4127.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n128_syevj",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 19759212.0,
+      "iqr": 22996.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n16_auto",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 309161.75,
+      "iqr": 7445.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n16_syevd",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 284764.625,
+      "iqr": 808.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n16_syevj",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 199183.1875,
+      "iqr": 3209.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n32_auto",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 435572.875,
+      "iqr": 3320.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n32_syevd",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 438266.625,
+      "iqr": 8069.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eigh_batched_f64_n32_syevj",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 392452.5,
+      "iqr": 11779.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab248320_cudarc-row-copies",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 29611.9140625,
+      "iqr": 787.29296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab248320_eager-gather",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 13588.2578125,
+      "iqr": 1402.82421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab65536_cudarc-row-copies",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 29070.9609375,
+      "iqr": 73.91015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab65536_eager-gather",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 13781.58203125,
+      "iqr": 893.6484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab8192_cudarc-row-copies",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 28900.484375,
+      "iqr": 104.765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gather_embedding_f32_vocab8192_eager-gather",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 13882.83984375,
+      "iqr": 692.41015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "hadamard_f32_1024x1024_dot-general",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 17335.96875,
+      "iqr": 769.546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "hadamard_f32_1024x1024_multiply",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 10769.0,
+      "iqr": 147.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "qr_live_buffers_f64_n32_live1024",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 334180.375,
+      "iqr": 6301.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "qr_live_buffers_f64_n32_live16",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 332249.125,
+      "iqr": 1431.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "qr_live_buffers_f64_n32_live256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 345640.875,
+      "iqr": 11408.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_constant_f32_64M_constant",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 332490.25,
+      "iqr": 778.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_constant_f32_64M_op-output",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 333307.75,
+      "iqr": 1708.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_fixed-warm_latency",
+      "group": "shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 714487.0,
+      "iqr": 12976.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_fresh_latency",
+      "group": "shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 316882.0,
+      "iqr": 12455.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n16_mixed-warm_latency",
+      "group": "shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 719797.0,
+      "iqr": 10500.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_fixed-warm_latency",
+      "group": "shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 762279.0,
+      "iqr": 13106.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_fresh_latency",
+      "group": "shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 380234.0,
+      "iqr": 5494.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "shape_stream_f64_n64_mixed-warm_latency",
+      "group": "shape_stream_diagnostic",
+      "backend": "tenferro-cuda",
+      "median": 743889.0,
+      "iqr": 7765.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_batched_n16_count256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 24546.109375,
+      "iqr": 332.66796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_batched_n32_count256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 25453.484375,
+      "iqr": 294.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_batched_n64_count256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 25617.25,
+      "iqr": 237.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_batched_n8_count256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 22876.984375,
+      "iqr": 382.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_loop_n16_count256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4870339.0,
+      "iqr": 224140.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_loop_n32_count256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4676002.0,
+      "iqr": 307661.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_loop_n64_count256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 5760613.0,
+      "iqr": 20627.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_blocks_gemm_f64_loop_n8_count256",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 5069617.0,
+      "iqr": 200482.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n1024_auto",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 387827386.0,
+      "iqr": 95380.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n1024_gesvd",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 258787258.0,
+      "iqr": 155963.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n1024_gesvdj",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 387416933.0,
+      "iqr": 50383.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n1024_xgesvdp",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 61664307.0,
+      "iqr": 123750.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n256_auto",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 41025569.0,
+      "iqr": 16041.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n256_gesvd",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 32292415.0,
+      "iqr": 12521.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n256_gesvdj",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 41081771.0,
+      "iqr": 34071.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n256_xgesvdp",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 9149050.0,
+      "iqr": 13741.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n64_auto",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4685620.0,
+      "iqr": 33010.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n64_gesvd",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 6295520.0,
+      "iqr": 11605.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n64_gesvdj",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 4648098.0,
+      "iqr": 6730.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "svd_driver_c64_n64_xgesvdp",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 3504004.0,
+      "iqr": 5706.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_1048576B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 651595.5,
+      "iqr": 1098.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_16777216B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 2092861.0,
+      "iqr": 9350.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_268435456B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 145787209.0,
+      "iqr": 6862692.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_4096B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 8324.03515625,
+      "iqr": 381.94921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_65536B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 45926.640625,
+      "iqr": 5578.6484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable-fresh_8B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 7342.494140625,
+      "iqr": 14.6083984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_1048576B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 94525.25,
+      "iqr": 390.78125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_16777216B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 854983.5,
+      "iqr": 3246.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_268435456B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 27708792.0,
+      "iqr": 1980252.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_4096B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 8328.296875,
+      "iqr": 117.892578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_65536B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 13071.09765625,
+      "iqr": 489.2578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pageable_8B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 7790.6171875,
+      "iqr": 31.2890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_1048576B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 49721.328125,
+      "iqr": 73.8359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_16777216B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 646727.75,
+      "iqr": 385.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_268435456B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 10197227.0,
+      "iqr": 9275.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_4096B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 9374.546875,
+      "iqr": 84.357421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_65536B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 11676.66796875,
+      "iqr": 68.40234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_cudarc-pinned_8B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 9198.5625,
+      "iqr": 95.3984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_1048576B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 114371.34375,
+      "iqr": 257.046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_16777216B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 1055521.5,
+      "iqr": 6185.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_268435456B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 16053636.0,
+      "iqr": 628900.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_4096B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 21938.90625,
+      "iqr": 214.2265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_65536B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 28372.515625,
+      "iqr": 103.33203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro-into_8B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 22063.984375,
+      "iqr": 64.4921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_1048576B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 657605.75,
+      "iqr": 56502.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_16777216B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 9617376.0,
+      "iqr": 183387.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_268435456B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 143944133.0,
+      "iqr": 3700340.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_4096B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 22746.046875,
+      "iqr": 1351.34375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_65536B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 65118.328125,
+      "iqr": 254.53125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_down_f64_tenferro_8B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 15708.5078125,
+      "iqr": 105.5859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_1048576B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 90460.09375,
+      "iqr": 378.578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_16777216B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 756564.75,
+      "iqr": 1156.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_268435456B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 14004049.0,
+      "iqr": 295091.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_4096B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 7204.26953125,
+      "iqr": 44.2587890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_65536B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 13107.30859375,
+      "iqr": 71.2890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pageable_8B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 6557.81640625,
+      "iqr": 60.3642578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_1048576B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 50498.703125,
+      "iqr": 124.765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_16777216B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 636782.5,
+      "iqr": 198.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_268435456B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 10018303.0,
+      "iqr": 270.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_4096B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 60200.34375,
+      "iqr": 196.7890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_65536B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 12657.2578125,
+      "iqr": 32.404296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_cudarc-pinned_8B",
+      "group": "steady_state",
+      "backend": "cudarc",
+      "median": 9834.68359375,
+      "iqr": 62.98828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_1048576B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 380703.625,
+      "iqr": 2940.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_16777216B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 1230133.0,
+      "iqr": 53502.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_268435456B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 22648069.0,
+      "iqr": 102743.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_4096B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 39827.8984375,
+      "iqr": 7314.078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_65536B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 96360.03125,
+      "iqr": 4458.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transfer_up_f64_tenferro_8B",
+      "group": "steady_state",
+      "backend": "tenferro-cuda",
+      "median": 35780.78125,
+      "iqr": 7511.859375,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}

@@ -57,6 +57,7 @@ fi
 mkdir -p "$RESULTS_ROOT" "$REPORTS_DIR"
 
 IFS=',' read -r -a SUITES <<< "$SUITES_VALUE"
+REQUESTED_SUITE_FILES=("${SUITES[@]}")
 IFS=',' read -r -a BACKENDS <<< "$BACKENDS_VALUE"
 
 echo "============================================"
@@ -92,7 +93,17 @@ elif [[ -n "${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}" ]
 else
     COVERAGE=quick
 fi
+# A filtered invocation is a targeted probe, never a routine profile refresh.
+FILTERED=0
+[[ -n "${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}" ]] && FILTERED=1
+# On an unfiltered full run, also write the quick-profile report family from the
+# same records (quick selection is a subset of full; see docs/gpu-routine-coverage.md).
+QUICK_FROM_FULL=0
+if [[ "$COVERAGE" == full && "$FILTERED" == 0 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
+    QUICK_FROM_FULL=1
+fi
 SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection/$TIMESTAMP"
+QUICK_SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection_quick/$TIMESTAMP"
 mapfile -t SUITES < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
     --coverage "$COVERAGE" --effort "${BENCH_EFFORT:-standard}" \
     --backends "${GPU_BENCH_BACKENDS:-}" --problem "$PROBLEM_FILTER" \
@@ -104,7 +115,7 @@ mapfile -t SUITES < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
 RUST_BACKENDS=()
 PYTHON_BACKENDS=()
 for b in "${BACKENDS[@]}"; do
-    if [[ "$b" == "tenferro-cuda-trace" || "$b" == "tenferro-cuda-eager" ]]; then
+    if [[ "$b" == "tenferro-cuda-trace" || "$b" == "tenferro-cuda-eager" || "$b" == "tenferro-cuda-eager-per-call-session" ]]; then
         RUST_BACKENDS+=("$b")
     else
         PYTHON_BACKENDS+=("$b")
@@ -226,6 +237,9 @@ run_python_backend() {
     local suite="$1"
     local chunk_jsonl="$2"
     shift 2
+    # Per-run synthetic sparse cache shared by every backend process (the
+    # fixtures are identical across pytorch-cuda/cusparse/ginkgo).
+    GPU_BENCH_SPARSE_CACHE_DIR="${GPU_BENCH_SPARSE_CACHE_DIR:-$(dirname "$chunk_jsonl")/cache}" \
     "${PYTHON[@]}" "$SCRIPT_DIR/benchmark_gpu_python.py" \
         "$chunk_jsonl" "$DEVICE_ORDINAL" "$PROBLEM_FILTER" \
         "$@" -- "$suite"
@@ -254,7 +268,7 @@ run_suite_serial_by_backend() {
         backend_start="$(wall_now)"
         build_before="$RUST_BUILD_NS"
 
-        if [[ "$backend" == "tenferro-cuda-eager" || "$backend" == "tenferro-cuda-trace" ]]; then
+        if [[ "$backend" == "tenferro-cuda-eager" || "$backend" == "tenferro-cuda-eager-per-call-session" || "$backend" == "tenferro-cuda-trace" ]]; then
             run_rust_backend "$suite" "$chunk" "$backend"
         else
             run_python_backend "$suite" "$chunk" "$backend"
@@ -329,6 +343,12 @@ PY
     "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
     if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
         cp "$MARKDOWN_OUT" "$REPORT_OUT"
+        # The formatter writes a dashboard summary sidecar next to the raw
+        # report; publish it next to the maintained Markdown under the same
+        # condition so the dashboard never shows a stale summary.
+        if [[ -f "${MARKDOWN_OUT%.md}.summary.json" ]]; then
+            cp "${MARKDOWN_OUT%.md}.summary.json" "${REPORT_OUT%.md}.summary.json"
+        fi
     fi
     "${PYTHON[@]}" - "$RUN_DIR/wall_command.json" "$COMMAND_START_NS" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$REPORT_START_NS" "$(wall_now)" <<'PY'
 import json, sys
@@ -355,7 +375,19 @@ done
     --output "$SELECTION_DIR/report.md"
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
     mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu"
-    cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+    if [[ "$QUICK_FROM_FULL" == 1 ]]; then
+        cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_full_coverage.md"
+        "${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --coverage quick --effort "${BENCH_EFFORT:-standard}" \
+            --output "$QUICK_SELECTION_DIR" "${REQUESTED_SUITE_FILES[@]}" >/dev/null
+        "${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$QUICK_SELECTION_DIR" \
+            --records "${RESULT_PATHS[@]}" --restrict
+        "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$QUICK_SELECTION_DIR/case_status.json" \
+            --output "$QUICK_SELECTION_DIR/report.md"
+        cp "$QUICK_SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+    elif [[ "$FILTERED" == 0 ]]; then
+        # A filtered probe is not a routine profile refresh: its accounting stays in the raw selection dir.
+        cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
+    fi
 fi
 
 CONTROLS="${GPU_BENCH_ROUTINE_CONTROLS:-}"
@@ -384,7 +416,17 @@ PY
 if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
     "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$SELECTION_DIR" --output "$SELECTION_DIR/wall_report.md"
     if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
-        cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
+        if [[ "$QUICK_FROM_FULL" == 1 ]]; then
+            # A full campaign has no quick wall clock of its own. Publish the
+            # full-profile workflow report and leave the quick
+            # `routine_workflow.md` (from the last real quick campaign)
+            # untouched: a derived quick wall time would be a counterfactual,
+            # not a measurement, and must not be evaluated against the quick
+            # budget.
+            cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_full_workflow.md"
+        elif [[ "$FILTERED" == 0 ]]; then
+            cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
+        fi
     fi
 fi
 

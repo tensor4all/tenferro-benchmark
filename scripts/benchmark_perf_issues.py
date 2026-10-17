@@ -24,6 +24,7 @@ import yaml
 from benchmark_layout import safe_target_profile
 import bench_selection
 import case_status as cs
+import report_summary
 from suite_instances import resolve_suite_instance_ids
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -329,6 +330,63 @@ def shape_label(row):
     return ", ".join(f"{k}={v}" for k, v in row["params"].items() if k not in {"kind", "arm", "dtype"})
 
 
+def _numeric_summary(row):
+    if row.get("correctness_status") != "passed":
+        return None, None
+    values = [s["elapsed_ns"] / s["iterations"] for s in row.get("samples", [])]
+    if not values:
+        return None, None
+    median = statistics.median(values)
+    q = statistics.quantiles(values, n=4, method="inclusive") if len(values) > 1 else [median] * 3
+    return median, q[2] - q[0]
+
+
+def build_summary(run_dir, target, suite_key="cpu"):
+    """Machine-readable sidecar for the same records the report is built from."""
+    rows = [json.loads(line) for path in sorted(run_dir.glob("samples_t*.jsonl"))
+            for line in path.read_text().splitlines()]
+    metadata = None
+    for path in sorted(run_dir.glob("run_t*.yaml")):
+        metadata = yaml.safe_load(path.read_text())
+        break
+    header = report_summary.metadata_from_run_metadata(metadata)
+    hardware = dict(header["hardware"])
+    if suite_key != "gpu":
+        try:
+            from collect_cpu_info import collect_cpu_info
+            hardware.setdefault("cpu", collect_cpu_info().get("Model", "unknown"))
+        except Exception:  # pragma: no cover - best-effort host label
+            hardware.setdefault("cpu", "unknown")
+    threads = sorted({int(row["threads"]) for row in rows if row.get("threads") is not None})
+    if threads:
+        hardware["threads"] = threads
+    out_rows = []
+    for row in rows:
+        median, iqr = _numeric_summary(row)
+        status = "ok" if row.get("correctness_status") == "passed" else str(row.get("correctness_status", "failed"))
+        out_rows.append(
+            report_summary.make_row(
+                row["case_id"],
+                row["backend"],
+                median,
+                status=status,
+                iqr=iqr,
+                group=row.get("measurement_scope"),
+                verified=row.get("correctness_status") == "passed",
+                reason=(row.get("unsupported_reason") or row.get("error")) if status != "ok" else None,
+            )
+        )
+    return report_summary.build_document(
+        out_rows,
+        target_profile=header["target_profile"] or target,
+        suite_id=header["suite_id"] or SUITES[suite_key][2],
+        timestamp=header["timestamp"],
+        tenferro_commit=header["tenferro_commit"],
+        hardware=hardware,
+        unit="ns/op",
+    )
+
+
 def report(run_dir, target, suite_key="cpu"):
     suite_id = SUITES[suite_key][2]
     run_dir = run_dir.resolve()
@@ -522,6 +580,10 @@ def report(run_dir, target, suite_key="cpu"):
     latest = ROOT / "result" / safe_target_profile(target) / f"{suite_id}.md"
     latest.parent.mkdir(parents=True, exist_ok=True)
     latest.write_text(text)
+    report_summary.write_document(
+        report_summary.summary_path_for_report(latest),
+        build_summary(run_dir, target, suite_key),
+    )
     print(latest)
 
 

@@ -1,6 +1,6 @@
 # GPU routine coverage
 
-Source accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_234450/case_status.json`.
+Source accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection_quick/20261017_104441/case_status.json`.
 
 Manifest version: 1; coverage: quick; effort: standard.
 
@@ -19,7 +19,7 @@ Verification-only, unsupported, missing and unselected rows are not measured cov
 | raw_samples_unavailable | 0 |
 | expected | 27 |
 | selected | 27 |
-| unselected | 68 |
+| unselected | 67 |
 | duplicates | 0 |
 | unexpected | 0 |
 
@@ -206,7 +206,6 @@ None.
 - `gpu/sparse:sparse_synthetic_64k_4m_spmm_f64_rhs1024:ginkgo`
 - `gpu/tensornetwork:tensornetwork_permutation_optimized_f32:tenferro-cuda-trace`
 - `gpu/tensornetwork:tensornetwork_permutation_optimized_f32:jax-cuda-tree-jit`
-- `gpu/tensornetwork:tensornetwork_permutation_optimized_f32:jax-cuda-eager`
 
 ## duplicates
 
