@@ -128,10 +128,15 @@ jobs:
           uv run python -m unittest tests.test_gpu_public_api tests.test_gpu_framework_runner tests.test_gpu_linalg_ad_contracts tests.test_gpu_multi_output_verification tests.test_gpu_routine_selection tests.test_gpu_routine_coverage_report tests.test_gpu_routine_controls tests.test_gpu_routine_wall tests.test_gpu_paired tests.test_gpu_vendor_sampling tests.test_gpu_permutation_sampled_verify tests.test_gpu_sparse_cache
 
       - name: Validate performance-issue case generation and reports
-        run: uv run python -m unittest tests.test_perf_issues_suite
+        run: |
+          uv run python scripts/generate_overhead_smoke_cases.py --check
+          uv run python -m unittest tests.test_perf_issues_suite tests.test_overhead_smoke
 
       - name: Cargo check
         run: cargo check --all-targets
+
+      - name: Check overhead-smoke runtime timing scope
+        run: cargo test --bin perf_issue_case umbrella::alloc_counter::tests -- --test-threads=1
 
   followup-mwe:
     if: github.repository == 'tensor4all/tenferro-benchmark'

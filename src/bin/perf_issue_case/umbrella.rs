@@ -1,6 +1,8 @@
 //! Public CPU umbrella routes (#177). Setup, counters and diagnostic clocks
 //! are distinct; no private lane planner or provider object is inspected.
 use super::*;
+#[path = "umbrella/alloc_counter.rs"]
+mod alloc_counter;
 use tenferro_cpu::with_cpu_exec_session;
 use tenferro_einsum::ConcreteEinsumPlan;
 use tenferro_linalg::LinalgBackend;
@@ -86,6 +88,7 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
         "umbrella_axpby" => axpby(p, timing, threads),
         "umbrella_view_counter" => views(p),
         "umbrella_pool_state" => pool_state(p, timing),
+        "umbrella_alloc_counter" => alloc_counter::run(p, timing, budget(p, threads)),
         _ => Err("unregistered umbrella kind".into()),
     }?;
     if matches!(
@@ -96,9 +99,16 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
     } else if param_str(p, "arm")? == "host" {
         row.extra["host_reference_threads"] = json!(1);
     } else {
-        row.extra["effective_backend_threads"] = json!(threads);
+        row.extra["effective_backend_threads"] = json!(budget(p, threads));
     }
     Ok(row)
+}
+
+/// The backend thread budget: an explicit case `budget`, else the run's threads.
+fn budget(p: &Value, threads: usize) -> usize {
+    p.get("budget")
+        .and_then(Value::as_u64)
+        .map_or(threads, |b| b as usize)
 }
 
 fn checked_backend(threads: usize) -> Result<CpuBackend> {

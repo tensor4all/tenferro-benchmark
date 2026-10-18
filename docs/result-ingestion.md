@@ -187,9 +187,9 @@ source run must be explicit before ingestion is retried.
 
 ## CPU normalized bundle details
 
-The default nightly publication subset is the eight suites explicitly declared
+The default nightly publication subset is the nine suites explicitly declared
 in `scripts/ci/cpu_ingestion_adapter.py`: einsum, cpu_ops, linalg_jvp_vjp, fft,
-public_api, small_work, session_matrix and permutation. Existing other reports
+public_api, small_work, session_matrix, permutation and overhead_smoke. Existing other reports
 remain maintained in git. CPU packaging is non-timing work after collection.
 
 Combined core reports name two original runs. Packaging copies these into
@@ -202,6 +202,13 @@ original source; it never treats the aggregate metadata as measurement proof.
 Original suite IDs for cpu_ops/linalg_jvp_vjp historically say cpu/einsum;
 the adapter checks that original spelling and emits the correct summary ID.
 Unsupported explanations lost by old summaries are restored from raw notes.
+The overhead_smoke suite is collected once at 1T, with its own declared thread
+selection in the inventory; the other nightly suites use 1T and 4T. Its raw
+samples rebuild both ns/op and allocation counters. Eight steady-state rows
+and two explicitly scoped session-entry diagnostics stay separate in Pages;
+this trend never gates. Filtered, legacy-scope or incomplete smoke runs cannot
+replace the standard nightly report.
+
 Reports and timing values remain unchanged. New small_work/session_matrix
 summaries use ns per declared operation/workflow and retain per-case scopes;
 FFT retains its report's timing audit and must not be cited as compliant

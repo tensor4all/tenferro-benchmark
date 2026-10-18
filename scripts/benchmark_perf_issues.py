@@ -501,7 +501,8 @@ def report(run_dir, target, suite_key="cpu"):
                              f"{c['host_allocated_bytes_per_op']:.0f} | {ratio_text} |")
             for field in ("size_of_bytes", "diagnostic_timing", "descriptor_cache_before",
                           "descriptor_cache_after", "binary_plan_builds_per_call",
-                          "requested_threads", "actual_lanes", "actual_item_threads", "operation_requires_session"):
+                          "requested_threads", "actual_lanes", "actual_item_threads", "operation_requires_session",
+                          "output_retention", "session_entry", "fused_regions"):
                 if field in row:
                     lines += ["", f"{field}: `{json.dumps(row[field], separators=(',', ':'))}`"]
             lines.append("")

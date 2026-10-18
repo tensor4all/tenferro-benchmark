@@ -81,12 +81,12 @@ def package_cpu(root: Path, profile: str, head_sha: str, bundle: Path, suites=CP
                 raise ValueError(f'{suite}: missing raw data or metadata')
             for metadata in metadata_paths:
                 selected_paths = paths
-                if name in ('small_work', 'session_matrix'):
+                if name in ('small_work', 'session_matrix', 'overhead_smoke'):
                     thread = re.fullmatch(r'run_t(\d+)', metadata.stem).group(1)
                     selected_paths = [run/f'samples_t{thread}.jsonl']
                 descriptor = {'metadata': str(metadata.relative_to(root)),
                               'raw_files': [str(path.relative_to(root)) for path in selected_paths]}
-                thread_metadata = sorted(run.glob('run_t*.yaml')) if name not in ('small_work', 'session_matrix') else [metadata]
+                thread_metadata = sorted(run.glob('run_t*.yaml')) if name not in ('small_work', 'session_matrix', 'overhead_smoke') else [metadata]
                 descriptor['thread_metadata'] = [str(path.relative_to(root)) for path in thread_metadata] or [str(metadata.relative_to(root))]
                 if name == 'permutation':
                     match = re.search(r'^- Model: `([^`]+)`', report.read_text(), re.MULTILINE)
@@ -124,7 +124,7 @@ def package_cpu(root: Path, profile: str, head_sha: str, bundle: Path, suites=CP
         target_report.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(report, target_report)
         entry = {'suite_id': suite, 'timestamp': stamp, 'run_directory': run_directory,
-                 'threads': list(threads), 'sources': packed_sources,
+                 'threads': [1] if name == 'overhead_smoke' else list(threads), 'sources': packed_sources,
                  'files': {str(path.relative_to(bundle)): digest(path) for path in destination.rglob('*') if path.is_file()}}
         document = rebuild_cpu(bundle, entry, profile, source)
         entry.update(tenferro_commit=document['tenferro_commit'], hardware=document['hardware'], expected_rows=identities(document))

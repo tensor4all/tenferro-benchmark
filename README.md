@@ -30,6 +30,7 @@ live in git history only.
 | `mac-cpu` | `cpu/session_matrix` | [result/mac-cpu/cpu/session_matrix.md](result/mac-cpu/cpu/session_matrix.md) |
 | `mac-cpu` | `cpu/small_work` | [result/mac-cpu/cpu/small_work.md](result/mac-cpu/cpu/small_work.md) |
 | `mac-cpu` | `cpu/permutation` | [result/mac-cpu/cpu/permutation.md](result/mac-cpu/cpu/permutation.md) |
+| `mac-cpu` | `cpu/overhead_smoke` | [result/mac-cpu/cpu/overhead_smoke.md](result/mac-cpu/cpu/overhead_smoke.md) |
 | `linux-cpu` (Linux devcontainer; collected as `amd-cpu`) | `cpu/einsum` | [result/linux-cpu/cpu/einsum.md](result/linux-cpu/cpu/einsum.md) |
 | `linux-cpu` | `cpu/cpu_ops` | [result/linux-cpu/cpu/cpu_ops.md](result/linux-cpu/cpu/cpu_ops.md) |
 | `linux-cpu` | `cpu/linalg_jvp_vjp` | [result/linux-cpu/cpu/linalg_jvp_vjp.md](result/linux-cpu/cpu/linalg_jvp_vjp.md) |
@@ -37,6 +38,7 @@ live in git history only.
 | `amd-cpu` (Linux devcontainer) | `cpu/small_work` | [result/amd-cpu/cpu/small_work.md](result/amd-cpu/cpu/small_work.md) |
 | `amd-cpu` | `cpu/large_ad` | [result/amd-cpu/cpu/large_ad.md](result/amd-cpu/cpu/large_ad.md) |
 | `amd-cpu` (Linux devcontainer) | `cpu/perf_issues` | [result/amd-cpu/cpu/perf_issues.md](result/amd-cpu/cpu/perf_issues.md) |
+| `amd-cpu` (Linux devcontainer) | `cpu/overhead_smoke` | [result/amd-cpu/cpu/overhead_smoke.md](result/amd-cpu/cpu/overhead_smoke.md) |
 | `linux-cpu` | linalg JVP/JVP repro | [result/linux-cpu/cpu/linalg_jvp_jvp.md](result/linux-cpu/cpu/linalg_jvp_jvp.md) |
 | `nvidia-gpu` (CUDA devcontainer) | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
@@ -286,6 +288,34 @@ timing. Raw runs go to `data/results/<target_profile>/{cpu,gpu}/perf_issues/<tim
 | #1873, #1805 | `contraction_plan_churn_f64_{distinct-plans,repeated-plan}` | `gpu/perf_issues` |
 | #1949 | `dot_general_destination_f64_{owned-dst,borrowed-dst}` | `gpu/perf_issues` |
 | #1925 | `borrowed_input_gemm_f64_n{8,32}_{owned-input,view-input}` | `gpu/perf_issues` |
+| #2178 | `typed_elemwise_f64_add_{bcast,permuted_view}_counter`, `permute_materialize_f64_r4_counter`, `fused_elemwise_f64_serial_counter`, `reduce_axis_f64_counter` (allocation counters, 1/2 threads, host-loop references) | `cpu/perf_issues`, trend in `cpu/overhead_smoke` |
+
+### Overhead smoke (`cpu/overhead_smoke`)
+
+A small nightly trend view for the allocation-free provider work of
+tenferro-rs #2178 (tenferro-benchmark #197): ten small public calls (stride-0
+and permuted-view add, rank-4 transpose, traced fused `a*b+c` at backend
+thread budgets 1 and 2, axis reduction, concatenate, prepared einsum at n=2/4)
+on one run thread. Eight rows measure steady-state operations in entered
+sessions; two separately named `run_prepared` diagnostics include runtime-internal
+session entry/exit and are reported in a separate table. Each row reports ns/op
+and allocs/op. Allocation counts come from the pooled steady state of the matching
+`cpu/perf_issues` counter case; compare matching fixtures, thread budgets and
+execution scopes across nights.
+Nothing gates here (the gates live in each repository's PR CI).
+`scripts/run_all.sh` runs it once after the other suites
+(`RUN_OVERHEAD_SMOKE_SUITE=0` skips it); standalone:
+
+```bash
+devcontainer exec --workspace-folder . bash -lc '
+  TENFERRO_CPU_FEATURES=blas-mkl BENCHMARK_TARGET_PROFILE=amd-cpu \
+  ./scripts/run_overhead_smoke.sh'
+BENCHMARK_TARGET_PROFILE=mac-cpu ./scripts/run_overhead_smoke.sh
+```
+
+Edit `scripts/generate_overhead_smoke_cases.py` and rerun it to change the
+rows. Raw runs go to `data/results/<target_profile>/cpu/overhead_smoke/<timestamp>/`;
+the latest report is `result/<target_profile>/cpu/overhead_smoke.md`.
 
 ### CPU permutation suite (`cpu/permutation`)
 

@@ -126,5 +126,111 @@ class CPUIngestionTest(unittest.TestCase):
             self.package()
 
 
+
+class OverheadIngestionTest(unittest.TestCase):
+    def fixture(self, profile='amd-cpu'):
+        from scripts.generate_overhead_smoke_cases import generate_cases, collection_policy
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        run = root/f'data/results/{profile}/cpu/overhead_smoke/20261018_000000'
+        run.mkdir(parents=True)
+        cases = generate_cases()
+        records = [dict(suite_id='cpu/overhead_smoke', case_id=case['id'], threads=1,
+                        fixture=case['fixture'], timing_scope=case['timing_scope'],
+                        backend_thread_budget=case['backend_thread_budget'],
+                        refs=case['refs'], note=case['note'], correctness_status='passed',
+                        samples=[{'elapsed_ns':200, 'iterations':10}, {'elapsed_ns':400, 'iterations':10}],
+                        counters=[{'host_allocations_per_op':2, 'host_allocated_bytes_per_op':64}])
+                   for case in cases]
+        metadata = dict(target_profile=profile, suite_id='cpu/overhead_smoke',
+                        timestamp='2026-10-18T00:00:00+00:00', harness={'commit':'a'*40},
+                        tenferro_rs={'commit':'b'*40,'features':['blas-mkl' if profile=='amd-cpu' else 'blas-accelerate']},
+                        blas={'implementation':'mkl' if profile=='amd-cpu' else 'accelerate'},
+                        python_backends={'pytorch':{'provider':'mkl'}},
+                        environment={'hostname':'fixture', 'env':{'RAYON_NUM_THREADS':'1'}},
+                        collection=collection_policy(cases))
+        for name in ('run.yaml', 'run_t1.yaml'):
+            (run/name).write_text(yaml.safe_dump(metadata))
+        (run/'samples_t1.jsonl').write_text(''.join(json.dumps(row)+'\n' for row in records))
+        from benchmark_overhead_smoke import report
+        with patch('benchmark_overhead_smoke.ROOT', root):
+            report(run, profile)
+        return root, run, records
+
+    def package(self, root, profile='amd-cpu'):
+        return package_cpu(root, profile, 'a'*40, root/'bundle', suites=('overhead_smoke',))
+
+    def test_raw_to_bundle_to_committed_payload_to_pages_for_both_profiles(self):
+        import generate_dashboard as dashboard
+        for profile in ('amd-cpu','mac-cpu'):
+            with self.subTest(profile=profile):
+                root,run,records = self.fixture(profile)
+                original = (run/'samples_t1.jsonl').read_bytes()
+                manifest = self.package(root,profile)
+                self.assertEqual(manifest['suites'][0]['threads'],[1])
+                source={'head_sha':'a'*40,'run_id':123,'run_attempt':1,'artifact_id':456,
+                        'repository':'tensor4all/tenferro-benchmark',
+                        'workflow_path':'.github/workflows/benchmark-nightly-linux-cpu.yml' if profile=='amd-cpu' else '.github/workflows/benchmark-nightly-mac-cpu.yml',
+                        'expires_at':'2027-01-16T00:00:00Z'}
+                receipt,payload=validate_bundle(root/'bundle',profile,source)[0]
+                summary=json.loads(payload[f'result/{profile}/cpu/overhead_smoke.summary.json'])
+                self.assertEqual(summary['hardware']['threads'],[1])
+                self.assertEqual(len(summary['rows']),10)
+                self.assertEqual({row['median'] for row in summary['rows']},{30})
+                self.assertEqual({row['host_allocations_per_op'] for row in summary['rows']},{2})
+                self.assertEqual(sum(row['timing_scope']=='steady_state_host_api' for row in summary['rows']),8)
+                for relative,data in payload.items():
+                    path=root/'accepted'/relative
+                    path.parent.mkdir(parents=True,exist_ok=True)
+                    path.write_bytes(data)
+                self.assertEqual(dashboard.generate(root/'accepted/result',root/'site'),0)
+                html=(root/f'site/{profile}/cpu/overhead_smoke.html').read_text()
+                self.assertIn('Non-gating trend',html)
+                self.assertIn('Steady-state operations',html)
+                self.assertIn('Runtime session-entry diagnostics',html)
+                self.assertIn('allocs/op',html)
+                self.assertNotIn('Absolute medians on a log time axis',html)
+                self.assertEqual((run/'samples_t1.jsonl').read_bytes(),original)
+
+    def test_incomplete_or_duplicate_or_wrong_scope_samples_cannot_publish(self):
+        for mode in ('missing','duplicate','scope','budget','threads','zero_iterations','nonfinite','counter'):
+            with self.subTest(mode=mode):
+                root,run,records=self.fixture()
+                if mode=='missing': records.pop()
+                if mode=='duplicate': records.append(records[0])
+                if mode=='scope': records[4]['timing_scope']='steady_state_host_api'
+                if mode=='budget': records[4]['backend_thread_budget']=9
+                if mode=='threads': records[0]['threads']=4
+                if mode=='zero_iterations': records[0]['samples'][0]['iterations']=0
+                if mode=='nonfinite': records[0]['samples'][0]['elapsed_ns']=float('nan')
+                if mode=='counter': records[0]['counters'][0]['host_allocations_per_op']=-1
+                (run/'samples_t1.jsonl').write_text(''.join(json.dumps(row)+'\n' for row in records))
+                with self.assertRaises(ValueError): self.package(root)
+
+    def test_forged_allocation_summary_is_rejected_after_digest_updates(self):
+        root,_,_=self.fixture()
+        manifest=self.package(root)
+        entry=manifest['suites'][0]
+        for relative in (f"{entry['run_directory']}/report.summary.json",
+                         'result/amd-cpu/cpu/overhead_smoke.summary.json'):
+            path=root/'bundle'/relative
+            document=json.loads(path.read_text())
+            document['rows'][0]['host_allocations_per_op']=0
+            path.write_text(json.dumps(document))
+            entry['files'][relative]=digest(path)
+        (root/'bundle/ingestion.json').write_text(json.dumps(manifest))
+        with self.assertRaisesRegex(ValueError,'differs from raw'):
+            validate_bundle(root/'bundle','amd-cpu',{'head_sha':'a'*40})
+
+    def test_legacy_blanket_scope_is_not_accepted_as_new_publication(self):
+        root,run,_=self.fixture()
+        path=run/'run_t1.yaml'
+        metadata=yaml.safe_load(path.read_text())
+        metadata['collection']={'timing_scope':'steady_state_host_api'}
+        path.write_text(yaml.safe_dump(metadata))
+        with self.assertRaisesRegex(ValueError,'per-case timing metadata'): self.package(root)
+
+
 if __name__=='__main__':
     unittest.main()

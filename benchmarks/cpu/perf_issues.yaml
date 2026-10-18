@@ -4,8 +4,8 @@ suite_id: cpu/perf_issues
 title: Workloads of open and resolved tenferro-rs performance issues (CPU)
 description: 'One case family per open or resolved tenferro-rs performance issue (#1615, #1803, #1885,
   #1900, #1975, #1976, #1990, #1992, #1995, #2003, #2006, #2007, #2008, #2021, #2027, #2028, #2029, #2030,
-  #2031, #2032, #2033, #2034, #2035, #2036, #2037, #2038, #2039, #2040, #2139, #2141, #2142, #2143, #2170),
-  each with its reference arm(s); the issue numbers are recorded per case in data/instances/perf_issues.json.
+  #2031, #2032, #2033, #2034, #2035, #2036, #2037, #2038, #2039, #2040, #2139, #2141, #2142, #2143, #2170,
+  #2178), each with its reference arm(s); the issue numbers are recorded per case in data/instances/perf_issues.json.
   Workloads are added when an issue is opened; perf-fix PRs report numbers from these cases. Steady-state
   rows and labelled diagnostics are reported separately. #1865 and #1863 live in cpu/einsum.'
 defaults:
@@ -340,6 +340,16 @@ problems:
   - metadata_view_alloc_counter_slice_host
   - metadata_view_alloc_counter_reshape
   - metadata_view_alloc_counter_reshape_host
+  - typed_elemwise_f64_add_bcast_counter
+  - typed_elemwise_f64_add_bcast_counter_host
+  - typed_elemwise_f64_add_permuted_view_counter
+  - typed_elemwise_f64_add_permuted_view_counter_host
+  - permute_materialize_f64_r4_counter
+  - permute_materialize_f64_r4_counter_host
+  - fused_elemwise_f64_serial_counter
+  - fused_elemwise_f64_serial_counter_host
+  - reduce_axis_f64_counter
+  - reduce_axis_f64_counter_host
   - pool_miss_f64_bins0
   - pool_miss_f64_bins100
   - pool_miss_f64_bins1000
