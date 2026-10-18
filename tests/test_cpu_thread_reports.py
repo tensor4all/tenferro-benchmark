@@ -1,4 +1,5 @@
 import sys
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -23,6 +24,10 @@ class ThreadReports(unittest.TestCase):
                 self.assertIn("### Thread Environment", text)
                 self.assertIn("run1", text)
                 self.assertIn("run4", text)
+                summary=json.loads((root / "result/mac-cpu/cpu" / f"{name}.summary.json").read_text())
+                self.assertEqual(summary["hardware"]["threads"],[1,4])
+                self.assertEqual(summary["suite_id"],f"cpu/{name}")
+                self.assertEqual(len(summary["rows"]),2)
 
     def test_rejects_mixed_commits_or_duplicate_threads(self):
         for change in ("tenferro", "benchmark", "threads"):
@@ -49,8 +54,15 @@ class ThreadReports(unittest.TestCase):
             "target_profile": "mac-cpu", "tenferro_rs": {"commit": "core"},
             "environment": {"env": {"RAYON_NUM_THREADS": str(threads), "BENCHMARK_COMMIT": "bench"}},
         }))
-        for filename, title in REPORTS.values():
+        for name, (filename, title, summary_name) in REPORTS.items():
             (run / filename).write_text(f"# {title}\n\n## Thread Environment\n\nthreads={threads}\n\n## Threads: {threads}\n\n| case | {threads}.0 |\n")
+            (run / summary_name).write_text(json.dumps({
+                "schema_version":1, "target_profile":"mac-cpu", "suite_id":f"cpu/{name}",
+                "timestamp":f"2026-10-18T00:00:0{threads}+00:00", "tenferro_commit":"core",
+                "hardware":{"host":"fixture","threads":[threads]}, "unit":"ms",
+                "rows":[{"case":"case", "group":f"Threads: {threads}", "backend":"fixture",
+                         "median":float(threads), "status":"ok", "verified":True}],
+            }))
         return run
 
 
