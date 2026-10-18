@@ -114,7 +114,14 @@ def validate_summary(document: dict, profile: str, entry: dict) -> None:
 
 
 def validate_bundle(bundle: Path, profile: str, source: dict) -> list[tuple[dict, dict[str, bytes]]]:
-    manifest = json.loads(safe_file(bundle, 'ingestion.json').read_text())
+    if not (bundle / 'ingestion.json').exists() and profile == 'nvidia-gpu':
+        if __package__:
+            from .gpu_ingestion_adapter import adapt_publication
+        else:
+            from gpu_ingestion_adapter import adapt_publication
+        manifest = adapt_publication(bundle, source)
+    else:
+        manifest = json.loads(safe_file(bundle, 'ingestion.json').read_text())
     if manifest.get('schema_version') != 1 or manifest.get('target_profile') != profile:
         raise ValueError('Invalid ingestion manifest')
     if manifest.get('harness_commit') != source['head_sha']:
