@@ -1952,10 +1952,10 @@ fn build_trace_case(case: &Case) -> BenchResult<Vec<TracedTensor>> {
         ("cpu/complex", "dot_general") => one(traced(tensor_c64(&[640, 640], 1))?.dot_general(
             &traced(tensor_c64(&[640, 640], 2))?,
             DotGeneralConfig {
-                lhs_contracting_dims: vec![1].into(),
-                rhs_contracting_dims: vec![0].into(),
-                lhs_batch_dims: vec![].into(),
-                rhs_batch_dims: vec![].into(),
+                lhs_contracting_dims: [1].into_iter().collect(),
+                rhs_contracting_dims: [0].into_iter().collect(),
+                lhs_batch_dims: [].into_iter().collect(),
+                rhs_batch_dims: [].into_iter().collect(),
             },
         )?),
         ("cpu/complex", "tensordot") => one(traced(tensor_c64(&[640, 640], 1))?.tensordot(
@@ -2622,10 +2622,10 @@ fn copy_read_into_f64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
 
 fn dot_config() -> DotGeneralConfig {
     DotGeneralConfig {
-        lhs_contracting_dims: vec![1].into(),
-        rhs_contracting_dims: vec![0].into(),
-        lhs_batch_dims: vec![].into(),
-        rhs_batch_dims: vec![].into(),
+        lhs_contracting_dims: [1].into_iter().collect(),
+        rhs_contracting_dims: [0].into_iter().collect(),
+        lhs_batch_dims: [].into_iter().collect(),
+        rhs_batch_dims: [].into_iter().collect(),
     }
 }
 
@@ -2978,10 +2978,10 @@ fn dot_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
             prepared_config!(
                 DotGeneralConfig,
                 DotGeneralConfig {
-                    lhs_contracting_dims: vec![1].into(),
-                    rhs_contracting_dims: vec![0].into(),
-                    lhs_batch_dims: vec![].into(),
-                    rhs_batch_dims: vec![].into(),
+                    lhs_contracting_dims: [1].into_iter().collect(),
+                    rhs_contracting_dims: [0].into_iter().collect(),
+                    lhs_batch_dims: [].into_iter().collect(),
+                    rhs_batch_dims: [].into_iter().collect(),
                 }
             ),
         )
@@ -2996,10 +2996,10 @@ fn dot_with_conj_c64(b: &mut CpuBackend) -> tenferro_tensor::Result<()> {
             prepared_config!(
                 DotGeneralConfig,
                 DotGeneralConfig {
-                    lhs_contracting_dims: vec![1].into(),
-                    rhs_contracting_dims: vec![0].into(),
-                    lhs_batch_dims: vec![].into(),
-                    rhs_batch_dims: vec![].into(),
+                    lhs_contracting_dims: [1].into_iter().collect(),
+                    rhs_contracting_dims: [0].into_iter().collect(),
+                    lhs_batch_dims: [].into_iter().collect(),
+                    rhs_batch_dims: [].into_iter().collect(),
                 }
             ),
             true,
