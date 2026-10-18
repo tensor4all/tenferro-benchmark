@@ -1,105 +1,51 @@
 name: publish-results
 
 on:
-  schedule:
-    # 06:00 JST (21:00 UTC) every day, after nightly benchmark workflows finish.
-    - cron: "0 21 * * *"
-  workflow_dispatch:
-  workflow_run:
-    workflows: [benchmark-runpod-gpu, benchmark-nightly-mac-cpu, benchmark-nightly-linux-cpu]
-    types: [completed]
+  push:
     branches: [main]
+    paths:
+      - 'result/**'
+      - 'scripts/generate_dashboard.py'
+      - 'scripts/report_summary.py'
+      - 'scripts/dashboard-requirements.txt'
+      - 'benchmarks/**'
+      - 'data/instances/**'
+      - '.github/workflows/publish-results.yml'
+  repository_dispatch:
+    types: [benchmark-results-ingested]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 21 * * *"
 
-# Publish to GitHub Pages.
 permissions:
   contents: read
-  actions: read
   pages: write
   id-token: write
 
 concurrency:
   group: publish-results-pages
   cancel-in-progress: false
+  queue: max
 
 jobs:
   build:
-    if: >-
-      github.repository == 'tensor4all/tenferro-benchmark' &&
-      (github.event_name != 'workflow_run' ||
-       (github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_repository.full_name == github.repository))
+    if: github.repository == 'tensor4all/tenferro-benchmark'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout benchmark harness
+      - name: Checkout committed benchmark results
         uses: actions/checkout@v4
         with:
+          ref: main
           persist-credentials: false
-          # Full history so the dashboard can diff each summary against the
-          # previous committed revision of the same suite on the same hardware.
           fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
-        with:
-          version: "latest"
 
-      - name: Install Python dependencies
-        run: uv sync --frozen || uv sync
-
-      - name: Download latest mac-cpu results
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          workflow: benchmark-nightly-mac-cpu.yml
-          workflow_conclusion: success
-          name_is_regexp: true
-          name: mac-cpu-benchmark-results-.*
-          path: _artifacts/mac-cpu
-          if_no_artifact_found: warn
-
-      - name: Download latest linux-cpu results
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          workflow: benchmark-nightly-linux-cpu.yml
-          workflow_conclusion: success
-          name_is_regexp: true
-          name: linux-cpu-benchmark-results-.*
-          path: _artifacts/linux-cpu
-          if_no_artifact_found: warn
-
-      - name: Merge report trees for Pages
+      - name: Generate dashboard from repository only
         run: |
-          mkdir -p _site/result _site/raw
-          # Preserve maintained reports even when nightly artifacts are unavailable.
-          cp -R result/. _site/result/
-          mkdir -p _site/result/linux-cpu
-          cp -R result/amd-cpu/. _site/result/linux-cpu/
-          # mac-cpu artifacts are archived under result/mac-cpu and data/results/mac-cpu.
-          if [[ -d "_artifacts/mac-cpu/result/mac-cpu" ]]; then
-            cp -R "_artifacts/mac-cpu/result/mac-cpu/." "_site/result/mac-cpu/"
-          fi
-          if [[ -d "_artifacts/mac-cpu/data/results/mac-cpu" ]]; then
-            cp -r "_artifacts/mac-cpu/data/results/mac-cpu" "_site/raw/"
-          fi
-          # The linux nightly benchmarks the amd-cpu target profile; publish it as linux-cpu.
-          if [[ -d "_artifacts/linux-cpu/result/amd-cpu" ]]; then
-            cp -R "_artifacts/linux-cpu/result/amd-cpu/." "_site/result/linux-cpu/"
-          fi
-          if [[ -d "_artifacts/linux-cpu/data/results/amd-cpu" ]]; then
-            cp -r "_artifacts/linux-cpu/data/results/amd-cpu" "_site/raw/linux-cpu"
-          fi
-
-      - name: Collect latest successful GPU results by suite
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: uv run python scripts/ci/collect_gpu_pages_results.py --repository "$GITHUB_REPOSITORY" --site-dir _site
-
-      - name: Generate results dashboard
-        run: |
-          uv run python scripts/generate_dashboard.py \
-            --result-dir _site/result \
-            --output-dir _site \
-            --git-repo . \
-            --git-result-dir result
+          uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt \
+            python scripts/generate_dashboard.py --result-dir result --output-dir _site --git-repo .
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

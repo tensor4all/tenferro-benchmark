@@ -24,13 +24,13 @@ from __future__ import annotations
 
 import argparse
 import html
+import hashlib
 import json
 import math
 import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -88,9 +88,9 @@ PROFILE_FAMILY = {
 PROFILE_LABEL = {
     "nvidia-gpu": "NVIDIA A100 80GB PCIe",
     "mac-gpu": "Apple GPU (GitHub runner)",
-    "linux-cpu": "AMD EPYC 7713P (GitHub runner)",
+    "linux-cpu": "Linux CPU",
     "mac-cpu": "Apple silicon (GitHub runner)",
-    "amd-cpu": "AMD EPYC 7713P (dedicated)",
+    "amd-cpu": "AMD CPU",
 }
 
 THROUGHPUT = "throughput"
@@ -569,7 +569,6 @@ def previous_rows_for(
         ).stdout.split()
     except (OSError, subprocess.CalledProcessError):
         return None, None
-    current_text = json.dumps(document, indent=2) + "\n"
     for commit in commits:
         show = subprocess.run(
             ["git", "-C", str(git_repo), "show", f"{commit}:{relative}"],
@@ -577,11 +576,11 @@ def previous_rows_for(
         )
         if show.returncode != 0:
             continue
-        if show.stdout == current_text:
-            continue
         try:
             previous = json.loads(show.stdout)
         except ValueError:
+            continue
+        if previous == document:
             continue
         if hardware_name(previous) == hardware:
             return hardware, previous.get("rows")
@@ -974,12 +973,6 @@ def profile_header(profile: str, summaries: dict[tuple[str, str], dict[str, Any]
         if document.get("tenferro_commit"):
             commit = document["tenferro_commit"]
             break
-    if not documents:
-        for _profile, _suite, report in maintained:
-            if _profile == profile:
-                mtime = datetime.fromtimestamp(report.stat().st_mtime, tz=timezone.utc)
-                timestamp = mtime.isoformat(timespec="seconds")
-                break
     pieces = [f"<strong>{esc(profile)}</strong>"]
     if hardware:
         pieces.append(f"hardware: {esc(hardware)}")
@@ -1010,9 +1003,57 @@ class SuiteView:
     report: Path
     document: dict[str, Any] | None
     cases: list[CaseView]
+    provenance: dict[str, Any] | None = None
 
     def regime_cases(self, regime: str) -> list[CaseView]:
         return [case for case in self.cases if case.regime == regime]
+
+
+def load_provenance(report: Path, profile: str, suite_id: str) -> dict[str, Any] | None:
+    path = report.with_suffix(".provenance.json")
+    if not path.exists():
+        return None
+    document = json.loads(path.read_text(encoding="utf-8"))
+    if (document.get("schema_version") != 1 or document.get("target_profile") != profile
+            or document.get("suite_id") != suite_id):
+        raise ValueError(f"Invalid accepted-result provenance: {path}")
+    source = document["source"]
+    if source["repository"] != "tensor4all/tenferro-benchmark":
+        raise ValueError(f"Unexpected provenance repository: {path}")
+    for key in ("run_id", "run_attempt", "artifact_id"):
+        if type(source[key]) is not int or source[key] < 1:
+            raise ValueError(f"Invalid provenance source identity: {path}")
+    for candidate in (report, report.with_suffix(".summary.json")):
+        relative = f"result/{profile}/{candidate.parent.name}/{candidate.name}"
+        expected = document["files"].get(relative)
+        if not expected or hashlib.sha256(candidate.read_bytes()).hexdigest() != expected:
+            raise ValueError(f"Accepted report differs from provenance: {candidate}")
+    return document
+
+
+def is_hosted(view: SuiteView) -> bool:
+    source = (view.provenance or {}).get("source", {})
+    return source.get("workflow_path") in {
+        ".github/workflows/benchmark-nightly-linux-cpu.yml",
+        ".github/workflows/benchmark-nightly-mac-cpu.yml",
+    }
+
+
+def render_provenance(view: SuiteView) -> str:
+    if not view.provenance:
+        return '<p class="muted">Legacy report: ingestion provenance is unrecorded; no raw artifact is inferred.</p>'
+    source = view.provenance["source"]
+    run_url = f"https://github.com/tensor4all/tenferro-benchmark/actions/runs/{source['run_id']}"
+    artifact_url = f"{run_url}/artifacts/{source['artifact_id']}"
+    receipt = view.report.with_suffix(".provenance.json").name
+    return (
+        '<div class="notice"><strong>Accepted result provenance.</strong> '
+        f'<a href="{run_url}">Source run {source["run_id"]}, attempt {source["run_attempt"]}</a> · '
+        f'<a href="{artifact_url}">raw artifact {source["artifact_id"]}</a> · '
+        f'<a href="{esc(receipt)}">provenance and SHA-256 digests</a>. '
+        f'Raw artifacts have finite retention; this artifact download availability ends at {esc(source["expires_at"])} '
+        '(GitHub access required). Expired artifacts are not replaced by another run.</div>'
+    )
 
 
 def build_suite_views(
@@ -1035,7 +1076,7 @@ def build_suite_views(
                         rows=rows,
                     )
                 )
-        views.append(SuiteView(profile, suite_id, report, document, cases))
+        views.append(SuiteView(profile, suite_id, report, document, cases, load_provenance(report, profile, suite_id)))
     return views
 
 
@@ -1189,12 +1230,13 @@ def render_diagnostics(views: list[SuiteView], prefix: str) -> str:
     for profile in ordered_profiles({view.profile for view in diagnostics}):
         rows = []
         for view in sorted((v for v in diagnostics if v.profile == profile), key=lambda v: v.suite_id):
-            mtime = datetime.fromtimestamp(view.report.stat().st_mtime, tz=timezone.utc)
+            collected = (view.document or {}).get("timestamp")
+            date_label = str(collected)[:10] if collected else "collection date unrecorded"
             suite_dir = view.suite_id.split("/", 1)[0]
             href = f"{prefix}{profile}/{suite_dir}/{view.report.stem}.html"
             rows.append(
                 f'<li><a href="{esc(href)}"><code>{esc(view.suite_id)}</code></a> '
-                f'<span class="muted">({esc(mtime.date().isoformat())})</span></li>'
+                f'<span class="muted">({esc(date_label)})</span></li>'
             )
         groups.append(f"<h3>{esc(profile)}</h3><ul>" + "".join(rows) + "</ul>")
     return (
@@ -1299,7 +1341,7 @@ def render_family(
         body.append('<section class="profile-card">')
         body.append(f'<h2>{esc(profile_label(profile))}</h2>')
         body.append(profile_header_from_views(profile, profile_views))
-        if profile in GITHUB_HOSTED_PROFILES:
+        if profile in GITHUB_HOSTED_PROFILES or any(is_hosted(view) for view in profile_views):
             body.append(f'<p class="notice">{REPORT_QUALITY_NOTICE}</p>')
         any_suite = False
         for view in sorted(profile_views, key=lambda item: item.suite_id):
@@ -1478,8 +1520,11 @@ def render_suite_page(
     else:
         meta.append('<span class="muted">no machine-readable summary</span>')
     body.append('<div class="profile-head">' + "".join(meta) + "</div>")
-    if profile in GITHUB_HOSTED_PROFILES:
+    if profile in GITHUB_HOSTED_PROFILES or is_hosted(view):
         body.append(f'<p class="notice">{REPORT_QUALITY_NOTICE}</p>')
+    body.append(render_provenance(view))
+    if suite_id == "cpu/fft":
+        body.append('<p class="notice">Timing diagnostic: the original report identifies setup-inclusive paths. These values are not compliant operation-performance evidence.</p>')
     if document:
         unit = document.get("unit", "ms")
         grouped = case_rows(document)
@@ -1567,7 +1612,11 @@ def generate(
             render_markdown(view.report.read_text(encoding="utf-8")),
         )
         (target / f"{view.report.stem}.html").write_text(page_html, encoding="utf-8")
-        shutil.copy2(view.report, target / view.report.name)
+        shutil.copyfile(view.report, target / view.report.name)
+        for suffix in (".summary.json", ".provenance.json"):
+            sidecar = view.report.with_suffix(suffix)
+            if sidecar.exists():
+                shutil.copyfile(sidecar, target / sidecar.name)
 
     for family in FAMILY_ORDER:
         family_views = [view for view in views if family_of(view.profile) == family]
