@@ -93,8 +93,6 @@ PROFILE_LABEL = {
     "amd-cpu": "AMD EPYC 7713P (dedicated)",
 }
 
-OVERVIEW_CASE_LIMIT = 12
-
 THROUGHPUT = "throughput"
 LATENCY = "latency"
 REGIMES = (THROUGHPUT, LATENCY)
@@ -1138,6 +1136,13 @@ def case_ratio_row(
     return item
 
 
+def case_sort_ratio(item: dict[str, Any]) -> float:
+    """Best tenferro ratio in a case, used to put the good cases on top."""
+    tenferro = [c["ratio"] for c in item["contenders"] if c.get("kind") == "tenferro"]
+    values = tenferro or [c["ratio"] for c in item["contenders"]]
+    return min(values) if values else float("inf")
+
+
 def suite_baseline_label(cases: list[CaseView], suite_id: str, reference_map: dict[str, list[str]], grouped: dict[str, list[dict[str, Any]]]) -> str:
     counts: dict[str, int] = {}
     for case in cases:
@@ -1306,11 +1311,8 @@ def render_family(
             any_suite = True
             document = view.document or {}
             grouped = case_rows(document)
-            all_items = [case_ratio_row(case, view.suite_id, reference_map, grouped) for case in cases]
-            all_items.sort(key=lambda item: max((c["ratio"] for c in item["contenders"]), default=0.0), reverse=True)
-            shown = all_items[:OVERVIEW_CASE_LIMIT]
-            items = shown
-            hidden = len(all_items) - len(shown)
+            items = [case_ratio_row(case, view.suite_id, reference_map, grouped) for case in cases]
+            items.sort(key=case_sort_ratio)
             baseline = suite_baseline_label(cases, view.suite_id, reference_map, grouped)
             flagged = suite_flags(document, previous_by_key.get((view.profile, view.suite_id))) if document else {}
             flagged_count = sum(1 for (case_id, group), _ in flagged.items() if (case_id, group) in {(c.case, c.group) for c in cases})
@@ -1323,12 +1325,22 @@ def render_family(
                 f'<summary><code>{esc(view.suite_id)}</code> '
                 f'<span class="muted">{len(cases)} case{"s" if len(cases) != 1 else ""}{suffix}</span></summary>'
             )
-            note = f"baseline {esc(baseline)} · worst first"
-            if hidden:
-                note += f" (showing {len(shown)} of {len(cases)})"
-            note += f' · <a href="{esc(suite_href)}">case table, absolute times and raw report &rarr;</a>'
+            note = (
+                f"baseline {esc(baseline)} · best first · {len(items)} case"
+                f'{"s" if len(items) != 1 else ""} · '
+                f'<a href="{esc(suite_href)}">case table, absolute times and raw report &rarr;</a>'
+            )
             body.append(f'<p class="chart-legend">{note}</p>')
             body.append(svg_ratio_chart(items, baseline))
+            plotted = {item["case"] for item in items if item["contenders"]}
+            missing = sorted(case.case for case in cases if case.case not in plotted)
+            if missing:
+                body.append(
+                    f'<details class="no-baseline"><summary>Cases without a comparable baseline '
+                    f'({len(missing)})</summary><p class="chart-legend">'
+                    + ", ".join(f"<code>{esc(name)}</code>" for name in missing)
+                    + "</p></details>"
+                )
             body.append("</details>")
         if not any_suite:
             body.append(f'<p class="muted">No {esc(REGIME_LABEL[regime].lower())} cases.</p>')
@@ -1488,7 +1500,12 @@ def render_suite_page(
                     "for faster calls; the dashed line is the best reference for each case.</p>"
                 )
             body.append(render_case_table(document, suite_id, previous_rows, reference_map, metadata, regime))
-            for case in cases:
+            ordered = sorted(
+                cases,
+                key=lambda case: case_sort_ratio(case_ratio_row(case, suite_id, reference_map, grouped)),
+            )
+            body.append('<p class="chart-legend">Charts below are ordered best first (smallest ratio).</p>')
+            for case in ordered:
                 title_text = f"<code>{esc(case.case)}</code>"
                 if case.group:
                     title_text += f' <span class="muted">{esc(case.group)}</span>'
