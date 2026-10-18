@@ -151,7 +151,8 @@ trigger Pages directly; manual dispatch is available for recovery.
 
 ## Retention and reproducibility limits
 
-Raw artifacts keep the current 90-day retention. Provenance links point to the
+New CPU/GPU result artifacts use 90-day retention. Legacy GPU artifacts may
+have the earlier 30-day retention; always use the recorded API expiry. Provenance links point to the
 exact run/artifact, require GitHub access, and may cease to download after the
 recorded expiry. Show that retention limit without consulting the network or
 clock at render time. Never fall back to a different run when a raw artifact

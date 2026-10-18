@@ -436,7 +436,7 @@ jobs:
           path: |
             _benchmark_artifact
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 90
 
       - name: Archive failed-run diagnostics
         if: failure()
