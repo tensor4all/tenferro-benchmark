@@ -1,0 +1,45 @@
+{
+  "collected_at": "2026-10-18T19:17:50.465020+00:00",
+  "files": {
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/julia_output_t1.jsonl": "397b6eed61d4730e9a2df166969b3c78ad1c654434eb9df18637da74114c0357",
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/julia_output_t4.jsonl": "e0359a19b4eda5ab86638fb95af282e0110dacce1111d19887bead7377c5bf10",
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/run.yaml": "020c3699dfc9ca708459fd4a31b81add2251871b11811793ce28a48d707d10a9",
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/run_t1.yaml": "36516c1df4ce4ab8b97bf561d12dade033bf801bb0409afc7a9e247aa512880c",
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/run_t4.yaml": "bba277332fad37a7cde17d8df154e82985e1432777748fb31791385b6e157578",
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/rust_output_t1.jsonl": "661c7b99135ed58349ab909a3947e3f9e8e7be4fd682237bc485625a2280860f",
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/rust_output_t4.jsonl": "cfa26fae0893ed7a81876aa31e7a54685498b75e8c1642e46a0724f34582ad42",
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/report.md": "74fd3b6d09387eccf3894cb436ddf4eca8ad8e5712eb2ca27e6f710bd86c3f65",
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/report.summary.json": "a7d182e9076cd37c688de6bcda6b30ca6fbe9d7b4aec5c9fd08b421ce0236502",
+    "data/results/amd-cpu/cpu/permutation/20261018_191750/run.yaml": "7da4ae6308e399f0c3ef4c7a5de0ba3cf6fc3132fee77c5bcbabc265cf737c6b",
+    "result/amd-cpu/cpu/permutation.md": "74fd3b6d09387eccf3894cb436ddf4eca8ad8e5712eb2ca27e6f710bd86c3f65",
+    "result/amd-cpu/cpu/permutation.summary.json": "a7d182e9076cd37c688de6bcda6b30ca6fbe9d7b4aec5c9fd08b421ce0236502"
+  },
+  "hardware": {
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "host": "2c25503e91ae",
+    "threads": [
+      1,
+      4
+    ]
+  },
+  "harness_commit": "e4b601dcd685fe1bafd45e6da97bc134f45c5049",
+  "schema_version": 1,
+  "source": {
+    "artifact_id": 12147733929,
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39151272710/artifacts/12147733929",
+    "created_at": "2026-10-18T19:30:32Z",
+    "digest": "sha256:8369a9fa90827bdb2258de4f73776765ee72c8e5928b4ebb39b01c7fe8da34d3",
+    "expires_at": "2027-01-16T17:48:34Z",
+    "head_branch": "main",
+    "head_sha": "e4b601dcd685fe1bafd45e6da97bc134f45c5049",
+    "repository": "tensor4all/tenferro-benchmark",
+    "run_attempt": 1,
+    "run_id": 39151272710,
+    "run_started_at": "2026-10-18T17:48:34Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39151272710",
+    "workflow_path": ".github/workflows/benchmark-nightly-linux-cpu.yml"
+  },
+  "suite_id": "cpu/permutation",
+  "target_profile": "amd-cpu",
+  "tenferro_commit": "c2ddccb14b89f8e9fa8a8fe3957367e32fb4e677"
+}

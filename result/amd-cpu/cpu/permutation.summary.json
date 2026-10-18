@@ -2,11 +2,11 @@
   "schema_version": 1,
   "target_profile": "amd-cpu",
   "suite_id": "cpu/permutation",
-  "timestamp": "2026-10-08T06:29:10.793239+00:00",
-  "tenferro_commit": "5cf78c7ec0ad9516dd78bab546d5e7bd42fa3102",
+  "timestamp": "2026-10-18T19:17:50.465020+00:00",
+  "tenferro_commit": "c2ddccb14b89f8e9fa8a8fe3957367e32fb4e677",
   "hardware": {
-    "host": "14099c68ff8e",
-    "cpu": "AMD EPYC 7713P 64-Core Processor",
+    "host": "2c25503e91ae",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
     "threads": [
       1,
       4
@@ -20,14 +20,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "cyclic_15d_3",
       "group": "Threads: 1 / 15D 3^15 cyclic [1,2,...,0]",
       "backend": "julia-base",
-      "median": 70.270964,
-      "iqr": 23.332436,
+      "median": 43.76085,
+      "iqr": 11.896521,
       "status": "ok",
       "verified": true
     },
@@ -35,8 +36,8 @@
       "case": "cyclic_15d_3",
       "group": "Threads: 1 / 15D 3^15 cyclic [1,2,...,0]",
       "backend": "strided-jl",
-      "median": 70.970381,
-      "iqr": 25.458039000000007,
+      "median": 25.848392,
+      "iqr": 11.873376,
       "status": "ok",
       "verified": true
     },
@@ -44,8 +45,8 @@
       "case": "cyclic_15d_3",
       "group": "Threads: 1 / 15D 3^15 cyclic [1,2,...,0]",
       "backend": "strided-rs",
-      "median": 30.912009,
-      "iqr": 0.22215900000000488,
+      "median": 13.840025,
+      "iqr": 0.512969,
       "status": "ok",
       "verified": true
     },
@@ -53,8 +54,8 @@
       "case": "cyclic_15d_3",
       "group": "Threads: 1 / 15D 3^15 cyclic [1,2,...,0]",
       "backend": "tenferro-rs",
-      "median": 43.428077,
-      "iqr": 0.3471240000000009,
+      "median": 21.976206,
+      "iqr": 0.22000100000000344,
       "status": "ok",
       "verified": true
     },
@@ -64,14 +65,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "cyclic_15d_3",
       "group": "Threads: 4 / 15D 3^15 cyclic [1,2,...,0]",
       "backend": "julia-base",
-      "median": 61.157874,
-      "iqr": 13.468361999999992,
+      "median": 39.531181,
+      "iqr": 7.523007999999997,
       "status": "ok",
       "verified": true
     },
@@ -79,8 +81,8 @@
       "case": "cyclic_15d_3",
       "group": "Threads: 4 / 15D 3^15 cyclic [1,2,...,0]",
       "backend": "strided-jl",
-      "median": 27.944972,
-      "iqr": 16.760601,
+      "median": 17.260625,
+      "iqr": 7.3306629999999995,
       "status": "ok",
       "verified": true
     },
@@ -88,8 +90,8 @@
       "case": "cyclic_15d_3",
       "group": "Threads: 4 / 15D 3^15 cyclic [1,2,...,0]",
       "backend": "strided-rs",
-      "median": 30.771054,
-      "iqr": 0.17131300000000138,
+      "median": 8.914878,
+      "iqr": 0.527407000000002,
       "status": "ok",
       "verified": true
     },
@@ -97,8 +99,8 @@
       "case": "cyclic_15d_3",
       "group": "Threads: 4 / 15D 3^15 cyclic [1,2,...,0]",
       "backend": "tenferro-rs",
-      "median": 13.29725,
-      "iqr": 3.1286309999999986,
+      "median": 10.284277,
+      "iqr": 0.35219900000000237,
       "status": "ok",
       "verified": true
     },
@@ -106,8 +108,8 @@
       "case": "memcpy_24d_contiguous",
       "group": "Threads: 1 / memcpy baseline (24D 2^24)",
       "backend": "memcpy",
-      "median": 33.693907,
-      "iqr": 1.0649039999999985,
+      "median": 13.468478000000001,
+      "iqr": 0.47819400000000023,
       "status": "ok",
       "verified": true
     },
@@ -115,8 +117,8 @@
       "case": "memcpy_24d_contiguous",
       "group": "Threads: 1 / memcpy baseline (24D 2^24)",
       "backend": "strided-rs",
-      "median": 33.059162,
-      "iqr": 1.357015000000004,
+      "median": 13.243236,
+      "iqr": 0.14655499999999932,
       "status": "ok",
       "verified": true
     },
@@ -124,8 +126,8 @@
       "case": "memcpy_24d_contiguous",
       "group": "Threads: 4 / memcpy baseline (24D 2^24)",
       "backend": "memcpy",
-      "median": 34.28116300000001,
-      "iqr": 0.8125100000000032,
+      "median": 12.910853,
+      "iqr": 0.15126300000000015,
       "status": "ok",
       "verified": true
     },
@@ -133,8 +135,8 @@
       "case": "memcpy_24d_contiguous",
       "group": "Threads: 4 / memcpy baseline (24D 2^24)",
       "backend": "strided-rs",
-      "median": 34.258089999999996,
-      "iqr": 0.23588399999999865,
+      "median": 12.767344,
+      "iqr": 0.17083900000000085,
       "status": "ok",
       "verified": true
     },
@@ -144,32 +146,33 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "reverse_15d_3",
       "group": "Threads: 1 / 15D 3^15 reverse",
       "backend": "julia-base",
-      "median": 228.213068,
-      "iqr": 21.627635999999995,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "reverse_15d_3",
-      "group": "Threads: 1 / 15D 3^15 reverse",
-      "backend": "strided-jl",
-      "median": 115.13866300000001,
-      "iqr": 23.424600000000012,
+      "median": 208.367142,
+      "iqr": 15.683918000000006,
       "status": "ok",
       "verified": true
     },
     {
       "case": "reverse_15d_3",
       "group": "Threads: 1 / 15D 3^15 reverse",
+      "backend": "strided-jl",
+      "median": 73.899062,
+      "iqr": 20.159968,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 1 / 15D 3^15 reverse",
       "backend": "strided-rs",
-      "median": 68.357161,
-      "iqr": 0.21357299999999668,
+      "median": 50.389267000000004,
+      "iqr": 2.805582000000001,
       "status": "ok",
       "verified": true
     },
@@ -177,8 +180,8 @@
       "case": "reverse_15d_3",
       "group": "Threads: 1 / 15D 3^15 reverse",
       "backend": "tenferro-rs",
-      "median": 174.644967,
-      "iqr": 2.10504499999999,
+      "median": 52.366763,
+      "iqr": 2.5576390000000018,
       "status": "ok",
       "verified": true
     },
@@ -188,32 +191,33 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "reverse_15d_3",
       "group": "Threads: 4 / 15D 3^15 reverse",
       "backend": "julia-base",
-      "median": 219.259859,
-      "iqr": 1.9565849999999898,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "reverse_15d_3",
-      "group": "Threads: 4 / 15D 3^15 reverse",
-      "backend": "strided-jl",
-      "median": 46.466439,
-      "iqr": 2.13561099999999,
+      "median": 208.57483299999998,
+      "iqr": 5.40799100000001,
       "status": "ok",
       "verified": true
     },
     {
       "case": "reverse_15d_3",
       "group": "Threads: 4 / 15D 3^15 reverse",
+      "backend": "strided-jl",
+      "median": 38.556617,
+      "iqr": 7.454286000000003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 4 / 15D 3^15 reverse",
       "backend": "strided-rs",
-      "median": 37.132192,
-      "iqr": 0.30314100000000366,
+      "median": 22.765603,
+      "iqr": 1.4488689999999984,
       "status": "ok",
       "verified": true
     },
@@ -221,8 +225,8 @@
       "case": "reverse_15d_3",
       "group": "Threads: 4 / 15D 3^15 reverse",
       "backend": "tenferro-rs",
-      "median": 58.289783,
-      "iqr": 0.9483350000000002,
+      "median": 23.017674,
+      "iqr": 0.8188709999999979,
       "status": "ok",
       "verified": true
     },
@@ -232,32 +236,33 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "reverse_23d_2",
       "group": "Threads: 1 / 23D 2^23 reverse",
       "backend": "julia-base",
-      "median": 189.555694,
-      "iqr": 17.432186,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "reverse_23d_2",
-      "group": "Threads: 1 / 23D 2^23 reverse",
-      "backend": "strided-jl",
-      "median": 63.183027,
-      "iqr": 18.230960000000003,
+      "median": 271.554114,
+      "iqr": 15.956454000000008,
       "status": "ok",
       "verified": true
     },
     {
       "case": "reverse_23d_2",
       "group": "Threads: 1 / 23D 2^23 reverse",
+      "backend": "strided-jl",
+      "median": 43.549492,
+      "iqr": 11.704885000000004,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 1 / 23D 2^23 reverse",
       "backend": "strided-rs",
-      "median": 39.152055,
-      "iqr": 0.24213599999999502,
+      "median": 35.02825,
+      "iqr": 0.6082569999999947,
       "status": "ok",
       "verified": true
     },
@@ -265,8 +270,8 @@
       "case": "reverse_23d_2",
       "group": "Threads: 1 / 23D 2^23 reverse",
       "backend": "tenferro-rs",
-      "median": 68.456247,
-      "iqr": 2.6273379999999946,
+      "median": 30.944319,
+      "iqr": 0.484572,
       "status": "ok",
       "verified": true
     },
@@ -276,14 +281,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "reverse_23d_2",
       "group": "Threads: 4 / 23D 2^23 reverse",
       "backend": "julia-base",
-      "median": 189.504097,
-      "iqr": 15.789883000000003,
+      "median": 266.596991,
+      "iqr": 12.270898999999986,
       "status": "ok",
       "verified": true
     },
@@ -291,8 +297,8 @@
       "case": "reverse_23d_2",
       "group": "Threads: 4 / 23D 2^23 reverse",
       "backend": "strided-jl",
-      "median": 27.291922,
-      "iqr": 13.239652000000001,
+      "median": 22.095767,
+      "iqr": 6.466753000000001,
       "status": "ok",
       "verified": true
     },
@@ -300,8 +306,8 @@
       "case": "reverse_23d_2",
       "group": "Threads: 4 / 23D 2^23 reverse",
       "backend": "strided-rs",
-      "median": 27.438318,
-      "iqr": 0.3386679999999984,
+      "median": 19.890558,
+      "iqr": 0.29886899999999983,
       "status": "ok",
       "verified": true
     },
@@ -309,8 +315,8 @@
       "case": "reverse_23d_2",
       "group": "Threads: 4 / 23D 2^23 reverse",
       "backend": "tenferro-rs",
-      "median": 18.049348,
-      "iqr": 0.5144690000000018,
+      "median": 19.106682,
+      "iqr": 7.275682999999999,
       "status": "ok",
       "verified": true
     },
@@ -320,14 +326,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "rotation_6d_32_32_32_32_16_16",
       "group": "Threads: 1 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
       "backend": "julia-base",
-      "median": 930.205199,
-      "iqr": 13.163677000000007,
+      "median": 1031.475251,
+      "iqr": 350.0361499999999,
       "status": "ok",
       "verified": true
     },
@@ -335,8 +342,8 @@
       "case": "rotation_6d_32_32_32_32_16_16",
       "group": "Threads: 1 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
       "backend": "strided-jl",
-      "median": 1027.96675,
-      "iqr": 29.829701,
+      "median": 710.874099,
+      "iqr": 13.175926000000118,
       "status": "ok",
       "verified": true
     },
@@ -344,8 +351,8 @@
       "case": "rotation_6d_32_32_32_32_16_16",
       "group": "Threads: 1 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
       "backend": "strided-rs",
-      "median": 645.0273629999999,
-      "iqr": 6.533472999999958,
+      "median": 766.866646,
+      "iqr": 8.732495999999855,
       "status": "ok",
       "verified": true
     },
@@ -353,8 +360,8 @@
       "case": "rotation_6d_32_32_32_32_16_16",
       "group": "Threads: 1 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
       "backend": "tenferro-rs",
-      "median": 801.105046,
-      "iqr": 2.924517000000151,
+      "median": 917.8401779999999,
+      "iqr": 11.368815999999924,
       "status": "ok",
       "verified": true
     },
@@ -364,14 +371,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "rotation_6d_32_32_32_32_16_16",
       "group": "Threads: 4 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
       "backend": "julia-base",
-      "median": 933.426215,
-      "iqr": 17.190310999999838,
+      "median": 1029.567341,
+      "iqr": 231.94643300000007,
       "status": "ok",
       "verified": true
     },
@@ -379,8 +387,8 @@
       "case": "rotation_6d_32_32_32_32_16_16",
       "group": "Threads: 4 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
       "backend": "strided-jl",
-      "median": 350.84090299999997,
-      "iqr": 21.227942999999925,
+      "median": 301.01043300000003,
+      "iqr": 11.538108000000022,
       "status": "ok",
       "verified": true
     },
@@ -388,8 +396,8 @@
       "case": "rotation_6d_32_32_32_32_16_16",
       "group": "Threads: 4 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
       "backend": "strided-rs",
-      "median": 244.85095800000002,
-      "iqr": 0.7297149999999988,
+      "median": 347.11082300000004,
+      "iqr": 4.890279000000021,
       "status": "ok",
       "verified": true
     },
@@ -397,8 +405,8 @@
       "case": "rotation_6d_32_32_32_32_16_16",
       "group": "Threads: 4 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
       "backend": "tenferro-rs",
-      "median": 217.971944,
-      "iqr": 1.009289999999993,
+      "median": 313.05472000000003,
+      "iqr": 7.433764999999994,
       "status": "ok",
       "verified": true
     },
@@ -408,14 +416,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "tn_light_415_24d_contiguous_same_perm",
       "group": "Threads: 1 / 24D contiguous source, TN light 415 late-step permutation",
       "backend": "julia-base",
-      "median": 100.71103500000001,
-      "iqr": 27.046239,
+      "median": 73.358521,
+      "iqr": 22.595755999999994,
       "status": "ok",
       "verified": true
     },
@@ -423,8 +432,8 @@
       "case": "tn_light_415_24d_contiguous_same_perm",
       "group": "Threads: 1 / 24D contiguous source, TN light 415 late-step permutation",
       "backend": "strided-jl",
-      "median": 85.408168,
-      "iqr": 24.575136000000008,
+      "median": 29.744007,
+      "iqr": 12.046418,
       "status": "ok",
       "verified": true
     },
@@ -432,8 +441,8 @@
       "case": "tn_light_415_24d_contiguous_same_perm",
       "group": "Threads: 1 / 24D contiguous source, TN light 415 late-step permutation",
       "backend": "strided-rs",
-      "median": 36.591052999999995,
-      "iqr": 0.36317399999999367,
+      "median": 14.823584,
+      "iqr": 0.513069999999999,
       "status": "ok",
       "verified": true
     },
@@ -441,8 +450,8 @@
       "case": "tn_light_415_24d_contiguous_same_perm",
       "group": "Threads: 1 / 24D contiguous source, TN light 415 late-step permutation",
       "backend": "tenferro-rs",
-      "median": 45.53769,
-      "iqr": 0.3588570000000004,
+      "median": 14.945902,
+      "iqr": 0.21375900000000136,
       "status": "ok",
       "verified": true
     },
@@ -452,14 +461,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "tn_light_415_24d_contiguous_same_perm",
       "group": "Threads: 4 / 24D contiguous source, TN light 415 late-step permutation",
       "backend": "julia-base",
-      "median": 89.811029,
-      "iqr": 1.4319459999999964,
+      "median": 69.10074900000001,
+      "iqr": 5.3277009999999905,
       "status": "ok",
       "verified": true
     },
@@ -467,8 +477,8 @@
       "case": "tn_light_415_24d_contiguous_same_perm",
       "group": "Threads: 4 / 24D contiguous source, TN light 415 late-step permutation",
       "backend": "strided-jl",
-      "median": 33.848699,
-      "iqr": 10.852916999999998,
+      "median": 17.281413999999998,
+      "iqr": 11.114522,
       "status": "ok",
       "verified": true
     },
@@ -476,8 +486,8 @@
       "case": "tn_light_415_24d_contiguous_same_perm",
       "group": "Threads: 4 / 24D contiguous source, TN light 415 late-step permutation",
       "backend": "strided-rs",
-      "median": 12.25158,
-      "iqr": 0.4921369999999996,
+      "median": 8.954946999999999,
+      "iqr": 0.36057399999999973,
       "status": "ok",
       "verified": true
     },
@@ -485,8 +495,8 @@
       "case": "tn_light_415_24d_contiguous_same_perm",
       "group": "Threads: 4 / 24D contiguous source, TN light 415 late-step permutation",
       "backend": "tenferro-rs",
-      "median": 14.065837,
-      "iqr": 0.6715040000000005,
+      "median": 8.836571999999999,
+      "iqr": 0.3521780000000003,
       "status": "ok",
       "verified": true
     },
@@ -494,8 +504,8 @@
       "case": "tn_light_415_24d_scattered_to_colmajor",
       "group": "Threads: 1 / 24D scattered -> col-major",
       "backend": "julia-base",
-      "median": 278.05631600000004,
-      "iqr": 11.907832999999982,
+      "median": 280.346114,
+      "iqr": 12.969141999999977,
       "status": "ok",
       "verified": true
     },
@@ -503,8 +513,8 @@
       "case": "tn_light_415_24d_scattered_to_colmajor",
       "group": "Threads: 1 / 24D scattered -> col-major",
       "backend": "strided-jl",
-      "median": 81.22419000000001,
-      "iqr": 12.256079,
+      "median": 32.559991000000004,
+      "iqr": 13.372024999999997,
       "status": "ok",
       "verified": true
     },
@@ -512,8 +522,8 @@
       "case": "tn_light_415_24d_scattered_to_colmajor",
       "group": "Threads: 1 / 24D scattered -> col-major",
       "backend": "strided-rs",
-      "median": 38.616327,
-      "iqr": 1.5770300000000006,
+      "median": 17.065240999999997,
+      "iqr": 0.3769240000000025,
       "status": "ok",
       "verified": true
     },
@@ -521,8 +531,8 @@
       "case": "tn_light_415_24d_scattered_to_colmajor",
       "group": "Threads: 1 / 24D scattered -> col-major",
       "backend": "tenferro-rs",
-      "median": 51.609544,
-      "iqr": 0.3883109999999945,
+      "median": 16.985862,
+      "iqr": 0.2818959999999997,
       "status": "ok",
       "verified": true
     },
@@ -530,8 +540,8 @@
       "case": "tn_light_415_24d_scattered_to_colmajor",
       "group": "Threads: 4 / 24D scattered -> col-major",
       "backend": "julia-base",
-      "median": 273.028638,
-      "iqr": 0.4399380000000406,
+      "median": 276.247142,
+      "iqr": 5.899133000000006,
       "status": "ok",
       "verified": true
     },
@@ -539,8 +549,8 @@
       "case": "tn_light_415_24d_scattered_to_colmajor",
       "group": "Threads: 4 / 24D scattered -> col-major",
       "backend": "strided-jl",
-      "median": 34.10909899999999,
-      "iqr": 4.4194720000000025,
+      "median": 18.442100999999997,
+      "iqr": 6.229150000000001,
       "status": "ok",
       "verified": true
     },
@@ -548,8 +558,8 @@
       "case": "tn_light_415_24d_scattered_to_colmajor",
       "group": "Threads: 4 / 24D scattered -> col-major",
       "backend": "strided-rs",
-      "median": 12.857652,
-      "iqr": 0.3382670000000001,
+      "median": 9.365010999999999,
+      "iqr": 0.5683530000000001,
       "status": "ok",
       "verified": true
     },
@@ -557,8 +567,8 @@
       "case": "tn_light_415_24d_scattered_to_colmajor",
       "group": "Threads: 4 / 24D scattered -> col-major",
       "backend": "tenferro-rs",
-      "median": 15.198039,
-      "iqr": 0.592395999999999,
+      "median": 9.576215000000001,
+      "iqr": 0.7760940000000005,
       "status": "ok",
       "verified": true
     },
@@ -568,32 +578,33 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "transpose_2d_2048",
       "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
       "backend": "julia-base",
-      "median": 49.170391,
-      "iqr": 12.089725999999999,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "transpose_2d_2048",
-      "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
-      "backend": "strided-jl",
-      "median": 29.846794,
-      "iqr": 7.896739999999998,
+      "median": 75.47920099999999,
+      "iqr": 9.897019999999998,
       "status": "ok",
       "verified": true
     },
     {
       "case": "transpose_2d_2048",
       "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
+      "backend": "strided-jl",
+      "median": 70.56097899999999,
+      "iqr": 6.423833000000002,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
       "backend": "strided-rs",
-      "median": 12.778383000000002,
-      "iqr": 0.1041559999999997,
+      "median": 9.675337,
+      "iqr": 0.32405800000000085,
       "status": "ok",
       "verified": true
     },
@@ -601,8 +612,8 @@
       "case": "transpose_2d_2048",
       "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
       "backend": "tenferro-rs",
-      "median": 12.605386999999999,
-      "iqr": 0.024397000000000446,
+      "median": 15.611124,
+      "iqr": 0.22595499999999902,
       "status": "ok",
       "verified": true
     },
@@ -612,14 +623,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "transpose_2d_2048",
       "group": "Threads: 4 / 2D 2048^2 transpose [1,0]",
       "backend": "julia-base",
-      "median": 47.122574,
-      "iqr": 2.6566919999999996,
+      "median": 73.10197050000001,
+      "iqr": 4.574731,
       "status": "ok",
       "verified": true
     },
@@ -627,8 +639,8 @@
       "case": "transpose_2d_2048",
       "group": "Threads: 4 / 2D 2048^2 transpose [1,0]",
       "backend": "strided-jl",
-      "median": 11.70463,
-      "iqr": 4.834593999999999,
+      "median": 16.586495499999998,
+      "iqr": 5.790705000000001,
       "status": "ok",
       "verified": true
     },
@@ -636,8 +648,8 @@
       "case": "transpose_2d_2048",
       "group": "Threads: 4 / 2D 2048^2 transpose [1,0]",
       "backend": "strided-rs",
-      "median": 3.989492,
-      "iqr": 0.24005099999999935,
+      "median": 3.3513990000000002,
+      "iqr": 0.09654999999999969,
       "status": "ok",
       "verified": true
     },
@@ -645,8 +657,8 @@
       "case": "transpose_2d_2048",
       "group": "Threads: 4 / 2D 2048^2 transpose [1,0]",
       "backend": "tenferro-rs",
-      "median": 3.384182,
-      "iqr": 0.34854600000000024,
+      "median": 5.186184,
+      "iqr": 0.18019699999999972,
       "status": "ok",
       "verified": true
     },
@@ -656,14 +668,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "transpose_3d_256_102",
       "group": "Threads: 1 / 3D 256^3 transpose [1,0,2]",
       "backend": "julia-base",
-      "median": 70.278579,
-      "iqr": 16.432292999999994,
+      "median": 58.287143,
+      "iqr": 5.214535000000005,
       "status": "ok",
       "verified": true
     },
@@ -671,8 +684,8 @@
       "case": "transpose_3d_256_102",
       "group": "Threads: 1 / 3D 256^3 transpose [1,0,2]",
       "backend": "strided-jl",
-      "median": 70.098249,
-      "iqr": 15.357029000000004,
+      "median": 50.430951,
+      "iqr": 5.435206999999998,
       "status": "ok",
       "verified": true
     },
@@ -680,8 +693,8 @@
       "case": "transpose_3d_256_102",
       "group": "Threads: 1 / 3D 256^3 transpose [1,0,2]",
       "backend": "strided-rs",
-      "median": 41.990671,
-      "iqr": 0.6469579999999979,
+      "median": 35.280069999999995,
+      "iqr": 0.8377120000000104,
       "status": "ok",
       "verified": true
     },
@@ -689,8 +702,8 @@
       "case": "transpose_3d_256_102",
       "group": "Threads: 1 / 3D 256^3 transpose [1,0,2]",
       "backend": "tenferro-rs",
-      "median": 54.298488,
-      "iqr": 0.1410759999999982,
+      "median": 36.708537,
+      "iqr": 0.5116659999999982,
       "status": "ok",
       "verified": true
     },
@@ -700,14 +713,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "transpose_3d_256_102",
       "group": "Threads: 4 / 3D 256^3 transpose [1,0,2]",
       "backend": "julia-base",
-      "median": 67.726663,
-      "iqr": 2.5769420000000025,
+      "median": 56.623748,
+      "iqr": 4.990053000000003,
       "status": "ok",
       "verified": true
     },
@@ -715,8 +729,8 @@
       "case": "transpose_3d_256_102",
       "group": "Threads: 4 / 3D 256^3 transpose [1,0,2]",
       "backend": "strided-jl",
-      "median": 26.949849,
-      "iqr": 7.530670000000001,
+      "median": 19.494191,
+      "iqr": 6.064439000000002,
       "status": "ok",
       "verified": true
     },
@@ -724,8 +738,8 @@
       "case": "transpose_3d_256_102",
       "group": "Threads: 4 / 3D 256^3 transpose [1,0,2]",
       "backend": "strided-rs",
-      "median": 13.677405,
-      "iqr": 0.34757500000000263,
+      "median": 14.704255,
+      "iqr": 0.34611699999999956,
       "status": "ok",
       "verified": true
     },
@@ -733,8 +747,8 @@
       "case": "transpose_3d_256_102",
       "group": "Threads: 4 / 3D 256^3 transpose [1,0,2]",
       "backend": "tenferro-rs",
-      "median": 16.072445000000002,
-      "iqr": 0.6076349999999984,
+      "median": 15.336487,
+      "iqr": 0.20043500000000058,
       "status": "ok",
       "verified": true
     },
@@ -744,14 +758,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "transpose_3d_256_201",
       "group": "Threads: 1 / 3D 256^3 transpose [2,0,1]",
       "backend": "julia-base",
-      "median": 114.556427,
-      "iqr": 6.679298000000003,
+      "median": 77.05445399999999,
+      "iqr": 9.597065,
       "status": "ok",
       "verified": true
     },
@@ -759,8 +774,8 @@
       "case": "transpose_3d_256_201",
       "group": "Threads: 1 / 3D 256^3 transpose [2,0,1]",
       "backend": "strided-jl",
-      "median": 97.90478,
-      "iqr": 10.461939999999984,
+      "median": 68.197092,
+      "iqr": 9.458345999999992,
       "status": "ok",
       "verified": true
     },
@@ -768,8 +783,8 @@
       "case": "transpose_3d_256_201",
       "group": "Threads: 1 / 3D 256^3 transpose [2,0,1]",
       "backend": "strided-rs",
-      "median": 52.151635,
-      "iqr": 0.32979200000000475,
+      "median": 36.903242000000006,
+      "iqr": 2.0502719999999997,
       "status": "ok",
       "verified": true
     },
@@ -777,8 +792,8 @@
       "case": "transpose_3d_256_201",
       "group": "Threads: 1 / 3D 256^3 transpose [2,0,1]",
       "backend": "tenferro-rs",
-      "median": 79.303212,
-      "iqr": 2.378818999999993,
+      "median": 39.754241,
+      "iqr": 0.4855370000000008,
       "status": "ok",
       "verified": true
     },
@@ -788,14 +803,15 @@
       "backend": "hptt",
       "median": null,
       "status": "skipped",
-      "verified": false
+      "verified": false,
+      "reason": "hptt crate exposes only one-shot transpose with per-call plan construction; no prepared-plan API for operation-only timing"
     },
     {
       "case": "transpose_3d_256_201",
       "group": "Threads: 4 / 3D 256^3 transpose [2,0,1]",
       "backend": "julia-base",
-      "median": 114.238978,
-      "iqr": 1.9296039999999977,
+      "median": 74.942536,
+      "iqr": 3.973186999999996,
       "status": "ok",
       "verified": true
     },
@@ -803,8 +819,8 @@
       "case": "transpose_3d_256_201",
       "group": "Threads: 4 / 3D 256^3 transpose [2,0,1]",
       "backend": "strided-jl",
-      "median": 34.011165000000005,
-      "iqr": 6.1787950000000045,
+      "median": 30.133892,
+      "iqr": 5.3422060000000045,
       "status": "ok",
       "verified": true
     },
@@ -812,8 +828,8 @@
       "case": "transpose_3d_256_201",
       "group": "Threads: 4 / 3D 256^3 transpose [2,0,1]",
       "backend": "strided-rs",
-      "median": 15.666711999999999,
-      "iqr": 0.4338260000000016,
+      "median": 12.910972999999998,
+      "iqr": 0.4224199999999989,
       "status": "ok",
       "verified": true
     },
@@ -821,8 +837,8 @@
       "case": "transpose_3d_256_201",
       "group": "Threads: 4 / 3D 256^3 transpose [2,0,1]",
       "backend": "tenferro-rs",
-      "median": 22.179646,
-      "iqr": 1.3635780000000004,
+      "median": 15.025274999999999,
+      "iqr": 0.4362750000000002,
       "status": "ok",
       "verified": true
     }
