@@ -13,6 +13,11 @@ description: >-
   prepared trace, n in {2,4,...} x batch) carry tenferro-rs #1803 C (trace
   batched solve ~2x eager) and the matmul/solve *_backward rows #1803 B; the
   #1803 A live-leaf sweep is in cpu/perf_issues.
+  The small and batched prepared-trace linalg AD rows (grad_sum_{qr,eigh,lu}_{jvp,vjp},
+  grad_sum_{svd_s,solve}_{jvp,vjp,backward}, grad_sum_matmul_backward and
+  grad_sum_batched_{matmul,solve}_backward) carry tenferro-rs #2186 (per-node
+  backend session entry in run_prepared; 4T slower than 1T), read against the
+  PyTorch/JAX rows across the 1/4-thread runs.
 defaults:
   device: {kind: cpu, ordinal: 0}
   layout: {tenferro: col_major, framework: row_major_contiguous}

@@ -259,6 +259,7 @@ timing. Raw runs go to `data/results/<target_profile>/{cpu,gpu}/perf_issues/<tim
 | #1897, #1899, #1904 | generic einsum cases (`*_abcd-dbef-acef_d4`, `*_ax-asb-xsb_d4s2`, `*_ij-jk-ik_m95k95n1`) | `cpu/small_work` |
 | #2000, #1884 | `batched_lu_factor` / `batched_lu_solve` 1024x{8,16}, `cpu/linalg_batch_families` | `cpu/public_api` |
 | #1803 B/C | `batched_solve`, `*_backward` rows | `cpu/cpu_ops` |
+| #2186 | prepared-trace `grad_sum_{qr,eigh,lu}_{jvp,vjp}`, `grad_sum_{svd_s,solve}_{jvp,vjp,backward}`, `grad_sum_matmul_backward`, `grad_sum_batched_{matmul,solve}_backward` rows (1/4-thread runs) | `cpu/cpu_ops` |
 | #1865 | `bin_omeinsum_{matmul_10x10,batched_matmul_8x8_batch_4,high_d_12x12_contract_4_batch_4}` | `cpu/einsum` |
 | #1863 | `bin_permuted_r4_abcd_dbef_acef_d32` (1/4(/8)-thread runs) | `cpu/einsum` |
 | #1992, #2003, #1995 | `decode_proj_f32_*`, `decode_block_copy_volume_f32_d1024_len8` | `cpu/perf_issues` |
@@ -288,6 +289,7 @@ timing. Raw runs go to `data/results/<target_profile>/{cpu,gpu}/perf_issues/<tim
 | #1873, #1805 | `contraction_plan_churn_f64_{distinct-plans,repeated-plan}` | `gpu/perf_issues` |
 | #1949 | `dot_general_destination_f64_{owned-dst,borrowed-dst}` | `gpu/perf_issues` |
 | #1925 | `borrowed_input_gemm_f64_n{8,32}_{owned-input,view-input}` | `gpu/perf_issues` |
+| #2192 | `dense_solve_f64_512_rhs16` | `gpu/dense` |
 | #2178 | `typed_elemwise_f64_add_{bcast,permuted_view}_counter`, `permute_materialize_f64_r4_counter`, `fused_elemwise_f64_serial_counter`, `reduce_axis_f64_counter` (allocation counters, 1/2 threads, host-loop references) | `cpu/perf_issues`, trend in `cpu/overhead_smoke` |
 
 ### Overhead smoke (`cpu/overhead_smoke`)

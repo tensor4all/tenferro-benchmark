@@ -1,7 +1,10 @@
 schema_version: 1
 suite_id: gpu/dense
 title: GPU Dense Benchmarks
-description: Dense GPU benchmark contract suite for matmul, batched matmul, and linalg ops.
+description: >-
+  Dense GPU benchmark contract suite for matmul, batched matmul, and linalg ops.
+  dense_solve_f64_512_rhs16 carries tenferro-rs #2192 (CUDA solve vs pytorch-cuda;
+  per-call non-singularity validation synchronizes and reads back scalars).
 defaults:
   device: {kind: cuda, ordinal: 0}
   layout: {tenferro: col_major, framework: row_major_contiguous}
