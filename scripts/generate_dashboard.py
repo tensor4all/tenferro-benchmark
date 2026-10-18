@@ -1444,7 +1444,12 @@ def render_suite_page(
     suite_id = view.suite_id
     document = view.document
     family = family_of(profile)
-    body = [f'<p><a href="../../{family}/index.html">&larr; {esc(FAMILY_LABEL[family])} results</a></p>', f"<h1>{esc(suite_id)}</h1>"]
+    has_throughput = bool(view.regime_cases(THROUGHPUT))
+    if has_throughput:
+        back = f'<a href="../../{family}/index.html">&larr; {esc(FAMILY_LABEL[family])} results</a>'
+    else:
+        back = f'<a href="../../{family}/latency/index.html">&larr; {esc(FAMILY_LABEL[family])} latency results</a>'
+    body = [f"<p>{back}</p>", f"<h1>{esc(suite_id)}</h1>"]
     meta = [f"<span>profile: <strong>{esc(profile)}</strong></span>"]
     if document:
         hardware = hardware_name(document)
