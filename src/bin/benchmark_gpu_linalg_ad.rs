@@ -116,7 +116,7 @@ fn dispatch(
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
         // backend are rejected by the compute engine and by the traced runtime.
-        let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
+        let mut compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
         .map_err(|e| format!("compute backend: {e}"))?;
@@ -145,71 +145,148 @@ fn dispatch(
             .prepare_compiled(&program, &[])
             .map_err(|e| format!("prepare: {e}"))?;
 
-        let probe = runtime
-            .run_prepared(&prepared, &[])
-            .map_err(|e| format!("initial run: {e}"))?;
-        sync_runtime(compute_bk.runtime())?;
-        let initial = export_outputs(compute_bk.runtime(), &probe, device_ordinal)?;
-        let bytes = probe
-            .iter()
-            .map(|v| v.shape().iter().product::<usize>() * 8)
-            .sum::<usize>();
-        drop(probe);
         let mut times_ms = Vec::new();
         let mut batch_ms = Vec::new();
         let mut count = 1;
-        if diagnostic && !verify_only {
-            // Runtime cannot borrow an entered session. This is explicitly
-            // public-path latency, never a shared-session operation benchmark.
-            let batch = |count: usize| -> Result<f64, String> {
-                let mut retained = Vec::with_capacity(count);
-                sync_runtime(compute_bk.runtime())?;
-                let start = Instant::now();
-                for _ in 0..count {
-                    retained.push(
-                        runtime
-                            .run_prepared(&prepared, &[])
-                            .map_err(|e| format!("run: {e}"))?,
-                    );
+        let initial;
+        let final_values;
+        if diagnostic {
+            // Public-path latency: the public `run_prepared` scope, including
+            // its internal session entry, is the declared measurement.
+            let probe = runtime
+                .run_prepared(&prepared, &[])
+                .map_err(|e| format!("initial run: {e}"))?;
+            sync_runtime(transfer_bk.runtime())?;
+            initial = export_outputs(transfer_bk.runtime(), &probe, device_ordinal)?;
+            let bytes = probe
+                .iter()
+                .map(|v| v.shape().iter().product::<usize>() * 8)
+                .sum::<usize>();
+            drop(probe);
+            if !verify_only {
+                let batch = |count: usize| -> Result<f64, String> {
+                    let mut retained = Vec::with_capacity(count);
+                    sync_runtime(transfer_bk.runtime())?;
+                    let start = Instant::now();
+                    for _ in 0..count {
+                        retained.push(
+                            runtime
+                                .run_prepared(&prepared, &[])
+                                .map_err(|e| format!("run: {e}"))?,
+                        );
+                    }
+                    sync_runtime(transfer_bk.runtime())?;
+                    let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+                    black_box(&retained);
+                    Ok(elapsed)
+                };
+                for _ in 0..n_warmup {
+                    batch(1)?;
                 }
-                sync_runtime(compute_bk.runtime())?;
-                let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-                black_box(&retained);
-                Ok(elapsed)
-            };
-            for _ in 0..n_warmup {
-                batch(1)?;
+                let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
+                while batch(count)? < 2.0 && count < cap {
+                    count = (count * 2).min(cap);
+                }
+                for _ in 0..n_runs {
+                    let duration = batch(count)?;
+                    batch_ms.push(duration);
+                    times_ms.push(duration / count as f64);
+                }
             }
-            let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
-            while batch(count)? < 2.0 && count < cap {
-                count = (count * 2).min(cap);
+            let final_outputs = runtime
+                .run_prepared(&prepared, &[])
+                .map_err(|e| format!("final run: {e}"))?;
+            sync_runtime(transfer_bk.runtime())?;
+            final_values = export_outputs(transfer_bk.runtime(), &final_outputs, device_ordinal)?;
+        } else {
+            // Standard operation rows: one caller-held CUDA session executes
+            // every run, including both verification runs. Each
+            // `run_prepared_in` call retires its own device work before
+            // returning, so the per-call barrier stays inside the timed batch.
+            let mut session = compute_bk
+                .open_session()
+                .map_err(|e| format!("open held session: {e}"))?;
+            let initial_out = session
+                .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
+                .map_err(|e| format!("held session entry: {e}"))?
+                .map_err(|e| format!("initial run: {e}"))?;
+            sync_runtime(transfer_bk.runtime())?;
+            initial = export_outputs(transfer_bk.runtime(), &initial_out, device_ordinal)?;
+            let bytes = initial_out
+                .iter()
+                .map(|v| v.shape().iter().product::<usize>() * 8)
+                .sum::<usize>();
+            drop(initial_out);
+            let mut last_timed: Option<Vec<Tensor>> = None;
+            if verify_only {
+                // Verification-only lane: no clocks, same held-session route.
+                last_timed = Some(
+                    session
+                        .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
+                        .map_err(|e| format!("held session entry: {e}"))?
+                        .map_err(|e| format!("verification run: {e}"))?,
+                );
+            } else {
+                for _ in 0..n_warmup {
+                    let out = session
+                        .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
+                        .map_err(|e| format!("held session entry: {e}"))?
+                        .map_err(|e| format!("warmup: {e}"))?;
+                    black_box(out.len());
+                }
+                {
+                    let mut batch = |count: usize| -> Result<f64, String> {
+                        let mut retained = Vec::with_capacity(count);
+                        let start = Instant::now();
+                        for _ in 0..count {
+                            retained.push(
+                                session
+                                    .with_session(|s| {
+                                        runtime.run_prepared_in(s, &prepared, &[])
+                                    })
+                                    .map_err(|e| format!("held session entry: {e}"))?
+                                    .map_err(|e| format!("run: {e}"))?,
+                            );
+                        }
+                        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+                        black_box(&retained);
+                        last_timed = retained.pop();
+                        Ok(elapsed)
+                    };
+                    let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
+                    while batch(count)? < 2.0 && count < cap {
+                        count = (count * 2).min(cap);
+                    }
+                    for _ in 0..n_runs {
+                        let duration = batch(count)?;
+                        batch_ms.push(duration);
+                        times_ms.push(duration / count as f64);
+                    }
+                }
             }
-            for _ in 0..n_runs {
-                let duration = batch(count)?;
-                batch_ms.push(duration);
-                times_ms.push(duration / count as f64);
-            }
+            session
+                .close()
+                .map_err(|e| format!("close held session: {e}"))?;
+            let final_outputs =
+                last_timed.ok_or("no held-session result available for verification")?;
+            final_values =
+                export_outputs(transfer_bk.runtime(), &final_outputs, device_ordinal)?;
         }
-        let final_outputs = runtime
-            .run_prepared(&prepared, &[])
-            .map_err(|e| format!("final run: {e}"))?;
-        sync_runtime(compute_bk.runtime())?;
-        let final_values = export_outputs(compute_bk.runtime(), &final_outputs, device_ordinal)?;
         Ok((
             times_ms,
             json!({"initial": initial, "final": final_values}),
             json!({"operations_per_sample":count,"batch_ms":batch_ms,"retention_budget_bytes":256usize<<20,
-                   "target_batch_ms":2,"warmups":n_warmup,"scope":"public_path_latency_including_internal_session_entry"}),
+                   "target_batch_ms":2,"warmups":n_warmup,"scope": if diagnostic {
+                       "public_path_latency_including_internal_session_entry"
+                   } else {
+                       "steady_state_host_api_plus_device_sync_caller_held_session"
+                   }}),
         ))
     }));
 
     match result {
         Ok(Ok((times_ms, verification_outputs, sampling))) => {
-            let mut rec = if !diagnostic {
-                stub(suite_id, problem, device_ordinal, "unsupported",
-                    "run_prepared cannot borrow an entered session; standard operation timing would include internal setup",
-                    ts, bc, tc)
-            } else if verify_only {
+            let mut rec = if verify_only {
                 stub(
                     suite_id,
                     problem,
@@ -236,7 +313,7 @@ fn dispatch(
             rec["execution"]["execution_path"] = json!(if diagnostic {
                 "prepared-tenferro-cuda-trace-public-path-linalg-ad"
             } else {
-                "prepared-tenferro-cuda-trace-linalg-ad"
+                "trace-run-prepared-in-held-session-linalg-ad"
             });
             rec["execution"]["synchronization"] = json!(
                 "native CUDA synchronization; initial/final verification downloads outside timing"
@@ -244,8 +321,12 @@ fn dispatch(
             rec["verification"]["status"] = json!("skipped");
             rec["verification"]["reason"] = json!("awaiting independent CPU AD verification");
             rec["execution"]["notes"] = json!(json!({"verification_outputs":verification_outputs,
-                "sampling":if diagnostic && !verify_only {sampling} else {Value::Null},
-                "session_policy":"run_prepared enters internal sessions; not caller-shared",
+                "sampling":if verify_only {Value::Null} else {sampling},
+                "session_policy": if diagnostic {
+                    "run_prepared enters internal sessions; not caller-shared"
+                } else {
+                    "run_prepared_in executes in one caller-held CUDA session; each call includes its own stream retirement barrier"
+                },
                 "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok(),
                 "physical_device_index":std::env::var("GPU_BENCH_PHYSICAL_DEVICE").ok()})
             .to_string());

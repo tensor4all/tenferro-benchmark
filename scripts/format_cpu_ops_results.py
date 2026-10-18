@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import os
 import re
@@ -11,6 +12,8 @@ from collections import defaultdict
 from math import prod
 from pathlib import Path
 from typing import NamedTuple
+
+import report_summary
 
 
 def clean_markdown_eof(markdown: str) -> str:
@@ -454,11 +457,84 @@ def format_table(paths: list[Path]) -> str:
     return clean_markdown_eof("\n".join(lines))
 
 
+def build_summary(
+    paths: list[Path],
+    run_metadata: dict | None = None,
+) -> dict:
+    """Machine-readable sidecar for the same CSV rows the table is built from."""
+    header = report_summary.metadata_from_run_metadata(run_metadata)
+    hardware = dict(header["hardware"])
+    if not hardware.get("cpu"):
+        cpu_model = (run_metadata or {}).get("environment", {}).get("cpu") if run_metadata else None
+        hardware["cpu"] = cpu_model or "unknown"
+    rows = []
+    threads_seen: set[int] = set()
+    for path in paths:
+        with path.open(newline="") as f:
+            for row in csv.DictReader(f):
+                key, backend, _value = normalize_row(row)
+                if not backend:
+                    continue
+                suite, benchmark, dtype, threads, shape = key
+                status = row_value(row, "status") or "ok"
+                median_ms = row_value(row, "median_ms")
+                if not median_ms:
+                    mean_us = row_value(row, "mean_us")
+                    if mean_us:
+                        median_ms = str(float(mean_us) / 1000.0)
+                median = float(median_ms) if (median_ms and status == "ok") else None
+                if status == "ok" and (median is None or median <= 0):
+                    median = None
+                iqr_ms = row_value(row, "iqr_ms")
+                iqr = float(iqr_ms) if iqr_ms else None
+                if threads.isdigit():
+                    threads_seen.add(int(threads))
+                rows.append(
+                    report_summary.make_row(
+                        benchmark,
+                        backend,
+                        median,
+                        status=status,
+                        iqr=iqr,
+                        group=f"suite={suite} / dtype={dtype} / threads={threads} / shape={shape}",
+                        verified=status == "ok" and median is not None,
+                    )
+                )
+    if threads_seen:
+        hardware["threads"] = sorted(threads_seen)
+    return report_summary.build_document(
+        rows,
+        target_profile=header["target_profile"],
+        suite_id=header["suite_id"],
+        timestamp=header["timestamp"],
+        tenferro_commit=header["tenferro_commit"],
+        hardware=hardware,
+        unit="ms",
+    )
+
+
 def main() -> None:
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <cpu-ops.csv>...", file=sys.stderr)
-        sys.exit(1)
-    sys.stdout.write(format_table([Path(value) for value in sys.argv[1:]]))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("csvfiles", nargs="+", type=Path)
+    parser.add_argument("--run-metadata", type=Path, default=None)
+    parser.add_argument("--output", type=Path, default=None)
+    args = parser.parse_args()
+    markdown = format_table(args.csvfiles)
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(markdown)
+    else:
+        sys.stdout.write(markdown)
+    run_metadata = (
+        report_summary.load_run_metadata(args.run_metadata)
+        if args.run_metadata
+        else report_summary.env_run_metadata()
+    )
+    report_summary.maybe_write(
+        build_summary(args.csvfiles, run_metadata),
+        summary_path=report_summary.summary_path_for_report(args.output) if args.output else None,
+        env=os.environ,
+    )
 
 
 if __name__ == "__main__":

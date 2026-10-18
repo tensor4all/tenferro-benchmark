@@ -151,6 +151,7 @@ for problem_id, (n, rhs_cols, generator) in expected.items():
     assert problem["only_backends"] == [
         "tenferro-cuda-trace",
         "tenferro-cuda-eager",
+        "tenferro-cuda-eager-per-call-session",
         "pytorch-cuda",
         "jax-cuda",
         "cusolver",

@@ -77,8 +77,10 @@ still require `BENCH_INCLUDE_SETUP_DIAGNOSTICS=1`. This change does not silently
 relabel those unadapted runners; ordinary eager APIs still cannot be entered
 inside a borrowed BackendSession.
 
-CPU and GPU trace runners now prepare execution plans with `prepare_compiled`
-before warmup and call `run_prepared` inside timing. Graph compilation alone
+CPU trace runners prepare execution plans with `prepare_compiled`
+before warmup and call `run_prepared` inside timing; the GPU trace runners
+enter one caller-held CUDA session outside timing and call `run_prepared_in`
+inside it. Graph compilation alone
 did not exclude the metadata/ingress preparation performed by `run_compiled`.
 
 A shared BackendSession is distinct from one executor entry. Since tenferro-rs

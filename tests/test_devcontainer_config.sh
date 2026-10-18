@@ -73,6 +73,21 @@ if grep -q "libopenblas-dev" "$ROOT/.devcontainer/cuda/Dockerfile"; then
     exit 1
 fi
 
+python3 - "$ROOT" <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+config = json.loads((root / ".devcontainer/cuda/devcontainer.json").read_text())
+mounts = "\n".join(config.get("mounts", []))
+assert "source=tenferro-benchmark-cuda-venv-${devcontainerId}" in mounts
+assert "target=${containerWorkspaceFolder}/.venv,type=volume" in mounts
+command = config["postCreateCommand"]
+assert command.startswith("sudo mkdir -p")
+assert "chown -R vscode:vscode" in command
+PY
+
 python3 - "$ROOT/.devcontainer/openblas/devcontainer.json" <<'PY'
 import json
 from pathlib import Path

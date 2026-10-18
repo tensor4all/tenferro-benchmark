@@ -26,12 +26,14 @@ defaults:
 backends:
 - tenferro-cuda-trace
 - tenferro-cuda-eager
+- tenferro-cuda-eager-per-call-session
 - pytorch-cuda
 - jax-cuda
 problems:
 - id: elementwise_chain_f64_1k
   family: elementwise
   op: elementwise_chain
+  regime: latency  # per-command overhead probe, not a bandwidth measurement
   intent: "Per-command bound: 8 chained elementwise ops over a small vector."
   dtype:
     a: f64

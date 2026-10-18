@@ -11,6 +11,7 @@ MARKDOWN="$RUN_DIR/report.md"
 REPORT="result/nvidia-gpu/gpu/dense.md"
 TMP="$(mktemp -d)"
 ARTIFACTS=("$RUN_YAML" "$JSONL" "$MARKDOWN" "$RUN_DIR/rust_records.jsonl" "$REPORT"
+  "$RUN_DIR/report.summary.json" "result/nvidia-gpu/gpu/dense.summary.json"
   "$RUN_DIR/wall_backends.jsonl" "$RUN_DIR/wall_command.json"
   "result/nvidia-gpu/gpu/routine_coverage.md" "result/nvidia-gpu/gpu/routine_workflow.md")
 SELECTION_DIR="data/results/nvidia-gpu/gpu/routine_selection/19990101_000000"
@@ -242,6 +243,11 @@ test -s "$RUN_YAML"
 test -s "$JSONL"
 test -s "$MARKDOWN"
 test -s "$REPORT"
+# Publishing a maintained report must publish its dashboard summary sidecar
+# next to it, not only in the raw run directory.
+test -s "$RUN_DIR/report.summary.json"
+test -s "result/nvidia-gpu/gpu/dense.summary.json"
+rg -q '"suite_id": "gpu/dense"' "result/nvidia-gpu/gpu/dense.summary.json"
 uv run python - "$RUN_DIR" <<'PY'
 import json, sys
 from pathlib import Path

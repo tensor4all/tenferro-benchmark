@@ -476,6 +476,52 @@
   "reference_for": "transfer_down_f64_tenferro_8B"
  },
  {
+  "id": "transfer_down_f64_tenferro-into_8B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro-into",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 8,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro-into",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "reference_for": "transfer_down_f64_tenferro_8B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable-fresh_8B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable-fresh",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 8,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable-fresh",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "reference_for": "transfer_down_f64_tenferro_8B"
+ },
+ {
   "id": "transfer_down_f64_tenferro_4096B",
   "issues": [
    "#2009"
@@ -541,6 +587,52 @@
    "nvidia-gpu"
   ],
   "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
+  "reference_for": "transfer_down_f64_tenferro_4096B"
+ },
+ {
+  "id": "transfer_down_f64_tenferro-into_4096B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro-into",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 4096,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro-into",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "reference_for": "transfer_down_f64_tenferro_4096B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable-fresh_4096B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable-fresh",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 4096,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable-fresh",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_4096B"
  },
  {
@@ -612,6 +704,52 @@
   "reference_for": "transfer_down_f64_tenferro_65536B"
  },
  {
+  "id": "transfer_down_f64_tenferro-into_65536B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro-into",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 65536,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro-into",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "reference_for": "transfer_down_f64_tenferro_65536B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable-fresh_65536B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable-fresh",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 65536,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable-fresh",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "reference_for": "transfer_down_f64_tenferro_65536B"
+ },
+ {
   "id": "transfer_down_f64_tenferro_1048576B",
   "issues": [
    "#2009"
@@ -677,6 +815,52 @@
    "nvidia-gpu"
   ],
   "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
+  "reference_for": "transfer_down_f64_tenferro_1048576B"
+ },
+ {
+  "id": "transfer_down_f64_tenferro-into_1048576B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro-into",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 1048576,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro-into",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "reference_for": "transfer_down_f64_tenferro_1048576B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable-fresh_1048576B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable-fresh",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 1048576,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable-fresh",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_1048576B"
  },
  {
@@ -748,6 +932,52 @@
   "reference_for": "transfer_down_f64_tenferro_16777216B"
  },
  {
+  "id": "transfer_down_f64_tenferro-into_16777216B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro-into",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 16777216,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro-into",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "reference_for": "transfer_down_f64_tenferro_16777216B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable-fresh_16777216B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable-fresh",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 16777216,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable-fresh",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "reference_for": "transfer_down_f64_tenferro_16777216B"
+ },
+ {
   "id": "transfer_down_f64_tenferro_268435456B",
   "issues": [
    "#2009"
@@ -813,6 +1043,52 @@
    "nvidia-gpu"
   ],
   "intent": "tenferro-rs #2009: host-device transfer of one f64 buffer (8 B to 256 MiB), upload_tensor + runtime synchronize / download_tensor, vs plain cudarc memcpy from pageable and pinned host memory on the same device. Every call includes its own synchronize; the transfer is the declared operation. The cudarc arms reuse one preallocated destination while the tenferro arms allocate their output, so the cudarc rows are an output-reuse lower bound for the transport, not an allocation-equivalent comparison.",
+  "reference_for": "transfer_down_f64_tenferro_268435456B"
+ },
+ {
+  "id": "transfer_down_f64_tenferro-into_268435456B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "tenferro-into",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "bytes": 268435456,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "tenferro-into",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "reference_for": "transfer_down_f64_tenferro_268435456B"
+ },
+ {
+  "id": "transfer_down_f64_cudarc-pageable-fresh_268435456B",
+  "issues": [
+   "#2009"
+  ],
+  "kind": "transfer",
+  "arm": "cudarc-pageable-fresh",
+  "backend": "cudarc",
+  "dtype": "f64",
+  "params": {
+   "bytes": 268435456,
+   "direction": "down",
+   "kind": "transfer",
+   "arm": "cudarc-pageable-fresh",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_268435456B"
  },
  {

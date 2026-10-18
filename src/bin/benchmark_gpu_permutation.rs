@@ -20,17 +20,25 @@
 //! `pytorch-cuda`, `jax-cuda`, and `memcpy-d2d` are measured by
 //! `scripts/benchmark_gpu_permutation_python.py` and are ignored here.
 //!
-//! Every participant's output is downloaded and compared elementwise against
-//! a host-computed naive reference *outside* any timed region before any
-//! timing; a mismatch is reported as `verification_failed` and is never
-//! timed, per `AGENTS.md`'s GPU Timing Fairness policy. Timed regions cover
-//! host API dispatch plus CUDA device synchronization only; no downloads
-//! happen inside a timed closure.
+//! By default every participant's output is checked exactly against a
+//! deterministic sampled set (per-axis corners plus ~1M seeded physical
+//! elements); each arm copies only those sampled ranges device-to-device into a
+//! small staging tensor, so the host readback is a few MiB rather than the full
+//! output. With `PERMUTATION_FULL_VERIFY=1` the whole output is downloaded and
+//! compared elementwise against a host-computed naive reference. Either check
+//! runs *outside* any timed region before any timing; a mismatch is reported as
+//! `verification_failed` and is never timed, per `AGENTS.md`'s GPU Timing
+//! Fairness policy. Timed regions cover host API dispatch plus CUDA device
+//! synchronization only; no downloads happen inside a timed closure.
 //!
 //! Environment variables:
 //! - `PATTERN_ID`: run a single pattern id instead of the full suite.
 //! - `BENCH_RUNS` / `BENCH_WARMUPS`: override the size-scaled iteration and
 //!   warmup counts for every participant.
+//! - `PERMUTATION_FULL_VERIFY`: when set to `1`, use the legacy full host
+//!   reference plus elementwise compare instead of the default sampled gate.
+//! - `PERMUTATION_PHASE_TIMING`: when set to `1`, print per-phase wall seconds
+//!   to stderr (source generation, upload, op, sampled check, drops).
 //! - `BENCH_OUTPUT`: path to write machine-readable JSON Lines results. When
 //!   unset, only the human-readable table is printed to stdout.
 //! - `GPU_BENCH_DEVICE`: CUDA device ordinal (default `0`).
@@ -56,6 +64,39 @@ use tenferro_tensor::{
 
 const PATTERN_PATH: &str = "data/instances/gpu_permutation_patterns.json";
 const SUITE_ID: &str = "gpu/permutation";
+
+/// Env-gated phase instrumentation (`PERMUTATION_PHASE_TIMING=1`). Prints one
+/// wall-seconds line per phase to stderr so host setup can be attributed
+/// without changing any timed region or record.
+fn phase_timing_enabled() -> bool {
+    std::env::var("PERMUTATION_PHASE_TIMING").as_deref() == Ok("1")
+}
+
+struct Phase<'a> {
+    enabled: bool,
+    label: &'a str,
+    start: Instant,
+}
+
+impl<'a> Phase<'a> {
+    fn new(label: &'a str) -> Self {
+        Self {
+            enabled: phase_timing_enabled(),
+            label,
+            start: Instant::now(),
+        }
+    }
+
+    fn report(&self) {
+        if self.enabled {
+            eprintln!(
+                "[perm-phase] {:<40} {:8.3} s",
+                self.label,
+                self.start.elapsed().as_secs_f64()
+            );
+        }
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Pattern schema (subset of data/instances/gpu_permutation_patterns.json; no
@@ -173,7 +214,18 @@ fn inverse_permutation(perm: &[usize]) -> Vec<usize> {
 }
 
 fn deterministic_data(total: usize) -> Vec<f64> {
-    (0..total).map(|i| i as f64 + 1.0).collect()
+    use rayon::prelude::*;
+    const CHUNK: usize = 1 << 20;
+    let mut data = vec![0.0f64; total];
+    data.par_chunks_mut(CHUNK)
+        .enumerate()
+        .for_each(|(chunk_index, chunk)| {
+            let base = chunk_index * CHUNK;
+            for (offset, value) in chunk.iter_mut().enumerate() {
+                *value = (base + offset) as f64 + 1.0;
+            }
+        });
+    data
 }
 
 /// Generic strided copy using odometer iteration; the host-side correctness
@@ -208,40 +260,238 @@ unsafe fn naive_strided_copy(
     }
 }
 
+/// Sampled correctness gate: number of elements per copied physical range and
+/// number of seeded ranges. Checking ~1M scattered output elements catches a
+/// wrong axis permutation with overwhelming probability while keeping the D2H
+/// readback at ~8 MiB instead of the full 4 GiB output. The contiguous ranges
+/// are copied device-to-device into a small staging tensor by the runners.
+const SAMPLE_BLOCK: usize = 1024;
+const SAMPLE_BLOCKS: usize = 1000;
+/// Fixed seed for the sampled ranges.
+const SAMPLE_SEED: u64 = 0x9E37_79B9_7F4A_7C15;
+
+/// Per-pattern host setup shared by every participant: layout metadata and
+/// either the full host reference (`PERMUTATION_FULL_VERIFY=1`) or the sampled
+/// physical output ranges plus their expected values.
 struct PreparedPattern {
-    src_data: Vec<f64>,
     src_strides: Vec<isize>,
     out_shape: Vec<usize>,
     dst_strides: Vec<isize>,
-    reference: Vec<f64>,
+    reference: Option<Vec<f64>>,
+    sample_ranges: Vec<(usize, usize)>,
+    sample_expected: Vec<f64>,
+    total: usize,
 }
 
-fn prepare_pattern(pattern: &PermutePattern) -> PreparedPattern {
+fn full_verify_enabled() -> bool {
+    matches!(env::var("PERMUTATION_FULL_VERIFY").as_deref(), Ok("1"))
+}
+
+fn verification_mode_label() -> &'static str {
+    if full_verify_enabled() {
+        "full"
+    } else {
+        "sampled"
+    }
+}
+
+fn splitmix64(state: &mut u64) -> u64 {
+    *state = state.wrapping_add(SAMPLE_SEED);
+    let mut z = *state;
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+    z ^ (z >> 31)
+}
+
+/// Decode a compact col-major output offset into a logical coordinate.
+fn offset_coordinate(offset: usize, out_shape: &[usize], dst_strides: &[isize]) -> Vec<usize> {
+    let mut remaining = offset;
+    let mut coord = vec![0usize; out_shape.len()];
+    for axis in (0..out_shape.len()).rev() {
+        let stride = dst_strides[axis].unsigned_abs();
+        coord[axis] = remaining / stride;
+        remaining %= stride;
+    }
+    coord
+}
+
+/// Deterministic physical output ranges: every per-axis corner plus
+/// `SAMPLE_BLOCKS` seeded contiguous blocks of `SAMPLE_BLOCK` elements. The
+/// contiguous form lets each participant copy only those elements D2D into a
+/// small staging tensor, so no full output is materialized on the host.
+fn generate_sample_ranges(out_shape: &[usize], dst_strides: &[isize]) -> Vec<(usize, usize)> {
+    let rank = out_shape.len();
+    let total: usize = out_shape.iter().product();
+    let block = SAMPLE_BLOCK.min(total.max(1));
+    let blocks = SAMPLE_BLOCKS.min(total / block);
+    let mut ranges = Vec::with_capacity(2 * rank + 2 + blocks);
+
+    fn push_corner(coord: &[usize], dst_strides: &[isize], ranges: &mut Vec<(usize, usize)>) {
+        let mut offset = 0isize;
+        for (axis, &index) in coord.iter().enumerate() {
+            offset += index as isize * dst_strides[axis];
+        }
+        ranges.push((offset as usize, 1));
+    }
+    push_corner(&vec![0usize; rank], dst_strides, &mut ranges);
+    push_corner(
+        &out_shape
+            .iter()
+            .map(|&d| d.saturating_sub(1))
+            .collect::<Vec<_>>(),
+        dst_strides,
+        &mut ranges,
+    );
+    for axis in 0..rank {
+        let mut corner = vec![0usize; rank];
+        corner[axis] = out_shape[axis].saturating_sub(1);
+        push_corner(&corner, dst_strides, &mut ranges);
+        let mut corner: Vec<usize> = out_shape.iter().map(|&d| d.saturating_sub(1)).collect();
+        corner[axis] = 0;
+        push_corner(&corner, dst_strides, &mut ranges);
+    }
+
+    if total >= block {
+        let max_start = total - block;
+        let mut state = 0u64;
+        for _ in 0..blocks {
+            let start = (splitmix64(&mut state) as usize) % (max_start + 1);
+            ranges.push((start, block));
+        }
+    }
+    ranges
+}
+
+/// Expected value for every element covered by `ranges`, in range order.
+fn sample_expected_values(
+    ranges: &[(usize, usize)],
+    out_shape: &[usize],
+    dst_strides: &[isize],
+    src_perm_strides: &[isize],
+) -> Vec<f64> {
+    let mut expected = Vec::with_capacity(ranges.iter().map(|&(_, len)| len).sum());
+    for &(start, len) in ranges {
+        for offset in start..start + len {
+            let coord = offset_coordinate(offset, out_shape, dst_strides);
+            let src_off: isize = coord
+                .iter()
+                .enumerate()
+                .map(|(axis, &index)| index as isize * src_perm_strides[axis])
+                .sum();
+            // `deterministic_index_value` stores `src_off + 1` at source offset `src_off`.
+            expected.push(src_off as f64 + 1.0);
+        }
+    }
+    expected
+}
+
+fn prepare_pattern(pattern: &PermutePattern) -> (PreparedPattern, Vec<f64>) {
     let src_strides = layout_strides(&pattern.shape, &pattern.src_layout);
-    let total: usize = pattern.shape.iter().product();
-    let src_data = deterministic_data(total);
+    let src_total: usize = pattern.shape.iter().product();
+    let source_phase = Phase::new("prepare.source_gen");
+    let src_data = deterministic_data(src_total);
+    source_phase.report();
 
     let src_perm_strides: Vec<isize> = pattern.perm.iter().map(|&axis| src_strides[axis]).collect();
     let out_shape = output_shape(pattern);
     let dst_strides = col_major_strides(&out_shape);
+    let total: usize = out_shape.iter().product();
 
-    let mut reference = vec![0.0f64; out_shape.iter().product()];
-    unsafe {
-        naive_strided_copy(
-            src_data.as_ptr(),
-            reference.as_mut_ptr(),
-            &out_shape,
-            &src_perm_strides,
-            &dst_strides,
-        );
+    let ref_phase = Phase::new("prepare.reference_or_positions");
+    let (reference, sample_ranges, sample_expected) = if full_verify_enabled() {
+        let mut reference = vec![0.0f64; total];
+        unsafe {
+            naive_strided_copy(
+                src_data.as_ptr(),
+                reference.as_mut_ptr(),
+                &out_shape,
+                &src_perm_strides,
+                &dst_strides,
+            );
+        }
+        (Some(reference), Vec::new(), Vec::new())
+    } else {
+        let ranges = generate_sample_ranges(&out_shape, &dst_strides);
+        let expected = sample_expected_values(&ranges, &out_shape, &dst_strides, &src_perm_strides);
+        (None, ranges, expected)
+    };
+    ref_phase.report();
+
+    (
+        PreparedPattern {
+            src_strides,
+            out_shape,
+            dst_strides,
+            reference,
+            sample_ranges,
+            sample_expected,
+            total,
+        },
+        src_data,
+    )
+}
+
+impl PreparedPattern {
+    fn is_sampled(&self) -> bool {
+        self.reference.is_none()
     }
 
-    PreparedPattern {
-        src_data,
-        src_strides,
-        out_shape,
-        dst_strides,
-        reference,
+    /// Full elementwise compare; only valid in `PERMUTATION_FULL_VERIFY=1` mode.
+    fn verify_full(&self, actual: &[f64]) -> Result<(), String> {
+        match &self.reference {
+            Some(reference) => verify_output(actual, reference),
+            None => Err("full verification requested without a reference".into()),
+        }
+    }
+
+    /// Exact sampled compare against the precomputed expected values.
+    fn verify_sampled_values(&self, values: &[f64]) -> Result<(), String> {
+        if values.len() != self.sample_expected.len() {
+            return Err(format!(
+                "sampled length mismatch {} != {}",
+                values.len(),
+                self.sample_expected.len()
+            ));
+        }
+        for (i, (&got, &expected)) in values.iter().zip(&self.sample_expected).enumerate() {
+            if got != expected {
+                return Err(format!("sampled mismatch at position {i}: {got} != {expected}"));
+            }
+        }
+        Ok(())
+    }
+
+    /// Verify a resident device output: sampled mode reads back only the sampled
+    /// ranges; full mode downloads the whole output and compares elementwise.
+    fn check_output(&self, backend: &mut CudaBackend, output: &Tensor) -> Result<(), String> {
+        if self.is_sampled() {
+            let values = sample_output_ranges(backend, output, &self.sample_ranges)?;
+            self.verify_sampled_values(&values)
+        } else {
+            backend.runtime().synchronize().map_err(|e| e.to_string())?;
+            let downloaded = download_tensor(backend.runtime(), output).map_err(|e| e.to_string())?;
+            let actual = downloaded.as_slice::<f64>().map_err(|e| e.to_string())?;
+            self.verify_full(actual)
+        }
+    }
+
+    /// Verify an output already inside an entered raw session (cuTENSOR arm).
+    fn check_output_raw(
+        &self,
+        raw: &tenferro_gpu::cuda::raw::Session<'_>,
+        output: &TypedTensor<f64>,
+    ) -> Result<(), String> {
+        if self.is_sampled() {
+            let values = raw_sample_ranges(raw, output, &self.sample_ranges)?;
+            self.verify_sampled_values(&values)
+        } else {
+            raw.synchronize().map_err(|e| e.to_string())?;
+            let host = raw
+                .download_tensor(output, "benchmark.gpu_permutation.verify")
+                .map_err(|e| e.to_string())?;
+            let actual = host.as_slice().map_err(|e| e.to_string())?;
+            self.verify_full(actual)
+        }
     }
 }
 
@@ -259,6 +509,73 @@ fn verify_output(actual: &[f64], expected: &[f64]) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+/// Copy the given compact col-major output ranges into a small staging tensor
+/// inside an already-entered raw session and read back only those elements.
+fn raw_sample_ranges(
+    raw: &tenferro_gpu::cuda::raw::Session<'_>,
+    output: &TypedTensor<f64>,
+    ranges: &[(usize, usize)],
+) -> Result<Vec<f64>, String> {
+    const OP: &str = "benchmark.gpu_permutation.sample";
+    let total: usize = ranges.iter().map(|&(_, len)| len).sum();
+    let mut staging = raw.alloc_output::<f64>(&[total]).map_err(|e| e.to_string())?;
+    {
+        let output_ref = raw.tensor(output).map_err(|e| e.to_string())?;
+        let output_base = unsafe { output_ref.raw_ptr() } as usize;
+        let staging_ref = raw.tensor_mut(&mut staging).map_err(|e| e.to_string())?;
+        let mut destination = unsafe { staging_ref.raw_ptr() } as usize;
+        let element = std::mem::size_of::<f64>();
+        for &(start, len) in ranges {
+            unsafe {
+                raw.copy_bytes(
+                    destination as *mut std::ffi::c_void,
+                    (output_base + start * element) as *const std::ffi::c_void,
+                    len * element,
+                    OP,
+                )
+                .map_err(|e| e.to_string())?;
+            }
+            destination += len * element;
+        }
+    }
+    raw.synchronize().map_err(|e| e.to_string())?;
+    let host = raw
+        .download_tensor(&staging, OP)
+        .map_err(|e| e.to_string())?;
+    host.as_slice()
+        .map(|slice| slice.to_vec())
+        .map_err(|e| e.to_string())
+}
+
+/// Sample only the prepared output ranges from a resident output tensor on the
+/// device, so the D2H transfer is the sampled bytes rather than the whole
+/// output. Opens a short raw session on the same backend/runtime.
+fn sample_output_ranges(
+    backend: &CudaBackend,
+    output: &Tensor,
+    ranges: &[(usize, usize)],
+) -> Result<Vec<f64>, String> {
+    const OP: &str = "benchmark.gpu_permutation.sample";
+    let typed = output
+        .as_typed::<f64>()
+        .ok_or_else(|| "sampled output must be f64".to_string())?;
+    let mut session_backend = backend.clone();
+    let result = session_backend.with_backend_session(|session| {
+        with_cuda_exec_session(session, |session| {
+            session.with_raw(OP, |raw| {
+                raw_sample_ranges(raw, typed, ranges)
+                    .map_err(|message| tenferro_tensor::Error::backend_failure(OP, message))
+            })
+        })
+    });
+    match result {
+        Ok(Some(Ok(values))) => Ok(values),
+        Ok(Some(Err(error))) => Err(error.to_string()),
+        Ok(None) => Err("not a CUDA execution session".to_string()),
+        Err(error) => Err(error.to_string()),
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -357,6 +674,7 @@ struct ResultRecord {
     device: String,
     status: &'static str,
     correctness: &'static str,
+    verification_mode: &'static str,
     per_call_allocation: bool,
     warmup: Option<usize>,
     iters: Option<usize>,
@@ -446,6 +764,7 @@ fn base_record(
         device: device.to_string(),
         status,
         correctness,
+        verification_mode: verification_mode_label(),
         per_call_allocation,
         warmup: None,
         iters: None,
@@ -927,6 +1246,7 @@ use cutensor_ffi::CutensorLib;
 fn run_tenferro_cuda_transpose(
     pattern: &PermutePattern,
     prepared: &PreparedPattern,
+    source_gpu: &Tensor,
     warmup: usize,
     iters: usize,
     bytes: usize,
@@ -934,7 +1254,7 @@ fn run_tenferro_cuda_transpose(
     backend: &mut CudaBackend,
     sink: &mut RecordSink,
 ) {
-    let total = prepared.reference.len();
+    let total = prepared.total;
     let name: &'static str = "tenferro-cuda-transpose";
     if !matches!(pattern.src_layout, LayoutPattern::ColMajor) {
         finish_skip(
@@ -956,22 +1276,18 @@ fn run_tenferro_cuda_transpose(
         return;
     }
 
-    let host = Tensor::from_vec_col_major(pattern.shape.clone(), prepared.src_data.clone())
-        .expect("building source tensor must succeed");
-    let gpu_in = upload_tensor(backend.runtime(), &host).expect("upload must succeed");
-
+    let op_phase = Phase::new("transpose.correctness_op");
     let out = backend
         .with_backend_session(|session| {
-            session.transpose_read(TensorRead::from_tensor(&gpu_in), &pattern.perm)
+            session.transpose_read(TensorRead::from_tensor(source_gpu), &pattern.perm)
         })
         .expect("entering the CUDA backend session must succeed")
         .expect("tenferro-cuda-transpose must succeed on a validated pattern");
-    backend.runtime().synchronize().expect("device sync");
-    let downloaded = download_tensor(backend.runtime(), &out).expect("download must succeed");
-    let actual = downloaded
-        .as_slice::<f64>()
-        .expect("tenferro-cuda-transpose output must be f64");
-    if let Err(msg) = verify_output(actual, &prepared.reference) {
+    op_phase.report();
+    let verify_phase = Phase::new("transpose.sampled_or_full_check");
+    let verify_result = prepared.check_output(backend, &out);
+    verify_phase.report();
+    if let Err(msg) = verify_result {
         finish_skip(
             base_record(
                 pattern,
@@ -992,16 +1308,21 @@ fn run_tenferro_cuda_transpose(
     // tenferro-rs #1938 moved `transpose` onto the entered session. The
     // pre-#1938 backend method entered once per call, so each timed call still
     // enters its own session.
+    let bench_phase = Phase::new("transpose.bench_n(warmup+timed)");
     let timing = bench_n(warmup, iters, bytes, || {
         let out = backend
             .with_backend_session(|session| {
-                session.transpose_read(TensorRead::from_tensor(&gpu_in), &pattern.perm)
+                session.transpose_read(TensorRead::from_tensor(source_gpu), &pattern.perm)
             })
             .unwrap()
             .unwrap();
         backend.runtime().synchronize().unwrap();
         out
     });
+    bench_phase.report();
+    let drop_phase = Phase::new("transpose.drops");
+    drop(out);
+    drop_phase.report();
     finish_ok(
         base_record(pattern, name, total, bytes, device_name, "ok", "passed", true).with_note(
             "allocates a fresh device tensor per call (eager transpose op); destination is not reused"
@@ -1030,9 +1351,11 @@ fn cuda_to_contiguous(
         .expect("a CUDA backend session is a CUDA execution session")
 }
 
+#[allow(clippy::too_many_arguments)]
 fn run_tenferro_cuda_to_contiguous(
     pattern: &PermutePattern,
     prepared: &PreparedPattern,
+    source_gpu: &Tensor,
     warmup: usize,
     iters: usize,
     bytes: usize,
@@ -1040,13 +1363,10 @@ fn run_tenferro_cuda_to_contiguous(
     backend: &mut CudaBackend,
     sink: &mut RecordSink,
 ) {
-    let total = prepared.reference.len();
+    let total = prepared.total;
     let name: &'static str = "tenferro-cuda-to-contiguous";
 
-    let flat_host = Tensor::from_vec_col_major(vec![total], prepared.src_data.clone())
-        .expect("building flat source tensor must succeed");
-    let flat_gpu = upload_tensor(backend.runtime(), &flat_host).expect("upload must succeed");
-    let typed: &TypedTensor<f64> = flat_gpu
+    let typed: &TypedTensor<f64> = source_gpu
         .as_typed::<f64>()
         .unwrap_or_else(|| unreachable!("upload_tensor preserves dtype"));
     // Mirror the CPU runner's composition exactly: build the strided view
@@ -1065,13 +1385,7 @@ fn run_tenferro_cuda_to_contiguous(
 
     let compact = cuda_to_contiguous(backend, &view)
         .expect("tenferro-cuda-to-contiguous must succeed on a validated pattern");
-    backend.runtime().synchronize().expect("device sync");
-    let downloaded = download_tensor(backend.runtime(), &Tensor::from_typed(compact))
-        .expect("download must succeed");
-    let actual = downloaded
-        .as_slice::<f64>()
-        .expect("tenferro-cuda-to-contiguous output must be f64");
-    if let Err(msg) = verify_output(actual, &prepared.reference) {
+    if let Err(msg) = prepared.check_output(backend, &Tensor::from_typed(compact)) {
         finish_skip(
             base_record(
                 pattern,
@@ -1119,6 +1433,7 @@ fn run_tenferro_cuda_to_contiguous(
 fn run_tenferro_cuda_destination_reuse(
     pattern: &PermutePattern,
     prepared: &PreparedPattern,
+    source_gpu: &Tensor,
     warmup: usize,
     iters: usize,
     bytes: usize,
@@ -1126,7 +1441,7 @@ fn run_tenferro_cuda_destination_reuse(
     backend: &mut CudaBackend,
     sink: &mut RecordSink,
 ) {
-    let total = prepared.reference.len();
+    let total = prepared.total;
     let name: &'static str = "tenferro-cuda-destination-reuse";
     if !matches!(pattern.src_layout, LayoutPattern::ColMajor) {
         finish_skip(
@@ -1146,13 +1461,9 @@ fn run_tenferro_cuda_destination_reuse(
         return;
     }
 
-    let host_source = Tensor::from_vec_col_major(pattern.shape.clone(), prepared.src_data.clone())
-        .expect("building source tensor must succeed");
-    let gpu_source =
-        upload_tensor(backend.runtime(), &host_source).expect("source upload must succeed");
     let host_destination = Tensor::from_vec_col_major(
         prepared.out_shape.clone(),
-        vec![0.0_f64; prepared.reference.len()],
+        vec![0.0_f64; prepared.total],
     )
     .expect("building destination tensor must succeed");
     let mut gpu_destination = upload_tensor(backend.runtime(), &host_destination)
@@ -1171,7 +1482,7 @@ fn run_tenferro_cuda_destination_reuse(
         backend
             .with_backend_session(|session| {
                 session.copy_read_into(
-                    TensorRead::from_tensor(&gpu_source),
+                    TensorRead::from_tensor(source_gpu),
                     TensorWrite::from_view(TensorViewMut::F64(destination_view)),
                 )
             })
@@ -1180,13 +1491,7 @@ fn run_tenferro_cuda_destination_reuse(
 
     execute(backend, &mut gpu_destination)
         .expect("CudaBackend::copy_read_into must succeed on a validated pattern");
-    backend.runtime().synchronize().expect("device sync");
-    let downloaded =
-        download_tensor(backend.runtime(), &gpu_destination).expect("download must succeed");
-    let actual = downloaded
-        .as_slice::<f64>()
-        .expect("tenferro-cuda-destination-reuse output must be f64");
-    if let Err(msg) = verify_output(actual, &prepared.reference) {
+    if let Err(msg) = prepared.check_output(backend, &gpu_destination) {
         finish_skip(
             base_record(
                 pattern,
@@ -1234,6 +1539,7 @@ fn run_tenferro_cuda_destination_reuse(
 fn run_cutensor(
     pattern: &PermutePattern,
     prepared: &PreparedPattern,
+    source_gpu: &Tensor,
     warmup: usize,
     iters: usize,
     bytes: usize,
@@ -1242,7 +1548,7 @@ fn run_cutensor(
     cutensor: Option<&CutensorLib>,
     sink: &mut RecordSink,
 ) {
-    let total = prepared.reference.len();
+    let total = prepared.total;
     let name: &'static str = "cutensor";
 
     if cutensor.is_none() {
@@ -1271,16 +1577,13 @@ fn run_cutensor(
     let strides_b: Vec<i64> = prepared.dst_strides.iter().map(|&s| s as i64).collect();
     let modes_b: Vec<i32> = pattern.perm.iter().map(|&p| p as i32).collect();
 
-    let flat_src_host = Tensor::from_vec_col_major(vec![total], prepared.src_data.clone())
-        .expect("building flat source tensor must succeed");
-    let flat_src = upload_tensor(backend.runtime(), &flat_src_host).expect("upload must succeed");
     let flat_dst_host = Tensor::from_vec_col_major(vec![total], vec![0.0f64; total])
         .expect("building flat destination tensor must succeed");
     let flat_dst = upload_tensor(backend.runtime(), &flat_dst_host).expect("upload must succeed");
 
-    let Ok(flat_src) = flat_src.into_typed::<f64>() else {
-        unreachable!("f64 source")
-    };
+    let flat_src = source_gpu
+        .as_typed::<f64>()
+        .expect("flat source must be f64");
     let Ok(mut flat_dst) = flat_dst.into_typed::<f64>() else {
         unreachable!("f64 destination")
     };
@@ -1317,7 +1620,7 @@ fn run_cutensor(
                         }
                     };
 
-                    let src_ref = raw.tensor(&flat_src)?;
+                    let src_ref = raw.tensor(flat_src)?;
                     let dst_ref = raw.tensor_mut(&mut flat_dst)?;
                     // SAFETY: disjoint source/destination allocations and the raw session
                     // survive all vendor calls; each call completes before scope exit.
@@ -1352,10 +1655,10 @@ fn run_cutensor(
                         return Ok(());
                     }
                     raw.synchronize()?;
-                    drop(dst_ref);
-                    let downloaded = raw.download_tensor(&flat_dst, "cutensor verification")?;
-                    let actual = downloaded.as_slice().expect("cutensor output must be f64");
-                    if let Err(msg) = verify_output(actual, &prepared.reference) {
+                    // End the mutable borrow of `flat_dst` before the immutable
+                    // sampled/full verification borrow below.
+                    let _ = dst_ref;
+                    if let Err(msg) = prepared.check_output_raw(raw, &flat_dst) {
                         finish_skip(
                             base_record(
                                 pattern,
@@ -1422,8 +1725,8 @@ fn run_pattern(
     cutensor: Option<&CutensorLib>,
     sink: &mut RecordSink,
 ) {
-    let prepared = prepare_pattern(pattern);
-    let total = prepared.reference.len();
+    let (prepared, src_data) = prepare_pattern(pattern);
+    let total = prepared.total;
     let bytes = total * std::mem::size_of::<f64>() * 2;
     let (warmup, iters) = timing_counts_env(total);
 
@@ -1432,11 +1735,34 @@ fn run_pattern(
         pattern.label, pattern.id, total, bytes
     );
 
+    // The deterministic source is uploaded exactly once per pattern and every
+    // participant reads that same device tensor: a shaped compact tensor for
+    // col-major patterns (so the structural/`copy_read_into` arms keep reading
+    // an owned tensor exactly as before) or a flat tensor for explicit-stride
+    // patterns (which only `to_contiguous` and cuTENSOR consume).
+    let upload_phase = Phase::new("pattern.source_host+upload");
+    let host_source = if matches!(pattern.src_layout, LayoutPattern::ColMajor) {
+        Tensor::from_vec_col_major(pattern.shape.clone(), src_data)
+            .expect("building the shaped source tensor must succeed")
+    } else {
+        Tensor::from_vec_col_major(vec![total], src_data)
+            .expect("building the flat source tensor must succeed")
+    };
+    let source_gpu =
+        upload_tensor(backend.runtime(), &host_source).expect("source upload must succeed");
+    drop(host_source);
+    upload_phase.report();
+
     for participant in &pattern.participants_gpu {
+        let arm_phase = Phase::new("pattern.arm_total");
+        if phase_timing_enabled() {
+            eprintln!("[perm-phase] arm {participant} ({})", pattern.id);
+        }
         match participant.as_str() {
             "tenferro-cuda-transpose" => run_tenferro_cuda_transpose(
                 pattern,
                 &prepared,
+                &source_gpu,
                 warmup,
                 iters,
                 bytes,
@@ -1447,6 +1773,7 @@ fn run_pattern(
             "tenferro-cuda-to-contiguous" => run_tenferro_cuda_to_contiguous(
                 pattern,
                 &prepared,
+                &source_gpu,
                 warmup,
                 iters,
                 bytes,
@@ -1457,6 +1784,7 @@ fn run_pattern(
             "tenferro-cuda-destination-reuse" => run_tenferro_cuda_destination_reuse(
                 pattern,
                 &prepared,
+                &source_gpu,
                 warmup,
                 iters,
                 bytes,
@@ -1467,6 +1795,7 @@ fn run_pattern(
             "cutensor" => run_cutensor(
                 pattern,
                 &prepared,
+                &source_gpu,
                 warmup,
                 iters,
                 bytes,
@@ -1479,7 +1808,12 @@ fn run_pattern(
             // scripts/benchmark_gpu_permutation_python.py.
             _ => {}
         }
+        arm_phase.report();
     }
+    let drop_phase = Phase::new("pattern.prepared_drop");
+    drop(source_gpu);
+    drop(prepared);
+    drop_phase.report();
     println!();
 }
 
@@ -1577,4 +1911,106 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Done.");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn reference_output(
+        shape: &[usize],
+        perm: &[usize],
+        src_strides: &[isize],
+    ) -> (Vec<f64>, Vec<usize>, Vec<isize>, Vec<isize>) {
+        let out_shape: Vec<usize> = perm.iter().map(|&axis| shape[axis]).collect();
+        let src_perm_strides: Vec<isize> = perm.iter().map(|&axis| src_strides[axis]).collect();
+        let dst_strides = col_major_strides(&out_shape);
+        let src_data = deterministic_data(shape.iter().product::<usize>());
+        let mut reference = vec![0.0f64; out_shape.iter().product::<usize>()];
+        unsafe {
+            naive_strided_copy(
+                src_data.as_ptr(),
+                reference.as_mut_ptr(),
+                &out_shape,
+                &src_perm_strides,
+                &dst_strides,
+            );
+        }
+        (reference, out_shape, src_perm_strides, dst_strides)
+    }
+
+    fn gather(reference: &[f64], ranges: &[(usize, usize)]) -> Vec<f64> {
+        let mut values = Vec::new();
+        for &(start, len) in ranges {
+            for offset in start..start + len {
+                values.push(reference[offset]);
+            }
+        }
+        values
+    }
+
+    #[test]
+    fn sampled_ranges_accept_correct_and_reject_wrong_permutation() {
+        // shape [3, 4], perm [1, 0] -> out_shape [4, 3], all col-major.
+        let shape = [3usize, 4];
+        let src_strides = col_major_strides(&shape);
+        let (reference, out_shape, src_perm_strides, dst_strides) =
+            reference_output(&shape, &[1, 0], &src_strides);
+
+        let ranges = generate_sample_ranges(&out_shape, &dst_strides);
+        let expected = sample_expected_values(&ranges, &out_shape, &dst_strides, &src_perm_strides);
+        let prepared = PreparedPattern {
+            src_strides: src_strides.clone(),
+            out_shape: out_shape.clone(),
+            dst_strides: dst_strides.clone(),
+            reference: None,
+            sample_ranges: ranges.clone(),
+            sample_expected: expected,
+            total: reference.len(),
+        };
+
+        let correct = gather(&reference, &ranges);
+        prepared
+            .verify_sampled_values(&correct)
+            .expect("the correct permutation must pass the sampled gate");
+
+        // A corrupted corner is caught by the always-checked corner ranges.
+        let mut corrupted = correct.clone();
+        corrupted[0] = -12345.0;
+        assert!(prepared.verify_sampled_values(&corrupted).is_err());
+
+        // A deliberately wrong permutation (identity instead of [1, 0]) must fail.
+        let identity_strides = vec![src_strides[0], src_strides[1]];
+        let src_data = deterministic_data(shape.iter().product::<usize>());
+        let mut wrong = vec![0.0f64; out_shape.iter().product::<usize>()];
+        unsafe {
+            naive_strided_copy(
+                src_data.as_ptr(),
+                wrong.as_mut_ptr(),
+                &out_shape,
+                &identity_strides,
+                &dst_strides,
+            );
+        }
+        let wrong_values = gather(&wrong, &ranges);
+        assert_ne!(wrong_values, correct, "fixture must distinguish the two permutations");
+        assert!(prepared.verify_sampled_values(&wrong_values).is_err());
+    }
+
+    #[test]
+    fn sampled_ranges_cover_corners_and_seeded_blocks() {
+        let out_shape = [4usize, 3, 2];
+        let dst_strides = col_major_strides(&out_shape);
+        let ranges = generate_sample_ranges(&out_shape, &dst_strides);
+        let total: usize = out_shape.iter().product();
+        let block = SAMPLE_BLOCK.min(total);
+        assert!(ranges.iter().any(|&(_, len)| len == 1), "corner ranges missing");
+        assert!(
+            ranges.iter().any(|&(_, len)| len == block),
+            "seeded block ranges missing"
+        );
+        for &(start, len) in &ranges {
+            assert!(start + len <= total, "range out of bounds");
+        }
+    }
 }

@@ -27,7 +27,10 @@
   "remoteEnv": {
     "PATH": "/home/vscode/.cargo/bin:/home/vscode/.local/bin:${containerEnv:PATH}"
   },
-  "postCreateCommand": "uv sync --frozen || uv sync && uv pip install 'torch>=2.12.0' --extra-index-url https://download.pytorch.org/whl/cu126 && uv pip install 'jax[cuda12]'",
+  "mounts": [
+    "source=tenferro-benchmark-cuda-venv-${devcontainerId},target=${containerWorkspaceFolder}/.venv,type=volume"
+  ],
+  "postCreateCommand": "sudo mkdir -p \"${containerWorkspaceFolder}/.venv\" && sudo chown -R vscode:vscode \"${containerWorkspaceFolder}/.venv\" && (uv sync --frozen || uv sync) && uv pip install 'torch>=2.12.0' --extra-index-url https://download.pytorch.org/whl/cu126 && uv pip install 'jax[cuda12]'",
   "customizations": {
     "vscode": {
       "extensions": [

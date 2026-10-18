@@ -31,7 +31,7 @@ def plan(coverage, effort):
                                        if key not in selected["timing"] + selected["state"]])
 
 
-def account(selection, paths, verify_only=False):
+def account(selection, paths, verify_only=False, restrict=False):
     rows, duplicates, provenance = {}, [], []
     for path in paths:
         metadata = yaml.safe_load((path.parent / "run.yaml").read_text())
@@ -44,6 +44,12 @@ def account(selection, paths, verify_only=False):
                 duplicates.append(key)
             rows[key] = row
     expected = selection["timing"] + selection["state"]
+    if restrict:
+        # Quick-from-full: ignore full-only control records rather than
+        # reporting them as unexpected.
+        allowed = set(expected)
+        rows = {key: row for key, row in rows.items() if key in allowed}
+        duplicates = []
     status = dict(selection, expected=expected, selected=expected,
                   measured=[], observed=[], verification_only=[], missing=[], failed=[], noisy=[],
                   duplicates=duplicates, unexpected=sorted(set(rows) - set(expected)), provenance=provenance,
@@ -160,11 +166,13 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--lane", choices=("timing", "state"))
     parser.add_argument("--records", type=Path, nargs="+")
+    parser.add_argument("--restrict", action="store_true",
+                        help="ignore records outside the selection (used for quick-from-full accounting)")
     parser.add_argument("--verify-only", action="store_true")
     args = parser.parse_args()
     if args.records:
         selection = json.loads((args.output / "selection.json").read_text())
-        status = account(selection, args.records, args.verify_only)
+        status = account(selection, args.records, args.verify_only, restrict=args.restrict)
         (args.output / "case_status.json").write_text(json.dumps(status, indent=2) + "\n")
         (args.output / "report.md").write_text(report(status, args.output.as_posix()))
         if status["provenance_mismatch"] or any(status[key] for key in ("failed", "missing", "duplicates", "unexpected")):

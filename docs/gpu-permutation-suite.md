@@ -254,13 +254,27 @@ allocation**, with exceptions called out per column:
 ### Correctness Gate
 
 Before timing, every participant's output is downloaded to the host and
-compared elementwise against a host-computed naive reference for the
-pattern's deterministic input -- **exactly**, `rtol=0, atol=0` (pure data
-movement of `f64` must be bit-exact). This download happens once, after the
-correctness run and before the timed loop; it is never inside a timed
-closure, per `AGENTS.md`'s GPU Timing Fairness policy. A mismatch fails that
-pattern/backend cell (`status: verification_failed`) and is never timed; it
-does not abort the rest of the suite.
+checked **exactly** (`rtol=0, atol=0`; pure `f64` data movement must be
+bit-exact) against the pattern's deterministic source. The download happens
+once, after the correctness run and before the timed loop; it is never inside
+a timed closure, per `AGENTS.md`'s GPU Timing Fairness policy. A mismatch
+fails that pattern/backend cell (`status: verification_failed`) and is never
+timed; it does not abort the rest of the suite.
+
+The default gate is a **sampled exact** check: a deterministic sampled set of
+all per-axis corners plus roughly 1M seeded output elements (1000 contiguous
+seeded block ranges in the Rust runner, 1M seeded positions in the Python
+runner) is compared against values recomputed from the source
+index mapping (`out[i] = src[i_perm]`). Each backend gathers/copies only those
+sampled elements on the device, so the D2H readback is a few MiB instead of the
+full 4 GiB output, and no full host reference transpose is materialized. Set
+`PERMUTATION_FULL_VERIFY=1` to restore the legacy full host reference plus
+elementwise compare. Both runners generate the deterministic source buffer
+exactly once per pattern per process; the Rust runner also uploads it exactly
+once per pattern and reuses that device tensor for every participant. The
+active mode is recorded per record as `verification_mode` (`sampled`/`full`),
+in `run.yaml` under `collection.permutation_verification_mode`, and in the
+report text.
 
 ## Participant Eligibility
 
@@ -303,9 +317,10 @@ Two runners, both consuming `data/instances/gpu_permutation_patterns.json`:
   (`required-features = ["cuda"]`), covering `tenferro-cuda-transpose`,
   `tenferro-cuda-to-contiguous`, `tenferro-cuda-destination-reuse`, and
   `cutensor`. Builds a single
-  `CudaBackend` for the whole run; uploads the pattern's deterministic data
-  once per pattern/backend combination via `tenferro_gpu::upload_tensor`,
-  runs the correctness gate, then times the steady-state op with
+  `CudaBackend` for the whole run; generates the pattern's deterministic source
+  once per pattern and uploads it once, reusing that device tensor across every
+  participating arm. Each arm then runs the correctness gate on the device
+  (copying only the sampled ranges) and times the steady-state op with
   `tenferro_gpu`'s explicit `CudaRuntime::synchronize()` as the
   timing-region boundary (see [Timing Policy](#timing-policy)).
 - Python: `scripts/benchmark_gpu_permutation_python.py`, covering
@@ -410,8 +425,11 @@ Supervision checklist, restated as suite requirements (parallel to
 3. Pattern definitions live in one JSON file consumed by both suites (CPU
    and GPU) and both runners within this suite; no per-runner hardcoded
    shapes.
-4. Correctness is verified against a host-computed reference, downloaded
-   outside the timed region, before any timing.
+4. Correctness is verified exactly against the deterministic source -- by
+   default at a fixed corner + seeded sampled element set gathered on the
+   device with a small (a few MiB) readback, or elementwise against a full
+   host reference with `PERMUTATION_FULL_VERIFY=1` -- outside the timed
+   region, before any timing.
 5. Input data is deterministic (`deterministic_index_value`); no RNG state
    in the comparison.
 6. Allocation semantics are uniform across columns or explicitly footnoted

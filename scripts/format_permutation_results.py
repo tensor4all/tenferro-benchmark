@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 import sys
 from collections import defaultdict
@@ -33,6 +34,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import report_summary  # noqa: E402
 from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown  # noqa: E402
 from validate_benchmark_suite import (  # noqa: E402
     PERMUTATION_RESULT_SCHEMA,
@@ -232,6 +234,49 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def build_summary(
+    records: list[dict[str, Any]],
+    run_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Machine-readable sidecar for the same records the Markdown is built from."""
+    header = report_summary.metadata_from_run_metadata(run_metadata)
+    hardware = dict(header["hardware"])
+    if not hardware.get("cpu"):
+        try:
+            hardware["cpu"] = collect_cpu_info().get("Model", "unknown")
+        except Exception:  # pragma: no cover - best-effort host label
+            hardware["cpu"] = "unknown"
+    threads = sorted({int(record["threads"]) for record in records if record.get("threads") is not None})
+    if threads:
+        hardware["threads"] = threads
+    rows = []
+    for record in records:
+        status = str(record.get("status", "unknown"))
+        median = record.get("median_ms") if status == "ok" else None
+        p25, p75 = record.get("p25_ms"), record.get("p75_ms")
+        iqr = (float(p75) - float(p25)) if (median is not None and p25 is not None and p75 is not None) else None
+        rows.append(
+            report_summary.make_row(
+                record.get("pattern_id"),
+                record["backend"],
+                median,
+                status=status,
+                iqr=iqr,
+                group=f"Threads: {record.get('threads', 'unknown')} / {record.get('label', '')}",
+                verified=record.get("correctness") == "passed",
+            )
+        )
+    return report_summary.build_document(
+        rows,
+        target_profile=header["target_profile"],
+        suite_id=header["suite_id"] or "cpu/permutation",
+        timestamp=header["timestamp"],
+        tenferro_commit=header["tenferro_commit"],
+        hardware=hardware,
+        unit="ms",
+    )
+
+
 def main() -> None:
     args = parse_args()
     records: list[dict[str, Any]] = []
@@ -258,12 +303,17 @@ def main() -> None:
 
     run_metadata = load_run_metadata(args.run_metadata)
     markdown = format_markdown(records, run_metadata)
+    summary = build_summary(records, run_metadata)
 
     if args.output is not None:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(markdown)
+        report_summary.write_document(
+            report_summary.summary_path_for_report(args.output), summary
+        )
     else:
         sys.stdout.write(markdown)
+    report_summary.maybe_write(None if args.output else summary, env=os.environ)
 
 
 if __name__ == "__main__":

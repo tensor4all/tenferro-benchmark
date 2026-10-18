@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/sparse",
+  "timestamp": "2026-10-17T10:44:41.382612+00:00",
+  "tenferro_commit": "88daa885a5bb09e07f3031814bbb1a21f7a74e62",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "60145713b7ef"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "sparse_synthetic_4m_64m_spmv_f64",
+      "group": "spmv",
+      "backend": "cusparse",
+      "median": 2.295854,
+      "iqr": 0.00921100000000008,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sparse_synthetic_4m_64m_spmv_f64",
+      "group": "spmv",
+      "backend": "ginkgo",
+      "median": 2.584463,
+      "iqr": 0.015371000000000024,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sparse_synthetic_4m_64m_spmv_f64",
+      "group": "spmv",
+      "backend": "pytorch-cuda",
+      "median": 2.294644,
+      "iqr": 0.009831000000000145,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sparse_synthetic_64k_4m_spmm_f64_rhs1024",
+      "group": "spmm",
+      "backend": "cusparse",
+      "median": 14.992904,
+      "iqr": 0.08185600000000015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sparse_synthetic_64k_4m_spmm_f64_rhs1024",
+      "group": "spmm",
+      "backend": "ginkgo",
+      "median": 220.806409,
+      "iqr": 0.011223999999998568,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "sparse_synthetic_64k_4m_spmm_f64_rhs1024",
+      "group": "spmm",
+      "backend": "pytorch-cuda",
+      "median": 14.969133,
+      "iqr": 0.032272000000000745,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}

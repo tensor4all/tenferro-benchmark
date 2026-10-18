@@ -19,6 +19,38 @@ headroom, and runtime thread pools, which distorts medians and IQRs.
 Parallel shell/tool execution is fine for non-timing work such as file
 inspection or tests that do not measure benchmark performance.
 
+## Never Mix Compute-Bound and Latency Results
+
+Every case has a regime: `throughput` (compute- or bandwidth-bound) or
+`latency` (dominated by per-call launch/dispatch overhead). Declare it in the
+suite YAML when it differs from the suite default:
+
+```yaml
+defaults:
+  regime: throughput
+problems:
+  - id: elementwise_chain_f64_1k
+    regime: latency   # per-command overhead probe, not a bandwidth measurement
+```
+
+`latency` cases currently include `gpu/dense` `dense_batched_matmul_f64_b16_32`,
+`gpu/elementwise` `elementwise_chain_f64_1k`, all of `gpu/linalg_ad_latency`,
+and the `ns/op` microbenchmarks in `gpu/perf_issues`.
+
+Rules:
+
+- Never put a latency bar in a compute-bound chart, and never average or flag
+  across regimes. A suite summary covers one regime only.
+- Suite pages show a throughput section and a latency section separately.
+- Published pages separate them: compute-bound results on the CPU/GPU pages,
+  latency/overhead results on dedicated `*/latency/` pages.
+- A small workload is not evidence of slow compute. The latency pages measure
+  dispatch overhead, and their numbers must never be read as GPU/CPU
+  throughput.
+- When adding a case, state its regime explicitly when it is not the suite
+  default, and keep the label consistent with `intent` (per-command, bandwidth
+  or compute bound).
+
 ## Mandatory Timing Boundary: Setup Is Untimed
 
 All standard operation benchmarks must measure steady-state operation execution.
@@ -124,6 +156,7 @@ Expected latest report paths:
 - `result/nvidia-gpu/gpu/einsum.md`
 - `result/nvidia-gpu/gpu/elementwise.md`
 - `result/nvidia-gpu/gpu/sparse.md`
+- `result/nvidia-gpu/gpu/tensornetwork.md`
 - `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`
 - `result/nvidia-gpu/gpu/linalg_ad_latency.md`
 - `result/nvidia-gpu/gpu/permutation.md`
@@ -365,6 +398,14 @@ sequential: one devcontainer benchmark command at a time, with no concurrent
 
 Use the CUDA devcontainer for NVIDIA GPU measurements.
 
+The CUDA devcontainer mounts a container-only named volume over
+`<workspace>/.venv`, so the host and container Python environments are separate.
+A host `uv run`/`uv sync` cannot rewrite the container's CUDA PyTorch/JAX wheels
+or interpreter. Run Python inside the container for GPU work; use host `python3`
+only for pure-Python checks that do not import `torch`. The CPU devcontainers
+deliberately keep a resettable bind-mounted `.venv` instead, because their
+collection scripts delete and recreate it.
+
 Collect `nvidia-gpu` reports on the NVIDIA A100 80GB PCIe host (the standard
 GPU benchmark hardware since 2026-10-17); do not mix in results from other GPU
 models. That host has a single GPU (physical GPU 0): verification-only lanes
@@ -385,6 +426,15 @@ devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.js
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
 ```
+
+An unfiltered `BENCH_COVERAGE=full` run also writes the quick-profile routine
+coverage and control reports (`routine_coverage.md`, `routine_controls.md`)
+from the same records restricted to the quick manifest selection; the
+full-profile reports are the `routine_full_*.md` variants. The quick
+`routine_workflow.md` wall-time observation is not derived from a full run
+(its clocks would be the full campaign's), so a full run never overwrites it.
+The diagnostic `jax-cuda-eager` tensor-network path is opt-in via
+`GPU_BENCH_BACKENDS=jax-cuda-eager` (see `docs/gpu-routine-coverage.md`).
 
 For the GPU linalg JVP/VJP report (CPU `linalg_jvp_vjp` parity on CUDA):
 
@@ -455,7 +505,11 @@ result/nvidia-gpu/gpu/permutation.md
 
 This is a standalone entry point, like `scripts/run_permutation.sh` is for
 `cpu/permutation`: it is not wired into `scripts/run_gpu_suite.sh`. Run it
-sequentially; do not overlap it with other GPU benchmark processes.
+sequentially; do not overlap it with other GPU benchmark processes. The
+correctness gate defaults to exact sampled verification (per-axis corners plus
+roughly 1M seeded output elements, gathered on device with a small readback);
+set `PERMUTATION_FULL_VERIFY=1` to restore the full host
+reference. The mode is recorded in `run.yaml` and the report.
 
 If vendor libraries are needed:
 
@@ -485,6 +539,7 @@ Run these after changing benchmark scripts:
 ```bash
 uv run python scripts/validate_benchmark_suite.py benchmarks/cpu/einsum.yaml
 uv run python scripts/validate_benchmark_suite.py benchmarks/gpu/dense.yaml benchmarks/gpu/einsum.yaml benchmarks/gpu/sparse.yaml benchmarks/gpu/linalg_jvp_vjp.yaml
+uv run python -m unittest tests.test_generate_dashboard
 bash tests/test_suite_result_layout.sh
 bash tests/test_run_all_docs_outputs.sh
 bash tests/test_cpu_ops_linalg_ad.sh

@@ -75,6 +75,27 @@ class RoutineControlsTest(unittest.TestCase):
             self.assertTrue(result["provenance_mismatch"])
             self.assertFalse(result["complete"])
 
+    def test_restricted_accounting_ignores_full_only_controls(self):
+        selection = dict(manifest_version=1, coverage="quick", effort="scan",
+                         timing=["operation"], state=["counter"], unselected=["extra"])
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "samples.jsonl"
+            (path.parent / "run.yaml").write_text(json.dumps(dict(
+                tenferro_rs=dict(commit="provider", features=["cuda"]),
+                harness=dict(commit="harness"), cuda=dict(device_uuid="GPU-test"))))
+            rows = [
+                dict(case_id="operation", correctness_status="passed",
+                     samples=[dict(elapsed_ns=1000, iterations=10)]),
+                dict(case_id="counter", correctness_status="passed", samples=[]),
+                dict(case_id="extra", correctness_status="passed",
+                     samples=[dict(elapsed_ns=1000, iterations=10)]),
+            ]
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+            self.assertEqual(controls.account(selection, [path])["unexpected"], ["extra"])
+            restricted = controls.account(selection, [path], restrict=True)
+            self.assertEqual(restricted["unexpected"], [])
+            self.assertTrue(restricted["complete"])
+
 
 if __name__ == "__main__":
     unittest.main()

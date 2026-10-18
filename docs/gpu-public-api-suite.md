@@ -87,8 +87,9 @@ missing rows, duplicates and invalid samples without replacing the latest report
   FFT uses `FftExecutor` so its plans survive across samples. Eager uses one
   borrowed `EagerSession` with inactive AD recording. Input wrapping and uploads
   happen before sampling. Compiled tenferro trace is not silently called direct:
-  `Runtime::run_prepared` does not expose a borrowed-session execution route and
-  its per-call session setup cannot satisfy this suite's timing contract.
+  the public API suite compares immediate per-op calls, while trace executes a
+  prepared graph in one caller-held session (`Runtime::run_prepared_in`), and
+  that graph/session setup is not part of this suite's per-operation contract.
 * PyTorch eager, JAX eager and compiled JAX are distinct backend names. JAX
   compilation occurs outside timing. JAX enables x64 and `highest` matmul
   precision; PyTorch disables TF32. Outputs must remain on the selected GPU.
@@ -236,10 +237,10 @@ are checked against dense NumPy contractions, and prepared JAX tree kernels are
 tested on nonconstant inputs.
 
 Tenferro eager sampling reuses one entered session for initialization, calibration
-and samples, with inactive AD recording. Standard tenferro trace rows are
-unsupported because `Runtime::run_prepared` still enters sessions during execution
-and exposes no caller-borrowed session route. Trace public-call latency belongs
-in separately named diagnostic suites, including the work in issue #107.
+and samples, with inactive AD recording. Standard tenferro trace rows are measured
+by `benchmark_gpu_rust` with `Runtime::run_prepared_in` in one caller-held CUDA
+session. Trace public-call latency belongs in separately named diagnostic suites,
+including the work in issue #107.
 
 ## Checks
 

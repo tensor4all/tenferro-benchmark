@@ -46,6 +46,16 @@ EXTRA=()
 "$PYTHON" scripts/gpu_routine_controls.py --output "$RUN_DIR" --records "${RECORDS[@]}" "${EXTRA[@]}"
 if [[ "$VERIFY_ONLY" != 1 && "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     mkdir -p "$PROJECT_DIR/result/nvidia-gpu/gpu"
-    cp "$RUN_DIR/report.md" "$PROJECT_DIR/result/nvidia-gpu/gpu/routine_controls.md"
+    if [[ "$COVERAGE" == full ]]; then
+        # A full run also regenerates the quick-profile control report from the
+        # same records, because quick controls are a subset of full controls.
+        cp "$RUN_DIR/report.md" "$PROJECT_DIR/result/nvidia-gpu/gpu/routine_full_controls.md"
+        QUICK_RUN_DIR="$PROJECT_DIR/data/$ROOT_KIND/nvidia-gpu/gpu/routine_controls_quick/$STAMP"
+        "$PYTHON" scripts/gpu_routine_controls.py --coverage quick --effort "$EFFORT" --output "$QUICK_RUN_DIR"
+        "$PYTHON" scripts/gpu_routine_controls.py --output "$QUICK_RUN_DIR" --records "${RECORDS[@]}" --restrict
+        cp "$QUICK_RUN_DIR/report.md" "$PROJECT_DIR/result/nvidia-gpu/gpu/routine_controls.md"
+    else
+        cp "$RUN_DIR/report.md" "$PROJECT_DIR/result/nvidia-gpu/gpu/routine_controls.md"
+    fi
 fi
 echo "Routine controls: $RUN_DIR/report.md"

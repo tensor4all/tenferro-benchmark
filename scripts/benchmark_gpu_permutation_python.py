@@ -31,6 +31,11 @@ Environment variables:
 - `PATTERN_ID`: run a single pattern id instead of the full suite.
 - `BENCH_RUNS` / `BENCH_WARMUPS`: override the size-scaled iteration and
   warmup counts for every participant.
+- `PERMUTATION_FULL_VERIFY`: when set to `1`, fall back to the legacy full
+  host reference plus elementwise compare. The default (`sampled`) checks a
+  deterministic set of corners plus 1M seeded positions, gathered on the
+  device so only those values are downloaded, and never materializes the
+  transposed reference.
 - `BENCH_OUTPUT`: path to write machine-readable JSON Lines results. When
   unset, only the human-readable table is printed to stdout.
 - `GPU_BENCH_DEVICE`: CUDA device ordinal (default `0`).
@@ -54,6 +59,11 @@ PATTERN_PATH = PROJECT_DIR / "data" / "instances" / "gpu_permutation_patterns.js
 SUITE_ID = "gpu/permutation"
 
 ALL_BACKENDS = ("pytorch-cuda", "jax-cuda", "memcpy-d2d")
+
+# Fixed seed/count for the sampled correctness gate; kept byte-identical to
+# src/bin/benchmark_gpu_permutation.rs so both runners check the same positions.
+SAMPLE_SEED = 0x9E37_79B9_7F4A_7C15
+DEFAULT_SAMPLE_POSITIONS = 1_000_000
 
 
 # ---------------------------------------------------------------------------
@@ -90,25 +100,67 @@ def deterministic_data(total: int) -> np.ndarray:
     return (np.arange(total, dtype=np.float64) + 1.0)
 
 
-def compute_reference(pattern: dict[str, Any]) -> np.ndarray:
-    """Host-computed reference: logical `out_shape` array, dtype float64.
+def compute_reference(pattern: dict[str, Any], data: np.ndarray) -> np.ndarray:
+    """Host-computed full reference: logical `out_shape` array, dtype float64.
 
     Only the logical values (not physical byte layout) are compared against
     every backend's output, so this uses `numpy.lib.stride_tricks.as_strided`
     over the deterministic flat buffer for an exact, fast reference -- the
     same source-stride semantics as
-    `src/bin/benchmark_gpu_permutation.rs::naive_strided_copy`.
+    `src/bin/benchmark_gpu_permutation.rs::naive_strided_copy`. The caller
+    passes the already-generated flat source buffer so it is not regenerated.
     """
     shape = list(pattern["shape"])
     perm = list(pattern["perm"])
-    total = 1
-    for d in shape:
-        total *= d
-    data = deterministic_data(total)
     src_strides = layout_strides(shape, pattern["src_layout"])
     byte_strides = tuple(s * data.itemsize for s in src_strides)
     src_view = np.lib.stride_tricks.as_strided(data, shape=tuple(shape), strides=byte_strides)
     return np.transpose(src_view, axes=perm).astype(np.float64, copy=True)
+
+
+def sample_coordinates(out_shape: list[int]) -> np.ndarray:
+    """Deterministic corner coordinates plus up to 1M seeded random positions.
+
+    Returns an ``(n_positions, rank)`` int64 array. Uses the same sampled-gate
+    scheme as the Rust runner (a fixed corner set plus seeded elements): each
+    backend gathers these positions on the device and downloads only those
+    values. The exact position set is not required to match the Rust block
+    ranges, only the exact-compare semantics.
+    """
+    rank = len(out_shape)
+    total = 1
+    for d in out_shape:
+        total *= d
+    count = min(DEFAULT_SAMPLE_POSITIONS, total)
+
+    corners = [[0] * rank]
+    corners.append([max(d - 1, 0) for d in out_shape])
+    for axis in range(rank):
+        corner = [0] * rank
+        corner[axis] = max(out_shape[axis] - 1, 0)
+        corners.append(corner)
+        corner = [max(d - 1, 0) for d in out_shape]
+        corner[axis] = 0
+        corners.append(corner)
+    corner_array = np.asarray(corners, dtype=np.int64)
+
+    if count == 0:
+        return corner_array
+    # Draw k (0-indexed) uses state (k + 1) * SAMPLE_SEED, matching the scalar
+    # Rust splitmix64 stream exactly. Vectorized so rank-24 patterns stay cheap.
+    draw_index = np.arange(count * rank, dtype=np.uint64)
+    state = (draw_index + np.uint64(1)) * np.uint64(SAMPLE_SEED)
+    z = state
+    z = (z ^ (z >> np.uint64(30))) * np.uint64(0xBF58_476D_1CE4_E5B9)
+    z = (z ^ (z >> np.uint64(27))) * np.uint64(0x94D0_49BB_1331_11EB)
+    z = z ^ (z >> np.uint64(31))
+    extents = np.asarray(out_shape, dtype=np.uint64)
+    random_coords = (z.reshape(count, rank) % extents).astype(np.int64)
+    return np.vstack([corner_array, random_coords])
+
+
+def full_verify_enabled() -> bool:
+    return os.environ.get("PERMUTATION_FULL_VERIFY") == "1"
 
 
 # ---------------------------------------------------------------------------
@@ -228,11 +280,107 @@ def verify_output(actual: np.ndarray, reference: np.ndarray) -> str | None:
     return None
 
 
+def verify_sampled_values(
+    values: np.ndarray,
+    source_data: np.ndarray,
+    out_shape: list[int],
+    src_strides: list[int],
+    perm: list[int],
+    positions: np.ndarray,
+) -> str | None:
+    """Exact compare of already-gathered sampled values (no full reference).
+
+    Every backend gathers the sampled positions on the device and downloads only
+    those K values; this compares them against the value recomputed from the
+    source index mapping (`out[i] = src[i_perm]`). A wrong permutation therefore
+    fails even though the full host reference transpose is skipped.
+    """
+    values = np.asarray(values, dtype=np.float64).reshape(-1)
+    coords = np.asarray(positions, dtype=np.int64)
+    out_axis_strides = np.asarray(
+        [src_strides[perm[axis]] for axis in range(len(perm))], dtype=np.int64
+    )
+    src_offsets = coords @ out_axis_strides
+    expected = source_data[src_offsets]
+    if values.shape != expected.shape:
+        return f"sampled shape mismatch {values.shape} != {expected.shape}"
+    mismatches = np.nonzero(values != expected)[0]
+    if mismatches.size:
+        index = int(mismatches[0])
+        coord = tuple(int(value) for value in coords[index])
+        return f"mismatch at output coordinate {coord}: {values[index]} != {expected[index]}"
+    return None
+
+
+def verify_sampled(
+    actual: np.ndarray,
+    source_data: np.ndarray,
+    out_shape: list[int],
+    src_strides: list[int],
+    perm: list[int],
+    positions: np.ndarray,
+) -> str | None:
+    """Sampled gate over a full host output array (gathers in numpy)."""
+    actual = np.asarray(actual)
+    if tuple(actual.shape) != tuple(out_shape):
+        return f"shape mismatch {tuple(actual.shape)} != {tuple(out_shape)}"
+    coords = np.asarray(positions, dtype=np.int64)
+    values = actual[tuple(coords.T)]
+    return verify_sampled_values(values, source_data, out_shape, src_strides, perm, positions)
+
+
+# ---------------------------------------------------------------------------
+# Device-side sampled gather helpers
+#
+# In sampled mode each backend gathers the prepared positions on the device and
+# downloads only those K values (KBs-MBs) rather than the full output, then the
+# shared `verify_sampled_values` compares them exactly. In full mode the whole
+# output is downloaded and compared against the full host reference.
+# ---------------------------------------------------------------------------
+
+def torch_check_output(view, verify_plan: dict, device) -> str | None:
+    import torch
+    if verify_plan["positions"] is None:
+        return verify_plan["verify_full"](view.detach().to("cpu", torch.float64).numpy())
+    positions = verify_plan["positions"]
+    indices = tuple(
+        torch.as_tensor(positions[:, axis], dtype=torch.int64, device=device)
+        for axis in range(positions.shape[1])
+    )
+    values = view[indices].detach().to("cpu", torch.float64).numpy()
+    return verify_plan["verify_sampled"](values)
+
+
+def torch_check_flat_identity(flat, verify_plan: dict, shape: list[int], device) -> str | None:
+    import torch
+    if verify_plan["positions"] is None:
+        actual = flat.detach().to("cpu", torch.float64).numpy().reshape(shape, order="F")
+        return verify_plan["verify_full"](actual)
+    positions = verify_plan["positions"]
+    offsets = positions @ np.asarray(col_major_strides(shape), dtype=np.int64)
+    indices = torch.as_tensor(offsets, dtype=torch.int64, device=device)
+    values = flat[indices].detach().to("cpu", torch.float64).numpy()
+    return verify_plan["verify_sampled"](values)
+
+
+def jax_check_output(out, verify_plan: dict, device) -> str | None:
+    import jax.numpy as jnp
+    if verify_plan["positions"] is None:
+        return verify_plan["verify_full"](np.asarray(out))
+    positions = verify_plan["positions"]
+    indices = tuple(
+        jnp.asarray(positions[:, axis], dtype=jnp.int64, device=device)
+        for axis in range(positions.shape[1])
+    )
+    values = np.asarray(out[indices])
+    return verify_plan["verify_sampled"](values)
+
+
 # ---------------------------------------------------------------------------
 # PyTorch backend
 # ---------------------------------------------------------------------------
 
-def run_pytorch(pattern, reference, warmup, iters, bytes_rw, device_name, device_ordinal):
+def run_pytorch(pattern, source_data, verify_plan, warmup, iters, bytes_rw, device_name, device_ordinal):
     import torch
 
     name = "pytorch-cuda"
@@ -243,7 +391,7 @@ def run_pytorch(pattern, reference, warmup, iters, bytes_rw, device_name, device
     total = int(np.prod(shape)) if shape else 1
 
     src_strides = layout_strides(shape, pattern["src_layout"])
-    flat = torch.from_numpy(deterministic_data(total)).to(device)
+    flat = torch.from_numpy(source_data).to(device)
     src_view = torch.as_strided(flat, size=shape, stride=src_strides)
     src_permuted = src_view.permute(*perm)
 
@@ -258,8 +406,7 @@ def run_pytorch(pattern, reference, warmup, iters, bytes_rw, device_name, device
         torch.cuda.synchronize(device)
 
     op()  # correctness run (warmup #1), not timed
-    actual = dst_view.detach().to("cpu", torch.float64).numpy()
-    err = verify_output(actual, reference)
+    err = torch_check_output(dst_view, verify_plan, device)
     if err is not None:
         return finish_skip(
             base_record(pattern, name, total, bytes_rw, device_name, "verification_failed", "failed", False, err)
@@ -276,7 +423,7 @@ def run_pytorch(pattern, reference, warmup, iters, bytes_rw, device_name, device
 # JAX backend
 # ---------------------------------------------------------------------------
 
-def run_jax(pattern, reference, warmup, iters, bytes_rw, device_name, device_ordinal):
+def run_jax(pattern, source_data, verify_plan, warmup, iters, bytes_rw, device_name, device_ordinal):
     import jax
     import jax.numpy as jnp
 
@@ -304,7 +451,7 @@ def run_jax(pattern, reference, warmup, iters, bytes_rw, device_name, device_ord
         )
     device = cuda_devices[device_ordinal] if device_ordinal < len(cuda_devices) else cuda_devices[0]
 
-    data = deterministic_data(total)
+    data = source_data
     src_np = data.reshape(shape, order="F")
     src_jax = jax.device_put(jnp.asarray(src_np), device)
 
@@ -320,8 +467,7 @@ def run_jax(pattern, reference, warmup, iters, bytes_rw, device_name, device_ord
         return out
 
     out = op()  # correctness run (warmup #1), not timed
-    actual = np.asarray(out)
-    err = verify_output(actual, reference)
+    err = jax_check_output(out, verify_plan, device)
     if err is not None:
         return finish_skip(
             base_record(pattern, name, total, bytes_rw, device_name, "verification_failed", "failed", True, err)
@@ -344,7 +490,7 @@ def run_jax(pattern, reference, warmup, iters, bytes_rw, device_name, device_ord
 # memcpy-d2d backend (torch, contiguous baseline only)
 # ---------------------------------------------------------------------------
 
-def run_memcpy_d2d(pattern, reference, warmup, iters, bytes_rw, device_name, device_ordinal):
+def run_memcpy_d2d(pattern, source_data, verify_plan, warmup, iters, bytes_rw, device_name, device_ordinal):
     import torch
 
     name = "memcpy-d2d"
@@ -362,7 +508,7 @@ def run_memcpy_d2d(pattern, reference, warmup, iters, bytes_rw, device_name, dev
             )
         )
 
-    src = torch.from_numpy(deterministic_data(total)).to(device)
+    src = torch.from_numpy(source_data).to(device)
     dst = torch.empty_like(src)
 
     def op():
@@ -370,8 +516,7 @@ def run_memcpy_d2d(pattern, reference, warmup, iters, bytes_rw, device_name, dev
         torch.cuda.synchronize(device)
 
     op()  # correctness run (warmup #1), not timed
-    actual = dst.detach().to("cpu", torch.float64).numpy().reshape(shape, order="F")
-    err = verify_output(actual, reference)
+    err = torch_check_flat_identity(dst, verify_plan, shape, device)
     if err is not None:
         return finish_skip(
             base_record(pattern, name, total, bytes_rw, device_name, "verification_failed", "failed", False, err)
@@ -418,12 +563,36 @@ def torch_cuda_available() -> bool:
 
 
 def run_pattern(pattern, backends, device_name, device_ordinal, records: list[dict[str, Any]]) -> None:
-    reference = compute_reference(pattern)
-    total = int(reference.size)
+    shape = list(pattern["shape"])
+    total = int(np.prod(shape)) if shape else 1
+    # Generate the deterministic source buffer exactly once per pattern/process;
+    # every backend reuses it instead of regenerating the multi-GiB host array.
+    source_data = deterministic_data(total)
+    if full_verify_enabled():
+        reference = compute_reference(pattern, source_data)
+        verify_plan = {
+            "positions": None,
+            "verify_full": lambda actual: verify_output(actual, reference),  # noqa: E731
+            "verify_sampled": None,
+        }
+        mode = "full"
+    else:
+        out_shape = [shape[p] for p in pattern["perm"]]
+        src_strides = layout_strides(shape, pattern["src_layout"])
+        positions = sample_coordinates(out_shape)
+        verify_plan = {
+            "positions": positions,
+            "verify_full": None,
+            "verify_sampled": lambda values: verify_sampled_values(  # noqa: E731
+                values, source_data, out_shape, src_strides, pattern["perm"], positions
+            ),
+        }
+        mode = "sampled"
     bytes_rw = total * 8 * 2
     warmup, iters = timing_counts_env(total)
 
     print(f"=== {pattern['label']} ===\n  id={pattern['id']} elems={total} bytes(r+w)={bytes_rw}")
+    print(f"  verification_mode={mode}")
 
     participants = set(pattern.get("participants_gpu", []))
     for backend in backends:
@@ -431,11 +600,14 @@ def run_pattern(pattern, backends, device_name, device_ordinal, records: list[di
             continue
         runner = _RUNNERS[backend]
         try:
-            record = runner(pattern, reference, warmup, iters, bytes_rw, device_name, device_ordinal)
+            record = runner(
+                pattern, source_data, verify_plan, warmup, iters, bytes_rw, device_name, device_ordinal
+            )
         except Exception as exc:  # noqa: BLE001 - convert unexpected runtime errors into a skip record
             record = finish_skip(
                 base_record(pattern, backend, total, bytes_rw, device_name, "runtime_failed", "skipped", False, str(exc)[:500])
             )
+        record["verification_mode"] = mode
         records.append(record)
     print()
 

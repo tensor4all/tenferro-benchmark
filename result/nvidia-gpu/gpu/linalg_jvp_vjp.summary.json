@@ -1,0 +1,554 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/linalg_jvp_vjp",
+  "timestamp": "2026-10-17T10:53:37.162246+00:00",
+  "tenferro_commit": "88daa885a5bb09e07f3031814bbb1a21f7a74e62",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "60145713b7ef"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_256",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "jax-cuda",
+      "median": 3.103077,
+      "iqr": 0.17368899999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_256",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "pytorch-cuda",
+      "median": 3.031205,
+      "iqr": 0.012731000000000048,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_256",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 3.0841990000000004,
+      "iqr": 0.019449999999999967,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_512",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "jax-cuda",
+      "median": 6.411413,
+      "iqr": 0.03267099999999967,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_512",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "pytorch-cuda",
+      "median": 6.375005,
+      "iqr": 0.01888000000000023,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_jvp_f64_512",
+      "group": "grad_sum_eigh_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 6.418611,
+      "iqr": 0.048202999999999996,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_256",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "jax-cuda",
+      "median": 3.022143,
+      "iqr": 0.02520200000000017,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_256",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "pytorch-cuda",
+      "median": 3.215404,
+      "iqr": 0.01978100000000005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_256",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 3.135102,
+      "iqr": 0.08219399999999988,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_512",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "jax-cuda",
+      "median": 6.414063,
+      "iqr": 0.03942099999999993,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_512",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "pytorch-cuda",
+      "median": 6.539523,
+      "iqr": 0.01962099999999989,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_eigh_vjp_f64_512",
+      "group": "grad_sum_eigh_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 6.415252,
+      "iqr": 0.05588400000000071,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_256",
+      "group": "grad_sum_lu_jvp",
+      "backend": "jax-cuda",
+      "median": 0.812251,
+      "iqr": 0.0027125000000000066,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_256",
+      "group": "grad_sum_lu_jvp",
+      "backend": "pytorch-cuda",
+      "median": 1.102521,
+      "iqr": 0.003310499999999994,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_256",
+      "group": "grad_sum_lu_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 1.201457,
+      "iqr": 0.014500500000000027,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_512",
+      "group": "grad_sum_lu_jvp",
+      "backend": "jax-cuda",
+      "median": 2.006991,
+      "iqr": 0.013869999999999827,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_512",
+      "group": "grad_sum_lu_jvp",
+      "backend": "pytorch-cuda",
+      "median": 2.417994,
+      "iqr": 0.022741000000000344,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_jvp_f64_512",
+      "group": "grad_sum_lu_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 2.082777,
+      "iqr": 0.09122500000000011,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_256",
+      "group": "grad_sum_lu_vjp",
+      "backend": "jax-cuda",
+      "median": 0.8199465,
+      "iqr": 0.002690250000000005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_256",
+      "group": "grad_sum_lu_vjp",
+      "backend": "pytorch-cuda",
+      "median": 0.868012,
+      "iqr": 0.0446375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_256",
+      "group": "grad_sum_lu_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 1.140109,
+      "iqr": 0.010335499999999831,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_512",
+      "group": "grad_sum_lu_vjp",
+      "backend": "jax-cuda",
+      "median": 2.049863,
+      "iqr": 0.010380000000000056,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_512",
+      "group": "grad_sum_lu_vjp",
+      "backend": "pytorch-cuda",
+      "median": 1.890191,
+      "iqr": 0.006975500000000023,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_lu_vjp_f64_512",
+      "group": "grad_sum_lu_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 2.409174,
+      "iqr": 0.06927299999999992,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
+      "group": "grad_sum_qr_jvp",
+      "backend": "jax-cuda",
+      "median": 1.4167715,
+      "iqr": 0.0317615,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
+      "group": "grad_sum_qr_jvp",
+      "backend": "pytorch-cuda",
+      "median": 1.447714,
+      "iqr": 0.014971000000000068,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
+      "group": "grad_sum_qr_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 2.046795,
+      "iqr": 0.10502600000000006,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_512",
+      "group": "grad_sum_qr_jvp",
+      "backend": "jax-cuda",
+      "median": 3.304437,
+      "iqr": 0.0615429999999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_512",
+      "group": "grad_sum_qr_jvp",
+      "backend": "pytorch-cuda",
+      "median": 3.247415,
+      "iqr": 0.016800999999999622,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_512",
+      "group": "grad_sum_qr_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 3.5945259999999997,
+      "iqr": 0.004730000000000345,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
+      "group": "grad_sum_qr_vjp",
+      "backend": "jax-cuda",
+      "median": 1.4342675,
+      "iqr": 0.04130199999999995,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
+      "group": "grad_sum_qr_vjp",
+      "backend": "pytorch-cuda",
+      "median": 1.411907,
+      "iqr": 0.017371000000000025,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
+      "group": "grad_sum_qr_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 2.070837,
+      "iqr": 0.028260999999999648,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_512",
+      "group": "grad_sum_qr_vjp",
+      "backend": "jax-cuda",
+      "median": 3.450704,
+      "iqr": 0.19491900000000006,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_512",
+      "group": "grad_sum_qr_vjp",
+      "backend": "pytorch-cuda",
+      "median": 3.216423,
+      "iqr": 0.009560000000000013,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_512",
+      "group": "grad_sum_qr_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 3.67995,
+      "iqr": 0.024451,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_256",
+      "group": "grad_sum_solve_jvp",
+      "backend": "jax-cuda",
+      "median": 0.724339,
+      "iqr": 0.010833250000000016,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_256",
+      "group": "grad_sum_solve_jvp",
+      "backend": "pytorch-cuda",
+      "median": 0.9240495,
+      "iqr": 0.004512750000000065,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_256",
+      "group": "grad_sum_solve_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 1.4093574999999998,
+      "iqr": 0.2137509999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_512",
+      "group": "grad_sum_solve_jvp",
+      "backend": "jax-cuda",
+      "median": 1.6946155,
+      "iqr": 0.027216499999999977,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_512",
+      "group": "grad_sum_solve_jvp",
+      "backend": "pytorch-cuda",
+      "median": 1.823423,
+      "iqr": 0.023506500000000097,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_jvp_f64_512",
+      "group": "grad_sum_solve_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 2.356591,
+      "iqr": 0.09457499999999985,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_256",
+      "group": "grad_sum_solve_vjp",
+      "backend": "jax-cuda",
+      "median": 0.7351895,
+      "iqr": 0.0032274999999999388,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_256",
+      "group": "grad_sum_solve_vjp",
+      "backend": "pytorch-cuda",
+      "median": 1.731493,
+      "iqr": 0.010080500000000159,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_256",
+      "group": "grad_sum_solve_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 1.317918,
+      "iqr": 0.017125999999999975,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_512",
+      "group": "grad_sum_solve_vjp",
+      "backend": "jax-cuda",
+      "median": 1.7378425,
+      "iqr": 0.032141500000000045,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_512",
+      "group": "grad_sum_solve_vjp",
+      "backend": "pytorch-cuda",
+      "median": 3.471337,
+      "iqr": 0.06066399999999961,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_solve_vjp_f64_512",
+      "group": "grad_sum_solve_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 2.3364499999999997,
+      "iqr": 0.012271000000000587,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_256",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "jax-cuda",
+      "median": 11.732705,
+      "iqr": 0.2375620000000005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_256",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "pytorch-cuda",
+      "median": 12.463427,
+      "iqr": 0.024301999999998714,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_256",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 11.883445,
+      "iqr": 0.07485300000000095,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_512",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "jax-cuda",
+      "median": 32.512201,
+      "iqr": 0.03432200000000307,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_512",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "pytorch-cuda",
+      "median": 33.428286,
+      "iqr": 0.06630400000000236,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_jvp_f64_512",
+      "group": "grad_sum_svd_s_jvp",
+      "backend": "tenferro-cuda-trace",
+      "median": 32.53155,
+      "iqr": 0.033251000000007025,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_256",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "jax-cuda",
+      "median": 11.699932,
+      "iqr": 0.043692000000000064,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_256",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "pytorch-cuda",
+      "median": 12.518739,
+      "iqr": 0.015680999999998946,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_256",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 11.853633,
+      "iqr": 0.04375199999999779,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_512",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "jax-cuda",
+      "median": 32.513559,
+      "iqr": 0.12426599999999866,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_512",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "pytorch-cuda",
+      "median": 33.465387,
+      "iqr": 0.15968800000000272,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_svd_s_vjp_f64_512",
+      "group": "grad_sum_svd_s_vjp",
+      "backend": "tenferro-cuda-trace",
+      "median": 32.551681,
+      "iqr": 0.01167100000000687,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}

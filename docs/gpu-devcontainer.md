@@ -25,6 +25,40 @@ The container also sets `UV_NO_SYNC=1`: `postCreateCommand` installs the CUDA
 variants of PyTorch and JAX after the locked base environment, and later
 benchmark-time `uv run` calls must not replace them with the default wheels.
 
+## Host and container Python environments are separate
+
+The CUDA devcontainer mounts a container-only named volume over
+`<workspace>/.venv`:
+
+```json
+"source=tenferro-benchmark-cuda-venv-${devcontainerId},target=${containerWorkspaceFolder}/.venv,type=volume"
+```
+
+`postCreateCommand` creates the virtualenv in that volume, `chown`ing it to
+`vscode` first because a fresh Docker volume is root-owned. The host checkout's
+`.venv` is a different directory, so a host `uv run`/`uv sync` can no longer
+rewrite the container's CUDA PyTorch/JAX wheels or Python interpreter. Run every
+Python command for GPU work inside the container; use host `python3` only for
+pure-Python checks that do not import `torch`.
+
+The CPU devcontainers do not use this volume: their collection scripts
+intentionally delete and recreate `.venv` (`reset_benchmark_python_venv`), which
+a volume mount point would prevent.
+
+## Torch extension JIT build locks
+
+`scripts/benchmark_gpu_python.py` JIT-compiles the CUTLASS and Ginkgo
+extensions through `torch.utils.cpp_extension.load_inline`, which serializes
+builds with a `FileBaton` lock at `<build dir>/lock`. A build killed by a
+signal or container restart leaves that lock behind and the next run would wait
+forever. Before loading, the runner calls `scripts/torch_extension_lock.py`:
+
+- a lock with no live compiler (`nvcc`/`ninja`/`cc1plus`/`cicc` whose command
+  line names the build directory) and older than 120 s is removed with one
+  stderr line naming the path and age;
+- a lock held by a live compiler is waited on for at most 30 min, then the run
+  fails with `ExtensionBuildLockError` instead of hanging.
+
 For an existing container created from an older image, install the same vendor
 libraries into its configured paths with:
 
@@ -90,12 +124,13 @@ The formatter rejects skipped verification, failed/debug rows, duplicate cells,
 missing selected cells and invalid sampling. Older AD reports containing only
 successful-execution checks are not numerically validated performance evidence.
 
-`Runtime::run_prepared` cannot borrow an entered session. Its standard large
-operation rows are timing-unsupported even if numerical execution passes.
-`gpu/linalg_ad_latency` explicitly measures repeated public calls including
-internal session entry, using `public_path_latency_including_internal_session_entry`.
-These small rows are latency diagnostics, not shared-session or GPU throughput
-comparisons.
+The standard operation rows run the prepared graph in one caller-held CUDA
+session (`Runtime::run_prepared_in`); each timed call includes the run's own
+stream-retirement barrier, so standard large-operation rows are timed without
+the public-path session entry. `gpu/linalg_ad_latency` separately measures
+repeated public calls including internal session entry, using
+`public_path_latency_including_internal_session_entry`. These small rows are
+latency diagnostics, not shared-session or GPU throughput comparisons.
 
 Check both suites on physical GPU1 without collecting operation timings or
 updating maintained reports:

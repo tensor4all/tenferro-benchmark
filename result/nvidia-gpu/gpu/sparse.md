@@ -2,11 +2,11 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/sparse`
-- Suite file: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116/gpu_sparse.yaml`
-- Timestamp: `2026-10-16T23:51:16.689453+00:00`
-- tenferro-rs commit: `2754c8c85dcc35c1b63cb7bbdd94ddfd7ea5746e`
+- Suite file: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261017_104441/gpu_sparse.yaml`
+- Timestamp: `2026-10-17T10:44:41.382612+00:00`
+- tenferro-rs commit: `88daa885a5bb09e07f3031814bbb1a21f7a74e62`
 - Coverage: `full`; effort: `standard`; manifest version: `1`
-- Selection and case accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261016_235116/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
+- Selection and case accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261017_104441/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
@@ -42,13 +42,13 @@ Non-`ok` cells show the structured backend status.
 
 | Problem | PyTorch CUDA | PyTorch CSR (cuSPARSE) | Ginkgo |
 |---|---:|---:|---:|
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | 14.935 | 15.005 | 220.827 |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | 14.969 | 14.993 | 220.806 |
 
 ## gpu/sparse / spmv / allocating output
 
 | Problem | PyTorch CUDA | PyTorch CSR (cuSPARSE) | Ginkgo |
 |---|---:|---:|---:|
-| sparse_synthetic_4m_64m_spmv_f64 | 2.300 | 2.294 | 2.577 |
+| sparse_synthetic_4m_64m_spmv_f64 | 2.295 | 2.296 | 2.584 |
 
 ## Sampling
 
@@ -56,12 +56,12 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| sparse_synthetic_4m_64m_spmv_f64 | pytorch-cuda | 1 | 2.31174, 2.29654, 2.29987, 2.30467, 2.29845, 2.30672, 2.28448 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | pytorch-cuda | 1 | 14.9187, 14.9175, 14.9348, 14.982, 14.93, 15.0187, 15.0382 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_4m_64m_spmv_f64 | cusparse | 1 | 2.29212, 2.29207, 2.29058, 2.29671, 2.29774, 2.29381, 2.29853 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | cusparse | 1 | 15.0041, 15.0189, 15.0299, 14.9998, 15.0048, 15.0048, 15.0009 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| sparse_synthetic_4m_64m_spmv_f64 | ginkgo | 1 | 2.57678, 2.58623, 2.57385, 3.31524, 2.5598, 2.58129, 2.57371 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
-| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | ginkgo | 1 | 220.857, 220.844, 220.824, 220.881, 220.827, 220.807, 220.803 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
+| sparse_synthetic_4m_64m_spmv_f64 | pytorch-cuda | 1 | 2.29429, 2.29464, 2.29588, 2.29982, 2.29102, 2.2999, 2.28999 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | pytorch-cuda | 1 | 14.951, 14.9691, 14.9683, 14.9672, 14.9712, 14.9833, 14.9987 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_4m_64m_spmv_f64 | cusparse | 1 | 2.29367, 2.29585, 2.29813, 2.30302, 2.28995, 2.29095, 2.29916 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | cusparse | 1 | 14.9158, 14.9671, 14.9926, 14.9968, 14.9977, 14.9977, 14.9929 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| sparse_synthetic_4m_64m_spmv_f64 | ginkgo | 1 | 2.59212, 2.58098, 2.58739, 2.58446, 2.58298, 2.59014, 2.57477 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
+| sparse_synthetic_64k_4m_spmm_f64_rhs1024 | ginkgo | 1 | 221.636, 220.804, 220.805, 220.803, 220.806, 220.807, 220.815 | inputs, layouts, native operators/workspaces, initialization and validation outside clocks; native float64; no dtype conversion in clocks |
 
 ## Output retention bounds
 

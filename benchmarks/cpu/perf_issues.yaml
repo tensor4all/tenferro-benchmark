@@ -9,6 +9,7 @@ description: 'One case family per open or resolved tenferro-rs performance issue
   Workloads are added when an issue is opened; perf-fix PRs report numbers from these cases. Steady-state
   rows and labelled diagnostics are reported separately. #1865 and #1863 live in cpu/einsum.'
 defaults:
+  regime: latency
   device:
     kind: cpu
     ordinal: 0
