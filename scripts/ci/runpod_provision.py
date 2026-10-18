@@ -47,8 +47,9 @@ from scripts.ci.runpod_client import (
     create_pod,
 )
 from scripts.ci.runpod_contract import configured_gpu_tiers
-from scripts.ci.runpod_pricing import candidate_plan
+from scripts.ci.runpod_pricing import candidate_plan, http_transport as pricing_http_transport
 from scripts.ci.runpod_http import (
+    Cooldown,
     delete_pod as http_delete_pod,
     request_once,
     retry_delay,
@@ -441,7 +442,8 @@ def _pod_api(api_url: str, api_key: str):
 
 
 def _pod_state_checker(graphql_url: str, api_key: str, *,
-                       monotonic=time.monotonic, transport=request_once):
+                       monotonic=time.monotonic, transport=request_once,
+                       cooldown: Cooldown | None = None):
     """One deadline-bounded observation; the provision loop owns all waiting."""
     query = (
         "query Pod($input: PodFilter!) { pod(input: $input) "
@@ -449,18 +451,18 @@ def _pod_state_checker(graphql_url: str, api_key: str, *,
     )
     failures = 0
     last_pod = None
-    not_before = 0.0
+    cooldown = cooldown if cooldown is not None else Cooldown()
 
     def check(pod_id: str, *, deadline=None) -> PodState:
-        nonlocal failures, last_pod, not_before
+        nonlocal failures, last_pod
         if last_pod != pod_id:
             failures = 0
             last_pod = pod_id
         remaining = 30.0 if deadline is None else deadline - monotonic()
         if remaining <= 0:
             return PodState(None, None)
-        if monotonic() < not_before:
-            return PodState(None, None, not_before - monotonic())
+        if monotonic() < cooldown.until:
+            return PodState(None, None, cooldown.until - monotonic())
         request = urllib.request.Request(
             graphql_url,
             data=json.dumps({"query": query, "variables": {"input": {"podId": pod_id}}}).encode(),
@@ -483,7 +485,7 @@ def _pod_state_checker(graphql_url: str, api_key: str, *,
                 or not pod.get("desiredStatus") or "runtime" not in pod):
             failures += 1
             delay = retry_delay(response.headers, failures, base=10.0)
-            not_before = monotonic() + delay
+            cooldown.until = monotonic() + delay
             print(f"Pod state unavailable (HTTP {response.status}); next poll after {delay:.1f}s")
             return PodState(None, None, delay)
         failures = 0
@@ -572,7 +574,11 @@ def main() -> int:
             if not any(selected_gpu in ids for _, ids in tiers):
                 raise PermanentRunPodError("GPU type is outside the reviewed allowlist")
             tiers = [("selected", (selected_gpu,))]
-        plan = candidate_plan(config, tiers)
+        graphql_url = str(config.get("graphql_url", "https://api.runpod.io/graphql"))
+        graphql_cooldown = Cooldown()
+        plan = candidate_plan(config, tiers, transport=pricing_http_transport(
+            graphql_url, cooldown=graphql_cooldown,
+        ))
         transport = _http_transport(str(config["api_url"]), api_key)
 
         def create(request: CreateRequest, jit_config: str) -> CreateResult:
@@ -603,8 +609,7 @@ def main() -> int:
 
         delete_pod = _pod_api(str(config["api_url"]), api_key)
         pod_status = _pod_state_checker(
-            str(config.get("graphql_url", "https://api.runpod.io/graphql")),
-            api_key,
+            graphql_url, api_key, cooldown=graphql_cooldown,
         )
         keep_failed_pods = (
             os.environ.get("PROVISION_KEEP_FAILED_PODS", "").lower() == "true"

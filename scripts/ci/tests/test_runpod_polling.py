@@ -3,11 +3,11 @@ import unittest
 from unittest import mock
 
 from scripts.ci.runpod_client import CreateResult, PermanentRunPodError
-from scripts.ci.runpod_http import Response
+from scripts.ci.runpod_http import Cooldown, Response
 from scripts.ci.runpod_provision import (
     PodState, ProvisionExhaustedError, _pod_state_checker, provision,
 )
-from scripts.ci.runpod_pricing import candidate_plan
+from scripts.ci.runpod_pricing import candidate_plan, http_transport as pricing_transport
 from scripts.ci.tests.test_runpod_http import Clock
 
 
@@ -161,6 +161,34 @@ class PollingTests(unittest.TestCase):
         with mock.patch('urllib.request.urlopen', return_value=response) as urlopen:
             self.assertEqual(_runner_minter('key', 'org', 4)('label'), 'fixture')
         self.assertEqual(urlopen.call_args.kwargs['timeout'], 30)
+
+    def test_pricing_retry_after_is_shared_with_first_pod_observation(self):
+        clock = Clock()
+        cooldown = Cooldown()
+        pricing_calls = []
+        pod_calls = []
+        def pricing_request(request, *, timeout):
+            pricing_calls.append(clock.now)
+            return Response(429, {'Retry-After': '120'}, b'')
+        def pod_request(request, *, timeout):
+            pod_calls.append(clock.now)
+            return live()
+        pricing = pricing_transport('https://example.test/graphql', cooldown=cooldown,
+                                    monotonic=clock.monotonic, transport=pricing_request)
+        self.assertEqual(candidate_plan({}, [('static', ['GPU'])], transport=pricing),
+                         [('static', ['GPU'])])
+        checker = _pod_state_checker('https://example.test/graphql', 'key',
+                                     cooldown=cooldown, monotonic=clock.monotonic,
+                                     transport=pod_request)
+        state = checker('pod-1', deadline=420)
+        self.assertEqual(state.retry_seconds, 120)
+        self.assertEqual(pod_calls, [])
+        # No other pricing query may bypass the endpoint cooldown either.
+        pricing(b'{}')
+        self.assertEqual(pricing_calls, [0])
+        clock.sleep(state.retry_seconds)
+        self.assertEqual(checker('pod-1', deadline=420), PodState('RUNNING', True))
+        self.assertEqual(pod_calls, [120])
 
     def test_pricing_is_one_query_then_static_fallback_without_retry_storm(self):
         calls = []

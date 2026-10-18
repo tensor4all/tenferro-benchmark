@@ -20,6 +20,12 @@ from pathlib import Path
 
 
 @dataclass
+class Cooldown:
+    """A process-local endpoint cooldown shared by pricing and pod observations."""
+    until: float = 0.0
+
+
+@dataclass
 class Response:
     status: int
     headers: dict[str, str]

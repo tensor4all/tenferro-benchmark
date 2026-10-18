@@ -112,7 +112,9 @@ budget; no new poll starts after that budget, including a long Retry-After.
 
 Pricing is one unauthenticated GraphQL query per provisioning invocation,
 with a 20-second request timeout and immediate static fallback on failure;
-there is no pricing retry loop to amplify 429s. The workflow concurrency group
+there is no pricing retry loop to amplify 429s. Pricing and pod observations
+share an endpoint cooldown within the provisioner, so a pricing Retry-After
+also delays the first pod-state query. The workflow concurrency group
 allows one active benchmark workflow in this repository. It does not coordinate
 with tenferro-rs or other clients sharing an account: normal GraphQL demand is
 approximately 6 requests/minute per active provisioner plus each invocation's

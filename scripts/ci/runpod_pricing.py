@@ -15,10 +15,13 @@ from __future__ import annotations
 
 import dataclasses
 import json
-import urllib.error
+import time
 import urllib.request
+
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
+
+from scripts.ci.runpod_http import Cooldown, request_once, retry_delay, retryable
 
 GRAPHQL_URL = "https://api.runpod.io/graphql"
 
@@ -154,10 +157,15 @@ def fetch_gpu_offers(
     )
 
 
-def http_transport(url: str = GRAPHQL_URL) -> Transport:
+def http_transport(url: str = GRAPHQL_URL, *, cooldown: Cooldown | None = None,
+                   monotonic=time.monotonic, transport=request_once) -> Transport:
     """Unauthenticated transport for the public pricing query."""
 
+    cooldown = cooldown if cooldown is not None else Cooldown()
+
     def send(payload: bytes) -> tuple[int, bytes]:
+        if monotonic() < cooldown.until:
+            return 429, b""
         request = urllib.request.Request(
             url,
             data=payload,
@@ -168,11 +176,10 @@ def http_transport(url: str = GRAPHQL_URL) -> Transport:
                 "User-Agent": "tenferro-ci-runpod-pricing/1",
             },
         )
-        try:
-            with urllib.request.urlopen(request, timeout=20.0) as response:
-                return response.status, response.read()
-        except urllib.error.HTTPError as error:
-            return error.code, error.read()
+        response = transport(request, timeout=20.0)
+        if retryable(response.status):
+            cooldown.until = monotonic() + retry_delay(response.headers, 1, base=10.0)
+        return response.status, response.body
 
     return send
 
