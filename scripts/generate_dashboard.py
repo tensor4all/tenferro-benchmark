@@ -344,7 +344,9 @@ def is_tenferro(row: dict[str, Any]) -> bool:
 
 def is_neutral_unsupported(row: dict[str, Any]) -> bool:
     """A tenferro row the harness explicitly did not measure by policy."""
-    return row.get("status") == "unsupported" and bool(row.get("reason"))
+    status = str(row.get("status", ""))
+    policy_skip = status in ("unsupported", "skipped") or status.startswith("unsupported:")
+    return policy_skip and bool(row.get("reason"))
 
 
 def is_tenferro_anomaly(row: dict[str, Any]) -> bool:
@@ -354,6 +356,8 @@ def is_tenferro_anomaly(row: dict[str, Any]) -> bool:
     status = row.get("status")
     if status == "ok":
         return row.get("verified") is False
+    if is_neutral_unsupported(row):
+        return False
     if status == "unsupported":
         return not bool(row.get("reason"))
     return True

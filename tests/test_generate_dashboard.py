@@ -46,6 +46,16 @@ def row(case, backend, median, status="ok", group="matmul", reason=None, iqr=Non
 
 
 class DashboardTests(unittest.TestCase):
+    def test_reasoned_legacy_cpu_policy_skips_are_neutral(self):
+        for status in ("skipped", "unsupported: no borrowed-session API"):
+            entry=row("policy", "tenferro-trace", None, status=status, reason="setup-inclusive API excluded")
+            with self.subTest(status=status):
+                self.assertTrue(dashboard.is_neutral_unsupported(entry))
+                self.assertFalse(dashboard.is_tenferro_anomaly(entry))
+                self.assertEqual(dashboard.compute_case_flags([entry]),[])
+                entry.pop("reason")
+                self.assertTrue(dashboard.is_tenferro_anomaly(entry))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
