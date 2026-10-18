@@ -1040,6 +1040,7 @@ def render(cases, *, suite_id=SUITE_ID, manifest_version=MANIFEST_VERSION,
                " Timed batches end with a device synchronize, never a result download, except "
                "where the download is the declared operation (#2009).")),
         "defaults": {
+            "regime": "latency",
             "device": {"kind": "cpu" if device == "cpu" else "cuda", "ordinal": 0},
             "run": {"warmups": 3, "runs": 15 if device == "cpu" else 7, "min_runtime_ms": 2,
                     "timing_scope": "steady_state_host_api" if device == "cpu"

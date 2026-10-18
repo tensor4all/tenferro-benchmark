@@ -29,7 +29,7 @@ def summary_document(rows, *, hardware=None, timestamp="2026-10-17T00:00:00+00:0
     }
 
 
-def row(case, backend, median, status="ok", group="matmul", reason=None):
+def row(case, backend, median, status="ok", group="matmul", reason=None, iqr=None):
     result = {
         "case": case,
         "group": group,
@@ -38,6 +38,8 @@ def row(case, backend, median, status="ok", group="matmul", reason=None):
         "status": status,
         "verified": status == "ok",
     }
+    if iqr is not None:
+        result["iqr"] = iqr
     if reason is not None:
         result["reason"] = reason
     return result
@@ -64,6 +66,9 @@ class DashboardTests(unittest.TestCase):
             row("case_b", "tenferro-cuda-trace", None, status="unsupported"),
             row("case_b", "pytorch-cuda", 10.0),
             row("case_b", "jax-cuda", 25.0),
+            row("case_lat", "tenferro-cuda-eager", 50.0, group="lat"),
+            row("case_lat", "pytorch-cuda", 40.0, group="lat"),
+            row("case_lat", "jax-cuda", 45.0, group="lat"),
         ]
         previous_rows = [
             row("case_a", "tenferro-cuda-eager", 10.0),
@@ -80,6 +85,15 @@ class DashboardTests(unittest.TestCase):
         )
         # A maintained report with no summary must still render.
         (self.result / "linux-cpu/cpu/cpu_ops.md").write_text("# CPU Ops\n\nno summary here\n")
+        # Regimes and run counts come from the suite YAML.
+        self.benchmarks = self.root / "benchmarks" / "gpu"
+        self.benchmarks.mkdir(parents=True)
+        (self.benchmarks / "dense.yaml").write_text(
+            "schema_version: 1\nsuite_id: gpu/dense\ndefaults:\n"
+            "  regime: throughput\n  run: {runs: 7}\n"
+            "problems:\n  - {id: case_a}\n  - {id: case_b}\n"
+            "  - {id: case_lat, regime: latency}\n"
+        )
 
     def generate(self, output):
         return dashboard.generate(
@@ -88,13 +102,18 @@ class DashboardTests(unittest.TestCase):
             baseline_dir=self.baseline,
             git_repo=None,
             instances_dir=self.root / "instances",
+            benchmarks_dir=self.root / "benchmarks",
         )
 
     def test_two_summaries_produce_expected_ratios_and_flags(self):
         current = json.loads((self.result / "nvidia-gpu/gpu/dense.summary.json").read_text())
         ratios = dashboard.suite_ratios(current, "gpu/dense")
-        self.assertAlmostEqual(ratios["vs PyTorch"]["arms"]["eager"], 1.0, places=6)
-        self.assertAlmostEqual(ratios["vs JAX"]["arms"]["eager"], (4.0 * 0.2) ** 0.5, places=6)
+        self.assertAlmostEqual(
+            ratios["vs PyTorch"]["arms"]["eager"], (2.0 * 0.5 * 1.25) ** (1 / 3), places=6
+        )
+        self.assertAlmostEqual(
+            ratios["vs JAX"]["arms"]["eager"], (4.0 * 0.2 * (50.0 / 45.0)) ** (1 / 3), places=6
+        )
 
         grouped = dashboard.case_rows(current)
         flags_a = dashboard.compute_case_flags(grouped["case_a"], [row("case_a", "tenferro-cuda-eager", 10.0)])
@@ -153,17 +172,36 @@ class DashboardTests(unittest.TestCase):
             {("case", "Threads: 1 / opt"): ["regression"]},
         )
 
-    def test_linear_bars_use_a_zero_baseline(self):
-        rows = [row("c", "backend-a", 1.0), row("c", "backend-b", 1.01)]
-        svg = dashboard.svg_bar_chart(rows, "ms")
-        widths = [float(width) for width in re.findall(r'<rect[^>]*width="([0-9.]+)"', svg)]
-        self.assertEqual(len(widths), 2)
-        # 1.00 and 1.01 are nearly equal with a zero baseline, not 2 px vs 440 px.
-        self.assertLess(max(widths) / min(widths), 1.1)
-        self.assertNotIn("log scale", svg)
-        # A >10x spread switches to a labelled log scale.
-        log_svg = dashboard.svg_bar_chart([row("c", "a", 1.0), row("c", "b", 100.0)], "ms")
-        self.assertIn("log scale", log_svg)
+    def test_case_chart_uses_log_axis_baseline_and_ci_whisker(self):
+        rows = [
+            row("c", "pytorch-cuda", 10.0, iqr=0.2),
+            row("c", "tenferro-cuda-eager", 12.0, iqr=0.3),
+        ]
+        svg = dashboard.svg_case_chart(rows, "ms", runs=7, baseline=rows[0], baseline_label="PyTorch")
+        self.assertIn("log scale", svg)
+        self.assertIn("1.20x", svg)
+        self.assertIn("PyTorch (10.000 ms)", svg)
+        # The estimated CI is drawn as a black line over a white halo.
+        self.assertIn('stroke="#1b1f24"', svg)
+        # Without a sample count there is no interval.
+        no_ci = dashboard.svg_case_chart(rows, "ms", runs=None, baseline=rows[0], baseline_label="PyTorch")
+        self.assertNotIn('stroke="#1b1f24"', no_ci)
+
+    def test_ratio_chart_outlines_competitor_bars(self):
+        cases = [
+            {
+                "case": "case_one",
+                "contenders": [
+                    {"label": "eager", "kind": "tenferro", "ratio": 1.2, "interval": (1.1, 1.3)},
+                    {"label": "JAX", "kind": "reference", "ratio": 0.9, "interval": None},
+                ],
+            }
+        ]
+        svg = dashboard.svg_ratio_chart(cases, "PyTorch")
+        self.assertIn("eager 1.20x", svg)
+        self.assertIn("JAX 0.90x", svg)
+        # Competitor bars are white with a black outline.
+        self.assertIn('fill="#ffffff" stroke="#1b1f24"', svg)
 
     def test_permutation_and_perf_issue_ratio_mapping(self):
         permutation = summary_document([
@@ -186,46 +224,49 @@ class DashboardTests(unittest.TestCase):
         reference_map = {"transfer_tenferro_8B": ["transfer_cudarc_8B"]}
         ratios = dashboard.suite_ratios(perf, "gpu/perf_issues", reference_map)
         self.assertAlmostEqual(ratios["vs reference"]["arms"]["tenferro-cuda"], 2.0)
-        details = dashboard.perf_reference_details(perf, reference_map)
-        self.assertEqual(len(details), 1)
-        self.assertAlmostEqual(details[0]["ratio"], 2.0)
-        self.assertEqual(details[0]["reference_case"], "transfer_cudarc_8B")
 
-    def test_landing_and_suite_pages_render(self):
+    def test_top_family_and_suite_pages_render(self):
         output = self.root / "site"
         self.assertEqual(self.generate(output), 0)
         index = (output / "index.html").read_text()
-        # Ratios and the flag count appear on the landing table.
-        self.assertIn("eager 1.00x", index)
-        self.assertIn("nvidia-gpu", index)
-        self.assertIn("flag", index)
-        # Flagged cases come first on the suite page.
+        self.assertIn('href="gpu/index.html"', index)
+        self.assertIn('href="cpu/index.html"', index)
+        self.assertIn("NVIDIA A100 80GB PCIe", index)
+
+        gpu = (output / "gpu/index.html").read_text()
+        self.assertIn("How to read", gpu)
+        self.assertIn("gpu/dense", gpu)
+        self.assertIn("case_a", gpu)
+        # A latency case never appears on the compute-bound page.
+        self.assertNotIn("case_lat", gpu)
+
+        latency = (output / "gpu/latency/index.html").read_text()
+        self.assertIn("case_lat", latency)
+        self.assertNotIn("case_a", latency)
+        self.assertIn("not by device compute", latency)
+
         suite = (output / "nvidia-gpu/gpu/dense.html").read_text()
-        self.assertIn("Flagged cases (2)", suite)
-        self.assertIn("case_a", suite)
+        self.assertIn("Compute-bound cases", suite)
+        self.assertIn("Latency and per-call overhead", suite)
         self.assertIn("<svg", suite)
         self.assertIn("Original report", suite)
-        # A profile without summaries still renders (report link, no ratio).
+
+        cpu = (output / "cpu/index.html").read_text()
+        self.assertIn("linux-cpu", cpu)
+        self.assertIn("Reference-quality indicators only", cpu)
         self.assertTrue((output / "linux-cpu/cpu/cpu_ops.html").exists())
-        self.assertIn('href="linux-cpu/cpu/cpu_ops.html"', index)
-        self.assertIn("linux-cpu", index)
-        # The reference-quality notice only applies to GitHub-hosted profiles.
-        self.assertNotIn("Reference-quality indicators only", index.split("linux-cpu")[0])
-        self.assertIn("Reference-quality indicators only", index)
 
     def test_generator_is_deterministic(self):
         first = self.root / "site-a"
         second = self.root / "site-b"
         self.generate(first)
         self.generate(second)
-        self.assertEqual(
-            (first / "index.html").read_bytes(),
-            (second / "index.html").read_bytes(),
-        )
-        self.assertEqual(
-            (first / "nvidia-gpu/gpu/dense.html").read_bytes(),
-            (second / "nvidia-gpu/gpu/dense.html").read_bytes(),
-        )
+        for relative in ("index.html", "gpu/index.html", "gpu/latency/index.html", "nvidia-gpu/gpu/dense.html"):
+            self.assertEqual(
+                (first / relative).read_bytes(),
+                (second / relative).read_bytes(),
+                relative,
+            )
 
     def test_discover_reports_and_summary_loading(self):
         reports = dashboard.discover_reports(self.result)

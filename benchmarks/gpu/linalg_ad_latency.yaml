@@ -5,6 +5,7 @@ description: Single-call latency and per-op overhead of trace-mode linalg AD on 
   at n=2, 4, 8. Device kernel time is a small fraction of each measurement, so these
   rows are latency/overhead diagnostics, not GPU throughput.
 defaults:
+  regime: latency  # single-call latency: device kernel time is a small fraction
   device:
     kind: cuda
     ordinal: 0

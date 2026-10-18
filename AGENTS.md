@@ -19,6 +19,38 @@ headroom, and runtime thread pools, which distorts medians and IQRs.
 Parallel shell/tool execution is fine for non-timing work such as file
 inspection or tests that do not measure benchmark performance.
 
+## Never Mix Compute-Bound and Latency Results
+
+Every case has a regime: `throughput` (compute- or bandwidth-bound) or
+`latency` (dominated by per-call launch/dispatch overhead). Declare it in the
+suite YAML when it differs from the suite default:
+
+```yaml
+defaults:
+  regime: throughput
+problems:
+  - id: elementwise_chain_f64_1k
+    regime: latency   # per-command overhead probe, not a bandwidth measurement
+```
+
+`latency` cases currently include `gpu/dense` `dense_batched_matmul_f64_b16_32`,
+`gpu/elementwise` `elementwise_chain_f64_1k`, all of `gpu/linalg_ad_latency`,
+and the `ns/op` microbenchmarks in `gpu/perf_issues`.
+
+Rules:
+
+- Never put a latency bar in a compute-bound chart, and never average or flag
+  across regimes. A suite summary covers one regime only.
+- Suite pages show a throughput section and a latency section separately.
+- Published pages separate them: compute-bound results on the CPU/GPU pages,
+  latency/overhead results on dedicated `*/latency/` pages.
+- A small workload is not evidence of slow compute. The latency pages measure
+  dispatch overhead, and their numbers must never be read as GPU/CPU
+  throughput.
+- When adding a case, state its regime explicitly when it is not the suite
+  default, and keep the label consistent with `intent` (per-command, bandwidth
+  or compute bound).
+
 ## Mandatory Timing Boundary: Setup Is Untimed
 
 All standard operation benchmarks must measure steady-state operation execution.
