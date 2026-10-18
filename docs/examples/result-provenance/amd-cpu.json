@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "target_profile": "amd-cpu",
+  "suite_id": "cpu/einsum",
+  "collected_at": "2026-10-18T00:00:00+00:00",
+  "harness_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "tenferro_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "hardware": {
+    "host": "example-host",
+    "cpu": "example CPU"
+  },
+  "source": {
+    "repository": "tensor4all/tenferro-benchmark",
+    "workflow_path": ".github/workflows/benchmark-nightly-linux-cpu.yml",
+    "head_branch": "main",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "run_id": 123,
+    "run_attempt": 1,
+    "artifact_id": 456,
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/123",
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/123/artifacts/456",
+    "created_at": "2026-10-18T01:00:00Z",
+    "expires_at": "2027-01-16T01:00:00Z",
+    "digest": null
+  },
+  "files": {
+    "result/amd-cpu/cpu/einsum.md": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "result/amd-cpu/cpu/einsum.summary.json": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "data/results/amd-cpu/cpu/einsum/20261018_000000/run.yaml": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  }
+}

@@ -1,0 +1,59 @@
+name: ingest-results
+
+on:
+  workflow_run:
+    workflows: [benchmark-runpod-gpu, benchmark-nightly-mac-cpu, benchmark-nightly-linux-cpu]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Exact successful benchmark run ID to ingest (no latest-run discovery)
+        required: true
+        type: string
+      validate_only:
+        description: Validate without committing results or publishing Pages
+        type: boolean
+        default: false
+
+permissions:
+  actions: read
+  contents: write
+
+# One writer for all profiles. The driver also retries unrelated main pushes.
+concurrency:
+  group: benchmark-result-ingestion
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  ingest:
+    if: >-
+      github.repository == 'tensor4all/tenferro-benchmark' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout trusted ingestion implementation
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          # Needed only for the driver's restricted result commit/push.
+          persist-credentials: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Validate and ingest the selected run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ inputs.run_id || github.event.workflow_run.id }}
+          VALIDATE_ONLY: ${{ inputs.validate_only || false }}
+        run: |
+          args=(--run-id "$SOURCE_RUN_ID")
+          if [[ "$VALIDATE_ONLY" == true ]]; then args+=(--validate-only); fi
+          uv run --no-project --python 3.12 --with pyyaml --with jsonschema \
+            python scripts/ci/ingest_benchmark_results.py "${args[@]}"

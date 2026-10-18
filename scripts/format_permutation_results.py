@@ -237,10 +237,13 @@ def parse_args() -> argparse.Namespace:
 def build_summary(
     records: list[dict[str, Any]],
     run_metadata: dict[str, Any] | None = None,
+    *, cpu_model: str | None = None,
 ) -> dict[str, Any]:
     """Machine-readable sidecar for the same records the Markdown is built from."""
     header = report_summary.metadata_from_run_metadata(run_metadata)
     hardware = dict(header["hardware"])
+    if cpu_model:
+        hardware["cpu"] = cpu_model
     if not hardware.get("cpu"):
         try:
             hardware["cpu"] = collect_cpu_info().get("Model", "unknown")

@@ -2,33 +2,33 @@
 
 - Target profile: `nvidia-gpu`
 - Suite: `gpu/tensornetwork`
-- Suite file: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261017_104441/gpu_tensornetwork.yaml`
-- Timestamp: `2026-10-17T10:44:41.382612+00:00`
-- tenferro-rs commit: `88daa885a5bb09e07f3031814bbb1a21f7a74e62`
+- Suite file: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261017_141327/gpu_tensornetwork.yaml`
+- Timestamp: `2026-10-17T14:13:27.525120+00:00`
+- tenferro-rs commit: `4de2e1226337e877066f129667b70c2a01308bfb`
 - Coverage: `full`; effort: `standard`; manifest version: `1`
-- Selection and case accounting: `/home/shinaoka/tensor4all/tenferro-benchmark/.worktrees/gpu-refresh-20261017/data/results/nvidia-gpu/gpu/routine_selection/20261017_104441/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
+- Selection and case accounting: `/tmp/actions-runner/_work/tenferro-benchmark/tenferro-benchmark/data/results/nvidia-gpu/gpu/routine_selection/20261017_141327/selection.json` (see adjacent `case_status.json` and `report.md`; unselected rows are not covered)
 
 ## GPU Information
 
 - Device: `cuda:0`
 - Name: `NVIDIA A100 80GB PCIe`
-- UUID: `GPU-530977e1-4968-9283-4129-9fbec3e66542`
+- UUID: `GPU-836a43ba-6520-b027-a26d-7c22feb348e8`
 - Memory: `80 GiB`
-- Driver version: `580.126.09`
+- Driver version: `580.159.04`
 - CUDA version: `13.0`
-- CUDA runtime: `12.9`
-- cuDNN version: `92700`
+- CUDA runtime: `12.8`
+- cuDNN version: `92000`
 
 ## CPU Information
 
-- Model: `AMD EPYC 7713P 64-Core Processor`
+- Model: `AMD EPYC 7763 64-Core Processor`
 - Vendor: `AuthenticAMD`
-- Logical CPUs: `64`
-- Sockets: `1`
-- Cores per socket: `64`
+- Logical CPUs: `252`
+- Sockets: `2`
+- Cores per socket: `126`
 - Threads per core: `1`
 - NUMA nodes: `1`
-- Python platform: `Linux-6.8.0-101-generic-x86_64-with-glibc2.39`
+- Python platform: `Linux-6.8.0-124-generic-x86_64-with-glibc2.39`
 
 Median time is reported in milliseconds for `ok` records.
 Inputs are prepared on the GPU before timed runs; initial host-to-device transfer is outside the timed region.
@@ -40,9 +40,9 @@ Non-`ok` cells show the structured backend status.
 
 ## gpu/tensornetwork / tensor_network_contract / allocating output
 
-| Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA | JAX CUDA JIT | JAX CUDA tree JIT |
-|---|---:|---:|---:|---:|---:|
-| tensornetwork_permutation_optimized_f32 | 45.974 | 46.479 | 107.360 | 90.283 | 130.561 |
+| Problem | tenferro-rs CUDA trace | tenferro-rs CUDA eager | PyTorch CUDA |
+|---|---:|---:|---:|
+| tensornetwork_permutation_optimized_f32 | 53.519 | 51.005 | 110.586 |
 
 ## Sampling
 
@@ -50,8 +50,6 @@ JAX uses compiled JIT execution; compilation, planning and numerical checks are 
 
 | Problem | Backend | Ops/sample | Raw batch ms | Setup and precision |
 | --- | --- | ---: | --- | --- |
-| tensornetwork_permutation_optimized_f32 | tenferro-cuda-trace | 1 | 46.0023, 45.7714, 46.0334, 45.5368, 45.598, 46.0478, 45.9354, 46.5225, 46.0109, 45.9456 | one caller-held CUDA session entered before sampling; each Runtime::run_prepared_in call includes its own stream-retirement barrier inside the batch interval; inputs, plans, compilation and session entry outside clocks; native declared dtype; no AD recording |
-| tensornetwork_permutation_optimized_f32 | tenferro-cuda-eager | 1 | 46.4307, 46.4193, 45.9239, 47.3795, 47.3863, 47.6763, 46.5279, 46.2756, 46.8842, 46.0559 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
-| tensornetwork_permutation_optimized_f32 | pytorch-cuda | 1 | 107.412, 107.306, 107.37, 107.301, 107.304, 107.711, 107.362, 107.279, 107.859, 107.357 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| tensornetwork_permutation_optimized_f32 | jax-cuda | 1 | 90.293, 90.2692, 90.3446, 90.2765, 90.282, 90.6894, 90.2533, 89.796, 90.2836, 90.3263 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
-| tensornetwork_permutation_optimized_f32 | jax-cuda-tree-jit | 1 | 130.395, 131.84, 131.586, 131.176, 130.134, 129.995, 130.727, 129.412, 130.268, 135.878 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |
+| tensornetwork_permutation_optimized_f32 | tenferro-cuda-trace | 1 | 54.2882, 54.1811, 54.3929, 53.6596, 53.3337, 53.3778, 53.7775, 53.259, 52.44, 51.8268 | one caller-held CUDA session entered before sampling; each Runtime::run_prepared_in call includes its own stream-retirement barrier inside the batch interval; inputs, plans, compilation and session entry outside clocks; native declared dtype; no AD recording |
+| tensornetwork_permutation_optimized_f32 | tenferro-cuda-eager | 1 | 51.5617, 51.3205, 51.9267, 50.9559, 50.7471, 52.1482, 50.9598, 51.0494, 49.9241, 49.9148 | one entered eager session; input wrapping, transfers, argument handles, initialization and validation outside clocks; native declared dtype; no AD recording |
+| tensornetwork_permutation_optimized_f32 | pytorch-cuda | 1 | 109.609, 109.549, 110.514, 110.735, 111.39, 110.642, 110.121, 113.021, 110.594, 110.577 | inputs/transfers, plans, compilation, lazy initialization and validation outside clocks; JAX x64/highest; PyTorch TF32 disabled |

@@ -2,47 +2,20 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/einsum",
-  "timestamp": "2026-10-17T10:44:41.382612+00:00",
-  "tenferro_commit": "88daa885a5bb09e07f3031814bbb1a21f7a74e62",
+  "timestamp": "2026-10-17T14:13:27.525120+00:00",
+  "tenferro_commit": "4de2e1226337e877066f129667b70c2a01308bfb",
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "host": "60145713b7ef"
+    "host": "98b13ebfe249"
   },
   "unit": "ms",
   "rows": [
     {
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
-      "backend": "cublaslt",
-      "median": 3.172502,
-      "iqr": 0.004290000000000127,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "einsum_bin_matmul_3072_f64",
-      "group": "einsum",
-      "backend": "cutlass",
-      "median": 3.43441,
-      "iqr": 0.000560000000000116,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "einsum_bin_matmul_3072_f64",
-      "group": "einsum",
-      "backend": "jax-cuda",
-      "median": 3.390199,
-      "iqr": 0.08979300000000023,
-      "status": "ok",
-      "verified": true
-    },
-    {
-      "case": "einsum_bin_matmul_3072_f64",
-      "group": "einsum",
       "backend": "pytorch-cuda",
-      "median": 3.171793,
-      "iqr": 0.0018199999999999328,
+      "median": 3.211453,
+      "iqr": 0.04630800000000024,
       "status": "ok",
       "verified": true
     },
@@ -50,8 +23,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "tenferro-cuda-eager",
-      "median": 3.1519719999999998,
-      "iqr": 0.0006099999999999994,
+      "median": 3.192116,
+      "iqr": 0.013233999999999746,
       "status": "ok",
       "verified": true
     },
@@ -59,8 +32,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "tenferro-cuda-trace",
-      "median": 3.175462,
-      "iqr": 0.0040399999999998215,
+      "median": 3.216442,
+      "iqr": 0.04954299999999989,
       "status": "ok",
       "verified": true
     }

@@ -221,6 +221,8 @@ result/**
 !result/*.md
 !result/**/*.md
 !result/**/*.summary.json
+!result/**/*.provenance.json
+_cpu_benchmark_artifact/
 
 # Repo-local external checkouts
 extern/

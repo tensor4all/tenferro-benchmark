@@ -142,18 +142,21 @@ The Pages publish workflow checks out with `fetch-depth: 0` so the regression
 comparison can walk `git log`.
 
 ```bash
-uv run python scripts/generate_dashboard.py --result-dir result --output-dir _site
+uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt \
+  python scripts/generate_dashboard.py --result-dir result --output-dir _site --git-repo .
 ```
 
-The GPU sections publish the repository's A100 results under `result/nvidia-gpu`.
-GPU Pages data is chosen per suite: the publish workflow starts from the
-committed repository report and summary, then overlays the latest successful
-weekly RunPod `benchmark-runpod-gpu.yml` bundle for that suite only when it is
-newer. A RunPod bundle is eligible only when its recorded GPU is an NVIDIA A100
-(the summary's `hardware.gpu`, falling back to `run.yaml`'s `cuda.device_name`)
-and it carries the dashboard `*.summary.json` sidecar produced by the current
-harness; non-A100 diagnostics and older-harness bundles without a summary are
-skipped with one log line and never replace the maintained data. The overlay
-runs before the dashboard generator, so the dashboard renders whichever report
-and summary won, and expired RunPod artifacts simply leave the repository
-reports in place.
+The collection workflows upload raw bundles. `ingest-results.yml` validates one
+explicit successful main run and commits accepted reports, summary sidecars
+and provenance. `publish-results.yml` only renders these committed results and
+deploys Pages; it has no artifact download or run-discovery stage. Renderer-only
+changes publish directly. Ingestion explicitly triggers Pages after its bot
+commit. The Linux nightly keeps the canonical `amd-cpu` profile; it is not
+copied to `linux-cpu`.
+
+Suite pages link the exact accepted run and raw artifact, show its API-recorded
+expiry, and expose the provenance/digests JSON. Raw artifacts can expire without
+changing the committed report or causing a fallback to another run. Legacy
+reports remain readable with an explicit missing-provenance label. Rendering
+uses neither the network nor filesystem modification dates for result data.
+See [the ingestion contract and recovery procedure](result-ingestion.md).
