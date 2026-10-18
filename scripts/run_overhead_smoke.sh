@@ -41,7 +41,8 @@ configure_cpu_thread_env "$THREADS"
     --tenferro-dir "$PROJECT_DIR/extern/tenferro-rs" --features "$TENFERRO_CPU_FEATURES" \
     --blas "$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")" --output "$RUN_DIR/run_t${THREADS}.yaml"
 "$PYTHON" - "$RUN_DIR/run_t${THREADS}.yaml" <<'PY'
-import os, sys, subprocess, yaml
+import json, os, sys, subprocess, yaml
+from scripts.generate_overhead_smoke_cases import collection_policy
 from pathlib import Path
 path = Path(sys.argv[1])
 metadata = yaml.safe_load(path.read_text())
@@ -49,12 +50,11 @@ metadata['environment'].setdefault('env', {}).update({
     'BENCHMARK_COMMIT': os.environ['BENCHMARK_COMMIT'], 'BENCHMARK_BUILD_PROFILE': 'release',
     'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
     'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None})
-metadata['collection'] = {
-    'command': os.environ.get('BENCH_COMMAND', ''),
-    'timing_scope': 'steady_state_host_api; setup, session entry, tracing, compilation and '
-                    'preparation outside timing; outputs retained until the clock stops',
-    'allocation_scope': 'separate pooled pass: 64 calls after warmup, outputs dropped between calls',
-    'gating': 'none (trend view)'}
+cases = json.loads(Path('data/instances/overhead_smoke.json').read_text())
+selected = {item.strip() for item in os.environ.get('BENCH_INSTANCE', '').split(',') if item.strip()}
+if selected:
+    cases = [case for case in cases if case['id'] in selected]
+metadata['collection'] = {'command': os.environ.get('BENCH_COMMAND', ''), **collection_policy(cases)}
 path.write_text(yaml.safe_dump(metadata, sort_keys=False))
 PY
 cp "$RUN_DIR/run_t${THREADS}.yaml" "$RUN_DIR/run.yaml"

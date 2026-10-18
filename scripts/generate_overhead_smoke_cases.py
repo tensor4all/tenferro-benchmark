@@ -3,8 +3,8 @@
 
 A small nightly trend view for the allocation-free provider work of
 tenferro-rs #2178: about ten small public calls, one run thread, each row
-reporting ns/op and allocs/op. allocs/op is exact and hardware independent, so
-it compares across ``mac-cpu`` and ``amd-cpu`` and across nights; a change
+reporting ns/op and allocs/op. Compare matching fixtures, budgets and scopes
+across ``mac-cpu`` and ``amd-cpu`` and across nights; a change
 between two nightlies is worth a look by itself. Nothing here gates.
 
 The rows reuse the ``umbrella_alloc_counter`` fixtures of ``cpu/perf_issues``
@@ -30,54 +30,160 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/overhead_smoke.json"
 SUITE = ROOT / "benchmarks/cpu/overhead_smoke.yaml"
 SUITE_ID = "cpu/overhead_smoke"
+STEADY_SCOPE = "steady_state_host_api"
+ENTRY_SCOPE = "public_path_latency_including_internal_session_entry"
+
+
+def case_timing_scope(case):
+    """Classify old raw rows by their actual public call, preserving raw data."""
+    if case.get("params", {}).get("op") == "fused" or case.get(
+        "fixture", ""
+    ).startswith("run_prepared_mul_add_"):
+        return ENTRY_SCOPE
+    return STEADY_SCOPE
+
+
+def collection_policy(cases):
+    return {
+        "timing_scope": "mixed; see timing_scopes_by_case",
+        "timing_scopes_by_case": {
+            case["id"]: case_timing_scope(case) for case in cases
+        },
+        "setup_policy": {
+            STEADY_SCOPE: "inputs, entered session, initialization, tracing and preparation outside timing",
+            ENTRY_SCOPE: "runtime/input/tracing/preparation setup outside timing; run_prepared internal session entry/exit inside timing; diagnostic only",
+        },
+        "output_policy": "outputs retained until the clock stops; destruction outside timing",
+        "allocation_scope": "separate pooled pass: 64 calls after warmup, outputs dropped between calls",
+        "gating": "none (trend view)",
+    }
+
 
 # (id, op, fixture, counter case it mirrors, refs, budget, note)
 ROWS = (
-    ("typed_elemwise_f64_add_bcast_n16", "bcast", "add_rank0_scalar_n16",
-     "typed_elemwise_f64_add_bcast_counter", ("tenferro-rs#2178",), None,
-     "typed add, rank-0 scalar rhs (stride-0 operand)"),
-    ("typed_elemwise_f64_add_bcast_8x8x8", "bcast", "add_rank0_scalar_8x8x8",
-     "typed_elemwise_f64_add_bcast_counter", ("tenferro-rs#2178",), None,
-     "typed add, rank-0 scalar rhs (stride-0 operand)"),
-    ("typed_elemwise_f64_add_permuted_view_8x8x8", "permuted_view", "add_read_permuted_lhs_8x8x8",
-     "typed_elemwise_f64_add_permuted_view_counter", ("tenferro-rs#2178",), None,
-     "add_read, lhs a permuted view (perm [2,0,1])"),
-    ("permute_materialize_f64_r4_4x4x4x4", "permute_r4", "transpose_r4_4x4x4x4",
-     "permute_materialize_f64_r4_counter", ("tenferro-rs#2178",), None,
-     "materializing rank-4 transpose (perm [3,1,0,2])"),
+    (
+        "typed_elemwise_f64_add_bcast_n16",
+        "bcast",
+        "add_rank0_scalar_n16",
+        "typed_elemwise_f64_add_bcast_counter",
+        ("tenferro-rs#2178",),
+        None,
+        "typed add, rank-0 scalar rhs (stride-0 operand)",
+    ),
+    (
+        "typed_elemwise_f64_add_bcast_8x8x8",
+        "bcast",
+        "add_rank0_scalar_8x8x8",
+        "typed_elemwise_f64_add_bcast_counter",
+        ("tenferro-rs#2178",),
+        None,
+        "typed add, rank-0 scalar rhs (stride-0 operand)",
+    ),
+    (
+        "typed_elemwise_f64_add_permuted_view_8x8x8",
+        "permuted_view",
+        "add_read_permuted_lhs_8x8x8",
+        "typed_elemwise_f64_add_permuted_view_counter",
+        ("tenferro-rs#2178",),
+        None,
+        "add_read, lhs a permuted view (perm [2,0,1])",
+    ),
+    (
+        "permute_materialize_f64_r4_4x4x4x4",
+        "permute_r4",
+        "transpose_r4_4x4x4x4",
+        "permute_materialize_f64_r4_counter",
+        ("tenferro-rs#2178",),
+        None,
+        "materializing rank-4 transpose (perm [3,1,0,2])",
+    ),
     # 32x32x32: the CPU fused lane declines regions below 16384 elements, so a
     # smaller program could never reach it once CPU fusion is selected again.
-    ("fused_elemwise_f64_budget1_32x32x32", "fused", "run_prepared_mul_add_32x32x32",
-     "fused_elemwise_f64_serial_counter", ("tenferro-rs#2178", "strided-rs#305"), 1,
-     "traced a*b+c via run_prepared, backend thread budget 1"),
-    ("fused_elemwise_f64_budget2_32x32x32", "fused", "run_prepared_mul_add_32x32x32",
-     "fused_elemwise_f64_serial_counter", ("tenferro-rs#2178", "strided-rs#305"), 2,
-     "traced a*b+c via run_prepared, backend thread budget 2"),
-    ("reduce_axis_f64_8x8x8", "reduce_axis", "reduce_sum_axis1_8x8x8",
-     "reduce_axis_f64_counter", ("tenferro-rs#2178",), None, "typed reduce_sum over axis 1"),
-    ("concatenate_axis1_f64_8x8x8", "concat", "concatenate_axis1_8x8x8", None,
-     ("tenferro-rs#2178",), None, "concatenate two 8x8x8 tensors along axis 1"),
-    ("einsum_prepared_f64_n2", "einsum_prepared", "einsum_prepared_execute_into_n2", None,
-     ("tenferro-rs#2178", "tenferro-rs#1899"), None,
-     "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)"),
-    ("einsum_prepared_f64_n4", "einsum_prepared", "einsum_prepared_execute_into_n4", None,
-     ("tenferro-rs#2178", "tenferro-rs#1899"), None,
-     "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)"),
+    (
+        "prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic",
+        "fused",
+        "run_prepared_mul_add_32x32x32",
+        "fused_elemwise_f64_serial_counter",
+        ("tenferro-rs#2178", "strided-rs#305"),
+        1,
+        "run_prepared a*b+c including internal session entry/exit, backend thread budget 1 (diagnostic)",
+    ),
+    (
+        "prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic",
+        "fused",
+        "run_prepared_mul_add_32x32x32",
+        "fused_elemwise_f64_serial_counter",
+        ("tenferro-rs#2178", "strided-rs#305"),
+        2,
+        "run_prepared a*b+c including internal session entry/exit, backend thread budget 2 (diagnostic)",
+    ),
+    (
+        "reduce_axis_f64_8x8x8",
+        "reduce_axis",
+        "reduce_sum_axis1_8x8x8",
+        "reduce_axis_f64_counter",
+        ("tenferro-rs#2178",),
+        None,
+        "typed reduce_sum over axis 1",
+    ),
+    (
+        "concatenate_axis1_f64_8x8x8",
+        "concat",
+        "concatenate_axis1_8x8x8",
+        None,
+        ("tenferro-rs#2178",),
+        None,
+        "concatenate two 8x8x8 tensors along axis 1",
+    ),
+    (
+        "einsum_prepared_f64_n2",
+        "einsum_prepared",
+        "einsum_prepared_execute_into_n2",
+        None,
+        ("tenferro-rs#2178", "tenferro-rs#1899"),
+        None,
+        "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)",
+    ),
+    (
+        "einsum_prepared_f64_n4",
+        "einsum_prepared",
+        "einsum_prepared_execute_into_n4",
+        None,
+        ("tenferro-rs#2178", "tenferro-rs#1899"),
+        None,
+        "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)",
+    ),
 )
 
 
 def generate_cases():
     cases = []
     for cid, op, fixture, mirrors, refs, budget, note in ROWS:
-        params = {"kind": "umbrella_alloc_counter", "arm": "tenferro", "dtype": "f64",
-                  "op": op, "fixture": fixture, "timed": True}
+        params = {
+            "kind": "umbrella_alloc_counter",
+            "arm": "tenferro",
+            "dtype": "f64",
+            "op": op,
+            "fixture": fixture,
+            "timed": True,
+        }
         if budget is not None:
             params["budget"] = budget
-        row = {"id": cid, "refs": list(refs), "kind": "umbrella_alloc_counter",
-               "backend": "tenferro-rs", "dtype": "f64", "fixture": fixture,
-               "backend_thread_budget": budget or 1, "params": params, "note": note}
+        row = {
+            "id": cid,
+            "refs": list(refs),
+            "kind": "umbrella_alloc_counter",
+            "backend": "tenferro-rs",
+            "dtype": "f64",
+            "fixture": fixture,
+            "backend_thread_budget": budget or 1,
+            "params": params,
+            "note": note,
+        }
         if mirrors:
             row["counter_case"] = f"cpu/perf_issues:{mirrors}"
+        row["timing_scope"] = case_timing_scope(row)
+        params["timing_scope"] = row["timing_scope"]
         cases.append(row)
     return cases
 
@@ -85,33 +191,45 @@ def generate_cases():
 def render(cases):
     header = "# Generated by scripts/generate_overhead_smoke_cases.py; do not edit.\n"
     instances = json.dumps(cases, indent=1, ensure_ascii=False) + "\n"
-    suite = header + yaml.safe_dump({
-        "schema_version": 1,
-        "suite_id": SUITE_ID,
-        "title": "CPU overhead smoke: ns/op and allocs/op trend (tenferro-rs #2178)",
-        "description": (
-            "Ten small public tenferro-rs calls run on one thread, each reporting ns/op and "
-            "allocs/op for the nightly trend of the allocation-free provider APIs "
-            "(tenferro-rs #2178, tenferro-benchmark #197). allocs/op is the pooled steady "
-            "state of the matching cpu/perf_issues counter case and is exact; ns/op is a "
-            "reference indicator. No row gates."),
-        "defaults": {
-            "device": {"kind": "cpu", "ordinal": 0},
-            "run": {"warmups": 3, "runs": 15, "min_runtime_ms": 2,
-                    "timing_scope": "steady_state_host_api"},
-            "verify": {"reference": "independent f64 scalar host loops", "rtol": 1.0e-10,
-                       "atol": 0},
+    suite = header + yaml.safe_dump(
+        {
+            "schema_version": 1,
+            "suite_id": SUITE_ID,
+            "title": "CPU overhead smoke: ns/op and allocs/op trend (tenferro-rs #2178)",
+            "description": (
+                "Ten small public tenferro-rs calls run on one thread, each reporting ns/op and "
+                "allocs/op for the nightly trend of the allocation-free provider APIs "
+                "(tenferro-rs #2178, tenferro-benchmark #197). allocs/op is the pooled steady "
+                "state of the matching cpu/perf_issues counter case; ns/op is a "
+                "reference indicator. Eight steady-state rows and two separately named runtime session-entry "
+                "diagnostics are reported in separate tables. No row gates."
+            ),
+            "defaults": {
+                "device": {"kind": "cpu", "ordinal": 0},
+                "run": {"warmups": 3, "runs": 15, "min_runtime_ms": 2},
+                "verify": {
+                    "reference": "independent f64 scalar host loops",
+                    "rtol": 1.0e-10,
+                    "atol": 0,
+                },
+            },
+            "backends": ["tenferro-rs"],
+            "problems": {
+                "source": "data/instances/overhead_smoke.json",
+                "include": [c["id"] for c in cases],
+            },
         },
-        "backends": ["tenferro-rs"],
-        "problems": {"source": "data/instances/overhead_smoke.json",
-                     "include": [c["id"] for c in cases]},
-    }, sort_keys=False, width=100)
+        sort_keys=False,
+        width=100,
+    )
     return instances, suite
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true", help="fail if checked-in files are stale")
+    parser.add_argument(
+        "--check", action="store_true", help="fail if checked-in files are stale"
+    )
     args = parser.parse_args()
     files = list(zip((INSTANCES, SUITE), render(generate_cases())))
     if args.check:

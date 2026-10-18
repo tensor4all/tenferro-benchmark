@@ -15,10 +15,12 @@
    "dtype": "f64",
    "op": "bcast",
    "fixture": "add_rank0_scalar_n16",
-   "timed": true
+   "timed": true,
+   "timing_scope": "steady_state_host_api"
   },
   "note": "typed add, rank-0 scalar rhs (stride-0 operand)",
-  "counter_case": "cpu/perf_issues:typed_elemwise_f64_add_bcast_counter"
+  "counter_case": "cpu/perf_issues:typed_elemwise_f64_add_bcast_counter",
+  "timing_scope": "steady_state_host_api"
  },
  {
   "id": "typed_elemwise_f64_add_bcast_8x8x8",
@@ -36,10 +38,12 @@
    "dtype": "f64",
    "op": "bcast",
    "fixture": "add_rank0_scalar_8x8x8",
-   "timed": true
+   "timed": true,
+   "timing_scope": "steady_state_host_api"
   },
   "note": "typed add, rank-0 scalar rhs (stride-0 operand)",
-  "counter_case": "cpu/perf_issues:typed_elemwise_f64_add_bcast_counter"
+  "counter_case": "cpu/perf_issues:typed_elemwise_f64_add_bcast_counter",
+  "timing_scope": "steady_state_host_api"
  },
  {
   "id": "typed_elemwise_f64_add_permuted_view_8x8x8",
@@ -57,10 +61,12 @@
    "dtype": "f64",
    "op": "permuted_view",
    "fixture": "add_read_permuted_lhs_8x8x8",
-   "timed": true
+   "timed": true,
+   "timing_scope": "steady_state_host_api"
   },
   "note": "add_read, lhs a permuted view (perm [2,0,1])",
-  "counter_case": "cpu/perf_issues:typed_elemwise_f64_add_permuted_view_counter"
+  "counter_case": "cpu/perf_issues:typed_elemwise_f64_add_permuted_view_counter",
+  "timing_scope": "steady_state_host_api"
  },
  {
   "id": "permute_materialize_f64_r4_4x4x4x4",
@@ -78,13 +84,15 @@
    "dtype": "f64",
    "op": "permute_r4",
    "fixture": "transpose_r4_4x4x4x4",
-   "timed": true
+   "timed": true,
+   "timing_scope": "steady_state_host_api"
   },
   "note": "materializing rank-4 transpose (perm [3,1,0,2])",
-  "counter_case": "cpu/perf_issues:permute_materialize_f64_r4_counter"
+  "counter_case": "cpu/perf_issues:permute_materialize_f64_r4_counter",
+  "timing_scope": "steady_state_host_api"
  },
  {
-  "id": "fused_elemwise_f64_budget1_32x32x32",
+  "id": "prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic",
   "refs": [
    "tenferro-rs#2178",
    "strided-rs#305"
@@ -101,13 +109,15 @@
    "op": "fused",
    "fixture": "run_prepared_mul_add_32x32x32",
    "timed": true,
-   "budget": 1
+   "budget": 1,
+   "timing_scope": "public_path_latency_including_internal_session_entry"
   },
-  "note": "traced a*b+c via run_prepared, backend thread budget 1",
-  "counter_case": "cpu/perf_issues:fused_elemwise_f64_serial_counter"
+  "note": "run_prepared a*b+c including internal session entry/exit, backend thread budget 1 (diagnostic)",
+  "counter_case": "cpu/perf_issues:fused_elemwise_f64_serial_counter",
+  "timing_scope": "public_path_latency_including_internal_session_entry"
  },
  {
-  "id": "fused_elemwise_f64_budget2_32x32x32",
+  "id": "prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic",
   "refs": [
    "tenferro-rs#2178",
    "strided-rs#305"
@@ -124,10 +134,12 @@
    "op": "fused",
    "fixture": "run_prepared_mul_add_32x32x32",
    "timed": true,
-   "budget": 2
+   "budget": 2,
+   "timing_scope": "public_path_latency_including_internal_session_entry"
   },
-  "note": "traced a*b+c via run_prepared, backend thread budget 2",
-  "counter_case": "cpu/perf_issues:fused_elemwise_f64_serial_counter"
+  "note": "run_prepared a*b+c including internal session entry/exit, backend thread budget 2 (diagnostic)",
+  "counter_case": "cpu/perf_issues:fused_elemwise_f64_serial_counter",
+  "timing_scope": "public_path_latency_including_internal_session_entry"
  },
  {
   "id": "reduce_axis_f64_8x8x8",
@@ -145,10 +157,12 @@
    "dtype": "f64",
    "op": "reduce_axis",
    "fixture": "reduce_sum_axis1_8x8x8",
-   "timed": true
+   "timed": true,
+   "timing_scope": "steady_state_host_api"
   },
   "note": "typed reduce_sum over axis 1",
-  "counter_case": "cpu/perf_issues:reduce_axis_f64_counter"
+  "counter_case": "cpu/perf_issues:reduce_axis_f64_counter",
+  "timing_scope": "steady_state_host_api"
  },
  {
   "id": "concatenate_axis1_f64_8x8x8",
@@ -166,9 +180,11 @@
    "dtype": "f64",
    "op": "concat",
    "fixture": "concatenate_axis1_8x8x8",
-   "timed": true
+   "timed": true,
+   "timing_scope": "steady_state_host_api"
   },
-  "note": "concatenate two 8x8x8 tensors along axis 1"
+  "note": "concatenate two 8x8x8 tensors along axis 1",
+  "timing_scope": "steady_state_host_api"
  },
  {
   "id": "einsum_prepared_f64_n2",
@@ -187,9 +203,11 @@
    "dtype": "f64",
    "op": "einsum_prepared",
    "fixture": "einsum_prepared_execute_into_n2",
-   "timed": true
+   "timed": true,
+   "timing_scope": "steady_state_host_api"
   },
-  "note": "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)"
+  "note": "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)",
+  "timing_scope": "steady_state_host_api"
  },
  {
   "id": "einsum_prepared_f64_n4",
@@ -208,8 +226,10 @@
    "dtype": "f64",
    "op": "einsum_prepared",
    "fixture": "einsum_prepared_execute_into_n4",
-   "timed": true
+   "timed": true,
+   "timing_scope": "steady_state_host_api"
   },
-  "note": "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)"
+  "note": "prepared ij,jk->ik execute_into a caller output (overlaps cpu/small_work)",
+  "timing_scope": "steady_state_host_api"
  }
 ]

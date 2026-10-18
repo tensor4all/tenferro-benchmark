@@ -211,6 +211,14 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
         .and_then(Value::as_bool)
         .unwrap_or(false)
         .then_some(timing);
+    let entry_diagnostic = op == "fused" && param_str(p, "arm")? == "tenferro";
+    if timing.is_some()
+        && entry_diagnostic
+        && p.get("timing_scope").and_then(Value::as_str)
+            != Some("public_path_latency_including_internal_session_entry")
+    {
+        return Err("run_prepared timing requires explicit session-entry diagnostic scope".into());
+    }
     let selected: Vec<_> = fixtures(op)?
         .into_iter()
         .filter(|fx| only.map_or(true, |label| fx.label == label))
@@ -265,11 +273,24 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
         including this process's Rust worker allocations"
     );
     if op == "fused" {
-        extra["unavailable"] = json!(["foreign BLAS/C allocator calls", "pooled-buffer reuse volume",
-            "fused-lane allocations when the runtime declines the region (see elementwise_region_execution_counts)"]);
-        extra["session_entry"] = json!("run_prepared enters a runtime-internal session per call; its entry allocations are counted");
+        extra["unavailable"] = json!([
+            "foreign BLAS/C allocator calls",
+            "pooled-buffer reuse volume",
+            "fused-lane allocations when the runtime declines the region (see elementwise_region_execution_counts)"
+        ]);
+        extra["session_entry"] = json!(
+            "run_prepared enters a runtime-internal session per call; its entry allocations are counted"
+        );
     }
-    let timer = if measurement.is_some() {
+    if entry_diagnostic {
+        extra["timing_scope"] = json!("public_path_latency_including_internal_session_entry");
+        extra["diagnostic_timing"] = json!(
+            "run_prepared includes runtime-internal session entry/exit; not shared-session operation timing"
+        );
+    } else {
+        extra["timing_scope"] = json!("steady_state_host_api");
+    }
+    let mut timer = if measurement.is_some() {
         vec![
             "declared public operation (counters[0].op)",
             "intrinsic output allocation or pooled checkout",
@@ -277,7 +298,16 @@ pub(super) fn run(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutc
     } else {
         vec![]
     };
-    Ok(outcome(measurement, extra, timer))
+    if entry_diagnostic && measurement.is_some() {
+        timer.push("runtime-internal session entry and exit (diagnostic)");
+    }
+    let mut result = outcome(measurement, extra, timer);
+    if entry_diagnostic {
+        result
+            .outside_timer
+            .retain(|item| !item.contains("entered held session"));
+    }
+    Ok(result)
 }
 
 fn merge(mut base: Value, extra: Value) -> Value {
@@ -426,4 +456,68 @@ fn fused(
         "elementwise_region_execution_counts": {"fused": fused, "fallbacks": fallbacks},
         "execution_counts_scope": "cumulative over validation, warmup, the counted calls and any timed batches"}),
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn runtime_timing_rejects_an_implicit_or_steady_session_scope() {
+        let timing = Timing {
+            warmups: 0,
+            samples: 0,
+            target_ns: 1,
+        };
+        for scope in [None, Some("steady_state_host_api")] {
+            let mut params = json!({"op": "fused", "arm": "tenferro", "timed": true});
+            if let Some(scope) = scope {
+                params["timing_scope"] = json!(scope);
+            }
+            let error = run(&params, &timing, 1)
+                .err()
+                .expect("must reject standard timing");
+            assert!(
+                error
+                    .to_string()
+                    .contains("explicit session-entry diagnostic")
+            );
+        }
+    }
+
+    #[test]
+    fn runtime_diagnostic_records_entry_inside_the_timer() {
+        let timing = Timing {
+            warmups: 0,
+            samples: 0,
+            target_ns: 1,
+        };
+        let params = json!({"op": "fused", "arm": "tenferro", "timed": true,
+            "fixture": "run_prepared_mul_add_8x8x8",
+            "timing_scope": "public_path_latency_including_internal_session_entry"});
+        let result = run(&params, &timing, 1).expect("correctness-only diagnostic");
+        assert_eq!(
+            result.extra["timing_scope"],
+            "public_path_latency_including_internal_session_entry"
+        );
+        assert!(
+            result
+                .timer
+                .iter()
+                .any(|item| item.contains("session entry and exit"))
+        );
+        assert!(
+            !result
+                .outside_timer
+                .iter()
+                .any(|item| item.contains("entered held session"))
+        );
+        assert!(
+            result
+                .measurement
+                .expect("zero-sample measurement")
+                .samples
+                .is_empty()
+        );
+    }
 }

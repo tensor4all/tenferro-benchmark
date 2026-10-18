@@ -294,10 +294,12 @@ A small nightly trend view for the allocation-free provider work of
 tenferro-rs #2178 (tenferro-benchmark #197): ten small public calls (stride-0
 and permuted-view add, rank-4 transpose, traced fused `a*b+c` at backend
 thread budgets 1 and 2, axis reduction, concatenate, prepared einsum at n=2/4)
-on one run thread. Each row reports ns/op and allocs/op. allocs/op is the
-pooled steady state of the matching `cpu/perf_issues` counter case; it is exact
-and hardware independent, so it compares across `mac-cpu` and `amd-cpu` and
-across nights, and a change between two nightlies is worth a look by itself.
+on one run thread. Eight rows measure steady-state operations in entered
+sessions; two separately named `run_prepared` diagnostics include runtime-internal
+session entry/exit and are reported in a separate table. Each row reports ns/op
+and allocs/op. Allocation counts come from the pooled steady state of the matching
+`cpu/perf_issues` counter case; compare matching fixtures, thread budgets and
+execution scopes across nights.
 Nothing gates here (the gates live in each repository's PR CI).
 `scripts/run_all.sh` runs it once after the other suites
 (`RUN_OVERHEAD_SMOKE_SUITE=0` skips it); standalone:
