@@ -130,6 +130,8 @@ problems:
   - id: dense_batched_matmul_f64_b16_32
     family: dense
     op: batched_matmul
+    regime: latency   # 16 batches of 32x32: per-call dispatch, not GPU throughput
+
     dtype:
       a: f64
       b: f64

@@ -26,6 +26,7 @@
       "additionalProperties": true,
       "properties": {
         "run": { "$ref": "#/$defs/run" },
+        "regime": { "enum": ["throughput", "latency"] },
         "verify": { "$ref": "#/$defs/verify" },
         "device": { "$ref": "#/$defs/device" },
         "layout": { "$ref": "#/$defs/layout" }
@@ -158,6 +159,7 @@
         "id": { "type": "string", "minLength": 1 },
         "intent": { "type": "string", "minLength": 1 },
         "notes": { "type": "string", "minLength": 1 },
+        "regime": { "enum": ["throughput", "latency"] },
         "family": { "enum": ["dense", "sparse", "einsum", "elementwise", "tensornetwork", "linalg_ad"] },
         "op": {
           "enum": [

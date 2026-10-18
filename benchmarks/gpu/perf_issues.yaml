@@ -9,6 +9,7 @@ description: 'One case family per open or resolved tenferro-rs performance issue
   rows and labelled diagnostics are reported separately. Timed batches end with a device synchronize,
   never a result download, except where the download is the declared operation (#2009).'
 defaults:
+  regime: latency
   device:
     kind: cuda
     ordinal: 0
