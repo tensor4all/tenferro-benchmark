@@ -47,33 +47,35 @@ from scripts.ci.runpod_client import (
     create_pod,
 )
 from scripts.ci.runpod_contract import configured_gpu_tiers
-from scripts.ci.runpod_pricing import candidate_plan, http_transport as pricing_http_transport
+from scripts.ci.runpod_pricing import (
+    candidate_plan,
+    http_transport as pricing_http_transport,
+)
 from scripts.ci.runpod_http import (
     Cooldown,
     delete_pod as http_delete_pod,
     request_once,
     retry_delay,
     retryable,
+    pod_request,
 )
 
-# Pod desiredStatus values that mean the startup script stopped without
-# registering the runner (smoke failure or setup failure). desiredStatus
-# alone is NOT sufficient: RunPod keeps it at RUNNING after the container
-# exits, so container death is detected through the GraphQL runtime field
-# (present while the container runs, null once it stops).
-_DEAD_POD_STATUSES = frozenset({"EXITED", "TERMINATED", "DEAD", "STOPPED"})
+# REST v2 reports actual lifecycle state and runtime. Keep both signals:
+# a terminal state rejects a pod immediately; disappearance of a previously
+# observed runtime also detects container termination.
+_DEAD_POD_STATUSES = frozenset({"EXITED", "ERROR", "TERMINATED"})
 
 
 @dataclasses.dataclass(frozen=True)
 class PodState:
-    """One observation of a pod: desired status plus container liveness.
+    """One observation of a pod: lifecycle status plus container liveness.
 
     ``has_runtime`` is None when the observation could not determine
     container state (transient poll failure); True while the container is
-    running; False once GraphQL reports no runtime for the pod.
+    running; False once REST v2 reports no runtime for the pod.
     """
 
-    desired: str | None
+    status: str | None
     has_runtime: bool | None
     # Minimum pause after an unavailable observation; never a death signal.
     retry_seconds: float | None = None
@@ -112,10 +114,9 @@ def parse_cost_per_hr(body: bytes) -> float | None:
         return None
     if not isinstance(payload, Mapping):
         return None
-    for key in ("adjustedCostPerHr", "costPerHr"):
-        value = payload.get(key)
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            return float(value)
+    value = payload.get("cost")
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value)
     return None
 
 
@@ -272,16 +273,16 @@ def provision(
                 break
             try:
                 state = pod_status(result.pod_id, deadline=deadline)
-            except PermanentRunPodError:
-                reason = "permanent pod state API failure"
+            except PermanentRunPodError as error:
+                reason = f"permanent pod state API failure: {error}"
                 break
             if monotonic() >= deadline:
                 reason = f"startup timed out after {startup_timeout:.0f}s"
                 break
-            if state.desired in _DEAD_POD_STATUSES:
+            if state.status in _DEAD_POD_STATUSES:
                 reason = (
                     f"pod exited before runner registration (status "
-                    f"{state.desired}); CUDA smoke proof or startup failed"
+                    f"{state.status}); CUDA smoke proof or startup failed"
                 )
                 break
             if state.has_runtime:
@@ -289,16 +290,19 @@ def provision(
             elif runtime_seen and state.has_runtime is False:
                 # The container ran and then stopped without registering
                 # the runner: the startup script (usually the CUDA smoke
-                # proof) failed. desiredStatus stays RUNNING in this case,
-                # so this is the authoritative fast-fail signal.
+                # proof) failed. Keep this independent of lifecycle status
+                # to handle observations that lag behind container termination.
                 reason = (
                     "container stopped before runner registration; "
                     "CUDA smoke proof or startup failed"
                 )
                 break
-            if (state.desired is not None
-                    and runner_online(label, deadline=deadline)
-                    and monotonic() < deadline):
+            if (
+                state.status == "RUNNING"
+                and state.has_runtime
+                and runner_online(label, deadline=deadline)
+                and monotonic() < deadline
+            ):
                 startup_seconds = monotonic() - started
                 print(
                     f"Runner {label} online: pod {result.pod_id} passed the "
@@ -365,7 +369,9 @@ def _runner_online_checker(token: str, org: str) -> Callable[..., bool]:
             },
         )
         try:
-            with urllib.request.urlopen(request, timeout=min(30.0, remaining)) as response:
+            with urllib.request.urlopen(
+                request, timeout=min(30.0, remaining)
+            ) as response:
                 payload = json.loads(response.read())
         except (OSError, json.JSONDecodeError) as error:
             print(f"Runner registry poll failed (transient): {error}")
@@ -374,19 +380,14 @@ def _runner_online_checker(token: str, org: str) -> Callable[..., bool]:
         for runner in runners:
             if runner.get("status") != "online":
                 continue
-            if any(
-                entry.get("name") == label
-                for entry in runner.get("labels", [])
-            ):
+            if any(entry.get("name") == label for entry in runner.get("labels", [])):
                 return True
         return False
 
     return check
 
 
-def _runner_minter(
-    token: str, org: str, runner_group_id: int
-) -> Callable[[str], str]:
+def _runner_minter(token: str, org: str, runner_group_id: int) -> Callable[[str], str]:
     """Mint one single-use JIT runner config per provision attempt."""
 
     def mint(label: str) -> str:
@@ -418,9 +419,7 @@ def _runner_minter(
                 f"generate-jitconfig returned HTTP {error.code}"
             ) from error
         except (OSError, json.JSONDecodeError) as error:
-            raise PermanentRunPodError(
-                f"generate-jitconfig failed: {error}"
-            ) from error
+            raise PermanentRunPodError(f"generate-jitconfig failed: {error}") from error
         jit_config = payload.get("encoded_jit_config")
         if not isinstance(jit_config, str) or not jit_config:
             raise PermanentRunPodError(
@@ -434,21 +433,29 @@ def _runner_minter(
     return mint
 
 
-def _pod_api(api_url: str, api_key: str):
+def _pod_api(api_url: str, api_key: str, *, cooldown=None):
     def delete(pod_id: str, *, retries: int = 5) -> bool:
-        return http_delete_pod(api_url, api_key, pod_id, attempts=retries,
-                               sleep=time.sleep)
+        return http_delete_pod(
+            api_url,
+            api_key,
+            pod_id,
+            attempts=retries,
+            sleep=time.sleep,
+            cooldown=cooldown,
+        )
+
     return delete
 
 
-def _pod_state_checker(graphql_url: str, api_key: str, *,
-                       monotonic=time.monotonic, transport=request_once,
-                       cooldown: Cooldown | None = None):
+def _pod_state_checker(
+    api_url: str,
+    api_key: str,
+    *,
+    monotonic=time.monotonic,
+    transport=request_once,
+    cooldown: Cooldown | None = None,
+):
     """One deadline-bounded observation; the provision loop owns all waiting."""
-    query = (
-        "query Pod($input: PodFilter!) { pod(input: $input) "
-        "{ desiredStatus runtime { uptimeInSeconds } } }"
-    )
     failures = 0
     last_pod = None
     cooldown = cooldown if cooldown is not None else Cooldown()
@@ -463,15 +470,13 @@ def _pod_state_checker(graphql_url: str, api_key: str, *,
             return PodState(None, None)
         if monotonic() < cooldown.until:
             return PodState(None, None, cooldown.until - monotonic())
-        request = urllib.request.Request(
-            graphql_url,
-            data=json.dumps({"query": query, "variables": {"input": {"podId": pod_id}}}).encode(),
-            method="POST",
-            headers={"Authorization": f"Bearer {api_key}",
-                     "Content-Type": "application/json", "Accept": "application/json"},
-        )
+        request = pod_request(api_url, api_key, pod_id, "GET")
         response = transport(request, timeout=min(30.0, remaining))
-        if response.status and not 200 <= response.status < 300 and not retryable(response.status):
+        if (
+            response.status
+            and not 200 <= response.status < 300
+            and not retryable(response.status)
+        ):
             raise PermanentRunPodError(f"Pod state HTTP {response.status}")
         payload = None
         if 200 <= response.status < 300:
@@ -479,17 +484,31 @@ def _pod_state_checker(graphql_url: str, api_key: str, *,
                 payload = json.loads(response.body)
             except (ValueError, UnicodeError):
                 pass
-        data = payload.get("data") if isinstance(payload, Mapping) else None
-        pod = data.get("pod") if isinstance(data, Mapping) else None
-        if (not isinstance(pod, Mapping) or payload.get("errors")
-                or not pod.get("desiredStatus") or "runtime" not in pod):
+        pod = payload if isinstance(payload, Mapping) else None
+        if (
+            not isinstance(pod, Mapping)
+            or not isinstance(pod.get("status"), str)
+            or pod["status"]
+            not in {
+                "PROVISIONING",
+                "STARTING",
+                "RUNNING",
+                "EXITED",
+                "ERROR",
+                "TERMINATED",
+            }
+            or "runtime" not in pod
+            or (pod["runtime"] is not None and not isinstance(pod["runtime"], Mapping))
+        ):
             failures += 1
             delay = retry_delay(response.headers, failures, base=10.0)
             cooldown.until = monotonic() + delay
-            print(f"Pod state unavailable (HTTP {response.status}); next poll after {delay:.1f}s")
+            print(
+                f"Pod state unavailable (HTTP {response.status}); next poll after {delay:.1f}s"
+            )
             return PodState(None, None, delay)
         failures = 0
-        return PodState(str(pod["desiredStatus"]), pod["runtime"] is not None)
+        return PodState(str(pod["status"]), pod["runtime"] is not None)
 
     return check
 
@@ -574,11 +593,17 @@ def main() -> int:
             if not any(selected_gpu in ids for _, ids in tiers):
                 raise PermanentRunPodError("GPU type is outside the reviewed allowlist")
             tiers = [("selected", (selected_gpu,))]
-        graphql_url = str(config.get("graphql_url", "https://api.runpod.io/graphql"))
-        graphql_cooldown = Cooldown()
-        plan = candidate_plan(config, tiers, transport=pricing_http_transport(
-            graphql_url, cooldown=graphql_cooldown,
-        ))
+        api_cooldown = Cooldown()
+        plan = candidate_plan(
+            config,
+            tiers,
+            transport=pricing_http_transport(
+                str(config["catalog_url"]),
+                api_key=api_key,
+                config=config,
+                cooldown=api_cooldown,
+            ),
+        )
         transport = _http_transport(str(config["api_url"]), api_key)
 
         def create(request: CreateRequest, jit_config: str) -> CreateResult:
@@ -605,11 +630,14 @@ def main() -> int:
                 ],
                 transport=transport,
                 secrets=(api_key, jit_config),
+                cooldown=api_cooldown,
             )
 
-        delete_pod = _pod_api(str(config["api_url"]), api_key)
+        delete_pod = _pod_api(str(config["api_url"]), api_key, cooldown=api_cooldown)
         pod_status = _pod_state_checker(
-            graphql_url, api_key, cooldown=graphql_cooldown,
+            str(config["api_url"]),
+            api_key,
+            cooldown=api_cooldown,
         )
         keep_failed_pods = (
             os.environ.get("PROVISION_KEEP_FAILED_PODS", "").lower() == "true"

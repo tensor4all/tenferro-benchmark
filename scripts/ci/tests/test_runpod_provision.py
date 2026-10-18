@@ -33,8 +33,8 @@ PLAN = [
 ]
 
 
-def live(desired: str = "RUNNING") -> PodState:
-    return PodState(desired=desired, has_runtime=True)
+def live(status: str = "RUNNING") -> PodState:
+    return PodState(status=status, has_runtime=True)
 
 
 def created(pod_id: str, gpu: str, tier: str, cost: float = 0.44) -> CreateResult:
@@ -42,7 +42,7 @@ def created(pod_id: str, gpu: str, tier: str, cost: float = 0.44) -> CreateResul
         pod_id=pod_id,
         gpu_type_id=gpu,
         gpu_tier=tier,
-        body=json.dumps({"id": pod_id, "costPerHr": cost}).encode(),
+        body=json.dumps({"id": pod_id, "cost": cost}).encode(),
     )
 
 
@@ -58,14 +58,14 @@ class Clock:
 
 
 class ParseCostTests(unittest.TestCase):
-    def test_prefers_adjusted_cost(self) -> None:
-        body = json.dumps({"adjustedCostPerHr": 0.4, "costPerHr": 0.5}).encode()
-        self.assertEqual(parse_cost_per_hr(body), 0.4)
+    def test_reads_v2_hourly_cost(self) -> None:
+        body = json.dumps({"cost": 0.5}).encode()
+        self.assertEqual(parse_cost_per_hr(body), 0.5)
 
     def test_missing_or_invalid_cost_is_none(self) -> None:
         self.assertIsNone(parse_cost_per_hr(b"{}"))
         self.assertIsNone(parse_cost_per_hr(b"not json"))
-        self.assertIsNone(parse_cost_per_hr(json.dumps({"costPerHr": True}).encode()))
+        self.assertIsNone(parse_cost_per_hr(json.dumps({"cost": True}).encode()))
 
 
 class ProvisionTests(unittest.TestCase):
@@ -142,7 +142,9 @@ class ProvisionTests(unittest.TestCase):
                 PLAN,
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
-                create=lambda req, jit: created("pod-slow", "NVIDIA A40", req.tier_name),
+                create=lambda req, jit: created(
+                    "pod-slow", "NVIDIA A40", req.tier_name
+                ),
                 runner_online=lambda label, **kwargs: False,
                 pod_status=lambda pod_id, **kwargs: live(),
                 delete_pod=lambda pod_id: (deleted.append(pod_id), True)[1],
@@ -299,14 +301,14 @@ class ProvisionTests(unittest.TestCase):
         self.assertEqual(result.pod_id, "pod-live")
         self.assertEqual(deleted, ["pod-dead"])
 
-    def test_container_stop_is_detected_without_desired_status_change(self) -> None:
-        """desiredStatus stays RUNNING after container exit; runtime is the signal."""
+    def test_container_stop_is_detected_without_status_change(self) -> None:
+        """Runtime loss is checked even if the lifecycle status observation lags."""
 
         clock = Clock()
         states = iter(
             [
-                PodState(desired="RUNNING", has_runtime=True),
-                PodState(desired="RUNNING", has_runtime=False),
+                PodState(status="RUNNING", has_runtime=True),
+                PodState(status="RUNNING", has_runtime=False),
             ]
         )
         deleted: list[str] = []
@@ -316,7 +318,9 @@ class ProvisionTests(unittest.TestCase):
                 PLAN,
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
-                create=lambda req, jit: created("pod-dead", "NVIDIA A40", req.tier_name),
+                create=lambda req, jit: created(
+                    "pod-dead", "NVIDIA A40", req.tier_name
+                ),
                 runner_online=lambda label, **kwargs: False,
                 pod_status=lambda pod_id, **kwargs: next(states),
                 delete_pod=lambda pod_id: (deleted.append(pod_id), True)[1],
@@ -335,7 +339,7 @@ class ProvisionTests(unittest.TestCase):
         def pod_status(pod_id: str, **kwargs) -> PodState:
             boot["polls"] += 1
             # Image pull phase: runtime not yet present.
-            return PodState(desired="RUNNING", has_runtime=boot["polls"] > 3)
+            return PodState(status="RUNNING", has_runtime=boot["polls"] > 3)
 
         result = provision(
             CONFIG,
@@ -359,7 +363,9 @@ class ProvisionTests(unittest.TestCase):
                 PLAN,
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
-                create=lambda req, jit: created("pod-debug", "NVIDIA A40", req.tier_name),
+                create=lambda req, jit: created(
+                    "pod-debug", "NVIDIA A40", req.tier_name
+                ),
                 runner_online=lambda label, **kwargs: False,
                 pod_status=lambda pod_id, **kwargs: live("EXITED"),
                 delete_pod=lambda pod_id: self.fail("debug mode must not delete"),
@@ -392,7 +398,6 @@ class ProvisionTests(unittest.TestCase):
             )
         self.assertEqual(len(calls), CONFIG["max_provision_attempts"])
         self.assertIn("capacity unavailable", str(caught.exception))
-
 
     def test_consecutive_startup_failures_stop_the_ladder_early(self) -> None:
         """An outage must not pay for every candidate in the plan."""
@@ -527,25 +532,29 @@ class PodApiTransportTests(unittest.TestCase):
         def failing_urlopen(*args, **kwargs):
             raise urllib.error.URLError("dns hiccup")
 
-        delete_pod = _pod_api("https://rest.example/v1/pods", "key")
-        pod_status = _pod_state_checker("https://gql.example/graphql", "key")
-        with mock.patch.object(
-            provision_module.urllib.request, "urlopen", failing_urlopen
-        ), mock.patch.object(provision_module.time, "sleep"):
+        delete_pod = _pod_api("https://rest.example/v2/pods", "key")
+        pod_status = _pod_state_checker("https://rest.example/v2/pods", "key")
+        with (
+            mock.patch.object(
+                provision_module.urllib.request, "urlopen", failing_urlopen
+            ),
+            mock.patch.object(provision_module.time, "sleep"),
+            mock.patch("sys.stderr", new_callable=io.StringIO),
+        ):
             # status: transient -> unknown state (keep waiting), no exception
             state = pod_status("pod-1")
-            self.assertIsNone(state.desired)
+            self.assertIsNone(state.status)
             self.assertIsNone(state.has_runtime)
             # delete: retries then reports unconfirmed -> False, no exception
             self.assertFalse(delete_pod("pod-1"))
 
-    def test_pod_state_reads_desired_status_and_runtime(self) -> None:
+    def test_pod_state_reads_status_and_runtime(self) -> None:
         import io
 
         payloads = iter(
             [
-                b'{"data": {"pod": {"desiredStatus": "RUNNING", "runtime": {"uptimeInSeconds": 12}}}}',
-                b'{"data": {"pod": {"desiredStatus": "RUNNING", "runtime": null}}}',
+                b'{"status": "RUNNING", "runtime": {"uptime": 12}}',
+                b'{"status": "RUNNING", "runtime": null}',
             ]
         )
 
@@ -559,16 +568,16 @@ class PodApiTransportTests(unittest.TestCase):
             def __exit__(self, *args):
                 return False
 
-        pod_status = _pod_state_checker("https://gql.example/graphql", "key")
+        pod_status = _pod_state_checker("https://rest.example/v2/pods", "key")
         with mock.patch.object(
             provision_module.urllib.request,
             "urlopen",
             lambda *a, **k: FakeResponse(next(payloads)),
         ):
             first = pod_status("pod-1")
-            self.assertEqual(first, PodState(desired="RUNNING", has_runtime=True))
+            self.assertEqual(first, PodState(status="RUNNING", has_runtime=True))
             second = pod_status("pod-1")
-            self.assertEqual(second, PodState(desired="RUNNING", has_runtime=False))
+            self.assertEqual(second, PodState(status="RUNNING", has_runtime=False))
 
 
 if __name__ == "__main__":

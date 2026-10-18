@@ -1,8 +1,7 @@
 {
-  "api_url": "https://rest.runpod.io/v1/pods",
-  "openapi_url": "https://rest.runpod.io/v1/openapi.json",
+  "api_url": "https://api.runpod.io/v2/pods",
+  "openapi_url": "https://api.runpod.io/v2/openapi.json",
   "cloud_type": "SECURE",
-  "compute_type": "GPU",
   "allowed_cuda_versions": [
     "13.0"
   ],
@@ -42,8 +41,6 @@
       ]
     }
   ],
-  "gpu_type_priority": "availability",
-  "graphql_url": "https://api.runpod.io/graphql",
   "min_vram_gb": 8,
   "max_price_candidates": 3,
   "max_provision_attempts": 6,
@@ -57,5 +54,6 @@
   "same_tier_retries": 1,
   "create_deadline_seconds": 60,
   "retry_base_seconds": 10,
-  "retry_max_seconds": 60
+  "retry_max_seconds": 60,
+  "catalog_url": "https://api.runpod.io/v2/catalog/gpus"
 }

@@ -57,13 +57,14 @@ covered by `scripts/ci/LICENSE-tenferro-MIT`.
 
 Provisioning runs on a GitHub-hosted runner:
 
-1. Validate the reviewed GPU/CUDA allowlist against RunPod's live OpenAPI.
+1. Check the v2 create schema, resolve reviewed GPU IDs against the catalog,
+   and validate CUDA version syntax. Live capacity remains a separate check.
 2. Order available candidates by live Secure Cloud price, falling back to the
    reviewed tier order when pricing is unavailable. Try one GPU type at a time.
 3. Mint a fresh JIT configuration and unique runner label for every attempt.
 4. Before registering the runner, prove NVRTC compilation, PTX loading, kernel
    launch, device synchronization, readback, and at least 8 GB VRAM.
-5. Observe both the GitHub runner registry and RunPod's GraphQL runtime state.
+5. Observe both the GitHub runner registry and REST v2 Pod status/runtime.
    Delete rejected pods before trying another candidate. Stop if deletion
    cannot be confirmed.
 
@@ -76,6 +77,55 @@ from receiving the benchmark job. Rust uses CUDA 12.8, while the locked PyTorch
 wheel uses CUDA 13.0. Provisioning requests CUDA 13.0-capable hosts and startup
 rejects older drivers before transferring the runtime. Hosted preparation checks
 the wheel's CUDA version so dependency upgrades cannot bypass this requirement.
+
+## REST v2 integration
+
+All RunPod operational calls use `https://api.runpod.io/v2`. The migration follows
+[the official guide](https://docs.runpod.io/api-reference-v2/migrate-from-v1)
+and [the published OpenAPI](https://api.runpod.io/v2/openapi.json).
+
+| Purpose | REST v2 API and fields |
+| --- | --- |
+| Create | `POST /v2/pods`: `image`, `cloud`, `gpu.id/count/allowedCudaVersions`, `disk`, `mounts.persistent`, `entrypoint`, `cmd`, `env` |
+| Assigned hardware and cost | Created Pod's `gpu.id` and `cost` |
+| Pricing and stock | `GET /v2/catalog/gpus`: wrapped `gpus`, `price.secure`, `memory`, `availability` |
+| Startup and container liveness | `GET /v2/pods/{id}`: `status` and `runtime` |
+| Diagnostic listing | `GET /v2/pods`: wrapped `pods` with cursor pagination |
+| Deletion | `DELETE /v2/pods/{id}` |
+
+A v2 create selects exactly one GPU type; both priced candidates and static
+tiers are expanded into individual requests, under the existing attempt cap.
+The deployment remains Secure Cloud with no spot configuration. Invalid
+requests and insufficient balance stop creation; known capacity failures and
+inaccessible pools move to the next candidate. RFC 9457 problem diagnostics
+are redacted before logging.
+
+The previous GraphQL pricing and container-state queries have been removed.
+The replacement uses the authenticated
+[GPU catalog](https://docs.runpod.io/api-reference-v2/catalog/list-gpu-types)
+and [Pod retrieval](https://docs.runpod.io/api-reference-v2/pods/get-a-pod).
+Only `RUNNING` with a runtime plus the fresh runner registration is accepted.
+`EXITED`, `ERROR`, and `TERMINATED` reject immediately; loss of a previously
+observed runtime is also checked, rather than trusting status alone.
+
+The contract check handles v2 `allOf`/local refs. GPU IDs come from the catalog,
+not a schema enum. CUDA strings are checked against the schema's format;
+this does not prove a version is offered on a particular machine. The catalog
+availability filter and the on-Pod CUDA smoke proof keep that distinction.
+Fixtures in `scripts/ci/tests/fixtures/runpod_v2_*` record the public schema
+source/digest and response examples. Tests validate payloads against its actual
+constraints, including rejection of old flat fields.
+
+To inspect possible remaining Pods without exposing environment variables or
+startup commands (requires a key with Pod read access):
+
+```bash
+python3 -m scripts.ci.runpod_http list --config scripts/ci/runpod_config.json
+```
+
+This reads all cursor pages within a 120-second/100-page bound and prints only
+Pod ID, status, and cost. It does not automatically delete anything; no new
+reaper or retention policy is introduced.
 
 ## HTTP retries, polling, and failed cleanup
 
@@ -100,27 +150,38 @@ end-of-workflow cleanup, and the pod watchdog) use `runpod_http.py`:
   if the runner/workflow is already gone. An operator must check that log or
   the dashboard when hosted cleanup fails.
 
-Startup observes GraphQL at most once per 10 seconds normally (6 requests/minute
+Startup observes `GET /v2/pods/{id}` at most once per 10 seconds normally (6 requests/minute
 per active provisioner, excluding request duration). Failed observations use
 10/20/40/60-second exponential backoff with positive jitter, respect both
 Retry-After formats, and reset after success. Cooldown survives candidate changes.
 A failed observation remains unknown, not a container-stop signal. Missing
-runtime fields and GraphQL errors also remain unknown. Authentication and other
+runtime fields, malformed responses, and unknown lifecycle states also remain unknown. Authentication and other
 permanent HTTP failures reject the candidate and enter cleanup. Pod and GitHub
 runner requests use at most 30 seconds or the remaining 420-second startup
 budget; no new poll starts after that budget, including a long Retry-After.
 
-Pricing is one unauthenticated GraphQL query per provisioning invocation,
-with a 20-second request timeout and immediate static fallback on failure;
-there is no pricing retry loop to amplify 429s. Pricing and pod observations
-share an endpoint cooldown within the provisioner, so a pricing Retry-After
-also delays the first pod-state query. The workflow concurrency group
-allows one active benchmark workflow in this repository. It does not coordinate
-with tenferro-rs or other clients sharing an account: normal GraphQL demand is
-approximately 6 requests/minute per active provisioner plus each invocation's
-one pricing query. Budget shared-account usage using the sum across clients;
-there is no cross-repository rate limiter. These client settings do not assert
-that a particular provider quota is sufficient.
+Pricing is one authenticated catalog GET per provisioning invocation, with a
+20-second request timeout and immediate static fallback on failure. The query
+requests `include=AVAILABILITY&product=POD&cloud=SECURE`, the GPU count, and the
+configured exact CUDA versions. It reads `price.secure` (the list price per GPU),
+`memory` (VRAM), and `availability`; actual billed hourly Pod cost comes from
+`cost` on the created Pod. Missing/unknown stock is not treated as available.
+Catalog prices do not imply negotiated discounts or reserved capacity.
+
+Catalog reads, creation, Pod observations, and rejected-Pod deletion share a
+process-local cooldown, so switching operations or candidates cannot bypass
+Retry-After. Creation also respects HTTP-date Retry-After values and does not
+shorten a provider wait to fit its deadline. The standalone workflow cleanup
+steps and detached watchdog each have their own retry budget.
+
+The workflow concurrency group allows one active benchmark workflow in this
+repository. It does not coordinate with tenferro-rs or other clients sharing an
+account. Startup demand is at most approximately 6 Pod GETs/minute per active
+provisioner, plus one pricing catalog GET per invocation and bounded create and
+cleanup requests. Contract preflight separately reads the OpenAPI document and
+the GPU catalog before renting. Budget shared-account usage using the sum
+across clients; there is no cross-repository rate limiter. These settings do
+not assert that a particular provider quota is sufficient.
 
 Run the mock/fixture coverage without renting a pod:
 
