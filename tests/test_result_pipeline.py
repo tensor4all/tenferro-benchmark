@@ -82,6 +82,10 @@ class PipelineTest(unittest.TestCase):
         (repo/'result/nvidia-gpu/gpu/dense.md').write_text('Corrupted accepted report')
         with self.assertRaisesRegex(ValueError,'differs from provenance'):
             dashboard.generate(repo/'result',fixture.root/'corrupt',git_repo=repo,benchmarks_dir=repo/'benchmarks')
+        (repo/'result/nvidia-gpu/gpu/dense.md').write_bytes(payload['result/nvidia-gpu/gpu/dense.md'])
+        (repo/'result/nvidia-gpu/gpu/dense.summary.json').write_text('{}')
+        with self.assertRaisesRegex(ValueError,'differs from provenance'):
+            dashboard.generate(repo/'result',fixture.root/'corrupt-summary',git_repo=repo,benchmarks_dir=repo/'benchmarks')
 
     def test_workflow_permissions_triggers_and_stage_boundaries(self):
         load=lambda name:yaml.load((ROOT/'.github/workflows'/name).read_text(),Loader=yaml.BaseLoader)
@@ -90,6 +94,9 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(ingestion['permissions'],{'actions':'read','contents':'write'})
         self.assertEqual(ingestion['concurrency']['queue'],'max')
         self.assertEqual(publish['permissions']['contents'],'read')
+        checkout=publish['jobs']['build']['steps'][0]
+        self.assertEqual(checkout['with']['ref'],'main')
+        self.assertEqual(checkout['with']['fetch-depth'],'0')
         self.assertNotIn('actions',publish['permissions'])
         self.assertNotIn('workflow_run',publish['on'])
         self.assertEqual(publish['on']['repository_dispatch']['types'],['benchmark-results-ingested'])

@@ -52,7 +52,7 @@ with PyTorch and JAX. Their family reports live under `result/nvidia-gpu/gpu/`.
 
 Raw runs (per-timestamp `run.yaml` + machine-readable outputs) are written to
 `data/results/<target_profile>/<suite_id>/<timestamp>/`; the tracked report in
-`result/` is regenerated from the newest run. See
+`result/` is generated from the explicitly selected raw runs. See
 [docs/results.md](docs/results.md) for the full layout.
 
 A live dashboard is published to GitHub Pages at
