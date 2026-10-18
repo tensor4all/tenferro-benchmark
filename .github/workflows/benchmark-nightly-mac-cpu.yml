@@ -73,12 +73,26 @@ jobs:
           trap 'echo "CPU collection failed at line $LINENO: $BASH_COMMAND" >&2' ERR
           ./scripts/run_all.sh 1 4
 
-      - name: Archive raw results (failed runs are diagnostic only)
-        if: always()
+      - name: Package this collection's CPU results
+        run: |
+          uv run --no-project --with pyyaml --with jsonschema python scripts/ci/bundle_cpu_results.py \
+            --profile mac-cpu --harness-commit "$GITHUB_SHA" --threads 1 4
+
+      - name: Archive validated raw bundle
         uses: actions/upload-artifact@v4
         with:
-          name: mac-cpu-benchmark-results-${{ github.run_id }}
+          name: mac-cpu-benchmark-results-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: _cpu_benchmark_artifact/
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Archive failed collection diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-cpu-benchmark-diagnostics-${{ github.run_id }}
           path: |
             data/results/mac-cpu
             result/mac-cpu
+            _cpu_benchmark_artifact/
           retention-days: 90

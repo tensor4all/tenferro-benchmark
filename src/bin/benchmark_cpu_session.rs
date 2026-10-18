@@ -290,10 +290,10 @@ fn main() -> Result<()> {
         .map(|k| fixture(n, k))
         .collect::<Result<Vec<_>>>()?;
     let config = DotGeneralConfig {
-        lhs_contracting_dims: vec![1].into(),
-        rhs_contracting_dims: vec![0].into(),
-        lhs_batch_dims: vec![].into(),
-        rhs_batch_dims: vec![].into(),
+        lhs_contracting_dims: [1].into_iter().collect(),
+        rhs_contracting_dims: [0].into_iter().collect(),
+        lhs_batch_dims: [].into_iter().collect(),
+        rhs_batch_dims: [].into_iter().collect(),
     };
     // Output slots and every input are prepared before entering the session.
     let mut outputs = Vec::with_capacity(count);

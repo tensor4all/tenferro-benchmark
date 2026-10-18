@@ -2278,10 +2278,10 @@ fn batched_spd(n: usize, batch: usize, seed: u64) -> Vec<f64> {
 
 fn batched_matmul_config() -> DotGeneralConfig {
     DotGeneralConfig {
-        lhs_contracting_dims: vec![1].into(),
-        rhs_contracting_dims: vec![0].into(),
-        lhs_batch_dims: vec![2].into(),
-        rhs_batch_dims: vec![2].into(),
+        lhs_contracting_dims: [1].into_iter().collect(),
+        rhs_contracting_dims: [0].into_iter().collect(),
+        lhs_batch_dims: [2].into_iter().collect(),
+        rhs_batch_dims: [2].into_iter().collect(),
     }
 }
 
