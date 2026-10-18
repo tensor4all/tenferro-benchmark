@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import sys
 import subprocess
 import tempfile
 import zipfile
@@ -39,7 +40,11 @@ def selected_source(run_id: int):
         page += 1
         if page > 100:
             raise ValueError('Artifact pagination exceeded limit')
-    selected = [item for item in artifacts if item['name'] == f'{prefix}-{run_id}']
+    from datetime import datetime
+    names = {f'{prefix}-{run_id}', f"{prefix}-{run_id}-attempt{run['run_attempt']}"}
+    selected = [item for item in artifacts if item['name'] in names
+                and datetime.fromisoformat(item['created_at'].replace('Z', '+00:00')) >=
+                datetime.fromisoformat(run['run_started_at'].replace('Z', '+00:00'))]
     if len(selected) != 1:
         raise ValueError('Selected run must contain exactly one named result artifact; no fallback is allowed')
     artifact = selected[0]
@@ -167,7 +172,7 @@ if __name__ == '__main__':
         main()
     except Exception as error:
         message = f'Benchmark ingestion rejected or failed: {error}'
-        print(message, file=__import__('sys').stderr)
+        print(message, file=sys.stderr)
         if os.environ.get('GITHUB_STEP_SUMMARY'):
             with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
                 output.write('## Benchmark ingestion failed\n\n' + message + '\n')

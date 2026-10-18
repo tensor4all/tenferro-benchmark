@@ -81,7 +81,7 @@ jobs:
       - name: Archive validated raw bundle
         uses: actions/upload-artifact@v4
         with:
-          name: mac-cpu-benchmark-results-${{ github.run_id }}
+          name: mac-cpu-benchmark-results-${{ github.run_id }}-attempt${{ github.run_attempt }}
           path: _cpu_benchmark_artifact/
           if-no-files-found: error
           retention-days: 90

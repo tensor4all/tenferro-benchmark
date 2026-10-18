@@ -54,7 +54,8 @@ def source_from_api(run: dict, artifact: dict) -> tuple[str, dict]:
             or run.get('status') != 'completed' or workflow not in WORKFLOWS):
         raise ValueError('Run is not a successful canonical main workflow')
     profile, prefix = WORKFLOWS[workflow]
-    if artifact.get('expired') or artifact['name'] != f"{prefix}-{run['id']}":
+    names = {f"{prefix}-{run['id']}", f"{prefix}-{run['id']}-attempt{run['run_attempt']}"}
+    if artifact.get('expired') or artifact['name'] not in names:
         raise ValueError('Artifact is expired or has an unexpected name')
     if instant(artifact['created_at']) < instant(run['run_started_at']):
         raise ValueError('Artifact predates the selected run attempt')
