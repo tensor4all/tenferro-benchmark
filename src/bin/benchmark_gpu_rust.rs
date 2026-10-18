@@ -2440,10 +2440,10 @@ const ELEMENTWISE_CHAIN_STEPS: usize = 8;
 
 fn batched_matmul_cfg() -> DotGeneralConfig {
     DotGeneralConfig {
-        lhs_contracting_dims: vec![1].into(),
-        rhs_contracting_dims: vec![0].into(),
-        lhs_batch_dims: vec![2].into(),
-        rhs_batch_dims: vec![2].into(),
+        lhs_contracting_dims: vec![1].into_iter().collect(),
+        rhs_contracting_dims: vec![0].into_iter().collect(),
+        lhs_batch_dims: vec![2].into_iter().collect(),
+        rhs_batch_dims: vec![2].into_iter().collect(),
     }
 }
 
