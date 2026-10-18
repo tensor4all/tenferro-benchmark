@@ -262,44 +262,36 @@ einsum, sparse, and tensornetwork. A specific suite YAML or comma-separated list
 can be supplied instead. Standalone GPU runners such as permutation and linalg
 AD latency are not included in `all`.
 
-Download the `runpod-gpu-benchmark-<run_id>` artifact for raw measurements under
+Download the `runpod-gpu-benchmark-<run_id>-attempt<attempt>` artifact
+(legacy bundles use the run-ID-only name) for raw measurements under
 `data/results/nvidia-gpu/` and reports under `result/nvidia-gpu/`. The workflow
 does not commit generated reports. The hosted build produces a fresh Rust binary
 for every invocation; local benchmark entry points rebuild before measurement.
 
-After successful GPU or CPU nightly runs on `main`, `publish-results.yml`
-automatically deploys the reports to https://tensor4all.org/tenferro-benchmark/.
-It starts with maintained reports in `result/`, overlays successful CPU
-artifacts, then takes the latest validated GPU artifact separately for each
-suite. Running one GPU suite therefore preserves other suites' latest reports.
-Manual publication and the daily schedule remain available.
+After successful GPU or CPU nightly runs on `main`, `ingest-results.yml`
+downloads that exact run's result bundle, validates it, and commits accepted
+report/summary/provenance files. The GPU schema-2 publication manifest is
+revalidated against raw measurements, digests and the exact standard
+`NVIDIA A100 80GB PCIe` hardware. Missing/expired artifacts, incorrect hardware,
+incomplete suites, and failed verification are visible errors; there is no
+latest-run search or silent artifact fallback. Older valid results and duplicate
+submissions are explicit no-ops. Complete selected suites update independently
+without removing other committed suites.
 
-GPU publication is a per-suite choice between the repository's committed A100
-report/summary and the latest successful weekly RunPod bundle. The RunPod bundle
-wins only when it is newer than the summary already copied into the site's
-`result/nvidia-gpu` tree and is eligible; a bundle is eligible only when its
-recorded GPU is an NVIDIA A100 and it contains the dashboard `*.summary.json`
-sidecar produced by the current harness. Non-A100 bundles and older-harness
-bundles without a summary are skipped with one log line, leaving the repository
-A100 results in place. The chosen report `.md`, summary `.json`, and raw run are
-copied into the Pages tree before the dashboard generator runs.
-
-GPU publication requires every requested problem/backend row to be present,
-with finite measurements and passing verification. Explicit unsupported rows
-remain labeled unsupported; runtime failures, unconfigured backends, missing
-rows, and failed verification block publication. The bundle includes only this
-invocation's raw data and reports, plus a hashed publication manifest. Failed
-runs preserve available diagnostic raw data without a publication manifest.
-Pages rechecks the manifest and measurements without executing artifact code.
-It searches the latest 100 successful main runs; artifacts are retained for
-30 days. When artifacts expire, the maintained repository reports provide the
-fallback. Raw data are published under `raw/nvidia-gpu/gpu/<suite>/<timestamp>/`.
+`publish-results.yml` generates https://tensor4all.org/tenferro-benchmark/ only
+from committed `result/` and git history. It does not download benchmark data.
+Raw bundles remain in the exact source run's artifact store, linked from each
+accepted suite's provenance. New result bundles retain raw data for 90 days;
+legacy GPU bundles may expire after the earlier 30-day policy. The API-recorded
+expiry is authoritative. Expiry does not change published report data.
 
 CPU nightlies resolve `tenferro_ref` once per invocation and keep that detached
-revision for all suites. Linux collection runs in the maintained MKL CPU
-devcontainer; macOS uses native execution. Failed CPU artifacts are diagnostic
-only and are not overlaid by Pages. Shared hosted CPU runners remain reference
-indicators rather than canonical regression measurements.
+revision for all suites. Linux collection uses the maintained MKL CPU
+container; macOS uses native execution. CPU bundles explicitly identify the
+selected 1T/4T raw sources, and ingestion regenerates summaries with trusted
+formatters. Failed runs upload separate diagnostics and cannot publish. Shared
+hosted CPU runners remain reference indicators, not controlled performance
+measurements. See [result ingestion](result-ingestion.md) for run-ID recovery.
 
 By default the cleanup job deletes the pod, including after benchmark failure
 or cancellation. `keep_failed_pod=true` retains the pod only when the benchmark

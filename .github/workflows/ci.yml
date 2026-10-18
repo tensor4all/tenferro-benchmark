@@ -112,7 +112,7 @@ jobs:
         run: bash tests/test_suite_result_layout.sh
 
       - name: Validate results dashboard
-        run: uv run python -m unittest tests.test_generate_dashboard
+        run: uv run python -m unittest tests.test_generate_dashboard tests.test_result_pipeline tests.test_cpu_thread_reports
 
       - name: Check public API report output without runner stdout
         run: bash tests/test_public_api_table_output.sh

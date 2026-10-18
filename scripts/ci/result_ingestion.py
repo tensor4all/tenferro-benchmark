@@ -109,6 +109,9 @@ def validate_summary(document: dict, profile: str, entry: dict) -> None:
             value = row.get('median')
             if type(value) not in (int, float) or not math.isfinite(value) or value < 0 or row.get('verified') is not True:
                 raise ValueError(f'Invalid or unverified measurement: {key}')
+            iqr = row.get('iqr')
+            if iqr is not None and (type(iqr) not in (int, float) or not math.isfinite(iqr) or iqr < 0):
+                raise ValueError(f'Invalid timing IQR: {key}')
             measured += 1
         elif (row['status'] not in ('unsupported', 'skipped') and not str(row['status']).startswith('unsupported:')) or not row.get('reason') or row.get('median') is not None:
             raise ValueError(f'Incomplete or unexplained row: {key}')

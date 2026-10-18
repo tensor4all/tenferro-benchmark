@@ -1,0 +1,3 @@
+# Rendering-only dependencies, matching the repository uv.lock.
+Markdown==3.11
+PyYAML==6.0.3

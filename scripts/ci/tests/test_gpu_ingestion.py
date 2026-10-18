@@ -66,6 +66,19 @@ class GPUIngestionTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'differs from raw'):
             self.validate()
 
+    def test_consistent_nonstandard_a100_model_is_rejected(self):
+        model='NVIDIA A100-SXM4-80GB'
+        self.rewrite_summary(lambda doc: doc['hardware'].update(gpu=model))
+        relative='data/results/nvidia-gpu/gpu/dense/20261018_000000/run.yaml'
+        metadata=yaml.safe_load((self.bundle/relative).read_text())
+        metadata['cuda']['device_name']=model
+        (self.bundle/relative).write_text(yaml.safe_dump(metadata))
+        manifest=json.loads((self.bundle/'publication.json').read_text())
+        manifest['suites'][0]['files'][relative]=digest(self.bundle/relative)
+        (self.bundle/'publication.json').write_text(json.dumps(manifest))
+        with self.assertRaisesRegex(ValueError,'Only standard NVIDIA A100 80GB PCIe'):
+            self.validate()
+
     def test_nonstandard_hardware_and_conflicting_revision_rejected(self):
         for field, change in [('hardware', lambda doc: doc['hardware'].update(gpu='NVIDIA A100-SXM4-80GB')),
                               ('revision', lambda doc: doc.update(tenferro_commit='c'*40))]:

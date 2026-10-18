@@ -233,3 +233,48 @@ attempt and collection timestamps outside the selected attempt are rejected.
 A repository-dispatch listener must be present before final Pages cutover.
 
 GitHub concurrency queue semantics: [official documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
+
+## Operational commands
+
+Validate a specific existing run without committing or publishing:
+
+```bash
+gh workflow run ingest-results.yml -f run_id=RUN_ID -f validate_only=true
+```
+
+Ingest that same run through the identical validation path:
+
+```bash
+gh workflow run ingest-results.yml -f run_id=RUN_ID -f validate_only=false
+```
+
+Inspect the ingestion run's step summary for the source ID, result commit,
+and per-suite accepted/stale/duplicate decisions. A rejection exits nonzero
+and states the failed check. A successful ingestion requests Pages even when
+all suites are duplicate/stale, so repeating the command recovers a dispatch
+failure after a successful commit. To republish an already committed tree
+without downloading any benchmark data:
+
+```bash
+gh workflow run publish-results.yml
+```
+
+For local rendering from a full-history checkout:
+
+```bash
+uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt \
+  python scripts/generate_dashboard.py --result-dir result --output-dir _site --git-repo .
+```
+
+Render-only dependencies are pinned separately to the versions in `uv.lock`.
+The generated suite pages include raw artifact expiry and link provenance JSON.
+Legacy pages do not infer raw URLs. Corruption of a report or summary with
+accepted provenance fails rendering rather than quietly substituting an older
+report. The renderer has no artifact API permissions and never creates a
+`_site/raw` overlay.
+
+For rollback, revert the accepted result commit (report, summary and provenance
+together) and dispatch Pages. Record and resolve the source-run problem before
+retrying ingestion; merely reverting a result is not a permanent exclusion.
+Use the ingestion concurrency queue and normal push retry path. Do not bypass
+validation, force-push, or manually change timing values.
