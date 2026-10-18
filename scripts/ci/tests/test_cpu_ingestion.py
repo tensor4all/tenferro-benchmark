@@ -21,7 +21,7 @@ class CPUIngestionTest(unittest.TestCase):
         self.run.mkdir(parents=True)
         self.metadata = {'target_profile': 'amd-cpu', 'suite_id': 'cpu/fft',
                          'timestamp': '2026-10-18T00:00:00+00:00',
-                         'tenferro_rs': {'commit': 'b'*40, 'features':['blas-mkl']}, 'blas':{'implementation':'mkl'}, 'harness': {'commit': 'a'*40},
+                         'tenferro_rs': {'commit': 'b'*40, 'features':['blas-mkl']}, 'blas':{'implementation':'mkl'}, 'python_backends':{'pytorch':{'provider':'mkl'}}, 'harness': {'commit': 'a'*40},
                          'environment': {'hostname': 'fixture', 'cpu': 'Fixture CPU', 'env':{'RAYON_NUM_THREADS':'1'}}}
         (self.run/'run.yaml').write_text(yaml.safe_dump(self.metadata))
         for thread in (1,4):
@@ -96,6 +96,12 @@ class CPUIngestionTest(unittest.TestCase):
     def test_missing_declared_workload_fails_collection(self):
         self.csv.write_text(self.csv.read_text().splitlines()[0]+'\n')
         with self.assertRaisesRegex(ValueError,'No CPU raw measurements|raw threads'):
+            self.package()
+
+    def test_mismatched_pytorch_provider_cannot_publish(self):
+        self.metadata['python_backends']['pytorch']['provider']='openblas'
+        (self.run/'run.yaml').write_text(yaml.safe_dump(self.metadata))
+        with self.assertRaisesRegex(ValueError,'MKL-backed PyTorch'):
             self.package()
 
     def test_mac_profile_uses_the_same_offline_path(self):
