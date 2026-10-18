@@ -171,6 +171,11 @@ def build_source(bundle: Path, descriptor: dict, suite: str, profile: str, sourc
         if (thread_metadata.get('tenferro_rs', {}).get('commit') != document['tenferro_commit']
                 or thread_metadata.get('target_profile') != profile):
             raise ValueError('CPU per-thread metadata identity mismatch')
+        if (thread_metadata.get('tenferro_rs', {}).get('features') != metadata.get('tenferro_rs', {}).get('features')
+                or thread_metadata.get('blas', {}).get('implementation') != metadata.get('blas', {}).get('implementation')):
+            raise ValueError('CPU sources mix BLAS providers/features')
+        if 'run_started_at' in source and not (instant(source['run_started_at']) <= instant(thread_metadata['timestamp']) <= instant(source['created_at'])):
+            raise ValueError('CPU source timestamp is outside the selected run attempt')
         value = thread_metadata.get('environment', {}).get('env', {}).get('RAYON_NUM_THREADS')
         if value is None:
             raise ValueError('CPU per-thread metadata lacks RAYON_NUM_THREADS')
