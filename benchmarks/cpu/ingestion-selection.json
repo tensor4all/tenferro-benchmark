@@ -38,6 +38,15 @@
     "cpu/permutation": {
       "row_count": 92,
       "identities_sha256": "937fa4f38cbbe98f0daf3b76ec98866622deaf707c1a6ef200270b7b8a10063e"
+    },
+    "cpu/overhead_smoke": {
+      "row_count": 10,
+      "identities_sha256": "2523684bbf328157d8339c4596abf857d240d17c7a8464201ea0cb6fac6667f1"
     }
+  },
+  "suite_threads": {
+    "cpu/overhead_smoke": [
+      1
+    ]
   }
 }

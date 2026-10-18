@@ -10,12 +10,14 @@ latest ``result/<target_profile>/cpu/overhead_smoke.md``.
 """
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import statistics
 import subprocess
 
 import yaml
+import report_summary
 
 from benchmark_layout import safe_target_profile
 from generate_overhead_smoke_cases import case_timing_scope, STEADY_SCOPE, ENTRY_SCOPE
@@ -88,6 +90,40 @@ def collect(binary, output, threads):
             out.write(json.dumps(row) + "\n")
             print(f"{cid}: {row['correctness_status']}")
     return failed
+
+
+def build_summary(records, metadata):
+    """Rebuild ns/op and allocator trends from original retained-output samples."""
+    rows = []
+    for record in records:
+        values = []
+        for sample in record.get("samples", []):
+            elapsed, count = sample["elapsed_ns"], sample["iterations"]
+            if (type(elapsed) not in (int, float) or not math.isfinite(elapsed)
+                    or elapsed < 0 or type(count) is not int or count <= 0):
+                raise ValueError("Invalid overhead batch sample")
+            values.append(elapsed / count)
+        verified = record.get("correctness_status") == "passed"
+        ok = verified and bool(values)
+        quartiles = statistics.quantiles(values, n=4, method="inclusive") if len(values) > 1 else [0]*3
+        scope = case_timing_scope(record)
+        row = report_summary.make_row(
+            record["case_id"], "tenferro-rs", statistics.median(values) if ok else None,
+            iqr=quartiles[2]-quartiles[0] if ok else None,
+            status="ok" if ok else "failed", verified=verified,
+            group=f"threads={record['threads']} / scope={scope}",
+            reason=record.get("error"))
+        row.update(timing_scope=scope, backend_thread_budget=record["backend_thread_budget"])
+        counters = record.get("counters") or [{}]
+        for key in ("host_allocations_per_op", "host_allocated_bytes_per_op"):
+            value = counters[0].get(key)
+            if ok and (type(value) not in (int, float) or not math.isfinite(value) or value < 0):
+                raise ValueError("Invalid overhead allocation counter")
+            row[key] = value
+        rows.append(row)
+    header = report_summary.metadata_from_run_metadata(metadata)
+    header["hardware"]["threads"] = sorted({record["threads"] for record in records})
+    return report_summary.build_document(rows, **header, unit="ns")
 
 
 def summary(row):
@@ -273,6 +309,9 @@ def report(run_dir, target):
     latest = ROOT / "result" / target / "cpu" / "overhead_smoke.md"
     latest.parent.mkdir(parents=True, exist_ok=True)
     latest.write_text(text)
+    document = build_summary(rows, metadata if run_yaml.exists() else {})
+    report_summary.write_document(run_dir / "report.summary.json", document)
+    report_summary.write_document(latest.with_suffix(".summary.json"), document)
     print(latest)
 
 

@@ -46,6 +46,7 @@ class OverheadSmokeTests(unittest.TestCase):
             run.mkdir(parents=True)
             base = {
                 'refs': ['tenferro-rs#2178'],
+                'threads': 1,
                 'note': 'fixture',
                 'backend_thread_budget': 1,
                 'correctness_status': 'passed',

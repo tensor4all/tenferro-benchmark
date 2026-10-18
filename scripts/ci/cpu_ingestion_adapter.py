@@ -36,12 +36,13 @@ def validate_selection(document):
     expected = plan['suites'].get(document['suite_id'])
     if expected != {'row_count': len(rows), 'identities_sha256': fingerprint}:
         raise ValueError(f"CPU workload selection does not match declared nightly inventory: {document['suite_id']}")
-    if document['hardware'].get('threads') != plan['threads']:
+    expected_threads = plan.get('suite_threads', {}).get(document['suite_id'], plan['threads'])
+    if document['hardware'].get('threads') != expected_threads:
         raise ValueError('CPU nightly thread selection mismatch')
 
 
 CPU_SUITES = ('einsum', 'cpu_ops', 'linalg_jvp_vjp', 'fft', 'public_api',
-              'small_work', 'session_matrix', 'permutation')
+              'small_work', 'session_matrix', 'permutation', 'overhead_smoke')
 
 
 def identities(document):
@@ -130,6 +131,23 @@ def build_source(bundle: Path, descriptor: dict, suite: str, profile: str, sourc
                 record = by_key[(row['case'], threads, row['backend'])]
                 if record.get('notes'):
                     row['reason'] = record['notes']
+    elif suite == 'cpu/overhead_smoke':
+        from benchmark_overhead_smoke import build_summary
+        from generate_overhead_smoke_cases import generate_cases, case_timing_scope
+        records = [row for path in raw for row in read_jsonl(path)]
+        cases = {case['id']: case for case in generate_cases()}
+        policy = metadata.get('collection', {}).get('timing_scopes_by_case')
+        if not isinstance(policy, dict) or set(policy) != set(cases):
+            raise ValueError('Overhead smoke requires explicit per-case timing metadata')
+        for record in records:
+            case = cases.get(record['case_id'])
+            if (case is None or record.get('suite_id') != suite or type(record.get('threads')) is not int
+                    or record['threads'] != 1 or record.get('fixture') != case['fixture']
+                    or record.get('backend_thread_budget') != case['backend_thread_budget']
+                    or record.get('timing_scope') != case_timing_scope(case)
+                    or policy[record['case_id']] != case_timing_scope(case)):
+                raise ValueError('Overhead smoke case, thread budget or timing scope mismatch')
+        document = build_summary(records, metadata)
     elif suite in ('cpu/small_work', 'cpu/session_matrix'):
         records = [row for path in raw for row in read_jsonl(path)]
         rows = []

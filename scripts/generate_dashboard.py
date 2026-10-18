@@ -1529,7 +1529,9 @@ def render_suite_page(
     body.append(render_provenance(view))
     if suite_id == "cpu/fft":
         body.append('<p class="notice">Timing diagnostic: the original report identifies setup-inclusive paths. These values are not compliant operation-performance evidence.</p>')
-    if document:
+    if suite_id == "cpu/overhead_smoke":
+        body.append('<p class="notice">Non-gating trend: eight steady-state operations and two runtime session-entry diagnostics are shown separately in the original report below. Allocation counts come from a separate pooled pass.</p>')
+    if document and suite_id != "cpu/overhead_smoke":
         unit = document.get("unit", "ms")
         grouped = case_rows(document)
         for regime in REGIMES:
