@@ -71,6 +71,8 @@ def build_source(bundle: Path, descriptor: dict, suite: str, profile: str, sourc
     features = metadata.get('tenferro_rs', {}).get('features', [])
     if profile == 'amd-cpu' and ('blas-mkl' not in features or metadata.get('blas', {}).get('implementation') != 'mkl'):
         raise ValueError('Standard Linux CPU publication requires recorded MKL collection')
+    if profile == 'amd-cpu' and metadata.get('python_backends', {}).get('pytorch', {}).get('provider') != 'mkl':
+        raise ValueError('Standard Linux CPU publication requires recorded MKL-backed PyTorch')
     if profile == 'mac-cpu' and 'blas-accelerate' not in features:
         raise ValueError('Standard macOS CPU publication requires recorded Accelerate collection')
     metadata = dict(metadata, suite_id=suite)
