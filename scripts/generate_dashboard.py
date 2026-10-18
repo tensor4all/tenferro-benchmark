@@ -1316,7 +1316,8 @@ def render_family(
             flagged_count = sum(1 for (case_id, group), _ in flagged.items() if (case_id, group) in {(c.case, c.group) for c in cases})
             suffix = f" · {flagged_count} flagged" if flagged_count else ""
             suite_dir = view.suite_id.split("/", 1)[0]
-            suite_href = f"../{view.profile}/{suite_dir}/{view.report.stem}.html"
+            up = "../../" if regime == LATENCY else "../"
+            suite_href = f"{up}{view.profile}/{suite_dir}/{view.report.stem}.html"
             body.append('<details class="suite-block" open>')
             body.append(
                 f'<summary><code>{esc(view.suite_id)}</code> '
