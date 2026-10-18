@@ -294,24 +294,10 @@ jobs:
           PYTHONUNBUFFERED: "1"
         run: |
           set -euo pipefail
-          {
-          cat <<STARTUP
-          # Rental cap independent of GitHub: delete this pod after the budget
-          # even if the workflow or its cleanup job never runs, using the
-          # pod-scoped RUNPOD_API_KEY and RUNPOD_POD_ID that RunPod injects.
-          # The status file records only which prerequisites exist.
-          echo "RUNPOD_POD_ID=\${RUNPOD_POD_ID:+set} RUNPOD_API_KEY=\${RUNPOD_API_KEY:+set}" \
-            "runpodctl=\$(command -v runpodctl || echo missing) curl=\$(command -v curl || echo missing)" \
-            > /tmp/pod-watchdog.status
-          if [[ -n "\${RUNPOD_POD_ID:-}" && -n "\${RUNPOD_API_KEY:-}" ]]; then
-            nohup bash -c 'sleep ${POD_MAX_LIFETIME_SECONDS}
-              runpodctl remove pod "\$RUNPOD_POD_ID" ||
-                curl -fsS -X DELETE "https://rest.runpod.io/v1/pods/\$RUNPOD_POD_ID" \
-                  -H "Authorization: Bearer \$RUNPOD_API_KEY"' >/tmp/pod-watchdog.log 2>&1 &
-            echo \$! > /tmp/pod-watchdog.pid
-          fi
-          STARTUP
-          cat <<'STARTUP'
+          python3 -m scripts.ci.runpod_watchdog \
+            --config scripts/ci/runpod_config.json \
+            --lifetime "$POD_MAX_LIFETIME_SECONDS" > /tmp/runpod-startup.sh
+          cat >> /tmp/runpod-startup.sh <<'STARTUP'
           set -euo pipefail
           export DEBIAN_FRONTEND=noninteractive
           export RUNNER_ALLOW_RUNASROOT=1
@@ -320,8 +306,8 @@ jobs:
           nvidia-smi
           cat > /tmp/cuda_smoke_test.py <<'SMOKE'
           STARTUP
-          cat scripts/ci/cuda_smoke_test.py
-          cat <<'STARTUP'
+          cat scripts/ci/cuda_smoke_test.py >> /tmp/runpod-startup.sh
+          cat >> /tmp/runpod-startup.sh <<'STARTUP'
           SMOKE
           env -u RUNNER_JIT_CONFIG python3 /tmp/cuda_smoke_test.py \
             --min-runtime-version 12.8 --full-runtime-version 12.8 --min-driver-version 13.0 --min-vram-gb 8 --skip-nvrtc-install
@@ -337,7 +323,6 @@ jobs:
           ./bin/installdependencies.sh
           ./run.sh --jitconfig "${RUNNER_JIT_CONFIG}"
           STARTUP
-          } > /tmp/runpod-startup.sh
           python3 -m scripts.ci.runpod_provision \
             --config scripts/ci/runpod_config.json \
             --startup-script /tmp/runpod-startup.sh \
@@ -351,10 +336,7 @@ jobs:
           POD_ID: ${{ steps.create_pod.outputs.pod_id }}
         run: |
           set -euo pipefail
-          status="$(curl -sS -o /tmp/delete-startup.json -w '%{http_code}' \
-            -X DELETE "https://rest.runpod.io/v1/pods/${POD_ID}" \
-            -H "Authorization: Bearer ${RUNPOD_API_KEY}")"
-          [[ "$status" == 404 || ("$status" -ge 200 && "$status" -lt 300) ]]
+          python3 -m scripts.ci.runpod_http delete --config scripts/ci/runpod_config.json
 
   run-gpu-benchmark:
     name: Run GPU benchmark on RunPod
@@ -377,15 +359,9 @@ jobs:
           set -euo pipefail
           cat /tmp/pod-watchdog.status
           kill -0 "$(cat /tmp/pod-watchdog.pid)"
-          # Prove the pod-scoped credentials reach this pod via the API the
-          # watchdog uses (read-only).
-          if command -v runpodctl >/dev/null; then
-            runpodctl get pod "$RUNPOD_POD_ID" >/dev/null
-          else
-            curl -fsS -o /dev/null "https://rest.runpod.io/v1/pods/$RUNPOD_POD_ID" \
-              -H "Authorization: Bearer $RUNPOD_API_KEY"
-          fi
-          echo "Pod deletes itself ${POD_MAX_LIFETIME_SECONDS}s after startup."
+          # The exact HTTP client used by the watchdog verifies its credentials.
+          python3 /tmp/runpod_http.py get --api-url "$(cat /tmp/pod-watchdog-api-url)"
+          echo "Pod watchdog starts deletion after ${POD_MAX_LIFETIME_SECONDS}s (180s retry budget)."
 
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
@@ -480,6 +456,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Delete RunPod pod
         if: >-
           needs.start-runpod.outputs.pod_id != '' &&
@@ -489,8 +468,4 @@ jobs:
           POD_ID: ${{ needs.start-runpod.outputs.pod_id }}
         run: |
           set -euo pipefail
-          status="$(curl -sS -o /tmp/delete.json -w '%{http_code}' \
-            -X DELETE "https://rest.runpod.io/v1/pods/${POD_ID}" \
-            -H "Authorization: Bearer ${RUNPOD_API_KEY}")"
-          cat /tmp/delete.json || true
-          [[ "$status" == 404 || ("$status" -ge 200 && "$status" -lt 300) ]]
+          python3 -m scripts.ci.runpod_http delete --config scripts/ci/runpod_config.json

@@ -73,7 +73,7 @@ class ProvisionTests(unittest.TestCase):
         clock = Clock()
         online_after = {"count": 3}
 
-        def runner_online(label: str) -> bool:
+        def runner_online(label: str, **kwargs) -> bool:
             online_after["count"] -= 1
             return online_after["count"] <= 0
 
@@ -85,7 +85,7 @@ class ProvisionTests(unittest.TestCase):
             mint_runner=lambda label: f"jit-{label}",
             create=lambda req, jit: created("pod-1", "NVIDIA A40", req.tier_name),
             runner_online=runner_online,
-            pod_status=lambda pod_id: live(),
+            pod_status=lambda pod_id, **kwargs: live(),
             delete_pod=lambda pod_id: (deleted.append(pod_id), True)[1],
             monotonic=clock.monotonic,
             sleep=clock.sleep,
@@ -121,8 +121,8 @@ class ProvisionTests(unittest.TestCase):
             label_prefix="runpod-1-1",
             mint_runner=lambda label: f"jit-{label}",
             create=create,
-            runner_online=lambda label: current["id"] in accepted,
-            pod_status=lambda pod_id: live(statuses[pod_id]),
+            runner_online=lambda label, **kwargs: current["id"] in accepted,
+            pod_status=lambda pod_id, **kwargs: live(statuses[pod_id]),
             delete_pod=lambda pod_id: (deleted.append(pod_id), True)[1],
             publish_pod_id=published.append,
             monotonic=clock.monotonic,
@@ -143,8 +143,8 @@ class ProvisionTests(unittest.TestCase):
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
                 create=lambda req, jit: created("pod-slow", "NVIDIA A40", req.tier_name),
-                runner_online=lambda label: False,
-                pod_status=lambda pod_id: live(),
+                runner_online=lambda label, **kwargs: False,
+                pod_status=lambda pod_id, **kwargs: live(),
                 delete_pod=lambda pod_id: (deleted.append(pod_id), True)[1],
                 monotonic=clock.monotonic,
                 sleep=clock.sleep,
@@ -167,8 +167,8 @@ class ProvisionTests(unittest.TestCase):
             label_prefix="runpod-1-1",
             mint_runner=lambda label: f"jit-{label}",
             create=create,
-            runner_online=lambda label: True,
-            pod_status=lambda pod_id: live(),
+            runner_online=lambda label, **kwargs: True,
+            pod_status=lambda pod_id, **kwargs: live(),
             delete_pod=lambda pod_id: self.fail("no pod to delete"),
             monotonic=clock.monotonic,
             sleep=clock.sleep,
@@ -193,7 +193,7 @@ class ProvisionTests(unittest.TestCase):
             minted.append(label)
             return f"jit-{label}"
 
-        def runner_online(label: str) -> bool:
+        def runner_online(label: str, **kwargs) -> bool:
             waited.append(label)
             return label == "runpod-1-1-c2"
 
@@ -204,7 +204,7 @@ class ProvisionTests(unittest.TestCase):
             mint_runner=mint_runner,
             create=lambda req, jit: (jits.append(jit), next(pods))[1],
             runner_online=runner_online,
-            pod_status=lambda pod_id: live(statuses[pod_id]),
+            pod_status=lambda pod_id, **kwargs: live(statuses[pod_id]),
             delete_pod=lambda pod_id: True,
             monotonic=clock.monotonic,
             sleep=clock.sleep,
@@ -236,8 +236,8 @@ class ProvisionTests(unittest.TestCase):
             label_prefix="runpod-1-1",
             mint_runner=lambda label: f"jit-{label}",
             create=create,
-            runner_online=lambda label: True,
-            pod_status=lambda pod_id: live(),
+            runner_online=lambda label, **kwargs: True,
+            pod_status=lambda pod_id, **kwargs: live(),
             delete_pod=lambda pod_id: (deleted.append(pod_id), True)[1],
             publish_pod_id=published.append,
             monotonic=clock.monotonic,
@@ -262,8 +262,8 @@ class ProvisionTests(unittest.TestCase):
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
                 create=create,
-                runner_online=lambda label: False,
-                pod_status=lambda pod_id: live("EXITED"),
+                runner_online=lambda label, **kwargs: False,
+                pod_status=lambda pod_id, **kwargs: live("EXITED"),
                 delete_pod=lambda pod_id: False,
                 monotonic=clock.monotonic,
                 sleep=clock.sleep,
@@ -290,8 +290,8 @@ class ProvisionTests(unittest.TestCase):
             # The runner registry reports online the whole time (stale or
             # died-after-registering record); the dead pod must still be
             # rejected.
-            runner_online=lambda label: True,
-            pod_status=lambda pod_id: live(statuses[pod_id]),
+            runner_online=lambda label, **kwargs: True,
+            pod_status=lambda pod_id, **kwargs: live(statuses[pod_id]),
             delete_pod=lambda pod_id: (deleted.append(pod_id), True)[1],
             monotonic=clock.monotonic,
             sleep=clock.sleep,
@@ -317,8 +317,8 @@ class ProvisionTests(unittest.TestCase):
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
                 create=lambda req, jit: created("pod-dead", "NVIDIA A40", req.tier_name),
-                runner_online=lambda label: False,
-                pod_status=lambda pod_id: next(states),
+                runner_online=lambda label, **kwargs: False,
+                pod_status=lambda pod_id, **kwargs: next(states),
                 delete_pod=lambda pod_id: (deleted.append(pod_id), True)[1],
                 monotonic=clock.monotonic,
                 sleep=clock.sleep,
@@ -332,7 +332,7 @@ class ProvisionTests(unittest.TestCase):
         clock = Clock()
         boot = {"polls": 0}
 
-        def pod_status(pod_id: str) -> PodState:
+        def pod_status(pod_id: str, **kwargs) -> PodState:
             boot["polls"] += 1
             # Image pull phase: runtime not yet present.
             return PodState(desired="RUNNING", has_runtime=boot["polls"] > 3)
@@ -343,7 +343,7 @@ class ProvisionTests(unittest.TestCase):
             label_prefix="runpod-1-1",
             mint_runner=lambda label: f"jit-{label}",
             create=lambda req, jit: created("pod-boot", "NVIDIA A40", req.tier_name),
-            runner_online=lambda label: boot["polls"] > 5,
+            runner_online=lambda label, **kwargs: boot["polls"] > 5,
             pod_status=pod_status,
             delete_pod=lambda pod_id: self.fail("healthy pod must not be deleted"),
             monotonic=clock.monotonic,
@@ -360,8 +360,8 @@ class ProvisionTests(unittest.TestCase):
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
                 create=lambda req, jit: created("pod-debug", "NVIDIA A40", req.tier_name),
-                runner_online=lambda label: False,
-                pod_status=lambda pod_id: live("EXITED"),
+                runner_online=lambda label, **kwargs: False,
+                pod_status=lambda pod_id, **kwargs: live("EXITED"),
                 delete_pod=lambda pod_id: self.fail("debug mode must not delete"),
                 keep_failed_pods=True,
                 monotonic=clock.monotonic,
@@ -384,8 +384,8 @@ class ProvisionTests(unittest.TestCase):
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
                 create=create,
-                runner_online=lambda label: True,
-                pod_status=lambda pod_id: live(),
+                runner_online=lambda label, **kwargs: True,
+                pod_status=lambda pod_id, **kwargs: live(),
                 delete_pod=lambda pod_id: True,
                 monotonic=clock.monotonic,
                 sleep=clock.sleep,
@@ -416,8 +416,8 @@ class ProvisionTests(unittest.TestCase):
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
                 create=create,
-                runner_online=lambda label: False,
-                pod_status=lambda pod_id: live(),
+                runner_online=lambda label, **kwargs: False,
+                pod_status=lambda pod_id, **kwargs: live(),
                 delete_pod=lambda pod_id: True,
                 monotonic=clock.monotonic,
                 sleep=clock.sleep,
@@ -450,8 +450,8 @@ class ProvisionTests(unittest.TestCase):
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
                 create=create,
-                runner_online=lambda label: False,
-                pod_status=lambda pod_id: live(),
+                runner_online=lambda label, **kwargs: False,
+                pod_status=lambda pod_id, **kwargs: live(),
                 delete_pod=lambda pod_id: True,
                 monotonic=clock.monotonic,
                 sleep=clock.sleep,
@@ -483,8 +483,8 @@ class ProvisionTests(unittest.TestCase):
                 label_prefix="runpod-1-1",
                 mint_runner=lambda label: f"jit-{label}",
                 create=create,
-                runner_online=lambda label: False,
-                pod_status=lambda pod_id: live(),
+                runner_online=lambda label, **kwargs: False,
+                pod_status=lambda pod_id, **kwargs: live(),
                 delete_pod=lambda pod_id: True,
                 monotonic=clock.monotonic,
                 sleep=clock.sleep,
@@ -506,8 +506,8 @@ class ProvisionTests(unittest.TestCase):
                     create=lambda req, jit: created(
                         "pod-slow", "NVIDIA A40", req.tier_name, cost=0.44
                     ),
-                    runner_online=lambda label: False,
-                    pod_status=lambda pod_id: live(),
+                    runner_online=lambda label, **kwargs: False,
+                    pod_status=lambda pod_id, **kwargs: live(),
                     delete_pod=lambda pod_id: True,
                     monotonic=clock.monotonic,
                     sleep=clock.sleep,
@@ -552,6 +552,9 @@ class PodApiTransportTests(unittest.TestCase):
         class FakeResponse(io.BytesIO):
             def __enter__(self):
                 return self
+
+            status = 200
+            headers = {}
 
             def __exit__(self, *args):
                 return False

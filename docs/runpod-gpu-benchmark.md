@@ -34,15 +34,18 @@ Both scheduled and dispatched runs request only `NVIDIA A100 80GB PCIe`, the
 standard `nvidia-gpu` hardware. Passing a different reviewed `gpu_type` is
 for diagnostics only; such results must not replace maintained A100 reports.
 
-One pod's rental is capped below one hour (`POD_MAX_LIFETIME_SECONDS`, 3300 s):
+The watchdog starts deleting after 3300 seconds (`POD_MAX_LIFETIME_SECONDS`).
+Its 180-second cleanup budget stays below one hour when deletion succeeds;
+if the provider cannot confirm deletion, manual cleanup is required:
 
 - The pod startup script arms a watchdog that deletes the pod after the
   budget, independently of GitHub, using the pod-scoped `RUNPOD_POD_ID` and
-  `RUNPOD_API_KEY` that RunPod injects: `runpodctl remove pod` when present,
-  otherwise `DELETE https://rest.runpod.io/v1/pods/$RUNPOD_POD_ID` (the pinned
-  image has no `runpodctl`). The benchmark job's first step prints which
-  prerequisites exist, fails unless the watchdog is running, and proves the
-  pod-scoped credentials with a read-only API call.
+  `RUNPOD_API_KEY` that RunPod injects. `runpod_watchdog.py` embeds the same
+  standard-library-only `runpod_http.py` client used by the hosted cleanup
+  steps, with the API URL from `runpod_config.json`. It starts before package
+  installation and does not depend on runner checkout or `runpodctl`.
+  The benchmark job fails unless the watchdog is running and proves its
+  pod-scoped credentials with a bounded read-only API call.
 - On the GitHub side, startup is bounded by `startup_timeout_seconds` (420 s),
   the benchmark job by `timeout-minutes: 45`, and the cleanup job deletes the
   pod after success, failure, timeout, or cancellation.
@@ -73,6 +76,57 @@ from receiving the benchmark job. Rust uses CUDA 12.8, while the locked PyTorch
 wheel uses CUDA 13.0. Provisioning requests CUDA 13.0-capable hosts and startup
 rejects older drivers before transferring the runtime. Hosted preparation checks
 the wheel's CUDA version so dependency upgrades cannot bypass this requirement.
+
+## HTTP retries, polling, and failed cleanup
+
+All four deletion paths (rejected candidates, startup-failure cleanup,
+end-of-workflow cleanup, and the pod watchdog) use `runpod_http.py`:
+
+- Up to five DELETE attempts within a shared 180-second budget, with each
+  network request limited to 20 seconds or the remaining budget.
+- Network errors, HTTP 408/429/500/502/503/504 use exponential backoff starting
+  at 5 seconds, with positive jitter and a 60-second backoff cap. Retry-After
+  seconds and HTTP-date values are minimum waits, even above that cap.
+  A wait that cannot fit the budget ends retries without an early resend.
+- HTTP 2xx and 404 count as success. After an exhausted transport failure,
+  a verification GET can confirm 404, within the same overall budget.
+  Other permanent errors stop immediately. No verification request bypasses
+  a provider's Retry-After pause.
+- Unconfirmed deletion prints a failure with the pod ID and dashboard cleanup
+  instructions, and writes the same information to the Actions job summary
+  when available. The command exits nonzero. Provisioning retains the pod ID
+  and stops before creating another pod. The detached watchdog writes its
+  failure to `/tmp/pod-watchdog.log`; it cannot deliver an Actions notification
+  if the runner/workflow is already gone. An operator must check that log or
+  the dashboard when hosted cleanup fails.
+
+Startup observes GraphQL at most once per 10 seconds normally (6 requests/minute
+per active provisioner, excluding request duration). Failed observations use
+10/20/40/60-second exponential backoff with positive jitter, respect both
+Retry-After formats, and reset after success. Cooldown survives candidate changes.
+A failed observation remains unknown, not a container-stop signal. Missing
+runtime fields and GraphQL errors also remain unknown. Authentication and other
+permanent HTTP failures reject the candidate and enter cleanup. Pod and GitHub
+runner requests use at most 30 seconds or the remaining 420-second startup
+budget; no new poll starts after that budget, including a long Retry-After.
+
+Pricing is one unauthenticated GraphQL query per provisioning invocation,
+with a 20-second request timeout and immediate static fallback on failure;
+there is no pricing retry loop to amplify 429s. Pricing and pod observations
+share an endpoint cooldown within the provisioner, so a pricing Retry-After
+also delays the first pod-state query. The workflow concurrency group
+allows one active benchmark workflow in this repository. It does not coordinate
+with tenferro-rs or other clients sharing an account: normal GraphQL demand is
+approximately 6 requests/minute per active provisioner plus each invocation's
+one pricing query. Budget shared-account usage using the sum across clients;
+there is no cross-repository rate limiter. These client settings do not assert
+that a particular provider quota is sufficient.
+
+Run the mock/fixture coverage without renting a pod:
+
+```bash
+python3 -m unittest discover -s scripts/ci/tests -p 'test_runpod*.py'
+```
 
 The `gpu_type` input (default `NVIDIA A100 80GB PCIe`) restricts provisioning
 to one reviewed GPU ID. The accepted GPU is recorded in benchmark metadata;
