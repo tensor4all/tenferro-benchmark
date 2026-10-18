@@ -3,6 +3,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.ci.result_ingestion import (digest, instant, plan_updates, safe_file,
                                          source_from_api, validate_bundle)
@@ -49,6 +50,11 @@ class IngestionTest(unittest.TestCase):
         self.manifest = {'schema_version': 1, 'target_profile': self.profile,
                          'harness_commit': 'a'*40, 'suites': [self.entry]}
         self.save()
+        # These tests isolate acceptance/ordering from the independently tested
+        # CPU raw adapter, using a fixed rebuilt summary for the fixture.
+        self.raw_patch = patch('scripts.ci.cpu_ingestion_adapter.rebuild_cpu', return_value=self.summary)
+        self.raw_patch.start()
+        self.addCleanup(self.raw_patch.stop)
 
     def save(self):
         (self.bundle / 'ingestion.json').write_text(json.dumps(self.manifest))

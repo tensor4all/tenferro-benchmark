@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "profile": "quick",
+  "threads": [
+    1,
+    4
+  ],
+  "description": "Declared nightly workload identity inventory. Update deliberately with suite selection changes; timings never enter this file. Hardware and unsupported status do not change workload identities.",
+  "suites": {
+    "cpu/einsum": {
+      "row_count": 480,
+      "identities_sha256": "633627519abb5d3b076a3b27d294b46e2c59e6fa36e7d4c7bee2d3b028562fdf"
+    },
+    "cpu/cpu_ops": {
+      "row_count": 892,
+      "identities_sha256": "ccde3d129b957aa4711dacc95120ee923419b4e29d0a11270c1997c2a9ffe170"
+    },
+    "cpu/linalg_jvp_vjp": {
+      "row_count": 300,
+      "identities_sha256": "a37200d01170c2a791e0a7877e5aee47cab49d6857ae43368dc44500b154b9a0"
+    },
+    "cpu/fft": {
+      "row_count": 96,
+      "identities_sha256": "6a296f2afbc6a7f7c5c4c74e8833666fff65e56c7a1aa4a1fc32a539daaa7045"
+    },
+    "cpu/public_api": {
+      "row_count": 3024,
+      "identities_sha256": "d0b88af28a1019666099b590023d0e4688cbe9e36931e385ffba06c081b636cf"
+    },
+    "cpu/small_work": {
+      "row_count": 144,
+      "identities_sha256": "edeba6b3a6946ccb0465e1ec65163105b80fb05f29f138db4fea1b82d7309953"
+    },
+    "cpu/session_matrix": {
+      "row_count": 114,
+      "identities_sha256": "375a84984917238fbeb07380c6f0de876428180a5dd9de31a2ae5cb1d620c35d"
+    },
+    "cpu/permutation": {
+      "row_count": 92,
+      "identities_sha256": "937fa4f38cbbe98f0daf3b76ec98866622deaf707c1a6ef200270b7b8a10063e"
+    }
+  }
+}

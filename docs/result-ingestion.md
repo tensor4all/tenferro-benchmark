@@ -66,7 +66,10 @@ The manifest identifies each suite's `run_directory` under
 must be byte-identical to their per-run copies. All digests are checked before
 any repository writes. Summary schema 1 is required. Rows must match declared
 identities exactly with no duplicates; `ok` rows have finite nonnegative medians
-and successful verification, `unsupported` rows have a reason and no median.
+and the existing runner/formatter verification result. This does not add a
+numerical parity guarantee beyond that runner. `unsupported` rows and declared
+policy `skipped` rows have a raw-data explanation and no median. Legacy
+`unsupported: <reason>` statuses remain readable. Skips never count as coverage.
 Missing, failed and unexpected rows reject the bundle. At least one row must
 be measured for every suite. CPU suite-specific selectors/thread counts must
 be checked against collection declarations, and raw-to-summary identities and
@@ -123,7 +126,10 @@ unchecked overwrite. Reports without summaries remain until a validated
 candidate replaces them.
 
 Serialize ingestion writes using a single workflow concurrency group, with
-cancellation disabled. Before committing, fetch current `main`, reevaluate
+cancellation disabled and `queue: max` (up to 100 pending runs). The default
+single-pending queue would replace earlier pending ingestion requests; it is
+not suitable here. Queue overflow is visible as a canceled run and can be
+recovered by manual run-ID dispatch. Before committing, fetch current `main`, reevaluate
 ordering against that tree and replay only the accepted report, summary and
 provenance paths. If a push loses a race, fetch and revalidate/retry with a
 bounded limit; never force-push or drop unrelated changes. Zero accepted
@@ -172,3 +178,52 @@ selects an exact run ID; it must use the same validation path. Revert an
 incorrect result commit (all three files together) and republish the committed
 tree. Never hand-edit generated timing values. A permanent exclusion of a bad
 source run must be explicit before ingestion is retried.
+
+## CPU normalized bundle details
+
+The default nightly publication subset is the eight suites explicitly declared
+in `scripts/ci/cpu_ingestion_adapter.py`: einsum, cpu_ops, linalg_jvp_vjp, fft,
+public_api, small_work, session_matrix and permutation. Existing other reports
+remain maintained in git. CPU packaging is non-timing work after collection.
+
+Combined core reports name two original runs. Packaging copies these into
+`<run_directory>/inputs/<index>/`, preserves all original raw bytes and reports,
+and adds an aggregate `run.yaml` plus regenerated `report.summary.json`.
+`entry.sources` lists original metadata and raw input paths; `entry.threads`
+declares 1 and 4. The aggregate timestamp is the latest selected source's
+collection timestamp. Ingestion replays trusted formatters against every
+original source; it never treats the aggregate metadata as measurement proof.
+Original suite IDs for cpu_ops/linalg_jvp_vjp historically say cpu/einsum;
+the adapter checks that original spelling and emits the correct summary ID.
+Unsupported explanations lost by old summaries are restored from raw notes.
+Reports and timing values remain unchanged. New small_work/session_matrix
+summaries use ns per declared operation/workflow and retain per-case scopes;
+FFT retains its report's timing audit and must not be cited as compliant
+operation-performance evidence.
+
+`benchmarks/cpu/ingestion-selection.json` is an explicit versioned inventory
+of the standard quick nightly's 1T/4T workload identities. It records only
+row counts and SHA-256 of sorted `[case, group, backend]` identities encoded
+with JSON separators `(',', ':')`; no timings/statuses influence it. Collection
+and ingestion check it independently of artifact-supplied expected rows, so
+removing both raw and summary rows cannot silently redefine completeness.
+Update this inventory deliberately when the suite's selected workloads change,
+with fixture evidence for the intended selection. Custom CPU filters or thread
+counts are diagnostic and cannot replace these standard nightly reports.
+Selected complete suites may be ingested independently; a missing workload
+inside a suite is rejected.
+
+Only explicit source paths named by a report are selected. Permutation's ISO
+timestamp identifies exactly one metadata-matching run when its report does
+not name a path. No newest-directory fallback is used. CPU artifacts without
+`ingestion.json` are rejected by ingestion. For an existing valid legacy CPU
+artifact, maintainers may run the packager offline against its exact sources
+for validation/backfill preparation, preserving its original source revision;
+that local bundle is not silently substituted for the API-selected artifact.
+Failed collection diagnostics use a separate artifact name.
+
+Source `run_started_at` is also retained. Artifacts predating the latest run
+attempt and collection timestamps outside the selected attempt are rejected.
+A repository-dispatch listener must be present before final Pages cutover.
+
+GitHub concurrency queue semantics: [official documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).

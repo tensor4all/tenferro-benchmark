@@ -163,4 +163,12 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as error:
+        message = f'Benchmark ingestion rejected or failed: {error}'
+        print(message, file=__import__('sys').stderr)
+        if os.environ.get('GITHUB_STEP_SUMMARY'):
+            with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
+                output.write('## Benchmark ingestion failed\n\n' + message + '\n')
+        raise SystemExit(1) from error

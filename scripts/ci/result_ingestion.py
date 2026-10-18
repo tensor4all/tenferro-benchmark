@@ -109,7 +109,7 @@ def validate_summary(document: dict, profile: str, entry: dict) -> None:
             if type(value) not in (int, float) or not math.isfinite(value) or value < 0 or row.get('verified') is not True:
                 raise ValueError(f'Invalid or unverified measurement: {key}')
             measured += 1
-        elif row['status'] != 'unsupported' or not row.get('reason') or row.get('median') is not None:
+        elif (row['status'] not in ('unsupported', 'skipped') and not str(row['status']).startswith('unsupported:')) or not row.get('reason') or row.get('median') is not None:
             raise ValueError(f'Incomplete or unexplained row: {key}')
     if seen != set(expected) or measured == 0:
         raise ValueError('Missing/unexpected rows or no measured rows')
@@ -158,7 +158,17 @@ def validate_bundle(bundle: Path, profile: str, source: dict) -> list[tuple[dict
         payload = {relative: safe_file(bundle, relative).read_bytes() for relative in (report, summary)}
         if payload[report] != safe_file(bundle, f'{run_directory}/report.md').read_bytes() or payload[summary] != safe_file(bundle, f'{run_directory}/report.summary.json').read_bytes():
             raise ValueError('Published report/summary differ from run copies')
-        validate_summary(json.loads(payload[summary]), profile, entry)
+        document = json.loads(payload[summary])
+        if profile != 'nvidia-gpu':
+            if __package__:
+                from .cpu_ingestion_adapter import rebuild_cpu
+            else:
+                from cpu_ingestion_adapter import rebuild_cpu
+            if rebuild_cpu(bundle, entry, profile, source) != document:
+                raise ValueError('CPU summary differs from raw inputs')
+        if 'run_started_at' in source and not (instant(source['run_started_at']) <= instant(entry['timestamp']) <= instant(source['created_at'])):
+            raise ValueError('Collection timestamp is outside the source run attempt')
+        validate_summary(document, profile, entry)
         receipt = {'schema_version': 1, 'target_profile': profile, 'suite_id': suite,
                    'collected_at': entry['timestamp'], 'harness_commit': manifest['harness_commit'],
                    'tenferro_commit': entry['tenferro_commit'], 'hardware': entry['hardware'],
