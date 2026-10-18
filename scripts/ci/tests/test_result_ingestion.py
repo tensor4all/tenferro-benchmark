@@ -75,6 +75,9 @@ class IngestionTest(unittest.TestCase):
         self.assertEqual(len(updates), 3)
         self.apply(updates)
         self.assertEqual(plan_updates(self.repo, validated), ({}, {'cpu/einsum': 'duplicate'}))
+        extended = copy.deepcopy(validated)
+        extended[0][0]['source']['expires_at'] = '2027-02-01T00:00:00Z'
+        self.assertEqual(plan_updates(self.repo, extended), ({}, {'cpu/einsum': 'duplicate'}))
         older = copy.deepcopy(validated)
         older[0][0]['collected_at'] = '2026-10-17T23:59:59Z'
         older[0][0]['source']['run_attempt'] = 999

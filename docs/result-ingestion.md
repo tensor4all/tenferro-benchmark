@@ -24,9 +24,14 @@ Only runs of the canonical repository `tensor4all/tenferro-benchmark`, on
 
 | Workflow | Artifact name | Target profile |
 | --- | --- | --- |
-| `.github/workflows/benchmark-nightly-mac-cpu.yml` | `mac-cpu-benchmark-results-<run-id>` | `mac-cpu` |
-| `.github/workflows/benchmark-nightly-linux-cpu.yml` | `linux-cpu-benchmark-results-<run-id>` | `amd-cpu` |
-| `.github/workflows/benchmark-runpod-gpu.yml` | `runpod-gpu-benchmark-<run-id>` | `nvidia-gpu` |
+| `.github/workflows/benchmark-nightly-mac-cpu.yml` | `mac-cpu-benchmark-results-<run-id>-attempt<attempt>` | `mac-cpu` |
+| `.github/workflows/benchmark-nightly-linux-cpu.yml` | `linux-cpu-benchmark-results-<run-id>-attempt<attempt>` | `amd-cpu` |
+| `.github/workflows/benchmark-runpod-gpu.yml` | `runpod-gpu-benchmark-<run-id>-attempt<attempt>` | `nvidia-gpu` |
+
+New result artifact names include the run attempt, preserving earlier raw
+artifacts and their provenance links on reruns. Legacy run-ID-only names are
+accepted only when created within the selected attempt; old-attempt artifacts
+are not substituted.
 
 The ingestion workflow reads run, attempt and artifact identity from GitHub's
 API, not an untrusted artifact. It checks the source head repository as well
@@ -151,7 +156,8 @@ trigger Pages directly; manual dispatch is available for recovery.
 
 ## Retention and reproducibility limits
 
-Raw artifacts keep the current 90-day retention. Provenance links point to the
+New CPU/GPU result artifacts use 90-day retention. Legacy GPU artifacts may
+have the earlier 30-day retention; always use the recorded API expiry. Provenance links point to the
 exact run/artifact, require GitHub access, and may cease to download after the
 recorded expiry. Show that retention limit without consulting the network or
 clock at render time. Never fall back to a different run when a raw artifact
