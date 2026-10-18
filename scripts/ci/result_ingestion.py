@@ -195,7 +195,8 @@ def plan_updates(root: Path, validated: list[tuple[dict, dict[str, bytes]]]) -> 
             previous = json.loads(path.read_text())
             old, new = order_key(previous), order_key(receipt)
             if old == new:
-                if previous != receipt:
+                immutable = ('schema_version', 'target_profile', 'suite_id', 'collected_at', 'harness_commit', 'tenferro_commit', 'hardware', 'files')
+                if any(previous.get(key) != receipt.get(key) for key in immutable) or previous['source'].get('head_sha') != receipt['source'].get('head_sha'):
                     raise ValueError('Identical source key has conflicting content')
                 # Detect manual divergence instead of claiming a false duplicate.
                 if any(not (root / name).exists() or (root / name).read_bytes() != value for name, value in payload.items()):
