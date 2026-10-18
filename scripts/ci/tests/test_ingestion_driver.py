@@ -32,6 +32,28 @@ class ArchiveTest(unittest.TestCase):
                 extract_archive(root/'artifact.zip', root/'unpacked')
 
 
+class SourceSelectionTest(unittest.TestCase):
+    def test_rerun_selects_only_its_exact_attempt_and_dispatch_has_no_payload_code(self):
+        from scripts.ci.tests import test_result_ingestion as fixtures
+        from scripts.ci.ingest_benchmark_results import selected_source, request_publication
+        fixture=fixtures.IngestionTest()
+        fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        run=dict(fixture.run,run_attempt=2,run_started_at='2026-10-18T00:30:00Z')
+        older=dict(fixture.artifact,id=455,created_at='2026-10-18T00:00:00Z')
+        current=dict(fixture.artifact,name='linux-cpu-benchmark-results-123-attempt2')
+        with patch('scripts.ci.ingest_benchmark_results.gh_json',side_effect=[run,{'total_count':2,'artifacts':[older,current]}]):
+            profile,source,artifact=selected_source(123)
+        self.assertEqual((profile,source['run_attempt'],artifact['id']),('amd-cpu',2,456))
+        with patch('scripts.ci.ingest_benchmark_results.gh_json',side_effect=[run,{'total_count':1,'artifacts':[older]}]):
+            with self.assertRaisesRegex(ValueError,'exactly one'):
+                selected_source(123)
+        with patch('scripts.ci.ingest_benchmark_results.subprocess.run') as post:
+            request_publication()
+        self.assertEqual(json.loads(post.call_args.kwargs['input']),{'event_type':'benchmark-results-ingested'})
+        self.assertIn('repos/tensor4all/tenferro-benchmark/dispatches',post.call_args.args[0])
+
+
 class CommitRaceTest(unittest.TestCase):
     def test_race_replays_only_results_and_preserves_competing_commit(self):
         with tempfile.TemporaryDirectory() as directory:
