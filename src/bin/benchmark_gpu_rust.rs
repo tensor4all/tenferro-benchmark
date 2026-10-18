@@ -8,7 +8,7 @@
 
 use std::hint::black_box;
 use std::panic;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
@@ -29,6 +29,36 @@ use tenferro_runtime::{
     DType, DotGeneralConfig, Error as TfError, GraphCompiler, Runtime, TraceContext, TracedTensor,
 };
 use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
+
+/// How long to keep the GPU busy before the first timed case, in milliseconds.
+///
+/// A millisecond-scale case with a couple of warmups samples whatever clock the
+/// GPU happens to be at, which flips between two modes on a cold device. A
+/// single time-based ramp at process start removes that without paying the
+/// per-case warmup cost.
+fn clock_ramp_ms() -> u64 {
+    std::env::var("GPU_BENCH_CLOCK_RAMP_MS")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(300)
+}
+
+/// Run `step` until the clock ramp deadline, before each timed case.
+///
+/// Cases are separated by CPU verification, which leaves the GPU idle long
+/// enough for its clocks to drop again; a process-start ramp only warms the
+/// first case.
+fn ramp_gpu_clocks(mut step: impl FnMut() -> Result<(), String>) -> Result<(), String> {
+    let millis = clock_ramp_ms();
+    if millis == 0 {
+        return Ok(());
+    }
+    let deadline = Instant::now() + Duration::from_millis(millis);
+    while Instant::now() < deadline {
+        step()?;
+    }
+    Ok(())
+}
 
 fn eager_from_tensor_in(
     tensor: Tensor,
@@ -619,6 +649,10 @@ fn sample_trace_batches(
         let elapsed = start.elapsed().as_secs_f64() * 1000.0;
         Ok((elapsed, retained))
     };
+    ramp_gpu_clocks(|| {
+        let _ = time_batch(1)?;
+        Ok(())
+    })?;
     for _ in 0..n_warmup.max(1) {
         let (_, retained) = time_batch(1)?;
         black_box(retained.len());
@@ -2072,6 +2106,10 @@ fn sample_eager_ops<P>(
         }).sum::<usize>().max(1);
         drop(initial);
         let probe_end = sampler_start.elapsed().as_nanos();
+        ramp_gpu_clocks(|| {
+            let _ = batch(1)?;
+            Ok(())
+        })?;
         for _ in 0..warmups { drop(batch(1)?); }
         let warmup_end = sampler_start.elapsed().as_nanos();
         let cap = ((256 << 20) / bytes).clamp(1, 4096);
