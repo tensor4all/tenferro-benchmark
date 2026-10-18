@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.ci.result_ingestion import (digest, instant, plan_updates, safe_file,
-                                         source_from_api, validate_bundle)
+                                         source_from_api, validate_bundle, validate_summary)
 
 
 class IngestionTest(unittest.TestCase):
@@ -108,6 +108,12 @@ class IngestionTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.validate()
         self.assertEqual(list(self.repo.iterdir()), [])
+
+    def test_invalid_uncertainty_is_rejected(self):
+        for iqr in (-0.1, float('nan'), float('inf'), True):
+            self.summary['rows'][0]['iqr']=iqr
+            with self.subTest(iqr=iqr), self.assertRaisesRegex(ValueError,'IQR'):
+                validate_summary(self.summary,self.profile,self.entry)
 
     def test_paths_and_symlinks_rejected(self):
         for relative in ('../outside', '/etc/passwd', 'a/../outside', 'a\\b', 'a//b'):
