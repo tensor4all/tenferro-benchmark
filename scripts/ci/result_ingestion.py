@@ -56,13 +56,15 @@ def source_from_api(run: dict, artifact: dict) -> tuple[str, dict]:
     profile, prefix = WORKFLOWS[workflow]
     if artifact.get('expired') or artifact['name'] != f"{prefix}-{run['id']}":
         raise ValueError('Artifact is expired or has an unexpected name')
+    if instant(artifact['created_at']) < instant(run['run_started_at']):
+        raise ValueError('Artifact predates the selected run attempt')
     artifact_run = artifact.get('workflow_run') or {}
     if artifact_run.get('id') != run['id'] or artifact_run.get('head_sha') != run['head_sha']:
         raise ValueError('Artifact does not belong to the selected source run')
     source = {
         'repository': REPOSITORY, 'workflow_path': workflow, 'head_branch': 'main',
         'head_sha': run['head_sha'], 'run_id': run['id'], 'run_attempt': run['run_attempt'],
-        'artifact_id': artifact['id'], 'run_url': f"https://github.com/{REPOSITORY}/actions/runs/{run['id']}",
+        'artifact_id': artifact['id'], 'run_started_at': run['run_started_at'], 'run_url': f"https://github.com/{REPOSITORY}/actions/runs/{run['id']}",
         'artifact_url': f"https://github.com/{REPOSITORY}/actions/runs/{run['id']}/artifacts/{artifact['id']}",
         'created_at': artifact['created_at'], 'expires_at': artifact['expires_at'],
         'digest': artifact.get('digest'),
@@ -114,7 +116,7 @@ def validate_summary(document: dict, profile: str, entry: dict) -> None:
 
 
 def validate_bundle(bundle: Path, profile: str, source: dict) -> list[tuple[dict, dict[str, bytes]]]:
-    if not (bundle / 'ingestion.json').exists() and profile == 'nvidia-gpu':
+    if profile == 'nvidia-gpu':
         if __package__:
             from .gpu_ingestion_adapter import adapt_publication
         else:

@@ -17,7 +17,7 @@ class IngestionTest(unittest.TestCase):
         self.bundle.mkdir()
         self.repo = self.root / 'repo'
         self.repo.mkdir()
-        self.run = {'id': 123, 'run_attempt': 1, 'head_sha': 'a'*40,
+        self.run = {'run_started_at': '2026-10-17T23:00:00Z', 'id': 123, 'run_attempt': 1, 'head_sha': 'a'*40,
                     'head_branch': 'main', 'status': 'completed', 'conclusion': 'success',
                     'path': '.github/workflows/benchmark-nightly-linux-cpu.yml',
                     'repository': {'full_name': 'tensor4all/tenferro-benchmark'},
@@ -113,7 +113,7 @@ class IngestionTest(unittest.TestCase):
             run = dict(self.run, **{field: value})
             with self.subTest(field=field), self.assertRaises(ValueError):
                 source_from_api(run, self.artifact)
-        for change in ({'expired': True}, {'workflow_run': {'id': 999, 'head_sha': 'a'*40}}):
+        for change in ({'created_at': '2026-10-17T22:00:00Z'}, {'expired': True}, {'workflow_run': {'id': 999, 'head_sha': 'a'*40}}):
             with self.assertRaises(ValueError):
                 source_from_api(self.run, dict(self.artifact, **change))
 
