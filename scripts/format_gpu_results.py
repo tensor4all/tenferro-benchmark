@@ -19,6 +19,7 @@ import report_summary
 
 PREFERRED_BACKENDS = [
     "tenferro-cuda-trace",
+    "tenferro-cuda-trace-deferred-batch",
     "tenferro-cuda-eager",
     "tenferro-cuda-eager-per-call-session",
     "pytorch-cuda",
@@ -36,6 +37,7 @@ BACKEND_LABELS = {
     "tenferro-cuda-eager": "tenferro-rs CUDA eager",
     "tenferro-cuda-eager-per-call-session": "tenferro-rs CUDA eager (per-call session)",
     "tenferro-cuda-trace": "tenferro-rs CUDA trace",
+    "tenferro-cuda-trace-deferred-batch": "tenferro-rs CUDA trace (deferred batch throughput)",
     "pytorch-cuda": "PyTorch CUDA",
     "jax-cuda": "JAX CUDA JIT",
     "jax-cuda-tree-jit": "JAX CUDA tree JIT",
@@ -159,6 +161,22 @@ def format_markdown(records: list[dict[str, Any]], run_metadata: dict[str, Any] 
     lines.append("tenferro-rs uses native column-major GPU tensors; PyTorch and vendor-wrapper columns use their native row-major framework tensors unless noted.")
     lines.append("The cuSOLVER column is torch.linalg with preferred_linalg_library=cusolver; for SVD it pins driver=gesvd as a QR-based cuSOLVER comparison. tenferro-rs CUDA SVD uses its backend default driver policy, currently gesvdj for matrices with both dimensions at most 1024 and gesvd otherwise.")
     lines.append("Non-`ok` cells show the structured backend status.")
+    throughput_rows = [
+        record
+        for record in records
+        if str((record.get("execution") or {}).get("execution_path") or "").endswith(
+            "-deferred-batch"
+        )
+    ]
+    if throughput_rows:
+        lines.append(
+            "Rows whose backend name ends in `-deferred-batch` are **throughput mode**: "
+            "each timed sample enqueues K deferred prepared runs "
+            "(`Runtime::run_prepared_deferred`) in one caller-held session and pays one "
+            "retirement barrier (`finish_prepared`), so the reported per-operation time is "
+            "`sample_ms / K`. They measure batched throughput and are not comparable with, "
+            "and never averaged together with, per-call latency rows."
+        )
     lines.append("")
 
     for (suite_id, op, policy), group in sorted(by_suite_op.items()):

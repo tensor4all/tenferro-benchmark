@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/linalg_ad_throughput",
+  "timestamp": "2026-10-19T09:28:49.176769+00:00",
+  "tenferro_commit": "e921b059a5e3c41ea76002553cbb9415d4b5e58d",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "8b14bb26e819"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "linalg_ad_large_grad_sum_qr_jvp_f64_256",
+      "group": "grad_sum_qr_jvp",
+      "backend": "tenferro-cuda-trace-deferred-batch",
+      "median": 1.42634446875,
+      "iqr": 0.002612937499999912,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "linalg_ad_large_grad_sum_qr_vjp_f64_256",
+      "group": "grad_sum_qr_vjp",
+      "backend": "tenferro-cuda-trace-deferred-batch",
+      "median": 1.435242046875,
+      "iqr": 0.004121437500000047,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}

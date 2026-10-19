@@ -159,6 +159,8 @@ Expected latest report paths:
 - `result/nvidia-gpu/gpu/tensornetwork.md`
 - `result/nvidia-gpu/gpu/linalg_jvp_vjp.md`
 - `result/nvidia-gpu/gpu/linalg_ad_latency.md`
+- `result/nvidia-gpu/gpu/dense_throughput.md`
+- `result/nvidia-gpu/gpu/linalg_ad_throughput.md`
 - `result/nvidia-gpu/gpu/permutation.md`
 - `result/nvidia-gpu/gpu/perf_issues.md`
 
@@ -488,6 +490,27 @@ Device kernel time is a small fraction of each row in this suite, so these rows
 are latency/overhead diagnostics and must not be reported as GPU throughput.
 GPU-sized AD rows stay in `gpu/linalg_jvp_vjp`. Run it sequentially; do not
 overlap it with other GPU benchmark processes.
+
+For the GPU throughput mode (deferred batch) reports — `K` prepared runs share
+one retirement, so per-operation time is `sample_ms / K` (see
+`docs/gpu-throughput-mode.md`):
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_throughput.sh'
+```
+
+Expected report paths:
+
+```text
+result/nvidia-gpu/gpu/dense_throughput.md
+result/nvidia-gpu/gpu/linalg_ad_throughput.md
+```
+
+Throughput rows carry their own backend identity
+(`tenferro-cuda-trace-deferred-batch`) and their own suite ids; a latency row
+and a throughput row must never share a row, ratio, average or summary. Run it
+sequentially; do not overlap it with other GPU benchmark processes.
 
 For the GPU permutation / materialize-kernel report (CUDA port of
 `cpu/permutation`; see `docs/gpu-permutation-suite.md`):

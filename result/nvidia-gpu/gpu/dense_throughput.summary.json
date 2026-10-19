@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "target_profile": "nvidia-gpu",
+  "suite_id": "gpu/dense_throughput",
+  "timestamp": "2026-10-19T09:28:49.176769+00:00",
+  "tenferro_commit": "e921b059a5e3c41ea76002553cbb9415d4b5e58d",
+  "hardware": {
+    "gpu": "NVIDIA A100 80GB PCIe",
+    "host": "8b14bb26e819"
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "dense_batched_matmul_f64_b16_32_throughput",
+      "group": "batched_matmul",
+      "backend": "tenferro-cuda-trace-deferred-batch",
+      "median": 0.0326428125,
+      "iqr": 0.0005476874999999978,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "elementwise_chain_f64_1k_throughput",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-trace-deferred-batch",
+      "median": 0.069585203125,
+      "iqr": 0.0001970312500000071,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "elementwise_chain_f64_1m_throughput",
+      "group": "elementwise_chain",
+      "backend": "tenferro-cuda-trace-deferred-batch",
+      "median": 0.09963321875,
+      "iqr": 0.00031034374999999725,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}

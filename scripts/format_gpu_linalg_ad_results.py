@@ -21,12 +21,14 @@ from collect_gpu_info import markdown as gpu_info_markdown, resolve_gpu_info
 
 BACKEND_ORDER = [
     "tenferro-cuda-trace",
+    "tenferro-cuda-trace-deferred-batch",
     "pytorch-cuda",
     "jax-cuda",
 ]
 
 BACKEND_LABELS = {
     "tenferro-cuda-trace": "tenferro-rs CUDA trace",
+    "tenferro-cuda-trace-deferred-batch": "tenferro-rs CUDA trace (deferred batch throughput)",
     "pytorch-cuda": "PyTorch CUDA",
     "jax-cuda": "JAX CUDA JIT",
 }
@@ -169,6 +171,17 @@ def format_markdown(
     )
     lines.append("JAX uses an explicitly lowered/compiled whole-operation JIT; compilation and lazy initialization occur before sampling. Primal loss and first-order derivatives with respect to A are both returned and checked against CPU F64 AD, whose directional derivative is checked by central differences. RHS and derivative seeds are prepared before timing.")
     lines.append("Standard tenferro trace rows run the prepared graph in one caller-held CUDA session (Runtime::run_prepared_in); each timed call includes the run's own stream-retirement barrier. Small trace rows are separately labelled public-path latency diagnostics including internal session entry. Any unsupported row retains its actual reason in the raw records.")
+    if any(
+        record["backend"] == "tenferro-cuda-trace-deferred-batch" for record in records
+    ):
+        lines.append(
+            "Rows whose backend name ends in `-deferred-batch` are **throughput mode**: each "
+            "timed sample enqueues K deferred prepared runs "
+            "(`Runtime::run_prepared_deferred`) in one caller-held CUDA session and pays one "
+            "retirement barrier (`finish_prepared`), so the reported per-operation time is "
+            "`sample_ms / K`. They measure batched throughput and are not comparable with, "
+            "and never averaged together with, the per-call latency rows above."
+        )
     lines.append(
         "Inputs are uploaded to the GPU before timed runs; initial host-to-device "
         "transfer is outside the timed region."
@@ -217,6 +230,9 @@ def format_markdown(
         if record["status"] == "ok":
             sample = json.loads(record["execution"]["notes"])["sampling"]
             count, samples, scope = sample["operations_per_sample"], len(sample["batch_ms"]), record["timing"]["timing_scope"]
+            if record["backend"] == "tenferro-cuda-trace-deferred-batch":
+                # Throughput rows declare their own batched scope.
+                scope = sample.get("scope", scope)
         else:
             count, samples, scope = "—", "—", record["execution"]["unsupported_reason"]
         lines.append(f"| {record['problem_id']} | {record['backend']} | {count} | {samples} | {scope.replace('|', '/')} |")
