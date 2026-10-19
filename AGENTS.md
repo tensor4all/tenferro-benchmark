@@ -609,3 +609,11 @@ internally enters a new session per call and cannot accept the borrowed session,
 keep its short-operation measurement explicitly diagnostic; do not silently
 label it shared-session or use it as the standard small-work comparison.
 Pure metadata operations that do not require a session must say so.
+
+The GPU runners keep the device busy for `GPU_BENCH_CLOCK_RAMP_MS` (default
+300 ms) before each timed case. A millisecond-scale case with a couple of
+warmups otherwise samples a ramping clock and flips between two run-to-run
+modes (observed as ~12% on `dense_solve_f64_512_rhs16`). CPU verification
+between cases leaves the GPU idle long enough for its clocks to drop again, so
+a process-start ramp only warms the first case. Leave the ramp enabled for
+timing collection; do not raise per-case warmups for it.

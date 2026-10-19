@@ -7,7 +7,7 @@
 use std::hint::black_box;
 use std::panic;
 use std::sync::OnceLock;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
 use tenferro_ad::AdContext;
@@ -67,6 +67,27 @@ fn run_deferred_batch<'a>(
         .finish_prepared()
         .map_err(|e| format!("deferred finish: {e}"))?;
     Ok((start.elapsed().as_secs_f64() * 1000.0, runs))
+}
+
+fn clock_ramp_ms() -> u64 {
+    std::env::var("GPU_BENCH_CLOCK_RAMP_MS")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(300)
+}
+
+/// Keep the GPU busy before each timed AD case so short cases do not sample a
+/// ramping clock; CPU verification between cases lets the clocks drop again.
+fn ramp_gpu_clocks(mut step: impl FnMut() -> Result<(), String>) -> Result<(), String> {
+    let millis = clock_ramp_ms();
+    if millis == 0 {
+        return Ok(());
+    }
+    let deadline = Instant::now() + Duration::from_millis(millis);
+    while Instant::now() < deadline {
+        step()?;
+    }
+    Ok(())
 }
 
 fn main() {
@@ -251,6 +272,10 @@ fn dispatch(
                     black_box(&retained);
                     Ok(elapsed)
                 };
+                ramp_gpu_clocks(|| {
+                    let _ = batch(1)?;
+                    Ok(())
+                })?;
                 for _ in 0..n_warmup {
                     batch(1)?;
                 }
@@ -371,6 +396,14 @@ fn dispatch(
                         .map_err(|e| format!("verification run: {e}"))?,
                 );
             } else {
+                ramp_gpu_clocks(|| {
+                    let out = session
+                        .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
+                        .map_err(|e| format!("held session entry: {e}"))?
+                        .map_err(|e| format!("ramp: {e}"))?;
+                    black_box(out.len());
+                    Ok(())
+                })?;
                 for _ in 0..n_warmup {
                     let out = session
                         .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
