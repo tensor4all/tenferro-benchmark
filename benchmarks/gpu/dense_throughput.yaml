@@ -1,0 +1,76 @@
+schema_version: 1
+suite_id: gpu/dense_throughput
+title: GPU Dense Throughput Benchmarks (Deferred Batch)
+description: >-
+  Throughput-mode dense measurements for tenferro-rs CUDA trace. Each timed
+  sample enqueues K deferred prepared runs (Runtime::run_prepared_deferred) in
+  one caller-held session and pays one retirement barrier in a single
+  finish_prepared, so a sample's per-call time is sample_ms / K. These rows are
+  throughput measurements and are never comparable with, or averaged together
+  with, the per-call latency rows of `gpu/dense` and `gpu/elementwise`
+  (tenferro-rs #2087). Cases keep one deferred output set small enough that the
+  whole K-batch stays inside the retention budget; the effective K is recorded in
+  every row's notes.
+defaults:
+  regime: throughput
+  device: {kind: cuda, ordinal: 0}
+  layout: {tenferro: col_major, framework: row_major_contiguous}
+  run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
+  verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+backends:
+  - tenferro-cuda-trace-deferred-batch
+problems:
+  # tenferro-rs #2087: the same shape as the `gpu/dense`
+  # dense_batched_matmul_f64_b16_32 per-command overhead probe, measured here as
+  # amortized throughput (K deferred runs share one retirement).
+  - id: dense_batched_matmul_f64_b16_32_throughput
+    family: dense
+    op: batched_matmul
+    regime: throughput
+    intent: >-
+      Per-operation cost of 16 batches of 32x32 matmul when K deferred prepared
+      runs share one retirement; throughput mode only, not a per-call latency row.
+    dtype:
+      a: f64
+      b: f64
+      c: f64
+      accum: f64
+    layout: {tenferro: col_major, framework: row_major_contiguous}
+    data: {generator: normal, seed: 2}
+    batched_matmul: {batch: 16, m: 32, n: 32, k: 32, batch_layout: leading}
+    run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_fp64, rtol: 1.0e-8, atol: 1.0e-10}
+
+  # The same chain as the `gpu/elementwise` elementwise_chain_f64_1k latency
+  # probe (tanh(t * a + b) eight times, three dispatch-bound ops per step).
+  - id: elementwise_chain_f64_1k_throughput
+    family: elementwise
+    op: elementwise_chain
+    regime: throughput
+    intent: >-
+      Dispatch-bound elementwise chain per-operation cost when K deferred
+      prepared runs share one retirement; throughput mode only, not the per-call
+      latency probe of `gpu/elementwise`.
+    dtype:
+      a: f64
+      b: f64
+    data: {generator: normal, seed: 7}
+    elementwise_chain: {n: 1024}
+    run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_fp64, rtol: 1.0e-9, atol: 1.0e-11}
+
+  - id: elementwise_chain_f64_1m_throughput
+    family: elementwise
+    op: elementwise_chain
+    regime: throughput
+    intent: >-
+      Bandwidth-bound elementwise chain per-operation cost when K deferred
+      prepared runs share one retirement.
+    dtype:
+      a: f64
+      b: f64
+    data: {generator: normal, seed: 7}
+    elementwise_chain: {n: 1048576}
+    run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api_plus_device_sync}
+    verify: {reference: cpu_fp64, rtol: 1.0e-9, atol: 1.0e-11}
+    notes: n=1048576, steps=8

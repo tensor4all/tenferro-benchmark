@@ -1,0 +1,90 @@
+schema_version: 1
+suite_id: gpu/linalg_ad_throughput
+title: GPU Linalg AD Throughput Benchmarks (Deferred Batch)
+description: >-
+  Throughput-mode trace linalg AD on CUDA for tenferro-rs. Each timed sample
+  enqueues K deferred prepared runs (Runtime::run_prepared_deferred) in one
+  caller-held session and pays one retirement barrier in a single
+  finish_prepared, so a sample's per-call time is sample_ms / K. These rows are
+  throughput measurements and are never comparable with, or averaged together
+  with, the per-call latency rows of `gpu/linalg_jvp_vjp` and
+  `gpu/linalg_ad_latency` (tenferro-rs #2087).
+defaults:
+  regime: throughput
+  device:
+    kind: cuda
+    ordinal: 0
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+backends:
+- tenferro-cuda-trace-deferred-batch
+problems:
+# tenferro-rs #2087: the GPU-sized QR JVP case of `gpu/linalg_jvp_vjp`, measured
+# in throughput mode (K deferred runs share one retirement).
+- id: linalg_ad_large_grad_sum_qr_jvp_f64_256
+  family: linalg_ad
+  op: jvp
+  regime: throughput
+  intent: >-
+    QR JVP throughput at n=256 when K deferred prepared runs share one
+    retirement; throughput mode only, not a per-call latency row.
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 26
+  linalg_ad:
+    suite: large
+    loss: grad_sum_qr
+    n: 256
+    matrix_seed: 26
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256
+- id: linalg_ad_large_grad_sum_qr_vjp_f64_256
+  family: linalg_ad
+  op: vjp
+  regime: throughput
+  intent: >-
+    QR VJP throughput at n=256 when K deferred prepared runs share one
+    retirement; throughput mode only, not a per-call latency row.
+  dtype:
+    a: f64
+  layout:
+    tenferro: col_major
+    framework: row_major_contiguous
+  data:
+    generator: well_conditioned
+    seed: 26
+  linalg_ad:
+    suite: large
+    loss: grad_sum_qr
+    n: 256
+    matrix_seed: 26
+  run:
+    warmups: 3
+    runs: 7
+    timing_scope: steady_state_host_api_plus_device_sync
+  verify:
+    reference: cpu_fp64
+    rtol: 1.0e-05
+    atol: 1.0e-08
+  notes: shape=256x256

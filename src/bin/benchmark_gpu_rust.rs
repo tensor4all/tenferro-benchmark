@@ -162,7 +162,10 @@ fn dispatch(
         // Public-call latency suites keep the public `run_prepared` scope
         // (internal session entry included); every standard operation row runs
         // the prepared graph in one caller-held session instead.
-        "tenferro-cuda-trace" => run_trace(
+        //
+        // `tenferro-cuda-trace-deferred-batch` is the throughput-mode identity of
+        // the same trace path: latency and throughput never share a backend row.
+        "tenferro-cuda-trace" | "tenferro-cuda-trace-deferred-batch" => run_trace(
             suite_id,
             problem,
             backend,
@@ -495,6 +498,62 @@ fn run_eager_tensor_network(
     }
 }
 
+// ---------------------------------------------------------------------------
+// Throughput mode (deferred batch)
+// ---------------------------------------------------------------------------
+
+/// Backend identity of the deferred-batch throughput mode.
+///
+/// A latency row and a throughput row must never be joined into one ratio, so
+/// the throughput mode reports its own backend name even though it executes the
+/// same trace path.
+const DEFERRED_BATCH_BACKEND: &str = "tenferro-cuda-trace-deferred-batch";
+
+/// Marker prefix for a deferred-batch preflight rejection.
+///
+/// `Runtime::begin_prepared_deferred` rejects a graph whose schedule is not one
+/// borrowed-session engine (or a session of another engine). That is an
+/// eligibility fact about the case, not a runtime failure, so it is reported as
+/// `unsupported` instead of falling back to the per-call latency route.
+const DEFERRED_PREFLIGHT_PREFIX: &str = "deferred-batch-preflight: ";
+
+/// Deferred runs enqueued per timed throughput sample.
+///
+/// One `finish_prepared` retires the whole batch, so per-call time is
+/// `sample_ms / K`. `GPU_BENCH_DEFERRED_BATCH_K` overrides the default of 64.
+fn deferred_batch_k() -> usize {
+    std::env::var("GPU_BENCH_DEFERRED_BATCH_K")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .filter(|k| *k > 0)
+        .unwrap_or(64)
+}
+
+fn is_deferred_batch_backend(backend: &str) -> bool {
+    backend == DEFERRED_BATCH_BACKEND
+}
+
+/// Enqueue `count` deferred prepared runs and retire the whole batch once.
+///
+/// The guard borrows its session and inputs for its own lifetime, so this takes
+/// exactly that lifetime instead of a fresh one per call.
+fn run_deferred_batch<'a>(
+    deferred: &mut tenferro_runtime::PreparedDeferred<'a>,
+    inputs: &'a [&'a Tensor],
+    count: usize,
+) -> Result<(f64, Vec<Vec<Tensor>>), String> {
+    let start = Instant::now();
+    for _ in 0..count {
+        deferred
+            .run_prepared_deferred(inputs)
+            .map_err(|e| format!("deferred enqueue: {e}"))?;
+    }
+    let runs = deferred
+        .finish_prepared()
+        .map_err(|e| format!("deferred finish: {e}"))?;
+    Ok((start.elapsed().as_secs_f64() * 1000.0, runs))
+}
+
 /// Resident bytes of one prepared-run output set, used to bound batch retention.
 fn trace_output_bytes(outputs: &[Tensor]) -> usize {
     outputs
@@ -632,6 +691,10 @@ fn sample_trace_public(
 /// so its stream-retirement barrier stays inside the batch interval; the
 /// batch-edge synchronize is a safety net only. No output is downloaded inside
 /// timing.
+///
+/// With `deferred` set the sampling switches to throughput mode: `K` deferred
+/// prepared runs share one retirement per sample (see
+/// [`sample_trace_deferred_held`]).
 #[allow(clippy::too_many_arguments)]
 fn sample_trace_held(
     backend: &mut CudaBackend,
@@ -641,7 +704,20 @@ fn sample_trace_held(
     n_warmup: usize,
     n_runs: usize,
     sync_rt: &CudaRuntime,
+    deferred: bool,
 ) -> Result<(Vec<f64>, Vec<Tensor>, Value), String> {
+    if deferred {
+        return sample_trace_deferred_held(
+            backend,
+            runtime,
+            prepared,
+            inputs,
+            deferred_batch_k(),
+            n_warmup,
+            n_runs,
+            sync_rt,
+        );
+    }
     let mut session = backend
         .open_session()
         .map_err(|e| format!("open held session: {e}"))?;
@@ -663,6 +739,178 @@ fn sample_trace_held(
     result
 }
 
+/// Throughput mode: one retirement per batch of `K` deferred prepared runs.
+///
+/// The deferred guard is the reusable batch resource for the whole sampling run:
+/// it is entered once, before the clocks, in one caller-held CUDA session. Inside
+/// a timed sample only `run_prepared_deferred` enqueues happen, followed by the
+/// single `finish_prepared` that retires the batch's device work; per-call time
+/// is `sample_ms / K`. That is a throughput measurement and is never comparable
+/// to a per-call latency row, which pays one retirement per call.
+///
+/// A graph the deferred preflight rejects has no throughput measurement on this
+/// route; the rejection is returned with [`DEFERRED_PREFLIGHT_PREFIX`] so the
+/// caller records the case as unsupported instead of silently measuring latency.
+#[allow(clippy::too_many_arguments)]
+fn sample_trace_deferred_held(
+    backend: &mut CudaBackend,
+    runtime: &Runtime,
+    prepared: &tenferro_runtime::PreparedCompiledGraph,
+    inputs: &[&Tensor],
+    configured_k: usize,
+    n_warmup: usize,
+    n_runs: usize,
+    sync_rt: &CudaRuntime,
+) -> Result<(Vec<f64>, Vec<Tensor>, Value), String> {
+    let sampler_start = Instant::now();
+    let setup_note = "one caller-held CUDA session entered before sampling; each timed sample enqueues K deferred prepared runs (Runtime::run_prepared_deferred) and pays one retirement barrier in a single finish_prepared; per-call time is sample_ms / K; inputs, plans, compilation, guard entry and session entry outside clocks";
+    let mut session = backend
+        .open_session()
+        .map_err(|e| format!("open held session: {e}"))?;
+    let mut raw: Vec<f64> = Vec::new();
+    let mut effective_k = configured_k;
+    let mut output_bytes = 1usize;
+    let mut probe_end = 0u128;
+    let mut warmup_end = 0u128;
+    let mut sampling_end = 0u128;
+    let sampled = session.with_session(|view| -> Result<Vec<Tensor>, String> {
+        let mut deferred = runtime
+            .begin_prepared_deferred(view, prepared)
+            .map_err(|e| format!("{DEFERRED_PREFLIGHT_PREFIX}{e}"))?;
+        if verification_only() {
+            let (_, runs) = run_deferred_batch(&mut deferred, inputs, 1)?;
+            return runs
+                .into_iter()
+                .last()
+                .ok_or_else(|| "deferred batch returned no run".to_string());
+        }
+        // Probe batch outside the clocks: proves the route, bounds retention from
+        // one output set and supplies the final output set for verification.
+        // One run is enough for the bound, so a large configured K cannot
+        // overshoot the retention budget before it is clamped.
+        sync_cubecl_runtime(sync_rt)?;
+        let (_, probe) = run_deferred_batch(&mut deferred, inputs, 1)?;
+        let first = probe
+            .first()
+            .ok_or_else(|| "deferred batch returned no run".to_string())?;
+        output_bytes = trace_output_bytes(first);
+        let cap = ((256usize << 20) / output_bytes).clamp(1, 4096);
+        effective_k = configured_k.min(cap);
+        let mut last = probe
+            .into_iter()
+            .last()
+            .ok_or_else(|| "deferred batch returned no run".to_string())?;
+        probe_end = sampler_start.elapsed().as_nanos();
+        for _ in 0..n_warmup.max(1) {
+            let (_, runs) = run_deferred_batch(&mut deferred, inputs, effective_k)?;
+            last = runs
+                .into_iter()
+                .last()
+                .ok_or_else(|| "deferred batch returned no run".to_string())?;
+            black_box(last.len());
+        }
+        warmup_end = sampler_start.elapsed().as_nanos();
+        for _ in 0..n_runs {
+            let (elapsed, runs) = run_deferred_batch(&mut deferred, inputs, effective_k)?;
+            raw.push(elapsed);
+            last = runs
+                .into_iter()
+                .last()
+                .ok_or_else(|| "deferred batch returned no run".to_string())?;
+            black_box(&last);
+        }
+        sampling_end = sampler_start.elapsed().as_nanos();
+        Ok(last)
+    });
+    session
+        .close()
+        .map_err(|e| format!("close held session: {e}"))?;
+    let output = sampled.map_err(|e| format!("held session entry: {e}"))??;
+    if verification_only() {
+        return Ok((
+            Vec::new(),
+            output,
+            json!({"sampling":null,"verification_only":true,
+                "mode":"throughput","execution_mode":"deferred-batch",
+                "setup":setup_note,
+                "wall_phases_ns":{"session_entry_and_initial_probe":sampler_start.elapsed().as_nanos()},
+                "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()}),
+        ));
+    }
+    if raw.is_empty() {
+        return Err("no timed deferred batch".to_string());
+    }
+    let normalized: Vec<f64> = raw.iter().map(|time| time / effective_k as f64).collect();
+    let notes = json!({
+        "mode":"throughput",
+        "execution_mode":"deferred-batch",
+        "deferred_batch":{
+            "configured_k":configured_k,
+            "effective_k":effective_k,
+            "enqueues_per_sample":effective_k,
+            "retirements_per_sample":1,
+            "per_call_time":"sample_ms / effective_k",
+            "retained_output_bytes_per_run":output_bytes
+        },
+        "sampling":{"operations_per_sample":effective_k,"batch_ms":raw,
+            "target_batch_ms":null,"retention_budget_bytes":256<<20,
+            "retained_bytes_per_operation":output_bytes,
+            "effective_retention_bound_bytes":output_bytes.max(256<<20),
+            "single_output_exceeds_configured_budget":output_bytes > (256<<20)},
+        "setup":setup_note,
+        "precision":"native declared dtype; no AD recording",
+        "wall_phases_ns":{"session_entry_and_initial_probe":probe_end,
+            "warmup":warmup_end-probe_end,"sampling":sampling_end-warmup_end},
+        "wall_phase_scope":"phase wall time includes untimed preparation/cleanup; outside operation clocks",
+        "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok(),
+    });
+    Ok((normalized, output, notes))
+}
+
+/// Record a trace sampling failure.
+///
+/// A deferred-batch preflight rejection says the case is not eligible for the
+/// throughput route (`unsupported`); every other error is a runtime failure.
+#[allow(clippy::too_many_arguments)]
+fn trace_failure(
+    suite_id: &str,
+    problem: &serde_yaml::Value,
+    backend: &str,
+    device_ordinal: usize,
+    path: &str,
+    msg: &str,
+    ts: &str,
+    bc: Option<&str>,
+    tc: Option<&str>,
+) -> Value {
+    match msg.strip_prefix(DEFERRED_PREFLIGHT_PREFIX) {
+        Some(reason) => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "unsupported",
+            reason,
+            path,
+            ts,
+            bc,
+            tc,
+        ),
+        None => stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "runtime_failed",
+            msg,
+            path,
+            ts,
+            bc,
+            tc,
+        ),
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn run_trace_tensor_network(
     suite_id: &str,
@@ -678,7 +926,10 @@ fn run_trace_tensor_network(
     let n_runs = yaml_usize(&problem["run"]["runs"], 10);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-4);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-5);
-    let exec_path = if held_session {
+    let deferred = is_deferred_batch_backend(backend);
+    let exec_path = if deferred {
+        "trace-run-prepared-in-held-session-tensornetwork-deferred-batch"
+    } else if held_session {
         "trace-run-prepared-in-held-session-tensornetwork"
     } else {
         "phase2-measured-tenferro-cuda-trace-tensornetwork"
@@ -734,6 +985,7 @@ fn run_trace_tensor_network(
                 n_warmup,
                 n_runs,
                 transfer_bk.runtime(),
+                deferred,
             )?
         } else {
             sample_trace_public(
@@ -802,14 +1054,13 @@ fn run_trace_tensor_network(
             apply_sampling_record(&mut record, &sampling);
             record
         }
-        Ok(Err(msg)) => stub(
+        Ok(Err(msg)) => trace_failure(
             suite_id,
             problem,
             backend,
             device_ordinal,
-            "runtime_failed",
-            &msg,
             exec_path,
+            &msg,
             ts,
             bc,
             tc,
@@ -1074,7 +1325,10 @@ fn run_semantic_trace_einsum(
     let n_runs = yaml_usize(&problem["run"]["runs"], 7);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
-    let exec_path = if held_session {
+    let deferred = is_deferred_batch_backend(backend);
+    let exec_path = if deferred {
+        "trace-run-prepared-in-held-session-einsum-deferred-batch"
+    } else if held_session {
         "trace-run-prepared-in-held-session-einsum"
     } else {
         "phase2-measured-tenferro-cuda-trace"
@@ -1141,6 +1395,7 @@ fn run_semantic_trace_einsum(
                 n_warmup,
                 n_runs,
                 transfer_bk.runtime(),
+                deferred,
             )?
         } else {
             sample_trace_public(
@@ -1218,14 +1473,13 @@ fn run_semantic_trace_einsum(
             apply_sampling_record(&mut record, &sampling);
             record
         }
-        Ok(Err(msg)) => stub(
+        Ok(Err(msg)) => trace_failure(
             suite_id,
             problem,
             backend,
             device_ordinal,
-            "runtime_failed",
-            &msg,
             exec_path,
+            &msg,
             ts,
             bc,
             tc,
@@ -1257,6 +1511,21 @@ fn run_trace(
     held_session: bool,
 ) -> Value {
     let op = problem["op"].as_str().unwrap_or("");
+    let deferred = is_deferred_batch_backend(backend);
+    if deferred && !held_session {
+        return stub(
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            "unsupported",
+            "deferred-batch throughput mode needs the caller-held session path; public-path latency suites stay latency-only",
+            "phase2-runner",
+            ts,
+            bc,
+            tc,
+        );
+    }
     if op == "tensor_network_contract" {
         return run_trace_tensor_network(
             suite_id, problem, backend, device_ordinal, ts, bc, tc, held_session,
@@ -1295,7 +1564,9 @@ fn run_trace(
     let n_runs = yaml_usize(&problem["run"]["runs"], 7);
     let rtol = problem["verify"]["rtol"].as_f64().unwrap_or(1e-5);
     let atol = problem["verify"]["atol"].as_f64().unwrap_or(1e-8);
-    let exec_path = if held_session {
+    let exec_path = if deferred {
+        "trace-run-prepared-in-held-session-deferred-batch"
+    } else if held_session {
         "trace-run-prepared-in-held-session"
     } else {
         "phase2-measured-tenferro-cuda-trace"
@@ -1340,6 +1611,7 @@ fn run_trace(
                 n_warmup,
                 n_runs,
                 transfer_bk.runtime(),
+                deferred,
             )?
         } else {
             sample_trace_public(
@@ -1415,14 +1687,13 @@ fn run_trace(
             apply_sampling_record(&mut record, &sampling);
             record
         }
-        Ok(Err(msg)) => stub(
+        Ok(Err(msg)) => trace_failure(
             suite_id,
             problem,
             backend,
             device_ordinal,
-            "runtime_failed",
-            &msg,
             exec_path,
+            &msg,
             ts,
             bc,
             tc,
