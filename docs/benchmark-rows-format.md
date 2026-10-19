@@ -13,9 +13,18 @@ uv run python -m scripts.ci.slow_rows rows.jsonl \
 ```
 
 `--since` selects raw runs whose timestamp directory (UTC) is at or after the
-given value. A nightly artifact also carries the repository's older raw runs,
-so pass the nightly run's start time. Raw runs whose format has no adapter are
-reported on stderr and skipped.
+given value. Raw runs whose format has no adapter are reported on stderr and
+skipped.
+
+When the root carries an `ingestion.json` manifest for the profile (a
+collection bundle, see `docs/result-ingestion.md`), only the raw files the
+manifest lists are read, with the metadata of their source. Several suites of
+one collection can list the same raw file (`cpu/cpu_ops` and
+`cpu/linalg_jvp_vjp` share the `cpu_ops` tables); a file with the same digest
+is exported once, under the first suite that lists it. Without a manifest,
+every `data/results/<profile>/<suite>/<timestamp>/` directory is scanned; an
+older artifact also carries the repository's earlier raw runs, so pass the
+collecting run's start time.
 
 ## Row fields
 
