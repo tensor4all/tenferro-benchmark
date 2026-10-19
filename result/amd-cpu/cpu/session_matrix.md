@@ -1,21 +1,21 @@
 # CPU shared-session matrix results
 
-Raw data and provenance: `data/results/amd-cpu/cpu/session_matrix/20261018_191613`.
+Raw data and provenance: `data/results/amd-cpu/cpu/session_matrix/20261019_185225`.
 
 ### run_t1
 
 ```yaml
-timestamp: '2026-10-18T19:16:13Z'
+timestamp: '2026-10-19T18:52:25Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: c2ddccb14b89f8e9fa8a8fe3957367e32fb4e677
+  commit: 14bc1ab933e3c7a9c966e08355670331ab9d993c
   dirty: false
   features:
   - blas-mkl
   resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: e4b601dcd685fe1bafd45e6da97bc134f45c5049
+  commit: ce89bccec28bc7c863b30c80764d3570747f6df6
   dirty: false
 collection:
   command: 'BENCH_COMMAND_BUDGET_SECONDS=300 TENFERRO_CPU_FEATURES=blas-mkl BENCHMARK_TARGET_PROFILE=amd-cpu
@@ -33,17 +33,17 @@ collection:
 ### run_t4
 
 ```yaml
-timestamp: '2026-10-18T19:16:54Z'
+timestamp: '2026-10-19T18:52:51Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: c2ddccb14b89f8e9fa8a8fe3957367e32fb4e677
+  commit: 14bc1ab933e3c7a9c966e08355670331ab9d993c
   dirty: false
   features:
   - blas-mkl
   resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: e4b601dcd685fe1bafd45e6da97bc134f45c5049
+  commit: ce89bccec28bc7c863b30c80764d3570747f6df6
   dirty: false
 collection:
   command: 'BENCH_COMMAND_BUDGET_SECONDS=300 TENFERRO_CPU_FEATURES=blas-mkl BENCHMARK_TARGET_PROFILE=amd-cpu
@@ -61,10 +61,10 @@ collection:
 ## Case status
 
 - Manifest: `cpu/session_matrix` version 4, coverage `quick`, effort `standard`
-- Expected 114, selected 114, executed 48, unsupported 66, failed 0, missing 0, noisy 5.
+- Expected 114, selected 114, executed 48, unsupported 66, failed 0, missing 0, noisy 15.
 - Complete: **NO** — only executed cases count as covered; unsupported, failed, missing and unselected cases never do.
 - Unsupported: `matmul_n2_count1024[faer]@t1`, `matmul_n4_count1024[faer]@t1`, `matmul_n8_count1024[faer]@t1`, `matmul_n16_count1024[faer]@t1`, `matmul_n32_count1024[faer]@t1`, `solve_n2_count1024[faer]@t1`, `solve_n4_count1024[faer]@t1`, `solve_n8_count1024[faer]@t1`, `solve_n16_count1024[faer]@t1`, `solve_n32_count1024[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_direct_into_auto[faer]@t1`, `beinsum_f64_b1024_m4n4k4_direct_alloc_auto[faer]@t1`, `beinsum_f64_b1024_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b64_m4n4k4_direct_alloc_auto[faer]@t1`, `bdot_f64_b64_m4n4k4_direct_into_auto[faer]@t1`, `bdot_f64_b16_m64n64k64_direct_alloc_auto[faer]@t1`, `bdot_f64_b16_m64n64k64_direct_into_auto[faer]@t1`, `bdot_f64_b64_m64n1k64_direct_alloc_auto[faer]@t1`, `bdot_f64_b64_m64n1k64_direct_into_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_canonical_alloc_auto[faer]@t1`, `bdot_f64_b1024_m4n4k4_canonical_into_auto[faer]@t1`, `hadamard_f64_m64n64_dot_alloc[faer]@t1`, `hadamard_f64_m64n64_einsum_alloc[faer]@t1`, `chain3_f64_n4_einsum_alloc[faer]@t1`, `stream_f64_fixed_len32_einsum_alloc[faer]@t1`, `stream_f64_mixed_len32_einsum_alloc[faer]@t1`, `stream_f64_fresh_len32_einsum_alloc[faer]@t1`, `stream_f64_strides_len32_einsum_alloc[faer]@t1`, `eager_stream_f64_fixed_len128_einsum3_alloc[faer]@t1`, `eager_stream_f64_mixed_len128_einsum3_alloc[faer]@t1`, `eager_stream_f64_fresh_len128_einsum3_alloc[faer]@t1`, `eager_stream_f64_strides_len128_einsum3_alloc[faer]@t1`, `matmul_n2_count1024[faer]@t4`, `matmul_n4_count1024[faer]@t4`, `matmul_n8_count1024[faer]@t4`, `matmul_n16_count1024[faer]@t4`, `matmul_n32_count1024[faer]@t4`, `solve_n2_count1024[faer]@t4`, `solve_n4_count1024[faer]@t4` (+26 more)
-- Noisy: `solve_n4_count1024[blas]@t1`, `solve_n16_count1024[blas]@t1`, `solve_n32_count1024[blas]@t1`, `solve_n16_count1024[blas]@t4`, `eager_stream_f64_fresh_len128_einsum3_alloc[blas]@t4`
+- Noisy: `matmul_n2_count1024[pytorch]@t1`, `matmul_n4_count1024[pytorch]@t1`, `matmul_n8_count1024[pytorch]@t1`, `solve_n16_count1024[blas]@t1`, `solve_n32_count1024[blas]@t1`, `matmul_n2_count1024[pytorch]@t4`, `matmul_n4_count1024[pytorch]@t4`, `matmul_n8_count1024[blas]@t4`, `matmul_n8_count1024[pytorch]@t4`, `matmul_n16_count1024[pytorch]@t4`, `solve_n4_count1024[pytorch]@t4`, `solve_n8_count1024[pytorch]@t4`, `solve_n16_count1024[blas]@t4`, `solve_n16_count1024[pytorch]@t4`, `solve_n32_count1024[blas]@t4`
 
 ## Loop of independent small calls
 
@@ -76,66 +76,66 @@ This independent-call loop lane uses concrete Tensor routes. Borrowed eager-sess
 
 | Case ID | Operation | Matrix | Operations | Threads | Provider | Route | Execution mode | Median total ms | IQR total ms | Median ns/op | CoV | Check |
 |---|---|---|---:|---:|---|---|---|---:|---:|---:|---:|---|
-| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | blas | shared-session | not applicable | 2.40 | 0.04 | 2343.75 | 1.1% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | blas | shared-session | not applicable | 1.37 | 0.02 | 1337.89 | 1.0% | passed |
 | matmul_n16_count1024 | matmul | n16 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 3.42 | 0.15 | 3339.84 | 5.4% | passed |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | blas | shared-session | not applicable | 2.40 | 0.02 | 2343.75 | 1.0% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 2.22 | 0.07 | 2167.97 | 6.9% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | blas | shared-session | not applicable | 1.45 | 0.07 | 1416.02 | 4.4% | passed |
 | matmul_n16_count1024 | matmul | n16 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 3.31 | 0.11 | 3232.42 | 4.4% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | blas | shared-session | not applicable | 1.57 | 0.01 | 1533.20 | 0.4% | passed |
+| matmul_n16_count1024 | matmul | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 2.39 | 0.19 | 2333.98 | 10.4% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | blas | shared-session | not applicable | 0.90 | 0.01 | 878.91 | 0.9% | passed |
 | matmul_n2_count1024 | matmul | n2 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 2.13 | 0.11 | 2080.08 | 5.5% | passed |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | blas | shared-session | not applicable | 1.63 | 0.02 | 1591.80 | 0.7% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 1.12 | 0.05 | 1093.75 | 12.1% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | blas | shared-session | not applicable | 0.87 | 0.01 | 849.61 | 0.9% | passed |
 | matmul_n2_count1024 | matmul | n2 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 2.04 | 0.10 | 1992.19 | 5.1% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | blas | shared-session | not applicable | 6.40 | 0.14 | 6250.00 | 1.7% | passed |
+| matmul_n2_count1024 | matmul | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 1.30 | 0.04 | 1269.53 | 11.0% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | blas | shared-session | not applicable | 4.71 | 0.07 | 4599.61 | 1.2% | passed |
 | matmul_n32_count1024 | matmul | n32 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 7.37 | 0.17 | 7197.27 | 2.1% | passed |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | blas | shared-session | not applicable | 10.59 | 0.14 | 10341.80 | 1.0% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 5.54 | 0.22 | 5410.16 | 3.9% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | blas | shared-session | not applicable | 6.20 | 0.15 | 6054.69 | 1.7% | passed |
 | matmul_n32_count1024 | matmul | n32 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 10.60 | 0.19 | 10351.56 | 2.2% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | blas | shared-session | not applicable | 1.58 | 0.01 | 1542.97 | 0.5% | passed |
+| matmul_n32_count1024 | matmul | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 6.59 | 0.18 | 6435.55 | 3.4% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | blas | shared-session | not applicable | 0.91 | 0.00 | 888.67 | 0.4% | passed |
 | matmul_n4_count1024 | matmul | n4 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 2.04 | 0.12 | 1992.19 | 6.4% | passed |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | blas | shared-session | not applicable | 1.61 | 0.01 | 1572.27 | 0.4% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 1.18 | 0.06 | 1152.34 | 11.0% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | blas | shared-session | not applicable | 0.91 | 0.01 | 888.67 | 0.4% | passed |
 | matmul_n4_count1024 | matmul | n4 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 1.93 | 0.13 | 1884.77 | 6.0% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | blas | shared-session | not applicable | 1.67 | 0.00 | 1630.86 | 0.4% | passed |
+| matmul_n4_count1024 | matmul | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 1.21 | 0.05 | 1181.64 | 10.9% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | blas | shared-session | not applicable | 0.99 | 0.00 | 966.80 | 0.2% | passed |
 | matmul_n8_count1024 | matmul | n8 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 2.16 | 0.09 | 2109.38 | 7.4% | passed |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | blas | shared-session | not applicable | 1.71 | 0.01 | 1669.92 | 0.6% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 1.09 | 0.07 | 1064.45 | 11.5% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | blas | shared-session | not applicable | 1.06 | 0.38 | 1035.16 | 23.8% | passed |
 | matmul_n8_count1024 | matmul | n8 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 2.22 | 0.22 | 2167.97 | 6.5% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 1 | blas | shared-session | not applicable | 4.40 | 0.94 | 4296.88 | 10.3% | passed |
+| matmul_n8_count1024 | matmul | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 1.52 | 0.16 | 1484.38 | 17.5% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 1 | blas | shared-session | not applicable | 2.92 | 0.75 | 2851.56 | 12.2% | passed |
 | solve_n16_count1024 | solve | n16 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n16_count1024 | solve | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 21.26 | 0.33 | 20761.72 | 1.3% | passed |
-| solve_n16_count1024 | solve | n16 | 1024 | 4 | blas | shared-session | not applicable | 4.70 | 1.02 | 4589.84 | 10.3% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 1 | pytorch | shared-session | not applicable | 12.07 | 0.26 | 11787.11 | 1.9% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 4 | blas | shared-session | not applicable | 2.83 | 0.74 | 2763.67 | 12.1% | passed |
 | solve_n16_count1024 | solve | n16 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n16_count1024 | solve | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 21.31 | 0.64 | 20810.55 | 1.9% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 1 | blas | shared-session | not applicable | 1.24 | 0.01 | 1210.94 | 0.7% | passed |
+| solve_n16_count1024 | solve | n16 | 1024 | 4 | pytorch | shared-session | not applicable | 11.60 | 0.39 | 11328.12 | 11.3% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 1 | blas | shared-session | not applicable | 0.75 | 0.01 | 732.42 | 2.2% | passed |
 | solve_n2_count1024 | solve | n2 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n2_count1024 | solve | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 16.60 | 0.24 | 16210.94 | 1.5% | passed |
-| solve_n2_count1024 | solve | n2 | 1024 | 4 | blas | shared-session | not applicable | 1.21 | 0.01 | 1181.64 | 1.1% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 1 | pytorch | shared-session | not applicable | 8.87 | 0.23 | 8662.11 | 1.6% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 4 | blas | shared-session | not applicable | 0.76 | 0.01 | 742.19 | 0.7% | passed |
 | solve_n2_count1024 | solve | n2 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n2_count1024 | solve | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 17.14 | 0.29 | 16738.28 | 4.5% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 1 | blas | shared-session | not applicable | 19.04 | 4.01 | 18593.75 | 10.1% | passed |
+| solve_n2_count1024 | solve | n2 | 1024 | 4 | pytorch | shared-session | not applicable | 8.90 | 0.57 | 8691.41 | 3.6% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 1 | blas | shared-session | not applicable | 11.76 | 2.79 | 11484.38 | 11.1% | passed |
 | solve_n32_count1024 | solve | n32 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n32_count1024 | solve | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 37.79 | 0.22 | 36904.30 | 0.6% | passed |
-| solve_n32_count1024 | solve | n32 | 1024 | 4 | blas | shared-session | not applicable | 32.02 | 5.55 | 31269.53 | 9.8% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 1 | pytorch | shared-session | not applicable | 20.93 | 0.15 | 20439.45 | 0.9% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 4 | blas | shared-session | not applicable | 15.88 | 3.42 | 15507.81 | 10.5% | passed |
 | solve_n32_count1024 | solve | n32 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n32_count1024 | solve | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 52.84 | 0.84 | 51601.56 | 1.3% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 1 | blas | shared-session | not applicable | 1.37 | 0.03 | 1337.89 | 10.9% | passed |
+| solve_n32_count1024 | solve | n32 | 1024 | 4 | pytorch | shared-session | not applicable | 27.62 | 0.86 | 26972.66 | 4.7% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 1 | blas | shared-session | not applicable | 0.80 | 0.00 | 781.25 | 1.6% | passed |
 | solve_n4_count1024 | solve | n4 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n4_count1024 | solve | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 16.94 | 0.33 | 16542.97 | 1.3% | passed |
-| solve_n4_count1024 | solve | n4 | 1024 | 4 | blas | shared-session | not applicable | 1.37 | 0.02 | 1337.89 | 1.0% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 1 | pytorch | shared-session | not applicable | 8.96 | 0.11 | 8750.00 | 2.1% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 4 | blas | shared-session | not applicable | 0.78 | 0.01 | 761.72 | 0.9% | passed |
 | solve_n4_count1024 | solve | n4 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n4_count1024 | solve | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 17.94 | 0.19 | 17519.53 | 2.9% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 1 | blas | shared-session | not applicable | 2.49 | 0.04 | 2431.64 | 1.1% | passed |
+| solve_n4_count1024 | solve | n4 | 1024 | 4 | pytorch | shared-session | not applicable | 9.38 | 0.42 | 9160.16 | 29.2% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 1 | blas | shared-session | not applicable | 1.45 | 0.01 | 1416.02 | 0.6% | passed |
 | solve_n8_count1024 | solve | n8 | — | 1 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n8_count1024 | solve | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 17.90 | 0.30 | 17480.47 | 1.1% | passed |
-| solve_n8_count1024 | solve | n8 | 1024 | 4 | blas | shared-session | not applicable | 2.55 | 0.04 | 2490.23 | 1.3% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 1 | pytorch | shared-session | not applicable | 9.65 | 0.27 | 9423.83 | 2.0% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 4 | blas | shared-session | not applicable | 1.42 | 0.01 | 1386.72 | 0.5% | passed |
 | solve_n8_count1024 | solve | n8 | — | 4 | faer | shared-session | not applicable | — | — | — | — | unsupported |
-| solve_n8_count1024 | solve | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 18.46 | 0.17 | 18027.34 | 0.8% | passed |
+| solve_n8_count1024 | solve | n8 | 1024 | 4 | pytorch | shared-session | not applicable | 9.91 | 0.20 | 9677.73 | 15.0% | passed |
 
 ## One-operation batched routes (tenferro-rs #1946 B2)
 
@@ -184,25 +184,25 @@ One sample is the entire ordered sequence, with required planning/cache lookup i
 | stream_f64_mixed_len32_einsum_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
 | stream_f64_fresh_len32_einsum_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
 | stream_f64_strides_len32_einsum_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
-| eager_stream_f64_fixed_len128_einsum3_alloc | blas | 1 | 128 | 1.24 | 0.02 | 1.278 | 1.326 | 2.2% | passed |
+| eager_stream_f64_fixed_len128_einsum3_alloc | blas | 1 | 128 | 0.90 | 0.01 | 0.906 | 0.906 | 0.6% | passed |
 | eager_stream_f64_fixed_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
-| eager_stream_f64_mixed_len128_einsum3_alloc | blas | 1 | 128 | 1.25 | 0.01 | 1.256 | 1.258 | 0.6% | passed |
+| eager_stream_f64_mixed_len128_einsum3_alloc | blas | 1 | 128 | 0.89 | 0.01 | 0.903 | 0.909 | 1.5% | passed |
 | eager_stream_f64_mixed_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
-| eager_stream_f64_fresh_len128_einsum3_alloc | blas | 1 | 128 | 6.37 | 0.35 | 6.851 | 7.245 | 4.5% | passed |
+| eager_stream_f64_fresh_len128_einsum3_alloc | blas | 1 | 128 | 3.06 | 0.09 | 3.190 | 3.342 | 2.9% | passed |
 | eager_stream_f64_fresh_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
-| eager_stream_f64_strides_len128_einsum3_alloc | blas | 1 | 128 | 2.42 | 0.02 | 2.433 | 2.435 | 0.6% | passed |
+| eager_stream_f64_strides_len128_einsum3_alloc | blas | 1 | 128 | 1.38 | 0.01 | 1.395 | 1.399 | 0.7% | passed |
 | eager_stream_f64_strides_len128_einsum3_alloc | faer | 1 | — | — | — | — | — | — | unsupported |
 | stream_f64_fixed_len32_einsum_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
 | stream_f64_mixed_len32_einsum_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
 | stream_f64_fresh_len32_einsum_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
 | stream_f64_strides_len32_einsum_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
-| eager_stream_f64_fixed_len128_einsum3_alloc | blas | 4 | 128 | 1.22 | 0.01 | 1.232 | 1.239 | 1.3% | passed |
+| eager_stream_f64_fixed_len128_einsum3_alloc | blas | 4 | 128 | 0.89 | 0.01 | 0.901 | 0.904 | 0.5% | passed |
 | eager_stream_f64_fixed_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
-| eager_stream_f64_mixed_len128_einsum3_alloc | blas | 4 | 128 | 1.27 | 0.04 | 1.330 | 1.349 | 2.5% | passed |
+| eager_stream_f64_mixed_len128_einsum3_alloc | blas | 4 | 128 | 0.89 | 0.01 | 0.904 | 0.940 | 1.7% | passed |
 | eager_stream_f64_mixed_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
-| eager_stream_f64_fresh_len128_einsum3_alloc | blas | 4 | 128 | 6.87 | 0.42 | 8.074 | 8.878 | 10.5% | passed (NOISY; inconclusive) |
+| eager_stream_f64_fresh_len128_einsum3_alloc | blas | 4 | 128 | 3.30 | 0.18 | 3.852 | 4.228 | 9.3% | passed |
 | eager_stream_f64_fresh_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
-| eager_stream_f64_strides_len128_einsum3_alloc | blas | 4 | 128 | 2.42 | 0.02 | 2.452 | 2.470 | 0.9% | passed |
+| eager_stream_f64_strides_len128_einsum3_alloc | blas | 4 | 128 | 1.38 | 0.01 | 1.391 | 1.407 | 0.7% | passed |
 | eager_stream_f64_strides_len128_einsum3_alloc | faer | 4 | — | — | — | — | — | — | unsupported |
 
 ### Separate-process cache observations
@@ -223,26 +223,26 @@ Public EagerRuntime extension-store counters only. Provider GEMM-analysis/indexe
 Wall observations `wall_collection_t1.json`:
 ```json
 {
-  "latency_case_processes_seconds": 37.30100528899948,
-  "separate_cache_diagnostics_seconds": 0.5622211790005167,
-  "collection_total_seconds": 37.86322677899989
+  "latency_case_processes_seconds": 22.93435063900006,
+  "separate_cache_diagnostics_seconds": 0.38769874099989465,
+  "collection_total_seconds": 23.32204952000029
 }
 ```
 
 Wall observations `wall_collection_t4.json`:
 ```json
 {
-  "latency_case_processes_seconds": 39.5302483559999,
-  "separate_cache_diagnostics_seconds": 0.597574325000096,
-  "collection_total_seconds": 40.12782293100008
+  "latency_case_processes_seconds": 24.918124032000378,
+  "separate_cache_diagnostics_seconds": 0.40733269299971653,
+  "collection_total_seconds": 25.32545688600021
 }
 ```
 
 Wall observations `wall_command.json`:
 ```json
 {
-  "command_seconds_before_final_report_write": 88.10837048,
-  "report_generation_seconds": 0.119612135,
+  "command_seconds_before_final_report_write": 56.132577866,
+  "report_generation_seconds": 0.082522628,
   "scope": "command startup through report generation; excludes final report file writes",
   "budget_seconds": 300.0,
   "budget_status": "within_budget"
@@ -252,8 +252,8 @@ Wall observations `wall_command.json`:
 Wall observations `wall_phases.json`:
 ```json
 {
-  "build_and_checkout_seconds": 3.043010546,
-  "validation_metadata_and_collection_seconds": 84.945747799,
-  "command_before_report_seconds": 87.988758345
+  "build_and_checkout_seconds": 2.156216984,
+  "validation_metadata_and_collection_seconds": 53.893838254,
+  "command_before_report_seconds": 56.050055238
 }
 ```

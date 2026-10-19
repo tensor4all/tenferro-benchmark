@@ -1,45 +1,45 @@
 {
-  "collected_at": "2026-10-18T19:17:50.465020+00:00",
+  "collected_at": "2026-10-19T18:53:28.252283+00:00",
   "files": {
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/julia_output_t1.jsonl": "397b6eed61d4730e9a2df166969b3c78ad1c654434eb9df18637da74114c0357",
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/julia_output_t4.jsonl": "e0359a19b4eda5ab86638fb95af282e0110dacce1111d19887bead7377c5bf10",
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/run.yaml": "020c3699dfc9ca708459fd4a31b81add2251871b11811793ce28a48d707d10a9",
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/run_t1.yaml": "36516c1df4ce4ab8b97bf561d12dade033bf801bb0409afc7a9e247aa512880c",
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/run_t4.yaml": "bba277332fad37a7cde17d8df154e82985e1432777748fb31791385b6e157578",
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/rust_output_t1.jsonl": "661c7b99135ed58349ab909a3947e3f9e8e7be4fd682237bc485625a2280860f",
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/inputs/0/rust_output_t4.jsonl": "cfa26fae0893ed7a81876aa31e7a54685498b75e8c1642e46a0724f34582ad42",
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/report.md": "74fd3b6d09387eccf3894cb436ddf4eca8ad8e5712eb2ca27e6f710bd86c3f65",
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/report.summary.json": "a7d182e9076cd37c688de6bcda6b30ca6fbe9d7b4aec5c9fd08b421ce0236502",
-    "data/results/amd-cpu/cpu/permutation/20261018_191750/run.yaml": "7da4ae6308e399f0c3ef4c7a5de0ba3cf6fc3132fee77c5bcbabc265cf737c6b",
-    "result/amd-cpu/cpu/permutation.md": "74fd3b6d09387eccf3894cb436ddf4eca8ad8e5712eb2ca27e6f710bd86c3f65",
-    "result/amd-cpu/cpu/permutation.summary.json": "a7d182e9076cd37c688de6bcda6b30ca6fbe9d7b4aec5c9fd08b421ce0236502"
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/inputs/0/julia_output_t1.jsonl": "3a77e0936406c9d79eb282c661e3e949dd75074b757d923f2bb9f4c86dcf5225",
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/inputs/0/julia_output_t4.jsonl": "b96b72699ff053e33977e5726b372094defc0824ec0da2b995f951c191f008f6",
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/inputs/0/run.yaml": "56d8b1e0d91ff1aa02a10a2449898c4b78d0bdf0fe3cdf0afd6f83b3fc22207d",
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/inputs/0/run_t1.yaml": "065ad95d9961531d77322c40208d5b81825b3da93684f4219d3e062185ca35c1",
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/inputs/0/run_t4.yaml": "7ae6708b710e58de41725776c0f9320274f64abba46ea2751811153e52f7a7d5",
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/inputs/0/rust_output_t1.jsonl": "bec235e705abed62791623fce356d29f1de40224ead54435544710c4e7a7a9d8",
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/inputs/0/rust_output_t4.jsonl": "83636eb41346f94fd46c1450437f8064fbb28c1d988c8dfbabcf1e04654c2de6",
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/report.md": "3bdbe9fe1bb35e2ca7fb396099f83a778824a3888cbf195d5569aa0f920e9419",
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/report.summary.json": "435c55421461ff8fe088da2e5ff190dad656ce57efed44e24751180e5cf16c23",
+    "data/results/amd-cpu/cpu/permutation/20261019_185328/run.yaml": "223aaa94871a8d95ac693587c083cbfe27a57eb550ed37b24a87bc20ef8ffeb6",
+    "result/amd-cpu/cpu/permutation.md": "3bdbe9fe1bb35e2ca7fb396099f83a778824a3888cbf195d5569aa0f920e9419",
+    "result/amd-cpu/cpu/permutation.summary.json": "435c55421461ff8fe088da2e5ff190dad656ce57efed44e24751180e5cf16c23"
   },
   "hardware": {
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "host": "2c25503e91ae",
+    "cpu": "AMD EPYC 9V45 96-Core Processor",
+    "host": "a5c7960fb148",
     "threads": [
       1,
       4
     ]
   },
-  "harness_commit": "e4b601dcd685fe1bafd45e6da97bc134f45c5049",
+  "harness_commit": "ce89bccec28bc7c863b30c80764d3570747f6df6",
   "schema_version": 1,
   "source": {
-    "artifact_id": 12147733929,
-    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39151272710/artifacts/12147733929",
-    "created_at": "2026-10-18T19:30:32Z",
-    "digest": "sha256:8369a9fa90827bdb2258de4f73776765ee72c8e5928b4ebb39b01c7fe8da34d3",
-    "expires_at": "2027-01-16T17:48:34Z",
+    "artifact_id": 12213159769,
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39297258818/artifacts/12213159769",
+    "created_at": "2026-10-19T19:02:17Z",
+    "digest": "sha256:6432c7b81195a00eb6ce58f92c37c631b7cd64d74e1fb0e9ab7f48b27ef44359",
+    "expires_at": "2027-01-17T17:48:22Z",
     "head_branch": "main",
-    "head_sha": "e4b601dcd685fe1bafd45e6da97bc134f45c5049",
+    "head_sha": "ce89bccec28bc7c863b30c80764d3570747f6df6",
     "repository": "tensor4all/tenferro-benchmark",
     "run_attempt": 1,
-    "run_id": 39151272710,
-    "run_started_at": "2026-10-18T17:48:34Z",
-    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39151272710",
+    "run_id": 39297258818,
+    "run_started_at": "2026-10-19T17:48:22Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39297258818",
     "workflow_path": ".github/workflows/benchmark-nightly-linux-cpu.yml"
   },
   "suite_id": "cpu/permutation",
   "target_profile": "amd-cpu",
-  "tenferro_commit": "c2ddccb14b89f8e9fa8a8fe3957367e32fb4e677"
+  "tenferro_commit": "14bc1ab933e3c7a9c966e08355670331ab9d993c"
 }
