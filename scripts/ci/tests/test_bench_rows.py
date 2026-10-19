@@ -117,6 +117,41 @@ class ExportTests(unittest.TestCase):
         [finding] = slow_rows(rows, 1.5)
         self.assertEqual((finding['backend'], finding['threads']), ('tenferro-cuda-eager', None))
 
+    def test_ingestion_bundle_is_read_through_its_manifest(self):
+        def source(suite, stamp, index, files, meta='run.yaml'):
+            inputs = self.root / 'data/results/amd-cpu' / suite / stamp / 'inputs' / str(index)
+            inputs.mkdir(parents=True, exist_ok=True)
+            (inputs / meta).write_text(RUN_YAML.format(suite=suite))
+            for name, text in files.items():
+                (inputs / name).write_text(text)
+            return {'metadata': str((inputs / meta).relative_to(self.root)),
+                    'raw_files': [str((inputs / name).relative_to(self.root)) for name in files]}
+
+        table = CSV_HEADER + ('small,qr,f64,1,2x2,tenferro-trace,3.0,0.1,b,ok\n'
+                              'small,qr,f64,1,2x2,jax-cpu,1.0,0.1,b,ok\n')
+        ops = source('cpu/cpu_ops', '20261018_183622', 0, {'cpu_ops_t1_x.csv': table})
+        linalg = source('cpu/linalg_jvp_vjp', '20261018_183622', 0, {'cpu_ops_t1_x.csv': table})
+        smoke = source('cpu/overhead_smoke', '20261018_191746', 0, {'samples_t1.jsonl': ''})
+        # A raw run outside the manifest is not exported.
+        (self.run_dir('cpu/cpu_ops', '20261018_200000') / 'cpu_ops_t1_x.csv').write_text(table)
+        suites = []
+        for suite, src in (('cpu/cpu_ops', ops), ('cpu/linalg_jvp_vjp', linalg), ('cpu/overhead_smoke', smoke)):
+            run_directory = str(Path(src['metadata']).parent.parent.parent)
+            suites.append({'suite_id': suite, 'run_directory': run_directory, 'tenferro_commit': 'def',
+                           'sources': [src], 'files': {f: 'sha-' + Path(f).name for f in src['raw_files']}})
+        (self.root / 'ingestion.json').write_text(json.dumps(
+            {'schema_version': 1, 'target_profile': 'amd-cpu', 'harness_commit': 'h1', 'suites': suites}))
+
+        rows, skipped = export(self.root, 'amd-cpu', '20261018_174834')
+
+        self.assertEqual({(r['suite_id'], r['backend']) for r in rows},
+                         {('cpu/cpu_ops', 'tenferro-trace'), ('cpu/cpu_ops', 'jax-cpu')})
+        self.assertEqual({(r['tenferro_commit'], r['harness_commit'], r['blas'], r['raw_run']) for r in rows},
+                         {('def', 'h1', 'mkl', 'data/results/amd-cpu/cpu/cpu_ops/20261018_183622')})
+        self.assertEqual([s['suite_id'] for s in skipped], ['cpu/overhead_smoke'])
+        [finding] = slow_rows(rows, 1.5)
+        self.assertEqual(finding['ratio'], 3.0)
+
     def test_load_rejects_rows_from_another_format(self):
         path = self.root / 'rows.jsonl'
         path.write_text(jsonl([{'backend': 'x'}]))
