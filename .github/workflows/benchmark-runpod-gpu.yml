@@ -32,9 +32,9 @@ on:
         default: false
         type: boolean
       gpu_type:
-        description: RunPod GPU type ID (standard nvidia-gpu hardware is the A100 80GB PCIe)
+        description: RunPod GPU type ID, or a tier name of scripts/ci/runpod_config.json (a100 = any A100, the standard nvidia-gpu hardware)
         required: false
-        default: NVIDIA A100 80GB PCIe
+        default: a100
         type: string
 
 permissions:
@@ -55,7 +55,7 @@ env:
   BENCHMARK_TARGET_PROFILE: nvidia-gpu
   # Scheduled runs have no inputs; jobs fall back to the weekly defaults
   # (suite=all, default backends, A100).
-  BENCH_GPU_TYPE: ${{ inputs.gpu_type || 'NVIDIA A100 80GB PCIe' }}
+  BENCH_GPU_TYPE: ${{ inputs.gpu_type || 'a100' }}
   # Hard cap on one pod's lifetime, enforced by the pod itself (see startup).
   # Budget: <=7 min startup (startup_timeout_seconds) + 45 min benchmark job
   # timeout + cleanup stays below it.

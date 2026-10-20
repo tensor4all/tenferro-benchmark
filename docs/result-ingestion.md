@@ -44,9 +44,10 @@ Keep `amd-cpu` as the Linux nightly's identity; do not duplicate it as
 `linux-cpu`. Existing independently maintained `linux-cpu` reports remain
 unchanged. CPU summaries must contain hardware identity (at least host/CPU)
 and a tenferro commit. Hosted CPU results remain reference indicators. GPU
-publication requires `NVIDIA A100 80GB PCIe` (case-insensitive whitespace
-normalization is allowed); an A100 SXM, another memory size, or a generic A100
-label is insufficient. Diagnostic hardware cannot replace standard reports.
+publication requires an NVIDIA A100 device name (`NVIDIA A100 80GB PCIe`,
+`NVIDIA A100-SXM4-80GB`, `NVIDIA A100-SXM4-40GB`; case-insensitive whitespace
+normalization is allowed). The exact model is kept in the summary and
+provenance, so reports show which A100 measured them. Diagnostic hardware cannot replace standard reports.
 
 ## Bundle manifest, version 1
 

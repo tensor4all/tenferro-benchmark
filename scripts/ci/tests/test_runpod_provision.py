@@ -7,6 +7,7 @@ import scripts.ci.runpod_provision as provision_module
 from scripts.ci.runpod_client import (
     AssignedGpuError,
     CreateResult,
+    PermanentRunPodError,
     RetryableRunPodError,
 )
 from scripts.ci.runpod_provision import (
@@ -521,6 +522,29 @@ class ProvisionTests(unittest.TestCase):
         self.assertIn("estimated paid time", output)
         # 100s of startup wait at $0.44/hr.
         self.assertIn("~$0.01", output)
+
+
+class SelectTiersTests(unittest.TestCase):
+    TIERS = [
+        ("premium", ("NVIDIA L40S",)),
+        ("a100", ("NVIDIA A100 80GB PCIe", "NVIDIA A100-SXM4-40GB")),
+    ]
+
+    def test_tier_name_selects_every_gpu_of_that_tier(self) -> None:
+        self.assertEqual(
+            provision_module.select_tiers(self.TIERS, "a100"), [self.TIERS[1]]
+        )
+
+    def test_gpu_id_selects_only_that_gpu(self) -> None:
+        self.assertEqual(
+            provision_module.select_tiers(self.TIERS, "NVIDIA A100-SXM4-40GB"),
+            [("selected", ("NVIDIA A100-SXM4-40GB",))],
+        )
+
+    def test_empty_keeps_all_tiers_and_unknown_is_rejected(self) -> None:
+        self.assertEqual(provision_module.select_tiers(self.TIERS, ""), self.TIERS)
+        with self.assertRaises(PermanentRunPodError):
+            provision_module.select_tiers(self.TIERS, "NVIDIA H100 80GB HBM3")
 
 
 class PodApiTransportTests(unittest.TestCase):

@@ -86,7 +86,7 @@ PROFILE_FAMILY = {
     "amd-cpu": "cpu",
 }
 PROFILE_LABEL = {
-    "nvidia-gpu": "NVIDIA A100 80GB PCIe",
+    "nvidia-gpu": "NVIDIA A100",
     "mac-gpu": "Apple GPU (GitHub runner)",
     "linux-cpu": "Linux CPU",
     "mac-cpu": "Apple silicon (GitHub runner)",
