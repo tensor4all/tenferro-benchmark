@@ -21,6 +21,11 @@ concurrency:
   group: benchmark-mac-cpu-canonical
   cancel-in-progress: false
 
+env:
+  # Pin the interpreter: the macos-26 image's Homebrew python moved to 3.15
+  # (2026-10), for which the locked torch release has no wheel.
+  UV_PYTHON: "3.14"
+
 jobs:
   mac-cpu:
     # Restrict to the canonical repository only.
