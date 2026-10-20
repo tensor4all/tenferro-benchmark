@@ -562,6 +562,18 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def select_tiers(tiers, selected: str):
+    """Restrict the reviewed tiers to a tier name or a single GPU type ID."""
+    if not selected:
+        return tiers
+    named = [(name, ids) for name, ids in tiers if name == selected]
+    if named:
+        return named
+    if not any(selected in ids for _, ids in tiers):
+        raise PermanentRunPodError("GPU type is outside the reviewed allowlist")
+    return [("selected", (selected,))]
+
+
 def main() -> int:
     args = _parse_args()
     try:
@@ -587,12 +599,9 @@ def main() -> int:
                     f"--pod-env entries must be KEY=VALUE, got {entry!r}"
                 )
             extra_env[key] = value
-        tiers = list(configured_gpu_tiers(config))
-        selected_gpu = os.environ.get("RUNPOD_GPU_TYPE", "")
-        if selected_gpu:
-            if not any(selected_gpu in ids for _, ids in tiers):
-                raise PermanentRunPodError("GPU type is outside the reviewed allowlist")
-            tiers = [("selected", (selected_gpu,))]
+        tiers = select_tiers(
+            list(configured_gpu_tiers(config)), os.environ.get("RUNPOD_GPU_TYPE", "")
+        )
         api_cooldown = Cooldown()
         plan = candidate_plan(
             config,

@@ -91,8 +91,9 @@ def validate_summary(document: dict, profile: str, entry: dict) -> None:
         raise ValueError('Invalid measured revision')
     hardware = entry['hardware']
     if profile == 'nvidia-gpu':
-        if ' '.join(str(hardware.get('gpu', '')).lower().split()) != 'nvidia a100 80gb pcie':
-            raise ValueError('Only standard NVIDIA A100 80GB PCIe results may publish')
+        # Any A100 (PCIe/SXM4, 40/80 GB) is standard; the exact model is recorded.
+        if not ' '.join(str(hardware.get('gpu', '')).lower().split()).startswith('nvidia a100'):
+            raise ValueError('Only NVIDIA A100 results may publish')
     elif not (hardware.get('host') or hardware.get('cpu')):
         raise ValueError('CPU hardware identity is missing')
     expected = [tuple(row) for row in entry['expected_rows']]

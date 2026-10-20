@@ -37,7 +37,8 @@
       "name": "a100",
       "gpu_type_ids": [
         "NVIDIA A100 80GB PCIe",
-        "NVIDIA A100-SXM4-80GB"
+        "NVIDIA A100-SXM4-80GB",
+        "NVIDIA A100-SXM4-40GB"
       ]
     }
   ],

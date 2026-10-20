@@ -30,9 +30,12 @@ results, and a slot that cannot obtain a card is retried by the next one
 without renting anything in between. Manual dispatches always proceed.
 Scheduled runs use `suite=all` and the default backends.
 
-Both scheduled and dispatched runs request only `NVIDIA A100 80GB PCIe`, the
-standard `nvidia-gpu` hardware. Passing a different reviewed `gpu_type` is
-for diagnostics only; such results must not replace maintained A100 reports.
+Both scheduled and dispatched runs request the `a100` tier: any in-stock
+A100 (`NVIDIA A100 80GB PCIe`, `NVIDIA A100-SXM4-80GB` or
+`NVIDIA A100-SXM4-40GB`), the standard `nvidia-gpu` hardware. The exact model
+is recorded in the run metadata and summaries. Passing a non-A100 reviewed
+`gpu_type` is for diagnostics only; such results must not replace maintained
+A100 reports.
 
 The watchdog starts deleting after 3300 seconds (`POD_MAX_LIFETIME_SECONDS`).
 Its 180-second cleanup budget stays below one hour when deletion succeeds;
@@ -189,8 +192,8 @@ Run the mock/fixture coverage without renting a pod:
 python3 -m unittest discover -s scripts/ci/tests -p 'test_runpod*.py'
 ```
 
-The `gpu_type` input (default `NVIDIA A100 80GB PCIe`) restricts provisioning
-to one reviewed GPU ID. The accepted GPU is recorded in benchmark metadata;
+The `gpu_type` input (default `a100`) restricts provisioning to one tier of
+`scripts/ci/runpod_config.json` or to one reviewed GPU ID. The accepted GPU is recorded in benchmark metadata;
 comparisons must use the actual device, rather than treating all RunPod runs
 as the same hardware.
 
@@ -249,7 +252,7 @@ Run a first GPU benchmark from GitHub Actions, or with:
 gh workflow run benchmark-runpod-gpu.yml --repo tensor4all/tenferro-benchmark \
   -f suite=benchmarks/gpu/dense.yaml \
   -f backends=tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda \
-  -f gpu_type="NVIDIA A100 80GB PCIe" \
+  -f gpu_type=a100 \
   -f keep_failed_pod=false
 ```
 
@@ -271,8 +274,8 @@ for every invocation; local benchmark entry points rebuild before measurement.
 After successful GPU or CPU nightly runs on `main`, `ingest-results.yml`
 downloads that exact run's result bundle, validates it, and commits accepted
 report/summary/provenance files. The GPU schema-2 publication manifest is
-revalidated against raw measurements, digests and the exact standard
-`NVIDIA A100 80GB PCIe` hardware. Missing/expired artifacts, incorrect hardware,
+revalidated against raw measurements, digests and NVIDIA A100 hardware (any
+A100 model). Missing/expired artifacts, incorrect hardware,
 incomplete suites, and failed verification are visible errors; there is no
 latest-run search or silent artifact fallback. Older valid results and duplicate
 submissions are explicit no-ops. Complete selected suites update independently

@@ -408,9 +408,10 @@ only for pure-Python checks that do not import `torch`. The CPU devcontainers
 deliberately keep a resettable bind-mounted `.venv` instead, because their
 collection scripts delete and recreate it.
 
-Collect `nvidia-gpu` reports on the NVIDIA A100 80GB PCIe host (the standard
-GPU benchmark hardware since 2026-10-17); do not mix in results from other GPU
-models. That host has a single GPU (physical GPU 0): verification-only lanes
+Collect `nvidia-gpu` reports on an NVIDIA A100 (any of the 80GB PCIe, SXM4 80GB
+or SXM4 40GB models; the standard GPU benchmark hardware since 2026-10-17, and
+since 2026-10-20 any A100 model, recorded per run); do not mix in results from
+non-A100 GPUs. The A100 80GB PCIe host has a single GPU (physical GPU 0): verification-only lanes
 default to GPU 1, so pass `GPU_BENCH_DEVICE=0` there and never run them
 concurrently with timing collection.
 
