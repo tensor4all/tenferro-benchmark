@@ -76,6 +76,7 @@ _CAPACITY_MESSAGES = (
     "no capacity",
     "insufficient capacity",
     "could not be placed",
+    "no longer any instances available",
 )
 
 

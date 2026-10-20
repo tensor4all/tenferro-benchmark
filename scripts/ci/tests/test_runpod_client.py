@@ -136,6 +136,11 @@ class RunPodClientTests(unittest.TestCase):
         self.assertTrue(is_capacity_failure(500, body))
         self.assertTrue(is_capacity_failure(400, body))
         self.assertFalse(is_capacity_failure(500, b'{"error":"internal failure"}'))
+        # Run 39415249100: the stock A100 offer disappeared between pricing and create.
+        self.assertTrue(is_capacity_failure(400, (
+            b'{"detail": "There are no longer any instances available with the '
+            b'requested specifications. Please refresh and try again.", "status": 400}'
+        )))
 
     def test_capacity_failure_moves_tier_without_sleep(self) -> None:
         requests = [
