@@ -1,10 +1,10 @@
-use super::{Case, Result, Settings};
+use super::{Case, EngineScope, Result, Settings};
 use serde_json::Value;
 use std::path::Path;
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
-use tenferro_gpu::cuda::{upload_tensor, CudaBackend, CudaDeviceId, CudaRuntime};
+use tenferro_gpu::cuda::{upload_tensor, CudaDeviceId, CudaEngine, CudaRuntime};
 use tenferro_linalg::{EagerSessionLinalgExt, HouseholderQr, QrOptions, TensorLinalgExt};
-use tenferro_tensor::{BackendSession, BackendSessionHost, DType, Tensor};
+use tenferro_tensor::{DType, Engine, Tensor};
 
 enum Output<T> {
     State(HouseholderQr<T>),
@@ -14,7 +14,7 @@ fn direct(
     case: &Case,
     inputs: &[Tensor],
     state: Option<&HouseholderQr<Tensor>>,
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
 ) -> Result<Output<Tensor>> {
     Ok(match case.op.as_str() {
         "householder_from_factors" => Output::State(HouseholderQr::<Tensor>::from_factors(
@@ -72,7 +72,7 @@ fn check_direct(
     expected: &[Tensor],
     input: &Tensor,
     case: &Case,
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
 ) -> Result<f64> {
     match output {
         Output::State(state) => {
@@ -143,7 +143,7 @@ pub(super) fn run(
                 }
         })
         .sum();
-    let mut backend = CudaBackend::new(CudaDeviceId::from_ordinal(device.try_into()?))?;
+    let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let rt = backend.runtime().clone();
     let inputs = hosts
         .iter()
@@ -183,9 +183,10 @@ pub(super) fn run(
             Ok((Some(timing), error))
         })?
     } else {
-        let runtime = EagerRuntime::with_cuda_backend(backend)?;
+        // The runtime stores no engine (tenferro-rs #2206).
+        let runtime = EagerRuntime::new()?;
         let _guard = runtime.no_grad();
-        runtime.with_eager_session(|s| {
+        runtime.with_eager_session(&mut backend, |s| {
             let inputs = inputs
                 .into_iter()
                 .map(|t| Ok(s.constant_from(t)?))

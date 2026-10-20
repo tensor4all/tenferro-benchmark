@@ -12,11 +12,11 @@ use std::time::Instant;
 use num_complex::Complex64;
 use serde::Serialize;
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
+use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
-    BackendSession, BackendSessionHost, CompiledGraph, DType, GraphCompiler, Runtime,
-    TensorSessionOpsExt, TraceContext,
+    CompiledGraph, DType, Engine, ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt,
+    TraceContext,
 };
 use tenferro_tensor::{Tensor, TensorRead, TypedTensorView};
 
@@ -31,29 +31,36 @@ mod allocations;
 #[path = "small_work/nonad.rs"]
 mod nonad;
 
-/// Enter one backend session and flatten the session-entry error into the
-/// callback's own error channel.
+/// Borrow the caller-held engine for one call sequence.
+///
+/// tenferro-rs #2206 removed backend sessions: the engine the caller holds is
+/// already the execution scope, so the callback simply borrows it. The trait
+/// keeps the tier spellings (`concrete-shared`, `concrete-fresh`) explicit.
 trait SessionScope {
     fn session_scope<R: Send>(
         &mut self,
-        f: impl FnOnce(&mut dyn BackendSession) -> Result<R, BoxError> + Send,
+        f: impl FnOnce(&mut dyn Engine) -> Result<R, BoxError> + Send,
     ) -> Result<R, BoxError>;
 }
 
-impl SessionScope for CpuBackend {
+impl SessionScope for CpuEngine {
     fn session_scope<R: Send>(
         &mut self,
-        f: impl FnOnce(&mut dyn BackendSession) -> Result<R, BoxError> + Send,
+        f: impl FnOnce(&mut dyn Engine) -> Result<R, BoxError> + Send,
     ) -> Result<R, BoxError> {
-        self.with_backend_session(f)?
+        f(self)
     }
 }
 
-/// Sum all axes of an eager tensor inside one borrowed eager session.
-fn eager_reduce_sum(input: &EagerTensor, axes: &[usize]) -> Result<EagerTensor, BoxError> {
+/// Sum axes of an eager tensor inside one borrowed eager session.
+fn eager_reduce_sum(
+    engine: &mut CpuEngine,
+    input: &EagerTensor,
+    axes: &[usize],
+) -> Result<EagerTensor, BoxError> {
     Ok(input
         .runtime()
-        .with_eager_session(|session| session.reduce_sum(input, Some(axes)))?)
+        .with_eager_session(engine, |session| session.reduce_sum(input, Some(axes)))?)
 }
 
 #[derive(Serialize)]
@@ -271,14 +278,14 @@ fn trace_compile_einsum(
 }
 
 fn compiled_einsum(
-    backend: &CpuBackend,
+    backend: &CpuEngine,
     n: usize,
     dtype: DType,
 ) -> Result<(Runtime, CompiledGraph), Box<dyn Error + Send + Sync>> {
     let program = trace_compile_einsum(n, dtype)?;
     let mut builder = Runtime::builder();
     builder.register_engine(runtime_engine_registration(backend)?)?;
-    builder.install_extension_module(tenferro_einsum::extension_module::<CpuBackend>(
+    builder.install_extension_module(tenferro_einsum::extension_module::<CpuEngine>(
         runtime_engine_id()?,
     )?)?;
     Ok((builder.build()?, program))
@@ -286,13 +293,16 @@ fn compiled_einsum(
 
 fn check_compiled_einsum(
     runtime: &Runtime,
+    engine: &mut CpuEngine,
     program: &CompiledGraph,
     lhs: &Tensor,
     rhs: &Tensor,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     let n = matrix_dimension(lhs.shape().iter().product())?;
     let mut checked = 0.0;
-    let prepared = runtime.prepare_compiled(program, &[lhs, rhs])?;
+    let signature = [TensorRead::from_tensor(lhs), TensorRead::from_tensor(rhs)];
+    let target = ExecutionEngine::target(engine);
+    let prepared = runtime.prepare(program, &signature, std::slice::from_ref(&target))?;
     for (a, b) in [(lhs, rhs), (rhs, lhs), (lhs, rhs)] {
         let expected = if a.dtype() == DType::F64 {
             Tensor::from_vec_col_major(
@@ -305,11 +315,17 @@ fn check_compiled_einsum(
                 matmul_reference(n, a.as_slice::<Complex64>()?, b.as_slice::<Complex64>()?),
             )?
         };
-        let outputs = runtime.run_prepared(&prepared, &[a, b])?;
+        let reads = [TensorRead::from_tensor(a), TensorRead::from_tensor(b)];
+        let outputs = runtime.run(&mut [&mut *engine], &prepared, &reads)?;
         if outputs.len() != 1 {
             return Err("compiled einsum must return one output".into());
         }
-        checked = check_tensor_reference(&outputs[0], &expected)?;
+        let output = outputs
+            .into_iter()
+            .next()
+            .expect("checked output count")
+            .into_tensor(engine)?;
+        checked = check_tensor_reference(&output, &expected)?;
     }
     Ok(checked)
 }
@@ -404,7 +420,7 @@ impl BorrowedEinsumInputs {
 
 fn borrowed_einsum(
     inputs: &BorrowedEinsumViews<'_>,
-    session: &mut dyn BackendSession,
+    session: &mut dyn Engine,
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
     use tenferro_einsum::TypedTensorReadEinsumExt;
     Ok(match inputs {
@@ -415,7 +431,7 @@ fn borrowed_einsum(
 
 fn concrete_operation(
     operation: &str,
-    session: &mut dyn BackendSession,
+    session: &mut dyn Engine,
     lhs: &Tensor,
     rhs: &Tensor,
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
@@ -441,7 +457,7 @@ fn concrete_operation(
 
 fn concrete_fresh(
     operation: &str,
-    backend: &mut CpuBackend,
+    backend: &mut CpuEngine,
     lhs: &Tensor,
     rhs: &Tensor,
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
@@ -465,6 +481,7 @@ where
 }
 
 fn eager_operation(
+    engine: &mut CpuEngine,
     operation: &str,
     lhs: &EagerTensor,
     rhs: &EagerTensor,
@@ -475,8 +492,8 @@ fn eager_operation(
     Ok(match operation {
         "add" => lhs
             .runtime()
-            .with_eager_session(|session| session.add(lhs, rhs))?,
-        "einsum" => lhs.runtime().with_eager_session(|session| {
+            .with_eager_session(engine, |session| session.add(lhs, rhs))?,
+        "einsum" => lhs.runtime().with_eager_session(engine, |session| {
             session
                 .einsum_subscripts(&[lhs, rhs], subs)
                 .map_err(Box::<dyn Error + Send + Sync>::from)
@@ -751,6 +768,7 @@ fn check_tensor(output: &Tensor, expected: &[f64]) -> Result<f64, Box<dyn Error 
 }
 
 fn check_einsum_ad(
+    engine: &mut CpuEngine,
     output: &EagerTensor,
     lhs: &EagerTensor,
     rhs: &EagerTensor,
@@ -758,9 +776,9 @@ fn check_einsum_ad(
     b: &Tensor,
     expected: &[f64],
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let value = check_tensor_shape(&output.to_tensor()?, expected, a.shape())?;
-    let loss = eager_reduce_sum(output, &[0, 1])?;
-    let _ = loss.backward()?;
+    let value = check_tensor_shape(&output.to_tensor(engine)?, expected, a.shape())?;
+    let loss = eager_reduce_sum(engine, output, &[0, 1])?;
+    let _ = loss.backward(engine)?;
     let av = TensorRead::from_tensor(a).as_slice::<f64>()?;
     let bv = TensorRead::from_tensor(b).as_slice::<f64>()?;
     let n = a.shape()[0];
@@ -791,6 +809,7 @@ fn check_einsum_ad(
 }
 
 fn check_complex_einsum_ad(
+    engine: &mut CpuEngine,
     output: &EagerTensor,
     lhs: &EagerTensor,
     rhs: &EagerTensor,
@@ -798,8 +817,8 @@ fn check_complex_einsum_ad(
     b: &Tensor,
     expected: &Tensor,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let value = check_tensor_reference(&output.to_tensor()?, expected)?;
-    eager_reduce_sum(output, &[0, 1])?.backward()?;
+    let value = check_tensor_reference(&output.to_tensor(engine)?, expected)?;
+    eager_reduce_sum(engine, output, &[0, 1])?.backward(engine)?;
     let av = a.as_slice::<Complex64>()?;
     let bv = b.as_slice::<Complex64>()?;
     let n = a.shape()[0];
@@ -817,7 +836,7 @@ fn check_complex_einsum_ad(
             .grad()?
             .ok_or("active complex einsum AD gradient is missing")?;
         let expected = Tensor::from_vec_col_major(vec![n, n], values)?;
-        check_tensor_reference(&gradient.to_tensor()?, &expected)?;
+        check_tensor_reference(&gradient.to_tensor(engine)?, &expected)?;
         input.clear_grad()?;
     }
     Ok(value)
@@ -825,7 +844,7 @@ fn check_complex_einsum_ad(
 
 fn execute_fresh(
     operation: &str,
-    backend: &mut CpuBackend,
+    backend: &mut CpuEngine,
     lhs: &Tensor,
     rhs: &Tensor,
     calls: usize,
@@ -837,7 +856,7 @@ fn execute_fresh(
 
 fn execute_shared(
     operation: &str,
-    session: &mut dyn BackendSession,
+    session: &mut dyn Engine,
     lhs: &Tensor,
     rhs: &Tensor,
     calls: usize,
@@ -931,12 +950,15 @@ where
 }
 
 fn execute_eager(
+    engine: &mut CpuEngine,
     operation: &str,
     lhs: &EagerTensor,
     rhs: &EagerTensor,
     calls: usize,
 ) -> Result<EagerTensor, Box<dyn Error + Send + Sync>> {
-    add_chain(lhs, rhs, calls, |a, b| eager_operation(operation, a, b))
+    add_chain(lhs, rhs, calls, |a, b| {
+        eager_operation(engine, operation, a, b)
+    })
 }
 
 /// Retain every intermediate of a dependent workflow, using containers
@@ -1008,23 +1030,25 @@ fn measure_chain<T>(
 }
 
 fn check_eager(
+    engine: &mut CpuEngine,
     output: &EagerTensor,
     expected: &[f64],
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let tensor = output.to_tensor()?;
+    let tensor = output.to_tensor(engine)?;
     check_tensor(&tensor, expected)
 }
 
 fn check_active_ad(
+    engine: &mut CpuEngine,
     output: &EagerTensor,
     lhs: &EagerTensor,
     rhs: &EagerTensor,
     expected: &[f64],
     rhs_gradient: f64,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let value = check_eager(output, expected)?;
-    let loss = eager_reduce_sum(output, &[0])?;
-    let _ = loss.backward()?;
+    let value = check_eager(engine, output, expected)?;
+    let loss = eager_reduce_sum(engine, output, &[0])?;
+    let _ = loss.backward(engine)?;
     for (input, expected_gradient) in [(lhs, 1.0), (rhs, rhs_gradient)] {
         let gradient = input.grad()?.ok_or("active AD gradient is missing")?;
         if gradient.shape() != [expected.len()]
@@ -1290,7 +1314,7 @@ fn run_generic_einsum(
     einsum: &GenericEinsum,
     api_tier: &str,
     mode: &str,
-    mut backend: CpuBackend,
+    mut backend: CpuEngine,
     provider: &str,
     timing: (usize, usize, u128, usize, usize),
 ) -> Result<serde_json::Value, BoxError> {
@@ -1418,15 +1442,15 @@ mod tests {
             if size == 4 {
                 assert_eq!(expected, vec![0.375, 0.125, -0.125, 0.125]);
             }
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let actual = concrete_fresh("einsum", &mut backend, &a, &b).unwrap();
             check_tensor_shape(&actual, &expected, a.shape()).unwrap();
-            let runtime = EagerRuntime::with_cpu_backend(backend).unwrap();
+            let runtime = EagerRuntime::new().unwrap();
             let (left, right, _) = einsum_inputs(size).unwrap();
             let lhs = EagerTensor::requires_grad_in(left, runtime.clone()).unwrap();
             let rhs = EagerTensor::requires_grad_in(right, runtime).unwrap();
-            let output = eager_operation("einsum", &lhs, &rhs).unwrap();
-            check_einsum_ad(&output, &lhs, &rhs, &a, &b, &expected).unwrap();
+            let output = eager_operation(&mut backend, "einsum", &lhs, &rhs).unwrap();
+            check_einsum_ad(&mut backend, &output, &lhs, &rhs, &a, &b, &expected).unwrap();
         }
     }
 
@@ -1445,7 +1469,7 @@ mod tests {
                     ]
                 );
             }
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let fresh = concrete_fresh("einsum", &mut backend, &lhs, &rhs).unwrap();
             check_tensor_reference(&fresh, &expected).unwrap();
             backend
@@ -1497,7 +1521,7 @@ mod tests {
                 expected.as_slice::<Complex64>().unwrap(),
                 swapped.as_slice::<Complex64>().unwrap()
             );
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             backend
                 .session_scope(|session| {
                     for (a, b, reference) in [
@@ -1545,7 +1569,7 @@ mod tests {
             let (input, expected) = reduce_sum_input(size).unwrap();
             let original = input.as_slice::<f64>().unwrap().to_vec();
             assert_eq!(expected.shape(), &[] as &[usize]);
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let output = concrete_fresh("reduce_sum", &mut backend, &input, &input).unwrap();
             check_tensor_reference(&output, &expected).unwrap();
             assert_eq!(input.as_slice::<f64>().unwrap(), original);
@@ -1602,7 +1626,7 @@ mod tests {
                     .len()
                     < size
             );
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let output = concrete_fresh("gather", &mut backend, &data, &indices).unwrap();
             check_tensor_shape(&output, &expected, &[size]).unwrap();
             backend
@@ -1639,7 +1663,7 @@ mod tests {
                 } else {
                     complex_einsum_inputs(size).unwrap()
                 };
-                let mut backend = CpuBackend::new();
+                let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
                 let output = concrete_fresh("einsum", &mut backend, &a, &b).unwrap();
                 check_tensor_reference(&output, &expected).unwrap();
                 let plan =
@@ -1682,7 +1706,7 @@ mod tests {
                     .filter(|&j| j != i)
                     .all(|j| before_a[i + n * j] != 0.0));
             }
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let result = concrete_fresh("solve", &mut backend, &a, &b).unwrap();
             check_solve_result(&result, &a, &b, &expected).unwrap();
             assert_eq!(a.as_slice::<f64>().unwrap(), &before_a);
@@ -1726,18 +1750,19 @@ mod tests {
     fn complex_einsum_ad_matches_hermitian_and_directional_oracles() {
         for size in [4, 16, 256] {
             let (a, b, expected) = complex_einsum_inputs(size).unwrap();
-            let ctx = EagerRuntime::with_cpu_backend(CpuBackend::new()).unwrap();
+            let ctx = EagerRuntime::new().unwrap();
+            let mut engine = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let (left, right, _) = complex_einsum_inputs(size).unwrap();
             let lhs = EagerTensor::requires_grad_in(left, ctx.clone()).unwrap();
             let rhs = EagerTensor::requires_grad_in(right, ctx).unwrap();
-            let output = eager_operation("einsum", &lhs, &rhs).unwrap();
-            check_complex_einsum_ad(&output, &lhs, &rhs, &a, &b, &expected).unwrap();
+            let output = eager_operation(&mut engine, "einsum", &lhs, &rhs).unwrap();
+            check_complex_einsum_ad(&mut engine, &output, &lhs, &rhs, &a, &b, &expected).unwrap();
             assert!(lhs.grad().unwrap().is_none());
             assert!(rhs.grad().unwrap().is_none());
             if size == 4 {
-                eager_reduce_sum(&output, &[0, 1])
+                eager_reduce_sum(&mut engine, &output, &[0, 1])
                     .unwrap()
-                    .backward()
+                    .backward(&mut engine)
                     .unwrap();
                 let av = a.as_slice::<Complex64>().unwrap().to_vec();
                 let bv = b.as_slice::<Complex64>().unwrap().to_vec();
@@ -1777,21 +1802,29 @@ mod tests {
     fn complex_eager_and_compiled_einsum_keep_complex_inputs() {
         for size in [4, 16, 256] {
             let (lhs, rhs, expected) = complex_einsum_inputs(size).unwrap();
-            let backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let (runtime, program) =
                 compiled_einsum(&backend, matrix_dimension(size).unwrap(), lhs.dtype()).unwrap();
-            check_compiled_einsum(&runtime, &program, &lhs, &rhs).unwrap();
+            check_compiled_einsum(&runtime, &mut backend, &program, &lhs, &rhs).unwrap();
+            // A wrong-dtype input must be refused by the prepared program.
             let real_input =
                 Tensor::from_vec_col_major(lhs.shape().to_vec(), vec![1.0_f64; size]).unwrap();
-            assert!(runtime
-                .run_compiled(&program, &[&lhs, &real_input])
-                .is_err());
-            let context = EagerRuntime::with_cpu_backend(backend).unwrap();
+            let signature = [TensorRead::from_tensor(&lhs), TensorRead::from_tensor(&rhs)];
+            let target = ExecutionEngine::target(&backend);
+            let prepared = runtime
+                .prepare(&program, &signature, std::slice::from_ref(&target))
+                .unwrap();
+            let wrong = [
+                TensorRead::from_tensor(&lhs),
+                TensorRead::from_tensor(&real_input),
+            ];
+            assert!(runtime.run(&mut [&mut backend], &prepared, &wrong).is_err());
+            let context = EagerRuntime::new().unwrap();
             let a = EagerTensor::from_tensor_in(lhs, context.clone()).unwrap();
             let b = EagerTensor::from_tensor_in(rhs, context).unwrap();
-            let output = eager_operation("einsum", &a, &b)
+            let output = eager_operation(&mut backend, "einsum", &a, &b)
                 .unwrap()
-                .to_tensor()
+                .to_tensor(&mut backend)
                 .unwrap();
             check_tensor_reference(&output, &expected).unwrap();
             for (tier, surface, contract) in [
@@ -1818,9 +1851,9 @@ mod tests {
                 lhs.as_slice::<f64>().unwrap(),
             );
             assert_ne!(expected, swapped);
-            let backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let (runtime, program) = compiled_einsum(&backend, n, lhs.dtype()).unwrap();
-            check_compiled_einsum(&runtime, &program, &lhs, &rhs).unwrap();
+            check_compiled_einsum(&runtime, &mut backend, &program, &lhs, &rhs).unwrap();
             let descriptor = case_descriptor(
                 "einsum",
                 "f64",
@@ -1882,7 +1915,7 @@ mod tests {
                         assert!(data[0].re.is_nan() && data[0].im.is_nan());
                     }
                 }
-                let mut backend = CpuBackend::new();
+                let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
                 let fresh = backend
                     .session_scope(|session| borrowed_einsum(&views, session))
                     .unwrap();
@@ -1925,7 +1958,7 @@ mod tests {
                 assert_eq!(view.shape(), &[n, n]);
                 assert_eq!(view.strides(), &[1, 0]);
             }
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             backend
                 .session_scope(|session| {
                     check_tensor_shape(&borrowed_einsum(&views, session)?, &expected, &[n, n])?;
@@ -1964,7 +1997,7 @@ mod tests {
                 if layout == "strided" {
                     assert!(fixture.storage[0].as_slice::<f64>().unwrap()[0].is_nan());
                 }
-                let mut backend = CpuBackend::new();
+                let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
                 let fresh = backend
                     .session_scope(|session| borrowed_einsum(&views, session))
                     .unwrap();
@@ -2032,7 +2065,7 @@ mod tests {
                 .unwrap()
                 .iter()
                 .any(|x| *x != 0.0));
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             backend
                 .session_scope(|session| {
                     use tenferro_einsum::TensorEinsumExt;
@@ -2050,7 +2083,7 @@ mod tests {
                     &einsum,
                     tier,
                     "correctness-only",
-                    CpuBackend::new(),
+                    tenferro_einsum_benchmark::cpu_engine(None).unwrap(),
                     "faer",
                     (1, 1, 1, 0, 0),
                 )
@@ -2117,7 +2150,8 @@ mod tests {
 
     #[test]
     fn check_active_ad_rejects_nonfinite_expected_gradient() {
-        let runtime = EagerRuntime::with_cpu_backend(CpuBackend::new()).unwrap();
+        let runtime = EagerRuntime::new().unwrap();
+        let mut engine = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
         let lhs = EagerTensor::requires_grad_in(
             Tensor::from_vec_col_major(vec![1], vec![1.0]).unwrap(),
             runtime.clone(),
@@ -2128,8 +2162,8 @@ mod tests {
             runtime,
         )
         .unwrap();
-        let output = eager_operation("add", &lhs, &rhs).unwrap();
-        assert!(check_active_ad(&output, &lhs, &rhs, &[3.0], f64::NAN).is_err());
+        let output = eager_operation(&mut engine, "add", &lhs, &rhs).unwrap();
+        assert!(check_active_ad(&mut engine, &output, &lhs, &rhs, &[3.0], f64::NAN).is_err());
     }
 }
 
@@ -2178,9 +2212,10 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         return Err("owned-input tiers require col_major_contiguous layout".into());
     }
 
-    // Construct exactly one CPU backend per process (tenferro-rs #2004: a build
-    // compiles exactly one), and record the compiled provider in the rows.
-    let backend = CpuBackend::new();
+    // Construct exactly one CPU engine per process (tenferro-rs #2004: a build
+    // compiles exactly one provider; #2206: the caller holds the engine and
+    // passes it to every operation), and record the provider in the rows.
+    let mut engine = Some(tenferro_einsum_benchmark::cpu_engine(None)?);
     let provider = tenferro_einsum_benchmark::compiled_cpu_provider();
     let operand_shapes = arg("--operand-shapes", "");
     if !operand_shapes.is_empty() {
@@ -2199,7 +2234,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             &einsum,
             &api_tier,
             &mode,
-            backend,
+            engine.take().ok_or("missing CPU engine")?,
             &provider,
             (
                 warmups,
@@ -2221,9 +2256,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     match api_tier.as_str() {
         "concrete-fresh" | "concrete-shared" | "borrowed-fresh" | "borrowed-shared"
         | "prepared-setup" | "prepared-repeat" | "compiled-repeat" | "compiled-setup" => {
-            concrete = Some(backend)
+            concrete = engine.take()
         }
-        "eager-no-ad" | "eager-ad" => runtime = Some(EagerRuntime::with_cpu_backend(backend)?),
+        "eager-no-ad" | "eager-ad" => runtime = Some(EagerRuntime::new()?),
         _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),
     }
     let (lhs, rhs_storage, expected_values) = if operation == "reduce_sum" {
@@ -2262,7 +2297,6 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     } else {
         None
     };
-    let compiled_bindings = [&lhs, rhs];
     let borrowed_storage = if api_tier.starts_with("borrowed-") {
         Some(BorrowedEinsumInputs::new(&lhs, rhs, &layout)?)
     } else {
@@ -2324,7 +2358,8 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
         "compiled-repeat" | "compiled-setup" => {
             let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
-            check_compiled_einsum(runtime, program, &lhs, rhs)?
+            let engine = concrete.as_mut().ok_or("concrete backend missing")?;
+            check_compiled_einsum(runtime, engine, program, &lhs, rhs)?
         }
         "borrowed-fresh" | "borrowed-shared" => {
             let backend = concrete.as_mut().ok_or("concrete backend missing")?;
@@ -2357,19 +2392,26 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
         "eager-no-ad" => {
             let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
+            let engine = engine.as_mut().ok_or("eager engine missing")?;
             check_tensor_reference(
-                &add_chain(left, right, calls, |a, b| eager_operation(&operation, a, b))?
-                    .to_tensor()?,
+                &add_chain(left, right, calls, |a, b| {
+                    eager_operation(engine, &operation, a, b)
+                })?
+                .to_tensor(engine)?,
                 &expected_values,
             )?
         }
         "eager-ad" => {
             let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
-            let value = add_chain(left, right, calls, |a, b| eager_operation(&operation, a, b))?;
+            let engine = engine.as_mut().ok_or("eager engine missing")?;
+            let value = add_chain(left, right, calls, |a, b| {
+                eager_operation(engine, &operation, a, b)
+            })?;
             if operation == "einsum" && dtype == "c64" {
-                check_complex_einsum_ad(&value, left, right, &lhs, rhs, &expected_values)?
+                check_complex_einsum_ad(engine, &value, left, right, &lhs, rhs, &expected_values)?
             } else if operation == "einsum" {
                 check_einsum_ad(
+                    engine,
                     &value,
                     left,
                     right,
@@ -2379,6 +2421,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 )?
             } else {
                 check_active_ad(
+                    engine,
                     &value,
                     left,
                     right,
@@ -2465,6 +2508,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             }
             "eager-no-ad" | "eager-ad" => {
                 let (left, right) = eager_pair.as_ref().ok_or("missing eager inputs")?;
+                let engine = engine.as_mut().ok_or("eager engine missing")?;
                 measure_chain(
                     left,
                     right,
@@ -2475,7 +2519,7 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                     target_ns,
                     process_index,
                     sample_start,
-                    |a, b| eager_operation(&operation, a, b),
+                    |a, b| eager_operation(engine, &operation, a, b),
                 )?
             }
             _ => return Err("unsupported retained-chain tier".into()),
@@ -2496,14 +2540,18 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             }
             "compiled-repeat" => {
                 let (runtime, program) = compiled.as_ref().ok_or("compiled program missing")?;
-                let prepared = runtime.prepare_compiled(program, &compiled_bindings)?;
+                let engine = concrete.as_mut().ok_or("concrete backend missing")?;
+                let reads = [TensorRead::from_tensor(&lhs), TensorRead::from_tensor(rhs)];
+                let target = ExecutionEngine::target(engine);
+                let prepared = runtime.prepare(program, &reads, std::slice::from_ref(&target))?;
+                let engine = concrete.as_mut().ok_or("concrete backend missing")?;
                 measure(
                     warmups,
                     samples_count,
                     target_ns,
                     process_index,
                     sample_start,
-                    || Ok(runtime.run_prepared(&prepared, &compiled_bindings)?),
+                    || Ok(runtime.run(&mut [&mut *engine], &prepared, &reads)?),
                 )?
             }
             "prepared-setup" => measure(
@@ -2559,13 +2607,14 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
             }
             "eager-no-ad" | "eager-ad" => {
                 let (left, right) = eager_pair.as_ref().ok_or("eager inputs missing")?;
+                let engine = engine.as_mut().ok_or("eager engine missing")?;
                 measure(
                     warmups,
                     samples_count,
                     target_ns,
                     process_index,
                     sample_start,
-                    || execute_eager(&operation, left, right, calls),
+                    || execute_eager(engine, &operation, left, right, calls),
                 )?
             }
             _ => return Err(format!("unsupported small-work API tier: {api_tier}").into()),

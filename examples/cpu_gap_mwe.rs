@@ -4,12 +4,33 @@ use num_complex::{Complex32, Complex64};
 use serde_json::{json, Value};
 use std::{error::Error, hint::black_box, time::Instant};
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{with_cpu_exec_session, CpuBackend};
+use tenferro_cpu::CpuEngine;
 use tenferro_fft::{FftExecutor, FftNorm};
 use tenferro_linalg::{EagerSessionLinalgExt, TensorLinalgExt};
-use tenferro_tensor::{BackendSessionHost, Tensor};
+use tenferro_tensor::{Engine, Tensor};
 
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
+
+/// Enter the caller-held CPU engine for one operation sequence.
+///
+/// tenferro-rs #2206 removed backend sessions (and `with_cpu_exec_session`):
+/// the engine the caller holds is already the execution scope, so entering it
+/// is a plain borrow.
+trait EngineScope {
+    fn with_backend_session<R>(
+        &mut self,
+        f: impl FnOnce(&mut dyn Engine) -> R,
+    ) -> tenferro_tensor::Result<R>;
+}
+
+impl EngineScope for CpuEngine {
+    fn with_backend_session<R>(
+        &mut self,
+        f: impl FnOnce(&mut dyn Engine) -> R,
+    ) -> tenferro_tensor::Result<R> {
+        Ok(f(self))
+    }
+}
 
 fn measure<O>(
     bytes: usize,
@@ -61,7 +82,7 @@ pub fn run(
     samples: usize,
     target_ns: u128,
 ) -> Result<Value> {
-    let mut backend = CpuBackend::with_threads(threads)?;
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
     let provider = tenferro_einsum_benchmark::compiled_cpu_provider();
     let mut result = match operation {
         "gelu" | "softmax" => {
@@ -96,12 +117,12 @@ pub fn run(
                     }
                 }
             }
-            let runtime = EagerRuntime::with_cpu_backend(backend)?;
+            let runtime = EagerRuntime::new()?;
             let x = EagerTensor::from_tensor_in(
                 Tensor::from_vec_col_major(shape, data)?,
                 runtime.clone(),
             )?;
-            runtime.with_eager_session(|s| -> tenferro_ad::Result<Value> {
+            runtime.with_eager_session(&mut backend, |s| -> tenferro_ad::Result<Value> {
                 let output = if operation == "gelu" {
                     s.gelu(&x)?
                 } else {
@@ -197,18 +218,15 @@ pub fn run(
                 .collect();
             let mut executor = FftExecutor::default();
             backend.with_backend_session(|s| {
-                with_cpu_exec_session(s, |s| -> Result<Value> {
-                    let output = executor.ifft(&input, None, -1, FftNorm::Backward, s)?;
-                    let got = output.as_slice::<Complex32>()?;
-                    for (i, want) in &expected {
-                        let g = Complex64::new(got[*i].re as f64, got[*i].im as f64);
-                        assert!((g - want).norm() < 1e-5);
-                    }
-                    measure(n * 8, warmups, samples, target_ns, || {
-                        Ok(executor.ifft(&input, None, -1, FftNorm::Backward, s)?)
-                    })
+                let output = executor.ifft(&input, None, -1, FftNorm::Backward, s)?;
+                let got = output.as_slice::<Complex32>()?;
+                for (i, want) in &expected {
+                    let g = Complex64::new(got[*i].re as f64, got[*i].im as f64);
+                    assert!((g - want).norm() < 1e-5);
+                }
+                measure(n * 8, warmups, samples, target_ns, || {
+                    Ok(executor.ifft(&input, None, -1, FftNorm::Backward, s)?)
                 })
-                .expect("CPU session")
             })??
         }
         "ifft" => {
@@ -216,18 +234,15 @@ pub fn run(
             let input = Tensor::from_vec_col_major(vec![n], vec![Complex32::new(1.0, 0.0); n])?;
             let mut executor = FftExecutor::default();
             backend.with_backend_session(|s| {
-                with_cpu_exec_session(s, |s| -> Result<Value> {
-                    let output = executor.ifft(&input, None, -1, FftNorm::Backward, s)?;
-                    let values = output.as_slice::<Complex32>()?;
-                    for (i, value) in values.iter().enumerate() {
-                        let want = if i == 0 { 1.0 } else { 0.0 };
-                        assert!((value.re - want).abs() < 1e-5 && value.im.abs() < 1e-5);
-                    }
-                    measure(n * 8, warmups, samples, target_ns, || {
-                        Ok(executor.ifft(&input, None, -1, FftNorm::Backward, s)?)
-                    })
+                let output = executor.ifft(&input, None, -1, FftNorm::Backward, s)?;
+                let values = output.as_slice::<Complex32>()?;
+                for (i, value) in values.iter().enumerate() {
+                    let want = if i == 0 { 1.0 } else { 0.0 };
+                    assert!((value.re - want).abs() < 1e-5 && value.im.abs() < 1e-5);
+                }
+                measure(n * 8, warmups, samples, target_ns, || {
+                    Ok(executor.ifft(&input, None, -1, FftNorm::Backward, s)?)
                 })
-                .expect("CPU session")
             })??
         }
         "diagonal" => {
@@ -262,17 +277,14 @@ pub fn run(
             let a = Tensor::from_vec_col_major(vec![n, n], data)?;
             let rhs = Tensor::from_vec_col_major(vec![n, nrhs], sums.repeat(nrhs))?;
             backend.with_backend_session(|s| {
-                with_cpu_exec_session(s, |s| -> Result<Value> {
-                    let output = a.triangular_solve(&rhs, true, true, false, false, s)?;
-                    assert!(output
-                        .as_slice::<f64>()?
-                        .iter()
-                        .all(|x| (x - 1.0).abs() < 1e-10));
-                    measure(n * nrhs * 8, warmups, samples, target_ns, || {
-                        Ok(a.triangular_solve(&rhs, true, true, false, false, s)?)
-                    })
+                let output = a.triangular_solve(&rhs, true, true, false, false, s)?;
+                assert!(output
+                    .as_slice::<f64>()?
+                    .iter()
+                    .all(|x| (x - 1.0).abs() < 1e-10));
+                measure(n * nrhs * 8, warmups, samples, target_ns, || {
+                    Ok(a.triangular_solve(&rhs, true, true, false, false, s)?)
                 })
-                .expect("CPU session")
             })??
         }
         "lstsq" => {
@@ -290,7 +302,7 @@ pub fn run(
                     sums[i] += v;
                 }
             }
-            let runtime = EagerRuntime::with_cpu_backend(backend)?;
+            let runtime = EagerRuntime::new()?;
             let a = EagerTensor::from_tensor_in(
                 Tensor::from_vec_col_major(vec![m, n], data)?,
                 runtime.clone(),
@@ -299,7 +311,7 @@ pub fn run(
                 Tensor::from_vec_col_major(vec![m, nrhs], sums.repeat(nrhs))?,
                 runtime.clone(),
             )?;
-            runtime.with_eager_session(|s| -> tenferro_ad::Result<Value> {
+            runtime.with_eager_session(&mut backend, |s| -> tenferro_ad::Result<Value> {
                 let output = s.lstsq(&a, &rhs)?;
                 let got = s.duplicate_value(&output)?;
                 assert!(got

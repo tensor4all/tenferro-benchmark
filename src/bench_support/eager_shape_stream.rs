@@ -1,7 +1,7 @@
 //! #107: whole public-call sequences with separately observed cache counters.
 use std::{error::Error, hint::black_box, num::NonZeroUsize, time::Instant};
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::CpuBackend;
+use tenferro_cpu::CpuEngine;
 use tenferro_einsum::{EagerSessionEinsumExt, EinsumSubscripts};
 use tenferro_runtime::{ExtensionCacheLimits, ExtensionCacheSelector};
 use tenferro_tensor::Tensor;
@@ -36,6 +36,7 @@ struct Call {
 }
 fn call(
     runtime: &std::sync::Arc<EagerRuntime>,
+    engine: &mut CpuEngine,
     geometry: (usize, usize, usize, bool),
     seed: usize,
 ) -> Result<Call> {
@@ -71,7 +72,7 @@ fn call(
             Tensor::from_vec_col_major([k, m], storage)?,
             runtime.clone(),
         )?;
-        runtime.with_eager_session(|s| s.transpose(&base, &[1, 0]))?
+        runtime.with_eager_session(engine, |s| s.transpose(&base, &[1, 0]))?
     } else {
         EagerTensor::from_tensor_in(Tensor::from_vec_col_major([m, k], a)?, runtime.clone())?
     };
@@ -147,25 +148,44 @@ pub fn run(args: &[String]) -> Result<()> {
     }
     tenferro_einsum_benchmark::thread_enforcement::enforce_thread_request(threads)?;
     let setup = Instant::now();
-    let backend = CpuBackend::new();
-    let workers = backend.num_threads();
+    let mut engine = tenferro_einsum_benchmark::cpu_engine(None)?;
+    let workers = engine.num_threads();
     tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
         "CpuBackend",
         workers,
         threads,
     )?;
-    let runtime = EagerRuntime::with_cpu_backend(backend)?;
+    let runtime = EagerRuntime::new()?;
     let _no_grad = runtime.no_grad();
     if stream == "thrash" {
-        runtime.set_extension_cache_limits(ExtensionCacheLimits::new(
-            NonZeroUsize::new(1).ok_or("zero limit")?,
-        ))?;
+        // The extension cache belongs to the caller-held engine (tenferro-rs
+        // #2206 moved it off the eager runtime), so the limit is installed
+        // through one setup session and persists on the engine.
+        let thrash_limits = ExtensionCacheLimits::new(NonZeroUsize::new(1).ok_or("zero limit")?);
+        runtime.with_eager_session(
+            &mut engine,
+            |s| -> std::result::Result<(), tenferro_ad::Error> {
+                s.with_extension_caches(|caches| caches.set_limits(thrash_limits))
+            },
+        )?;
     }
-    let limits = runtime.extension_cache_limits()?;
+    let limits = runtime.with_eager_session(
+        &mut engine,
+        |s| -> std::result::Result<ExtensionCacheLimits, tenferro_ad::Error> {
+            s.with_extension_caches(|caches| caches.limits())
+        },
+    )?;
     let passes: Vec<Vec<Call>> = (0..1 + warmups + samples)
         .map(|p| {
             (0..length)
-                .map(|i| call(&runtime, key(stream, p, i, length), p * length + i))
+                .map(|i| {
+                    call(
+                        &runtime,
+                        &mut engine,
+                        key(stream, p, i, length),
+                        p * length + i,
+                    )
+                })
                 .collect()
         })
         .collect::<Result<_>>()?;
@@ -176,7 +196,7 @@ pub fn run(args: &[String]) -> Result<()> {
     let mut worst = 0f64;
     let mut verification_ns = 0u128;
     let mut warmup_ns = 0u128;
-    runtime.with_eager_session(|s| -> Result<()> {
+    runtime.with_eager_session(&mut engine, |s| -> Result<()> {
         for (p, pass) in passes.iter().enumerate() {
             // Reset only the declared eager extension caches. This is not bypass:
             // lookups and retention remain enabled inside the public call.
@@ -213,7 +233,9 @@ pub fn run(args: &[String]) -> Result<()> {
                 if out.tracks_grad() || out.shape() != [call.m, 2] {
                     return Err("tracked or incorrectly shaped stream output".into());
                 }
-                let tensor = out.to_tensor()?;
+                // The session already borrows the engine; verify through the
+                // borrowed value instead of taking a second engine borrow.
+                let tensor = out.value()?;
                 for (x, y) in tensor.as_slice::<f64>()?.iter().zip(&call.expected) {
                     let err = (x - y).abs();
                     if !err.is_finite() || err > 1e-10 * (1. + y.abs()) {

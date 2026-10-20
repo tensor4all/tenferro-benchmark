@@ -7,11 +7,11 @@ use std::env;
 use std::hint::black_box;
 use std::io::Write;
 use std::panic;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant};
 
 use tenferro_ad::{AdContext, EagerRuntime, EagerSession, EagerTensor};
-use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
+use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
 use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::thread_enforcement::{
     enforce_thread_request, verify_backend_threads,
@@ -19,7 +19,8 @@ use tenferro_einsum_benchmark::thread_enforcement::{
 use tenferro_linalg::{EagerSessionLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
-    DotGeneralConfig, Error, ErrorPhase, GraphCompiler, Runtime, Tensor, TraceContext, TracedTensor,
+    DotGeneralConfig, Error, ErrorPhase, ExecutionEngine, GraphCompiler, Runtime, Tensor,
+    TraceContext, TracedTensor,
 };
 use tenferro_tensor::TypedTensor;
 
@@ -341,17 +342,15 @@ fn requested_threads() -> usize {
 fn enforce_threads_or_exit() {
     let requested = requested_threads();
     let check = enforce_thread_request(requested)
+        .and_then(|()| verify_backend_threads("CpuBackend", cpu_engine().num_threads(), requested))
         .and_then(|()| {
-            verify_backend_threads("CpuBackend", cpu_backend().num_threads(), requested)
-        })
-        .and_then(|()| {
-            let scope_threads = cpu_backend()
-                .with_execution_scope(rayon::current_num_threads)
-                .map_err(|error| format!("enter CpuBackend execution scope: {error}"))?;
+            // tenferro-rs #2206: the caller-held engine is the execution scope,
+            // so the scope width is the engine's own pool width.
+            let scope_threads = cpu_engine().num_threads();
             verify_backend_threads("CpuBackend execution scope", scope_threads, requested)?;
             eprintln!(
                 "publication_gate: requested_threads={requested} backend_threads={} scope_rayon_threads={scope_threads} global_rayon_threads={}",
-                cpu_backend().num_threads(),
+                cpu_engine().num_threads(),
                 rayon::current_num_threads(),
             );
             Ok(())
@@ -367,12 +366,8 @@ fn main() {
     enforce_threads_or_exit();
     println!("suite,op,phase,dtype,backend,profile,shape,warmups,runs,median_ms,iqr_ms,status");
 
-    let rows = cpu_backend()
-        .with_execution_scope(|| {
-            record_cpu_runtime().expect("record effective CPU execution settings");
-            run_all(&config)
-        })
-        .expect("enter shared CPU execution scope before benchmarking");
+    record_cpu_runtime().expect("record effective CPU execution settings");
+    let rows = run_all(&config);
     for row in rows {
         println!(
             "{},{},{},{},{},{},{},{},{},{},{},{}",
@@ -588,8 +583,11 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let y = eager_session_ops::matmul(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
-                let gradients = loss.backward()?;
-                Ok((loss, y, gradients))
+                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
+                // entered session already borrows, so the backward rows stay
+                // unsupported (see `bench_row`) and only the forward pass is
+                // expressible inside the session.
+                Ok((loss, y))
             },
         ));
 
@@ -610,8 +608,11 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a,)| {
                 let (u, s, vt) = eager_linalg_tensor::svd(session, &a)?;
                 let loss = eager_session_ops::reduce_sum(session, &s, &[0])?;
-                let gradients = loss.backward()?;
-                Ok((loss, u, s, vt, gradients))
+                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
+                // entered session already borrows, so the backward rows stay
+                // unsupported (see `bench_row`) and only the forward pass is
+                // expressible inside the session.
+                Ok((loss, u, s, vt))
             },
         ));
 
@@ -631,8 +632,11 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let x = eager_linalg_tensor::solve(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1])?;
-                let gradients = loss.backward()?;
-                Ok((loss, x, gradients))
+                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
+                // entered session already borrows, so the backward rows stay
+                // unsupported (see `bench_row`) and only the forward pass is
+                // expressible inside the session.
+                Ok((loss, x))
             },
         ));
     }
@@ -819,8 +823,11 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let y = eager_session_ops::matmul(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &y, &[0, 1])?;
-                let gradients = loss.backward()?;
-                Ok((loss, y, gradients))
+                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
+                // entered session already borrows, so the backward rows stay
+                // unsupported (see `bench_row`) and only the forward pass is
+                // expressible inside the session.
+                Ok((loss, y))
             },
         ));
         rows.push(bench_row(
@@ -840,8 +847,11 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a,)| {
                 let (u, s, vt) = eager_linalg_tensor::svd(session, &a)?;
                 let loss = eager_session_ops::reduce_sum(session, &s, &[0])?;
-                let gradients = loss.backward()?;
-                Ok((loss, u, s, vt, gradients))
+                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
+                // entered session already borrows, so the backward rows stay
+                // unsupported (see `bench_row`) and only the forward pass is
+                // expressible inside the session.
+                Ok((loss, u, s, vt))
             },
         ));
         rows.push(bench_row(
@@ -860,8 +870,11 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
             |session, (a, b)| {
                 let x = eager_linalg_tensor::solve(session, &a, &b)?;
                 let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1])?;
-                let gradients = loss.backward()?;
-                Ok((loss, x, gradients))
+                // tenferro-rs #2206: the reverse pass needs the engine itself, which the
+                // entered session already borrows, so the backward rows stay
+                // unsupported (see `bench_row`) and only the forward pass is
+                // expressible inside the session.
+                Ok((loss, x))
             },
         ));
     }
@@ -1047,8 +1060,11 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                         config.take().expect("prepared config"),
                     )?;
                     let loss = eager_session_ops::reduce_sum(session, &out, &[0, 1, 2])?;
-                    let gradients = loss.backward()?;
-                    Ok((loss, out, gradients))
+                    // tenferro-rs #2206: the reverse pass needs the engine itself, which the
+                    // entered session already borrows, so the backward rows stay
+                    // unsupported (see `bench_row`) and only the forward pass is
+                    // expressible inside the session.
+                    Ok((loss, out))
                 },
             ));
             rows.push(bench_row(
@@ -1073,8 +1089,11 @@ fn run_batched_small(config: &BenchConfig, rows: &mut Vec<Row>) {
                 |session, (a, rhs)| {
                     let x = eager_linalg_tensor::solve(session, &a, &rhs)?;
                     let loss = eager_session_ops::reduce_sum(session, &x, &[0, 1, 2])?;
-                    let gradients = loss.backward()?;
-                    Ok((loss, x, gradients))
+                    // tenferro-rs #2206: the reverse pass needs the engine itself, which the
+                    // entered session already borrows, so the backward rows stay
+                    // unsupported (see `bench_row`) and only the forward pass is
+                    // expressible inside the session.
+                    Ok((loss, x))
                 },
             ));
         }
@@ -1691,9 +1710,11 @@ fn measure_eager<I: Clone + Send + Sync, O>(
     let estimated_bytes = retention_estimate(shape);
     let cap = (RETENTION_BUDGET_BYTES / estimated_bytes).clamp(1, 65_536);
     let ctx = cpu_ctx();
+    // One caller-held engine for every sample of this case (tenferro-rs #2206).
+    let mut engine = cpu_engine();
     let mut inputs = vec![setup()?];
     let mut run = |inputs: &mut [I], samples: usize| {
-        ctx.with_eager_session(|session| {
+        ctx.with_eager_session(&mut *engine, |session| {
             let mut times = Vec::with_capacity(samples);
             for _ in 0..samples {
                 // Restore consumed descriptors and handles before this sample's timer.
@@ -1756,7 +1777,7 @@ fn summarize_measurement(
     record_raw(serde_json::json!({
         "record_type": "samples", "suite": suite,
         "benchmark": benchmark_name(op, phase), "shape": shape,
-        "backend": backend, "threads": cpu_backend().num_threads(),
+        "backend": backend, "threads": cpu_engine().num_threads(),
         "operations_per_sample": measured.operations,
         "batch_elapsed_ns": measured.times.iter().map(Duration::as_nanos).collect::<Vec<_>>(),
         "per_operation_ns": measured.times.iter().map(|t| t.as_nanos() as f64 / measured.operations as f64).collect::<Vec<_>>(),
@@ -1772,11 +1793,24 @@ fn summarize_measurement(
     ))
 }
 
-fn cpu_backend() -> &'static CpuBackend {
-    static BACKEND: OnceLock<CpuBackend> = OnceLock::new();
+/// The one caller-held CPU engine of this process (tenferro-rs #2206).
+///
+/// The engine owns the pool, so the process holds it in a lock and borrows it
+/// as `&mut` for one case at a time instead of rebuilding it per iteration.
+fn cpu_backend() -> &'static Mutex<CpuEngine> {
+    static BACKEND: OnceLock<Mutex<CpuEngine>> = OnceLock::new();
     BACKEND.get_or_init(|| {
-        CpuBackend::with_threads(requested_threads()).expect("configure explicit CPU thread count")
+        Mutex::new(
+            tenferro_einsum_benchmark::cpu_engine(Some(requested_threads()))
+                .expect("configure explicit CPU thread count"),
+        )
     })
+}
+
+fn cpu_engine() -> MutexGuard<'static, CpuEngine> {
+    cpu_backend()
+        .lock()
+        .expect("the publication-gate CPU engine lock is not poisoned")
 }
 
 fn record_cpu_runtime() -> Result<(), Error> {
@@ -1790,7 +1824,7 @@ fn record_cpu_runtime() -> Result<(), Error> {
         let threads = unsafe { MKL_Get_Max_Threads() };
         assert_eq!(
             threads as usize,
-            cpu_backend().num_threads(),
+            cpu_engine().num_threads(),
             "MKL and CPU thread budgets differ"
         );
         Some(threads)
@@ -1805,7 +1839,7 @@ fn record_cpu_runtime() -> Result<(), Error> {
                 .find(|line| line.starts_with("Cpus_allowed_list:"))
                 .map(str::to_owned)
         });
-    let backend = cpu_backend();
+    let backend = cpu_engine();
     record_raw(serde_json::json!({
         "record_type": "runtime", "backend": "tenferro", "provider": backend_name(),
         "thread_budget": backend.num_threads(), "worker_count": backend.num_threads(),
@@ -1894,12 +1928,14 @@ fn bench_trace_row(
         let mut compiler = GraphCompiler::new();
         let program = compiler.compile_many(&output_refs)?;
         let runtime = cpu_runtime_with_extensions()?;
-        let prepared = runtime.prepare_compiled(&program, &[])?;
+        let mut engine = cpu_engine();
+        let target = ExecutionEngine::target(&*engine);
+        let prepared = runtime.prepare(&program, &[], std::slice::from_ref(&target))?;
         let measured = measure(
             config,
             shape,
             || Ok(()),
-            |_| runtime.run_prepared(&prepared, &[]),
+            |_| runtime.run(&mut [&mut *engine], &prepared, &[]),
         )?;
         summarize_measurement(measured, suite, op, phase, shape, "tenferro-trace")
     }));
@@ -1942,23 +1978,24 @@ fn bench_trace_row(
 }
 
 fn cpu_runtime_with_extensions() -> Result<Runtime, Error> {
-    let backend = cpu_backend();
+    let backend = cpu_engine();
     let engine_id = runtime_engine_id().map_err(|err| Error::Internal(err.to_string()))?;
     let mut builder = Runtime::builder();
     builder
         .register_engine(
-            runtime_engine_registration(backend).map_err(|err| Error::Internal(err.to_string()))?,
-        )
-        .map_err(|err| Error::Internal(err.to_string()))?;
-    builder
-        .install_extension_module(
-            tenferro_einsum::extension_module::<CpuBackend>(engine_id.clone())
+            runtime_engine_registration(&backend)
                 .map_err(|err| Error::Internal(err.to_string()))?,
         )
         .map_err(|err| Error::Internal(err.to_string()))?;
     builder
         .install_extension_module(
-            tenferro_linalg::extension_module::<CpuBackend>(engine_id)
+            tenferro_einsum::extension_module::<CpuEngine>(engine_id.clone())
+                .map_err(|err| Error::Internal(err.to_string()))?,
+        )
+        .map_err(|err| Error::Internal(err.to_string()))?;
+    builder
+        .install_extension_module(
+            tenferro_linalg::extension_module::<CpuEngine>(engine_id)
                 .map_err(|err| Error::Internal(err.to_string()))?,
         )
         .map_err(|err| Error::Internal(err.to_string()))?;
@@ -1995,12 +2032,14 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
             .map_err(|err| Error::Internal(err.to_string()))?;
         let program = GraphCompiler::new().compile_traced_graph(&graph)?;
         let runtime = cpu_runtime_with_extensions()?;
-        let prepared = runtime.prepare_compiled(&program, &[])?;
+        let mut engine = cpu_engine();
+        let target = ExecutionEngine::target(&*engine);
+        let prepared = runtime.prepare(&program, &[], std::slice::from_ref(&target))?;
         let measured = measure(
             config,
             &shape,
             || Ok(()),
-            |_| runtime.run_prepared(&prepared, &[]),
+            |_| runtime.run(&mut [&mut *engine], &prepared, &[]),
         )?;
         summarize_measurement(measured, suite, op, phase, &shape, "tenferro-trace")
     }));
@@ -2045,7 +2084,9 @@ fn bench_einsum_trace_row(config: &BenchConfig, n: usize) -> Row {
 fn cpu_ctx() -> Arc<EagerRuntime> {
     static RUNTIME: OnceLock<Arc<EagerRuntime>> = OnceLock::new();
     Arc::clone(RUNTIME.get_or_init(|| {
-        EagerRuntime::with_cpu_backend_and_ad_context(cpu_backend().clone(), ad_context())
+        // The runtime stores no engine (tenferro-rs #2206); every eager call
+        // borrows the process's caller-held CPU engine.
+        EagerRuntime::with_ad_context(ad_context())
             .expect("configured eager CPU runtime should initialize")
     }))
 }
@@ -2402,70 +2443,76 @@ mod timing_tests {
         let _guard = EAGER_TEST_LOCK.lock().unwrap();
         let ctx = cpu_ctx();
         let runtime = cpu_runtime_with_extensions().unwrap();
-        cpu_backend()
-            .with_execution_scope(|| {
-                for (n, batch) in [(2, 16), (4, 3), (16, 1)] {
-                    let shape = [n, n, batch];
-                    let a = data_for_shape(&shape, 48);
-                    let b = data_for_shape(&shape, 49);
-                    let mut expected = vec![0.0; a.len()];
-                    let mut da = vec![0.0; a.len()];
-                    let mut db = vec![0.0; b.len()];
-                    for z in 0..batch {
-                        for j in 0..n {
-                            for i in 0..n {
-                                for k in 0..n {
-                                    let ai = i + n * (k + n * z);
-                                    let bi = k + n * (j + n * z);
-                                    expected[i + n * (j + n * z)] += a[ai] * b[bi];
-                                    da[ai] += b[bi];
-                                    db[bi] += a[ai];
-                                }
-                            }
+        // One caller-held engine for the whole reference check.
+        let mut engine = cpu_engine();
+        for (n, batch) in [(2, 16), (4, 3), (16, 1)] {
+            let shape = [n, n, batch];
+            let a = data_for_shape(&shape, 48);
+            let b = data_for_shape(&shape, 49);
+            let mut expected = vec![0.0; a.len()];
+            let mut da = vec![0.0; a.len()];
+            let mut db = vec![0.0; b.len()];
+            for z in 0..batch {
+                for j in 0..n {
+                    for i in 0..n {
+                        for k in 0..n {
+                            let ai = i + n * (k + n * z);
+                            let bi = k + n * (j + n * z);
+                            expected[i + n * (j + n * z)] += a[ai] * b[bi];
+                            da[ai] += b[bi];
+                            db[bi] += a[ai];
                         }
-                    }
-                    let check = |values: &[f64], expected: &[f64]| {
-                        assert_eq!(values.len(), expected.len());
-                        for (value, expected) in values.iter().zip(expected) {
-                            assert!((value - expected).abs() < 1e-11);
-                        }
-                    };
-                    let x = eager_requires_grad_in(tensor(&shape, a.clone()), ctx.clone());
-                    let y = eager_requires_grad_in(tensor(&shape, b.clone()), ctx.clone());
-                    let output = ctx
-                        .with_eager_session(|session| {
-                            eager_session_ops::dot_general(session, &x, &y, batched_matmul_config())
-                        })
-                        .unwrap();
-                    assert_eq!(output.shape(), shape);
-                    check(
-                        output.to_tensor().unwrap().as_slice::<f64>().unwrap(),
-                        &expected,
-                    );
-                    ctx.with_eager_session(|session| session.reduce_sum(&output, None))
-                        .unwrap()
-                        .backward()
-                        .unwrap();
-                    check(x.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &da);
-                    check(y.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &db);
-
-                    let x = traced_tensor(&shape, a);
-                    let y = traced_tensor(&shape, b);
-                    let output = x.dot_general(&y, batched_matmul_config()).unwrap();
-                    let loss = output.reduce_sum(None).unwrap();
-                    let gx = grad(&loss, &x).unwrap();
-                    let gy = grad(&loss, &y).unwrap();
-                    let program = GraphCompiler::new()
-                        .compile_many(&[&output, &gx, &gy])
-                        .unwrap();
-                    let prepared = runtime.prepare_compiled(&program, &[]).unwrap();
-                    let outputs = runtime.run_prepared(&prepared, &[]).unwrap();
-                    assert_eq!(outputs.len(), 3);
-                    for (actual, expected) in outputs.iter().zip([&expected, &da, &db]) {
-                        check(actual.as_slice::<f64>().unwrap(), expected);
                     }
                 }
-            })
-            .unwrap();
+            }
+            let check = |values: &[f64], expected: &[f64]| {
+                assert_eq!(values.len(), expected.len());
+                for (value, expected) in values.iter().zip(expected) {
+                    assert!((value - expected).abs() < 1e-11);
+                }
+            };
+            let x = eager_requires_grad_in(tensor(&shape, a.clone()), ctx.clone());
+            let y = eager_requires_grad_in(tensor(&shape, b.clone()), ctx.clone());
+            let output = ctx
+                .with_eager_session(&mut *engine, |session| {
+                    eager_session_ops::dot_general(session, &x, &y, batched_matmul_config())
+                })
+                .unwrap();
+            assert_eq!(output.shape(), shape);
+            check(
+                output
+                    .to_tensor(&mut *engine)
+                    .unwrap()
+                    .as_slice::<f64>()
+                    .unwrap(),
+                &expected,
+            );
+            ctx.with_eager_session(&mut *engine, |session| session.reduce_sum(&output, None))
+                .unwrap()
+                .backward(&mut *engine)
+                .unwrap();
+            check(x.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &da);
+            check(y.grad().unwrap().unwrap().as_slice::<f64>().unwrap(), &db);
+
+            let x = traced_tensor(&shape, a);
+            let y = traced_tensor(&shape, b);
+            let output = x.dot_general(&y, batched_matmul_config()).unwrap();
+            let loss = output.reduce_sum(None).unwrap();
+            let gx = grad(&loss, &x).unwrap();
+            let gy = grad(&loss, &y).unwrap();
+            let program = GraphCompiler::new()
+                .compile_many(&[&output, &gx, &gy])
+                .unwrap();
+            let target = ExecutionEngine::target(&*engine);
+            let prepared = runtime
+                .prepare(&program, &[], std::slice::from_ref(&target))
+                .unwrap();
+            let outputs = runtime.run(&mut [&mut *engine], &prepared, &[]).unwrap();
+            assert_eq!(outputs.len(), 3);
+            for (actual, expected) in outputs.into_iter().zip([&expected, &da, &db]) {
+                let actual = actual.into_tensor(&mut *engine).unwrap();
+                check(actual.as_slice::<f64>().unwrap(), expected);
+            }
+        }
     }
 }

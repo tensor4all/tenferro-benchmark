@@ -18,7 +18,7 @@ use tenferro_einsum::{
     TensorEinsumExt, TensorEinsumIntoExt, TensorReadEinsumExt, TensorReadEinsumIntoExt,
 };
 use tenferro_tensor::{
-    BackendSession, DotGeneralConfig, ErrorKind, Tensor, TensorRead, TensorView, TensorWrite,
+    DotGeneralConfig, Engine, ErrorKind, Tensor, TensorRead, TensorView, TensorWrite,
     TypedTensorView,
 };
 
@@ -412,22 +412,22 @@ impl Fixture {
 
 /// Execute one allocating call of the case's public route.
 pub fn run_alloc(
-    session: &mut dyn BackendSession,
+    engine: &mut dyn Engine,
     spec: &CaseSpec,
     fixture: &Fixture,
     reads: &[TensorRead<'_>],
     owned: &[&Tensor],
 ) -> Result<Tensor, OpError> {
     match spec.operation.as_str() {
-        "dot_general_read" => session
+        "dot_general_read" => engine
             .dot_general_read(reads[0].clone(), reads[1].clone(), &fixture.config)
             .map_err(tensor_error),
         "einsum" => {
             let subscripts = spec.subscripts.as_deref().unwrap_or_default();
             if spec.layout == "direct" {
-                owned.einsum(subscripts, session).map_err(einsum_error)
+                owned.einsum(subscripts, engine).map_err(einsum_error)
             } else {
-                reads.einsum_read(subscripts, session).map_err(einsum_error)
+                reads.einsum_read(subscripts, engine).map_err(einsum_error)
             }
         }
         other => Err(OpError::Failed(format!(
@@ -438,7 +438,7 @@ pub fn run_alloc(
 
 /// Execute one `_into` call of the case's public route into `out`.
 pub fn run_into(
-    session: &mut dyn BackendSession,
+    engine: &mut dyn Engine,
     spec: &CaseSpec,
     fixture: &Fixture,
     reads: &[TensorRead<'_>],
@@ -446,7 +446,7 @@ pub fn run_into(
     out: &mut Tensor,
 ) -> Result<(), OpError> {
     match spec.operation.as_str() {
-        "dot_general_read_into" => session
+        "dot_general_read_into" => engine
             .dot_general_read_into(
                 reads[0].clone(),
                 reads[1].clone(),
@@ -458,11 +458,11 @@ pub fn run_into(
             let subscripts = spec.subscripts.as_deref().unwrap_or_default();
             if spec.layout == "direct" {
                 owned
-                    .einsum_into(subscripts, session, TensorWrite::from_tensor(out))
+                    .einsum_into(subscripts, engine, TensorWrite::from_tensor(out))
                     .map_err(einsum_error)
             } else {
                 reads
-                    .einsum_read_into(subscripts, session, TensorWrite::from_tensor(out))
+                    .einsum_read_into(subscripts, engine, TensorWrite::from_tensor(out))
                     .map_err(einsum_error)
             }
         }

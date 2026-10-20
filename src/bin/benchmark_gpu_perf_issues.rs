@@ -21,13 +21,13 @@ use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_gpu::cuda::cudarc::cublas::{result as cublas, sys as cublas_sys};
 use tenferro_gpu::cuda::{
-    download_tensor, download_tensor_into, upload_tensor, with_cuda_exec_session, CudaBackend,
-    CudaDeviceId,
+    download_tensor, download_tensor_into, upload_tensor, with_cuda_engine, CudaDeviceId,
+    CudaEngine,
 };
 use tenferro_linalg::{EighDriver, EighOptions, SvdDriver, SvdOptions, TensorLinalgExt};
 use tenferro_runtime::TensorSessionOpsExt;
 use tenferro_tensor::{
-    BackendSession, BackendSessionHost, DotGeneralConfig, GatherConfig, Tensor, TensorRead,
+    DotGeneralConfig, Engine, GatherConfig, Tensor, TensorDot, TensorElementwise, TensorRead,
     TensorView, TensorViewCanonicalization, TensorWrite,
 };
 
@@ -142,8 +142,8 @@ fn timed<O>(
 /// Time `iterations` session operations, then synchronize the device.
 fn timed_in_session<O>(
     iterations: usize,
-    s: &mut dyn BackendSession,
-    mut op: impl FnMut(&mut dyn BackendSession) -> Result<O>,
+    s: &mut dyn Engine,
+    mut op: impl FnMut(&mut dyn Engine) -> Result<O>,
 ) -> Result<u128> {
     let mut outputs = Vec::with_capacity(iterations);
     let start = Instant::now();
@@ -162,10 +162,7 @@ fn timed_in_session<O>(
 /// churn, a destination handle built per call) a single wall-clock interval
 /// over many operations is not available, so the sample *is* one call and the
 /// reported median is a per-call latency, not a per-operation average.
-fn measure_isolated(
-    timing: &Timing,
-    mut op: impl FnMut() -> Result<u128>,
-) -> Result<Measurement> {
+fn measure_isolated(timing: &Timing, mut op: impl FnMut() -> Result<u128>) -> Result<Measurement> {
     for _ in 0..timing.warmups.max(1) {
         black_box(op()?);
     }
@@ -233,7 +230,9 @@ fn matmul_cfg(lhs_contract: &[usize], rhs_contract: &[usize]) -> DotGeneralConfi
 /// buffer the size of the tensor, which is too much for the 1 GiB tables.
 fn fill_f32(n: usize, seed: u64) -> Vec<f32> {
     (0..n as u64)
-        .map(|i| (((i.wrapping_mul(2_654_435_761).wrapping_add(seed * 97)) % 2001) as f32) / 1000.0 - 1.0)
+        .map(|i| {
+            (((i.wrapping_mul(2_654_435_761).wrapping_add(seed * 97)) % 2001) as f32) / 1000.0 - 1.0
+        })
         .collect()
 }
 
@@ -276,15 +275,34 @@ fn device_free_bytes(ctx: &CudaContext) -> Result<u64> {
     Ok(free as u64)
 }
 
-fn backend(device: usize) -> Result<CudaBackend> {
-    Ok(CudaBackend::new(CudaDeviceId::from_ordinal(
+/// Borrow the caller-held CUDA engine for one operation sequence.
+///
+/// tenferro-rs #2206 removed backend sessions: the engine the caller holds is
+/// already the execution scope, so entering it is a plain borrow.
+trait EngineScope {
+    fn with_backend_session<R>(
+        &mut self,
+        f: impl FnOnce(&mut CudaEngine) -> R,
+    ) -> tenferro_tensor::Result<R>;
+}
+
+impl EngineScope for CudaEngine {
+    fn with_backend_session<R>(
+        &mut self,
+        f: impl FnOnce(&mut CudaEngine) -> R,
+    ) -> tenferro_tensor::Result<R> {
+        Ok(f(self))
+    }
+}
+
+fn backend(device: usize) -> Result<CudaEngine> {
+    Ok(CudaEngine::open(CudaDeviceId::from_ordinal(
         u32::try_from(device)?,
     ))?)
 }
 
-fn device_sync(session: &mut dyn BackendSession) -> Result<()> {
-    with_cuda_exec_session(session, |cs| cs.synchronize())
-        .ok_or("not a CUDA execution session")??;
+fn device_sync(session: &mut dyn Engine) -> Result<()> {
+    with_cuda_engine(session, |cs| cs.synchronize()).ok_or("not a CUDA execution session")??;
     Ok(())
 }
 
@@ -402,11 +420,9 @@ fn transfer(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
                     it,
                     &mut || -> Result<()> {
                         let buffer = reuse.take().expect("reused buffer retained");
-                        reuse = Some(
-                            download_tensor_into(&rt, &resident, buffer).map_err(
-                                |e| -> BoxError { format!("download_tensor_into: {e}").into() },
-                            )?,
-                        );
+                        reuse = Some(download_tensor_into(&rt, &resident, buffer).map_err(
+                            |e| -> BoxError { format!("download_tensor_into: {e}").into() },
+                        )?);
                         Ok(())
                     },
                     &mut || Ok(()),
@@ -550,8 +566,8 @@ fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
         }
         Ok(0.0)
     };
-    let alloc_zero_once = |s: &mut dyn BackendSession| -> Result<Tensor> {
-        let typed = with_cuda_exec_session(s, |cs| {
+    let alloc_zero_once = |s: &mut dyn Engine| -> Result<Tensor> {
+        let typed = with_cuda_engine(s, |cs| {
             cs.with_cubecl("perf_issues.alloc_zero", |cub| {
                 cub.alloc_zero_output::<f64>(&shape)
             })
@@ -559,8 +575,8 @@ fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
         .ok_or("not a CUDA execution session")??;
         Ok(Tensor::from(typed))
     };
-    let alloc_fill_once = |s: &mut dyn BackendSession| -> Result<Tensor> {
-        Ok(with_cuda_exec_session(s, |cs| {
+    let alloc_fill_once = |s: &mut dyn Engine| -> Result<Tensor> {
+        Ok(with_cuda_engine(s, |cs| {
             cs.with_cubecl("perf_issues.alloc_fill", |cub| {
                 let mut out = Tensor::from(cub.alloc_output::<f64>(&shape)?);
                 cub.fill_zero_write(TensorWrite::from_tensor(&mut out))?;
@@ -583,7 +599,7 @@ fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
             // Enter the raw execution scope once, before initialization and
             // every sample. Retention-container allocation is also untimed.
             let m = bk.with_backend_session(|s| -> Result<Measurement> {
-                with_cuda_exec_session(s, |cs| {
+                with_cuda_engine(s, |cs| {
                     cs.with_cubecl("perf_issues.alloc_zero_samples", |cub| {
                         Ok((|| -> Result<Measurement> {
                             let initialized = cub.alloc_zero_output::<f64>(&shape)?;
@@ -856,7 +872,7 @@ fn well_conditioned(n: usize, seed: u64) -> Vec<f64> {
     a
 }
 
-fn factorize(op: &str, a: &Tensor, s: &mut dyn BackendSession) -> Result<Vec<Tensor>> {
+fn factorize(op: &str, a: &Tensor, s: &mut dyn Engine) -> Result<Vec<Tensor>> {
     Ok(if op == "qr" {
         let (q, r) = a.qr(s)?;
         vec![q, r]
@@ -1009,20 +1025,20 @@ fn first_call_layouts(params: &Value, device: usize) -> Result<CaseOutcome> {
         // A compact destination for the copy_into route, allocated untimed.
         let mut dst = upload_tensor(&rt, &host(vec![c, r], vec![0.0; r * c])?)?;
         rt.synchronize()?;
-        let mut call = |s: &mut dyn BackendSession| -> Result<(u128, Option<Tensor>)> {
+        let mut call = |s: &mut dyn Engine| -> Result<(u128, Option<Tensor>)> {
             let typed = t.as_typed::<f64>().ok_or("device tensor is not f64")?;
             let view = typed.as_view().transpose_view([1, 0])?;
             if copy_into {
                 let dst_typed = dst.as_typed_mut::<f64>().ok_or("destination is not f64")?;
                 let mut dst_view = dst_typed.as_view_mut();
                 let start = Instant::now();
-                with_cuda_exec_session(s, |cs| cs.copy_into(&view, &mut dst_view))
+                with_cuda_engine(s, |cs| cs.copy_into(&view, &mut dst_view))
                     .ok_or("not a CUDA execution session")??;
                 device_sync(s)?;
                 return Ok((start.elapsed().as_nanos(), None));
             }
             let start = Instant::now();
-            let out = with_cuda_exec_session(s, |cs| cs.to_contiguous(&view))
+            let out = with_cuda_engine(s, |cs| cs.to_contiguous(&view))
                 .ok_or("not a CUDA execution session")??;
             device_sync(s)?;
             Ok((start.elapsed().as_nanos(), Some(Tensor::from(out))))
@@ -1081,8 +1097,8 @@ fn first_call_layouts(params: &Value, device: usize) -> Result<CaseOutcome> {
 // #2078: entering a raw CUDA session is a host barrier
 // ---------------------------------------------------------------------------
 
-fn raw_scope(s: &mut dyn BackendSession) -> Result<()> {
-    with_cuda_exec_session(s, |cs| {
+fn raw_scope(s: &mut dyn Engine) -> Result<()> {
+    with_cuda_engine(s, |cs| {
         cs.with_raw("perf_issues.raw_scope_entry", |_raw| Ok(()))
     })
     .ok_or("not a CUDA execution session")??;
@@ -1099,15 +1115,18 @@ fn raw_scope_entry(params: &Value, timing: &Timing, device: usize) -> Result<Cas
     let a = upload_tensor(&rt, &host(vec![n, n], data.clone())?)?;
     let cfg = matmul_cfg(&[1], &[0]);
     // Correctness: the queued GEMM really ran (one probe entry against a host sum).
-    let probe = bk.with_backend_session(|s| -> Result<Tensor> {
-        Ok(a.dot_general(&a, cfg.clone(), s)?)
-    })??;
+    let probe =
+        bk.with_backend_session(|s| -> Result<Tensor> { Ok(a.dot_general(&a, cfg.clone(), s)?) })??;
     rt.synchronize()?;
     let (i, j) = (1usize, 2usize);
     let expected: f64 = (0..n).map(|p| data[i + p * n] * data[p + j * n]).sum();
     let back = download_tensor(&rt, &probe)?;
     let got = back.as_slice::<f64>()?;
-    let error = check_tol(max_rel(&[got[i + j * n]], &[expected]), 1e-12, "queued gemm")?;
+    let error = check_tol(
+        max_rel(&[got[i + j * n]], &[expected]),
+        1e-12,
+        "queued gemm",
+    )?;
     let retained_bytes = queued * n * n * 8;
     let (measurement, timer) = match arm {
         "empty-idle" => {
@@ -1122,7 +1141,7 @@ fn raw_scope_entry(params: &Value, timing: &Timing, device: usize) -> Result<Cas
             })??;
             (
                 m,
-                vec!["with_cuda_exec_session + empty with_raw closure on an idle device"],
+                vec!["with_cuda_engine + empty with_raw closure on an idle device"],
             )
         }
         "empty-behind-queued-gemm" => {
@@ -1169,7 +1188,9 @@ fn raw_scope_entry(params: &Value, timing: &Timing, device: usize) -> Result<Cas
             })??;
             (
                 m,
-                vec!["explicit device synchronize behind queued device work (the reference barrier)"],
+                vec![
+                    "explicit device synchronize behind queued device work (the reference barrier)",
+                ],
             )
         }
         _ => return Err(format!("unknown raw-scope arm {arm}").into()),
@@ -1199,38 +1220,41 @@ fn raw_scope_entry(params: &Value, timing: &Timing, device: usize) -> Result<Cas
 fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
     let op = param_str(params, "op")?.to_string();
     let arm = param_str(params, "arm")?.to_string();
-    let bk = backend(device)?;
+    let mut bk = backend(device)?;
     let rt = bk.runtime().clone();
-    let runtime = EagerRuntime::with_cuda_backend(bk)?;
-    let session = |s: &mut tenferro_ad::EagerSession<'_>| -> Result<(EagerTensor, EagerTensor, u64)> {
-        match op.as_str() {
-            "add" => {
-                let (hidden, tokens) =
-                    (param_usize(params, "hidden")?, param_usize(params, "tokens")?);
-                let x = fill_f32(hidden * tokens, 7);
-                let y = fill_f32(hidden * tokens, 8);
-                let xt = s.constant_from_host(host_f32(vec![hidden, tokens], x)?)?;
-                let yt = s.constant_from_host(host_f32(vec![hidden, tokens], y)?)?;
-                let bytes = (hidden * tokens * 4) as u64;
-                Ok((xt, yt, bytes))
+    let runtime = EagerRuntime::new()?;
+    let session =
+        |s: &mut tenferro_ad::EagerSession<'_>| -> Result<(EagerTensor, EagerTensor, u64)> {
+            match op.as_str() {
+                "add" => {
+                    let (hidden, tokens) = (
+                        param_usize(params, "hidden")?,
+                        param_usize(params, "tokens")?,
+                    );
+                    let x = fill_f32(hidden * tokens, 7);
+                    let y = fill_f32(hidden * tokens, 8);
+                    let xt = s.constant_from_host(host_f32(vec![hidden, tokens], x)?)?;
+                    let yt = s.constant_from_host(host_f32(vec![hidden, tokens], y)?)?;
+                    let bytes = (hidden * tokens * 4) as u64;
+                    Ok((xt, yt, bytes))
+                }
+                "dot_general" => {
+                    let (din, dout, len) = (
+                        param_usize(params, "in")?,
+                        param_usize(params, "out")?,
+                        param_usize(params, "len")?,
+                    );
+                    let w = fill_f32(dout * din, 5);
+                    let x = fill_f32(din * len, 6);
+                    let wt = s.constant_from_host(host_f32(vec![dout, din], w)?)?;
+                    let xt = s.constant_from_host(host_f32(vec![din, len], x)?)?;
+                    let bytes = (dout * len * 4) as u64;
+                    Ok((wt, xt, bytes))
+                }
+                other => Err(format!("unknown #2079 op {other}").into()),
             }
-            "dot_general" => {
-                let (din, dout, len) = (
-                    param_usize(params, "in")?,
-                    param_usize(params, "out")?,
-                    param_usize(params, "len")?,
-                );
-                let w = fill_f32(dout * din, 5);
-                let x = fill_f32(din * len, 6);
-                let wt = s.constant_from_host(host_f32(vec![dout, din], w)?)?;
-                let xt = s.constant_from_host(host_f32(vec![din, len], x)?)?;
-                let bytes = (dout * len * 4) as u64;
-                Ok((wt, xt, bytes))
-            }
-            other => Err(format!("unknown #2079 op {other}").into()),
-        }
-    };
-    let (lhs, rhs, bytes) = runtime.with_eager_session(session)?;
+        };
+    let (lhs, rhs, bytes) = runtime.with_eager_session(&mut bk, session)?;
     let run = |s: &mut tenferro_ad::EagerSession<'_>| -> Result<EagerTensor> {
         match op.as_str() {
             "add" => Ok(s.add(&lhs, &rhs)?),
@@ -1239,7 +1263,9 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
         }
     };
     // Correctness: one result, downloaded outside timing and checked against a host reduction.
-    let first = runtime.with_eager_session(run)?.to_tensor()?;
+    let first = runtime
+        .with_eager_session(&mut bk, run)?
+        .to_tensor(&mut bk)?;
     rt.synchronize()?;
     let back = download_tensor(&rt, &first)?;
     let got = back.as_slice::<f32>()?;
@@ -1287,7 +1313,7 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
         other => return Err(format!("unknown #2079 op {other}").into()),
     };
     let measurement = if arm == "eager-session" {
-        runtime.with_eager_session(|s| {
+        runtime.with_eager_session(&mut bk, |s| {
             measure(timing, bytes as usize, |it| {
                 timed(it, &mut || run(s), &mut || Ok(rt.synchronize()?))
             })
@@ -1296,7 +1322,7 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
         // The same eager op, but each result is dropped before the next op, the
         // way a decode loop consumes its intermediates: the output pool can then
         // hand the buffer back instead of allocating a fresh one per op.
-        runtime.with_eager_session(|s| {
+        runtime.with_eager_session(&mut bk, |s| {
             measure(timing, bytes as usize, |it| {
                 timed(
                     it,
@@ -1317,12 +1343,21 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
         let floor_rt = floor_bk.runtime().clone();
         let (floor_lhs, floor_rhs, mut floor_out) = match op.as_str() {
             "add" => {
-                let (hidden, tokens) =
-                    (param_usize(params, "hidden")?, param_usize(params, "tokens")?);
+                let (hidden, tokens) = (
+                    param_usize(params, "hidden")?,
+                    param_usize(params, "tokens")?,
+                );
                 let shape = vec![hidden, tokens];
-                let lhs = upload_tensor(&floor_rt, &host_f32(shape.clone(), fill_f32(hidden * tokens, 7))?)?;
-                let rhs = upload_tensor(&floor_rt, &host_f32(shape.clone(), fill_f32(hidden * tokens, 8))?)?;
-                let out = upload_tensor(&floor_rt, &host_f32(shape, fill_f32(hidden * tokens, 0))?)?;
+                let lhs = upload_tensor(
+                    &floor_rt,
+                    &host_f32(shape.clone(), fill_f32(hidden * tokens, 7))?,
+                )?;
+                let rhs = upload_tensor(
+                    &floor_rt,
+                    &host_f32(shape.clone(), fill_f32(hidden * tokens, 8))?,
+                )?;
+                let out =
+                    upload_tensor(&floor_rt, &host_f32(shape, fill_f32(hidden * tokens, 0))?)?;
                 (lhs, rhs, out)
             }
             other => return Err(format!("unknown #2079 floor op {other}").into()),
@@ -1348,7 +1383,7 @@ fn eager_op(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
         measure(timing, bytes as usize, |it| {
             timed(
                 it,
-                &mut || Ok(runtime.with_eager_session(run)?),
+                &mut || Ok(runtime.with_eager_session(&mut bk, run)?),
                 &mut || Ok(rt.synchronize()?),
             )
         })?
@@ -1399,9 +1434,7 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
     );
     let arm = param_str(params, "arm")?;
     let table = fill_f32(vocab * hidden, 21);
-    let ids: Vec<i64> = (0..tokens)
-        .map(|i| ((i * 37 + 2) % vocab) as i64)
-        .collect();
+    let ids: Vec<i64> = (0..tokens).map(|i| ((i * 37 + 2) % vocab) as i64).collect();
     let cfg = GatherConfig {
         offset_dims: vec![1],
         collapsed_slice_dims: vec![0],
@@ -1411,21 +1444,21 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
     };
     let bytes = tokens * hidden * 4;
     let (error, measurement, timer) = if arm == "eager-gather" {
-        let bk = backend(device)?;
+        let mut bk = backend(device)?;
         let rt = bk.runtime().clone();
-        let runtime = EagerRuntime::with_cuda_backend(bk)?;
-        let (table_t, index_t) = runtime.with_eager_session(|s| {
+        let runtime = EagerRuntime::new()?;
+        let (table_t, index_t) = runtime.with_eager_session(&mut bk, |s| {
             Ok::<_, BoxError>((
                 s.constant_from_host(host_f32(vec![vocab, hidden], table.clone())?)?,
                 s.constant_from_host(Tensor::from_vec_col_major(vec![tokens], ids.clone())?)?,
             ))
         })?;
-        let first = runtime.with_eager_session(|s| {
+        let first = runtime.with_eager_session(&mut bk, |s| {
             Ok::<_, BoxError>(s.gather(&table_t, &index_t, cfg.clone())?)
         })?;
         rt.synchronize()?;
         let shape = first.shape().to_vec();
-        let first = first.to_tensor()?;
+        let first = first.to_tensor(&mut bk)?;
         let back = download_tensor(&rt, &first)?;
         let got = back.as_slice::<f32>()?;
         // The issue's rows layout gathers (tokens, hidden): row t of the result is
@@ -1445,7 +1478,7 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
         }
         let error = check_tol(worst, 1e-6, "embedding gather")?;
         // TEMP PROBE: split the eager host enqueue from the device drain.
-        runtime.with_eager_session(|s| {
+        runtime.with_eager_session(&mut bk, |s| {
             for round in 0..4 {
                 let host_start = std::time::Instant::now();
                 let out = s.gather(&table_t, &index_t, cfg.clone())?;
@@ -1460,7 +1493,7 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
             }
             Ok::<_, BoxError>(())
         })?;
-        let m = runtime.with_eager_session(|s| {
+        let m = runtime.with_eager_session(&mut bk, |s| {
             measure(timing, bytes, |it| {
                 timed(
                     it,
@@ -1506,7 +1539,10 @@ fn gather_table(params: &Value, timing: &Timing, device: usize) -> Result<CaseOu
             for h in 0..hidden.min(64) {
                 let expected = table[row + h * vocab] as f64;
                 let scale = expected.abs().max(1.0);
-                worst = worst_of(worst, (back[t * hidden + h] as f64 - expected).abs() / scale);
+                worst = worst_of(
+                    worst,
+                    (back[t * hidden + h] as f64 - expected).abs() / scale,
+                );
             }
         }
         let error = check_tol(worst, 0.0, "cudarc row copies")?;
@@ -1567,17 +1603,18 @@ fn reshape_materialize(params: &Value, timing: &Timing, device: usize) -> Result
         return Err("reshape target does not preserve the element count".into());
     }
     let arm = param_str(params, "arm")?;
-    let bk = backend(device)?;
+    let mut bk = backend(device)?;
     let rt = bk.runtime().clone();
-    let runtime = EagerRuntime::with_cuda_backend(bk)?;
+    let runtime = EagerRuntime::new()?;
     let data = fill_f32(elements, 33);
-    let (constant, produced) = runtime.with_eager_session(|s| -> Result<(EagerTensor, EagerTensor)> {
-        let constant = s.constant_from_host(host_f32(vec![elements], data.clone())?)?;
-        let left = s.constant_from_host(host_f32(vec![elements], data.clone())?)?;
-        let right = s.constant_from_host(host_f32(vec![elements], data.clone())?)?;
-        let produced = s.add(&left, &right)?;
-        Ok((constant, produced))
-    })?;
+    let (constant, produced) =
+        runtime.with_eager_session(&mut bk, |s| -> Result<(EagerTensor, EagerTensor)> {
+            let constant = s.constant_from_host(host_f32(vec![elements], data.clone())?)?;
+            let left = s.constant_from_host(host_f32(vec![elements], data.clone())?)?;
+            let right = s.constant_from_host(host_f32(vec![elements], data.clone())?)?;
+            let produced = s.add(&left, &right)?;
+            Ok((constant, produced))
+        })?;
     let input = if arm == "constant" {
         &constant
     } else if arm == "op-output" {
@@ -1587,8 +1624,10 @@ fn reshape_materialize(params: &Value, timing: &Timing, device: usize) -> Result
     };
     let target = vec![rows, cols];
     let first = runtime
-        .with_eager_session(|s| Ok::<_, BoxError>(s.reshape(input, target.clone())?))?
-        .to_tensor()?;
+        .with_eager_session(&mut bk, |s| {
+            Ok::<_, BoxError>(s.reshape(input, target.clone())?)
+        })?
+        .to_tensor(&mut bk)?;
     rt.synchronize()?;
     let back = download_tensor(&rt, &first)?;
     let got = back.as_slice::<f32>()?;
@@ -1600,7 +1639,7 @@ fn reshape_materialize(params: &Value, timing: &Timing, device: usize) -> Result
         worst = worst_of(worst, (got[i] as f64 - expected).abs() / scale);
     }
     let error = check_tol(worst, 1e-6, "reshape values")?;
-    let m = runtime.with_eager_session(|s| {
+    let m = runtime.with_eager_session(&mut bk, |s| {
         measure(timing, elements * 4, |it| {
             timed(
                 it,
@@ -1637,7 +1676,7 @@ const VENDOR_OP: &str = "perf_issues.vendor_handle";
 /// `keep` says whether the handle created or passed in survives the call. The
 /// output is returned so the caller can keep it alive until its clock stops.
 fn cublas_dgemm_raw(
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
     a: &Tensor,
     b: &Tensor,
     n: usize,
@@ -1647,7 +1686,7 @@ fn cublas_dgemm_raw(
     use tenferro_tensor::Error;
     let dim = i32::try_from(n).map_err(|error| format!("{error}"))?;
     let mut out = None;
-    let result = with_cuda_exec_session(s, |cs| {
+    let result = with_cuda_engine(s, |cs| {
         cs.with_raw(VENDOR_OP, |raw| {
             let ar = raw.tensor(
                 a.as_typed::<f64>()
@@ -1669,25 +1708,28 @@ fn cublas_dgemm_raw(
             // the synchronize below. A, B and C are all n x n in compact
             // column-major storage, which is cuBLAS's native layout.
             let launched = unsafe {
-                cublas::set_stream(handle, raw.stream().raw_handle() as cublas_sys::cudaStream_t)
-                    .and_then(|()| {
-                        cublas::dgemm(
-                            handle,
-                            cublas_sys::cublasOperation_t::CUBLAS_OP_N,
-                            cublas_sys::cublasOperation_t::CUBLAS_OP_N,
-                            dim,
-                            dim,
-                            dim,
-                            &alpha,
-                            ar.raw_ptr().cast(),
-                            dim,
-                            br.raw_ptr().cast(),
-                            dim,
-                            &beta,
-                            cr.raw_ptr().cast(),
-                            dim,
-                        )
-                    })
+                cublas::set_stream(
+                    handle,
+                    raw.stream().raw_handle() as cublas_sys::cudaStream_t,
+                )
+                .and_then(|()| {
+                    cublas::dgemm(
+                        handle,
+                        cublas_sys::cublasOperation_t::CUBLAS_OP_N,
+                        cublas_sys::cublasOperation_t::CUBLAS_OP_N,
+                        dim,
+                        dim,
+                        dim,
+                        &alpha,
+                        ar.raw_ptr().cast(),
+                        dim,
+                        br.raw_ptr().cast(),
+                        dim,
+                        &beta,
+                        cr.raw_ptr().cast(),
+                        dim,
+                    )
+                })
             };
             let synchronized = raw.synchronize();
             // SAFETY: the barrier above means no work using the handle is pending.
@@ -1712,7 +1754,7 @@ fn cublas_dgemm_raw(
 /// One dgemm through the handle the runtime already owns (#2083's ask), inside
 /// a raw scope, with the same host barrier as the other arms.
 fn cublas_dgemm_runtime_handle(
-    bk: &mut CudaBackend,
+    bk: &mut CudaEngine,
     a: &Tensor,
     b: &Tensor,
     n: usize,
@@ -1720,7 +1762,7 @@ fn cublas_dgemm_runtime_handle(
     use tenferro_tensor::Error;
     let dim = i32::try_from(n).map_err(|error| format!("{error}"))?;
     let out = bk.with_backend_session(|s| -> Result<Tensor> {
-        let out = with_cuda_exec_session(s, |cs| {
+        let out = with_cuda_engine(s, |cs| {
             cs.with_raw(VENDOR_OP, |raw| {
                 let ar = raw.tensor(
                     a.as_typed::<f64>()
@@ -1772,10 +1814,10 @@ fn cublas_dgemm_runtime_handle(
     Ok(out)
 }
 
-fn destroy_raw_handle(bk: &mut CudaBackend, handle: cublas_sys::cublasHandle_t) -> Result<()> {
+fn destroy_raw_handle(bk: &mut CudaEngine, handle: cublas_sys::cublasHandle_t) -> Result<()> {
     use tenferro_tensor::Error;
     bk.with_backend_session(|s| -> Result<()> {
-        with_cuda_exec_session(s, |cs| {
+        with_cuda_engine(s, |cs| {
             cs.with_raw(VENDOR_OP, |_raw| {
                 // SAFETY: the handle was created inside a raw session of this
                 // runtime and is not used after this point.
@@ -1977,7 +2019,10 @@ fn pool_retention(params: &Value, device: usize) -> Result<CaseOutcome> {
     let got = probe.as_slice::<f64>()?;
     let mut worst = 0.0f64;
     for i in 0..8 {
-        worst = worst_of(worst, (got[i] - host_data[i]).abs() / host_data[i].abs().max(1.0));
+        worst = worst_of(
+            worst,
+            (got[i] - host_data[i]).abs() / host_data[i].abs().max(1.0),
+        );
     }
     let error = check_tol(worst, 1e-12, "1 GiB tensor round trip")?;
     let free_while_alive = device_free_bytes(&ctx)?;
@@ -2061,7 +2106,13 @@ fn svd_driver_of(name: &str) -> Result<SvdDriver> {
     })
 }
 
-fn host_matmul_c64(a: &[Complex64], b: &[Complex64], m: usize, k: usize, n: usize) -> Vec<Complex64> {
+fn host_matmul_c64(
+    a: &[Complex64],
+    b: &[Complex64],
+    m: usize,
+    k: usize,
+    n: usize,
+) -> Vec<Complex64> {
     let mut c = vec![Complex64::new(0.0, 0.0); m * n];
     for j in 0..n {
         for p in 0..k {
@@ -2110,7 +2161,10 @@ fn svd_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
             let scale = want.norm().max(1.0);
             worst = worst_of(worst, (got - want).norm() / scale);
         }
-        Ok((check_tol(worst, 1e-8, "svd reconstruction")?, vec![u, sv, vh]))
+        Ok((
+            check_tol(worst, 1e-8, "svd reconstruction")?,
+            vec![u, sv, vh],
+        ))
     })??;
     black_box(&outs);
     let m = bk.with_backend_session(|s| {
@@ -2199,7 +2253,14 @@ fn eigh_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOut
                     Ok(vec![w, v])
                 })
             })?;
-            Ok((error, m, vec!["one batched eigh call ([n, n, batch], batch trailing)", "device synchronize at the batch edge"]))
+            Ok((
+                error,
+                m,
+                vec![
+                    "one batched eigh call ([n, n, batch], batch trailing)",
+                    "device synchronize at the batch edge",
+                ],
+            ))
         })??
     } else {
         let all: Vec<Complex64> = (0..batch)
@@ -2240,7 +2301,14 @@ fn eigh_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOut
                     Ok(vec![w, v])
                 })
             })?;
-            Ok((error, m, vec!["one batched eigh call ([n, n, batch], batch trailing), c64 input", "device synchronize at the batch edge"]))
+            Ok((
+                error,
+                m,
+                vec![
+                    "one batched eigh call ([n, n, batch], batch trailing), c64 input",
+                    "device synchronize at the batch edge",
+                ],
+            ))
         })??
     };
     Ok(CaseOutcome {
@@ -2266,7 +2334,10 @@ fn eigh_residual_f64(a: &[f64], w: &[f64], v: &[f64], n: usize) -> f64 {
     let mut worst = 0.0f64;
     let norm = a.iter().fold(0.0f64, |m, x| m.max(x.abs())).max(1.0);
     for j in 0..n {
-        let vnorm = (0..n).map(|i| v[i + j * n] * v[i + j * n]).sum::<f64>().sqrt();
+        let vnorm = (0..n)
+            .map(|i| v[i + j * n] * v[i + j * n])
+            .sum::<f64>()
+            .sqrt();
         worst = worst_of(worst, (vnorm - 1.0).abs());
         let residual = (0..n)
             .map(|i| {
@@ -2290,10 +2361,7 @@ fn eigh_residual_c64(a: &[Complex64], w: &[f64], v: &[Complex64], n: usize) -> f
     let mut worst = 0.0f64;
     let norm = a.iter().fold(0.0f64, |m, x| m.max(x.norm())).max(1.0);
     for j in 0..n {
-        let vnorm = (0..n)
-            .map(|i| v[i + j * n].norm_sqr())
-            .sum::<f64>()
-            .sqrt();
+        let vnorm = (0..n).map(|i| v[i + j * n].norm_sqr()).sum::<f64>().sqrt();
         worst = worst_of(worst, (vnorm - 1.0).abs());
         let residual = (0..n)
             .map(|i| {
@@ -2306,9 +2374,7 @@ fn eigh_residual_c64(a: &[Complex64], w: &[f64], v: &[Complex64], n: usize) -> f
     }
     for j in 0..n.min(3) {
         for k in (j + 1)..n.min(4) {
-            let dot: Complex64 = (0..n)
-                .map(|i| v[i + j * n].conj() * v[i + k * n])
-                .sum();
+            let dot: Complex64 = (0..n).map(|i| v[i + j * n].conj() * v[i + k * n]).sum();
             worst = worst_of(worst, dot.norm());
         }
     }
@@ -2334,48 +2400,56 @@ fn hadamard_dot_general(params: &Value, timing: &Timing, device: usize) -> Resul
     let cfg = DotGeneralConfig {
         lhs_contracting_dims: [].as_slice().into(),
         rhs_contracting_dims: [].as_slice().into(),
-        lhs_batch_dims: vec![0usize, 1].into(),
-        rhs_batch_dims: vec![0usize, 1].into(),
+        lhs_batch_dims: [0usize, 1].as_slice().into(),
+        rhs_batch_dims: [0usize, 1].as_slice().into(),
     };
-    let (error, measurement, timer) = bk.with_backend_session(|s| -> Result<(f64, Measurement, Vec<&str>)> {
-        let out = if arm == "dot-general" {
-            a.dot_general(&b, cfg.clone(), s)?
-        } else {
-            a.mul(&b, s)?
-        };
-        let got = download_tensor(&rt, &out)?;
-        let got = got.as_slice::<f32>()?;
-        let mut worst = 0.0f64;
-        for i in 0..(rows * cols).min(64) {
-            let expected = x[i] as f64 * y[i] as f64;
-            let scale = expected.abs().max(1.0);
-            worst = worst_of(worst, (got[i] as f64 - expected).abs() / scale);
-        }
-        let error = check_tol(worst, 1e-6, "hadamard product")?;
-        let m = measure(timing, bytes, |it| {
-            timed_in_session(it, s, |s| {
-                Ok(if arm == "dot-general" {
-                    a.dot_general(&b, cfg.clone(), s)?
-                } else {
-                    a.mul(&b, s)?
-                })
-            })
-        })?;
-        Ok((
-            error,
-            m,
-            vec![if arm == "dot-general" {
-                "one dot_general with every axis as a batch axis (pure Hadamard)"
+    let (error, measurement, timer) =
+        bk.with_backend_session(|s| -> Result<(f64, Measurement, Vec<&str>)> {
+            let out = if arm == "dot-general" {
+                a.dot_general(&b, cfg.clone(), s)?
             } else {
-                "one elementwise multiply"
-            }, "device synchronize at the batch edge"],
-        ))
-    })??;
+                a.mul(&b, s)?
+            };
+            let got = download_tensor(&rt, &out)?;
+            let got = got.as_slice::<f32>()?;
+            let mut worst = 0.0f64;
+            for i in 0..(rows * cols).min(64) {
+                let expected = x[i] as f64 * y[i] as f64;
+                let scale = expected.abs().max(1.0);
+                worst = worst_of(worst, (got[i] as f64 - expected).abs() / scale);
+            }
+            let error = check_tol(worst, 1e-6, "hadamard product")?;
+            let m = measure(timing, bytes, |it| {
+                timed_in_session(it, s, |s| {
+                    Ok(if arm == "dot-general" {
+                        a.dot_general(&b, cfg.clone(), s)?
+                    } else {
+                        a.mul(&b, s)?
+                    })
+                })
+            })?;
+            Ok((
+                error,
+                m,
+                vec![
+                    if arm == "dot-general" {
+                        "one dot_general with every axis as a batch axis (pure Hadamard)"
+                    } else {
+                        "one elementwise multiply"
+                    },
+                    "device synchronize at the batch edge",
+                ],
+            ))
+        })??;
     Ok(CaseOutcome {
         max_rel_error: error,
         measurement: Some(measurement),
         timer,
-        outside_timer: vec!["backend construction", "operand upload", "correctness check (download)"],
+        outside_timer: vec![
+            "backend construction",
+            "operand upload",
+            "correctness check (download)",
+        ],
         extra: json!({"elements": rows * cols}),
     })
 }
@@ -2412,14 +2486,20 @@ fn contraction_plan_churn(params: &Value, timing: &Timing, device: usize) -> Res
     }
     rt.synchronize()?;
     let (error, measurement) = bk.with_backend_session(|s| -> Result<(f64, Measurement)> {
-        let first = plan_inputs[0].0.dot_general(&plan_inputs[0].1, cfg.clone(), s)?;
+        let first = plan_inputs[0]
+            .0
+            .dot_general(&plan_inputs[0].1, cfg.clone(), s)?;
         let got = download_tensor(&rt, &first)?;
         let got = got.as_slice::<f64>()?;
         let (m, k) = (n, n);
         let data = values(m * k, 90);
         let rhs = values(k * m, 190);
         let expected: f64 = (0..k).map(|p| data[1 + p * m] * rhs[p + 2 * k]).sum();
-        let error = check_tol(max_rel(&[got[1 + 2 * m]], &[expected]), 1e-12, "contraction")?;
+        let error = check_tol(
+            max_rel(&[got[1 + 2 * m]], &[expected]),
+            1e-12,
+            "contraction",
+        )?;
         // The timed operation is the re-run of the first shape alone, one
         // isolated call per sample. The churn that fills the plan cache is the
         // (untimed) precondition, and the device is drained before the clock
@@ -2431,7 +2511,9 @@ fn contraction_plan_churn(params: &Value, timing: &Timing, device: usize) -> Res
             }
             device_sync(s)?;
             let start = Instant::now();
-            let out = plan_inputs[0].0.dot_general(&plan_inputs[0].1, cfg.clone(), s)?;
+            let out = plan_inputs[0]
+                .0
+                .dot_general(&plan_inputs[0].1, cfg.clone(), s)?;
             device_sync(s)?;
             let elapsed = start.elapsed().as_nanos();
             black_box(&out);
@@ -2483,7 +2565,7 @@ fn owned_destination(params: &Value, timing: &Timing, device: usize) -> Result<C
     // `from_tensor` is the owned-tensor destination route (the write_device_ptr
     // path the #1949 memo covers); `from_view` is the borrowed-view route, which
     // keeps the resource round trip. Building the handle is untimed.
-    let write = |s: &mut dyn BackendSession, dst: &mut Tensor| -> Result<u128> {
+    let write = |s: &mut dyn Engine, dst: &mut Tensor| -> Result<u128> {
         let destination = if owned {
             TensorWrite::from_tensor(dst)
         } else {
@@ -2681,7 +2763,9 @@ fn main() -> Result<()> {
         output["samples"] = serde_json::to_value(&m.samples)?;
         output["calibration"] = if kind == "shape_stream" {
             json!({"mode":"fixed_whole_sequence","sequences_per_sample":1})
-        } else { json!({"target_ns": timing.target_ns, "iterations": m.iterations}) };
+        } else {
+            json!({"target_ns": timing.target_ns, "iterations": m.iterations})
+        };
     }
     println!("{}", serde_json::to_string(&output)?);
     Ok(())

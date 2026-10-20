@@ -1,11 +1,11 @@
-use super::{Case, Result, Settings};
+use super::{Case, EngineScope, Result, Settings};
 use num_complex::Complex64;
 use serde_json::Value;
 use std::path::Path;
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
-use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaBackend, CudaDeviceId, CudaRuntime};
+use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaDeviceId, CudaEngine, CudaRuntime};
 use tenferro_linalg::{EagerSessionLinalgExt, HouseholderQr, QrOptions, TensorLinalgExt};
-use tenferro_tensor::{BackendSession, BackendSessionHost, DType, Tensor};
+use tenferro_tensor::{DType, Engine, Tensor};
 
 // Stack-owned adapters add no output-retention allocation to the timed call.
 enum Outputs<T> {
@@ -24,7 +24,7 @@ impl<T> Outputs<T> {
         }
     }
 }
-fn direct(case: &Case, x: &Tensor, session: &mut dyn BackendSession) -> Result<Outputs<Tensor>> {
+fn direct(case: &Case, x: &Tensor, session: &mut dyn Engine) -> Result<Outputs<Tensor>> {
     Ok(match case.op.as_str() {
         "lu" => {
             let (p, l, u, parity) = x.lu(session)?;
@@ -214,7 +214,7 @@ fn check_direct(
     expected: &[Tensor],
     input: &Tensor,
     case: &Case,
-    session: &mut dyn BackendSession,
+    session: &mut dyn Engine,
 ) -> Result<f64> {
     if let Outputs::Compact(state) = out {
         let q = state.q_columns(0..input.shape()[0], QrOptions::default(), session)?;
@@ -288,7 +288,7 @@ pub(super) fn run(
                 }
         })
         .sum();
-    let mut backend = CudaBackend::new(CudaDeviceId::from_ordinal(device.try_into()?))?;
+    let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let rt = backend.runtime().clone();
     let x = upload_tensor(&rt, &input)?;
     if mode == "tenferro-cuda-direct" {
@@ -313,9 +313,10 @@ pub(super) fn run(
             Ok((Some(timing), error))
         })?
     } else {
-        let runtime = EagerRuntime::with_cuda_backend(backend)?;
+        // The runtime stores no engine (tenferro-rs #2206).
+        let runtime = EagerRuntime::new()?;
         let _guard = runtime.no_grad();
-        runtime.with_eager_session(|session| {
+        runtime.with_eager_session(&mut backend, |session| {
             let x = session.constant_from(x)?;
             let probe = eager(case, &x, session)?;
             let error = check_eager(&rt, &probe, &expected, &input, case, session)?;

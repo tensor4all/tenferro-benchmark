@@ -2,16 +2,15 @@
 //! one-operation batched routes of `cpu/session_matrix` (`--case <id>`).
 #[path = "../bench_support/batch_route.rs"]
 mod batch_route;
-#[path = "../bench_support/shape_stream.rs"]
-mod shape_stream;
 #[path = "../bench_support/eager_shape_stream.rs"]
 mod eager_shape_stream;
+#[path = "../bench_support/shape_stream.rs"]
+mod shape_stream;
 
 use std::{error::Error, hint::black_box, time::Instant};
-use tenferro_cpu::CpuBackend;
+use tenferro_cpu::CpuEngine;
 use tenferro_linalg::TensorLinalgExt;
-use tenferro_runtime::BackendSessionHost;
-use tenferro_tensor::{DotGeneralConfig, Tensor, TensorRead};
+use tenferro_tensor::{DotGeneralConfig, Tensor, TensorDot, TensorRead};
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
 
 fn fixture(n: usize, k: usize) -> Result<(Tensor, Tensor, Vec<f64>, Vec<f64>)> {
@@ -109,7 +108,7 @@ fn run_batched_case(args: &[String]) -> Result<()> {
         emit_unsupported(row, reason);
         return Ok(());
     }
-    let mut backend = CpuBackend::with_threads(threads)?;
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
     tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
         "CpuBackend",
         backend.num_threads(),
@@ -125,9 +124,10 @@ fn run_batched_case(args: &[String]) -> Result<()> {
         Timed(Vec<u128>, usize, f64),
         Unsupported(String),
     }
-    let outcome = backend.with_backend_session(|session| -> Result<Outcome> {
+    let outcome = (|| -> Result<Outcome> {
+        let session: &mut CpuEngine = &mut backend;
         let into = spec.is_into();
-        let call = |session: &mut dyn tenferro_tensor::BackendSession,
+        let call = |session: &mut dyn tenferro_tensor::Engine,
                     outputs: &mut Vec<tenferro_tensor::Tensor>,
                     destination: &mut tenferro_tensor::Tensor|
          -> std::result::Result<(), OpError> {
@@ -181,7 +181,7 @@ fn run_batched_case(args: &[String]) -> Result<()> {
         }
         let worst = check(&outputs, &destination)?;
         Ok(Outcome::Timed(elapsed, reps, worst))
-    })??;
+    })()?;
     match outcome {
         Outcome::Unsupported(reason) => emit_unsupported(row, reason),
         Outcome::Timed(elapsed, reps, worst) => {
@@ -203,7 +203,7 @@ fn run_stream_case(
     warmups: usize,
     samples: usize,
 ) -> Result<()> {
-    let mut backend = CpuBackend::with_threads(threads)?;
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
     tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
         "CpuBackend",
         backend.num_threads(),
@@ -211,9 +211,9 @@ fn run_stream_case(
     )?;
     // Inputs for every call of every pass exist before the session is entered.
     let stream = shape_stream::Stream::new(spec, 1 + warmups + samples)?;
-    let (elapsed, worst) = backend.with_backend_session(|session| {
-        stream.measure(session, warmups).map_err(|e| e.to_string())
-    })??;
+    let (elapsed, worst) = stream
+        .measure(&mut backend, warmups)
+        .map_err(|e| e.to_string())?;
     println!(
         "{}",
         serde_json::json!({
@@ -284,7 +284,7 @@ fn main() -> Result<()> {
         );
         return Ok(());
     }
-    let mut backend = CpuBackend::new();
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
     let worker_count = backend.num_threads();
     let fixtures = (0..count)
         .map(|k| fixture(n, k))
@@ -298,7 +298,8 @@ fn main() -> Result<()> {
     // Output slots and every input are prepared before entering the session.
     let mut outputs = Vec::with_capacity(count);
     let mut elapsed_ns = Vec::with_capacity(samples);
-    backend.with_backend_session(|session| -> Result<()> {
+    (|| -> Result<()> {
+        let session: &mut CpuEngine = &mut backend;
         for sample in 0..samples + warmups {
             outputs.clear(); // Destruction/reset is outside the clock.
             let start = Instant::now();
@@ -344,7 +345,7 @@ fn main() -> Result<()> {
             }
         }
         Ok(())
-    })??;
+    })()?;
     println!(
         "{}",
         serde_json::json!({"operation":op,"n":n,"operations_per_sample":count,"provider":provider,"route":"shared-session","session_count":1,"worker_count":worker_count,"warmups":warmups,"samples_ns":elapsed_ns,"correctness":"passed"})

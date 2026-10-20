@@ -24,12 +24,12 @@ use num_complex::Complex64;
 use serde::Serialize;
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
-use tenferro_cpu::{runtime_engine_registration, CpuBackend};
+use tenferro_cpu::{runtime_engine_registration, CpuEngine};
 use tenferro_linalg::TensorLinalgExt;
-use tenferro_runtime::{DType, GraphCompiler, Runtime, TensorSessionOpsExt, TracedTensor};
-use tenferro_tensor::{
-    BackendSession, BackendSessionHost, DotGeneralConfig, GatherConfig, Tensor, TensorRead,
+use tenferro_runtime::{
+    DType, ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TracedTensor,
 };
+use tenferro_tensor::{DotGeneralConfig, Engine, GatherConfig, Tensor, TensorRead};
 
 #[path = "../../examples/cpu_gap_mwe.rs"]
 mod cpu_gap_mwe;
@@ -283,12 +283,84 @@ fn param_str<'a>(params: &'a Value, key: &str) -> Result<&'a str> {
         .ok_or_else(|| format!("case parameter {key} missing").into())
 }
 
-fn eager_runtime(backend: CpuBackend) -> Result<Arc<EagerRuntime>> {
-    Ok(EagerRuntime::with_cpu_backend(backend)?)
+/// Enter the caller-held CPU engine for one operation sequence.
+///
+/// tenferro-rs #2206 removed backend sessions: the engine the caller holds is
+/// already the execution scope, so entering it is a plain borrow. The spelling
+/// is kept because the diagnostics below report which boundary they measure.
+trait EngineScope {
+    fn with_backend_session<R>(
+        &mut self,
+        f: impl FnOnce(&mut dyn Engine) -> R,
+    ) -> tenferro_tensor::Result<R>;
 }
 
-fn eager_const(runtime: &Arc<EagerRuntime>, tensor: Tensor) -> Result<EagerTensor> {
-    Ok(runtime.with_eager_session(|s| s.constant_from(tensor))?)
+impl EngineScope for CpuEngine {
+    fn with_backend_session<R>(
+        &mut self,
+        f: impl FnOnce(&mut dyn Engine) -> R,
+    ) -> tenferro_tensor::Result<R> {
+        Ok(f(self))
+    }
+}
+
+/// The pre-#2206 held-session spelling used by the umbrella cases: borrow the
+/// caller-held engine for a whole case. tenferro-rs #2206 removed held CPU
+/// sessions, so opening one is a borrow and closing it is a no-op.
+struct HeldEngine<'a> {
+    engine: &'a mut CpuEngine,
+}
+
+impl HeldEngine<'_> {
+    fn with_session<R>(&mut self, f: impl FnOnce(&mut dyn Engine) -> R) -> R {
+        f(self.engine)
+    }
+
+    fn close(self) -> tenferro_tensor::Result<()> {
+        Ok(())
+    }
+}
+
+trait OpenHeldSession {
+    fn open_session(&mut self) -> Result<HeldEngine<'_>>;
+}
+
+impl OpenHeldSession for CpuEngine {
+    fn open_session(&mut self) -> Result<HeldEngine<'_>> {
+        Ok(HeldEngine { engine: self })
+    }
+}
+
+/// The caller-held eager runtime and the caller-held engine every eager call
+/// borrows (tenferro-rs #2206). Both are built once per case, outside timing.
+struct EagerSetup {
+    runtime: Arc<EagerRuntime>,
+    engine: CpuEngine,
+}
+
+fn eager_runtime() -> Result<EagerSetup> {
+    Ok(EagerSetup {
+        runtime: EagerRuntime::new()?,
+        engine: tenferro_einsum_benchmark::cpu_engine(None)?,
+    })
+}
+
+impl EagerSetup {
+    fn session<T, E: From<tenferro_ad::Error>>(
+        &mut self,
+        f: impl FnOnce(&mut EagerSession<'_>) -> std::result::Result<T, E>,
+    ) -> std::result::Result<T, E> {
+        let runtime = Arc::clone(&self.runtime);
+        runtime.with_eager_session(&mut self.engine, f)
+    }
+
+    fn to_tensor(&mut self, tensor: &EagerTensor) -> Result<Tensor> {
+        Ok(tensor.to_tensor(&mut self.engine)?)
+    }
+}
+
+fn eager_const(runtime: &mut EagerSetup, tensor: Tensor) -> Result<EagerTensor> {
+    Ok(runtime.session(|s| s.constant_from(tensor))?)
 }
 
 // ---------------------------------------------------------------------------
@@ -324,19 +396,19 @@ fn decode_projection(params: &Value, timing: &Timing, threads: usize) -> Result<
     let cfg = matmul_config(&[0], &[0]);
     let (error, measurement, timer, outside): (f64, Measurement, Vec<&str>, Vec<&str>) = match arm {
         "eager-shared" | "eager-per-call" => {
-            let runtime = eager_runtime(CpuBackend::new())?;
+            let mut runtime = eager_runtime()?;
             let xt = eager_const(
-                &runtime,
+                &mut runtime,
                 Tensor::from_vec_col_major(vec![din, len], x.clone())?,
             )?;
             let wt = eager_const(
-                &runtime,
+                &mut runtime,
                 Tensor::from_vec_col_major(vec![din, dout], w.clone())?,
             )?;
-            let y = runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))?;
-            let error = check(y.to_tensor()?.as_slice::<f32>()?)?;
+            let y = runtime.session(|s| s.dot_general(&xt, &wt, cfg.clone()))?;
+            let error = check(runtime.to_tensor(&y)?.as_slice::<f32>()?)?;
             if arm == "eager-shared" {
-                let measurement = runtime.with_eager_session(|s| {
+                let measurement = runtime.session(|s| {
                     measure(timing, out_bytes, || {
                         Ok(s.dot_general(&xt, &wt, cfg.clone())?)
                     })
@@ -349,7 +421,7 @@ fn decode_projection(params: &Value, timing: &Timing, threads: usize) -> Result<
                 )
             } else {
                 let measurement = measure(timing, out_bytes, || {
-                    Ok(runtime.with_eager_session(|s| s.dot_general(&xt, &wt, cfg.clone()))?)
+                    Ok(runtime.session(|s| s.dot_general(&xt, &wt, cfg.clone()))?)
                 })?;
                 (
                     error,
@@ -453,21 +525,21 @@ fn decode_projection(params: &Value, timing: &Timing, threads: usize) -> Result<
 fn copy_volume(params: &Value) -> Result<CaseOutcome> {
     let (d, len) = (param_usize(params, "d")?, param_usize(params, "len")?);
     let repeats = 16usize;
-    let runtime = eager_runtime(CpuBackend::new())?;
+    let mut runtime = eager_runtime()?;
     let x = eager_const(
-        &runtime,
+        &mut runtime,
         Tensor::from_vec_col_major(vec![d, len], values_f32(d * len, 3))?,
     )?;
     let v = eager_const(
-        &runtime,
+        &mut runtime,
         Tensor::from_vec_col_major(vec![d], values_f32(d, 4))?,
     )?;
     let w = eager_const(
-        &runtime,
+        &mut runtime,
         Tensor::from_vec_col_major(vec![d, d], values_f32(d * d, 5))?,
     )?;
     let eps = eager_const(
-        &runtime,
+        &mut runtime,
         Tensor::from_vec_col_major(vec![len], vec![1e-5f32; len])?,
     )?;
     let full = d * len * 4;
@@ -515,11 +587,11 @@ fn copy_volume(params: &Value) -> Result<CaseOutcome> {
         ),
     ];
     for (name, output_bytes, op) in &ops {
-        runtime.with_eager_session(|s| op(s))?;
+        runtime.session(|s| op(s))?;
         let (_, allocations, bytes) = count_allocations(|| {
             let mut kept = Vec::with_capacity(repeats);
             for _ in 0..repeats {
-                kept.push(runtime.with_eager_session(|s| op(s))?);
+                kept.push(runtime.session(|s| op(s))?);
             }
             black_box(&kept);
             Ok(())
@@ -552,7 +624,7 @@ fn copy_volume(params: &Value) -> Result<CaseOutcome> {
 fn gemm_mm256(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let n = param_usize(params, "n")?;
     let dtype = param_str(params, "dtype")?;
-    let mut backend = CpuBackend::with_threads(1)?;
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(1))?;
     let cfg = matmul_config(&[1], &[0]);
     let (a, b, expected) = match dtype {
         "f64" => {
@@ -673,7 +745,7 @@ fn rank1_dot(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                 )
             };
             let cfg = matmul_config(&[0], &[0]);
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
             let (error, measurement) =
                 backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
                     let out = s.dot_general_read(
@@ -777,7 +849,7 @@ fn small_solves(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
         }
         worst
     };
-    let mut backend = CpuBackend::new();
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
     let bytes = batch * k * k * 8;
     let (error, measurement, timer) = match arm {
         "solve-loop" | "triangular-solve-loop" => {
@@ -791,7 +863,7 @@ fn small_solves(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                 })
                 .collect::<Result<_>>()?;
             let triangular = arm == "triangular-solve-loop";
-            let one = |s: &mut dyn BackendSession, a: &Tensor, b: &Tensor| -> Result<Tensor> {
+            let one = |s: &mut dyn Engine, a: &Tensor, b: &Tensor| -> Result<Tensor> {
                 Ok(if triangular {
                     a.triangular_solve(b, true, true, false, true, s)?
                 } else {
@@ -867,29 +939,29 @@ fn small_solves(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
 
 fn backward_live_leaves(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let leaves = param_usize(params, "unrelated_leaves")?;
-    let runtime = eager_runtime(CpuBackend::new())?;
+    let mut runtime = eager_runtime()?;
     let a = EagerTensor::requires_grad_in(
         Tensor::from_vec_col_major(vec![2, 2], vec![1.0, 2.0, 3.0, 4.0])?,
-        runtime.clone(),
+        runtime.runtime.clone(),
     )?;
     let b = EagerTensor::requires_grad_in(
         Tensor::from_vec_col_major(vec![2, 2], vec![0.5, -1.0, 1.5, 2.0])?,
-        runtime.clone(),
+        runtime.runtime.clone(),
     )?;
     // Unrelated leaves stay alive for the whole case; they never reach the loss.
     let unrelated: Vec<EagerTensor> = (0..leaves)
         .map(|i| {
             EagerTensor::requires_grad_in(
                 Tensor::from_vec_col_major(vec![2, 2], values(4, 100 + i as u64))?,
-                runtime.clone(),
+                runtime.runtime.clone(),
             )
             .map_err(Into::into)
         })
         .collect::<Result<_>>()?;
-    let workflow = || -> Result<()> {
-        let c = runtime.with_eager_session(|s| s.matmul(&a, &b))?;
-        let loss = runtime.with_eager_session(|s| s.reduce_sum(&c, None))?;
-        loss.backward()?;
+    let mut workflow = || -> Result<()> {
+        let c = runtime.session(|s| s.matmul(&a, &b))?;
+        let loss = runtime.session(|s| s.reduce_sum(&c, None))?;
+        loss.backward(&mut runtime.engine)?;
         Ok(())
     };
     workflow()?;
@@ -968,15 +1040,22 @@ fn tanh_chain(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
             }
             let program = GraphCompiler::new()
                 .compile_with_input_specs(&y, &[(&x_in, DType::F32, &[rows, cols])])?;
-            let backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
             let mut builder = Runtime::builder();
             builder.register_engine(runtime_engine_registration(&backend)?)?;
             let runtime = builder.build()?;
-            let prepared = runtime.prepare_compiled(&program, &[&x_t])?;
-            let out = runtime.run_prepared(&prepared, &[&x_t])?;
-            let error = check(out[0].as_slice::<f32>()?)?;
+            let reads = [TensorRead::from_tensor(&x_t)];
+            let target = ExecutionEngine::target(&backend);
+            let prepared = runtime.prepare(&program, &reads, std::slice::from_ref(&target))?;
+            let out = runtime.run(&mut [&mut backend], &prepared, &reads)?;
+            let out = out
+                .into_iter()
+                .next()
+                .ok_or("prepared tanh chain returned no output")?
+                .into_tensor(&mut backend)?;
+            let error = check(out.as_slice::<f32>()?)?;
             let measurement = measure(timing, bytes, || {
-                Ok(runtime.run_prepared(&prepared, &[&x_t])?)
+                Ok(runtime.run(&mut [&mut backend], &prepared, &reads)?)
             })?;
             let regions = format!("{:?}", prepared.elementwise_region_summary());
             let counts = format!("{:?}", prepared.elementwise_region_execution_counts());
@@ -984,7 +1063,7 @@ fn tanh_chain(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                 error,
                 measurement,
                 vec![
-                    "run_prepared (runtime-internal session entry)",
+                    "Runtime::run on the caller-held engine",
                     "fused region execution",
                     "output_allocation",
                 ],
@@ -992,25 +1071,24 @@ fn tanh_chain(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
             )
         }
         "eager-shared" => {
-            let runtime = eager_runtime(CpuBackend::new())?;
+            let mut runtime = eager_runtime()?;
             let x = eager_const(
-                &runtime,
+                &mut runtime,
                 Tensor::from_vec_col_major(vec![rows, cols], data.clone())?,
             )?;
-            let (error, measurement) =
-                runtime.with_eager_session(|s| -> Result<(f64, Measurement)> {
-                    let mut chain_once = || -> Result<EagerTensor> {
-                        let mut y = s.tanh(&x)?;
-                        for _ in 1..chain {
-                            y = s.tanh(&y)?;
-                        }
-                        Ok(y)
-                    };
-                    let y = chain_once()?;
-                    let error = check(y.to_tensor()?.as_slice::<f32>()?)?;
-                    let measurement = measure(timing, bytes, chain_once)?;
-                    Ok((error, measurement))
-                })?;
+            let (error, measurement) = runtime.session(|s| -> Result<(f64, Measurement)> {
+                let mut chain_once = || -> Result<EagerTensor> {
+                    let mut y = s.tanh(&x)?;
+                    for _ in 1..chain {
+                        y = s.tanh(&y)?;
+                    }
+                    Ok(y)
+                };
+                let y = chain_once()?;
+                let error = check(y.value()?.as_slice::<f32>()?)?;
+                let measurement = measure(timing, bytes, chain_once)?;
+                Ok((error, measurement))
+            })?;
             (
                 error,
                 measurement,
@@ -1030,7 +1108,7 @@ fn tanh_chain(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
         outside_timer: vec![
             "backend/runtime construction",
             "trace and compile",
-            "prepare_compiled",
+            "prepare",
             "input_construction",
             "eager session entry (eager arm)",
             "correctness_check",
@@ -1071,81 +1149,86 @@ fn composed_norm(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
         .collect::<Vec<_>>();
     let bd = values_f32(d, 32);
     let eps = 1e-5f32;
-    let runtime = eager_runtime(CpuBackend::new())?;
+    let mut runtime = eager_runtime()?;
     let x = eager_const(
-        &runtime,
+        &mut runtime,
         Tensor::from_vec_col_major(shape.to_vec(), xd.clone())?,
     )?;
-    let weight = eager_const(&runtime, Tensor::from_vec_col_major(vec![d], wd.clone())?)?;
-    let bias = eager_const(&runtime, Tensor::from_vec_col_major(vec![d], bd.clone())?)?;
+    let weight = eager_const(
+        &mut runtime,
+        Tensor::from_vec_col_major(vec![d], wd.clone())?,
+    )?;
+    let bias = eager_const(
+        &mut runtime,
+        Tensor::from_vec_col_major(vec![d], bd.clone())?,
+    )?;
     let eps_t = eager_const(
-        &runtime,
+        &mut runtime,
         Tensor::from_vec_col_major(vec![len, batch], vec![eps; len * batch])?,
     )?;
     let inv_d = 1.0 / d as f64;
-    let (error, measurement, ops) =
-        runtime.with_eager_session(|s| -> Result<(f64, Measurement, usize)> {
-            let mut forward = || -> Result<EagerTensor> {
-                Ok(if single && layer {
-                    s.layer_norm(&x, 0, Some(&weight), Some(&bias), eps as f64)?
-                } else if single {
-                    s.rms_norm(&x, 0, Some(&weight), None, eps as f64)?
-                } else if layer {
-                    let sum = s.reduce_sum(&x, Some(&[0]))?;
-                    let mean = s.scale_real(&sum, inv_d)?;
-                    let mean = s.broadcast_in_dim(&mean, &shape, &[1, 2])?;
-                    let centered = s.sub(&x, &mean)?;
-                    let sq = s.reduce_sum_squares(&centered, Some(&[0]))?;
-                    let var = s.scale_real(&sq, inv_d)?;
-                    let var = s.add(&var, &eps_t)?;
-                    let inv = s.rsqrt(&var)?;
-                    let inv = s.broadcast_in_dim(&inv, &shape, &[1, 2])?;
-                    let normed = s.mul(&centered, &inv)?;
-                    let w = s.broadcast_in_dim(&weight, &shape, &[0])?;
-                    let scaled = s.mul(&normed, &w)?;
-                    let b = s.broadcast_in_dim(&bias, &shape, &[0])?;
-                    s.add(&scaled, &b)?
-                } else {
-                    let sq = s.reduce_sum_squares(&x, Some(&[0]))?;
-                    let ms = s.scale_real(&sq, inv_d)?;
-                    let ms = s.add(&ms, &eps_t)?;
-                    let inv = s.rsqrt(&ms)?;
-                    let inv = s.broadcast_in_dim(&inv, &shape, &[1, 2])?;
-                    let normed = s.mul(&x, &inv)?;
-                    let w = s.broadcast_in_dim(&weight, &shape, &[0])?;
-                    s.mul(&normed, &w)?
-                })
+    let (error, measurement, ops) = runtime.session(|s| -> Result<(f64, Measurement, usize)> {
+        let mut forward = || -> Result<EagerTensor> {
+            Ok(if single && layer {
+                s.layer_norm(&x, 0, Some(&weight), Some(&bias), eps as f64)?
+            } else if single {
+                s.rms_norm(&x, 0, Some(&weight), None, eps as f64)?
+            } else if layer {
+                let sum = s.reduce_sum(&x, Some(&[0]))?;
+                let mean = s.scale_real(&sum, inv_d)?;
+                let mean = s.broadcast_in_dim(&mean, &shape, &[1, 2])?;
+                let centered = s.sub(&x, &mean)?;
+                let sq = s.reduce_sum_squares(&centered, Some(&[0]))?;
+                let var = s.scale_real(&sq, inv_d)?;
+                let var = s.add(&var, &eps_t)?;
+                let inv = s.rsqrt(&var)?;
+                let inv = s.broadcast_in_dim(&inv, &shape, &[1, 2])?;
+                let normed = s.mul(&centered, &inv)?;
+                let w = s.broadcast_in_dim(&weight, &shape, &[0])?;
+                let scaled = s.mul(&normed, &w)?;
+                let b = s.broadcast_in_dim(&bias, &shape, &[0])?;
+                s.add(&scaled, &b)?
+            } else {
+                let sq = s.reduce_sum_squares(&x, Some(&[0]))?;
+                let ms = s.scale_real(&sq, inv_d)?;
+                let ms = s.add(&ms, &eps_t)?;
+                let inv = s.rsqrt(&ms)?;
+                let inv = s.broadcast_in_dim(&inv, &shape, &[1, 2])?;
+                let normed = s.mul(&x, &inv)?;
+                let w = s.broadcast_in_dim(&weight, &shape, &[0])?;
+                s.mul(&normed, &w)?
+            })
+        };
+        let y = forward()?;
+        let ys = y.value()?;
+        let ys = ys.as_slice::<f32>()?;
+        let mut worst = 0.0f64;
+        for col in 0..len * batch {
+            let xs: Vec<f64> = (0..d).map(|i| xd[i + col * d] as f64).collect();
+            let mean = if layer {
+                xs.iter().sum::<f64>() / d as f64
+            } else {
+                0.0
             };
-            let y = forward()?;
-            let ys = y.to_tensor()?;
-            let ys = ys.as_slice::<f32>()?;
-            let mut worst = 0.0f64;
-            for col in 0..len * batch {
-                let xs: Vec<f64> = (0..d).map(|i| xd[i + col * d] as f64).collect();
-                let mean = if layer {
-                    xs.iter().sum::<f64>() / d as f64
-                } else {
-                    0.0
-                };
-                let var = xs.iter().map(|v| (v - mean) * (v - mean)).sum::<f64>() / d as f64;
-                let inv = 1.0 / (var + eps as f64).sqrt();
-                for i in 0..d {
-                    let mut want = (xs[i] - mean) * inv * wd[i] as f64;
-                    if layer {
-                        want += bd[i] as f64;
-                    }
-                    worst = worst.max(rel_error(ys[i + col * d] as f64, want));
+            let var = xs.iter().map(|v| (v - mean) * (v - mean)).sum::<f64>() / d as f64;
+            let inv = 1.0 / (var + eps as f64).sqrt();
+            for i in 0..d {
+                let mut want = (xs[i] - mean) * inv * wd[i] as f64;
+                if layer {
+                    want += bd[i] as f64;
                 }
+                worst = worst.max(rel_error(ys[i + col * d] as f64, want));
             }
-            let error = check_tol(worst, 1e-4, norm)?;
-            let measurement = measure(timing, n * 4 * 4, forward)?;
-            let ops = match (single, layer) {
-                (true, _) => 1,
-                (false, true) => 13,
-                (false, false) => 8,
-            };
-            Ok((error, measurement, ops))
-        })?;
+        }
+        let error = check_tol(worst, 1e-4, norm)?;
+        let measurement = measure(timing, n * 4 * 4, forward)?;
+        let ops = match (single, layer) {
+            (true, _) => 1,
+            (false, true) => 13,
+            (false, false) => 8,
+        };
+        Ok((error, measurement, ops))
+    })?;
     Ok(CaseOutcome {
         max_rel_error: error,
         measurement: Some(measurement),
@@ -1179,17 +1262,18 @@ type Check<'a> = dyn Fn(&Tensor) -> Result<f64> + Sync + 'a;
 
 /// One eager op timed inside one eager session (entry outside the timer).
 fn time_eager_op(
-    runtime: &Arc<EagerRuntime>,
+    runtime: &mut EagerSetup,
     timing: &Timing,
     retained_bytes: usize,
     check: &Check<'_>,
     mut op: impl FnMut(&mut EagerSession<'_>) -> tenferro_ad::Result<EagerTensor> + Send,
 ) -> Result<(f64, Measurement)> {
-    runtime.with_eager_session(|s| -> Result<(f64, Measurement)> {
-        let error = check(&op(s)?.to_tensor()?)?;
-        let measurement = measure(timing, retained_bytes, || Ok(op(s)?))?;
-        Ok((error, measurement))
-    })
+    // The engine may be borrowed by only one session at a time, so the
+    // validation materialization and the timed calls use separate borrows.
+    let output = runtime.session(|s| op(s))?;
+    let error = check(&runtime.to_tensor(&output)?)?;
+    let measurement = runtime.session(|s| measure(timing, retained_bytes, || Ok(op(s)?)))?;
+    Ok((error, measurement))
 }
 
 /// One concrete-session op timed inside one `CpuBackend::new()` session.
@@ -1197,9 +1281,9 @@ fn time_session_op(
     timing: &Timing,
     retained_bytes: usize,
     check: &Check<'_>,
-    mut op: impl FnMut(&mut dyn BackendSession) -> tenferro_tensor::Result<Tensor> + Send,
+    mut op: impl FnMut(&mut dyn Engine) -> tenferro_tensor::Result<Tensor> + Send,
 ) -> Result<(f64, Measurement)> {
-    let mut backend = CpuBackend::new();
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
     backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
         let error = check(&op(s)?)?;
         let measurement = measure(timing, retained_bytes, || Ok(op(s)?))?;
@@ -1282,11 +1366,7 @@ fn eager_activation(
     }
 }
 
-fn session_activation(
-    s: &mut dyn BackendSession,
-    op: &str,
-    x: &Tensor,
-) -> tenferro_tensor::Result<Tensor> {
+fn session_activation(s: &mut dyn Engine, op: &str, x: &Tensor) -> tenferro_tensor::Result<Tensor> {
     match op {
         "erf" => x.erf(s),
         "sigmoid" => x.sigmoid(s),
@@ -1356,22 +1436,22 @@ fn activation(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let bytes = n * 4;
     let (error, measurement) = match arm {
         "eager-single-call" | "eager-composed" => {
-            let runtime = eager_runtime(CpuBackend::new())?;
-            let x = eager_const(&runtime, x_t)?;
+            let mut runtime = eager_runtime()?;
+            let x = eager_const(&mut runtime, x_t)?;
             if arm == "eager-single-call" {
-                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                time_eager_op(&mut runtime, timing, bytes, &check, |s| {
                     eager_activation(s, op, &x)
                 })?
             } else {
                 let one = eager_const(
-                    &runtime,
+                    &mut runtime,
                     Tensor::from_vec_col_major(vec![rows, cols], vec![1.0f32; n])?,
                 )?;
                 let zero = eager_const(
-                    &runtime,
+                    &mut runtime,
                     Tensor::from_vec_col_major(vec![rows, cols], vec![0.0f32; n])?,
                 )?;
-                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                time_eager_op(&mut runtime, timing, bytes, &check, |s| {
                     composed_activation(s, op, &x, &one, &zero)
                 })?
             }
@@ -1441,11 +1521,11 @@ fn softmax_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let bytes = n * 4;
     let (error, measurement) = match arm {
         "eager-single-call" | "eager-composed" => {
-            let runtime = eager_runtime(CpuBackend::new())?;
-            let x = eager_const(&runtime, x_t)?;
+            let mut runtime = eager_runtime()?;
+            let x = eager_const(&mut runtime, x_t)?;
             if arm == "eager-single-call" {
-                let m = eager_const(&runtime, mask_t)?;
-                time_eager_op(&runtime, timing, bytes, &check, |s| match op {
+                let m = eager_const(&mut runtime, mask_t)?;
+                time_eager_op(&mut runtime, timing, bytes, &check, |s| match op {
                     "softmax" => s.softmax(&x, 0),
                     "log_softmax" => s.log_softmax(&x, 0),
                     _ => s.masked_softmax(&x, &m, 0),
@@ -1455,14 +1535,14 @@ fn softmax_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
                 // to the full shape outside timing (one select inside).
                 let full_mask: Vec<bool> = (0..n).map(|i| mask[i % (len * len)]).collect();
                 let m = eager_const(
-                    &runtime,
+                    &mut runtime,
                     Tensor::from_vec_col_major(shape.clone(), full_mask)?,
                 )?;
                 let neg_inf = eager_const(
-                    &runtime,
+                    &mut runtime,
                     Tensor::from_vec_col_major(shape.clone(), vec![f32::NEG_INFINITY; n])?,
                 )?;
-                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                time_eager_op(&mut runtime, timing, bytes, &check, |s| {
                     let selected;
                     let x = if masked {
                         selected = s.select(&m, &x, &neg_inf)?;
@@ -1524,14 +1604,14 @@ fn reduce_mean_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let bytes = cols * 4;
     let (error, measurement) = match arm {
         "eager-single-call" | "eager-composed" => {
-            let runtime = eager_runtime(CpuBackend::new())?;
-            let x = eager_const(&runtime, x_t)?;
+            let mut runtime = eager_runtime()?;
+            let x = eager_const(&mut runtime, x_t)?;
             if arm == "eager-single-call" {
-                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                time_eager_op(&mut runtime, timing, bytes, &check, |s| {
                     s.reduce_mean(&x, Some(&[0]))
                 })?
             } else {
-                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                time_eager_op(&mut runtime, timing, bytes, &check, |s| {
                     let sum = s.reduce_sum(&x, Some(&[0]))?;
                     s.scale_real(&sum, 1.0 / rows as f64)
                 })?
@@ -1585,11 +1665,11 @@ fn take_along_axis_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> 
     let bytes = n * n * batch * 8;
     let (error, measurement) = match arm {
         "eager-single-call" | "eager-gather-prebuilt" => {
-            let runtime = eager_runtime(CpuBackend::new())?;
-            let x = eager_const(&runtime, x_t)?;
+            let mut runtime = eager_runtime()?;
+            let x = eager_const(&mut runtime, x_t)?;
             if arm == "eager-single-call" {
-                let i = eager_const(&runtime, idx_t)?;
-                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                let i = eager_const(&mut runtime, idx_t)?;
+                time_eager_op(&mut runtime, timing, bytes, &check, |s| {
                     s.take_along_axis(&x, &i, 0)
                 })?
             } else {
@@ -1598,7 +1678,7 @@ fn take_along_axis_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> 
                 let mut tuples = idx.clone();
                 tuples.extend((0..batch).flat_map(|b| std::iter::repeat_n(b as i64, n)));
                 let t = eager_const(
-                    &runtime,
+                    &mut runtime,
                     Tensor::from_vec_col_major(vec![n, batch, 2], tuples)?,
                 )?;
                 let config = GatherConfig {
@@ -1608,7 +1688,7 @@ fn take_along_axis_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> 
                     index_vector_dim: 2,
                     slice_sizes: vec![1, n, 1],
                 };
-                time_eager_op(&runtime, timing, bytes, &check, |s| {
+                time_eager_op(&mut runtime, timing, bytes, &check, |s| {
                     s.gather(&x, &t, config.clone())
                 })?
             }
@@ -1662,7 +1742,7 @@ fn small_contraction_pool_hop(params: &Value, timing: &Timing) -> Result<CaseOut
         }
         check_tol(worst, 1e-12, "abcd,dbef->acef")
     };
-    let one = |s: &mut dyn BackendSession| -> Result<Tensor> {
+    let one = |s: &mut dyn Engine| -> Result<Tensor> {
         Ok(s.dot_general_read(
             TensorRead::from_tensor(&a),
             TensorRead::from_tensor(&b),
@@ -1673,9 +1753,9 @@ fn small_contraction_pool_hop(params: &Value, timing: &Timing) -> Result<CaseOut
     let (error, measurement, timer, construction) = match arm {
         "per-call-default-pool" | "per-call-threads1" => {
             let mut backend = if arm == "per-call-default-pool" {
-                CpuBackend::new()
+                tenferro_einsum_benchmark::cpu_engine(None)?
             } else {
-                CpuBackend::with_threads(1)?
+                tenferro_einsum_benchmark::cpu_engine(Some(1))?
             };
             let error = check(&backend.with_backend_session(|s| one(s))??)?;
             let measurement = measure(timing, bytes, || {
@@ -1697,7 +1777,7 @@ fn small_contraction_pool_hop(params: &Value, timing: &Timing) -> Result<CaseOut
             )
         }
         "shared-session-default-pool" => {
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
             let (error, measurement) =
                 backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
                     let error = check(&one(s)?)?;

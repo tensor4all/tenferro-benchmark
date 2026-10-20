@@ -1,7 +1,8 @@
 //! Whole-sequence planning latency; counters run in a separate untimed pass.
 use super::*;
+use tenferro_tensor::TensorDot;
 
-fn counters(b: &CudaBackend) -> Result<Value> {
+fn counters(b: &CudaEngine) -> Result<Value> {
     let p = b.cutensor_plan_cache_stats()?;
     let w = b.cutensor_workspace_stats()?;
     let r = b.cutensor_workspace_retirement_stats()?;
@@ -31,12 +32,11 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
     };
     let mut bk = backend(device)?;
     let rt = bk.runtime().clone();
-    let observer = bk.clone();
     let cfg = DotGeneralConfig {
-        lhs_contracting_dims: vec![2].into(),
-        rhs_contracting_dims: vec![0].into(),
-        lhs_batch_dims: vec![1].into(),
-        rhs_batch_dims: vec![1].into(),
+        lhs_contracting_dims: [2].as_slice().into(),
+        rhs_contracting_dims: [0].as_slice().into(),
+        lhs_batch_dims: [1].as_slice().into(),
+        rhs_batch_dims: [1].as_slice().into(),
     };
     let mut operands = Vec::with_capacity(keys);
     let mut references = Vec::with_capacity(keys);
@@ -164,10 +164,9 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
         let mut batch = || -> Result<u128> {
             // Clear only CUDA extension-owned plans/workspace. CubeCL compiled
             // kernels, cuTENSOR library handle and allocator pools remain initialized.
-            observer.clear_cuda_extension_cache()?;
+            s.clear_cuda_extension_cache()?;
             rt.synchronize()?;
-            observer
-                .set_cutensor_plan_cache_max_entries(std::num::NonZeroUsize::new(64).unwrap())?;
+            s.set_cutensor_plan_cache_max_entries(std::num::NonZeroUsize::new(64).unwrap())?;
             if mode.ends_with("warm") || mode == "equal-shape-strides" {
                 for (a, b) in &reads {
                     let out = s.dot_general_read(a.clone(), b.clone(), &cfg)?;
@@ -181,7 +180,7 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
                 .collect::<Vec<_>>();
             let mut outputs = Vec::with_capacity(order.len());
             if instrument {
-                observations.push(json!({"phase":"before","stats":counters(&observer)?}));
+                observations.push(json!({"phase":"before","stats":counters(s)?}));
             }
             let start = (!instrument && timing.samples > 0).then(Instant::now);
             for (index, item) in prepared.iter_mut().enumerate() {
@@ -189,7 +188,7 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
                 outputs.push(s.dot_general_read(a, b, &cfg)?);
                 if instrument {
                     observations.push(json!({"phase":"enqueue","index":index,
-                    "key":order[index],"stats":counters(&observer)?}));
+                    "key":order[index],"stats":counters(s)?}));
                 }
             }
             let queued = start.map(|t| t.elapsed().as_nanos());
@@ -199,13 +198,13 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
                 enqueue_ns.push(ns);
             }
             if instrument {
-                observations.push(json!({"phase":"completion","stats":counters(&observer)?}));
+                observations.push(json!({"phase":"completion","stats":counters(s)?}));
             }
             validate(&outputs)?;
             drop(outputs);
             rt.synchronize()?;
             if instrument {
-                observations.push(json!({"phase":"drop","stats":counters(&observer)?}));
+                observations.push(json!({"phase":"drop","stats":counters(s)?}));
             }
             Ok(elapsed)
         };

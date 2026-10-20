@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
-use tenferro_cpu::CpuBackend;
+use tenferro_cpu::CpuEngine;
 use tenferro_einsum::{EagerSessionEinsumExt, TraceContextEinsumExt};
 use tenferro_einsum_benchmark::tensornetwork::{
     build_cpu_eager_inputs as build_tensor_network_cpu_inputs, contract_tree_eager,
@@ -20,13 +20,14 @@ use tenferro_einsum_benchmark::tensornetwork::{
     TensorNetworkFile, TensorNetworkSpec, TreeNode,
 };
 use tenferro_gpu::cuda::{
-    cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaBackend,
+    cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaEngine,
     CudaRuntime,
 };
 use tenferro_linalg::{EagerSessionLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::program::ProgramInputSpec;
 use tenferro_runtime::{
-    DType, DotGeneralConfig, Error as TfError, GraphCompiler, Runtime, TraceContext, TracedTensor,
+    CompiledGraph, DType, DotGeneralConfig, Error as TfError, ExecutionEngine, GraphCompiler,
+    Prepared, Runtime, TensorRead, TraceContext, TracedTensor,
 };
 use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 
@@ -60,20 +61,26 @@ fn ramp_gpu_clocks(mut step: impl FnMut() -> Result<(), String>) -> Result<(), S
     Ok(())
 }
 
+/// Wrap an uploaded device tensor as an eager leaf.
+///
+/// tenferro-rs #2206: a device tensor needs the caller-held engine to become an
+/// eager leaf, so it is created through one eager session.
 fn eager_from_tensor_in(
+    engine: &mut CudaEngine,
     tensor: Tensor,
     ctx: std::sync::Arc<EagerRuntime>,
 ) -> Result<EagerTensor, String> {
-    EagerTensor::from_tensor_in(tensor, ctx).map_err(|e| format!("{e}"))
+    ctx.with_eager_session(engine, |session| session.constant_from(tensor))
+        .map_err(|e| format!("{e}"))
 }
 
 trait EagerTensorDataCompat {
-    fn data(&self) -> Result<Tensor, String>;
+    fn data(&self, engine: &mut CudaEngine) -> Result<Tensor, String>;
 }
 
 impl EagerTensorDataCompat for EagerTensor {
-    fn data(&self) -> Result<Tensor, String> {
-        self.to_tensor().map_err(|e| format!("{e}"))
+    fn data(&self, engine: &mut CudaEngine) -> Result<Tensor, String> {
+        self.to_tensor(engine).map_err(|e| format!("{e}"))
     }
 }
 
@@ -286,6 +293,7 @@ fn apply_sampling_record(record: &mut Value, sampling: &Value) {
 fn build_gpu_eager_inputs(
     network: &TensorNetworkFile,
     spec: &TensorNetworkSpec,
+    engine: &mut CudaEngine,
     ctx: std::sync::Arc<EagerRuntime>,
     runtime: &CudaRuntime,
 ) -> Result<Vec<EagerTensor>, String> {
@@ -296,7 +304,7 @@ fn build_gpu_eager_inputs(
             let shape = vec![spec.bond_dim; ixs.len()];
             let cpu = tensor_f32_col_major(&shape, spec.fill_value)?;
             let gpu = upload_tensor(runtime, &cpu).map_err(|e| format!("upload: {e}"))?;
-            Ok(eager_from_tensor_in(gpu, ctx.clone())?)
+            Ok(eager_from_tensor_in(engine, gpu, ctx.clone())?)
         })
         .collect()
 }
@@ -318,20 +326,31 @@ fn build_trace_inputs(
         .collect()
 }
 
-fn cuda_runtime_with_extensions(backend: &CudaBackend, linalg: bool) -> Result<Runtime, String> {
+/// Open the caller-held CUDA engine the runner passes to every operation.
+///
+/// The engine carries the runtime engine id the extension modules below are
+/// installed under (tenferro-rs #2206: an engine's id is its registration key).
+fn open_cuda_engine(device_ordinal: usize) -> Result<CudaEngine, String> {
+    let device = tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
+        u32::try_from(device_ordinal).map_err(|e| format!("device ordinal: {e}"))?,
+    );
+    let engine_id = tenferro_runtime::EngineId::new("benchmark.cuda")
+        .map_err(|e| format!("CUDA engine id: {e}"))?;
+    Ok(CudaEngine::open(device)
+        .map_err(|e| format!("compute engine: {e}"))?
+        .with_runtime_engine_id(engine_id))
+}
+
+fn cuda_runtime_with_extensions(engine: &CudaEngine, linalg: bool) -> Result<Runtime, String> {
     let mut builder = Runtime::builder();
     builder
         .register_engine(
-            cuda_runtime_engine_registration(
-                backend,
-                tenferro_runtime::EngineId::new("benchmark.cuda").map_err(|e| e.to_string())?,
-            )
-            .map_err(|e| format!("CUDA engine: {e}"))?,
+            cuda_runtime_engine_registration(engine).map_err(|e| format!("CUDA engine: {e}"))?,
         )
         .map_err(|e| format!("register CUDA engine: {e}"))?;
     builder
         .install_extension_module(
-            tenferro_einsum::extension_module::<CudaBackend>(
+            tenferro_einsum::extension_module::<CudaEngine>(
                 tenferro_runtime::EngineId::new("benchmark.cuda")
                     .map_err(|e| format!("CUDA engine id: {e}"))?,
             )
@@ -341,7 +360,7 @@ fn cuda_runtime_with_extensions(backend: &CudaBackend, linalg: bool) -> Result<R
     if linalg {
         builder
             .install_extension_module(
-                tenferro_linalg::extension_module::<CudaBackend>(
+                tenferro_linalg::extension_module::<CudaEngine>(
                     tenferro_runtime::EngineId::new("benchmark.cuda")
                         .map_err(|e| format!("CUDA engine id: {e}"))?,
                 )
@@ -354,8 +373,8 @@ fn cuda_runtime_with_extensions(backend: &CudaBackend, linalg: bool) -> Result<R
         .map_err(|e| format!("build CUDA runtime: {e}"))
 }
 
-fn cpu_runtime_with_extensions(linalg: bool) -> Result<Runtime, String> {
-    let backend = CpuBackend::new();
+fn cpu_runtime_with_extensions(linalg: bool) -> Result<(Runtime, CpuEngine), String> {
+    let backend = tenferro_einsum_benchmark::cpu_engine(None)?;
     let mut builder = Runtime::builder();
     builder
         .register_engine(
@@ -365,7 +384,7 @@ fn cpu_runtime_with_extensions(linalg: bool) -> Result<Runtime, String> {
         .map_err(|e| format!("register CPU engine: {e}"))?;
     builder
         .install_extension_module(
-            tenferro_einsum::extension_module::<CpuBackend>(
+            tenferro_einsum::extension_module::<CpuEngine>(
                 tenferro_cpu::runtime_engine_id().map_err(|e| format!("CPU engine id: {e}"))?,
             )
             .map_err(|e| format!("einsum extension: {e}"))?,
@@ -374,21 +393,26 @@ fn cpu_runtime_with_extensions(linalg: bool) -> Result<Runtime, String> {
     if linalg {
         builder
             .install_extension_module(
-                tenferro_linalg::extension_module::<CpuBackend>(
+                tenferro_linalg::extension_module::<CpuEngine>(
                     tenferro_cpu::runtime_engine_id().map_err(|e| format!("CPU engine id: {e}"))?,
                 )
                 .map_err(|e| format!("linalg extension: {e}"))?,
             )
             .map_err(|e| format!("install linalg extension: {e}"))?;
     }
-    builder
+    let runtime = builder
         .build()
-        .map_err(|e| format!("build CPU runtime: {e}"))
+        .map_err(|e| format!("build CPU runtime: {e}"))?;
+    Ok((runtime, backend))
 }
 
-fn scalar_f32_from_eager_gpu(result: &EagerTensor, runtime: &CudaRuntime) -> Result<f32, String> {
+fn scalar_f32_from_eager_gpu(
+    engine: &mut CudaEngine,
+    result: &EagerTensor,
+    runtime: &CudaRuntime,
+) -> Result<f32, String> {
     let downloaded =
-        download_tensor(runtime, &result.data()?).map_err(|e| format!("download: {e}"))?;
+        download_tensor(runtime, &result.data(engine)?).map_err(|e| format!("download: {e}"))?;
     scalar_f32_tensor(&downloaded)
 }
 
@@ -416,16 +440,15 @@ fn run_eager_tensor_network(
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
         // backend are rejected by the compute engine and by the traced runtime.
-        let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("compute backend: {e}"))?;
-        let transfer_bk = compute_bk.clone();
-        let ctx = EagerRuntime::with_cuda_backend(compute_bk).map_err(|e| e.to_string())?;
+        let mut compute_bk = open_cuda_engine(device_ordinal)?;
+        // Transfers use the compute engine's own runtime (tenferro-rs #2206:
+        // one engine owns one logical stream and allocation domain).
+        let transfer_rt = compute_bk.runtime().clone();
+        let ctx = EagerRuntime::new().map_err(|e| e.to_string())?;
         let backend_end = case_start.elapsed().as_nanos();
         let gpu_inputs =
-            build_gpu_eager_inputs(&network, &spec, ctx.clone(), transfer_bk.runtime())?;
-        sync_cubecl_runtime(transfer_bk.runtime())?;
+            build_gpu_eager_inputs(&network, &spec, &mut compute_bk, ctx.clone(), &transfer_rt)?;
+        sync_cubecl_runtime(&transfer_rt)?;
         let prepared_tree =
             tenferro_einsum_benchmark::tensornetwork::PreparedEagerTree::new(&network.tree)?;
 
@@ -433,7 +456,8 @@ fn run_eager_tensor_network(
         let _guard = ctx.no_grad();
         let (times_ms, outputs, mut sampling) = sample_eager(
             &ctx,
-            transfer_bk.runtime(),
+            &mut compute_bk,
+            &transfer_rt,
             n_warmup,
             n_runs,
             device_ordinal,
@@ -445,7 +469,7 @@ fn run_eager_tensor_network(
         )?;
         let validation_start = case_start.elapsed().as_nanos();
         let cpu_scalar = constant_tree_scalar(&network.tree, &spec)?;
-        let gpu_scalar = scalar_f32_from_eager_gpu(&outputs[0], transfer_bk.runtime())?;
+        let gpu_scalar = scalar_f32_from_eager_gpu(&mut compute_bk, &outputs[0], &transfer_rt)?;
         let (ver_status, max_abs, max_rel) =
             verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
 
@@ -539,17 +563,9 @@ fn run_eager_tensor_network(
 /// same trace path.
 const DEFERRED_BATCH_BACKEND: &str = "tenferro-cuda-trace-deferred-batch";
 
-/// Marker prefix for a deferred-batch preflight rejection.
+/// Prepared runs enqueued per timed throughput sample.
 ///
-/// `Runtime::begin_prepared_deferred` rejects a graph whose schedule is not one
-/// borrowed-session engine (or a session of another engine). That is an
-/// eligibility fact about the case, not a runtime failure, so it is reported as
-/// `unsupported` instead of falling back to the per-call latency route.
-const DEFERRED_PREFLIGHT_PREFIX: &str = "deferred-batch-preflight: ";
-
-/// Deferred runs enqueued per timed throughput sample.
-///
-/// One `finish_prepared` retires the whole batch, so per-call time is
+/// One caller-side retirement covers the whole batch, so per-call time is
 /// `sample_ms / K`. `GPU_BENCH_DEFERRED_BATCH_K` overrides the default of 64.
 fn deferred_batch_k() -> usize {
     std::env::var("GPU_BENCH_DEFERRED_BATCH_K")
@@ -563,25 +579,45 @@ fn is_deferred_batch_backend(backend: &str) -> bool {
     backend == DEFERRED_BATCH_BACKEND
 }
 
-/// Enqueue `count` deferred prepared runs and retire the whole batch once.
+/// Enqueue `count` prepared runs on the caller-held engine and retire the whole
+/// batch once.
 ///
-/// The guard borrows its session and inputs for its own lifetime, so this takes
-/// exactly that lifetime instead of a fresh one per call.
-fn run_deferred_batch<'a>(
-    deferred: &mut tenferro_runtime::PreparedDeferred<'a>,
-    inputs: &'a [&'a Tensor],
+/// tenferro-rs #2206 removed `PreparedDeferred`/`run_prepared_deferred`: a GPU
+/// `Runtime::run` returns once its work is queued, so `K` runs back to back are
+/// `K` enqueues and one caller-side `synchronize` is the single retirement.
+fn run_deferred_batch(
+    runtime: &Runtime,
+    engine: &mut CudaEngine,
+    sync_rt: &CudaRuntime,
+    prepared: &Prepared,
+    reads: &[TensorRead<'_>],
     count: usize,
 ) -> Result<(f64, Vec<Vec<Tensor>>), String> {
     let start = Instant::now();
+    let mut runs = Vec::with_capacity(count);
     for _ in 0..count {
-        deferred
-            .run_prepared_deferred(inputs)
-            .map_err(|e| format!("deferred enqueue: {e}"))?;
+        runs.push(run_prepared_once(runtime, engine, prepared, reads)?);
     }
-    let runs = deferred
-        .finish_prepared()
-        .map_err(|e| format!("deferred finish: {e}"))?;
+    sync_cubecl_runtime(sync_rt)?;
     Ok((start.elapsed().as_secs_f64() * 1000.0, runs))
+}
+
+/// Run one prepared program on the caller-held engine and materialize its
+/// outputs into owned tensors.
+fn run_prepared_once(
+    runtime: &Runtime,
+    engine: &mut CudaEngine,
+    prepared: &Prepared,
+    reads: &[TensorRead<'_>],
+) -> Result<Vec<Tensor>, String> {
+    let outputs = runtime
+        .run(&mut [&mut *engine], prepared, reads)
+        .map_err(|e| format!("run: {e}"))?;
+    outputs
+        .into_iter()
+        .map(|output| output.into_tensor(&mut *engine))
+        .collect::<tenferro_tensor::Result<Vec<_>>>()
+        .map_err(|e| format!("output materialization: {e}"))
 }
 
 /// Resident bytes of one prepared-run output set, used to bound batch retention.
@@ -602,15 +638,15 @@ fn trace_output_bytes(outputs: &[Tensor]) -> usize {
 }
 
 /// Batch prepared-graph calls in one wall-clock interval, retaining every output
-/// until the interval's native synchronization.
+/// until the interval's device synchronization.
 ///
-/// Both `run_prepared` and `run_prepared_in` retire their own device work before
-/// returning, so each call's stream-retirement barrier stays inside the batch
-/// interval. This is the same sampling contract as the eager arm: session entry,
-/// input handles and compilation are outside the clock, operations per sample and
-/// raw batch durations are recorded, and outputs stay alive until the interval
-/// ends. With `GPU_BENCH_VERIFY_ONLY=1` one call runs through the same route with
-/// no clocks and returns the verification-only record contract.
+/// The call closure decides its own device-completion policy, so a per-call
+/// barrier (public-call latency) and one barrier per K-run batch (throughput)
+/// both stay inside the interval. Inputs, plans and compilation are outside the
+/// clock, operations per sample and raw batch durations are recorded, and outputs
+/// stay alive until the interval ends. With `GPU_BENCH_VERIFY_ONLY=1` one call
+/// runs through the same route with no clocks and returns the verification-only
+/// record contract.
 fn sample_trace_batches(
     rt: &CudaRuntime,
     setup_note: &str,
@@ -697,44 +733,69 @@ fn sample_trace_batches(
 /// scope. This preserves the public-call latency semantics used by
 /// `gpu/public_path_latency` and `gpu/planning_latency`: internal session entry
 /// is inside each timed call.
+/// Run one prepared program on a caller-held CPU engine (reference arm).
+fn run_cpu_reference(
+    runtime: &Runtime,
+    engine: &mut CpuEngine,
+    program: &CompiledGraph,
+    inputs: &[&Tensor],
+) -> Result<Vec<Tensor>, String> {
+    let reads: Vec<TensorRead<'_>> = inputs
+        .iter()
+        .map(|tensor| TensorRead::from_tensor(tensor))
+        .collect();
+    let target = ExecutionEngine::target(engine);
+    let prepared = runtime
+        .prepare(program, &reads, std::slice::from_ref(&target))
+        .map_err(|e| format!("prepare: {e}"))?;
+    runtime
+        .run(&mut [&mut *engine], &prepared, &reads)
+        .map_err(|e| format!("run: {e}"))?
+        .into_iter()
+        .map(|output| output.into_tensor(&mut *engine))
+        .collect::<tenferro_tensor::Result<Vec<_>>>()
+        .map_err(|e| format!("materialization: {e}"))
+}
+
 fn sample_trace_public(
     runtime: &Runtime,
-    prepared: &tenferro_runtime::PreparedCompiledGraph,
-    inputs: &[&Tensor],
+    engine: &mut CudaEngine,
+    prepared: &Prepared,
+    reads: &[TensorRead<'_>],
     n_warmup: usize,
     n_runs: usize,
     sync_rt: &CudaRuntime,
 ) -> Result<(Vec<f64>, Vec<Tensor>, Value), String> {
     sample_trace_batches(
         sync_rt,
-        "public Runtime::run_prepared per operation; internal session entry and each run's stream-retirement barrier inside the batch interval; inputs, plans and compilation outside clocks",
+        "public Runtime::run per operation on the caller-held engine; each run's device completion and the batch-edge synchronize are inside the batch interval; inputs, plans and compilation outside clocks",
         n_warmup,
         n_runs,
         || {
-            runtime
-                .run_prepared(prepared, inputs)
-                .map_err(|e| format!("run: {e}"))
+            // Public-call latency keeps one device completion per timed call.
+            let outputs = run_prepared_once(runtime, engine, prepared, reads)?;
+            sync_cubecl_runtime(sync_rt)?;
+            Ok(outputs)
         },
     )
 }
 
-/// Run a prepared graph repeatedly in one caller-held CUDA session.
+/// Run a prepared graph repeatedly on one caller-held CUDA engine.
 ///
-/// Session entry, compilation and preparation happen outside timing. Each
-/// `Runtime::run_prepared_in` call retires its own device work before returning,
-/// so its stream-retirement barrier stays inside the batch interval; the
-/// batch-edge synchronize is a safety net only. No output is downloaded inside
-/// timing.
+/// Compilation and preparation happen outside timing. Each `Runtime::run` call is
+/// followed by an explicit device synchronize, so a per-call barrier stays inside
+/// the batch interval (tenferro-rs #2206 removed the session that used to retire
+/// each call); the batch-edge synchronize is a safety net only. No output is
+/// downloaded inside timing.
 ///
-/// With `deferred` set the sampling switches to throughput mode: `K` deferred
-/// prepared runs share one retirement per sample (see
-/// [`sample_trace_deferred_held`]).
+/// With `deferred` set the sampling switches to throughput mode: `K` prepared
+/// runs share one retirement per sample (see [`sample_trace_deferred_held`]).
 #[allow(clippy::too_many_arguments)]
 fn sample_trace_held(
-    backend: &mut CudaBackend,
+    engine: &mut CudaEngine,
     runtime: &Runtime,
-    prepared: &tenferro_runtime::PreparedCompiledGraph,
-    inputs: &[&Tensor],
+    prepared: &Prepared,
+    reads: &[TensorRead<'_>],
     n_warmup: usize,
     n_runs: usize,
     sync_rt: &CudaRuntime,
@@ -742,77 +803,61 @@ fn sample_trace_held(
 ) -> Result<(Vec<f64>, Vec<Tensor>, Value), String> {
     if deferred {
         return sample_trace_deferred_held(
-            backend,
+            engine,
             runtime,
             prepared,
-            inputs,
+            reads,
             deferred_batch_k(),
             n_warmup,
             n_runs,
             sync_rt,
         );
     }
-    let mut session = backend
-        .open_session()
-        .map_err(|e| format!("open held session: {e}"))?;
-    let result = sample_trace_batches(
+    sample_trace_batches(
         sync_rt,
-        "one caller-held CUDA session entered before sampling; each Runtime::run_prepared_in call includes its own stream-retirement barrier inside the batch interval; inputs, plans, compilation and session entry outside clocks",
+        "one caller-held CUDA engine for every sample; each Runtime::run call pays its own device-completion barrier inside the batch interval; inputs, plans and compilation outside clocks",
         n_warmup,
         n_runs,
         || {
-            session
-                .with_session(|s| runtime.run_prepared_in(s, prepared, inputs))
-                .map_err(|e| format!("held session entry: {e}"))?
-                .map_err(|e| format!("run: {e}"))
+            // tenferro-rs #2206 removed the per-call retiring session; an
+            // explicit synchronize after each run keeps that barrier inside the
+            // timed batch.
+            let outputs = run_prepared_once(runtime, engine, prepared, reads)?;
+            sync_cubecl_runtime(sync_rt)?;
+            Ok(outputs)
         },
-    );
-    session
-        .close()
-        .map_err(|e| format!("close held session: {e}"))?;
-    result
+    )
 }
 
-/// Throughput mode: one retirement per batch of `K` deferred prepared runs.
+/// Throughput mode: one retirement per batch of `K` prepared runs.
 ///
-/// The deferred guard is the reusable batch resource for the whole sampling run:
-/// it is entered once, before the clocks, in one caller-held CUDA session. Inside
-/// a timed sample only `run_prepared_deferred` enqueues happen, followed by the
-/// single `finish_prepared` that retires the batch's device work; per-call time
-/// is `sample_ms / K`. That is a throughput measurement and is never comparable
-/// to a per-call latency row, which pays one retirement per call.
-///
-/// A graph the deferred preflight rejects has no throughput measurement on this
-/// route; the rejection is returned with [`DEFERRED_PREFLIGHT_PREFIX`] so the
-/// caller records the case as unsupported instead of silently measuring latency.
+/// Inside a timed sample `K` `Runtime::run` calls are enqueued on the caller-held
+/// engine, followed by the single caller-side `synchronize` that retires the
+/// batch's device work; per-call time is `sample_ms / K`. That is a throughput
+/// measurement and is never comparable to a per-call latency row, which pays one
+/// retirement per call.
 #[allow(clippy::too_many_arguments)]
 fn sample_trace_deferred_held(
-    backend: &mut CudaBackend,
+    engine: &mut CudaEngine,
     runtime: &Runtime,
-    prepared: &tenferro_runtime::PreparedCompiledGraph,
-    inputs: &[&Tensor],
+    prepared: &Prepared,
+    reads: &[TensorRead<'_>],
     configured_k: usize,
     n_warmup: usize,
     n_runs: usize,
     sync_rt: &CudaRuntime,
 ) -> Result<(Vec<f64>, Vec<Tensor>, Value), String> {
     let sampler_start = Instant::now();
-    let setup_note = "one caller-held CUDA session entered before sampling; each timed sample enqueues K deferred prepared runs (Runtime::run_prepared_deferred) and pays one retirement barrier in a single finish_prepared; per-call time is sample_ms / K; inputs, plans, compilation, guard entry and session entry outside clocks";
-    let mut session = backend
-        .open_session()
-        .map_err(|e| format!("open held session: {e}"))?;
+    let setup_note = "one caller-held CUDA engine for every sample; each timed sample enqueues K prepared Runtime::run calls and pays one caller-side retirement barrier; per-call time is sample_ms / K; inputs, plans and compilation outside clocks";
     let mut raw: Vec<f64> = Vec::new();
     let mut effective_k = configured_k;
     let mut output_bytes = 1usize;
     let mut probe_end = 0u128;
     let mut warmup_end = 0u128;
     let mut sampling_end = 0u128;
-    let sampled = session.with_session(|view| -> Result<Vec<Tensor>, String> {
-        let mut deferred = runtime
-            .begin_prepared_deferred(view, prepared)
-            .map_err(|e| format!("{DEFERRED_PREFLIGHT_PREFIX}{e}"))?;
+    let sampled = (|| -> Result<Vec<Tensor>, String> {
         if verification_only() {
-            let (_, runs) = run_deferred_batch(&mut deferred, inputs, 1)?;
+            let (_, runs) = run_deferred_batch(runtime, engine, sync_rt, prepared, reads, 1)?;
             return runs
                 .into_iter()
                 .last()
@@ -823,7 +868,7 @@ fn sample_trace_deferred_held(
         // One run is enough for the bound, so a large configured K cannot
         // overshoot the retention budget before it is clamped.
         sync_cubecl_runtime(sync_rt)?;
-        let (_, probe) = run_deferred_batch(&mut deferred, inputs, 1)?;
+        let (_, probe) = run_deferred_batch(runtime, engine, sync_rt, prepared, reads, 1)?;
         let first = probe
             .first()
             .ok_or_else(|| "deferred batch returned no run".to_string())?;
@@ -836,7 +881,8 @@ fn sample_trace_deferred_held(
             .ok_or_else(|| "deferred batch returned no run".to_string())?;
         probe_end = sampler_start.elapsed().as_nanos();
         for _ in 0..n_warmup.max(1) {
-            let (_, runs) = run_deferred_batch(&mut deferred, inputs, effective_k)?;
+            let (_, runs) =
+                run_deferred_batch(runtime, engine, sync_rt, prepared, reads, effective_k)?;
             last = runs
                 .into_iter()
                 .last()
@@ -845,7 +891,8 @@ fn sample_trace_deferred_held(
         }
         warmup_end = sampler_start.elapsed().as_nanos();
         for _ in 0..n_runs {
-            let (elapsed, runs) = run_deferred_batch(&mut deferred, inputs, effective_k)?;
+            let (elapsed, runs) =
+                run_deferred_batch(runtime, engine, sync_rt, prepared, reads, effective_k)?;
             raw.push(elapsed);
             last = runs
                 .into_iter()
@@ -855,11 +902,8 @@ fn sample_trace_deferred_held(
         }
         sampling_end = sampler_start.elapsed().as_nanos();
         Ok(last)
-    });
-    session
-        .close()
-        .map_err(|e| format!("close held session: {e}"))?;
-    let output = sampled.map_err(|e| format!("held session entry: {e}"))??;
+    })();
+    let output = sampled?;
     if verification_only() {
         return Ok((
             Vec::new(),
@@ -917,32 +961,18 @@ fn trace_failure(
     bc: Option<&str>,
     tc: Option<&str>,
 ) -> Value {
-    match msg.strip_prefix(DEFERRED_PREFLIGHT_PREFIX) {
-        Some(reason) => stub(
-            suite_id,
-            problem,
-            backend,
-            device_ordinal,
-            "unsupported",
-            reason,
-            path,
-            ts,
-            bc,
-            tc,
-        ),
-        None => stub(
-            suite_id,
-            problem,
-            backend,
-            device_ordinal,
-            "runtime_failed",
-            msg,
-            path,
-            ts,
-            bc,
-            tc,
-        ),
-    }
+    stub(
+        suite_id,
+        problem,
+        backend,
+        device_ordinal,
+        "runtime_failed",
+        msg,
+        path,
+        ts,
+        bc,
+        tc,
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -976,12 +1006,9 @@ fn run_trace_tensor_network(
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
         // backend are rejected by the compute engine and by the traced runtime.
-        let mut compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("compute backend: {e}"))?;
-        let transfer_bk = compute_bk.clone();
-        let trace_inputs = build_trace_inputs(&network, &spec, transfer_bk.runtime())?;
+        let mut compute_bk = open_cuda_engine(device_ordinal)?;
+        let transfer_rt = compute_bk.runtime().clone();
+        let trace_inputs = build_trace_inputs(&network, &spec, &transfer_rt)?;
         let mut trace = TraceContext::new();
         let values = network
             .inputs
@@ -999,15 +1026,19 @@ fn run_trace_tensor_network(
         let graph = trace
             .finish(&[output])
             .map_err(|e| format!("finish trace: {e}"))?;
-        sync_cubecl_runtime(transfer_bk.runtime())?;
+        sync_cubecl_runtime(&transfer_rt)?;
 
         let program = GraphCompiler::new()
             .compile_traced_graph(&graph)
             .map_err(|e| format!("compile: {e}"))?;
         let runtime = cuda_runtime_with_extensions(&compute_bk, false)?;
-        let gpu_inputs: Vec<&Tensor> = trace_inputs.iter().map(|(gpu, _)| gpu).collect();
+        let reads: Vec<TensorRead<'_>> = trace_inputs
+            .iter()
+            .map(|(gpu, _)| TensorRead::from_tensor(gpu))
+            .collect();
+        let target = ExecutionEngine::target(&compute_bk);
         let prepared = runtime
-            .prepare_compiled(&program, &gpu_inputs)
+            .prepare(&program, &reads, std::slice::from_ref(&target))
             .map_err(|e| format!("prepare: {e}"))?;
 
         let (times_ms, last_out, sampling) = if held_session {
@@ -1015,30 +1046,32 @@ fn run_trace_tensor_network(
                 &mut compute_bk,
                 &runtime,
                 &prepared,
-                &gpu_inputs,
+                &reads,
                 n_warmup,
                 n_runs,
-                transfer_bk.runtime(),
+                &transfer_rt,
                 deferred,
             )?
         } else {
             sample_trace_public(
                 &runtime,
+                &mut compute_bk,
                 &prepared,
-                &gpu_inputs,
+                &reads,
                 n_warmup,
                 n_runs,
-                transfer_bk.runtime(),
+                &transfer_rt,
             )?
         };
-        let downloaded = download_tensor(transfer_bk.runtime(), &last_out[0])
-            .map_err(|e| format!("download: {e}"))?;
+        let downloaded =
+            download_tensor(&transfer_rt, &last_out[0]).map_err(|e| format!("download: {e}"))?;
         let gpu_scalar = Some(scalar_f32_tensor(&downloaded)?);
 
-        let cpu_ctx =
-            EagerRuntime::with_cpu_backend(CpuBackend::default()).expect("CPU reference runtime");
+        let cpu_ctx = EagerRuntime::new().expect("CPU reference runtime");
+        let mut cpu_engine = tenferro_einsum_benchmark::cpu_engine(None)?;
         let cpu_inputs = build_tensor_network_cpu_inputs(&network, &spec, cpu_ctx)?;
-        let cpu_scalar = scalar_f32(&contract_tree_eager(&network.tree, &cpu_inputs)?)?;
+        let contracted = contract_tree_eager(&mut cpu_engine, &network.tree, &cpu_inputs)?;
+        let cpu_scalar = scalar_f32(&mut cpu_engine, &contracted)?;
         let gpu_scalar = gpu_scalar.ok_or("missing timed tensor network result")?;
         let (ver_status, max_abs, max_rel) =
             verify_tensor_network_scalar(gpu_scalar, cpu_scalar, rtol, atol);
@@ -1187,12 +1220,11 @@ fn run_eager(
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
         // backend are rejected by the compute engine and by the traced runtime.
-        let compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("compute backend: {e}"))?;
-        let transfer_bk = compute_bk.clone();
-        let ctx = EagerRuntime::with_cuda_backend(compute_bk).map_err(|e| e.to_string())?;
+        let mut compute_bk = open_cuda_engine(device_ordinal)?;
+        // Transfers use the compute engine's own runtime (tenferro-rs #2206:
+        // one engine owns one logical stream and allocation domain).
+        let transfer_rt = compute_bk.runtime().clone();
+        let ctx = EagerRuntime::new().map_err(|e| e.to_string())?;
         let backend_end = case_start.elapsed().as_nanos();
 
         let seed = problem["data"]["seed"].as_u64().unwrap_or(0);
@@ -1204,10 +1236,11 @@ fn run_eager(
             problem,
             seed,
             gen,
-            transfer_bk.runtime(),
+            &mut compute_bk,
+            &transfer_rt,
             ctx.clone(),
         )?;
-        sync_cubecl_runtime(transfer_bk.runtime())?;
+        sync_cubecl_runtime(&transfer_rt)?;
         let cpu_inputs = build_cpu_eager_inputs(op, problem, seed, gen);
         let expression = problem["einsum"]["format_rowmajor"]
             .as_str()
@@ -1219,20 +1252,28 @@ fn run_eager(
         let setup_end = case_start.elapsed().as_nanos();
         let (times_ms, last, mut sampling) = if per_call_session {
             sample_eager_per_call(
-                transfer_bk.runtime(),
+                &transfer_rt,
                 n_warmup,
                 n_runs,
                 device_ordinal,
                 &gpu_inputs,
                 |config, refs| {
-                    run_eager_op_prepared(op, &subscripts, config, &gpu_inputs, refs)
+                    run_eager_op_prepared(
+                        &mut compute_bk,
+                        op,
+                        &subscripts,
+                        config,
+                        &gpu_inputs,
+                        refs,
+                    )
                 },
             )?
         } else {
             let refs = gpu_inputs.extra.iter().collect::<Vec<_>>();
             sample_eager(
                 &ctx,
-                transfer_bk.runtime(),
+                &mut compute_bk,
+                &transfer_rt,
                 n_warmup,
                 n_runs,
                 device_ordinal,
@@ -1246,17 +1287,28 @@ fn run_eager(
 
         // Verify last result against CPU reference
         let (ver_status, max_abs, max_rel) = if let Some(ref g) = last_out {
+            // The CPU reference runs on a CPU engine; the GPU outputs are
+            // materialized through the caller-held CUDA engine below.
             let cpu_out = if matches!(op, "qr" | "solve" | "svd" | "eigh") {
                 Vec::new()
             } else {
-                run_eager_op(op, &subscripts, batched_matmul_cfg(), &cpu_inputs).unwrap_or_default()
+                let mut cpu_ref_engine = tenferro_einsum_benchmark::cpu_engine(None)?;
+                run_eager_op(
+                    &mut cpu_ref_engine,
+                    op,
+                    &subscripts,
+                    batched_matmul_cfg(),
+                    &cpu_inputs,
+                )
+                .unwrap_or_default()
             };
             verify_eager(
+                &mut compute_bk,
                 op,
                 g,
                 &cpu_out,
                 &cpu_inputs,
-                transfer_bk.runtime(),
+                &transfer_rt,
                 rtol,
                 atol,
             )
@@ -1402,22 +1454,18 @@ fn run_semantic_trace_einsum(
             .compile_traced_graph(&graph)
             .map_err(|e| format!("compile: {e}"))?;
 
-        let mut compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("compute backend: {e}"))?;
-        let transfer_bk = compute_bk.clone();
+        let mut compute_bk = open_cuda_engine(device_ordinal)?;
+        let transfer_rt = compute_bk.runtime().clone();
         let gpu_inputs = cpu_inputs
             .iter()
-            .map(|tensor| {
-                upload_tensor(transfer_bk.runtime(), tensor).map_err(|e| format!("upload: {e}"))
-            })
+            .map(|tensor| upload_tensor(&transfer_rt, tensor).map_err(|e| format!("upload: {e}")))
             .collect::<Result<Vec<_>, _>>()?;
-        sync_cubecl_runtime(transfer_bk.runtime())?;
-        let gpu_input_refs: Vec<&Tensor> = gpu_inputs.iter().collect();
+        sync_cubecl_runtime(&transfer_rt)?;
+        let reads: Vec<TensorRead<'_>> = gpu_inputs.iter().map(TensorRead::from_tensor).collect();
         let runtime = cuda_runtime_with_extensions(&compute_bk, false)?;
+        let target = ExecutionEngine::target(&compute_bk);
         let prepared = runtime
-            .prepare_compiled(&program, &gpu_input_refs)
+            .prepare(&program, &reads, std::slice::from_ref(&target))
             .map_err(|e| format!("prepare: {e}"))?;
 
         let (times_ms, last_out, sampling) = if held_session {
@@ -1425,34 +1473,35 @@ fn run_semantic_trace_einsum(
                 &mut compute_bk,
                 &runtime,
                 &prepared,
-                &gpu_input_refs,
+                &reads,
                 n_warmup,
                 n_runs,
-                transfer_bk.runtime(),
+                &transfer_rt,
                 deferred,
             )?
         } else {
             sample_trace_public(
                 &runtime,
+                &mut compute_bk,
                 &prepared,
-                &gpu_input_refs,
+                &reads,
                 n_warmup,
                 n_runs,
-                transfer_bk.runtime(),
+                &transfer_rt,
             )?
         };
 
         let gpu_outputs = last_out
             .iter()
             .map(|tensor| {
-                download_tensor(transfer_bk.runtime(), tensor)
-                    .map_err(|e| format!("download result: {e}"))
+                download_tensor(&transfer_rt, tensor).map_err(|e| format!("download result: {e}"))
             })
             .collect::<Result<Vec<_>, _>>()?;
         let cpu_input_refs: Vec<&Tensor> = cpu_inputs.iter().collect();
-        let cpu_outputs = cpu_runtime_with_extensions(false)?
-            .run_compiled(&program, &cpu_input_refs)
-            .map_err(|e| format!("CPU reference: {e}"))?;
+        let (cpu_runtime, mut cpu_engine) = cpu_runtime_with_extensions(false)?;
+        let cpu_outputs =
+            run_cpu_reference(&cpu_runtime, &mut cpu_engine, &program, &cpu_input_refs)
+                .map_err(|e| format!("CPU reference: {e}"))?;
         let (ver_status, max_abs, max_rel) = verify_tensors(
             "einsum",
             &gpu_outputs,
@@ -1562,12 +1611,26 @@ fn run_trace(
     }
     if op == "tensor_network_contract" {
         return run_trace_tensor_network(
-            suite_id, problem, backend, device_ordinal, ts, bc, tc, held_session,
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            ts,
+            bc,
+            tc,
+            held_session,
         );
     }
     if op == "einsum" {
         return run_semantic_trace_einsum(
-            suite_id, problem, backend, device_ordinal, ts, bc, tc, held_session,
+            suite_id,
+            problem,
+            backend,
+            device_ordinal,
+            ts,
+            bc,
+            tc,
+            held_session,
         );
     }
     let supported = [
@@ -1616,16 +1679,12 @@ fn run_trace(
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
         // backend are rejected by the compute engine and by the traced runtime.
-        let mut compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
-            u32::try_from(device_ordinal).expect("device ordinal fits u32"),
-        ))
-        .map_err(|e| format!("compute backend: {e}"))?;
-        let transfer_bk = compute_bk.clone();
+        let mut compute_bk = open_cuda_engine(device_ordinal)?;
+        let transfer_rt = compute_bk.runtime().clone();
 
-        let (outputs, cpu_inputs) =
-            build_trace_graph_gpu(op, problem, seed, gen, transfer_bk.runtime())
-                .map_err(|e| format!("graph build: {e}"))?;
-        sync_cubecl_runtime(transfer_bk.runtime())?;
+        let (outputs, cpu_inputs) = build_trace_graph_gpu(op, problem, seed, gen, &transfer_rt)
+            .map_err(|e| format!("graph build: {e}"))?;
+        sync_cubecl_runtime(&transfer_rt)?;
         let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
         let mut compiler = GraphCompiler::new();
         let program = compiler
@@ -1633,35 +1692,38 @@ fn run_trace(
             .map_err(|e| format!("compile: {e}"))?;
 
         let runtime = cuda_runtime_with_extensions(&compute_bk, true)?;
+        let reads: [TensorRead<'_>; 0] = [];
+        let target = ExecutionEngine::target(&compute_bk);
         let prepared = runtime
-            .prepare_compiled(&program, &[])
+            .prepare(&program, &reads, std::slice::from_ref(&target))
             .map_err(|e| format!("prepare: {e}"))?;
         let (times_ms, last_out, sampling) = if held_session {
             sample_trace_held(
                 &mut compute_bk,
                 &runtime,
                 &prepared,
-                &[],
+                &reads,
                 n_warmup,
                 n_runs,
-                transfer_bk.runtime(),
+                &transfer_rt,
                 deferred,
             )?
         } else {
             sample_trace_public(
                 &runtime,
+                &mut compute_bk,
                 &prepared,
-                &[],
+                &reads,
                 n_warmup,
                 n_runs,
-                transfer_bk.runtime(),
+                &transfer_rt,
             )?
         };
 
         // Verify via download + CPU reference
         let gpu_tensors: Vec<Tensor> = last_out
             .iter()
-            .filter_map(|t| download_tensor(transfer_bk.runtime(), t).ok())
+            .filter_map(|t| download_tensor(&transfer_rt, t).ok())
             .collect();
         let cpu_out = if op == "solve" {
             Vec::new()
@@ -1763,12 +1825,13 @@ fn build_and_upload_eager_inputs(
     problem: &serde_yaml::Value,
     seed: u64,
     gen: &str,
+    engine: &mut CudaEngine,
     rt: &CudaRuntime,
     ctx: std::sync::Arc<EagerRuntime>,
 ) -> Result<EagerInputs, String> {
-    let upload = |t: Tensor| -> Result<EagerTensor, String> {
+    let mut upload = |t: Tensor| -> Result<EagerTensor, String> {
         let gpu_t = upload_tensor(rt, &t).map_err(|e| format!("upload: {e}"))?;
-        Ok(EagerTensor::from_tensor_in(gpu_t, ctx.clone()).map_err(|e| format!("{e}"))?)
+        eager_from_tensor_in(engine, gpu_t, ctx.clone())
     };
 
     match op {
@@ -1873,10 +1936,9 @@ fn build_cpu_eager_inputs(
     seed: u64,
     gen: &str,
 ) -> EagerInputs {
-    let cpu_ctx =
-        EagerRuntime::with_cpu_backend(CpuBackend::default()).expect("CPU reference runtime");
+    let cpu_ctx = EagerRuntime::new().expect("CPU reference runtime");
     let cpu = |t: Tensor| {
-        eager_from_tensor_in(t, cpu_ctx.clone()).expect("benchmark tensor should be valid")
+        EagerTensor::from_tensor_in(t, cpu_ctx.clone()).expect("benchmark tensor should be valid")
     };
 
     match op {
@@ -1982,6 +2044,7 @@ fn build_cpu_eager_inputs(
 }
 
 fn run_eager_op_prepared(
+    engine: &mut dyn ExecutionEngine,
     op: &str,
     subscripts: &tenferro_einsum::EinsumSubscripts,
     batched_config: DotGeneralConfig,
@@ -1995,7 +2058,7 @@ fn run_eager_op_prepared(
     };
     anchor
         .runtime()
-        .with_eager_session(|session| {
+        .with_eager_session(engine, |session| {
             run_eager_op_in(session, op, subscripts, batched_config, inputs, refs)
                 .map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { e.into() })
         })
@@ -2003,13 +2066,14 @@ fn run_eager_op_prepared(
 }
 
 fn run_eager_op(
+    engine: &mut dyn ExecutionEngine,
     op: &str,
     subscripts: &tenferro_einsum::EinsumSubscripts,
     batched_config: DotGeneralConfig,
     inputs: &EagerInputs,
 ) -> Result<Vec<EagerTensor>, String> {
     let refs = inputs.extra.iter().collect::<Vec<_>>();
-    run_eager_op_prepared(op, subscripts, batched_config, inputs, &refs)
+    run_eager_op_prepared(engine, op, subscripts, batched_config, inputs, &refs)
 }
 
 fn run_eager_op_in(
@@ -2078,9 +2142,13 @@ fn sample_eager_ops<P>(
             let output = op(prepare())?;
             sync_cubecl_runtime(rt)?;
             assert_cuda_eager_outputs(&output, device_ordinal)?;
-            return Ok((Vec::new(), output, json!({"sampling":null,"verification_only":true,
+            return Ok((
+                Vec::new(),
+                output,
+                json!({"sampling":null,"verification_only":true,
                 "wall_phases_ns":{"session_entry_and_initial_probe":sampler_start.elapsed().as_nanos()},
-                "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()})));
+                "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok()}),
+            ));
         }
         let mut batch = |count: usize| -> Result<_, String> {
             // Per-sample argument setup (configs, input handles) stays outside
@@ -2099,22 +2167,34 @@ fn sample_eager_ops<P>(
         };
         let (_, initial) = batch(1)?;
         assert_cuda_eager_outputs(&initial[0], device_ordinal)?;
-        let bytes = initial[0].iter().map(|value| {
-            let view = value.tensor_read();
-            let width = match view.dtype() { DType::F32 => 4, DType::C64 => 16, _ => 8 };
-            view.shape().iter().product::<usize>() * width
-        }).sum::<usize>().max(1);
+        let bytes = initial[0]
+            .iter()
+            .map(|value| {
+                let view = value.tensor_read();
+                let width = match view.dtype() {
+                    DType::F32 => 4,
+                    DType::C64 => 16,
+                    _ => 8,
+                };
+                view.shape().iter().product::<usize>() * width
+            })
+            .sum::<usize>()
+            .max(1);
         drop(initial);
         let probe_end = sampler_start.elapsed().as_nanos();
         ramp_gpu_clocks(|| {
             let _ = batch(1)?;
             Ok(())
         })?;
-        for _ in 0..warmups { drop(batch(1)?); }
+        for _ in 0..warmups {
+            drop(batch(1)?);
+        }
         let warmup_end = sampler_start.elapsed().as_nanos();
         let cap = ((256 << 20) / bytes).clamp(1, 4096);
         let mut count = 1;
-        while batch(count)?.0 < 2. && count < cap { count = (count * 2).min(cap); }
+        while batch(count)?.0 < 2. && count < cap {
+            count = (count * 2).min(cap);
+        }
         let calibration_end = sampler_start.elapsed().as_nanos();
         let mut raw = Vec::with_capacity(runs);
         let mut last = None;
@@ -2147,6 +2227,7 @@ fn sample_eager_ops<P>(
 
 fn sample_eager(
     ctx: &std::sync::Arc<EagerRuntime>,
+    engine: &mut CudaEngine,
     rt: &CudaRuntime,
     warmups: usize,
     runs: usize,
@@ -2154,7 +2235,7 @@ fn sample_eager(
     mut op: impl FnMut(&mut EagerSession<'_>, DotGeneralConfig) -> Result<Vec<EagerTensor>, String>,
 ) -> Result<(Vec<f64>, Vec<EagerTensor>, Value), String> {
     let sampler_start = Instant::now();
-    ctx.with_eager_session(|session| {
+    ctx.with_eager_session(&mut *engine, |session| {
         sample_eager_ops(
             rt,
             sampler_start,
@@ -2363,19 +2444,13 @@ fn run_cpu_trace(
     let program = compiler
         .compile_many(&output_refs)
         .map_err(|e| format!("{e}"))?;
-    cpu_runtime_with_extensions(true)?
-        .run_compiled(&program, &[])
-        .map_err(|e| format!("{e}"))
+    let (runtime, mut engine) = cpu_runtime_with_extensions(true)?;
+    run_cpu_reference(&runtime, &mut engine, &program, &[]).map_err(|e| format!("{e}"))
 }
 
 // ---------------------------------------------------------------------------
 // Synchronization
 // ---------------------------------------------------------------------------
-
-fn sync_eager_runtime(ctx: &EagerRuntime) -> Result<(), String> {
-    ctx.synchronize()
-        .map_err(|e| format!("eager runtime synchronize: {e}"))
-}
 
 fn sync_cubecl_runtime(rt: &CudaRuntime) -> Result<(), String> {
     // Fair GPU timing must wait for queued device work without reading result
@@ -2392,6 +2467,7 @@ fn sync_cubecl_runtime(rt: &CudaRuntime) -> Result<(), String> {
 // ---------------------------------------------------------------------------
 
 fn verify_eager(
+    engine: &mut CudaEngine,
     op: &str,
     gpu: &[EagerTensor],
     cpu_outputs: &[EagerTensor],
@@ -2402,19 +2478,26 @@ fn verify_eager(
 ) -> (String, Option<f64>, Option<f64>) {
     let gpu_tensors: Vec<Tensor> = gpu
         .iter()
-        .filter_map(|t| t.data().ok().and_then(|d| download_tensor(rt, &d).ok()))
+        .filter_map(|t| {
+            t.data(engine)
+                .ok()
+                .and_then(|d| download_tensor(rt, &d).ok())
+        })
         .collect();
-    let cpu_tensors: Vec<Tensor> = cpu_outputs.iter().filter_map(|t| t.data().ok()).collect();
-    let mut input_tensors = match cpu_inputs.a.data() {
+    let cpu_tensors: Vec<Tensor> = cpu_outputs
+        .iter()
+        .filter_map(|t| t.data(engine).ok())
+        .collect();
+    let mut input_tensors = match cpu_inputs.a.data(engine) {
         Ok(a) => vec![a],
         Err(_) => return ("skipped".to_string(), None, None),
     };
     if let Some(b) = &cpu_inputs.b {
-        if let Ok(b_data) = b.data() {
+        if let Ok(b_data) = b.data(engine) {
             input_tensors.push(b_data);
         }
     }
-    input_tensors.extend(cpu_inputs.extra.iter().filter_map(|t| t.data().ok()));
+    input_tensors.extend(cpu_inputs.extra.iter().filter_map(|t| t.data(engine).ok()));
     verify_tensors(op, &gpu_tensors, &cpu_tensors, &input_tensors, rtol, atol)
 }
 
@@ -2446,35 +2529,67 @@ fn verify_tensors(
     };
     let mut result = compare_vectors(&actual, &expected, rtol, atol);
     let checks = match op {
-        "qr" => gpu.first().and_then(|q| orthogonality(q, false)).map(|x| vec![x]),
-        "svd" => gpu.first().and_then(|u| orthogonality(u, false)).and_then(|u| {
-            gpu.get(2).and_then(|v| orthogonality(v, true)).map(|v| vec![u, v])
-        }),
-        "eigh" => gpu.get(1).and_then(|v| orthogonality(v, false)).map(|x| vec![x]),
+        "qr" => gpu
+            .first()
+            .and_then(|q| orthogonality(q, false))
+            .map(|x| vec![x]),
+        "svd" => gpu
+            .first()
+            .and_then(|u| orthogonality(u, false))
+            .and_then(|u| {
+                gpu.get(2)
+                    .and_then(|v| orthogonality(v, true))
+                    .map(|v| vec![u, v])
+            }),
+        "eigh" => gpu
+            .get(1)
+            .and_then(|v| orthogonality(v, false))
+            .map(|x| vec![x]),
         _ => Some(Vec::new()),
     };
-    let Some(checks) = checks else { return ("failed".into(), None, None); };
+    let Some(checks) = checks else {
+        return ("failed".into(), None, None);
+    };
     for (actual, expected) in checks {
         let check = compare_vectors(&actual, &expected, rtol, atol);
-        if check.0 != "passed" { result.0 = "failed".into(); }
-        result.1 = result.1.zip(check.1).map(|(a,b)| a.max(b));
-        result.2 = result.2.zip(check.2).map(|(a,b)| a.max(b));
+        if check.0 != "passed" {
+            result.0 = "failed".into();
+        }
+        result.1 = result.1.zip(check.1).map(|(a, b)| a.max(b));
+        result.2 = result.2.zip(check.2).map(|(a, b)| a.max(b));
     }
     if op == "qr" {
-        let Some((shape,r)) = gpu.get(1).and_then(tensor_f64_parts) else { return ("failed".into(),None,None); };
-        let (m,n) = (shape[0],shape[1]);
-        let lower = (0..n).flat_map(|j| (j+1..m).map(move |i| i+m*j))
-            .map(|index| r[index]).collect::<Vec<_>>();
-        let check = compare_vectors(&lower,&vec![0.0;lower.len()],rtol,atol);
-        if check.0 != "passed" { result.0 = "failed".into(); }
-        result.1 = result.1.zip(check.1).map(|(a,b)| a.max(b));
-        result.2 = result.2.zip(check.2).map(|(a,b)| a.max(b));
+        let Some((shape, r)) = gpu.get(1).and_then(tensor_f64_parts) else {
+            return ("failed".into(), None, None);
+        };
+        let (m, n) = (shape[0], shape[1]);
+        let lower = (0..n)
+            .flat_map(|j| (j + 1..m).map(move |i| i + m * j))
+            .map(|index| r[index])
+            .collect::<Vec<_>>();
+        let check = compare_vectors(&lower, &vec![0.0; lower.len()], rtol, atol);
+        if check.0 != "passed" {
+            result.0 = "failed".into();
+        }
+        result.1 = result.1.zip(check.1).map(|(a, b)| a.max(b));
+        result.2 = result.2.zip(check.2).map(|(a, b)| a.max(b));
     }
-    if matches!(op,"svd"|"eigh") {
-        let index = if op == "svd" {1} else {0};
-        let Some((_,values)) = gpu.get(index).and_then(tensor_f64_parts) else { return ("failed".into(),None,None); };
-        if values.iter().any(|v| !v.is_finite() || (op == "svd" && *v < 0.0)) ||
-            values.windows(2).any(|w| if op == "svd" {w[0]<w[1]}else{w[0]>w[1]}) {
+    if matches!(op, "svd" | "eigh") {
+        let index = if op == "svd" { 1 } else { 0 };
+        let Some((_, values)) = gpu.get(index).and_then(tensor_f64_parts) else {
+            return ("failed".into(), None, None);
+        };
+        if values
+            .iter()
+            .any(|v| !v.is_finite() || (op == "svd" && *v < 0.0))
+            || values.windows(2).any(|w| {
+                if op == "svd" {
+                    w[0] < w[1]
+                } else {
+                    w[0] > w[1]
+                }
+            })
+        {
             result.0 = "failed".into();
         }
     }
@@ -2483,16 +2598,26 @@ fn verify_tensors(
 
 fn orthogonality(tensor: &Tensor, rows_are_vectors: bool) -> Option<(Vec<f64>, Vec<f64>)> {
     let (shape, data) = tensor_f64_parts(tensor)?;
-    if shape.len() != 2 || shape[0].checked_mul(shape[1])? != data.len() { return None; }
-    let (m,n) = (shape[0],shape[1]);
+    if shape.len() != 2 || shape[0].checked_mul(shape[1])? != data.len() {
+        return None;
+    }
+    let (m, n) = (shape[0], shape[1]);
     let mut transpose = vec![0.0; data.len()];
-    for j in 0..n { for i in 0..m { transpose[j+n*i] = data[i+m*j]; } }
-    let (gram,size) = if rows_are_vectors {
-        (matmul_col_major(&data,m,n,&transpose,n,m)?,m)
-    } else { (matmul_col_major(&transpose,n,m,&data,m,n)?,n) };
+    for j in 0..n {
+        for i in 0..m {
+            transpose[j + n * i] = data[i + m * j];
+        }
+    }
+    let (gram, size) = if rows_are_vectors {
+        (matmul_col_major(&data, m, n, &transpose, n, m)?, m)
+    } else {
+        (matmul_col_major(&transpose, n, m, &data, m, n)?, n)
+    };
     let mut identity = vec![0.0; size.checked_mul(size)?];
-    for i in 0..size { identity[i+size*i] = 1.0; }
-    Some((gram,identity))
+    for i in 0..size {
+        identity[i + size * i] = 1.0;
+    }
+    Some((gram, identity))
 }
 
 fn verify_solve(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f64>)> {
@@ -2521,7 +2646,9 @@ fn verify_qr(gpu: &[Tensor], cpu_inputs: &[Tensor]) -> Option<(Vec<f64>, Vec<f64
     if q_shape.len() != 2 || r_shape.len() != 2 {
         return None;
     }
-    if a_shape.as_slice() != [q_shape[0],r_shape[1]] { return None; }
+    if a_shape.as_slice() != [q_shape[0], r_shape[1]] {
+        return None;
+    }
     let recon = matmul_col_major(&q, q_shape[0], q_shape[1], &r, r_shape[0], r_shape[1])?;
     Some((recon, a))
 }
@@ -2583,19 +2710,38 @@ fn matmul_col_major(
     b_rows: usize,
     b_cols: usize,
 ) -> Option<Vec<f64>> {
-    if a_cols != b_rows || a.len() != a_rows.checked_mul(a_cols)? || b.len() != b_rows.checked_mul(b_cols)? {
+    if a_cols != b_rows
+        || a.len() != a_rows.checked_mul(a_cols)?
+        || b.len() != b_rows.checked_mul(b_cols)?
+    {
         return None;
     }
     let mut out = vec![0.0; a_rows.checked_mul(b_cols)?];
     let a_stride = isize::try_from(a_rows).ok()?;
     let b_stride = isize::try_from(b_rows).ok()?;
-    if a_rows == 0 || b_cols == 0 || a_cols == 0 { return Some(out); }
+    if a_rows == 0 || b_cols == 0 || a_cols == 0 {
+        return Some(out);
+    }
     // Bounds were checked above. Inputs may alias each other, but the newly
     // allocated destination cannot alias either input. All layouts are compact
     // column-major. This independent blocked CPU product is verification only.
     unsafe {
-        matrixmultiply::dgemm(a_rows, a_cols, b_cols, 1.0,
-            a.as_ptr(),1,a_stride,b.as_ptr(),1,b_stride,0.0,out.as_mut_ptr(),1,a_stride);
+        matrixmultiply::dgemm(
+            a_rows,
+            a_cols,
+            b_cols,
+            1.0,
+            a.as_ptr(),
+            1,
+            a_stride,
+            b.as_ptr(),
+            1,
+            b_stride,
+            0.0,
+            out.as_mut_ptr(),
+            1,
+            a_stride,
+        );
     }
     Some(out)
 }
@@ -2609,7 +2755,11 @@ fn compare_vectors(
     if actual.len() != expected.len() {
         return ("skipped".to_string(), None, None);
     }
-    if actual.iter().chain(expected).any(|value| !value.is_finite()) {
+    if actual
+        .iter()
+        .chain(expected)
+        .any(|value| !value.is_finite())
+    {
         return ("failed".into(), None, None);
     }
     let max_abs = actual
@@ -2634,47 +2784,134 @@ fn compare_vectors(
 #[cfg(test)]
 mod verification_tests {
     use super::*;
-    fn matrix(data: Vec<f64>) -> Tensor { Tensor::from_vec_col_major(vec![2,2],data).unwrap() }
-    fn copy(t: &Tensor) -> Tensor { Tensor::from_vec_col_major(t.shape().to_vec(),t.as_slice::<f64>().unwrap().to_vec()).unwrap() }
-    fn identity() -> Tensor { matrix(vec![1.,0.,0.,1.]) }
+    fn matrix(data: Vec<f64>) -> Tensor {
+        Tensor::from_vec_col_major(vec![2, 2], data).unwrap()
+    }
+    fn copy(t: &Tensor) -> Tensor {
+        Tensor::from_vec_col_major(t.shape().to_vec(), t.as_slice::<f64>().unwrap().to_vec())
+            .unwrap()
+    }
+    fn identity() -> Tensor {
+        matrix(vec![1., 0., 0., 1.])
+    }
 
     #[test]
     fn blocked_product_respects_rectangular_column_major_layout() {
-        let result = matmul_col_major(&[1.,4.,2.,5.,3.,6.],2,3,&[7.,9.,11.,8.,10.,12.],3,2).unwrap();
-        assert_eq!(result,vec![58.,139.,64.,154.]);
-        assert!(matmul_col_major(&[],usize::MAX,2,&[],2,1).is_none());
+        let result = matmul_col_major(
+            &[1., 4., 2., 5., 3., 6.],
+            2,
+            3,
+            &[7., 9., 11., 8., 10., 12.],
+            3,
+            2,
+        )
+        .unwrap();
+        assert_eq!(result, vec![58., 139., 64., 154.]);
+        assert!(matmul_col_major(&[], usize::MAX, 2, &[], 2, 1).is_none());
     }
     #[test]
     fn nan_cannot_disappear_in_max_error_fold() {
-        assert_eq!(compare_vectors(&[f64::NAN],&[0.],1e-8,1e-10).0,"failed");
+        assert_eq!(compare_vectors(&[f64::NAN], &[0.], 1e-8, 1e-10).0, "failed");
     }
     #[test]
     fn qr_checks_orthogonality_and_triangularity() {
-        let r = matrix(vec![2.,0.,1.,3.]);
-        assert_eq!(verify_tensors("qr",&[identity(),copy(&r)],&[],&[r],1e-8,1e-10).0,"passed");
-        let a = matrix(vec![2.,0.,1.,3.]);
-        let scaled_q = matrix(vec![2.,0.,0.,2.]);
-        let scaled_r = matrix(vec![1.,0.,0.5,1.5]);
-        assert_eq!(verify_tensors("qr",&[scaled_q,scaled_r],&[],&[a],1e-8,1e-10).0,"failed");
-        let dense = matrix(vec![2.,1.,1.,3.]);
-        assert_eq!(verify_tensors("qr",&[identity(),copy(&dense)],&[],&[dense],1e-8,1e-10).0,"failed");
+        let r = matrix(vec![2., 0., 1., 3.]);
+        assert_eq!(
+            verify_tensors("qr", &[identity(), copy(&r)], &[], &[r], 1e-8, 1e-10).0,
+            "passed"
+        );
+        let a = matrix(vec![2., 0., 1., 3.]);
+        let scaled_q = matrix(vec![2., 0., 0., 2.]);
+        let scaled_r = matrix(vec![1., 0., 0.5, 1.5]);
+        assert_eq!(
+            verify_tensors("qr", &[scaled_q, scaled_r], &[], &[a], 1e-8, 1e-10).0,
+            "failed"
+        );
+        let dense = matrix(vec![2., 1., 1., 3.]);
+        assert_eq!(
+            verify_tensors(
+                "qr",
+                &[identity(), copy(&dense)],
+                &[],
+                &[dense],
+                1e-8,
+                1e-10
+            )
+            .0,
+            "failed"
+        );
     }
     #[test]
     fn eigh_rejects_zero_vectors_and_unsorted_spectrum() {
-        let a = matrix(vec![2.,0.,0.,3.]);
-        let w = Tensor::from_vec_col_major(vec![2],vec![2.,3.]).unwrap();
-        assert_eq!(verify_tensors("eigh",&[copy(&w),identity()],&[],&[copy(&a)],1e-8,1e-10).0,"passed");
-        assert_eq!(verify_tensors("eigh",&[w,matrix(vec![0.;4])],&[],&[copy(&a)],1e-8,1e-10).0,"failed");
-        let reverse = Tensor::from_vec_col_major(vec![2],vec![3.,2.]).unwrap();
-        assert_eq!(verify_tensors("eigh",&[reverse,matrix(vec![0.,1.,1.,0.])],&[],&[a],1e-8,1e-10).0,"failed");
+        let a = matrix(vec![2., 0., 0., 3.]);
+        let w = Tensor::from_vec_col_major(vec![2], vec![2., 3.]).unwrap();
+        assert_eq!(
+            verify_tensors(
+                "eigh",
+                &[copy(&w), identity()],
+                &[],
+                &[copy(&a)],
+                1e-8,
+                1e-10
+            )
+            .0,
+            "passed"
+        );
+        assert_eq!(
+            verify_tensors(
+                "eigh",
+                &[w, matrix(vec![0.; 4])],
+                &[],
+                &[copy(&a)],
+                1e-8,
+                1e-10
+            )
+            .0,
+            "failed"
+        );
+        let reverse = Tensor::from_vec_col_major(vec![2], vec![3., 2.]).unwrap();
+        assert_eq!(
+            verify_tensors(
+                "eigh",
+                &[reverse, matrix(vec![0., 1., 1., 0.])],
+                &[],
+                &[a],
+                1e-8,
+                1e-10
+            )
+            .0,
+            "failed"
+        );
     }
     #[test]
     fn svd_rejects_negative_singular_values_despite_reconstruction() {
-        let a = matrix(vec![3.,0.,0.,2.]);
-        let s = Tensor::from_vec_col_major(vec![2],vec![3.,2.]).unwrap();
-        assert_eq!(verify_tensors("svd",&[identity(),s,identity()],&[],&[copy(&a)],1e-8,1e-10).0,"passed");
-        let negative = Tensor::from_vec_col_major(vec![2],vec![-3.,-2.]).unwrap();
-        assert_eq!(verify_tensors("svd",&[matrix(vec![-1.,0.,0.,-1.]),negative,identity()],&[],&[a],1e-8,1e-10).0,"failed");
+        let a = matrix(vec![3., 0., 0., 2.]);
+        let s = Tensor::from_vec_col_major(vec![2], vec![3., 2.]).unwrap();
+        assert_eq!(
+            verify_tensors(
+                "svd",
+                &[identity(), s, identity()],
+                &[],
+                &[copy(&a)],
+                1e-8,
+                1e-10
+            )
+            .0,
+            "passed"
+        );
+        let negative = Tensor::from_vec_col_major(vec![2], vec![-3., -2.]).unwrap();
+        assert_eq!(
+            verify_tensors(
+                "svd",
+                &[matrix(vec![-1., 0., 0., -1.]), negative, identity()],
+                &[],
+                &[a],
+                1e-8,
+                1e-10
+            )
+            .0,
+            "failed"
+        );
     }
 }
 

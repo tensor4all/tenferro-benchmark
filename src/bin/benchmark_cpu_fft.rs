@@ -9,12 +9,12 @@ use std::time::Instant;
 
 use num_complex::{Complex32, Complex64};
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{with_cpu_exec_session, CpuBackend, CpuExecSession};
+use tenferro_cpu::CpuEngine;
 use tenferro_fft::{
     EagerSessionFftExt, FftExecutor, FftNorm, TensorFftExt, TensorReadFftExt, TracedTensorFftExt,
 };
-use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
-use tenferro_tensor::{BackendSessionHost, SessionEntryError, Tensor, TensorRead};
+use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TracedTensor};
+use tenferro_tensor::{Engine, Tensor, TensorRead};
 
 type BenchResult<T> = Result<T, Box<dyn std::error::Error>>;
 
@@ -275,27 +275,26 @@ fn time_case(
     input: &Tensor,
     n: usize,
 ) -> BenchResult<(f64, f64)> {
-    let mut backend = CpuBackend::new();
+    // The caller-held engine is built once per case, outside every timer.
+    let mut engine = tenferro_einsum_benchmark::cpu_engine(Some(args.num_threads))?;
     let mut executor = FftExecutor::default();
 
-    Ok(with_cpu_session(&mut backend, |session| {
-        for _ in 0..args.warmups.max(1) {
-            consume(run_fft(mode, op, input, n, session, &mut executor)?);
-        }
+    for _ in 0..args.warmups.max(1) {
+        consume(run_fft(mode, op, input, n, &mut engine, &mut executor)?);
+    }
 
-        let mut times = Vec::with_capacity(args.runs);
-        for _ in 0..args.runs {
-            let count = if n <= 16_384 { 128 } else { 1 };
-            let mut outputs = Vec::with_capacity(count);
-            let start = Instant::now();
-            for _ in 0..count {
-                outputs.push(run_fft(mode, op, input, n, session, &mut executor)?);
-            }
-            times.push(start.elapsed().as_secs_f64() * 1000.0 / count as f64);
-            black_box(&outputs);
+    let mut times = Vec::with_capacity(args.runs);
+    for _ in 0..args.runs {
+        let count = if n <= 16_384 { 128 } else { 1 };
+        let mut outputs = Vec::with_capacity(count);
+        let start = Instant::now();
+        for _ in 0..count {
+            outputs.push(run_fft(mode, op, input, n, &mut engine, &mut executor)?);
         }
-        Ok::<_, tenferro_tensor::Error>(median_iqr(&times))
-    })??)
+        times.push(start.elapsed().as_secs_f64() * 1000.0 / count as f64);
+        black_box(&outputs);
+    }
+    Ok(median_iqr(&times))
 }
 
 fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
@@ -309,16 +308,23 @@ fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
         Op::Irfft => traced.irfft(Some(n), -1, FftNorm::Backward)?,
     };
     let program = GraphCompiler::new().compile(&output)?;
-    let runtime = cpu_trace_runtime()?;
-    let prepared = runtime.prepare_compiled(&program, &[])?;
+    let mut engine = tenferro_einsum_benchmark::cpu_engine(Some(args.num_threads))?;
+    let runtime = cpu_trace_runtime(&engine)?;
+    let target = ExecutionEngine::target(&engine);
+    let prepared = runtime.prepare(&program, &[], std::slice::from_ref(&target))?;
 
     for _ in 0..args.warmups.max(1) {
-        consume(runtime.run_prepared(&prepared, &[])?.remove(0));
+        consume(
+            runtime
+                .run(&mut [&mut engine], &prepared, &[])?
+                .remove(0)
+                .into_tensor(&mut engine)?,
+        );
     }
     let mut times = Vec::with_capacity(args.runs);
     for _ in 0..args.runs {
         let start = Instant::now();
-        let outputs = runtime.run_prepared(&prepared, &[])?;
+        let outputs = runtime.run(&mut [&mut engine], &prepared, &[])?;
         times.push(start.elapsed().as_secs_f64() * 1000.0);
         black_box(outputs);
     }
@@ -326,17 +332,22 @@ fn time_trace_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
 }
 
 fn time_eager_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult<(f64, f64)> {
-    let runtime = EagerRuntime::with_cpu_backend(CpuBackend::new())?;
+    let runtime = EagerRuntime::new()?;
     let input = EagerTensor::from_tensor_in(input.duplicate()?, runtime)?;
-    // tenferro-rs #1938 moved eager FFTs onto `EagerSession`. Enter one eager
-    // session per call, as the pre-#1938 tensor-owned FFT methods did.
-    let run = || -> Result<EagerTensor, tenferro_ad::Error> {
-        input.runtime().with_eager_session(|session| match op {
-            Op::Fft => session.fft(&input, None, -1, FftNorm::Backward),
-            Op::Ifft => session.ifft(&input, None, -1, FftNorm::Backward),
-            Op::Rfft => session.rfft(&input, None, -1, FftNorm::Backward),
-            Op::Irfft => session.irfft(&input, Some(n), -1, FftNorm::Backward),
-        })
+    // The engine is caller-held (tenferro-rs #2206) and built once per case,
+    // outside every timer. tenferro-rs #1938 moved eager FFTs onto
+    // `EagerSession`; enter one eager session per call, as the pre-#1938
+    // tensor-owned FFT methods did, so that per-call entry stays measured.
+    let mut engine = tenferro_einsum_benchmark::cpu_engine(Some(args.num_threads))?;
+    let mut run = || -> Result<EagerTensor, tenferro_ad::Error> {
+        input
+            .runtime()
+            .with_eager_session(&mut engine, |session| match op {
+                Op::Fft => session.fft(&input, None, -1, FftNorm::Backward),
+                Op::Ifft => session.ifft(&input, None, -1, FftNorm::Backward),
+                Op::Rfft => session.rfft(&input, None, -1, FftNorm::Backward),
+                Op::Irfft => session.irfft(&input, Some(n), -1, FftNorm::Backward),
+            })
     };
 
     for _ in 0..args.warmups.max(1) {
@@ -352,12 +363,11 @@ fn time_eager_case(args: &Args, op: Op, input: &Tensor, n: usize) -> BenchResult
     Ok(median_iqr(&times))
 }
 
-fn cpu_trace_runtime() -> BenchResult<Runtime> {
-    let backend = CpuBackend::new();
+fn cpu_trace_runtime(engine: &CpuEngine) -> BenchResult<Runtime> {
     let engine_id = tenferro_cpu::runtime_engine_id()?;
     let mut builder = Runtime::builder();
-    builder.register_engine(tenferro_cpu::runtime_engine_registration(&backend)?)?;
-    builder.install_extension_module(tenferro_fft::extension_module::<CpuBackend>(engine_id)?)?;
+    builder.register_engine(tenferro_cpu::runtime_engine_registration(engine)?)?;
+    builder.install_extension_module(tenferro_fft::extension_module::<CpuEngine>(engine_id)?)?;
     Ok(builder.build()?)
 }
 
@@ -366,7 +376,7 @@ fn run_fft(
     op: Op,
     input: &Tensor,
     n: usize,
-    session: &mut CpuExecSession<'_>,
+    session: &mut dyn Engine,
     executor: &mut FftExecutor,
 ) -> tenferro_tensor::Result<Tensor> {
     match (mode, op) {
@@ -403,18 +413,6 @@ fn run_fft(
         (TenferroMode::Trace, _) => unreachable!("trace FFT uses time_trace_case"),
         (TenferroMode::Eager, _) => unreachable!("eager FFT uses time_eager_case"),
     }
-}
-
-fn with_cpu_session<R>(
-    backend: &mut CpuBackend,
-    f: impl for<'a> FnOnce(&'a mut CpuExecSession<'a>) -> R + Send,
-) -> Result<R, SessionEntryError>
-where
-    R: Send,
-{
-    backend.with_backend_session(|session| {
-        with_cpu_exec_session(session, f).expect("CpuBackend must expose a CPU execution session")
-    })
 }
 
 fn consume(tensor: Tensor) {

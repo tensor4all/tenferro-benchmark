@@ -2,8 +2,8 @@ use super::{Case, Result};
 use tenferro_ad::{EagerSession, EagerTensor};
 use tenferro_runtime::TensorSessionOpsExt;
 use tenferro_tensor::{
-    BackendSession, DType, DotGeneralConfig, GatherConfig, PadConfig, ScatterConfig, SliceConfig,
-    Tensor, TensorRead,
+    DType, DotGeneralConfig, Engine, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor,
+    TensorRead,
 };
 
 fn pad(case: &Case) -> PadConfig {
@@ -51,10 +51,10 @@ pub(super) fn prepare(case: &Case) -> Arguments<'static> {
     match case.op.as_str() {
         "dot_general_axes" | "dot_general_conj" => {
             args.dot = Some(DotGeneralConfig {
-                lhs_contracting_dims: case.lhs_contracting_dims.clone().into(),
-                rhs_contracting_dims: case.rhs_contracting_dims.clone().into(),
-                lhs_batch_dims: case.lhs_batch_dims.clone().into(),
-                rhs_batch_dims: case.rhs_batch_dims.clone().into(),
+                lhs_contracting_dims: case.lhs_contracting_dims.as_slice().into(),
+                rhs_contracting_dims: case.rhs_contracting_dims.as_slice().into(),
+                lhs_batch_dims: case.lhs_batch_dims.as_slice().into(),
+                rhs_batch_dims: case.rhs_batch_dims.as_slice().into(),
             })
         }
         "reshape" => args.reshape = Some(case.output_shape.clone()),
@@ -97,7 +97,7 @@ pub(super) fn prepare_direct<'a>(case: &Case, inputs: &'a [Tensor]) -> Arguments
 pub(super) fn direct(
     case: &Case,
     inputs: &[Tensor],
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
     mut args: Arguments<'_>,
 ) -> Result<Tensor> {
     let x = &inputs[0];
@@ -197,12 +197,12 @@ pub(super) fn verify_materialized(
     case: &Case,
     inputs: &[&Tensor],
     output: &Tensor,
-    session: &mut dyn BackendSession,
+    session: &mut dyn Engine,
 ) -> Result<()> {
     if !matches!(case.op.as_str(), "reshape" | "stack") {
         return Ok(());
     }
-    tenferro_gpu::cuda::with_cuda_exec_session(session, |cuda| {
+    tenferro_gpu::cuda::with_cuda_engine(session, |cuda| {
         cuda.with_raw("verification.materialized", |raw| {
             macro_rules! check {
                 ($ty:ty) => {{

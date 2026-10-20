@@ -2,12 +2,12 @@ use super::{Case, Result};
 use tenferro_ad::{EagerSession, EagerTensor};
 use tenferro_einsum::{EagerSessionEinsumExt, TensorDotAxes, TensorTensordotExt};
 use tenferro_linalg::{EagerSessionLinalgExt, TensorLinalgExt};
-use tenferro_tensor::{BackendSession, Tensor};
+use tenferro_tensor::{Engine, Tensor};
 
 pub(super) fn direct(
     case: &Case,
     inputs: &[Tensor],
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
     args: super::structural::Arguments<'_>,
 ) -> Result<Tensor> {
     let x = &inputs[0];

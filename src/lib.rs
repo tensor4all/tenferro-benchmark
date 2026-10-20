@@ -21,6 +21,38 @@ pub fn compiled_cpu_provider() -> &'static str {
     }
 }
 
+/// Number of workers a benchmark process runs on when the caller does not name
+/// one: `RAYON_NUM_THREADS`, else the host's available parallelism.
+pub fn cpu_thread_count() -> Result<usize, String> {
+    match std::env::var("RAYON_NUM_THREADS") {
+        Ok(value) => value
+            .parse::<usize>()
+            .map_err(|err| format!("RAYON_NUM_THREADS={value:?}: {err}")),
+        Err(_) => Ok(std::thread::available_parallelism()
+            .map(std::num::NonZeroUsize::get)
+            .unwrap_or(1)),
+    }
+}
+
+/// Build the caller-held CPU engine the harness measures on.
+///
+/// tenferro-rs #2206 removed backend sessions: the caller owns the engine and
+/// passes it as `&mut` to every operation. Build it once per run, outside the
+/// timed region, and reuse it across samples. `threads: None` sizes the pool
+/// from [`cpu_thread_count`]; the pool is a private one, built with tenferro's
+/// provider worker-stack preset, exactly as tenferro's own benches do.
+pub fn cpu_engine(threads: Option<usize>) -> Result<tenferro_cpu::CpuEngine, String> {
+    let threads = threads.map_or_else(cpu_thread_count, Ok)?;
+    if threads == 0 {
+        return Err("requested thread count must be at least 1".into());
+    }
+    let pool = tenferro_cpu::thread_pool_builder()
+        .num_threads(threads)
+        .build()
+        .map_err(|err| format!("build CPU engine pool: {err}"))?;
+    Ok(tenferro_cpu::CpuEngine::new(pool))
+}
+
 pub struct CompiledEinsum {
     pub program: CompiledGraph,
     pub input_count: usize,

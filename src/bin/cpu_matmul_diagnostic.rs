@@ -8,11 +8,11 @@ use std::hint::black_box;
 use std::time::{Duration, Instant};
 
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::CpuBackend;
+use tenferro_cpu::CpuEngine;
 use tenferro_einsum::{ContractionTree, EagerSessionEinsumExt, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, CompiledEinsum};
-use tenferro_runtime::{Runtime, TensorRead};
-use tenferro_tensor::{BackendSessionHost, DotGeneralConfig, Tensor};
+use tenferro_runtime::{ExecutionEngine, Runtime, TensorRead};
+use tenferro_tensor::{DotGeneralConfig, Tensor, TensorDot};
 
 const DEFAULT_N: usize = 1024;
 const DEFAULT_WARMUPS: usize = 3;
@@ -58,10 +58,10 @@ fn bool_env(key: &str) -> bool {
 
 fn matmul_ji_kj_ki_config() -> DotGeneralConfig {
     DotGeneralConfig {
-        lhs_contracting_dims: vec![0].into(),
-        rhs_contracting_dims: vec![1].into(),
-        lhs_batch_dims: vec![].into(),
-        rhs_batch_dims: vec![].into(),
+        lhs_contracting_dims: [0].as_slice().into(),
+        rhs_contracting_dims: [1].as_slice().into(),
+        lhs_batch_dims: [].as_slice().into(),
+        rhs_batch_dims: [].as_slice().into(),
     }
 }
 
@@ -198,42 +198,37 @@ fn main() -> Result<(), String> {
         Ok(c)
     })?;
 
-    let mut direct_backend = CpuBackend::new();
+    let mut direct_backend = tenferro_einsum_benchmark::cpu_engine(None)?;
     // tenferro-rs #1938 removed the owned-tensor `dot_general` spelling; the
-    // public session operation is `dot_general_read` over owned-tensor reads,
-    // so this row and `tenferro_blas_dot_general_read` now reach the same call.
-    // Both keep the pre-#1938 per-call backend entry inside the timed region.
+    // public operation is `dot_general_read` over owned-tensor reads, so this
+    // row and `tenferro_dot_general_read` reach the same call. Both borrow the
+    // caller-held engine (tenferro-rs #2206) inside the timed region; the
+    // former per-call backend session entry no longer exists.
     measure("tenferro_dot_general", warmups, runs, || {
         let out = direct_backend
-            .with_backend_session(|session| {
-                session.dot_general_read(
-                    TensorRead::from_tensor(&lhs),
-                    TensorRead::from_tensor(&rhs),
-                    &config,
-                )
-            })
-            .map_err(|err| err.to_string())?
+            .dot_general_read(
+                TensorRead::from_tensor(&lhs),
+                TensorRead::from_tensor(&rhs),
+                &config,
+            )
             .map_err(|err| err.to_string())?;
         Ok(out)
     })?;
 
-    let mut read_backend = CpuBackend::new();
+    let mut read_backend = tenferro_einsum_benchmark::cpu_engine(None)?;
     measure("tenferro_dot_general_read", warmups, runs, || {
         let out = read_backend
-            .with_backend_session(|session| {
-                session.dot_general_read(
-                    TensorRead::from_tensor(&lhs),
-                    TensorRead::from_tensor(&rhs),
-                    &config,
-                )
-            })
-            .map_err(|err| err.to_string())?
+            .dot_general_read(
+                TensorRead::from_tensor(&lhs),
+                TensorRead::from_tensor(&rhs),
+                &config,
+            )
             .map_err(|err| err.to_string())?;
         Ok(out)
     })?;
 
     let compiled = compile_trace_program(n)?;
-    let backend = CpuBackend::new();
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
     let mut builder = Runtime::builder();
     builder
         .register_engine(
@@ -242,21 +237,26 @@ fn main() -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     builder
         .install_extension_module(
-            tenferro_einsum::extension_module::<CpuBackend>(
+            tenferro_einsum::extension_module::<CpuEngine>(
                 tenferro_cpu::runtime_engine_id().map_err(|e| e.to_string())?,
             )
             .map_err(|e| e.to_string())?,
         )
         .map_err(|e| e.to_string())?;
     let runtime = builder.build().map_err(|e| e.to_string())?;
-    let bindings = [&lhs, &rhs];
+    let reads = [TensorRead::from_tensor(&lhs), TensorRead::from_tensor(&rhs)];
+    let target = ExecutionEngine::target(&backend);
+    let prepared = runtime
+        .prepare(&compiled.program, &reads, std::slice::from_ref(&target))
+        .map_err(|e| e.to_string())?;
     measure("tenferro_trace", warmups, runs, || {
         runtime
-            .run_compiled(&compiled.program, &bindings)
+            .run(&mut [&mut backend], &prepared, &reads)
             .map_err(|e| e.to_string())
     })?;
 
-    let eager_ctx = EagerRuntime::with_cpu_backend(CpuBackend::new()).map_err(|e| e.to_string())?;
+    let eager_ctx = EagerRuntime::new().map_err(|e| e.to_string())?;
+    let mut eager_engine = tenferro_einsum_benchmark::cpu_engine(None)?;
     let eager_lhs = EagerTensor::from_tensor_in(
         lhs.duplicate().map_err(|e| e.to_string())?,
         eager_ctx.clone(),
@@ -271,7 +271,7 @@ fn main() -> Result<(), String> {
         // One borrowed eager session per public einsum call.
         eager_lhs
             .runtime()
-            .with_eager_session(|session| {
+            .with_eager_session(&mut eager_engine, |session| {
                 session
                     .einsum_subscripts(&inputs, &subscripts)
                     .map_err(Box::<dyn std::error::Error + Send + Sync>::from)

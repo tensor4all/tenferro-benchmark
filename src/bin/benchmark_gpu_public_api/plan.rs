@@ -1,10 +1,10 @@
 //! Concrete public plans are built once before execution and sampling.
-use super::{measure, read_array, verify, Case, Result, Settings};
+use super::{measure, read_array, verify, Case, EngineScope, Result, Settings};
 use serde_json::Value;
 use std::path::Path;
 use tenferro_einsum::ConcreteEinsumPlan;
-use tenferro_gpu::cuda::{upload_tensor, CudaBackend, CudaDeviceId};
-use tenferro_tensor::{BackendSessionHost, DType, Tensor, TensorRead};
+use tenferro_gpu::cuda::{upload_tensor, CudaDeviceId, CudaEngine};
+use tenferro_tensor::{DType, Tensor, TensorRead};
 
 pub(super) fn run(
     root: &Path,
@@ -18,7 +18,7 @@ pub(super) fn run(
         .map(|spec| read_array(root, spec))
         .collect::<Result<Vec<_>>>()?;
     let expected = read_array(root, &case.outputs[0])?;
-    let mut backend = CudaBackend::new(CudaDeviceId::from_ordinal(device.try_into()?))?;
+    let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let rt = backend.runtime().clone();
     let inputs = hosts
         .iter()
