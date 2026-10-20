@@ -49,11 +49,11 @@ if the provider cannot confirm deletion, manual cleanup is required:
   installation and does not depend on runner checkout or `runpodctl`.
   The benchmark job fails unless the watchdog is running and proves its
   pod-scoped credentials with a bounded read-only API call.
-- On the GitHub side, startup is bounded by `startup_timeout_seconds` (420 s),
-  the benchmark job by `timeout-minutes: 45`, and the cleanup job deletes the
+- On the GitHub side, startup is bounded by `startup_timeout_seconds` (600 s),
+  the benchmark job by `timeout-minutes: 42`, and the cleanup job deletes the
   pod after success, failure, timeout, or cancellation.
 
-If the standard suites outgrow the 45-minute job budget, split them across
+If the standard suites outgrow the 42-minute job budget, split them across
 dispatches rather than raising the cap. It uses the same RunPod image and provisioning modules as
 `tenferro-rs`, adapted for this repository. Imported modules and tests are
 covered by `scripts/ci/LICENSE-tenferro-MIT`.
@@ -71,7 +71,7 @@ Provisioning runs on a GitHub-hosted runner:
    Delete rejected pods before trying another candidate. Stop if deletion
    cannot be confirmed.
 
-The limits are six provisioning attempts, 420 seconds per startup, and early
+The limits are six provisioning attempts, 600 seconds per startup, and early
 termination after two consecutive created pods fail to register. Capacity
 failures do not count as paid startup failures. Every attempt records GPU,
 price, startup duration, and rejection reason in the Actions logs. Successful
@@ -160,7 +160,7 @@ Retry-After formats, and reset after success. Cooldown survives candidate change
 A failed observation remains unknown, not a container-stop signal. Missing
 runtime fields, malformed responses, and unknown lifecycle states also remain unknown. Authentication and other
 permanent HTTP failures reject the candidate and enter cleanup. Pod and GitHub
-runner requests use at most 30 seconds or the remaining 420-second startup
+runner requests use at most 30 seconds or the remaining 600-second startup
 budget; no new poll starts after that budget, including a long Retry-After.
 
 Pricing is one authenticated catalog GET per provisioning invocation, with a
