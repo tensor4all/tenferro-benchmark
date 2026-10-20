@@ -20,10 +20,11 @@ jobs:
     env:
       OPENBLAS_ROOT: /usr
       # Validate the recorded compatible revision: the tenferro-rs commit this
-      # harness now builds against (CPU public API gap cases #133–#138).
+      # harness now builds against (the caller-held engine API from tenferro-rs
+      # #2206; CPU public API gap cases #133–#138).
       # Latest upstream main is exercised separately by
       # benchmark-smoke-tenferro-main / nightly jobs.
-      TENFERRO_REF: 8b13220c1e0397a29a27be65557c24105352a35b
+      TENFERRO_REF: 6aee629651957f1691fbf1c4797887dc1fcf725b
       TENFERRO_UPDATE: "1"
     steps:
       - name: Checkout
