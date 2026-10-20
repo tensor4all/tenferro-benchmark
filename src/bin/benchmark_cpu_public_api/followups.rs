@@ -29,7 +29,7 @@ pub(super) fn cases() -> Vec<Case> {
     }
     out
 }
-fn unused(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+fn unused(_: &mut CpuEngine) -> tenferro_tensor::Result<()> {
     Err(tenferro_tensor::Error::unsupported(
         "followup",
         "use explicit setup sampler",
@@ -149,11 +149,7 @@ fn validate(out: &Tensor, expected: &[f64]) -> BenchResult<()> {
     Ok(())
 }
 
-fn direct_op(
-    f: &Fixture,
-    name: &str,
-    s: &mut dyn BackendSession,
-) -> tenferro_tensor::Result<Tensor> {
+fn direct_op(f: &Fixture, name: &str, s: &mut dyn Engine) -> tenferro_tensor::Result<Tensor> {
     match name {
         "erf" => f.x.erf(s),
         "sigmoid" => f.x.sigmoid(s),
@@ -197,7 +193,7 @@ fn eager_op(
 
 fn timed(
     args: &Args,
-    backend: &mut CpuBackend,
+    backend: &mut CpuEngine,
     case: &Case,
     eager: bool,
 ) -> BenchResult<(f64, f64)> {
@@ -213,13 +209,14 @@ fn timed(
             candidates::sample_count(args, count, || direct_op(&fixture, case.benchmark, s))
         })?
     } else {
-        let runtime = EagerRuntime::with_cpu_backend(cpu_backend()?)?;
+        let runtime = EagerRuntime::new()?;
+        let mut engine = cpu_backend()?;
         let _guard = runtime.no_grad();
         let x = EagerTensor::from_tensor_in(fixture.x.duplicate()?, Arc::clone(&runtime))?;
         let mask = EagerTensor::from_tensor_in(fixture.mask.duplicate()?, Arc::clone(&runtime))?;
         let indices =
             EagerTensor::from_tensor_in(fixture.indices.duplicate()?, Arc::clone(&runtime))?;
-        runtime.with_eager_session(|s| -> BenchResult<_> {
+        runtime.with_eager_session(&mut engine, |s| -> BenchResult<_> {
             let output = eager_op(case.benchmark, &x, &mask, &indices, s)?;
             validate(
                 output
@@ -238,7 +235,7 @@ fn timed(
 pub(super) fn emit(
     writer: &mut impl Write,
     args: &Args,
-    backend: &mut CpuBackend,
+    backend: &mut CpuEngine,
     case: &Case,
 ) -> BenchResult<()> {
     if args.execution_filter.runs_direct() {
@@ -269,7 +266,7 @@ mod tests {
     #[test]
     fn neural_public_operations_match_scalar_references() -> BenchResult<()> {
         let f = Fixture::new(7, 9)?;
-        let mut backend = CpuBackend::with_threads(1)?;
+        let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(1))?;
         backend.with_backend_session(|s| -> BenchResult<()> {
             for &name in NAMES {
                 validate(&direct_op(&f, name, s)?, &f.expected(name)?)?;

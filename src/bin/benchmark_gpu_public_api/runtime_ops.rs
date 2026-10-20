@@ -2,7 +2,7 @@
 use super::{Case, Result};
 use tenferro_ad::{EagerSession, EagerTensor};
 use tenferro_runtime::TensorSessionOpsExt;
-use tenferro_tensor::{BackendSession, CompareDir, Tensor};
+use tenferro_tensor::{CompareDir, Engine, Tensor};
 
 fn axes(case: &Case) -> Option<&'static [usize]> {
     if case.full_reduction {
@@ -26,7 +26,7 @@ fn direction(case: &Case) -> Result<CompareDir> {
 pub(super) fn direct(
     case: &Case,
     inputs: &[Tensor],
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
     args: super::structural::Arguments<'_>,
 ) -> Result<Tensor> {
     let x = &inputs[0];

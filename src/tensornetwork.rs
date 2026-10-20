@@ -18,6 +18,8 @@ use tenferro_einsum::EagerEinsumExt;
 use tenferro_einsum::EagerSessionEinsumExt;
 #[cfg(feature = "cuda")]
 use tenferro_einsum::TraceContextEinsumExt;
+#[cfg(tenferro_session_einsum)]
+use tenferro_runtime::{Engine, ExecutionEngine};
 #[cfg(feature = "cuda")]
 use tenferro_runtime::{TraceContext, TraceValue};
 use tenferro_tensor::Tensor as StorageTensor;
@@ -154,15 +156,22 @@ impl PreparedEagerTree {
 
     /// Execute the whole tree inside one borrowed eager session of the
     /// inputs' runtime (one session entry per tree execution).
+    ///
+    /// `engine` is the caller-held execution engine; the caller builds it once
+    /// outside the timed region and passes the same one to every execution.
     #[cfg(tenferro_session_einsum)]
-    pub fn execute(&self, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
+    pub fn execute(
+        &self,
+        engine: &mut dyn ExecutionEngine,
+        inputs: &[EagerTensor],
+    ) -> Result<EagerTensor, String> {
         let runtime = inputs
             .first()
             .ok_or("tree has no inputs")?
             .runtime()
             .clone();
         runtime
-            .with_eager_session(|session| {
+            .with_eager_session(engine, |session| {
                 self.execute_in(session, inputs)
                     .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
             })
@@ -224,14 +233,18 @@ impl PreparedEagerTree {
 }
 
 #[cfg(tenferro_session_einsum)]
-pub fn contract_tree_eager(node: &TreeNode, inputs: &[EagerTensor]) -> Result<EagerTensor, String> {
+pub fn contract_tree_eager(
+    engine: &mut dyn ExecutionEngine,
+    node: &TreeNode,
+    inputs: &[EagerTensor],
+) -> Result<EagerTensor, String> {
     let runtime = inputs
         .first()
         .ok_or("tree has no inputs")?
         .runtime()
         .clone();
     runtime
-        .with_eager_session(|session| {
+        .with_eager_session(engine, |session| {
             contract_tree_eager_in(session, node, inputs)
                 .map_err(Box::<dyn std::error::Error + Send + Sync>::from)
         })
@@ -326,6 +339,14 @@ pub fn contract_tree_trace(
         .map_err(|e| format!("einsum ({expr}): {e}"))
 }
 
+#[cfg(tenferro_session_einsum)]
+pub fn scalar_f32(engine: &mut dyn ExecutionEngine, result: &EagerTensor) -> Result<f32, String> {
+    let engine: &mut dyn Engine = engine;
+    let tensor = result.to_tensor(engine).map_err(|e| format!("{e}"))?;
+    scalar_f32_tensor(&tensor)
+}
+
+#[cfg(not(tenferro_session_einsum))]
 pub fn scalar_f32(result: &EagerTensor) -> Result<f32, String> {
     let tensor = result.to_tensor().map_err(|e| format!("{e}"))?;
     scalar_f32_tensor(&tensor)

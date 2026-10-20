@@ -3,7 +3,6 @@
 use super::*;
 #[path = "umbrella/alloc_counter.rs"]
 mod alloc_counter;
-use tenferro_cpu::with_cpu_exec_session;
 use tenferro_einsum::ConcreteEinsumPlan;
 use tenferro_linalg::LinalgBackend;
 use tenferro_runtime::TypedTensorSessionOpsExt;
@@ -111,10 +110,10 @@ fn budget(p: &Value, threads: usize) -> usize {
         .map_or(threads, |b| b as usize)
 }
 
-fn checked_backend(threads: usize) -> Result<CpuBackend> {
-    let backend = CpuBackend::with_threads(threads)?;
+fn checked_backend(threads: usize) -> Result<CpuEngine> {
+    let backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
     if backend.num_threads() != threads {
-        return Err("CPU backend thread budget differs from requested count".into());
+        return Err("CPU engine thread budget differs from requested count".into());
     }
     Ok(backend)
 }
@@ -201,7 +200,7 @@ fn matmul(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
         })?;
         return Ok(outcome(None, counters(vec![row]), vec![]));
     }
-    let backend = checked_backend(threads)?;
+    let mut backend = checked_backend(threads)?;
     let mut held = backend.open_session()?;
     let result = held.with_session(|s| -> Result<CaseOutcome> {
         let got = a.matmul(&b, s)?;
@@ -304,7 +303,9 @@ fn entry(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
         } else if param_str(p, "route")? == "scoped" {
             backend.with_backend_session(|_| black_box(()))?;
         } else {
-            backend.open_session()?.close()?;
+            // No separate session entry exists after tenferro-rs #2206; the
+            // route keeps the same empty public callback.
+            black_box(());
         }
         Ok(())
     };
@@ -320,7 +321,7 @@ fn neg(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
     let n = param_usize(p, "n")?;
     let a = TypedTensor::<f64>::from_vec_col_major([n], values(n, 115))?;
     let want: Vec<_> = a.host_data()?.iter().map(|x| -x).collect();
-    let backend = checked_backend(threads)?;
+    let mut backend = checked_backend(threads)?;
     let mut held = backend.open_session()?;
     let result = held.with_session(|s| -> Result<CaseOutcome> {
         check(a.neg(s)?.host_data()?, &want)?;
@@ -339,7 +340,7 @@ fn gemm(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
     let a = Tensor::from_vec_col_major([n, n], vec![1_f64; n * n])?;
     let b = Tensor::from_vec_col_major([n, n], vec![2_f64; n * n])?;
     let plan = ConcreteEinsumPlan::prepare([&a, &b], "ij,jk->ik")?;
-    let backend = checked_backend(threads)?;
+    let mut backend = checked_backend(threads)?;
     let mut held = backend.open_session()?;
     let result = held.with_session(|s| -> Result<CaseOutcome> {
         check(
@@ -365,7 +366,7 @@ fn prepared(p: &Value, threads: usize) -> Result<CaseOutcome> {
     let plan = ConcreteEinsumPlan::prepare([&a, &b], "ij,jk->ik")?;
     let config = matmul_config(&[1], &[0]);
     let mut out = Tensor::from_vec_col_major([n, n], vec![0_f64; n * n])?;
-    let backend = checked_backend(threads)?;
+    let mut backend = checked_backend(threads)?;
     let mut held = backend.open_session()?;
     let result = held.with_session(|s| -> Result<CaseOutcome> {
         let direct = param_str(p,"arm")? == "direct";
@@ -469,35 +470,66 @@ fn lu(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
             ))
         };
     }
-    let backend = checked_backend(threads)?;
-    let mut held = backend.open_session()?;
-    let result = held.with_session(|s| -> Result<CaseOutcome> {
-        with_cpu_exec_session(s, |cpu| -> Result<CaseOutcome> {
-            let factors = LinalgBackend::lu_factor(cpu,&a)?;
-            if factors.len()!=3 { return Err("expected packed LU, pivots and parity".into()); }
-            check(data(&factors[0])?,&expected.0)?;
-            if factors[1].as_slice::<i32>()? != expected.1 { return Err("wrong LU pivots".into()); }
-            check(data(&factors[2])?,&expected.2)?;
-            if lane {
-                let row = counter("batched_lu_factor",bytes,|| Ok(LinalgBackend::lu_factor(cpu,&a)?))?;
-                let mut extra = counters(vec![row]);
-                extra["requested_threads"] = json!(threads);
-                extra["actual_lanes"] = Value::Null; extra["actual_item_threads"] = Value::Null;
-                extra["correctness_status"] = json!("unsupported");
-                extra["unsupported_reason"] = json!("LU verified; no public observer for the internal linalg lane plan. Requested threads and allocator counts do not establish lanes/item-threads.");
-                return Ok(outcome(None,extra,vec![]));
-            }
-            if param_str(p,"op")? == "factor" {
-                Ok(outcome(Some(measure(timing,bytes,|| Ok(LinalgBackend::lu_factor(cpu,&a)?))?),json!({}),vec!["public LinalgBackend packed LU, pivots and parity"]))
-            } else {
-                let got = LinalgBackend::lu_solve_prepared(cpu,&a,&factors[0],&factors[1],&b,false,false)?;
-                check(data(&got)?,&vec![1.;n*batch])?;
-                Ok(outcome(Some(measure(timing,n*batch*8,|| Ok(LinalgBackend::lu_solve_prepared(cpu,&a,&factors[0],&factors[1],&b,false,false)?))?),
-                    json!({"prepared_factorization_outside_timing":true}),vec!["public LinalgBackend prepared LU solve only"]))
-            }
-        }).ok_or("CPU execution session unavailable")?
-    });
-    held.close()?;
+    let mut backend = checked_backend(threads)?;
+    let result = {
+        let cpu = &mut backend;
+        let factors = LinalgBackend::lu_factor(cpu, &a)?;
+        if factors.len() != 3 {
+            return Err("expected packed LU, pivots and parity".into());
+        }
+        check(data(&factors[0])?, &expected.0)?;
+        if factors[1].as_slice::<i32>()? != expected.1 {
+            return Err("wrong LU pivots".into());
+        }
+        check(data(&factors[2])?, &expected.2)?;
+        if lane {
+            let row = counter("batched_lu_factor", bytes, || {
+                Ok(LinalgBackend::lu_factor(cpu, &a)?)
+            })?;
+            let mut extra = counters(vec![row]);
+            extra["requested_threads"] = json!(threads);
+            extra["actual_lanes"] = Value::Null;
+            extra["actual_item_threads"] = Value::Null;
+            extra["correctness_status"] = json!("unsupported");
+            extra["unsupported_reason"] = json!("LU verified; no public observer for the internal linalg lane plan. Requested threads and allocator counts do not establish lanes/item-threads.");
+            return Ok(outcome(None, extra, vec![]));
+        }
+        if param_str(p, "op")? == "factor" {
+            Ok(outcome(
+                Some(measure(timing, bytes, || {
+                    Ok(LinalgBackend::lu_factor(cpu, &a)?)
+                })?),
+                json!({}),
+                vec!["public LinalgBackend packed LU, pivots and parity"],
+            ))
+        } else {
+            let got = LinalgBackend::lu_solve_prepared(
+                cpu,
+                &a,
+                &factors[0],
+                &factors[1],
+                &b,
+                false,
+                false,
+            )?;
+            check(data(&got)?, &vec![1.; n * batch])?;
+            Ok(outcome(
+                Some(measure(timing, n * batch * 8, || {
+                    Ok(LinalgBackend::lu_solve_prepared(
+                        cpu,
+                        &a,
+                        &factors[0],
+                        &factors[1],
+                        &b,
+                        false,
+                        false,
+                    )?)
+                })?),
+                json!({"prepared_factorization_outside_timing":true}),
+                vec!["public LinalgBackend prepared LU solve only"],
+            ))
+        }
+    };
     result
 }
 
@@ -507,7 +539,7 @@ fn axpby(p: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
     let stride = n + 3;
     let offset = 2;
     let storage_len = offset + stride * n;
-    let backend = checked_backend(threads)?;
+    let mut backend = checked_backend(threads)?;
     let mut held = backend.open_session()?;
     let result = held.with_session(|s| -> Result<CaseOutcome> {
         let host = param_str(p,"arm")? == "host";
@@ -628,8 +660,9 @@ fn pool_state(p: &Value, timing: &Timing) -> Result<CaseOutcome> {
                 return Err("the unservable request was served from the pool".into());
             }
             steady = pool.stats();
-            let measurement =
-                measure(timing, len * 8, || Ok(pool.acquire_with_capacity::<f64>(len)))?;
+            let measurement = measure(timing, len * 8, || {
+                Ok(pool.acquire_with_capacity::<f64>(len))
+            })?;
             (measurement, json!({"probe_capacity": probe_capacity}))
         }
         "hit" | "cycle" => {

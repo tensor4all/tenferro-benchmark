@@ -1,26 +1,23 @@
 //! Stateful compact QR public-boundary workflow (#94).
 use std::{error::Error, hint::black_box, time::Instant};
 use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::CpuBackend;
+use tenferro_cpu::CpuEngine;
 use tenferro_einsum::TensorEinsumExt;
 use tenferro_linalg::{EagerSessionLinalgExt, HouseholderQr, QrOptions, TensorLinalgExt};
 use tenferro_runtime::TensorSessionOpsExt;
-use tenferro_tensor::{BackendSession, BackendSessionHost, Tensor, TensorRead};
+use tenferro_tensor::{Engine, Tensor, TensorRead};
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
 const BATCH: usize = 64;
 const APPENDS: usize = 9;
 enum Dispatch<'a> {
-    Shared(&'a mut dyn BackendSession),
-    Fresh(&'a mut CpuBackend),
+    Shared(&'a mut dyn Engine),
+    Fresh(&'a mut CpuEngine),
 }
 impl Dispatch<'_> {
-    fn call<O: Send>(
-        &mut self,
-        f: impl FnOnce(&mut dyn BackendSession) -> Result<O> + Send,
-    ) -> Result<O> {
+    fn call<O: Send>(&mut self, f: impl FnOnce(&mut dyn Engine) -> Result<O> + Send) -> Result<O> {
         match self {
-            Self::Shared(s) => f(*s),
-            Self::Fresh(b) => b.with_backend_session(f)?,
+            Self::Shared(s) => f(&mut **s),
+            Self::Fresh(b) => f(&mut **b),
         }
     }
 }
@@ -81,9 +78,10 @@ fn eager_sequence(
     out: &mut Output<EagerTensor>,
     runtime: &std::sync::Arc<EagerRuntime>,
     shared: Option<&mut tenferro_ad::EagerSession<'_>>,
+    engine: Option<&mut CpuEngine>,
 ) -> Result<()> {
-    match shared {
-        Some(s) => {
+    match (shared, engine) {
+        (Some(s), _) => {
             for (i, b) in blocks.iter().enumerate() {
                 let next = out.states.last().unwrap_or(initial).append_columns(b, s)?;
                 out.states.push(next);
@@ -93,20 +91,22 @@ fn eager_sequence(
                     .push(state.q_columns(5 + 3 * i..8 + 3 * i, QrOptions::default(), s)?);
             }
         }
-        None => {
+        (None, Some(engine)) => {
             for (i, b) in blocks.iter().enumerate() {
-                let next = runtime.with_eager_session(|s| {
+                let next = runtime.with_eager_session(engine, |s| {
                     out.states.last().unwrap_or(initial).append_columns(b, s)
                 })?;
                 out.states.push(next);
                 let state = out.states.last().ok_or("missing state")?;
-                out.r
-                    .push(runtime.with_eager_session(|s| state.r(QrOptions::default(), s))?);
-                out.q.push(runtime.with_eager_session(|s| {
+                out.r.push(
+                    runtime.with_eager_session(engine, |s| state.r(QrOptions::default(), s))?,
+                );
+                out.q.push(runtime.with_eager_session(engine, |s| {
                     state.q_columns(5 + 3 * i..8 + 3 * i, QrOptions::default(), s)
                 })?);
             }
         }
+        (None, None) => return Err("eager sequence needs an engine or an entered session".into()),
     }
     Ok(())
 }
@@ -149,10 +149,36 @@ fn validation(m: usize, a: &[f64], q: &[f64], r: &[f64]) -> Result<(f64, f64)> {
     }
     Ok((residual, ortho))
 }
-fn check_output(
+/// Shape and f64 slice of a retained QR factor: an owned tensor on the direct
+/// paths, or the eager value view when the engine is borrowed by an entered
+/// eager session (validation only; it never changes the measured scope).
+trait CheckedTensor {
+    fn shape(&self) -> &[usize];
+    fn as_f64(&self) -> Result<&[f64]>;
+}
+
+impl CheckedTensor for Tensor {
+    fn shape(&self) -> &[usize] {
+        Tensor::shape(self)
+    }
+    fn as_f64(&self) -> Result<&[f64]> {
+        Ok(self.as_slice::<f64>()?)
+    }
+}
+
+impl CheckedTensor for tenferro_ad::ValueGuard<'_> {
+    fn shape(&self) -> &[usize] {
+        tenferro_ad::ValueGuard::shape(self)
+    }
+    fn as_f64(&self) -> Result<&[f64]> {
+        Ok(self.as_slice::<f64>()?)
+    }
+}
+
+fn check_output<V: CheckedTensor>(
     m: usize,
     initial_q: &Tensor,
-    output: &Output<Tensor>,
+    output: &Output<V>,
     full: &[f64],
 ) -> Result<(f64, f64)> {
     if output.r.len() != 9 || output.q.len() != 9 {
@@ -163,10 +189,10 @@ fn check_output(
         if t.shape() != [m, 3] || output.r[step].shape() != [8 + 3 * step, 8 + 3 * step] {
             return Err("wrong output shape".into());
         }
-        q.extend_from_slice(t.as_slice::<f64>()?);
+        q.extend_from_slice(t.as_f64()?);
         // Every step's R and accumulated selected Q must reconstruct that prefix.
         let rank = 8 + 3 * step;
-        let r = output.r[step].as_slice::<f64>()?;
+        let r = output.r[step].as_f64()?;
         if q.iter().chain(r).any(|v| !v.is_finite()) {
             return Err("nonfinite interleaved output".into());
         }
@@ -181,12 +207,7 @@ fn check_output(
             }
         }
     }
-    validation(
-        m,
-        full,
-        &q,
-        output.r.last().ok_or("missing R")?.as_slice::<f64>()?,
-    )
+    validation(m, full, &q, output.r.last().ok_or("missing R")?.as_f64()?)
 }
 // Explicit-Q BCGS2, using public einsum, QR, arithmetic and concatenation.
 // All intermediate tensors are retained through the batch clock stop.
@@ -201,7 +222,7 @@ fn bcgs(
     blocks: &[Tensor],
     zeros: &[Tensor],
     out: &mut BcgsOutput,
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
     attributed: bool,
 ) -> Result<()> {
     for (i, b) in blocks.iter().enumerate() {
@@ -276,18 +297,19 @@ fn main() -> Result<()> {
         .map(|i| Tensor::from_vec_col_major([m, 3], values(m, 3, 5 + 3 * i)))
         .collect::<std::result::Result<_, _>>()?;
     let full = values(m, 32, 0);
-    let mut backend = CpuBackend::new();
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
     tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
         "CpuBackend",
         backend.num_threads(),
         threads,
     )?;
-    let (initial, initial_q, initial_r) = backend.with_backend_session(|s| -> Result<_> {
+    let (initial, initial_q, initial_r) = {
+        let s: &mut dyn Engine = &mut backend;
         let state = input.householder_qr(s)?;
         let q = state.q_columns(0..5, QrOptions::default(), s)?;
         let r = state.r(QrOptions::default(), s)?;
-        Ok((state, q, r))
-    })??;
+        (state, q, r)
+    };
     let zeros: Vec<Tensor> = (0..9)
         .map(|i| Tensor::from_vec_col_major([3, 5 + 3 * i], vec![0.; 3 * (5 + 3 * i)]))
         .collect::<std::result::Result<_, _>>()?;
@@ -332,89 +354,91 @@ fn main() -> Result<()> {
         Ok(())
     };
     match path.as_str() {
-        "shared" | "attributed" => {
-            backend.with_backend_session(|s| execute(&mut Dispatch::Shared(s)))??
-        }
+        "shared" | "attributed" => execute(&mut Dispatch::Shared(&mut backend))?,
         "fresh" => execute(&mut Dispatch::Fresh(&mut backend))?,
-        "bcgs2" | "bcgs2-attributed" => backend.with_backend_session(|s| -> Result<()> {
-            for pass in 0..1 + warmups + samples {
-                let preparation_clock = Instant::now();
-                let mut outputs: Vec<_> = (0..BATCH)
-                    .map(|_| {
-                        Ok(BcgsOutput {
-                            tensors: {
-                                let mut v = Vec::with_capacity(2 + 9 * 15);
-                                v.push(Tensor::from_vec_col_major(
-                                    [m, 5],
-                                    initial_q.as_slice::<f64>()?.to_vec(),
-                                )?);
-                                v.push(Tensor::from_vec_col_major(
-                                    [5, 5],
-                                    initial_r.as_slice::<f64>()?.to_vec(),
-                                )?);
-                                v
-                            },
-                            q: 0,
-                            r: 1,
-                            append_ns: 0,
+        "bcgs2" | "bcgs2-attributed" => {
+            let s: &mut dyn Engine = &mut backend;
+            (|| -> Result<()> {
+                for pass in 0..1 + warmups + samples {
+                    let preparation_clock = Instant::now();
+                    let mut outputs: Vec<_> = (0..BATCH)
+                        .map(|_| {
+                            Ok(BcgsOutput {
+                                tensors: {
+                                    let mut v = Vec::with_capacity(2 + 9 * 15);
+                                    v.push(Tensor::from_vec_col_major(
+                                        [m, 5],
+                                        initial_q.as_slice::<f64>()?.to_vec(),
+                                    )?);
+                                    v.push(Tensor::from_vec_col_major(
+                                        [5, 5],
+                                        initial_r.as_slice::<f64>()?.to_vec(),
+                                    )?);
+                                    v
+                                },
+                                q: 0,
+                                r: 1,
+                                append_ns: 0,
+                            })
                         })
-                    })
-                    .collect::<Result<_>>()?;
-                preparation_ns += preparation_clock.elapsed().as_nanos();
-                let clock = Instant::now();
-                for out in &mut outputs {
-                    bcgs(m, &blocks, &zeros, out, s, path == "bcgs2-attributed")?;
+                        .collect::<Result<_>>()?;
+                    preparation_ns += preparation_clock.elapsed().as_nanos();
+                    let clock = Instant::now();
+                    for out in &mut outputs {
+                        bcgs(m, &blocks, &zeros, out, s, path == "bcgs2-attributed")?;
+                    }
+                    let elapsed = clock.elapsed().as_nanos();
+                    black_box(&outputs);
+                    if pass <= warmups {
+                        warmup_ns += elapsed;
+                    }
+                    let validation_clock = Instant::now();
+                    for out in &outputs {
+                        let copy = |t: &Tensor| -> Result<Tensor> {
+                            Ok(Tensor::from_vec_col_major(
+                                t.shape().to_vec(),
+                                t.as_slice::<f64>()?.to_vec(),
+                            )?)
+                        };
+                        let observed = Output {
+                            states: vec![],
+                            r: (0..9)
+                                .map(|i| copy(&out.tensors[2 + 15 * i + 11]))
+                                .collect::<Result<_>>()?,
+                            q: (0..9)
+                                .map(|i| copy(&out.tensors[2 + 15 * i + 12]))
+                                .collect::<Result<_>>()?,
+                        };
+                        let (prefix_r, prefix_o) = check_output(m, &initial_q, &observed, &full)?;
+                        worst.0 = worst.0.max(prefix_r);
+                        worst.1 = worst.1.max(prefix_o);
+                        let (r, o) = validation(
+                            m,
+                            &full,
+                            out.tensors[out.q].as_slice::<f64>()?,
+                            out.tensors[out.r].as_slice::<f64>()?,
+                        )?;
+                        worst.0 = worst.0.max(r);
+                        worst.1 = worst.1.max(o);
+                    }
+                    validation_ns += validation_clock.elapsed().as_nanos();
+                    if pass > warmups {
+                        raw.push(elapsed);
+                        attributed_raw.push([outputs.iter().map(|o| o.append_ns).sum(), 0, 0]);
+                    }
                 }
-                let elapsed = clock.elapsed().as_nanos();
-                black_box(&outputs);
-                if pass <= warmups {
-                    warmup_ns += elapsed;
-                }
-                let validation_clock = Instant::now();
-                for out in &outputs {
-                    let copy = |t: &Tensor| -> Result<Tensor> {
-                        Ok(Tensor::from_vec_col_major(
-                            t.shape().to_vec(),
-                            t.as_slice::<f64>()?.to_vec(),
-                        )?)
-                    };
-                    let observed = Output {
-                        states: vec![],
-                        r: (0..9)
-                            .map(|i| copy(&out.tensors[2 + 15 * i + 11]))
-                            .collect::<Result<_>>()?,
-                        q: (0..9)
-                            .map(|i| copy(&out.tensors[2 + 15 * i + 12]))
-                            .collect::<Result<_>>()?,
-                    };
-                    let (prefix_r, prefix_o) = check_output(m, &initial_q, &observed, &full)?;
-                    worst.0 = worst.0.max(prefix_r);
-                    worst.1 = worst.1.max(prefix_o);
-                    let (r, o) = validation(
-                        m,
-                        &full,
-                        out.tensors[out.q].as_slice::<f64>()?,
-                        out.tensors[out.r].as_slice::<f64>()?,
-                    )?;
-                    worst.0 = worst.0.max(r);
-                    worst.1 = worst.1.max(o);
-                }
-                validation_ns += validation_clock.elapsed().as_nanos();
-                if pass > warmups {
-                    raw.push(elapsed);
-                    attributed_raw.push([outputs.iter().map(|o| o.append_ns).sum(), 0, 0]);
-                }
-            }
-            Ok(())
-        })??,
+                Ok(())
+            })()?
+        }
         "eager-fresh" | "eager-shared" => {
-            let runtime = EagerRuntime::with_cpu_backend(backend)?;
+            let runtime = EagerRuntime::new()?;
             let _guard = runtime.no_grad();
             let initial_input = EagerTensor::from_tensor_in(input, runtime.clone())?;
             if initial_input.tracks_grad() {
                 return Err("tracked initial fixture".into());
             }
-            let eager_initial = runtime.with_eager_session(|s| s.householder_qr(&initial_input))?;
+            let eager_initial =
+                runtime.with_eager_session(&mut backend, |s| s.householder_qr(&initial_input))?;
             let eager_blocks: Vec<_> = blocks
                 .into_iter()
                 .map(|b| EagerTensor::from_tensor_in(b, runtime.clone()))
@@ -423,61 +447,66 @@ fn main() -> Result<()> {
                 return Err("tracked fixture".into());
             }
             initialization_ms = setup.elapsed().as_secs_f64() * 1000.;
-            let mut batches =
-                |mut shared: Option<&mut tenferro_ad::EagerSession<'_>>| -> Result<()> {
-                    for pass in 0..1 + warmups + samples {
-                        let preparation_clock = Instant::now();
-                        let mut outputs: Vec<_> = (0..BATCH).map(|_| Output::new()).collect();
-                        preparation_ns += preparation_clock.elapsed().as_nanos();
-                        let clock = Instant::now();
-                        for out in &mut outputs {
-                            eager_sequence(
-                                &eager_initial,
-                                &eager_blocks,
-                                out,
-                                &runtime,
-                                shared.as_deref_mut(),
-                            )?;
-                        }
-                        let elapsed = clock.elapsed().as_nanos();
-                        black_box(&outputs);
-                        if pass <= warmups {
-                            warmup_ns += elapsed;
-                        }
-                        let validation_clock = Instant::now();
-                        for out in &outputs {
-                            if out.q.iter().chain(&out.r).any(EagerTensor::tracks_grad) {
-                                return Err("tracked result".into());
-                            }
-                            let concrete = Output {
-                                states: vec![],
-                                q: out
-                                    .q
-                                    .iter()
-                                    .map(EagerTensor::to_tensor)
-                                    .collect::<std::result::Result<_, _>>()?,
-                                r: out
-                                    .r
-                                    .iter()
-                                    .map(EagerTensor::to_tensor)
-                                    .collect::<std::result::Result<_, _>>()?,
-                            };
-                            let (r, o) = check_output(m, &initial_q, &concrete, &full)?;
-                            worst.0 = worst.0.max(r);
-                            worst.1 = worst.1.max(o);
-                        }
-                        validation_ns += validation_clock.elapsed().as_nanos();
-                        if pass > warmups {
-                            raw.push(elapsed);
-                            attributed_raw.push([0; 3]);
-                        }
+            let mut batches = |mut shared: Option<&mut tenferro_ad::EagerSession<'_>>,
+                               mut engine: Option<&mut CpuEngine>|
+             -> Result<()> {
+                for pass in 0..1 + warmups + samples {
+                    let preparation_clock = Instant::now();
+                    let mut outputs: Vec<_> = (0..BATCH).map(|_| Output::new()).collect();
+                    preparation_ns += preparation_clock.elapsed().as_nanos();
+                    let clock = Instant::now();
+                    for out in &mut outputs {
+                        eager_sequence(
+                            &eager_initial,
+                            &eager_blocks,
+                            out,
+                            &runtime,
+                            shared.as_deref_mut(),
+                            engine.as_deref_mut(),
+                        )?;
                     }
-                    Ok(())
-                };
+                    let elapsed = clock.elapsed().as_nanos();
+                    black_box(&outputs);
+                    if pass <= warmups {
+                        warmup_ns += elapsed;
+                    }
+                    let validation_clock = Instant::now();
+                    for out in &outputs {
+                        if out.q.iter().chain(&out.r).any(EagerTensor::tracks_grad) {
+                            return Err("tracked result".into());
+                        }
+                        // The engine may be borrowed by the entered session,
+                        // so validation reads the retained value view instead
+                        // of materializing a second copy.
+                        let concrete = Output {
+                            states: vec![],
+                            q: out
+                                .q
+                                .iter()
+                                .map(|t| t.value())
+                                .collect::<std::result::Result<_, _>>()?,
+                            r: out
+                                .r
+                                .iter()
+                                .map(|t| t.value())
+                                .collect::<std::result::Result<_, _>>()?,
+                        };
+                        let (r, o) = check_output(m, &initial_q, &concrete, &full)?;
+                        worst.0 = worst.0.max(r);
+                        worst.1 = worst.1.max(o);
+                    }
+                    validation_ns += validation_clock.elapsed().as_nanos();
+                    if pass > warmups {
+                        raw.push(elapsed);
+                        attributed_raw.push([0; 3]);
+                    }
+                }
+                Ok(())
+            };
             if path == "eager-shared" {
-                runtime.with_eager_session(|s| batches(Some(s)))?;
+                runtime.with_eager_session(&mut backend, |s| batches(Some(s), None))?;
             } else {
-                batches(None)?;
+                batches(None, Some(&mut backend))?;
             }
         }
         _ => unreachable!(),

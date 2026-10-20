@@ -7,7 +7,7 @@
 //! destination and compares:
 //!
 //! - `tenferro-rs`: `TypedTensorView::transpose_view` +
-//!   `BackendSession::to_contiguous_read` (accepts arbitrary source strides)
+//!   `CpuEngine::to_contiguous_read` (accepts arbitrary source strides)
 //! - `hptt` (feature `hptt`, contiguous src/dst only)
 //! - `strided-rs` (feature `strided-rs`; `strided_perm::copy_into` /
 //!   `copy_into_col_major`, see below)
@@ -53,8 +53,7 @@ use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 
-use tenferro_cpu::CpuBackend;
-use tenferro_tensor::{BackendSessionHost, TensorRead, TensorView, TypedTensorView};
+use tenferro_tensor::{TensorRead, TensorStructural, TensorView, TypedTensorView};
 
 const PATTERN_PATH: &str = "data/instances/permutation_patterns.json";
 const SUITE_ID: &str = "cpu/permutation";
@@ -645,16 +644,11 @@ fn run_participant(
             let transposed = view
                 .transpose_view(&pattern.perm)
                 .expect("transpose_view must succeed on a validated permutation");
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None)
+                .expect("CPU engine construction must succeed");
             let compact = backend
-                .with_backend_session(|session| {
-                    session
-                        .to_contiguous_read(TensorRead::from_view(TensorView::F64(
-                            transposed.clone(),
-                        )))
-                        .expect("session materialization must succeed")
-                })
-                .expect("entering the CPU backend session must succeed");
+                .to_contiguous_read(TensorRead::from_view(TensorView::F64(transposed.clone())))
+                .expect("engine materialization must succeed");
             let actual = compact
                 .as_slice::<f64>()
                 .expect("to_contiguous output must be host-contiguous");
@@ -670,13 +664,9 @@ fn run_participant(
                 .map(|_| TensorRead::from_view(TensorView::F64(transposed.clone())))
                 .collect::<Vec<_>>()
                 .into_iter();
-            let timing = backend
-                .with_backend_session(|session| {
-                    bench_n(warmup, iters, bytes, || {
-                        session.to_contiguous_read(reads.next().unwrap()).unwrap()
-                    })
-                })
-                .expect("entering the CPU backend session must succeed");
+            let timing = bench_n(warmup, iters, bytes, || {
+                backend.to_contiguous_read(reads.next().unwrap()).unwrap()
+            });
             finish!(base("ok", "passed", true), Some(timing));
         }
         Participant::Hptt => {
@@ -1076,13 +1066,9 @@ mod tests {
             )
             .unwrap();
             let transposed = view.transpose_view(&pattern.perm).unwrap();
-            let mut backend = CpuBackend::new();
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(None).unwrap();
             let compact = backend
-                .with_backend_session(|session| {
-                    session
-                        .to_contiguous_read(TensorRead::from_view(TensorView::F64(transposed)))
-                        .unwrap()
-                })
+                .to_contiguous_read(TensorRead::from_view(TensorView::F64(transposed)))
                 .unwrap();
             assert_eq!(
                 compact.as_slice::<f64>().unwrap(),

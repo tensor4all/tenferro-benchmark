@@ -360,7 +360,7 @@ fn session_op(
         vec![want.len()]
     };
     let mut out = Tensor::from_vec_col_major(out_shape, vec![0.; want.len()])?;
-    let backend = checked_backend(threads)?;
+    let mut backend = checked_backend(threads)?;
     let mut held = backend.open_session()?;
     let row = held.with_session(|s| -> Result<(Value, Option<Measurement>)> {
         let label = fx.label;
@@ -387,7 +387,7 @@ fn session_op(
                 probe(label, bytes, timing, || Ok(a.reduce_sum(Some(&[1]), s)?))
             }
             "concat" => {
-                let concat = |s: &mut dyn BackendSession| {
+                let concat = |s: &mut dyn Engine| {
                     <Tensor as TensorSessionOpsExt>::concatenate(&[&tx, &ty], 1, s)
                 };
                 check(data(&concat(s)?)?, want)?;
@@ -434,18 +434,34 @@ fn fused(
         .map(|t| (t, DType::F64, shape.as_slice()))
         .collect();
     let program = GraphCompiler::new().compile_with_input_specs(&out, &specs)?;
-    let backend = checked_backend(threads)?;
+    let mut backend = checked_backend(threads)?;
     let mut builder = Runtime::builder();
     builder.register_engine(runtime_engine_registration(&backend)?)?;
     let runtime = builder.build()?;
     let tensors = [x, y, z].map(|v| Tensor::from_vec_col_major(shape.clone(), v.to_vec()));
     let [tx, ty, tz] = tensors;
     let (tx, ty, tz) = (tx?, ty?, tz?);
-    let args = [&tx, &ty, &tz];
-    let prepared = runtime.prepare_compiled(&program, &args)?;
-    check(data(&runtime.run_prepared(&prepared, &args)?[0])?, want)?;
+    let args = [
+        TensorRead::from_tensor(&tx),
+        TensorRead::from_tensor(&ty),
+        TensorRead::from_tensor(&tz),
+    ];
+    let target = ExecutionEngine::target(&backend);
+    let prepared = runtime.prepare(&program, &args, std::slice::from_ref(&target))?;
+    let first = runtime.run(&mut [&mut backend], &prepared, &args)?;
+    let first = first
+        .into_iter()
+        .next()
+        .ok_or("prepared program returned no output")?
+        .into_tensor(&mut backend)?;
+    check(data(&first)?, want)?;
     let (row, measurement) = probe(fx.label, want.len() * 8, timing, || {
-        Ok(runtime.run_prepared(&prepared, &args)?)
+        let outputs = runtime.run(&mut [&mut backend], &prepared, &args)?;
+        let outputs = outputs
+            .into_iter()
+            .map(|output| output.into_tensor(&mut backend))
+            .collect::<tenferro_tensor::Result<Vec<_>>>()?;
+        Ok(outputs)
     })?;
     let (fused, fallbacks) = prepared.elementwise_region_execution_counts();
     let (planned, covered) = prepared.elementwise_region_summary();
@@ -477,11 +493,9 @@ mod tests {
             let error = run(&params, &timing, 1)
                 .err()
                 .expect("must reject standard timing");
-            assert!(
-                error
-                    .to_string()
-                    .contains("explicit session-entry diagnostic")
-            );
+            assert!(error
+                .to_string()
+                .contains("explicit session-entry diagnostic"));
         }
     }
 
@@ -500,24 +514,18 @@ mod tests {
             result.extra["timing_scope"],
             "public_path_latency_including_internal_session_entry"
         );
-        assert!(
-            result
-                .timer
-                .iter()
-                .any(|item| item.contains("session entry and exit"))
-        );
-        assert!(
-            !result
-                .outside_timer
-                .iter()
-                .any(|item| item.contains("entered held session"))
-        );
-        assert!(
-            result
-                .measurement
-                .expect("zero-sample measurement")
-                .samples
-                .is_empty()
-        );
+        assert!(result
+            .timer
+            .iter()
+            .any(|item| item.contains("session entry and exit")));
+        assert!(!result
+            .outside_timer
+            .iter()
+            .any(|item| item.contains("entered held session")));
+        assert!(result
+            .measurement
+            .expect("zero-sample measurement")
+            .samples
+            .is_empty());
     }
 }

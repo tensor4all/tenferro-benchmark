@@ -12,11 +12,11 @@ use std::time::{Duration, Instant};
 use serde_json::{json, Value};
 use tenferro_ad::AdContext;
 use tenferro_gpu::cuda::{
-    cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaBackend,
+    cuda_runtime_engine_registration, download_tensor, gpu_available, upload_tensor, CudaEngine,
     CudaRuntime,
 };
 use tenferro_linalg::TracedTensorLinalgExt;
-use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
+use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TracedTensor};
 use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 
 /// Backend identity of the deferred-batch throughput mode.
@@ -26,13 +26,6 @@ use tenferro_tensor::{DeviceKind, GpuBackendKind, Tensor};
 /// mode carries its own backend name.
 const DEFERRED_BATCH_BACKEND: &str = "tenferro-cuda-trace-deferred-batch";
 const LATENCY_BACKEND: &str = "tenferro-cuda-trace";
-
-/// Marker prefix for a deferred-batch preflight rejection.
-///
-/// `Runtime::begin_prepared_deferred` rejects a graph that is not one
-/// borrowed-session engine. That is an eligibility fact about the case, so it is
-/// reported as `unsupported` instead of silently measuring the latency route.
-const DEFERRED_PREFLIGHT_PREFIX: &str = "deferred-batch-preflight: ";
 
 /// Deferred runs enqueued per timed throughput sample (one retirement per batch).
 fn deferred_batch_k() -> usize {
@@ -48,24 +41,34 @@ fn throughput_regime(problem: &serde_yaml::Value) -> bool {
     problem["regime"].as_str() == Some("throughput")
 }
 
-/// Enqueue `count` deferred prepared runs and retire the whole batch once.
+/// Enqueue `count` prepared runs on the caller-held engine and retire the whole
+/// batch once.
 ///
-/// The guard borrows its session and inputs for its own lifetime, so this takes
-/// exactly that lifetime instead of a fresh one per call.
-fn run_deferred_batch<'a>(
-    deferred: &mut tenferro_runtime::PreparedDeferred<'a>,
-    inputs: &'a [&'a Tensor],
+/// tenferro-rs #2206 removed `PreparedDeferred`/`run_prepared_deferred`: a GPU
+/// `Runtime::run` returns once its work is queued, so `K` runs back to back are
+/// `K` enqueues and one caller-side `synchronize` is the single retirement.
+fn run_deferred_batch(
+    runtime: &Runtime,
+    engine: &mut CudaEngine,
+    runtime_sync: &CudaRuntime,
+    prepared: &tenferro_runtime::Prepared,
     count: usize,
 ) -> Result<(f64, Vec<Vec<Tensor>>), String> {
     let start = Instant::now();
+    let mut runs = Vec::with_capacity(count);
     for _ in 0..count {
-        deferred
-            .run_prepared_deferred(inputs)
+        let outputs = runtime
+            .run(&mut [&mut *engine], prepared, &[])
             .map_err(|e| format!("deferred enqueue: {e}"))?;
+        runs.push(
+            outputs
+                .into_iter()
+                .map(|output| output.into_tensor(&mut *engine))
+                .collect::<tenferro_tensor::Result<Vec<_>>>()
+                .map_err(|e| format!("deferred materialization: {e}"))?,
+        );
     }
-    let runs = deferred
-        .finish_prepared()
-        .map_err(|e| format!("deferred finish: {e}"))?;
+    sync_runtime(runtime_sync)?;
     Ok((start.elapsed().as_secs_f64() * 1000.0, runs))
 }
 
@@ -208,11 +211,16 @@ fn dispatch(
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
         // backend are rejected by the compute engine and by the traced runtime.
-        let mut compute_bk = CudaBackend::new(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
+        let engine_id = tenferro_runtime::EngineId::new("benchmark.cuda")
+            .map_err(|e| format!("CUDA engine id: {e}"))?;
+        let mut compute_bk = CudaEngine::open(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
-        .map_err(|e| format!("compute backend: {e}"))?;
-        let transfer_bk = compute_bk.clone();
+        .map_err(|e| format!("compute engine: {e}"))?
+        .with_runtime_engine_id(engine_id);
+        // Transfers use the compute engine's own runtime (tenferro-rs #2206:
+        // one engine owns one logical stream and allocation domain).
+        let transfer_rt = compute_bk.runtime().clone();
         let ad = problem["linalg_ad"]
             .as_mapping()
             .ok_or("missing linalg_ad block")?;
@@ -223,8 +231,8 @@ fn dispatch(
         let rhs_cols = yaml_usize(ad.get("rhs_cols").unwrap_or(&serde_yaml::Value::Null), 1);
 
         let loss_spec = parse_loss(loss, matrix_seed, rhs_seed, rhs_cols)?;
-        let outputs = build_ad_outputs(phase, n, &loss_spec, transfer_bk.runtime())?;
-        sync_runtime(transfer_bk.runtime())?;
+        let outputs = build_ad_outputs(phase, n, &loss_spec, &transfer_rt)?;
+        sync_runtime(&transfer_rt)?;
 
         let output_refs: Vec<&TracedTensor> = outputs.iter().collect();
         let mut compiler = GraphCompiler::new();
@@ -233,8 +241,9 @@ fn dispatch(
             .map_err(|e| format!("compile: {e}"))?;
 
         let runtime = cuda_runtime_with_extensions(&compute_bk)?;
+        let target = ExecutionEngine::target(&compute_bk);
         let prepared = runtime
-            .prepare_compiled(&program, &[])
+            .prepare(&program, &[], std::slice::from_ref(&target))
             .map_err(|e| format!("prepare: {e}"))?;
 
         let mut times_ms = Vec::new();
@@ -243,31 +252,35 @@ fn dispatch(
         let initial;
         let final_values;
         if diagnostic {
-            // Public-path latency: the public `run_prepared` scope, including
-            // its internal session entry, is the declared measurement.
+            // Public-path latency: each public `Runtime::run` call and its
+            // device completion are the declared measurement.
             let probe = runtime
-                .run_prepared(&prepared, &[])
-                .map_err(|e| format!("initial run: {e}"))?;
-            sync_runtime(transfer_bk.runtime())?;
-            initial = export_outputs(transfer_bk.runtime(), &probe, device_ordinal)?;
+                .run(&mut [&mut compute_bk], &prepared, &[])
+                .map_err(|e| format!("initial run: {e}"))?
+                .into_iter()
+                .map(|output| output.into_tensor(&mut compute_bk))
+                .collect::<tenferro_tensor::Result<Vec<_>>>()
+                .map_err(|e| format!("initial materialization: {e}"))?;
+            sync_runtime(&transfer_rt)?;
+            initial = export_outputs(&transfer_rt, &probe, device_ordinal)?;
             let bytes = probe
                 .iter()
                 .map(|v| v.shape().iter().product::<usize>() * 8)
                 .sum::<usize>();
             drop(probe);
             if !verify_only {
-                let batch = |count: usize| -> Result<f64, String> {
+                let mut batch = |count: usize| -> Result<f64, String> {
                     let mut retained = Vec::with_capacity(count);
-                    sync_runtime(transfer_bk.runtime())?;
+                    sync_runtime(&transfer_rt)?;
                     let start = Instant::now();
                     for _ in 0..count {
                         retained.push(
                             runtime
-                                .run_prepared(&prepared, &[])
+                                .run(&mut [&mut compute_bk], &prepared, &[])
                                 .map_err(|e| format!("run: {e}"))?,
                         );
                     }
-                    sync_runtime(transfer_bk.runtime())?;
+                    sync_runtime(&transfer_rt)?;
                     let elapsed = start.elapsed().as_secs_f64() * 1000.0;
                     black_box(&retained);
                     Ok(elapsed)
@@ -290,97 +303,107 @@ fn dispatch(
                 }
             }
             let final_outputs = runtime
-                .run_prepared(&prepared, &[])
-                .map_err(|e| format!("final run: {e}"))?;
-            sync_runtime(transfer_bk.runtime())?;
-            final_values = export_outputs(transfer_bk.runtime(), &final_outputs, device_ordinal)?;
+                .run(&mut [&mut compute_bk], &prepared, &[])
+                .map_err(|e| format!("final run: {e}"))?
+                .into_iter()
+                .map(|output| output.into_tensor(&mut compute_bk))
+                .collect::<tenferro_tensor::Result<Vec<_>>>()
+                .map_err(|e| format!("final materialization: {e}"))?;
+            sync_runtime(&transfer_rt)?;
+            final_values = export_outputs(&transfer_rt, &final_outputs, device_ordinal)?;
         } else if throughput {
-            // Throughput mode: one deferred guard per sampling run, K deferred
-            // prepared runs per timed sample and one retirement per sample. Per
-            // call time is sample_ms / K, which is a throughput measurement and
-            // is never joined with the per-call latency rows.
-            let mut session = compute_bk
-                .open_session()
-                .map_err(|e| format!("open held session: {e}"))?;
+            // Throughput mode: K prepared runs enqueued per timed sample on one
+            // caller-held engine, then one retirement. Per-call time is
+            // sample_ms / K, which is a throughput measurement and is never
+            // joined with the per-call latency rows.
             let configured_k = deferred_batch_k();
             let mut effective_k = configured_k;
-            let sampled = session.with_session(
-                |view| -> Result<(Vec<Tensor>, Option<Vec<Tensor>>), String> {
-                    let mut deferred = runtime
-                        .begin_prepared_deferred(view, &prepared)
-                        .map_err(|e| format!("{DEFERRED_PREFLIGHT_PREFIX}{e}"))?;
-                    // Probe batch outside the clocks: proves the deferred route,
-                    // bounds retention from one output set and supplies the
-                    // initial verification outputs. One run is enough for the
-                    // bound, so a large configured K cannot overshoot the
-                    // retention budget before it is clamped.
-                    let (_, mut probe) = run_deferred_batch(&mut deferred, &[], 1)?;
-                    let bytes: usize = probe
-                        .first()
-                        .map(|run| {
-                            run.iter()
-                                .map(|v| v.shape().iter().product::<usize>() * 8)
-                                .sum::<usize>()
-                        })
-                        .unwrap_or(1);
-                    effective_k =
-                        configured_k.min(((256usize << 20) / bytes.max(1)).clamp(1, 4096));
-                    // First probe run proves one run's outputs, the last one
-                    // supplies the final verification outputs.
-                    let initial_out = if probe.len() > 1 {
-                        probe.remove(0)
-                    } else {
-                        probe
-                            .pop()
-                            .ok_or_else(|| "deferred batch returned no run".to_string())?
-                    };
-                    let mut last_timed: Option<Vec<Tensor>> = probe.pop();
-                    if verify_only {
-                        // Verification-only lane: no clocks, same deferred route.
-                        let (_, runs) = run_deferred_batch(&mut deferred, &[], 1)?;
+            let sampled = (|| -> Result<(Vec<Tensor>, Option<Vec<Tensor>>), String> {
+                // Probe batch outside the clocks: proves the route, bounds
+                // retention from one output set and supplies the initial
+                // verification outputs. One run is enough for the bound, so
+                // a large configured K cannot overshoot the retention budget
+                // before it is clamped.
+                let (_, mut probe) =
+                    run_deferred_batch(&runtime, &mut compute_bk, &transfer_rt, &prepared, 1)?;
+                let bytes: usize = probe
+                    .first()
+                    .map(|run| {
+                        run.iter()
+                            .map(|v| v.shape().iter().product::<usize>() * 8)
+                            .sum::<usize>()
+                    })
+                    .unwrap_or(1);
+                effective_k = configured_k.min(((256usize << 20) / bytes.max(1)).clamp(1, 4096));
+                // First probe run proves one run's outputs, the last one
+                // supplies the final verification outputs.
+                let initial_out = if probe.len() > 1 {
+                    probe.remove(0)
+                } else {
+                    probe
+                        .pop()
+                        .ok_or_else(|| "deferred batch returned no run".to_string())?
+                };
+                let mut last_timed: Option<Vec<Tensor>> = probe.pop();
+                if verify_only {
+                    // Verification-only lane: no clocks, same route.
+                    let (_, runs) =
+                        run_deferred_batch(&runtime, &mut compute_bk, &transfer_rt, &prepared, 1)?;
+                    last_timed = runs.into_iter().last();
+                } else {
+                    for _ in 0..n_warmup {
+                        let (_, runs) = run_deferred_batch(
+                            &runtime,
+                            &mut compute_bk,
+                            &transfer_rt,
+                            &prepared,
+                            effective_k,
+                        )?;
                         last_timed = runs.into_iter().last();
-                    } else {
-                        for _ in 0..n_warmup {
-                            let (_, runs) = run_deferred_batch(&mut deferred, &[], effective_k)?;
-                            last_timed = runs.into_iter().last();
-                            black_box(last_timed.as_ref().map(Vec::len));
-                        }
-                        for _ in 0..n_runs {
-                            let (duration, runs) =
-                                run_deferred_batch(&mut deferred, &[], effective_k)?;
-                            batch_ms.push(duration);
-                            times_ms.push(duration / effective_k as f64);
-                            last_timed = runs.into_iter().last();
-                            black_box(last_timed.as_ref().map(Vec::len));
-                        }
+                        black_box(last_timed.as_ref().map(Vec::len));
                     }
-                    Ok((initial_out, last_timed))
-                },
-            );
-            session
-                .close()
-                .map_err(|e| format!("close held session: {e}"))?;
+                    for _ in 0..n_runs {
+                        let (duration, runs) = run_deferred_batch(
+                            &runtime,
+                            &mut compute_bk,
+                            &transfer_rt,
+                            &prepared,
+                            effective_k,
+                        )?;
+                        batch_ms.push(duration);
+                        times_ms.push(duration / effective_k as f64);
+                        last_timed = runs.into_iter().last();
+                        black_box(last_timed.as_ref().map(Vec::len));
+                    }
+                }
+                Ok((initial_out, last_timed))
+            })();
             count = effective_k;
-            let (initial_out, final_out) =
-                sampled.map_err(|e| format!("held session entry: {e}"))??;
-            initial = export_outputs(transfer_bk.runtime(), &initial_out, device_ordinal)?;
+            let (initial_out, final_out) = sampled?;
+            initial = export_outputs(&transfer_rt, &initial_out, device_ordinal)?;
             let final_outputs =
                 final_out.ok_or("no deferred-batch result available for verification")?;
-            final_values = export_outputs(transfer_bk.runtime(), &final_outputs, device_ordinal)?;
+            final_values = export_outputs(&transfer_rt, &final_outputs, device_ordinal)?;
         } else {
-            // Standard operation rows: one caller-held CUDA session executes
-            // every run, including both verification runs. Each
-            // `run_prepared_in` call retires its own device work before
-            // returning, so the per-call barrier stays inside the timed batch.
-            let mut session = compute_bk
-                .open_session()
-                .map_err(|e| format!("open held session: {e}"))?;
-            let initial_out = session
-                .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
-                .map_err(|e| format!("held session entry: {e}"))?
-                .map_err(|e| format!("initial run: {e}"))?;
-            sync_runtime(transfer_bk.runtime())?;
-            initial = export_outputs(transfer_bk.runtime(), &initial_out, device_ordinal)?;
+            // Standard operation rows: the caller-held engine executes every
+            // run, including both verification runs. tenferro-rs #2206 has no
+            // per-call session retirement, so an explicit device synchronize
+            // after each run keeps the per-call barrier inside the timed batch,
+            // exactly as the removed `run_prepared_in` did.
+            let mut run_once = |label: &'static str| -> Result<Vec<Tensor>, String> {
+                let outputs = runtime
+                    .run(&mut [&mut compute_bk], &prepared, &[])
+                    .map_err(|e| format!("{label} run: {e}"))?;
+                let outputs = outputs
+                    .into_iter()
+                    .map(|output| output.into_tensor(&mut compute_bk))
+                    .collect::<tenferro_tensor::Result<Vec<_>>>()
+                    .map_err(|e| format!("{label} materialization: {e}"))?;
+                sync_runtime(&transfer_rt)?;
+                Ok(outputs)
+            };
+            let initial_out = run_once("initial")?;
+            initial = export_outputs(&transfer_rt, &initial_out, device_ordinal)?;
             let bytes = initial_out
                 .iter()
                 .map(|v| v.shape().iter().product::<usize>() * 8)
@@ -388,27 +411,16 @@ fn dispatch(
             drop(initial_out);
             let mut last_timed: Option<Vec<Tensor>> = None;
             if verify_only {
-                // Verification-only lane: no clocks, same held-session route.
-                last_timed = Some(
-                    session
-                        .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
-                        .map_err(|e| format!("held session entry: {e}"))?
-                        .map_err(|e| format!("verification run: {e}"))?,
-                );
+                // Verification-only lane: no clocks, same caller-held route.
+                last_timed = Some(run_once("verification")?);
             } else {
                 ramp_gpu_clocks(|| {
-                    let out = session
-                        .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
-                        .map_err(|e| format!("held session entry: {e}"))?
-                        .map_err(|e| format!("ramp: {e}"))?;
+                    let out = run_once("ramp")?;
                     black_box(out.len());
                     Ok(())
                 })?;
                 for _ in 0..n_warmup {
-                    let out = session
-                        .with_session(|s| runtime.run_prepared_in(s, &prepared, &[]))
-                        .map_err(|e| format!("held session entry: {e}"))?
-                        .map_err(|e| format!("warmup: {e}"))?;
+                    let out = run_once("warmup")?;
                     black_box(out.len());
                 }
                 {
@@ -416,14 +428,7 @@ fn dispatch(
                         let mut retained = Vec::with_capacity(count);
                         let start = Instant::now();
                         for _ in 0..count {
-                            retained.push(
-                                session
-                                    .with_session(|s| {
-                                        runtime.run_prepared_in(s, &prepared, &[])
-                                    })
-                                    .map_err(|e| format!("held session entry: {e}"))?
-                                    .map_err(|e| format!("run: {e}"))?,
-                            );
+                            retained.push(run_once("timed")?);
                         }
                         let elapsed = start.elapsed().as_secs_f64() * 1000.0;
                         black_box(&retained);
@@ -441,24 +446,19 @@ fn dispatch(
                     }
                 }
             }
-            session
-                .close()
-                .map_err(|e| format!("close held session: {e}"))?;
-            let final_outputs =
-                last_timed.ok_or("no held-session result available for verification")?;
-            final_values =
-                export_outputs(transfer_bk.runtime(), &final_outputs, device_ordinal)?;
+            let final_outputs = last_timed.ok_or("no run result available for verification")?;
+            final_values = export_outputs(&transfer_rt, &final_outputs, device_ordinal)?;
         }
         Ok((
             times_ms,
             json!({"initial": initial, "final": final_values}),
             {
                 let mut sampling = json!({"operations_per_sample":count,"batch_ms":batch_ms,"retention_budget_bytes":256usize<<20,
-                       "target_batch_ms":2,"warmups":n_warmup,"scope": if diagnostic {
-                           "public_path_latency_including_internal_session_entry"
-                       } else {
-                           "steady_state_host_api_plus_device_sync_caller_held_session"
-                       }});
+                "target_batch_ms":2,"warmups":n_warmup,"scope": if diagnostic {
+                    "public_path_latency_including_internal_session_entry"
+                } else {
+                    "steady_state_host_api_plus_device_sync_caller_held_session"
+                }});
                 if throughput {
                     // The explicit mode note keeps a throughput row from ever
                     // being read (or averaged) as a per-call latency row.
@@ -522,11 +522,11 @@ fn dispatch(
             rec["execution"]["notes"] = json!(json!({"verification_outputs":verification_outputs,
                 "sampling":if verify_only {Value::Null} else {sampling},
                 "session_policy": if diagnostic {
-                    "run_prepared enters internal sessions; not caller-shared"
+                    "Runtime::run on the caller-held engine; each call is one public run, not caller-shared"
                 } else if throughput {
-                    "run_prepared_deferred enqueues K runs in one caller-held CUDA session and pays one retirement barrier per K-run batch"
+                    "K Runtime::run calls are enqueued on one caller-held CUDA engine and paid one caller-side retirement barrier per K-run batch"
                 } else {
-                    "run_prepared_in executes in one caller-held CUDA session; each call includes its own stream retirement barrier"
+                    "Runtime::run executes on one caller-held CUDA engine; an explicit device synchronize after each call is the per-call barrier"
                 },
                 "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok(),
                 "physical_device_index":std::env::var("GPU_BENCH_PHYSICAL_DEVICE").ok()})
@@ -538,10 +538,7 @@ fn dispatch(
             rec
         }
         Ok(Err(msg)) => {
-            let (status, reason) = match msg.strip_prefix(DEFERRED_PREFLIGHT_PREFIX) {
-                Some(reason) => ("unsupported", reason.to_string()),
-                None => classify_linalg_ad_error(&msg),
-            };
+            let (status, reason) = classify_linalg_ad_error(&msg);
             stub(
                 suite_id,
                 problem,
@@ -778,28 +775,24 @@ fn vjp(
     ad_context().vjp(output, wrt, cotangent)
 }
 
-fn cuda_runtime_with_extensions(backend: &CudaBackend) -> Result<Runtime, String> {
+fn cuda_runtime_with_extensions(engine: &CudaEngine) -> Result<Runtime, String> {
     let engine_id = tenferro_runtime::EngineId::new("benchmark.cuda")
         .map_err(|e| format!("CUDA engine id: {e}"))?;
     let mut builder = Runtime::builder();
     builder
         .register_engine(
-            cuda_runtime_engine_registration(
-                backend,
-                tenferro_runtime::EngineId::new("benchmark.cuda").map_err(|e| e.to_string())?,
-            )
-            .map_err(|e| format!("CUDA engine: {e}"))?,
+            cuda_runtime_engine_registration(engine).map_err(|e| format!("CUDA engine: {e}"))?,
         )
         .map_err(|e| format!("register CUDA engine: {e}"))?;
     builder
         .install_extension_module(
-            tenferro_einsum::extension_module::<CudaBackend>(engine_id.clone())
+            tenferro_einsum::extension_module::<CudaEngine>(engine_id.clone())
                 .map_err(|e| format!("einsum extension: {e}"))?,
         )
         .map_err(|e| format!("install einsum extension: {e}"))?;
     builder
         .install_extension_module(
-            tenferro_linalg::extension_module::<CudaBackend>(engine_id)
+            tenferro_linalg::extension_module::<CudaEngine>(engine_id)
                 .map_err(|e| format!("linalg extension: {e}"))?,
         )
         .map_err(|e| format!("install linalg extension: {e}"))?;

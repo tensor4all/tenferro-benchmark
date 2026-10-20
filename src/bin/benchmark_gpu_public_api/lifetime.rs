@@ -1,16 +1,16 @@
 //! Separate, untimed public-API observations; never operation result rows.
-use super::{Case, Result};
+use super::{Case, EngineScope, Result};
 use serde_json::{json, Value};
 use std::{fs, io::Write, path::Path};
 use tenferro_fft::FftExecutor;
-use tenferro_gpu::cuda::{CudaBackend, CudaDeviceId};
-use tenferro_tensor::{BackendSessionHost, CacheStats};
+use tenferro_gpu::cuda::{CudaDeviceId, CudaEngine};
+use tenferro_tensor::CacheStats;
 
 fn cache(stats: CacheStats) -> Value {
     json!({"entries":stats.entries,"retained_bytes":stats.retained_bytes,
            "hits":stats.hits,"misses":stats.misses,"evictions":stats.evictions,"clears":stats.clears})
 }
-pub(super) fn snapshot(backend: &CudaBackend) -> Result<Value> {
+pub(super) fn snapshot(backend: &CudaEngine) -> Result<Value> {
     let rt = backend.runtime();
     let (free, total) = rt.with_current_context(
         "benchmark.counter_memory",
@@ -53,7 +53,7 @@ pub(super) fn run(root: &Path, cases: &[Case], path: &Path, device: usize) -> Re
         {
             return Err("counter batch exceeds logical retention bound".into());
         }
-        let mut backend = CudaBackend::new(CudaDeviceId::from_ordinal(device.try_into()?))?;
+        let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
         let rt = backend.runtime().clone();
         let inputs = case
             .inputs
@@ -65,7 +65,6 @@ pub(super) fn run(root: &Path, cases: &[Case], path: &Path, device: usize) -> Re
                 )?)
             })
             .collect::<Result<Vec<_>>>()?;
-        let observer = backend.clone();
         let mut executor = FftExecutor::default();
         backend.with_backend_session(|session| -> Result<()> {
             rt.synchronize()?;
@@ -76,16 +75,16 @@ pub(super) fn run(root: &Path, cases: &[Case], path: &Path, device: usize) -> Re
                 "device_uuid":std::env::var("GPU_BENCH_DEVICE_UUID").ok(),
                 "session_policy":"one entered session per case; process-global allocator state may survive cases",
                 "batches":batches,"operations_per_batch":operations,"logical_output_bytes":bytes,
-                "phase":"before","snapshot":snapshot(&observer)?}))?;
+                "phase":"before","snapshot":snapshot(session)?}))?;
             for batch in 0..batches {
                 let mut outputs = Vec::with_capacity(operations);
                 for _ in 0..operations {
                     outputs.push(super::direct(case,&inputs,&mut executor,session,
                         super::structural::prepare_direct(case,&inputs))?);
                 }
-                let queued = snapshot(&observer)?;
+                let queued = snapshot(session)?;
                 rt.synchronize()?;
-                let completed = snapshot(&observer)?;
+                let completed = snapshot(session)?;
                 let error = super::verify(&rt,&outputs[0],&expected,case)?
                     .max(super::verify(&rt,&outputs[operations-1],&expected,case)?);
                 drop(outputs);
@@ -95,7 +94,7 @@ pub(super) fn run(root: &Path, cases: &[Case], path: &Path, device: usize) -> Re
                     "measurement_scope":"separate_untimed_public_counter_pass",
                     "phase":"batch","batch":batch,"operations_per_batch":operations,
                     "max_error_over_tolerance":error,"after_enqueue":queued,
-                    "after_completion":completed,"after_drop_and_barrier":snapshot(&observer)?}))?;
+                    "after_completion":completed,"after_drop_and_barrier":snapshot(session)?}))?;
                 file.flush()?;
             }
             Ok(())

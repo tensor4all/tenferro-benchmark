@@ -1,4 +1,4 @@
-//! Public CUDA operations, with one entered session spanning all samples.
+//! Public CUDA operations on one caller-held CUDA engine (tenferro-rs #2206).
 //! Fixtures and independent reference outputs are prepared by the Python runner.
 use num_complex::{Complex32, Complex64};
 use serde::Deserialize;
@@ -6,8 +6,28 @@ use serde_json::{json, Value};
 use std::{collections::HashMap, fs, hint::black_box, io::Write, path::Path, time::Instant};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_fft::{EagerSessionFftExt, FftExecutor, FftNorm};
-use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaBackend, CudaDeviceId, CudaRuntime};
-use tenferro_tensor::{BackendSession, BackendSessionHost, DType, Tensor};
+use tenferro_gpu::cuda::{download_tensor, upload_tensor, CudaDeviceId, CudaEngine, CudaRuntime};
+use tenferro_tensor::{DType, Engine, Tensor};
+
+/// Borrow the caller-held CUDA engine for one operation sequence.
+///
+/// tenferro-rs #2206 removed backend sessions: the engine the caller holds is
+/// already the execution scope, so entering it is a plain borrow.
+trait EngineScope {
+    fn with_backend_session<R>(
+        &mut self,
+        f: impl FnOnce(&mut CudaEngine) -> R,
+    ) -> tenferro_tensor::Result<R>;
+}
+
+impl EngineScope for CudaEngine {
+    fn with_backend_session<R>(
+        &mut self,
+        f: impl FnOnce(&mut CudaEngine) -> R,
+    ) -> tenferro_tensor::Result<R> {
+        Ok(f(self))
+    }
+}
 
 #[path = "benchmark_gpu_public_api/lifetime.rs"]
 mod lifetime;
@@ -290,7 +310,7 @@ fn direct(
     case: &Case,
     inputs: &[Tensor],
     executor: &mut FftExecutor,
-    session: &mut dyn BackendSession,
+    session: &mut dyn Engine,
     args: structural::Arguments<'_>,
 ) -> Result<Tensor> {
     let input = &inputs[0];
@@ -348,7 +368,7 @@ fn run(
         .map(|a| read_array(root, a))
         .collect::<Result<Vec<_>>>()?;
     let expected = read_array(root, &case.outputs[0])?;
-    let mut backend = CudaBackend::new(CudaDeviceId::from_ordinal(device.try_into()?))?;
+    let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let rt = backend.runtime().clone();
     let input = input_host
         .iter()
@@ -356,7 +376,9 @@ fn run(
         .collect::<Result<Vec<_>>>()?;
     // Serialized reference length is the exact output size for every supported
     // dtype, including I64 and Bool; do not estimate it with a partial dtype table.
-    let bytes: usize = fs::metadata(root.join(&case.outputs[0].file))?.len().try_into()?;
+    let bytes: usize = fs::metadata(root.join(&case.outputs[0].file))?
+        .len()
+        .try_into()?;
     if mode == "tenferro-cuda-direct" {
         let mut executor = FftExecutor::default();
         backend.with_backend_session(|session| {
@@ -410,9 +432,11 @@ fn run(
             Ok((Some(timing), error))
         })?
     } else {
-        let runtime = EagerRuntime::with_cuda_backend(backend)?;
+        // The runtime stores no engine (tenferro-rs #2206); every eager call
+        // borrows the caller-held CUDA engine.
+        let runtime = EagerRuntime::new()?;
         let _guard = runtime.no_grad();
-        runtime.with_eager_session(|session| {
+        runtime.with_eager_session(&mut backend, |session| {
             let input = input
                 .into_iter()
                 .map(|a| Ok(session.constant_from(a)?))

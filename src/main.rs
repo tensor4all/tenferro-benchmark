@@ -11,10 +11,10 @@ use std::time::{Duration, Instant};
 
 use serde::Deserialize;
 use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
-use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuBackend};
+use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
 use tenferro_einsum::{ContractionTree, EagerSessionEinsumExt, EinsumSubscripts, Subscripts};
 use tenferro_einsum_benchmark::{compile_einsum, unwrap_eval_result};
-use tenferro_runtime::{Runtime, Tensor};
+use tenferro_runtime::{ExecutionEngine, Runtime, Tensor, TensorRead};
 use tenferro_tensor::TypedTensor;
 
 const DEFAULT_WARMUPS: usize = 3;
@@ -143,22 +143,23 @@ fn bind_operands<'a>(
     Ok(operands.iter().collect())
 }
 
-/// The compiled CPU backend. tenferro-rs #2004 made it a compile-time choice
-/// (exactly one of `native` or `blas`), so nothing selects it at runtime;
-/// `tenferro_cpu::cpu_provider_id()` reports which one this build contains.
-fn cpu_backend() -> CpuBackend {
-    CpuBackend::new()
+/// The compiled CPU engine. tenferro-rs #2004 made the CPU provider a
+/// compile-time choice (exactly one of `native` or `blas`), so nothing selects
+/// it at runtime; `tenferro_cpu::cpu_provider_id()` reports which one this
+/// build contains. tenferro-rs #2206 made the engine caller-held: it is built
+/// once per run and passed as `&mut` to every operation.
+fn cpu_engine() -> Result<CpuEngine, String> {
+    tenferro_einsum_benchmark::cpu_engine(None)
 }
 
-fn cpu_runtime_with_einsum() -> Result<Runtime, String> {
-    let backend = cpu_backend();
+fn cpu_runtime_with_einsum(engine: &CpuEngine) -> Result<Runtime, String> {
     let mut builder = Runtime::builder();
     builder
-        .register_engine(runtime_engine_registration(&backend).map_err(|e| e.to_string())?)
+        .register_engine(runtime_engine_registration(engine).map_err(|e| e.to_string())?)
         .map_err(|e| e.to_string())?;
     builder
         .install_extension_module(
-            tenferro_einsum::extension_module::<CpuBackend>(
+            tenferro_einsum::extension_module::<CpuEngine>(
                 runtime_engine_id().map_err(|e| e.to_string())?,
             )
             .map_err(|e| e.to_string())?,
@@ -385,7 +386,9 @@ impl TenferroMode {
 
     fn timing_note(self) -> &'static str {
         match self {
-            Self::Trace => "graph compiled once, executed through Runtime::run_compiled",
+            Self::Trace => {
+                "graph compiled once, executed through Runtime::run on one caller-held CPU engine"
+            }
             Self::Eager => {
                 "precomputed path, eager binary contractions in one shared CPU execution scope"
             }
@@ -504,20 +507,27 @@ fn run_instance_trace(
         eprintln!("{:#?}", compiled.program);
     }
 
-    let runtime = cpu_runtime_with_einsum()?;
+    let mut engine = cpu_engine()?;
+
+    let runtime = cpu_runtime_with_einsum(&engine)?;
 
     let operands = create_operand_tensors(&instance.shapes_colmajor);
     let bindings = bind_operands(compiled.input_count, &operands)?;
+    let reads: Vec<TensorRead<'_>> = bindings
+        .iter()
+        .map(|tensor| TensorRead::from_tensor(tensor))
+        .collect();
     let program = &compiled.program;
+    let target = ExecutionEngine::target(&engine);
     let prepared = runtime
-        .prepare_compiled(program, &bindings)
+        .prepare(program, &reads, std::slice::from_ref(&target))
         .map_err(|e| format!("prepare: {e}"))?;
 
     // Warmup (execution only, graph already compiled)
     // Use catch_unwind to handle panics from unsupported layouts
     for _ in 0..bench_warmups().max(1) {
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            runtime.run_prepared(&prepared, &bindings)
+            runtime.run(&mut [&mut engine], &prepared, &reads)
         }));
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
         black_box(&eval);
@@ -528,7 +538,7 @@ fn run_instance_trace(
     for _ in 0..bench_runs() {
         let t0 = Instant::now();
         let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            runtime.run_prepared(&prepared, &bindings)
+            runtime.run(&mut [&mut engine], &prepared, &reads)
         }));
         let elapsed = t0.elapsed();
         let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
@@ -573,7 +583,7 @@ fn run_instance_trace(
         for _ in 0..bench_runs() {
             let started = Instant::now();
             let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-                runtime.run_prepared(&prepared, &bindings)
+                runtime.run(&mut [&mut engine], &prepared, &reads)
             }));
             let eval = unwrap_eval_result(result, "panic during execution (unsupported layout?)")?;
             executor_run.push(started.elapsed());
@@ -674,18 +684,14 @@ fn run_instance_eager(
     path_meta: &PathMeta,
     strategy_name: &str,
 ) -> Result<(Duration, Duration, Duration), String> {
-    let backend = cpu_backend();
-    // Match CPU ops: enter the reusable execution scope before sampling, not
-    // once per binary contraction inside each timed tensor-network evaluation.
-    backend
-        .with_execution_scope(|| {
-            run_instance_eager_in_scope(&backend, instance, path_meta, strategy_name)
-        })
-        .map_err(|err| err.to_string())?
+    // One caller-held engine for the whole run; every contraction of every
+    // sample borrows it, so no engine construction lands inside a timer.
+    let mut engine = cpu_engine()?;
+    run_instance_eager_in_scope(&mut engine, instance, path_meta, strategy_name)
 }
 
 fn run_instance_eager_in_scope(
-    backend: &CpuBackend,
+    engine: &mut CpuEngine,
     instance: &BenchmarkInstance,
     path_meta: &PathMeta,
     strategy_name: &str,
@@ -694,7 +700,7 @@ fn run_instance_eager_in_scope(
         return Err("complex128 not supported".into());
     }
 
-    let ctx = EagerRuntime::with_cpu_backend(backend.clone()).map_err(|err| err.to_string())?;
+    let ctx = EagerRuntime::new().map_err(|err| err.to_string())?;
     let source_operands = create_eager_operands(&instance.shapes_colmajor, &ctx)?;
     let prepared = prepare_eager_path(instance, path_meta)?;
 
@@ -716,7 +722,7 @@ fn run_instance_eager_in_scope(
         );
     }
 
-    ctx.with_eager_session(|session| -> Result<_, tenferro_ad::Error> {
+    ctx.with_eager_session(engine, |session| -> Result<_, tenferro_ad::Error> {
         for _ in 0..bench_warmups().max(1) {
             let mut operands = source_operands.to_vec();
             let mut retained_inputs = Vec::with_capacity(path_meta.path.len());

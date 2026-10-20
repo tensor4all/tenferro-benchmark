@@ -109,7 +109,7 @@ fn direct(
     input: &[Tensor],
     views: Option<&[TensorRead<'_>]>,
     subs: &EinsumSubscripts,
-    session: &mut dyn BackendSession,
+    session: &mut dyn Engine,
 ) -> Result<Outputs<Tensor>, BoxError> {
     use Outputs::*;
     if let Some(reads) = views {
@@ -324,7 +324,7 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
     };
     let threads = parse_usize("--threads", 1)?;
     tenferro_einsum_benchmark::thread_enforcement::enforce_thread_request(threads)?;
-    let mut backend = CpuBackend::new();
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
     let workers = backend.num_threads();
     tenferro_einsum_benchmark::thread_enforcement::verify_backend_threads(
         "CpuBackend",
@@ -337,7 +337,7 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
     let residual;
     let mut initial_public_call_ns = 0;
     let measured = if tier.starts_with("eager") {
-        let runtime = EagerRuntime::with_cpu_backend(backend)?;
+        let runtime = EagerRuntime::new()?;
         let _no_grad = runtime.no_grad();
         // Fresh standalone process, no capture_trace guard is ever entered.
         let mut eager_input: Vec<_> = input
@@ -345,7 +345,7 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
             .map(|t| EagerTensor::from_tensor_in(t, runtime.clone()))
             .collect::<Result<_, _>>()?;
         if views.is_some() {
-            eager_input = runtime.with_eager_session(|s| {
+            eager_input = runtime.with_eager_session(&mut backend, |s| {
                 eager_input
                     .iter()
                     .map(|t| s.transpose(t, &[1, 0]))
@@ -362,7 +362,7 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
         {
             return Err("eager input did not retain its transposed view layout".into());
         }
-        let validated = runtime.with_eager_session(|s| {
+        let validated = runtime.with_eager_session(&mut backend, |s| {
             let start = Instant::now();
             let result = eager(&op, &eager_input, &subs, s)?;
             initial_public_call_ns = start.elapsed().as_nanos();
@@ -374,18 +374,18 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
         let tensors = validated
             .as_slice()
             .iter()
-            .map(EagerTensor::to_tensor)
-            .collect::<Result<Vec<_>, _>>()?;
+            .map(|tensor| tensor.to_tensor(&mut backend))
+            .collect::<tenferro_ad::Result<Vec<_>>>()?;
         residual = check(&op, n, &a, &expected, &tensors)?;
         if tier == "eager-shared" {
-            runtime.with_eager_session(|s| {
+            runtime.with_eager_session(&mut backend, |s| {
                 sample(&mode, n, warmups, runs, target, || {
                     eager(&op, &eager_input, &subs, s)
                 })
             })?
         } else {
             sample(&mode, n, warmups, runs, target, || {
-                runtime.with_eager_session(|s| eager(&op, &eager_input, &subs, s))
+                runtime.with_eager_session(&mut backend, |s| eager(&op, &eager_input, &subs, s))
             })?
         }
     } else {
@@ -403,16 +403,15 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
                 })
             })?
         } else if tier == "concrete-scoped" {
-            let owner = backend.clone();
-            owner.with_execution_scope(|| -> Result<_, BoxError> {
-                let checked = backend
-                    .session_scope(|s| direct(&op, &input, prepared_reads.as_deref(), &subs, s))?;
-                check(&op, n, &a, &expected, checked.as_slice())?;
-                sample(&mode, n, warmups, runs, target, || {
-                    backend
-                        .session_scope(|s| direct(&op, &input, prepared_reads.as_deref(), &subs, s))
-                })
-            })??
+            // tenferro-rs #2206 removed execution scopes: the caller-held engine
+            // is itself the scope, so this tier borrows the same engine and
+            // measures the same public call as the shared tier.
+            let checked = backend
+                .session_scope(|s| direct(&op, &input, prepared_reads.as_deref(), &subs, s))?;
+            check(&op, n, &a, &expected, checked.as_slice())?;
+            sample(&mode, n, warmups, runs, target, || {
+                backend.session_scope(|s| direct(&op, &input, prepared_reads.as_deref(), &subs, s))
+            })?
         } else {
             sample(&mode, n, warmups, runs, target, || {
                 backend.session_scope(|s| direct(&op, &input, prepared_reads.as_deref(), &subs, s))
@@ -431,7 +430,7 @@ pub fn run(case_id: &str) -> Result<(), BoxError> {
             .as_array_mut()
             .ok_or("invalid scope")?
             .push(serde_json::json!(
-                "execution scope admission/exit; cloned witness setup"
+                "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
             ));
     }
     output["initial_public_call_scope"] = serde_json::json!("first selected operation inside entered shared session; lazy operation initialization included; validation/destruction excluded; single-call diagnostic, no performance ratio");

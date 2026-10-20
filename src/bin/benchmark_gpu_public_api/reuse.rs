@@ -6,8 +6,8 @@ use std::{hint::black_box, time::Instant};
 use tenferro_einsum::ConcreteEinsumPlan;
 use tenferro_gpu::cuda::{upload_tensor, CudaRuntime};
 use tenferro_tensor::{
-    BackendSession, ContractionScalar, DType, DotGeneralAccumulation, DotGeneralConfig, Tensor,
-    TensorRead, TensorView, TensorWrite,
+    ContractionScalar, DType, DotGeneralAccumulation, DotGeneralConfig, Engine, Tensor, TensorRead,
+    TensorView, TensorWrite,
 };
 
 fn execute(
@@ -16,7 +16,7 @@ fn execute(
     a: TensorRead<'_>,
     b: TensorRead<'_>,
     out: TensorWrite<'_>,
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
     scalars: (ContractionScalar, ContractionScalar),
     config: &DotGeneralConfig,
     dot_accumulation: DotGeneralAccumulation,
@@ -63,7 +63,7 @@ pub(super) fn run(
     inputs: &[Tensor],
     expected: &Tensor,
     rt: &CudaRuntime,
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
     settings: &Settings,
     bytes: usize,
     plan: Option<&ConcreteEinsumPlan>,

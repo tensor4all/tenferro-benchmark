@@ -20,7 +20,7 @@ use std::time::Instant;
 
 use serde::Deserialize;
 use tenferro_einsum::TensorReadEinsumExt;
-use tenferro_tensor::{BackendSession, Tensor, TensorRead, TensorView, TypedTensorView};
+use tenferro_tensor::{Engine, Tensor, TensorRead, TensorView, TypedTensorView};
 
 use super::batch_route::BoxError;
 
@@ -134,7 +134,7 @@ impl Stream {
     /// initialization; passes `1..=warmups` are untimed warmups.
     pub fn measure(
         &self,
-        session: &mut dyn BackendSession,
+        engine: &mut dyn Engine,
         warmups: usize,
     ) -> Result<(Vec<u128>, f64), BoxError> {
         let mut elapsed = Vec::new();
@@ -147,7 +147,7 @@ impl Stream {
             let mut outputs = Vec::with_capacity(pass.len());
             let start = Instant::now();
             for read in &reads {
-                outputs.push(read.einsum_read("ij,jk->ik", session)?);
+                outputs.push(read.einsum_read("ij,jk->ik", engine)?);
             }
             let ns = start.elapsed().as_nanos();
             black_box(&outputs);

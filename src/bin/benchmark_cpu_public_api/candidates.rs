@@ -27,7 +27,7 @@ pub(super) fn cases() -> Vec<Case> {
     rows
 }
 
-fn unused(_: &mut CpuBackend) -> tenferro_tensor::Result<()> {
+fn unused(_: &mut CpuEngine) -> tenferro_tensor::Result<()> {
     Err(tenferro_tensor::Error::unsupported(
         "candidate",
         "use explicit setup sampler",
@@ -188,7 +188,7 @@ fn check_solve(a: &Tensor, b: &Tensor, x: &Tensor) -> BenchResult<()> {
     Ok(())
 }
 
-fn direct(args: &Args, backend: &mut CpuBackend, case: &Case) -> BenchResult<(f64, f64)> {
+fn direct(args: &Args, backend: &mut CpuEngine, case: &Case) -> BenchResult<(f64, f64)> {
     let (m, n) = dims(case);
     let deficient = case.benchmark.ends_with("_deficient");
     let a = fixture(m, n, deficient)?;
@@ -238,11 +238,12 @@ fn direct(args: &Args, backend: &mut CpuBackend, case: &Case) -> BenchResult<(f6
 
 fn eager(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
     let (m, n) = dims(case);
-    let runtime = EagerRuntime::with_cpu_backend(cpu_backend()?)?;
+    let runtime = EagerRuntime::new()?;
+    let mut engine = cpu_backend()?;
     let _guard = runtime.no_grad();
     let original = fixture(m, n, case.benchmark.ends_with("_deficient"))?;
     let a = EagerTensor::from_tensor_in(original.duplicate()?, Arc::clone(&runtime))?;
-    runtime.with_eager_session(|s| -> BenchResult<_> {
+    runtime.with_eager_session(&mut engine, |s| -> BenchResult<_> {
         if case.benchmark == "householder_qr" {
             let state = s.householder_qr(&a)?;
             let q = state.q_columns(0..n, QrOptions::default(), s)?;
@@ -323,7 +324,7 @@ pub(super) fn row(
 pub(super) fn emit(
     writer: &mut impl Write,
     args: &Args,
-    backend: &mut CpuBackend,
+    backend: &mut CpuEngine,
     case: &Case,
 ) -> BenchResult<()> {
     if args.execution_filter.runs_direct() {
@@ -378,7 +379,8 @@ fn session_shape(case: &Case) -> Vec<usize> {
 
 fn eager_session_case(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
     let shape = session_shape(case);
-    let runtime = EagerRuntime::with_cpu_backend(cpu_backend()?)?;
+    let runtime = EagerRuntime::new()?;
+    let mut engine = cpu_backend()?;
     let _guard = runtime.no_grad();
     let input =
         EagerTensor::from_tensor_in(tensor_f64(&shape, 1).duplicate()?, Arc::clone(&runtime))?;
@@ -412,7 +414,7 @@ fn eager_session_case(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
             None
         },
     )?;
-    runtime.with_eager_session(|s| -> BenchResult<_> {
+    runtime.with_eager_session(&mut engine, |s| -> BenchResult<_> {
         let mut op = || match case.benchmark {
             "reduce_sum_squares_axis0" => s.reduce_sum_squares(&input, Some(&[0])),
             "masked_log_softmax_axis1" => s.masked_log_softmax(&input, mask.as_ref().unwrap(), 1),
@@ -433,7 +435,7 @@ fn eager_session_case(args: &Args, case: &Case) -> BenchResult<(f64, f64)> {
 
 pub(super) fn time_session_case(
     args: &Args,
-    backend: &mut CpuBackend,
+    backend: &mut CpuEngine,
     case: &Case,
     attribution: Option<&mut AttributionSink>,
 ) -> BenchResult<(f64, f64)> {
@@ -545,7 +547,7 @@ mod tests {
     use super::*;
     #[test]
     fn public_linalg_outputs_reconstruct_the_fixture() -> BenchResult<()> {
-        let mut backend = CpuBackend::with_threads(1)?;
+        let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(1))?;
         backend.with_backend_session(|s| -> BenchResult<()> {
             let a = fixture(12, 8, false)?;
             let state = a.householder_qr(s)?;

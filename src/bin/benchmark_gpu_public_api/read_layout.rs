@@ -3,7 +3,7 @@ use super::{measure, verify, Case, Result, Settings};
 use num_complex::{Complex32, Complex64};
 use serde_json::Value;
 use tenferro_gpu::cuda::CudaRuntime;
-use tenferro_tensor::{BackendSession, DType, Tensor, TensorRead, TensorView};
+use tenferro_tensor::{DType, Engine, Tensor, TensorRead, TensorView};
 
 pub(super) fn transpose(input: &Tensor) -> Result<TensorView<'_>> {
     macro_rules! view {
@@ -29,7 +29,7 @@ pub(super) fn transpose(input: &Tensor) -> Result<TensorView<'_>> {
 fn execute(
     op: &str,
     reads: (TensorRead<'_>, Option<TensorRead<'_>>),
-    s: &mut dyn BackendSession,
+    s: &mut dyn Engine,
 ) -> Result<Tensor> {
     let (lhs, rhs) = reads;
     Ok(match op {
@@ -69,7 +69,7 @@ pub(super) fn run(
     inputs: &[Tensor],
     expected: &Tensor,
     rt: &CudaRuntime,
-    session: &mut dyn BackendSession,
+    session: &mut dyn Engine,
     settings: &Settings,
     bytes: usize,
 ) -> Result<(Option<Value>, f64)> {
