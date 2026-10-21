@@ -187,12 +187,6 @@ coverage:
     disposition: alias
     benchmarks: cpu/einsum matmul rows; cpu/output_reuse/dot_general_read_into_accum
     reason: PyTorch exposes no equivalent caller-owned GEMM plan object; warmed calls are the closest fair comparison.
-  - family: grouped_gemm
-    tenferro_apis:
-      - SessionCachedDot::grouped_gemm_cached
-    pytorch: null
-    disposition: no_direct_pytorch
-    reason: PyTorch has no public heterogeneous grouped-GEMM CPU API.
 
   - family: einsum
     tenferro_apis:
@@ -399,10 +393,6 @@ routes:
     dims: {execution_path: eager, output: allocating, representation: owned, session_boundary: session-per-call (diagnostic), coverage: full}
     cases: ["cpu/small_work:einsum_f64_eager-no-ad_n4_single"]
   - route_id: compiled_trace_einsum
-    entrypoint: Runtime::run_prepared
-    dims: {execution_path: compiled-trace, output: allocating, session_boundary: runtime-internal session (diagnostic), coverage: full}
+    entrypoint: Runtime::run
+    dims: {execution_path: compiled-trace, output: allocating, session_boundary: caller-held engine, coverage: full}
     cases: ["cpu/small_work:einsum_f64_compiled-repeat_n4_single"]
-  - route_id: per_call_session_entry
-    entrypoint: BackendSessionHost::with_backend_session
-    dims: {execution_path: concrete, session_boundary: session-per-call (diagnostic), coverage: full}
-    cases: ["cpu/small_work:add_f64_concrete-fresh_size4_dependent10"]
