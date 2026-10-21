@@ -2664,7 +2664,8 @@
   "id": "svd_driver_c64_n64_auto",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "auto",
@@ -2681,13 +2682,14 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only."
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720."
  },
  {
   "id": "svd_driver_c64_n64_gesvdj",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "gesvdj",
@@ -2704,14 +2706,15 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
   "reference_for": "svd_driver_c64_n64_auto"
  },
  {
   "id": "svd_driver_c64_n64_gesvd",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "gesvd",
@@ -2728,14 +2731,15 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
   "reference_for": "svd_driver_c64_n64_auto"
  },
  {
   "id": "svd_driver_c64_n64_xgesvdp",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "xgesvdp",
@@ -2752,14 +2756,15 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
   "reference_for": "svd_driver_c64_n64_auto"
  },
  {
   "id": "svd_driver_c64_n256_auto",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "auto",
@@ -2776,13 +2781,14 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only."
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720."
  },
  {
   "id": "svd_driver_c64_n256_gesvdj",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "gesvdj",
@@ -2799,14 +2805,15 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
   "reference_for": "svd_driver_c64_n256_auto"
  },
  {
   "id": "svd_driver_c64_n256_gesvd",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "gesvd",
@@ -2823,14 +2830,15 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
   "reference_for": "svd_driver_c64_n256_auto"
  },
  {
   "id": "svd_driver_c64_n256_xgesvdp",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "xgesvdp",
@@ -2847,14 +2855,15 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
   "reference_for": "svd_driver_c64_n256_auto"
  },
  {
   "id": "svd_driver_c64_n1024_auto",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "auto",
@@ -2871,13 +2880,14 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only."
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720."
  },
  {
   "id": "svd_driver_c64_n1024_gesvdj",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "gesvdj",
@@ -2894,14 +2904,15 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
   "reference_for": "svd_driver_c64_n1024_auto"
  },
  {
   "id": "svd_driver_c64_n1024_gesvd",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "gesvd",
@@ -2918,14 +2929,15 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
   "reference_for": "svd_driver_c64_n1024_auto"
  },
  {
   "id": "svd_driver_c64_n1024_xgesvdp",
   "issues": [
    "#1839",
-   "#1849"
+   "#1849",
+   "#1720"
   ],
   "kind": "svd_driver",
   "arm": "xgesvdp",
@@ -2942,7 +2954,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only.",
+  "intent": "tenferro-rs #1839 / #1849: full SVD of a complex f64 matrix with an explicit cuSOLVER driver on a DMRG-like c64 input. Auto is the JAX-compatible policy (gesvdj at both dimensions <= 1024), which the issue measured as 4-5x slower than gesvd below 1024; xgesvdp is the polar-decomposition driver added in #1849 and is explicit-only. Also tracks #1720.",
   "reference_for": "svd_driver_c64_n1024_auto"
  },
  {

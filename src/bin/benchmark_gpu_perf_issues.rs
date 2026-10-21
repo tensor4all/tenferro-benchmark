@@ -2124,6 +2124,84 @@ fn host_matmul_c64(
     c
 }
 
+// ---------------------------------------------------------------------------
+// #2192 / #2204 / #2195: one CUDA solve or QR per call on device operands.
+// The timed call is dispatch plus the batch-edge device sync; the host
+// round trips the issues removed (solve validation scalars, QR status
+// readbacks) would show up in this per-call cost.
+// ---------------------------------------------------------------------------
+
+fn linalg_readback_latency(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
+    let op = param_str(params, "op")?;
+    let n = param_usize(params, "n")?;
+    if op != "solve" && op != "qr" {
+        return Err(format!("unknown linalg_readback_latency op {op}").into());
+    }
+    let mut bk = backend(device)?;
+    let rt = bk.runtime().clone();
+    // Diagonally dominant real f64 matrix: well conditioned for solve and QR.
+    let mut data = values(n * n, 81);
+    for i in 0..n {
+        data[i + n * i] += n as f64;
+    }
+    let rhs = values(n, 82);
+    let a = upload_tensor(&rt, &Tensor::from_vec_col_major(vec![n, n], data.clone())?)?;
+    let b = upload_tensor(&rt, &Tensor::from_vec_col_major(vec![n, 1], rhs.clone())?)?;
+    rt.synchronize()?;
+    let bytes = n * n * 8;
+    let error = bk.with_backend_session(|s| -> Result<f64> {
+        if op == "solve" {
+            let x = download_tensor(&rt, &a.solve(&b, s)?)?;
+            let xs = x.as_slice::<f64>()?;
+            let mut worst = 0.0f64;
+            for i in 0..n {
+                let ax: f64 = (0..n).map(|j| data[i + n * j] * xs[j]).sum();
+                worst = worst_of(worst, (ax - rhs[i]).abs() / rhs[i].abs().max(1.0));
+            }
+            check_tol(worst, 1e-10, "solve residual")
+        } else {
+            let (q, r) = a.qr(s)?;
+            let qh = download_tensor(&rt, &q)?;
+            let rh = download_tensor(&rt, &r)?;
+            let (qs, rs) = (qh.as_slice::<f64>()?, rh.as_slice::<f64>()?);
+            let mut worst = 0.0f64;
+            for i in 0..n {
+                for j in 0..n {
+                    let qr: f64 = (0..n).map(|p| qs[i + n * p] * rs[p + n * j]).sum();
+                    worst = worst_of(worst, (qr - data[i + n * j]).abs() / data[i + n * j].abs().max(1.0));
+                }
+            }
+            check_tol(worst, 1e-10, "qr reconstruction")
+        }
+    })??;
+    let m = bk.with_backend_session(|s| {
+        measure(timing, bytes, |it| {
+            timed_in_session(it, s, |s| {
+                if op == "solve" {
+                    Ok(vec![a.solve(&b, s)?])
+                } else {
+                    let (q, r) = a.qr(s)?;
+                    Ok(vec![q, r])
+                }
+            })
+        })
+    })??;
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(m),
+        timer: vec![
+            "one CUDA solve or QR of an n x n f64 device matrix, dispatch and batch-edge device sync",
+            "device synchronize at the batch edge",
+        ],
+        outside_timer: vec![
+            "backend construction",
+            "host matrix construction and upload",
+            "residual or reconstruction check (download)",
+        ],
+        extra: json!({"op": op, "n": n}),
+    })
+}
+
 fn svd_driver(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
     let n = param_usize(params, "n")?;
     let driver = param_str(params, "driver")?;
@@ -2737,6 +2815,7 @@ fn main() -> Result<()> {
         "vendor_churn" => vendor_churn(&params, device),
         "pool_retention" => pool_retention(&params, device),
         "svd_driver" => svd_driver(&params, &timing, device),
+        "linalg_readback_latency" => linalg_readback_latency(&params, &timing, device),
         "eigh_driver" => eigh_driver(&params, &timing, device),
         "hadamard_dot_general" => hadamard_dot_general(&params, &timing, device),
         "contraction_plan_churn" => contraction_plan_churn(&params, &timing, device),

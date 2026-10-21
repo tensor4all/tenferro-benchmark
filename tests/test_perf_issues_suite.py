@@ -130,7 +130,7 @@ class PerfIssueSuiteTest(unittest.TestCase):
                          "#2006", "#1885", "#1975", "#1976", "#2008"} <= cpu)
         self.assertEqual(gpu, {"#2009", "#1887", "#1885", "#2078", "#2079", "#2080", "#2081",
                                "#2082", "#2083", "#1924", "#1839", "#1849", "#1846", "#1852",
-                               "#1923", "#1898", "#1873", "#1805", "#1949", "#1925"})
+                               "#1923", "#1898", "#1873", "#1805", "#1949", "#1925", "#1720"})
         einsum = (ROOT / "benchmarks/cpu/einsum.yaml").read_text()
         for name in gen.einsum_instances():
             self.assertIn(name, einsum)

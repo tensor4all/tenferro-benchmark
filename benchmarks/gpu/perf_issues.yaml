@@ -2,9 +2,9 @@
 schema_version: 1
 suite_id: gpu/perf_issues
 title: Workloads of open and resolved tenferro-rs performance issues (GPU)
-description: 'One case family per open or resolved tenferro-rs performance issue (#1805, #1839, #1846,
-  #1849, #1852, #1873, #1885, #1887, #1898, #1923, #1924, #1925, #1949, #2009, #2078, #2079, #2080, #2081,
-  #2082, #2083), each with its reference arm(s); the issue numbers are recorded per case in data/instances/gpu_perf_issues.json.
+description: 'One case family per open or resolved tenferro-rs performance issue (#1720, #1805, #1839,
+  #1846, #1849, #1852, #1873, #1885, #1887, #1898, #1923, #1924, #1925, #1949, #2009, #2078, #2079, #2080,
+  #2081, #2082, #2083), each with its reference arm(s); the issue numbers are recorded per case in data/instances/gpu_perf_issues.json.
   Workloads are added when an issue is opened; perf-fix PRs report numbers from these cases. Steady-state
   rows and labelled diagnostics are reported separately. Timed batches end with a device synchronize,
   never a result download, except where the download is the declared operation (#2009).'
