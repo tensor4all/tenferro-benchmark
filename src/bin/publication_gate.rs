@@ -1777,7 +1777,9 @@ fn summarize_measurement(
     record_raw(serde_json::json!({
         "record_type": "samples", "suite": suite,
         "benchmark": benchmark_name(op, phase), "shape": shape,
-        "backend": backend, "threads": cpu_engine().num_threads(),
+        // Callers may still hold the engine lock here, so do not take it again;
+        // enforce_threads_or_exit already verified the engine width matches.
+        "backend": backend, "threads": requested_threads(),
         "operations_per_sample": measured.operations,
         "batch_elapsed_ns": measured.times.iter().map(Duration::as_nanos).collect::<Vec<_>>(),
         "per_operation_ns": measured.times.iter().map(|t| t.as_nanos() as f64 / measured.operations as f64).collect::<Vec<_>>(),

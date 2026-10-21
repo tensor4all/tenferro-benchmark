@@ -16,6 +16,11 @@ concurrency:
   group: benchmark-smoke-tenferro-main
   cancel-in-progress: false
 
+env:
+  # Pin the interpreter: hosted images move to Python releases that the locked
+  # torch wheels do not support yet (macos-26 Homebrew python3.15, 2026-10).
+  UV_PYTHON: "3.14"
+
 jobs:
   mac-cpu-smoke:
     if: github.repository == 'tensor4all/tenferro-benchmark'
@@ -36,17 +41,14 @@ jobs:
         with:
           version: "latest"
 
-      - name: Pull latest tenferro-rs main
-        run: |
-          cd extern/tenferro-rs
-          git fetch origin main
-          git checkout origin/main
-          echo "tenferro-rs commit: $(git rev-parse HEAD)"
-
-      - name: Prepare environment
+      - name: Prepare environment and check out latest tenferro-rs main
+        env:
+          TENFERRO_REF: main
+          TENFERRO_UPDATE: "1"
         run: |
           uv sync --frozen || uv sync
           ./scripts/setup_extern_deps.sh
+          echo "tenferro-rs commit: $(git -C extern/tenferro-rs rev-parse HEAD)"
 
       - name: Run minimal einsum smoke test
         env:
@@ -83,17 +85,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libopenblas-dev libomp-dev cmake
 
-      - name: Pull latest tenferro-rs main
-        run: |
-          cd extern/tenferro-rs
-          git fetch origin main
-          git checkout origin/main
-          echo "tenferro-rs commit: $(git rev-parse HEAD)"
-
-      - name: Prepare environment
+      - name: Prepare environment and check out latest tenferro-rs main
+        env:
+          TENFERRO_REF: main
+          TENFERRO_UPDATE: "1"
         run: |
           uv sync --frozen || uv sync
           ./scripts/setup_extern_deps.sh
+          echo "tenferro-rs commit: $(git -C extern/tenferro-rs rev-parse HEAD)"
 
       - name: Run minimal einsum smoke test
         env:
