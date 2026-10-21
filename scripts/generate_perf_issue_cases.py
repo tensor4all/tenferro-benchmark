@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 16
+MANIFEST_VERSION = 17
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -489,6 +489,38 @@ def erased_construct_cases():
     return rows
 
 
+def axpby_strided_source_cases():
+    """#2220 / #2214 item 7: strided axpby source into a compact owned destination."""
+    issues = ("#2220", "#2214")
+    intent = ("tenferro-rs #2220 (#2214 item 7): alpha=1, beta=1 axpby "
+              "y <- alpha*x + beta*y on a 1024x1024 f64 tensor. x is a borrowed "
+              "transposed/offset view (padded storage read through swapped strides) and y is "
+              "a compact owned TensorWrite, so the update must take the strided path without "
+              "staging x into a dense buffer. The contiguous-source control feeds the same "
+              "logical x as an owned column-major tensor, and the rust-loop arm is the host "
+              "strided update. Throughput regime: bandwidth-bound over the full tensor, not a "
+              "per-call latency probe. Source/target allocation, view construction, per-sample "
+              "destination restoration and verification are outside the timer.")
+    rows = []
+    for threads in (1, 4):
+        target = f"axpby_strided_source_f64_1024x1024_t{threads}"
+        rows.append(case(
+            target, issues, "axpby_strided_source", {"n": 1024},
+            arm="strided-source", dtype="f64", intent=intent))
+        rows[-1]["thread_counts"] = [threads]
+        contiguous = f"axpby_contiguous_source_f64_1024x1024_t{threads}"
+        rows.append(case(
+            contiguous, issues, "axpby_strided_source", {"n": 1024},
+            arm="contiguous-source", dtype="f64", reference_for=target, intent=intent))
+        rows[-1]["thread_counts"] = [threads]
+        host = f"axpby_strided_source_f64_1024x1024_host_t{threads}"
+        rows.append(case(
+            host, issues, "axpby_strided_source", {"n": 1024},
+            arm="host", backend="rust-loop", dtype="f64", reference_for=target, intent=intent))
+        rows[-1]["thread_counts"] = [threads]
+    return rows
+
+
 def eager_small_call_cases():
     """#1704 / #1667 / #1904: eager small-call steady state inside one held session."""
     rows = []
@@ -520,7 +552,8 @@ def generate_cases():
             + cpu_gap_cases()
             + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases()
             + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
-            + erased_binary_cases() + erased_construct_cases() + eager_small_call_cases())
+            + erased_binary_cases() + axpby_strided_source_cases()
+            + erased_construct_cases() + eager_small_call_cases())
 
 
 def cpu_umbrella_cases():

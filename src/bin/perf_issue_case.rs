@@ -31,7 +31,8 @@ use tenferro_runtime::{
     DType, ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TracedTensor,
 };
 use tenferro_tensor::{
-    DotGeneralConfig, Engine, GatherConfig, SliceConfig, Tensor, TensorRead, TensorValue,
+    ContractionScalar, DotGeneralConfig, Engine, GatherConfig, SliceConfig, Tensor, TensorRead,
+    TensorValue, TensorWrite,
 };
 
 #[path = "../../examples/cpu_gap_mwe.rs"]
@@ -2288,6 +2289,167 @@ fn erased_binary_add(params: &Value, timing: &Timing, threads: usize) -> Result<
 }
 
 // ---------------------------------------------------------------------------
+// #2220 / #2214 item 7: axpby with a strided source into a compact owned
+// destination. `x` is a borrowed transposed/offset view and `y` is a compact
+// owned TensorWrite, so the update must not stage `x` into a dense buffer. The
+// contiguous-source arm feeds the same logical x as an owned tensor (the dense
+// path), and the host arm is the same strided update as a Rust loop.
+// ---------------------------------------------------------------------------
+
+fn axpby_strided_source(params: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
+    let n = param_usize(params, "n")?;
+    let arm = param_str(params, "arm")?;
+    let x_data = values(n * n, 117);
+    let (alpha, beta, seed) = (1.0f64, 1.0f64, 3.0f64);
+    let bytes = n * n * 8;
+
+    // Store the logical [n, n] column-major source as [n + pad, n] so the
+    // sliced-and-transposed view reads it with swapped strides and a non-zero
+    // offset. The fill below keeps view(i, j) == x_data[i + n * j].
+    let pad = 3usize;
+    let stride = n + pad;
+    let mut storage = vec![0.0f64; stride * n];
+    for i in 0..n {
+        for j in 0..n {
+            storage[pad + j + stride * i] = x_data[i + n * j];
+        }
+    }
+    let stored = Tensor::from_vec_col_major(vec![stride, n], storage.clone())?;
+    let x_view = TensorValue::from_tensor(stored)
+        .slice_view(&SliceConfig {
+            starts: vec![pad, 0],
+            limits: vec![pad + n, n],
+            strides: vec![1, 1],
+        })?
+        .transpose_view([1, 0])?;
+    let x_contiguous = Tensor::from_vec_col_major(vec![n, n], x_data.clone())?;
+
+    let check = |dst: &Tensor| -> Result<f64> {
+        let worst = dst
+            .as_slice::<f64>()?
+            .iter()
+            .zip(&x_data)
+            .map(|(got, x)| rel_error(*got, alpha * x + beta * seed))
+            .fold(0.0f64, f64::max);
+        check_tol(worst, 1e-12, "axpby strided source")
+    };
+
+    let (error, measurement, timer) = match arm {
+        "strided-source" | "contiguous-source" => {
+            let strided = arm == "strided-source";
+            let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
+            let (error, measurement) =
+                backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
+                    let run = |s: &mut dyn Engine, dst: &mut Tensor| -> Result<()> {
+                        let read = if strided {
+                            TensorRead::from_view(x_view.tensor_view())
+                        } else {
+                            TensorRead::from_tensor(&x_contiguous)
+                        };
+                        Ok(s.axpby_read_into_accum(
+                            ContractionScalar::F64(alpha),
+                            read,
+                            ContractionScalar::F64(beta),
+                            TensorWrite::Tensor(dst),
+                        )?)
+                    };
+                    let mut first = Tensor::from_vec_col_major(vec![n, n], vec![seed; n * n])?;
+                    run(s, &mut first)?;
+                    let error = check(&first)?;
+                    let mut batch = |count: usize| -> Result<u128> {
+                        let mut destinations = Vec::with_capacity(count);
+                        for _ in 0..count {
+                            destinations
+                                .push(Tensor::from_vec_col_major(vec![n, n], vec![seed; n * n])?);
+                        }
+                        let start = Instant::now();
+                        for destination in &mut destinations {
+                            run(s, destination)?;
+                        }
+                        let elapsed = start.elapsed().as_nanos();
+                        black_box(&destinations);
+                        Ok(elapsed)
+                    };
+                    let measurement = measure_batches(timing, bytes, &mut batch)?;
+                    Ok((error, measurement))
+                })??;
+            let timer = if strided {
+                vec![
+                    "Engine::axpby_read_into_accum (strided/offset source view, compact owned destination)",
+                ]
+            } else {
+                vec![
+                    "Engine::axpby_read_into_accum (contiguous owned source, compact owned destination)",
+                ]
+            };
+            (error, measurement, timer)
+        }
+        "host" => {
+            let run = |dst: &mut Tensor| -> Result<()> {
+                let out = dst.as_slice_mut::<f64>()?;
+                for j in 0..n {
+                    let column = pad + j;
+                    let base = n * j;
+                    for i in 0..n {
+                        out[base + i] = alpha * storage[column + stride * i] + beta * out[base + i];
+                    }
+                }
+                Ok(())
+            };
+            let mut first = Tensor::from_vec_col_major(vec![n, n], vec![seed; n * n])?;
+            run(&mut first)?;
+            let error = check(&first)?;
+            let mut batch = |count: usize| -> Result<u128> {
+                let mut destinations = Vec::with_capacity(count);
+                for _ in 0..count {
+                    destinations.push(Tensor::from_vec_col_major(vec![n, n], vec![seed; n * n])?);
+                }
+                let start = Instant::now();
+                for destination in &mut destinations {
+                    run(destination)?;
+                }
+                let elapsed = start.elapsed().as_nanos();
+                black_box(&destinations);
+                Ok(elapsed)
+            };
+            let measurement = measure_batches(timing, bytes, &mut batch)?;
+            (
+                error,
+                measurement,
+                vec!["sequential Rust strided axpby loop into a compact owned destination"],
+            )
+        }
+        _ => return Err(format!("unknown axpby strided source arm {arm}").into()),
+    };
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
+        timer,
+        outside_timer: vec![
+            "backend/session construction",
+            "input_construction",
+            "strided/offset view construction (metadata only)",
+            "per-sample destination allocation and seed restoration",
+            "correctness_check",
+        ],
+        extra: json!({
+            "n": n,
+            "arm": arm,
+            "alpha": alpha,
+            "beta": beta,
+            "destination": "compact owned Tensor",
+            "source_layout": if arm == "strided-source" {
+                "strided/offset view"
+            } else if arm == "contiguous-source" {
+                "column-major owned"
+            } else {
+                "strided rust-loop"
+            },
+        }),
+    })
+}
+
+// ---------------------------------------------------------------------------
 // #2177: erased Tensor construction from a prepared payload. Payload Vecs are
 // prepared and consumed outside the clock; the host allocation count of one
 // construction is measured in a separate counting pass.
@@ -2545,6 +2707,7 @@ fn main() -> Result<()> {
         "fft_axis_c2c" => fft_axis_c2c(&params, &timing, threads),
         "degenerate_dot_general" => degenerate_dot_general(&params, &timing, threads),
         "erased_binary_add" => erased_binary_add(&params, &timing, threads),
+        "axpby_strided_source" => axpby_strided_source(&params, &timing, threads),
         "erased_construct" => erased_construct(&params, &timing),
         "eager_small_call" => eager_small_call(&params, &timing),
         "backward_live_leaves" => backward_live_leaves(&params, &timing),
