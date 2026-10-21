@@ -828,6 +828,166 @@
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len512"
  },
  {
+  "id": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t1",
+  "issues": [
+   "#2216"
+  ],
+  "kind": "decode_projection_view_operand",
+  "arm": "prepared-view",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection_view_operand",
+   "arm": "prepared-view",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2216: prepared decode-shaped projection y = W^T x, x [in, len] and W [in, out] f32, contracting the 1024 input axis. The weight operand is a borrowed transposed/offset view: W is stored [out, in] with a padded column offset and read [in, out] through swapped strides. The cached dot read hook must consume that view instead of staging a contiguous copy. The contiguous control feeds the same logical W as an owned [in, out] tensor through the same prepared cache slot, and PyTorch x @ W.T is the external reference. Latency regime: per-call dispatch plus the operand staging the fix removes, not GEMM throughput. Fixture and view construction, correctness checks and session setup are outside the timer.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t1",
+  "issues": [
+   "#2216"
+  ],
+  "kind": "decode_projection_view_operand",
+  "arm": "prepared-contiguous",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection_view_operand",
+   "arm": "prepared-contiguous",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2216: prepared decode-shaped projection y = W^T x, x [in, len] and W [in, out] f32, contracting the 1024 input axis. The weight operand is a borrowed transposed/offset view: W is stored [out, in] with a padded column offset and read [in, out] through swapped strides. The cached dot read hook must consume that view instead of staging a contiguous copy. The contiguous control feeds the same logical W as an owned [in, out] tensor through the same prepared cache slot, and PyTorch x @ W.T is the external reference. Latency regime: per-call dispatch plus the operand staging the fix removes, not GEMM throughput. Fixture and view construction, correctness checks and session setup are outside the timer.",
+  "reference_for": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t1",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t1",
+  "issues": [
+   "#2216"
+  ],
+  "kind": "decode_projection_view_operand",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection_view_operand",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2216: prepared decode-shaped projection y = W^T x, x [in, len] and W [in, out] f32, contracting the 1024 input axis. The weight operand is a borrowed transposed/offset view: W is stored [out, in] with a padded column offset and read [in, out] through swapped strides. The cached dot read hook must consume that view instead of staging a contiguous copy. The contiguous control feeds the same logical W as an owned [in, out] tensor through the same prepared cache slot, and PyTorch x @ W.T is the external reference. Latency regime: per-call dispatch plus the operand staging the fix removes, not GEMM throughput. Fixture and view construction, correctness checks and session setup are outside the timer.",
+  "reference_for": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t1",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t4",
+  "issues": [
+   "#2216"
+  ],
+  "kind": "decode_projection_view_operand",
+  "arm": "prepared-view",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection_view_operand",
+   "arm": "prepared-view",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2216: prepared decode-shaped projection y = W^T x, x [in, len] and W [in, out] f32, contracting the 1024 input axis. The weight operand is a borrowed transposed/offset view: W is stored [out, in] with a padded column offset and read [in, out] through swapped strides. The cached dot read hook must consume that view instead of staging a contiguous copy. The contiguous control feeds the same logical W as an owned [in, out] tensor through the same prepared cache slot, and PyTorch x @ W.T is the external reference. Latency regime: per-call dispatch plus the operand staging the fix removes, not GEMM throughput. Fixture and view construction, correctness checks and session setup are outside the timer.",
+  "thread_counts": [
+   4
+  ]
+ },
+ {
+  "id": "decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t4",
+  "issues": [
+   "#2216"
+  ],
+  "kind": "decode_projection_view_operand",
+  "arm": "prepared-contiguous",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection_view_operand",
+   "arm": "prepared-contiguous",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2216: prepared decode-shaped projection y = W^T x, x [in, len] and W [in, out] f32, contracting the 1024 input axis. The weight operand is a borrowed transposed/offset view: W is stored [out, in] with a padded column offset and read [in, out] through swapped strides. The cached dot read hook must consume that view instead of staging a contiguous copy. The contiguous control feeds the same logical W as an owned [in, out] tensor through the same prepared cache slot, and PyTorch x @ W.T is the external reference. Latency regime: per-call dispatch plus the operand staging the fix removes, not GEMM throughput. Fixture and view construction, correctness checks and session setup are outside the timer.",
+  "reference_for": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t4",
+  "thread_counts": [
+   4
+  ]
+ },
+ {
+  "id": "decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t4",
+  "issues": [
+   "#2216"
+  ],
+  "kind": "decode_projection_view_operand",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "decode_projection_view_operand",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2216: prepared decode-shaped projection y = W^T x, x [in, len] and W [in, out] f32, contracting the 1024 input axis. The weight operand is a borrowed transposed/offset view: W is stored [out, in] with a padded column offset and read [in, out] through swapped strides. The cached dot read hook must consume that view instead of staging a contiguous copy. The contiguous control feeds the same logical W as an owned [in, out] tensor through the same prepared cache slot, and PyTorch x @ W.T is the external reference. Latency regime: per-call dispatch plus the operand staging the fix removes, not GEMM throughput. Fixture and view construction, correctness checks and session setup are outside the timer.",
+  "reference_for": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t4",
+  "thread_counts": [
+   4
+  ]
+ },
+ {
   "id": "decode_block_copy_volume_f32_d1024_len8",
   "issues": [
    "#1995"
