@@ -41,6 +41,8 @@ def validate_selection(document):
         raise ValueError('CPU nightly thread selection mismatch')
 
 
+BLAS_IMPLEMENTATIONS = ('accelerate', 'openblas', 'mkl')
+
 CPU_SUITES = ('einsum', 'cpu_ops', 'linalg_jvp_vjp', 'fft', 'public_api',
               'small_work', 'session_matrix', 'permutation', 'overhead_smoke')
 
@@ -162,7 +164,11 @@ def build_source(bundle: Path, descriptor: dict, suite: str, profile: str, sourc
                 count = record.get('operations_per_sample', 1)
                 values = [value / count for value in record.get('samples_ns', [])]
                 verified = record.get('correctness') == 'passed'
-                backend = 'pytorch-cpu' if record.get('provider') == 'pytorch' else 'tenferro-' + str(record.get('provider', 'unknown'))
+                provider = str(record.get('provider', 'unknown'))
+                # The harness names the BLAS implementation (Accelerate on macOS); the
+                # workload identity is the provider family, as on every other profile.
+                provider = 'blas' if provider in BLAS_IMPLEMENTATIONS else provider
+                backend = 'pytorch-cpu' if provider == 'pytorch' else 'tenferro-' + provider
             status = 'ok' if verified and values else 'failed'
             reason = record.get('unsupported_reason') or record.get('reason') or record.get('error')
             if record.get('status') == 'unsupported' and reason:

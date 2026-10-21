@@ -98,6 +98,21 @@ class CPUIngestionTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'No CPU raw measurements|raw threads'):
             self.package()
 
+    def test_blas_implementation_names_share_one_session_matrix_identity(self):
+        run = self.root/'data/results/amd-cpu/cpu/session_matrix/20261018_000000'
+        run.mkdir(parents=True)
+        (run/'run.yaml').write_text(yaml.safe_dump(dict(self.metadata, suite_id='cpu/session_matrix',
+                                                         collection={'selected_cases':1})))
+        def build(provider):
+            (run/'samples_t1.jsonl').write_text(json.dumps(
+                {'case_id':'matmul_n2_count1024', 'provider':provider, 'threads':1, 'status':'passed',
+                 'correctness':'passed', 'operations_per_sample':4, 'samples_ns':[400, 800]})+'\n')
+            descriptor = {'metadata': str((run/'run.yaml').relative_to(self.root)),
+                          'raw_files': [str((run/'samples_t1.jsonl').relative_to(self.root))]}
+            return identities(build_source(self.root, descriptor, 'cpu/session_matrix', 'amd-cpu', {'head_sha':'a'*40}))
+        self.assertEqual(build('accelerate'), build('blas'))
+        self.assertEqual(build('accelerate'), [['matmul_n2_count1024', 'threads=1', 'tenferro-blas']])
+
     def test_mismatched_pytorch_provider_cannot_publish(self):
         self.metadata['python_backends']['pytorch']['provider']='openblas'
         (self.run/'run.yaml').write_text(yaml.safe_dump(self.metadata))
