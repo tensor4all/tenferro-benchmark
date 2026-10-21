@@ -187,6 +187,114 @@ def torch_case(case):
             ref = x.double().mean(-1)
             return float(((x.mean(-1).double() - ref).abs() / ref.abs().clamp(min=1.0)).max())
         return (lambda: x.mean(-1)), check, cols * 4, ["torch.mean", "output_allocation"]
+    if kind == "small_grad_trace":
+        # #2186: the Rust arm's matrix, rhs and finite-difference direction (column-major).
+        op_name, n = p["op"], p["n"]
+        symmetric = op_name == "eigh"
+
+        def symmetrize(flat):
+            if symmetric:
+                for col in range(n):
+                    for row in range(col):
+                        mean = 0.5 * (flat[row + n * col] + flat[col + n * row])
+                        flat[row + n * col] = mean
+                        flat[col + n * row] = mean
+            return flat
+
+        matrix = [0.1 * x for x in _values(n * n, 4)]
+        symmetrize(matrix)
+        for i in range(n):
+            matrix[i + n * i] += 2.0 + i / n
+        direction = symmetrize(_values(n * n, 99))
+
+        def col_major(flat):
+            return torch.tensor(flat, dtype=torch.float64).reshape(n, n).T.contiguous()
+
+        a0 = col_major(matrix)
+        b0 = col_major(_values(n * n, 77))
+        e0 = col_major(direction)
+
+        def loss(a):
+            if op_name == "qr":
+                q, r = torch.linalg.qr(a)
+                return q.sum() + r.sum()
+            if op_name == "eigh":
+                w, v = torch.linalg.eigh(a)
+                return w.sum() + v.sum()
+            if op_name == "lu":
+                _pm, low, up = torch.linalg.lu(a)
+                return low.sum() + up.sum()
+            if op_name == "svd":
+                u, sv, vh = torch.linalg.svd(a)
+                return u.sum() + sv.sum() + vh.sum()
+            return torch.linalg.solve(a, b0).sum()
+
+        leaf = a0.clone().requires_grad_(True)
+
+        def grad_once():
+            return torch.autograd.grad(loss(leaf), leaf)[0]
+
+        def check():
+            # Fifth-order five-point stencil: truncation and rounding both stay far below 1e-10.
+            analytic = float((grad_once() * e0).sum())
+            step = 1e-4
+            with torch.no_grad():
+                f = {k: float(loss(a0 + k * step * e0)) for k in (-2, -1, 1, 2)}
+            fd = (-f[2] + 8 * f[1] - 8 * f[-1] + f[-2]) / (12 * step)
+            return abs(analytic - fd) / max(abs(fd), 1.0)
+        return grad_once, check, 2 * n * n * 8, [f"torch.linalg.{op_name} + autograd.grad", "output_allocation"]
+    if kind == "fft_axis_c2c":
+        # #1765: the Rust arm's complex fixture (re = values(seed 3), im = values(seed 4)),
+        # in column-major order; axis 0 is the transform axis.
+        n = p["n"]
+        re, im = _values(n ** 3, 3), _values(n ** 3, 4)
+        flat = [complex(r, i) for r, i in zip(re, im)]
+        x = torch.tensor(flat, dtype=torch.complex128).reshape(n, n, n).permute(2, 1, 0).contiguous()
+
+        def check():
+            got = torch.fft.fft(x, dim=0)
+            ref = torch.stack([torch.fft.fft(x[:, j, l]) for j, l in [(0, 0), (n - 1, n // 2)]])
+            return float((got[:, 0, 0] - ref[0]).abs().max() / ref[0].abs().max())
+        return (lambda: torch.fft.fft(x, dim=0)), check, n ** 3 * 16, ["torch.fft.fft(dim=0)", "output_allocation"]
+    if kind == "degenerate_dot_general":
+        # #2111: the Rust arm's fixtures (seeds 50-55), reshaped to the logical operands.
+        form, n = p["form"], p["n"]
+        if form == "hadamard":
+            a = torch.tensor(_values(n * n, 50), dtype=torch.float64).reshape(n, n).T
+            b = torch.tensor(_values(n * n, 51), dtype=torch.float64).reshape(n, n).T
+            op = lambda: torch.mul(a, b)
+        elif form == "outer":
+            a = torch.tensor(_values(n, 52), dtype=torch.float64)
+            b = torch.tensor(_values(n, 53), dtype=torch.float64)
+            op = lambda: torch.outer(a, b)
+        elif form == "rank0":
+            a = torch.tensor(_values(1, 54), dtype=torch.float64)[0]
+            b = torch.tensor(_values(n * n, 55), dtype=torch.float64).reshape(n, n).T
+            op = lambda: a * b
+        else:
+            raise ValueError(f"unknown degenerate dot_general form {form}")
+
+        def check():
+            return 0.0  # the Rust arm checks the values; this arm is timing only
+        return op, check, n * n * 8, [f"torch {form} (degenerate dot)", "output_allocation"]
+    if kind == "erased_binary_add":
+        # #1766: the Rust arm's fixtures (seeds 60 and 61).
+        n = p["n"]
+        a = torch.tensor(_values(n, 60), dtype=torch.float64)
+        b = torch.tensor(_values(n, 61), dtype=torch.float64)
+        return (lambda: torch.add(a, b)), (lambda: 0.0), n * 8, ["torch.add", "output_allocation"]
+    if kind == "eager_small_call":
+        # #1704 / #1667 / #1904: the Rust arm's fixtures (seeds 70-74); tiny PyTorch ops.
+        op_name = p["op"]
+        if op_name == "add":
+            x = torch.tensor(_values(8, 70), dtype=torch.float64)
+            y = torch.tensor(_values(8, 71), dtype=torch.float64)
+            return (lambda: torch.add(x, y)), (lambda: 0.0), 8 * 8, ["torch.add (8 elements)", "output_allocation"]
+        if op_name == "gemm":
+            a = torch.tensor(_values(16, 73), dtype=torch.float64).reshape(4, 4).T
+            b = torch.tensor(_values(16, 74), dtype=torch.float64).reshape(4, 4).T
+            return (lambda: torch.matmul(a, b)), (lambda: 0.0), 16 * 8, ["torch.matmul (4x4)", "output_allocation"]
+        return None
     if kind == "take_along_axis":
         n, batch = p["n"], p["batch"]
         # Column-major x [n, n, batch] == row-major (batch, n_j, n_i); idx [n, 1, batch] == (batch, 1, n).
@@ -210,6 +318,10 @@ def run_torch(case, threads, config, correctness_only):
     op, check, retained, timer = torch_case(case)
     error = check()
     tol = 1e-4 if case["dtype"] == "f32" else 1e-10
+    if case["kind"] == "small_grad_trace":
+        # The check is a finite-difference gradient test; its noise floor is ~1e-10 at n=16
+        # (eigh). The Rust arm checks the same gradient against 1e-5 with its own step.
+        tol = 1e-8
     row = {"max_rel_error": error, "samples": [],
            "scope": {"timer": timer, "outside_timer": ["input_construction", "torch.set_num_threads", "correctness_check"]},
            "provider": torch.__config__.show().split("\n")[0].strip()}

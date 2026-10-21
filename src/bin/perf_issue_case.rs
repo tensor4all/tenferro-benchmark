@@ -23,9 +23,10 @@ use std::time::Instant;
 use num_complex::Complex64;
 use serde::Serialize;
 use serde_json::{json, Value};
-use tenferro_ad::{EagerRuntime, EagerSession, EagerTensor};
-use tenferro_cpu::{runtime_engine_registration, CpuEngine};
-use tenferro_linalg::TensorLinalgExt;
+use tenferro_ad::{AdContext, EagerRuntime, EagerSession, EagerTensor};
+use tenferro_cpu::{runtime_engine_id, runtime_engine_registration, CpuEngine};
+use tenferro_fft::{FftExecutor, FftNorm};
+use tenferro_linalg::{TensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::{
     DType, ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TracedTensor,
 };
@@ -1807,6 +1808,574 @@ fn small_contraction_pool_hop(params: &Value, timing: &Timing) -> Result<CaseOut
 
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// #2186: small linalg AD (grad_sum of one decomposition). The loss sums the
+// float outputs of the decomposition; the gradient is one traced program that
+// is prepared once on a caller-held engine and timed by Runtime::run. The
+// gradient is checked against a central finite difference of the eager forward
+// loss, so the traced and eager paths are independent of each other.
+// ---------------------------------------------------------------------------
+
+/// Diagonally dominant test matrix; symmetric for `eigh` (its input contract).
+fn small_ad_matrix(n: usize, symmetric: bool) -> Vec<f64> {
+    let raw = values(n * n, 4);
+    let mut data: Vec<f64> = raw.iter().map(|x| 0.1 * x).collect();
+    if symmetric {
+        for col in 0..n {
+            for row in 0..col {
+                let mean = 0.5 * (data[row + n * col] + data[col + n * row]);
+                data[row + n * col] = mean;
+                data[col + n * row] = mean;
+            }
+        }
+    }
+    for i in 0..n {
+        data[i + n * i] += 2.0 + i as f64 / n as f64;
+    }
+    data
+}
+
+fn small_ad_sum2(t: &TracedTensor) -> Result<TracedTensor> {
+    Ok(t.reduce_sum(Some(&[0, 1]))?)
+}
+
+fn small_ad_sum1(t: &TracedTensor) -> Result<TracedTensor> {
+    Ok(t.reduce_sum(Some(&[0]))?)
+}
+
+fn small_ad_add(x: &TracedTensor, y: &TracedTensor) -> Result<TracedTensor> {
+    Ok((x + y)?)
+}
+
+fn small_ad_loss_traced(op: &str, a: &TracedTensor, b: &TracedTensor) -> Result<TracedTensor> {
+    match op {
+        "qr" => {
+            let (q, r) = a.qr()?;
+            small_ad_add(&small_ad_sum2(&q)?, &small_ad_sum2(&r)?)
+        }
+        "eigh" => {
+            let (w, v) = a.eigh()?;
+            small_ad_add(&small_ad_sum1(&w)?, &small_ad_sum2(&v)?)
+        }
+        "lu" => {
+            let (_p, l, u, _parity) = a.lu()?;
+            small_ad_add(&small_ad_sum2(&l)?, &small_ad_sum2(&u)?)
+        }
+        "svd" => {
+            let (u, s, vt) = a.svd()?;
+            let us = small_ad_add(&small_ad_sum2(&u)?, &small_ad_sum1(&s)?)?;
+            small_ad_add(&us, &small_ad_sum2(&vt)?)
+        }
+        "solve" => small_ad_sum2(&a.solve(b)?),
+        _ => Err(format!("unknown small_grad_trace op {op}").into()),
+    }
+}
+
+fn small_ad_loss_eager(op: &str, a: &Tensor, b: &Tensor, s: &mut dyn Engine) -> Result<f64> {
+    let total = |t: &Tensor| -> Result<f64> { Ok(t.as_slice::<f64>()?.iter().sum()) };
+    Ok(match op {
+        "qr" => {
+            let (q, r) = a.qr(s)?;
+            total(&q)? + total(&r)?
+        }
+        "eigh" => {
+            let (w, v) = a.eigh(s)?;
+            total(&w)? + total(&v)?
+        }
+        "lu" => {
+            let (_p, l, u, _parity) = a.lu(s)?;
+            total(&l)? + total(&u)?
+        }
+        "svd" => {
+            let (u, sv, vt) = a.svd(s)?;
+            total(&u)? + total(&sv)? + total(&vt)?
+        }
+        "solve" => total(&a.solve(b, s)?)?,
+        _ => return Err(format!("unknown small_grad_trace op {op}").into()),
+    })
+}
+
+fn small_grad_trace(params: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
+    let op = param_str(params, "op")?;
+    let n = param_usize(params, "n")?;
+    let arm = param_str(params, "arm")?;
+    if arm != "trace-prepared" {
+        return Err(format!("unknown small_grad_trace arm {arm}").into());
+    }
+    let symmetric = op == "eigh";
+    let data = small_ad_matrix(n, symmetric);
+    let rhs = values(n * n, 77);
+    let mut direction = values(n * n, 99);
+    if symmetric {
+        for col in 0..n {
+            for row in 0..col {
+                let mean = 0.5 * (direction[row + n * col] + direction[col + n * row]);
+                direction[row + n * col] = mean;
+                direction[col + n * row] = mean;
+            }
+        }
+    }
+    let a_t = Tensor::from_vec_col_major(vec![n, n], data.clone())?;
+    let b_t = Tensor::from_vec_col_major(vec![n, n], rhs.clone())?;
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
+
+    // Setup: trace, AD transform, compile, and prepare happen before the clock.
+    let ad = AdContext::builder()
+        .with_semantic_extension_rules(tenferro_linalg::semantic_ad_rules()?)?
+        .build()?;
+    let a = TracedTensor::from_tensor_concrete_shape(Tensor::from_vec_col_major(
+        vec![n, n],
+        data.clone(),
+    )?)?;
+    let b = TracedTensor::from_tensor_concrete_shape(Tensor::from_vec_col_major(
+        vec![n, n],
+        rhs.clone(),
+    )?)?;
+    let loss = small_ad_loss_traced(op, &a, &b)?;
+    let seed = TracedTensor::from_tensor_concrete_shape(Tensor::from_vec_col_major(
+        Vec::<usize>::new(),
+        vec![1.0],
+    )?)?;
+    let grad = ad.vjp(&loss, &a, &seed)?;
+    let program = GraphCompiler::new().compile_many(&[&loss, &grad])?;
+    let mut builder = Runtime::builder();
+    builder.register_engine(runtime_engine_registration(&backend)?)?;
+    builder.install_extension_module(tenferro_linalg::extension_module::<CpuEngine>(
+        runtime_engine_id()?,
+    )?)?;
+    let runtime = builder.build()?;
+    let target = ExecutionEngine::target(&backend);
+    let prepared = runtime.prepare(&program, &[], std::slice::from_ref(&target))?;
+    let commands = prepared.execution_command_count();
+
+    // Correctness (untimed): forward loss and the directional derivative.
+    let mut outputs = runtime.run(&mut [&mut backend], &prepared, &[])?.into_iter();
+    let loss_value = outputs
+        .next()
+        .ok_or("prepared program returned no loss")?
+        .into_tensor(&mut backend)?;
+    let grad_value = outputs
+        .next()
+        .ok_or("prepared program returned no gradient")?
+        .into_tensor(&mut backend)?;
+    let (forward_error, fd_error) = backend.with_backend_session(|s| -> Result<(f64, f64)> {
+        let want = small_ad_loss_eager(op, &a_t, &b_t, s)?;
+        let got = loss_value.as_slice::<f64>()?[0];
+        let forward_error = check_tol(rel_error(got, want), 1e-10, "forward loss")?;
+        const STEP: f64 = 1e-6;
+        let mut shifted = |sign: f64| -> Result<f64> {
+            let x: Vec<f64> = data
+                .iter()
+                .zip(&direction)
+                .map(|(a, e)| a + sign * STEP * e)
+                .collect();
+            let x_t = Tensor::from_vec_col_major(vec![n, n], x)?;
+            small_ad_loss_eager(op, &x_t, &b_t, s)
+        };
+        let fd = (shifted(1.0)? - shifted(-1.0)?) / (2.0 * STEP);
+        let analytic: f64 = grad_value
+            .as_slice::<f64>()?
+            .iter()
+            .zip(&direction)
+            .map(|(g, e)| g * e)
+            .sum();
+        let fd_error = check_tol(rel_error(analytic, fd), 1e-5, "directional derivative")?;
+        Ok((forward_error, fd_error))
+    })??;
+
+    let bytes = 2 * n * n * 8;
+    let measurement = measure(timing, bytes, || {
+        Ok(runtime.run(&mut [&mut backend], &prepared, &[])?)
+    })?;
+    Ok(CaseOutcome {
+        max_rel_error: forward_error.max(fd_error),
+        measurement: Some(measurement),
+        timer: vec![
+            "Runtime::run of the prepared gradient program on the caller-held engine",
+            "output_allocation",
+        ],
+        outside_timer: vec![
+            "backend/runtime construction",
+            "trace, AD transform and compile",
+            "prepare",
+            "input_construction",
+            "finite-difference correctness check",
+        ],
+        extra: json!({"execution_command_count": commands}),
+    })
+}
+
+// ---------------------------------------------------------------------------
+// #1765: one complex-to-complex FFT pass over a 128x128x128 tensor (axis 0).
+// tenferro-fft has no N-dimensional public FFT, so this is one public
+// single-axis operation over the full cube: n*n lanes of length n, which is the
+// lane-parallel work #1765 asked to be threaded. It is not a full 3-D FFT.
+// ---------------------------------------------------------------------------
+
+fn fft_axis_c2c(params: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
+    let n = param_usize(params, "n")?;
+    let arm = param_str(params, "arm")?;
+    if arm != "fft-executor" {
+        return Err(format!("unknown fft_axis_c2c arm {arm}").into());
+    }
+    let data = complex_values(n * n * n, 3);
+    let input = Tensor::from_vec_col_major(vec![n, n, n], data.clone())?;
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
+    let mut executor = FftExecutor::default();
+    let bytes = n * n * n * 16;
+    let (error, measurement) = backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
+        // Correctness on sampled lanes against a direct DFT of length n.
+        let out = executor.fft(&input, None, 0, FftNorm::Backward, s)?;
+        let got = out.as_slice::<Complex64>()?;
+        let mut worst = 0.0f64;
+        for probe in 0..64usize {
+            let (k, j, l) = ((probe * 37) % n, (probe * 11) % n, (probe * 5) % n);
+            let want: Complex64 = (0..n)
+                .map(|m| {
+                    let angle = -2.0 * std::f64::consts::PI * (k * m) as f64 / n as f64;
+                    data[m + n * j + n * n * l] * Complex64::from_polar(1.0, angle)
+                })
+                .sum();
+            let have = got[k + n * j + n * n * l];
+            worst = worst.max((have - want).norm() / want.norm().max(1.0));
+        }
+        let error = check_tol(worst, 1e-9, "fft lanes against direct DFT")?;
+        let measurement = measure(timing, bytes, || {
+            Ok(executor.fft(&input, None, 0, FftNorm::Backward, s)?)
+        })?;
+        Ok((error, measurement))
+    })??;
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
+        timer: vec![
+            "FftExecutor::fft over axis 0 on the borrowed caller-held session",
+            "output_allocation",
+        ],
+        outside_timer: vec![
+            "backend/session construction",
+            "input_construction",
+            "correctness_check",
+        ],
+        extra: json!({"lanes": n * n, "lane_length": n, "axis": 0}),
+    })
+}
+
+// ---------------------------------------------------------------------------
+// #2111: degenerate dot_general forms on one caller-held session. The outer
+// product and the rank-0 operand contract nothing; the Hadamard form batches
+// every axis. The backend should rewrite these instead of running the general
+// contraction path.
+// ---------------------------------------------------------------------------
+
+fn degenerate_dot_general(params: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
+    let form = param_str(params, "form")?;
+    let n = param_usize(params, "n")?;
+    let arm = param_str(params, "arm")?;
+    if arm != "dot-general-shared" {
+        return Err(format!("unknown degenerate_dot_general arm {arm}").into());
+    }
+    let (lhs_shape, lhs_data, rhs_shape, rhs_data, cfg, want): (
+        Vec<usize>,
+        Vec<f64>,
+        Vec<usize>,
+        Vec<f64>,
+        DotGeneralConfig,
+        Vec<f64>,
+    ) = match form {
+        "hadamard" => {
+            let (a, b) = (values(n * n, 50), values(n * n, 51));
+            let want = a.iter().zip(&b).map(|(x, y)| x * y).collect();
+            let cfg = DotGeneralConfig {
+                lhs_contracting_dims: [].as_slice().into(),
+                rhs_contracting_dims: [].as_slice().into(),
+                lhs_batch_dims: [0, 1].as_slice().into(),
+                rhs_batch_dims: [0, 1].as_slice().into(),
+            };
+            (vec![n, n], a, vec![n, n], b, cfg, want)
+        }
+        "outer" => {
+            let (a, b) = (values(n, 52), values(n, 53));
+            let want = (0..n * n).map(|k| a[k % n] * b[k / n]).collect();
+            (vec![n], a, vec![n], b, matmul_config(&[], &[]), want)
+        }
+        "rank0" => {
+            let (a, b) = (values(1, 54), values(n * n, 55));
+            let want = b.iter().map(|y| a[0] * y).collect();
+            (vec![], a, vec![n, n], b, matmul_config(&[], &[]), want)
+        }
+        _ => return Err(format!("unknown degenerate dot_general form {form}").into()),
+    };
+    let lhs = Tensor::from_vec_col_major(lhs_shape, lhs_data)?;
+    let rhs = Tensor::from_vec_col_major(rhs_shape, rhs_data)?;
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
+    let bytes = n * n * 8;
+    let (error, measurement) = backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
+        let one = |s: &mut dyn Engine| -> Result<Tensor> {
+            Ok(s.dot_general_read(
+                TensorRead::from_tensor(&lhs),
+                TensorRead::from_tensor(&rhs),
+                &cfg,
+            )?)
+        };
+        let out = one(s)?;
+        let got = out.as_slice::<f64>()?;
+        let mut worst = 0.0f64;
+        for (g, w) in got.iter().zip(&want) {
+            worst = worst.max(rel_error(*g, *w));
+        }
+        let error = check_tol(worst, 1e-12, "degenerate dot_general")?;
+        let measurement = measure(timing, bytes, || one(s))?;
+        Ok((error, measurement))
+    })??;
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
+        timer: vec![
+            "Session::dot_general_read on the borrowed caller-held session",
+            "output_allocation",
+        ],
+        outside_timer: vec![
+            "backend/session construction",
+            "input_construction",
+            "correctness_check",
+        ],
+        extra: json!({"form": form, "n": n}),
+    })
+}
+
+// ---------------------------------------------------------------------------
+// #1766: erased Tensor binary op with matching shapes. The operands must be
+// read, not copied, before the backend op runs (the bug deep-copied both).
+// ---------------------------------------------------------------------------
+
+fn erased_binary_add(params: &Value, timing: &Timing, threads: usize) -> Result<CaseOutcome> {
+    let n = param_usize(params, "n")?;
+    let arm = param_str(params, "arm")?;
+    if arm != "session-add" {
+        return Err(format!("unknown erased_binary_add arm {arm}").into());
+    }
+    let (a_data, b_data) = (values(n, 60), values(n, 61));
+    let want: Vec<f64> = a_data.iter().zip(&b_data).map(|(x, y)| x + y).collect();
+    let a = Tensor::from_vec_col_major(vec![n], a_data)?;
+    let b = Tensor::from_vec_col_major(vec![n], b_data)?;
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
+    let bytes = n * 8;
+    let (error, measurement) = backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
+        let out = a.add(&b, s)?;
+        let mut worst = 0.0f64;
+        for (g, w) in out.as_slice::<f64>()?.iter().zip(&want) {
+            worst = worst.max(rel_error(*g, *w));
+        }
+        let error = check_tol(worst, 1e-15, "erased Tensor add")?;
+        let measurement = measure(timing, bytes, || Ok(a.add(&b, s)?))?;
+        Ok((error, measurement))
+    })??;
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
+        timer: vec![
+            "erased Tensor::add on the borrowed caller-held session",
+            "output_allocation",
+        ],
+        outside_timer: vec![
+            "backend/session construction",
+            "input_construction",
+            "correctness_check",
+        ],
+        extra: json!({"n": n}),
+    })
+}
+
+// ---------------------------------------------------------------------------
+// #2177: erased Tensor construction from a prepared payload. Payload Vecs are
+// prepared and consumed outside the clock; the host allocation count of one
+// construction is measured in a separate counting pass.
+// ---------------------------------------------------------------------------
+
+fn erased_construct(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
+    let n = param_usize(params, "n")?;
+    let layout = param_str(params, "layout")?;
+    if layout != "col" && layout != "row" {
+        return Err(format!("unknown erased_construct layout {layout}").into());
+    }
+    let shape = vec![8, n / 8];
+    let input = values(n, 114);
+    let make = |data: Vec<f64>| -> Result<Tensor> {
+        Ok(if layout == "col" {
+            Tensor::from_vec_col_major(shape.clone(), data)?
+        } else {
+            Tensor::from_vec_row_major(shape.clone(), data)?
+        })
+    };
+    let first = make(input.clone())?;
+    if first.shape() != shape.as_slice() {
+        return Err("erased construction shape mismatch".into());
+    }
+    let batch = |count: usize| -> Result<u128> {
+        let mut inputs: Vec<Vec<f64>> = (0..count).map(|_| input.clone()).collect();
+        let mut outputs = Vec::with_capacity(count);
+        let start = Instant::now();
+        for data in &mut inputs {
+            outputs.push(make(std::mem::take(data))?);
+        }
+        let elapsed = start.elapsed().as_nanos();
+        black_box(&outputs);
+        Ok(elapsed)
+    };
+    let measurement = measure_batches(timing, n * 8, batch)?;
+    let count = 64;
+    let mut inputs: Vec<Vec<f64>> = (0..count).map(|_| input.clone()).collect();
+    let mut outputs = Vec::with_capacity(count);
+    let (_, allocations, bytes) = count_allocations(|| {
+        for data in &mut inputs {
+            outputs.push(make(std::mem::take(data))?);
+        }
+        Ok(())
+    })?;
+    black_box(&outputs);
+    Ok(CaseOutcome {
+        max_rel_error: 0.0,
+        measurement: Some(measurement),
+        timer: vec!["erased Tensor::from_vec_* on a prepared payload Vec"],
+        outside_timer: vec![
+            "payload clone and restore",
+            "shape_check",
+            "allocation counting pass (separate)",
+        ],
+        extra: json!({
+            "layout": layout,
+            "output_bytes": n * 8,
+            "host_allocations_per_op": allocations as f64 / count as f64,
+            "host_allocated_bytes_per_op": bytes as f64 / count as f64,
+        }),
+    })
+}
+
+// ---------------------------------------------------------------------------
+// #1704 / #1667 / #1904: eager small-call overhead inside one held eager
+// session. Entry is outside the clock; the timed call is one leaf construction,
+// one eager add, or one tiny eager dot_general.
+// ---------------------------------------------------------------------------
+
+fn eager_small_call(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
+    let op = param_str(params, "op")?;
+    let arm = param_str(params, "arm")?;
+    if arm != "eager-held-session" {
+        return Err(format!("unknown eager_small_call arm {arm}").into());
+    }
+    let mut runtime = eager_runtime()?;
+    let (error, measurement, timer) = match op {
+        "leaf" => {
+            let n = 8;
+            let data = values(n, 72);
+            let (error, measurement) = runtime.session(|s| -> Result<(f64, Measurement)> {
+                let leaf = s.constant_from(Tensor::from_vec_col_major(vec![n], data.clone())?)?;
+                let got = leaf.value()?;
+                let error = check_tol(
+                    got.as_slice::<f64>()?
+                        .iter()
+                        .zip(&data)
+                        .map(|(g, w)| rel_error(*g, *w))
+                        .fold(0.0, f64::max),
+                    1e-15,
+                    "eager leaf",
+                )?;
+                let mut batch = |count: usize| -> Result<u128> {
+                    // Payload tensors are built before the clock; the leaf consumes them.
+                    let mut payloads = Vec::with_capacity(count);
+                    for _ in 0..count {
+                        payloads.push(Tensor::from_vec_col_major(vec![n], data.clone())?);
+                    }
+                    let mut leaves = Vec::with_capacity(count);
+                    let start = Instant::now();
+                    for payload in payloads {
+                        leaves.push(s.constant_from(payload)?);
+                    }
+                    let elapsed = start.elapsed().as_nanos();
+                    black_box(&leaves);
+                    Ok(elapsed)
+                };
+                let measurement = measure_batches(timing, n * 8, &mut batch)?;
+                Ok((error, measurement))
+            })?;
+            (
+                error,
+                measurement,
+                vec!["EagerSession::constant_from on a prepared 8-element payload"],
+            )
+        }
+        "add" | "gemm" => {
+            let (a_t, b_t, check, timer, bytes): (Tensor, Tensor, Box<Check<'_>>, _, usize) =
+                if op == "add" {
+                    let (x, y) = (values(8, 70), values(8, 71));
+                    let want: Vec<f64> = x.iter().zip(&y).map(|(p, q)| p + q).collect();
+                    (
+                        Tensor::from_vec_col_major(vec![8], x)?,
+                        Tensor::from_vec_col_major(vec![8], y)?,
+                        Box::new(move |t: &Tensor| -> Result<f64> {
+                            let worst = t
+                                .as_slice::<f64>()?
+                                .iter()
+                                .zip(&want)
+                                .map(|(g, w)| rel_error(*g, *w))
+                                .fold(0.0, f64::max);
+                            check_tol(worst, 1e-15, "eager add")
+                        }),
+                        vec!["EagerSession::add on two held 8-element leaves"],
+                        8 * 8,
+                    )
+                } else {
+                    let (a, b) = (values(16, 73), values(16, 74));
+                    let mut want = vec![0.0f64; 16];
+                    for j in 0..4 {
+                        for i in 0..4 {
+                            want[i + 4 * j] = (0..4).map(|p| a[i + 4 * p] * b[p + 4 * j]).sum();
+                        }
+                    }
+                    (
+                        Tensor::from_vec_col_major(vec![4, 4], a)?,
+                        Tensor::from_vec_col_major(vec![4, 4], b)?,
+                        Box::new(move |t: &Tensor| -> Result<f64> {
+                            let worst = t
+                                .as_slice::<f64>()?
+                                .iter()
+                                .zip(&want)
+                                .map(|(g, w)| rel_error(*g, *w))
+                                .fold(0.0, f64::max);
+                            check_tol(worst, 1e-12, "eager 4x4 dot_general")
+                        }),
+                        vec!["EagerSession::dot_general on two held 4x4 leaves"],
+                        16 * 8,
+                    )
+                };
+            let a = eager_const(&mut runtime, a_t)?;
+            let b = eager_const(&mut runtime, b_t)?;
+            let (error, measurement) = if op == "add" {
+                time_eager_op(&mut runtime, timing, bytes, check.as_ref(), |s| s.add(&a, &b))?
+            } else {
+                time_eager_op(&mut runtime, timing, bytes, check.as_ref(), |s| {
+                    s.dot_general(&a, &b, matmul_config(&[1], &[0]))
+                })?
+            };
+            (error, measurement, timer)
+        }
+        _ => return Err(format!("unknown eager_small_call op {op}").into()),
+    };
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
+        timer,
+        outside_timer: vec![
+            "backend/runtime construction",
+            "eager session entry (held, outside the clock)",
+            "leaf input construction",
+            "correctness_check",
+        ],
+        extra: json!({"op": op}),
+    })
+}
+
 fn main() -> Result<()> {
     let case_id = arg("--case").ok_or("--case is required")?;
     let params: Value = serde_json::from_str(&arg("--params").ok_or("--params is required")?)?;
@@ -1869,6 +2438,12 @@ fn main() -> Result<()> {
         "gemm_mm256" => gemm_mm256(&params, &timing),
         "rank1_dot" => rank1_dot(&params, &timing),
         "small_solves" => small_solves(&params, &timing),
+        "small_grad_trace" => small_grad_trace(&params, &timing, threads),
+        "fft_axis_c2c" => fft_axis_c2c(&params, &timing, threads),
+        "degenerate_dot_general" => degenerate_dot_general(&params, &timing, threads),
+        "erased_binary_add" => erased_binary_add(&params, &timing, threads),
+        "erased_construct" => erased_construct(&params, &timing),
+        "eager_small_call" => eager_small_call(&params, &timing),
         "backward_live_leaves" => backward_live_leaves(&params, &timing),
         "tanh_chain" => tanh_chain(&params, &timing),
         "composed_norm" => composed_norm(&params, &timing),

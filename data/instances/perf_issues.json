@@ -4,7 +4,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-shared",
@@ -23,14 +24,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_eager-per-call_in1024_out1024_len8",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-per-call",
@@ -49,14 +51,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_faer-direct_in1024_out1024_len8",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "faer-direct",
@@ -75,7 +78,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len8"
  },
  {
@@ -83,7 +86,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "host-sgemm",
@@ -102,7 +106,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len8"
  },
  {
@@ -110,7 +114,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "pytorch",
@@ -129,7 +134,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len8"
  },
  {
@@ -137,7 +142,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-shared",
@@ -156,14 +162,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_eager-per-call_in1024_out1024_len64",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-per-call",
@@ -182,14 +189,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_faer-direct_in1024_out1024_len64",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "faer-direct",
@@ -208,7 +216,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len64"
  },
  {
@@ -216,7 +224,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "host-sgemm",
@@ -235,7 +244,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len64"
  },
  {
@@ -243,7 +252,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "pytorch",
@@ -262,7 +272,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len64"
  },
  {
@@ -270,7 +280,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-shared",
@@ -289,14 +300,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_eager-per-call_in1024_out1024_len512",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-per-call",
@@ -315,14 +327,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_faer-direct_in1024_out1024_len512",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "faer-direct",
@@ -341,7 +354,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len512"
  },
  {
@@ -349,7 +362,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "host-sgemm",
@@ -368,7 +382,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len512"
  },
  {
@@ -376,7 +390,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "pytorch",
@@ -395,7 +410,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out1024_len512"
  },
  {
@@ -403,7 +418,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-shared",
@@ -422,14 +438,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_eager-per-call_in1024_out4096_len8",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-per-call",
@@ -448,14 +465,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_faer-direct_in1024_out4096_len8",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "faer-direct",
@@ -474,7 +492,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len8"
  },
  {
@@ -482,7 +500,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "host-sgemm",
@@ -501,7 +520,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len8"
  },
  {
@@ -509,7 +528,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "pytorch",
@@ -528,7 +548,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len8"
  },
  {
@@ -536,7 +556,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-shared",
@@ -555,14 +576,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_eager-per-call_in1024_out4096_len64",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-per-call",
@@ -581,14 +603,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_faer-direct_in1024_out4096_len64",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "faer-direct",
@@ -607,7 +630,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len64"
  },
  {
@@ -615,7 +638,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "host-sgemm",
@@ -634,7 +658,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len64"
  },
  {
@@ -642,7 +666,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "pytorch",
@@ -661,7 +686,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len64"
  },
  {
@@ -669,7 +694,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-shared",
@@ -688,14 +714,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_eager-per-call_in1024_out4096_len512",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "eager-per-call",
@@ -714,14 +741,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family."
  },
  {
   "id": "decode_proj_f32_faer-direct_in1024_out4096_len512",
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "faer-direct",
@@ -740,7 +768,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len512"
  },
  {
@@ -748,7 +776,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "host-sgemm",
@@ -767,7 +796,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len512"
  },
  {
@@ -775,7 +804,8 @@
   "issues": [
    "#1992",
    "#2003",
-   "#1995"
+   "#1995",
+   "#2229"
   ],
   "kind": "decode_projection",
   "arm": "pytorch",
@@ -794,7 +824,7 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
+  "intent": "tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, x column-major (in, len), W column-major (in, out), f32. The eager dot_general wrapper cost and the faer-vs-sgemm provider gap are both visible against the reference arms in the same family.",
   "reference_for": "decode_proj_f32_eager-shared_in1024_out4096_len512"
  },
  {
@@ -1257,7 +1287,8 @@
  {
   "id": "small_solve_f64_solve-loop_k16_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "solve-loop",
@@ -1274,12 +1305,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row."
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878."
  },
  {
   "id": "small_solve_f64_triangular-solve-loop_k16_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "triangular-solve-loop",
@@ -1296,12 +1328,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row."
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878."
  },
  {
   "id": "small_solve_f64_solve-batched_k16_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "solve-batched",
@@ -1318,13 +1351,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878.",
   "reference_for": "small_solve_f64_solve-loop_k16_b64"
  },
  {
   "id": "small_solve_f64_pytorch-solve-batched_k16_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "pytorch-solve-batched",
@@ -1341,13 +1375,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878.",
   "reference_for": "small_solve_f64_solve-loop_k16_b64"
  },
  {
   "id": "small_solve_f64_pytorch-solve-triangular-batched_k16_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "pytorch-solve-triangular-batched",
@@ -1364,13 +1399,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878.",
   "reference_for": "small_solve_f64_triangular-solve-loop_k16_b64"
  },
  {
   "id": "small_solve_f64_solve-loop_k64_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "solve-loop",
@@ -1387,12 +1423,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row."
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878."
  },
  {
   "id": "small_solve_f64_triangular-solve-loop_k64_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "triangular-solve-loop",
@@ -1409,12 +1446,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row."
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878."
  },
  {
   "id": "small_solve_f64_solve-batched_k64_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "solve-batched",
@@ -1431,13 +1469,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878.",
   "reference_for": "small_solve_f64_solve-loop_k64_b64"
  },
  {
   "id": "small_solve_f64_pytorch-solve-batched_k64_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "pytorch-solve-batched",
@@ -1454,13 +1493,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878.",
   "reference_for": "small_solve_f64_solve-loop_k64_b64"
  },
  {
   "id": "small_solve_f64_pytorch-solve-triangular-batched_k64_b64",
   "issues": [
-   "#2007"
+   "#2007",
+   "#1878"
   ],
   "kind": "small_solves",
   "arm": "pytorch-solve-triangular-batched",
@@ -1477,7 +1517,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row.",
+  "intent": "tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of rank-2 solve / triangular_solve calls in one session (items pre-sliced outside timing). References: the existing batched solve ([k, k, batch]) and PyTorch batched solve / solve_triangular. tenferro has no batched triangular_solve yet, so that future call has no tenferro row. Also tracks #1878.",
   "reference_for": "small_solve_f64_triangular-solve-loop_k64_b64"
  },
  {
@@ -2323,7 +2363,9 @@
  {
   "id": "small_contraction_abcd-dbef-acef_f64_per-call-default-pool_d4",
   "issues": [
-   "#1885"
+   "#1885",
+   "#1897",
+   "#1901"
   ],
   "kind": "small_contraction_pool_hop",
   "arm": "per-call-default-pool",
@@ -2340,12 +2382,14 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend)."
+  "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend). Also tracks #1897, #1901."
  },
  {
   "id": "small_contraction_abcd-dbef-acef_f64_per-call-threads1_d4",
   "issues": [
-   "#1885"
+   "#1885",
+   "#1897",
+   "#1901"
   ],
   "kind": "small_contraction_pool_hop",
   "arm": "per-call-threads1",
@@ -2362,13 +2406,15 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend).",
+  "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend). Also tracks #1897, #1901.",
   "reference_for": "small_contraction_abcd-dbef-acef_f64_per-call-default-pool_d4"
  },
  {
   "id": "small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4",
   "issues": [
-   "#1885"
+   "#1885",
+   "#1897",
+   "#1901"
   ],
   "kind": "small_contraction_pool_hop",
   "arm": "shared-session-default-pool",
@@ -2385,12 +2431,13 @@
    "amd-cpu",
    "mac-cpu"
   ],
-  "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend)."
+  "intent": "tenferro-rs #1885 §4.1 addendum: one-shot dot_general abcd,dbef->acef at extent 4 with a session entered per call on CpuBackend::new() (default pool) vs CpuBackend::with_threads(1), and the same call inside one session. Only meaningful at more than one thread (with 1 thread new() equals the 1-thread backend). Also tracks #1897, #1901."
  },
  {
   "id": "activation_erf_f32_eager-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2409,7 +2456,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "followup_mwe": {
    "case_id": "activation.erf",
    "rust_path": "eager-shared",
@@ -2422,6 +2469,7 @@
   "id": "activation_erf_f32_session-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2440,12 +2488,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_erf_f32_pytorch_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2464,7 +2513,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise erf on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). erf is the new B1 primitive (libm erff on CPU). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_erf_f32_eager-single-call_1024x64",
   "followup_mwe": {
    "case_id": "activation.erf",
@@ -2478,6 +2527,7 @@
   "id": "activation_sigmoid_f32_eager-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2496,7 +2546,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "followup_mwe": {
    "case_id": "activation.sigmoid",
    "rust_path": "eager-shared",
@@ -2509,6 +2559,7 @@
   "id": "activation_sigmoid_f32_session-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2527,12 +2578,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_sigmoid_f32_eager-composed_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2551,13 +2603,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_sigmoid_f32_eager-single-call_1024x64"
  },
  {
   "id": "activation_sigmoid_f32_pytorch_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2576,7 +2629,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise sigmoid on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_sigmoid_f32_eager-single-call_1024x64",
   "followup_mwe": {
    "case_id": "activation.sigmoid",
@@ -2590,6 +2643,7 @@
   "id": "activation_silu_f32_eager-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2608,7 +2662,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "followup_mwe": {
    "case_id": "activation.silu",
    "rust_path": "eager-shared",
@@ -2621,6 +2675,7 @@
   "id": "activation_silu_f32_session-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2639,12 +2694,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_silu_f32_eager-composed_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2663,13 +2719,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_silu_f32_eager-single-call_1024x64"
  },
  {
   "id": "activation_silu_f32_pytorch_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2688,7 +2745,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise silu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_silu_f32_eager-single-call_1024x64",
   "followup_mwe": {
    "case_id": "activation.silu",
@@ -2702,6 +2759,7 @@
   "id": "activation_softplus_f32_eager-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2720,7 +2778,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "followup_mwe": {
    "case_id": "activation.softplus",
    "rust_path": "eager-shared",
@@ -2733,6 +2791,7 @@
   "id": "activation_softplus_f32_session-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2751,12 +2810,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_softplus_f32_eager-composed_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2775,13 +2835,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_softplus_f32_eager-single-call_1024x64"
  },
  {
   "id": "activation_softplus_f32_pytorch_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2800,7 +2861,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise softplus on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_softplus_f32_eager-single-call_1024x64",
   "followup_mwe": {
    "case_id": "activation.softplus",
@@ -2814,7 +2875,9 @@
   "id": "activation_gelu_f32_eager-single-call_1024x64",
   "issues": [
    "#1975",
-   "#2030"
+   "#2030",
+   "#2069",
+   "#2228"
   ],
   "kind": "activation",
   "arm": "eager-single-call",
@@ -2832,13 +2895,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2030 tracks the confirmed borrowed-session exact GELU CPU gap."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2030 tracks the confirmed borrowed-session exact GELU CPU gap. Also tracks #2069, #2228."
  },
  {
   "id": "activation_gelu_f32_session-single-call_1024x64",
   "issues": [
    "#1975",
-   "#2030"
+   "#2030",
+   "#2069",
+   "#2228"
   ],
   "kind": "activation",
   "arm": "session-single-call",
@@ -2856,13 +2921,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2030 tracks the confirmed borrowed-session exact GELU CPU gap."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2030 tracks the confirmed borrowed-session exact GELU CPU gap. Also tracks #2069, #2228."
  },
  {
   "id": "activation_gelu_f32_pytorch_1024x64",
   "issues": [
    "#1975",
-   "#2030"
+   "#2030",
+   "#2069",
+   "#2228"
   ],
   "kind": "activation",
   "arm": "pytorch",
@@ -2880,13 +2947,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2030 tracks the confirmed borrowed-session exact GELU CPU gap.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). No pre-B1 composition exists (it needs erf), so the reference is PyTorch only. PyTorch is the external reference. #2030 tracks the confirmed borrowed-session exact GELU CPU gap. Also tracks #2069, #2228.",
   "reference_for": "activation_gelu_f32_eager-single-call_1024x64"
  },
  {
   "id": "activation_gelu_tanh_f32_eager-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2905,7 +2973,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "followup_mwe": {
    "case_id": "activation.gelu_tanh",
    "rust_path": "eager-shared",
@@ -2918,6 +2986,7 @@
   "id": "activation_gelu_tanh_f32_session-single-call_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2936,12 +3005,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload."
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload."
  },
  {
   "id": "activation_gelu_tanh_f32_eager-composed_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2960,13 +3030,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_gelu_tanh_f32_eager-single-call_1024x64"
  },
  {
   "id": "activation_gelu_tanh_f32_pytorch_1024x64",
   "issues": [
    "#1975",
+   "#2069",
    "#2032"
   ],
   "kind": "activation",
@@ -2985,7 +3056,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. #2032 tracks this confirmed current-main activation workload.",
+  "intent": "tenferro-rs #1975 (#2010 PR-B1): elementwise gelu_tanh on a 1024x64 f32 tensor as one eager call and as one concrete session call (TensorSessionOpsExt). The eager-composed arm is the hand-written formula from existing primitives (exp, neg, abs, log1p, tanh, maximum, ...). PyTorch is the external reference. Also tracks #2069. #2032 tracks this confirmed current-main activation workload.",
   "reference_for": "activation_gelu_tanh_f32_eager-single-call_1024x64",
   "followup_mwe": {
    "case_id": "activation.gelu_tanh",
@@ -2999,7 +3070,8 @@
   "id": "softmax_f32_eager-single-call_len64_b8",
   "issues": [
    "#1976",
-   "#2031"
+   "#2031",
+   "#2231"
   ],
   "kind": "softmax",
   "arm": "eager-single-call",
@@ -3018,13 +3090,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap."
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap. Also tracks #2231."
  },
  {
   "id": "softmax_f32_session-single-call_len64_b8",
   "issues": [
    "#1976",
-   "#2031"
+   "#2031",
+   "#2231"
   ],
   "kind": "softmax",
   "arm": "session-single-call",
@@ -3043,13 +3116,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap."
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap. Also tracks #2231."
  },
  {
   "id": "softmax_f32_eager-composed_len64_b8",
   "issues": [
    "#1976",
-   "#2031"
+   "#2031",
+   "#2231"
   ],
   "kind": "softmax",
   "arm": "eager-composed",
@@ -3068,14 +3142,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap.",
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap. Also tracks #2231.",
   "reference_for": "softmax_f32_eager-single-call_len64_b8"
  },
  {
   "id": "softmax_f32_pytorch_len64_b8",
   "issues": [
    "#1976",
-   "#2031"
+   "#2031",
+   "#2231"
   ],
   "kind": "softmax",
   "arm": "pytorch",
@@ -3094,13 +3169,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap.",
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 64, query 64, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. #2031 tracks the confirmed borrowed-session len64 CPU softmax gap. Also tracks #2231.",
   "reference_for": "softmax_f32_eager-single-call_len64_b8"
  },
  {
   "id": "softmax_f32_eager-single-call_len512_b8",
   "issues": [
-   "#1976"
+   "#1976",
+   "#2231"
   ],
   "kind": "softmax",
   "arm": "eager-single-call",
@@ -3119,12 +3195,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. Also tracks #2231."
  },
  {
   "id": "softmax_f32_session-single-call_len512_b8",
   "issues": [
-   "#1976"
+   "#1976",
+   "#2231"
   ],
   "kind": "softmax",
   "arm": "session-single-call",
@@ -3143,12 +3220,13 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference."
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. Also tracks #2231."
  },
  {
   "id": "softmax_f32_eager-composed_len512_b8",
   "issues": [
-   "#1976"
+   "#1976",
+   "#2231"
   ],
   "kind": "softmax",
   "arm": "eager-composed",
@@ -3167,13 +3245,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. Also tracks #2231.",
   "reference_for": "softmax_f32_eager-single-call_len512_b8"
  },
  {
   "id": "softmax_f32_pytorch_len512_b8",
   "issues": [
-   "#1976"
+   "#1976",
+   "#2231"
   ],
   "kind": "softmax",
   "arm": "pytorch",
@@ -3192,7 +3271,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference.",
+  "intent": "tenferro-rs #1976 (#2010 PR-B1): softmax over axis 0 of an attention-score-like (key 512, query 512, batch 8) f32 tensor, as one eager call and one concrete session call. The eager-composed arm is the plain max-subtracted composition from existing primitives (reduce_max, broadcast_in_dim, sub, exp, reduce_sum, div/log) without the all-masked guard; PyTorch is the external reference. Also tracks #2231.",
   "reference_for": "softmax_f32_eager-single-call_len512_b8"
  },
  {
@@ -5130,7 +5209,8 @@
  {
   "id": "followup_index_gather_direct-shared",
   "issues": [
-   "#2036"
+   "#2036",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "direct-shared",
@@ -5155,13 +5235,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2036: index.gather, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2036: index.gather, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "execution_path": "direct-shared"
  },
  {
   "id": "followup_index_gather_jax",
   "issues": [
-   "#2036"
+   "#2036",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "jax",
@@ -5186,14 +5267,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2036: index.gather, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2036: index.gather, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "reference_for": "followup_index_gather_direct-shared",
   "execution_path": "jax-compiled"
  },
  {
   "id": "followup_index_scatter_direct-shared",
   "issues": [
-   "#2036"
+   "#2036",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "direct-shared",
@@ -5218,13 +5300,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2036: index.scatter, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2036: index.scatter, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "execution_path": "direct-shared"
  },
  {
   "id": "followup_index_scatter_pytorch",
   "issues": [
-   "#2036"
+   "#2036",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "pytorch",
@@ -5249,14 +5332,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2036: index.scatter, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2036: index.scatter, fixed public-API fixture {'input_shape': [262144], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "reference_for": "followup_index_scatter_direct-shared",
   "execution_path": "pytorch"
  },
  {
   "id": "followup_index_dynamic_update_slice_direct-shared",
   "issues": [
-   "#2036"
+   "#2036",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "direct-shared",
@@ -5281,13 +5365,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2036: index.dynamic_update_slice, fixed public-API fixture {'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2036: index.dynamic_update_slice, fixed public-API fixture {'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "execution_path": "direct-shared"
  },
  {
   "id": "followup_index_dynamic_update_slice_jax",
   "issues": [
-   "#2036"
+   "#2036",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "jax",
@@ -5312,14 +5397,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2036: index.dynamic_update_slice, fixed public-API fixture {'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2036: index.dynamic_update_slice, fixed public-API fixture {'input_shape': [2097152], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "reference_for": "followup_index_dynamic_update_slice_direct-shared",
   "execution_path": "jax-compiled"
  },
  {
   "id": "followup_perm_reverse_15d_3_materialize",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "materialize",
@@ -5358,13 +5444,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.reverse_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.reverse_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "materialize"
  },
  {
   "id": "followup_perm_reverse_15d_3_strided-rs",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "strided-rs",
@@ -5403,14 +5490,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.reverse_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.reverse_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_perm_reverse_15d_3_materialize",
   "execution_path": "strided-rs"
  },
  {
   "id": "followup_structural_transpose_direct-shared",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "direct-shared",
@@ -5436,13 +5524,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: structural.transpose, fixed public-API fixture {'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: structural.transpose, fixed public-API fixture {'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "direct-shared"
  },
  {
   "id": "followup_structural_transpose_pytorch",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "pytorch",
@@ -5468,14 +5557,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: structural.transpose, fixed public-API fixture {'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: structural.transpose, fixed public-API fixture {'input_shape': [4096, 4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_structural_transpose_direct-shared",
   "execution_path": "pytorch"
  },
  {
   "id": "followup_perm_reverse_23d_2_materialize",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "materialize",
@@ -5522,13 +5612,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.reverse_23d_2, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.reverse_23d_2, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "materialize"
  },
  {
   "id": "followup_perm_reverse_23d_2_strided-rs",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "strided-rs",
@@ -5575,14 +5666,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.reverse_23d_2, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.reverse_23d_2, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_perm_reverse_23d_2_materialize",
   "execution_path": "strided-rs"
  },
  {
   "id": "followup_perm_transpose_3d_256_201_materialize",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "materialize",
@@ -5609,13 +5701,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.transpose_3d_256_201, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.transpose_3d_256_201, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "materialize"
  },
  {
   "id": "followup_perm_transpose_3d_256_201_strided-rs",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "strided-rs",
@@ -5642,14 +5735,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.transpose_3d_256_201, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.transpose_3d_256_201, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_perm_transpose_3d_256_201_materialize",
   "execution_path": "strided-rs"
  },
  {
   "id": "followup_perm_cyclic_15d_3_materialize",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "materialize",
@@ -5688,13 +5782,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.cyclic_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.cyclic_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "materialize"
  },
  {
   "id": "followup_perm_cyclic_15d_3_strided-rs",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "strided-rs",
@@ -5733,14 +5828,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.cyclic_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.cyclic_15d_3, fixed public-API fixture {'input_shape': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_perm_cyclic_15d_3_materialize",
   "execution_path": "strided-rs"
  },
  {
   "id": "followup_perm_transpose_3d_256_102_materialize",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "materialize",
@@ -5767,13 +5863,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.transpose_3d_256_102, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.transpose_3d_256_102, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "materialize"
  },
  {
   "id": "followup_perm_transpose_3d_256_102_strided-rs",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "strided-rs",
@@ -5800,14 +5897,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.transpose_3d_256_102, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.transpose_3d_256_102, fixed public-API fixture {'input_shape': [256, 256, 256], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_perm_transpose_3d_256_102_materialize",
   "execution_path": "strided-rs"
  },
  {
   "id": "followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "materialize",
@@ -5855,13 +5953,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_scattered_to_colmajor, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_scattered_to_colmajor, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "materialize"
  },
  {
   "id": "followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "strided-rs",
@@ -5909,14 +6008,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_scattered_to_colmajor, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_scattered_to_colmajor, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize",
   "execution_path": "strided-rs"
  },
  {
   "id": "followup_perm_tn_light_415_24d_contiguous_same_perm_materialize",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "materialize",
@@ -5964,13 +6064,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_contiguous_same_perm, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_contiguous_same_perm, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "materialize"
  },
  {
   "id": "followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "strided-rs",
@@ -6018,14 +6119,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_contiguous_same_perm, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.tn_light_415_24d_contiguous_same_perm, fixed public-API fixture {'input_shape': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_perm_tn_light_415_24d_contiguous_same_perm_materialize",
   "execution_path": "strided-rs"
  },
  {
   "id": "followup_perm_rotation_6d_32_32_32_32_16_16_materialize",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "materialize",
@@ -6055,13 +6157,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.rotation_6d_32_32_32_32_16_16, fixed public-API fixture {'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.rotation_6d_32_32_32_32_16_16, fixed public-API fixture {'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "materialize"
  },
  {
   "id": "followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs",
   "issues": [
-   "#2037"
+   "#2037",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "strided-rs",
@@ -6091,14 +6194,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2037: perm.rotation_6d_32_32_32_32_16_16, fixed public-API fixture {'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2037: perm.rotation_6d_32_32_32_32_16_16, fixed public-API fixture {'input_shape': [32, 32, 32, 32, 16, 16], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_perm_rotation_6d_32_32_32_32_16_16_materialize",
   "execution_path": "strided-rs"
  },
  {
   "id": "followup_structural_extract_diagonal_direct-shared",
   "issues": [
-   "#2038"
+   "#2038",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "direct-shared",
@@ -6125,13 +6229,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2038: structural.extract_diagonal, fixed public-API fixture {'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2038: structural.extract_diagonal, fixed public-API fixture {'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "direct-shared"
  },
  {
   "id": "followup_structural_extract_diagonal_jax",
   "issues": [
-   "#2038"
+   "#2038",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "jax",
@@ -6158,14 +6263,16 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2038: structural.extract_diagonal, fixed public-API fixture {'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2038: structural.extract_diagonal, fixed public-API fixture {'input_shape': [8388608, 2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_structural_extract_diagonal_direct-shared",
   "execution_path": "jax-compiled"
  },
  {
   "id": "followup_fft_irfft_direct-shared",
   "issues": [
-   "#2039"
+   "#2039",
+   "#2230",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "direct-shared",
@@ -6190,13 +6297,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2039: fft.irfft, fixed public-API fixture {'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2039: fft.irfft, fixed public-API fixture {'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2230, #2228.",
   "execution_path": "direct-shared"
  },
  {
   "id": "followup_fft_irfft_mkl-dfti",
   "issues": [
-   "#2039"
+   "#2039",
+   "#2230",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "mkl-dfti",
@@ -6221,14 +6330,16 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2039: fft.irfft, fixed public-API fixture {'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2039: fft.irfft, fixed public-API fixture {'input_shape': [524289], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2230, #2228.",
   "reference_for": "followup_fft_irfft_direct-shared",
   "execution_path": "mkl-dfti-cached"
  },
  {
   "id": "followup_fft_rfft_direct-shared",
   "issues": [
-   "#2039"
+   "#2039",
+   "#2230",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "direct-shared",
@@ -6253,13 +6364,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2039: fft.rfft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2039: fft.rfft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2230, #2228.",
   "execution_path": "direct-shared"
  },
  {
   "id": "followup_fft_rfft_mkl-dfti",
   "issues": [
-   "#2039"
+   "#2039",
+   "#2230",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "mkl-dfti",
@@ -6284,14 +6397,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2039: fft.rfft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2039: fft.rfft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'f32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2230, #2228.",
   "reference_for": "followup_fft_rfft_direct-shared",
   "execution_path": "mkl-dfti-cached"
  },
  {
   "id": "followup_fft_fft_direct-shared",
   "issues": [
-   "#2039"
+   "#2039",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "direct-shared",
@@ -6316,13 +6430,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2039: fft.fft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2039: fft.fft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "direct-shared"
  },
  {
   "id": "followup_fft_fft_mkl-dfti",
   "issues": [
-   "#2039"
+   "#2039",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "mkl-dfti",
@@ -6347,14 +6462,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2039: fft.fft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2039: fft.fft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_fft_fft_direct-shared",
   "execution_path": "mkl-dfti-cached"
  },
  {
   "id": "followup_fft_ifft_direct-shared",
   "issues": [
-   "#2039"
+   "#2039",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "direct-shared",
@@ -6379,13 +6495,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2039: fft.ifft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2039: fft.ifft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "execution_path": "direct-shared"
  },
  {
   "id": "followup_fft_ifft_mkl-dfti",
   "issues": [
-   "#2039"
+   "#2039",
+   "#2228"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "mkl-dfti",
@@ -6410,14 +6527,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2039: fft.ifft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2039: fft.ifft, fixed public-API fixture {'input_shape': [1048576], 'dtype': 'c32', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #2228.",
   "reference_for": "followup_fft_ifft_direct-shared",
   "execution_path": "mkl-dfti-cached"
  },
  {
   "id": "followup_metadata_transpose_view_metadata",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "metadata",
@@ -6444,13 +6562,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.transpose_view, fixed public-API fixture {'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2040: metadata.transpose_view, fixed public-API fixture {'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "execution_path": "metadata"
  },
  {
   "id": "followup_metadata_transpose_view_julia-base",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "julia-base",
@@ -6477,14 +6596,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.transpose_view, fixed public-API fixture {'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2040: metadata.transpose_view, fixed public-API fixture {'input_shape': [2, 2], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "reference_for": "followup_metadata_transpose_view_metadata",
   "execution_path": "julia-base"
  },
  {
   "id": "followup_metadata_transpose_view_metadata-host-dyn",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "metadata-host-dyn",
@@ -6511,13 +6631,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.transpose_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "intent": "tenferro-rs #2040: metadata.transpose_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank. Also tracks #1719.",
   "execution_path": "metadata-host-dyn"
  },
  {
   "id": "followup_metadata_transpose_view_metadata-host-static",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "metadata-host-static",
@@ -6544,13 +6665,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.transpose_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "intent": "tenferro-rs #2040: metadata.transpose_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank. Also tracks #1719.",
   "execution_path": "metadata-host-static"
  },
  {
   "id": "followup_metadata_slice_view_metadata",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "metadata",
@@ -6576,13 +6698,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.slice_view, fixed public-API fixture {'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2040: metadata.slice_view, fixed public-API fixture {'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "execution_path": "metadata"
  },
  {
   "id": "followup_metadata_slice_view_julia-base",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "julia-base",
@@ -6608,14 +6731,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.slice_view, fixed public-API fixture {'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2040: metadata.slice_view, fixed public-API fixture {'input_shape': [4096], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "reference_for": "followup_metadata_slice_view_metadata",
   "execution_path": "julia-base"
  },
  {
   "id": "followup_metadata_slice_view_metadata-host-dyn",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "metadata-host-dyn",
@@ -6641,13 +6765,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.slice_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "intent": "tenferro-rs #2040: metadata.slice_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank. Also tracks #1719.",
   "execution_path": "metadata-host-dyn"
  },
  {
   "id": "followup_metadata_slice_view_metadata-host-static",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "metadata-host-static",
@@ -6673,13 +6798,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.slice_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "intent": "tenferro-rs #2040: metadata.slice_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank. Also tracks #1719.",
   "execution_path": "metadata-host-static"
  },
  {
   "id": "followup_metadata_reshape_view_metadata",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "metadata",
@@ -6705,13 +6831,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.reshape_view, fixed public-API fixture {'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2040: metadata.reshape_view, fixed public-API fixture {'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "execution_path": "metadata"
  },
  {
   "id": "followup_metadata_reshape_view_julia-base",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "julia-base",
@@ -6737,14 +6864,15 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.reshape_view, fixed public-API fixture {'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible.",
+  "intent": "tenferro-rs #2040: metadata.reshape_view, fixed public-API fixture {'input_shape': [1024], 'dtype': 'f64', 'layout': 'native column-major for Rust/Julia; equivalent logical values in Python native layout', 'extent_policy': 'smaller pure-metadata repro; does not confirm original large-input timings'}; setup untimed, outputs retained, borrowed session except pure metadata. Paired reference path is separately labelled; trace is scope-ineligible. Also tracks #1719.",
   "reference_for": "followup_metadata_reshape_view_metadata",
   "execution_path": "julia-base"
  },
  {
   "id": "followup_metadata_reshape_view_metadata-host-dyn",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "metadata-host-dyn",
@@ -6770,13 +6898,14 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.reshape_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "intent": "tenferro-rs #2040: metadata.reshape_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank. Also tracks #1719.",
   "execution_path": "metadata-host-dyn"
  },
  {
   "id": "followup_metadata_reshape_view_metadata-host-static",
   "issues": [
-   "#2040"
+   "#2040",
+   "#1719"
   ],
   "kind": "cpu_followup_mwe",
   "arm": "metadata-host-static",
@@ -6802,7 +6931,7 @@
   "profiles": [
    "amd-cpu"
   ],
-  "intent": "tenferro-rs #2040: metadata.reshape_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.",
+  "intent": "tenferro-rs #2040: metadata.reshape_view; borrowed TypedTensorView<f64, R, Host>; separate owners and all outputs retained; as_view untimed; same Julia reference fixture. Static reshape input Rank<1> returns DynRank; slice/transpose retain rank. Also tracks #1719.",
   "execution_path": "metadata-host-static"
  },
  {
@@ -8881,5 +9010,1001 @@
    "amd-cpu"
   ],
   "intent": "tenferro-rs #2170: buffer-pool acquisition cost against the number of distinct capacities the run has seen, driven through the published pool crate's public surface (the issue's own minimal reproducer). State diagnostic: the capacity history is built outside the timed batches, and the emptied-bin count inside the pool has no public observation point, so it is reported as unavailable."
+ },
+ {
+  "id": "small_grad_qr_f64_trace-prepared_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of qr at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_qr_f64_pytorch_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of qr at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_qr_f64_trace-prepared_n4"
+ },
+ {
+  "id": "small_grad_qr_f64_trace-prepared_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of qr at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_qr_f64_pytorch_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of qr at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_qr_f64_trace-prepared_n16"
+ },
+ {
+  "id": "small_grad_eigh_f64_trace-prepared_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "eigh",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of eigh at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_eigh_f64_pytorch_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "eigh",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of eigh at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_eigh_f64_trace-prepared_n4"
+ },
+ {
+  "id": "small_grad_eigh_f64_trace-prepared_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "eigh",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of eigh at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_eigh_f64_pytorch_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "eigh",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of eigh at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_eigh_f64_trace-prepared_n16"
+ },
+ {
+  "id": "small_grad_lu_f64_trace-prepared_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "lu",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of lu at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_lu_f64_pytorch_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "lu",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of lu at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_lu_f64_trace-prepared_n4"
+ },
+ {
+  "id": "small_grad_lu_f64_trace-prepared_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "lu",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of lu at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_lu_f64_pytorch_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "lu",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of lu at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_lu_f64_trace-prepared_n16"
+ },
+ {
+  "id": "small_grad_svd_f64_trace-prepared_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "svd",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of svd at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_svd_f64_pytorch_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "svd",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of svd at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_svd_f64_trace-prepared_n4"
+ },
+ {
+  "id": "small_grad_svd_f64_trace-prepared_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "svd",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of svd at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_svd_f64_pytorch_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "svd",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of svd at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_svd_f64_trace-prepared_n16"
+ },
+ {
+  "id": "small_grad_solve_f64_trace-prepared_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of solve at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_solve_f64_pytorch_n4",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 4,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of solve at 4x4 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_solve_f64_trace-prepared_n4"
+ },
+ {
+  "id": "small_grad_solve_f64_trace-prepared_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "trace-prepared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "trace-prepared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of solve at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture."
+ },
+ {
+  "id": "small_grad_solve_f64_pytorch_n16",
+  "issues": [
+   "#2186"
+  ],
+  "kind": "small_grad_trace",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 16,
+   "kind": "small_grad_trace",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2186: grad_sum of solve at 16x16 f64; the loss sums the decomposition's float outputs. The trace-prepared arm times one Runtime::run of the prepared gradient program on a caller-held engine (trace, AD transform, compile and prepare untimed); the gradient is checked against a finite difference. Latency regime: per-node dispatch overhead on a size-flat program, not compute throughput. PyTorch arm: autograd.grad on the same fixture.",
+  "reference_for": "small_grad_solve_f64_trace-prepared_n16"
+ },
+ {
+  "id": "fft_axis0_c64_fft-executor_n128",
+  "issues": [
+   "#1765"
+  ],
+  "kind": "fft_axis_c2c",
+  "arm": "fft-executor",
+  "backend": "tenferro-rs",
+  "dtype": "c64",
+  "params": {
+   "n": 128,
+   "kind": "fft_axis_c2c",
+   "arm": "fft-executor",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1765: complex-to-complex FFT along axis 0 of a 128x128x128 c64 tensor (16384 lanes of length 128); tenferro-fft has no N-dimensional public FFT, so this is one public single-axis operation, not a full 3-D FFT. FftExecutor reused on the borrowed caller-held session; the thread arms show whether lanes scale. PyTorch arm: torch.fft.fft(dim=0) on the same fixture."
+ },
+ {
+  "id": "fft_axis0_c64_pytorch_n128",
+  "issues": [
+   "#1765"
+  ],
+  "kind": "fft_axis_c2c",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "c64",
+  "params": {
+   "n": 128,
+   "kind": "fft_axis_c2c",
+   "arm": "pytorch",
+   "dtype": "c64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1765: complex-to-complex FFT along axis 0 of a 128x128x128 c64 tensor (16384 lanes of length 128); tenferro-fft has no N-dimensional public FFT, so this is one public single-axis operation, not a full 3-D FFT. FftExecutor reused on the borrowed caller-held session; the thread arms show whether lanes scale. PyTorch arm: torch.fft.fft(dim=0) on the same fixture.",
+  "reference_for": "fft_axis0_c64_fft-executor_n128"
+ },
+ {
+  "id": "degenerate_dot_hadamard_f64_dot-general-shared_n1024",
+  "issues": [
+   "#2111"
+  ],
+  "kind": "degenerate_dot_general",
+  "arm": "dot-general-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "form": "hadamard",
+   "n": 1024,
+   "kind": "degenerate_dot_general",
+   "arm": "dot-general-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2111: pure Hadamard product, every axis batched (no contraction), 1024x1024 f64, dot_general on the borrowed caller-held session; the rewrite should avoid the general contraction path. Setup and correctness untimed; output retained. PyTorch arm: the equivalent elementwise or outer op on the same fixture."
+ },
+ {
+  "id": "degenerate_dot_hadamard_f64_pytorch_n1024",
+  "issues": [
+   "#2111"
+  ],
+  "kind": "degenerate_dot_general",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "form": "hadamard",
+   "n": 1024,
+   "kind": "degenerate_dot_general",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2111: pure Hadamard product, every axis batched (no contraction), 1024x1024 f64, dot_general on the borrowed caller-held session; the rewrite should avoid the general contraction path. Setup and correctness untimed; output retained. PyTorch arm: the equivalent elementwise or outer op on the same fixture.",
+  "reference_for": "degenerate_dot_hadamard_f64_dot-general-shared_n1024"
+ },
+ {
+  "id": "degenerate_dot_outer_f64_dot-general-shared_n1024",
+  "issues": [
+   "#2111"
+  ],
+  "kind": "degenerate_dot_general",
+  "arm": "dot-general-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "form": "outer",
+   "n": 1024,
+   "kind": "degenerate_dot_general",
+   "arm": "dot-general-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2111: outer product, no contracted or batch axes, 1024x1024 f64, dot_general on the borrowed caller-held session; the rewrite should avoid the general contraction path. Setup and correctness untimed; output retained. PyTorch arm: the equivalent elementwise or outer op on the same fixture."
+ },
+ {
+  "id": "degenerate_dot_outer_f64_pytorch_n1024",
+  "issues": [
+   "#2111"
+  ],
+  "kind": "degenerate_dot_general",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "form": "outer",
+   "n": 1024,
+   "kind": "degenerate_dot_general",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2111: outer product, no contracted or batch axes, 1024x1024 f64, dot_general on the borrowed caller-held session; the rewrite should avoid the general contraction path. Setup and correctness untimed; output retained. PyTorch arm: the equivalent elementwise or outer op on the same fixture.",
+  "reference_for": "degenerate_dot_outer_f64_dot-general-shared_n1024"
+ },
+ {
+  "id": "degenerate_dot_rank0_f64_dot-general-shared_n1024",
+  "issues": [
+   "#2111"
+  ],
+  "kind": "degenerate_dot_general",
+  "arm": "dot-general-shared",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "form": "rank0",
+   "n": 1024,
+   "kind": "degenerate_dot_general",
+   "arm": "dot-general-shared",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2111: rank-0 scalar operand times a matrix, 1024x1024 f64, dot_general on the borrowed caller-held session; the rewrite should avoid the general contraction path. Setup and correctness untimed; output retained. PyTorch arm: the equivalent elementwise or outer op on the same fixture."
+ },
+ {
+  "id": "degenerate_dot_rank0_f64_pytorch_n1024",
+  "issues": [
+   "#2111"
+  ],
+  "kind": "degenerate_dot_general",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "form": "rank0",
+   "n": 1024,
+   "kind": "degenerate_dot_general",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2111: rank-0 scalar operand times a matrix, 1024x1024 f64, dot_general on the borrowed caller-held session; the rewrite should avoid the general contraction path. Setup and correctness untimed; output retained. PyTorch arm: the equivalent elementwise or outer op on the same fixture.",
+  "reference_for": "degenerate_dot_rank0_f64_dot-general-shared_n1024"
+ },
+ {
+  "id": "erased_add_f64_session-add_n256",
+  "issues": [
+   "#1766"
+  ],
+  "kind": "erased_binary_add",
+  "arm": "session-add",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 256,
+   "kind": "erased_binary_add",
+   "arm": "session-add",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1766: erased Tensor add of two equal-shape f64 vectors (length 256) on the borrowed caller-held session; the operands are read, not deep-copied. Setup and correctness untimed; output retained. PyTorch arm: torch.add on the same fixture."
+ },
+ {
+  "id": "erased_add_f64_pytorch_n256",
+  "issues": [
+   "#1766"
+  ],
+  "kind": "erased_binary_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 256,
+   "kind": "erased_binary_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1766: erased Tensor add of two equal-shape f64 vectors (length 256) on the borrowed caller-held session; the operands are read, not deep-copied. Setup and correctness untimed; output retained. PyTorch arm: torch.add on the same fixture.",
+  "reference_for": "erased_add_f64_session-add_n256"
+ },
+ {
+  "id": "erased_add_f64_session-add_n4096",
+  "issues": [
+   "#1766"
+  ],
+  "kind": "erased_binary_add",
+  "arm": "session-add",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "kind": "erased_binary_add",
+   "arm": "session-add",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1766: erased Tensor add of two equal-shape f64 vectors (length 4096) on the borrowed caller-held session; the operands are read, not deep-copied. Setup and correctness untimed; output retained. PyTorch arm: torch.add on the same fixture."
+ },
+ {
+  "id": "erased_add_f64_pytorch_n4096",
+  "issues": [
+   "#1766"
+  ],
+  "kind": "erased_binary_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "kind": "erased_binary_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1766: erased Tensor add of two equal-shape f64 vectors (length 4096) on the borrowed caller-held session; the operands are read, not deep-copied. Setup and correctness untimed; output retained. PyTorch arm: torch.add on the same fixture.",
+  "reference_for": "erased_add_f64_session-add_n4096"
+ },
+ {
+  "id": "erased_add_f64_session-add_n1048576",
+  "issues": [
+   "#1766"
+  ],
+  "kind": "erased_binary_add",
+  "arm": "session-add",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 1048576,
+   "kind": "erased_binary_add",
+   "arm": "session-add",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1766: erased Tensor add of two equal-shape f64 vectors (length 1048576) on the borrowed caller-held session; the operands are read, not deep-copied. Setup and correctness untimed; output retained. PyTorch arm: torch.add on the same fixture."
+ },
+ {
+  "id": "erased_add_f64_pytorch_n1048576",
+  "issues": [
+   "#1766"
+  ],
+  "kind": "erased_binary_add",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "n": 1048576,
+   "kind": "erased_binary_add",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1766: erased Tensor add of two equal-shape f64 vectors (length 1048576) on the borrowed caller-held session; the operands are read, not deep-copied. Setup and correctness untimed; output retained. PyTorch arm: torch.add on the same fixture.",
+  "reference_for": "erased_add_f64_session-add_n1048576"
+ },
+ {
+  "id": "erased_construct_f64_col_n8",
+  "issues": [
+   "#2177"
+  ],
+  "kind": "erased_construct",
+  "arm": "col-major",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "layout": "col",
+   "kind": "erased_construct",
+   "arm": "col-major",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2177: erased Tensor::from_vec_col_major of a prepared 8-element f64 payload shaped [8, 1]; the payload is consumed outside the clock and the host allocation count is reported from a separate counting pass. No PyTorch arm: no equivalent constructor consumes a payload without a copy or a metadata-only view, so this is a tenferro-rs-only allocation and layout probe."
+ },
+ {
+  "id": "erased_construct_f64_row_n8",
+  "issues": [
+   "#2177"
+  ],
+  "kind": "erased_construct",
+  "arm": "row-major",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 8,
+   "layout": "row",
+   "kind": "erased_construct",
+   "arm": "row-major",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2177: erased Tensor::from_vec_row_major of a prepared 8-element f64 payload shaped [8, 1]; the payload is consumed outside the clock and the host allocation count is reported from a separate counting pass. No PyTorch arm: no equivalent constructor consumes a payload without a copy or a metadata-only view, so this is a tenferro-rs-only allocation and layout probe."
+ },
+ {
+  "id": "erased_construct_f64_col_n4096",
+  "issues": [
+   "#2177"
+  ],
+  "kind": "erased_construct",
+  "arm": "col-major",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "layout": "col",
+   "kind": "erased_construct",
+   "arm": "col-major",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2177: erased Tensor::from_vec_col_major of a prepared 4096-element f64 payload shaped [8, 512]; the payload is consumed outside the clock and the host allocation count is reported from a separate counting pass. No PyTorch arm: no equivalent constructor consumes a payload without a copy or a metadata-only view, so this is a tenferro-rs-only allocation and layout probe."
+ },
+ {
+  "id": "erased_construct_f64_row_n4096",
+  "issues": [
+   "#2177"
+  ],
+  "kind": "erased_construct",
+  "arm": "row-major",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 4096,
+   "layout": "row",
+   "kind": "erased_construct",
+   "arm": "row-major",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2177: erased Tensor::from_vec_row_major of a prepared 4096-element f64 payload shaped [8, 512]; the payload is consumed outside the clock and the host allocation count is reported from a separate counting pass. No PyTorch arm: no equivalent constructor consumes a payload without a copy or a metadata-only view, so this is a tenferro-rs-only allocation and layout probe."
+ },
+ {
+  "id": "erased_construct_f64_col_n65536",
+  "issues": [
+   "#2177"
+  ],
+  "kind": "erased_construct",
+  "arm": "col-major",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 65536,
+   "layout": "col",
+   "kind": "erased_construct",
+   "arm": "col-major",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2177: erased Tensor::from_vec_col_major of a prepared 65536-element f64 payload shaped [8, 8192]; the payload is consumed outside the clock and the host allocation count is reported from a separate counting pass. No PyTorch arm: no equivalent constructor consumes a payload without a copy or a metadata-only view, so this is a tenferro-rs-only allocation and layout probe."
+ },
+ {
+  "id": "erased_construct_f64_row_n65536",
+  "issues": [
+   "#2177"
+  ],
+  "kind": "erased_construct",
+  "arm": "row-major",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 65536,
+   "layout": "row",
+   "kind": "erased_construct",
+   "arm": "row-major",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2177: erased Tensor::from_vec_row_major of a prepared 65536-element f64 payload shaped [8, 8192]; the payload is consumed outside the clock and the host allocation count is reported from a separate counting pass. No PyTorch arm: no equivalent constructor consumes a payload without a copy or a metadata-only view, so this is a tenferro-rs-only allocation and layout probe."
+ },
+ {
+  "id": "eager_small_leaf_f64_eager-held-session",
+  "issues": [
+   "#1704"
+  ],
+  "kind": "eager_small_call",
+  "arm": "eager-held-session",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "leaf",
+   "kind": "eager_small_call",
+   "arm": "eager-held-session",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1704: EagerSession::constant_from, 8 f64 elements, timed inside one held eager session (entry outside the clock); latency regime: per-call eager overhead, not compute throughput. Outputs retained."
+ },
+ {
+  "id": "eager_small_add_f64_eager-held-session",
+  "issues": [
+   "#1667"
+  ],
+  "kind": "eager_small_call",
+  "arm": "eager-held-session",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "add",
+   "kind": "eager_small_call",
+   "arm": "eager-held-session",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1667: EagerSession::add, two 8-element leaves, timed inside one held eager session (entry outside the clock); latency regime: per-call eager overhead, not compute throughput. Outputs retained. PyTorch arm on the same fixture."
+ },
+ {
+  "id": "eager_small_add_f64_pytorch",
+  "issues": [
+   "#1667"
+  ],
+  "kind": "eager_small_call",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "add",
+   "kind": "eager_small_call",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1667: torch.add on the same 8-element or 4x4 fixture, the latency reference for the eager small-call row.",
+  "reference_for": "eager_small_add_f64_eager-held-session"
+ },
+ {
+  "id": "eager_small_gemm_f64_eager-held-session",
+  "issues": [
+   "#1904"
+  ],
+  "kind": "eager_small_call",
+  "arm": "eager-held-session",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "op": "gemm",
+   "kind": "eager_small_call",
+   "arm": "eager-held-session",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1904: EagerSession::dot_general, 4x4 f64, timed inside one held eager session (entry outside the clock); latency regime: per-call eager overhead, not compute throughput. Outputs retained. PyTorch arm on the same fixture."
+ },
+ {
+  "id": "eager_small_gemm_f64_pytorch",
+  "issues": [
+   "#1904"
+  ],
+  "kind": "eager_small_call",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "op": "gemm",
+   "kind": "eager_small_call",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #1904: torch.matmul on the same 8-element or 4x4 fixture, the latency reference for the eager small-call row.",
+  "reference_for": "eager_small_gemm_f64_eager-held-session"
  }
 ]

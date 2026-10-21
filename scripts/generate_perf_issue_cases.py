@@ -43,13 +43,13 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 8
+MANIFEST_VERSION = 15
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 6
+GPU_MANIFEST_VERSION = 7
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
@@ -59,6 +59,10 @@ DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad
 
 def case(cid, issues, kind, params, *, arm, backend="tenferro-rs", dtype, scope="steady_state",
          reference_for=None, profiles=("amd-cpu",), intent):
+    # Later fixes that re-measure an existing workload are named in the intent too.
+    missing = [i for i in issues if i not in intent]
+    if missing:
+        intent += " Also tracks " + ", ".join(missing) + "."
     row = {
         "id": cid,
         "issues": list(issues),
@@ -77,8 +81,8 @@ def case(cid, issues, kind, params, *, arm, backend="tenferro-rs", dtype, scope=
 
 
 def decode_cases():
-    issues = ("#1992", "#2003", "#1995")
-    intent = ("tenferro-rs #1992 (F1) / #2003 / #1995: decode-shaped projection y = W^T x, "
+    issues = ("#1992", "#2003", "#1995", "#2229")
+    intent = ("tenferro-rs #1992 (F1) / #2003 / #1995 / #2229: decode-shaped projection y = W^T x, "
               "x column-major (in, len), W column-major (in, out), f32. The eager dot_general "
               "wrapper cost and the faer-vs-sgemm provider gap are both visible against the "
               "reference arms in the same family.")
@@ -142,7 +146,7 @@ def other_cases():
                                   ("pytorch-solve-triangular-batched", "pytorch-cpu",
                                    "triangular-solve-loop")):
             rows.append(case(
-                f"small_solve_f64_{arm}_k{k}_b{batch}", ("#2007",), "small_solves",
+                f"small_solve_f64_{arm}_k{k}_b{batch}", ("#2007", "#1878"), "small_solves",
                 {"k": k, "batch": batch}, arm=arm, backend=backend, dtype="f64",
                 reference_for=ref and f"small_solve_f64_{ref}_k{k}_b{batch}",
                 intent=("tenferro-rs #2007: batch x (k x k) systems solved by a per-item loop of "
@@ -197,7 +201,7 @@ def other_cases():
                             ("per-call-threads1", "session_entry_diagnostic", "per-call-default-pool"),
                             ("shared-session-default-pool", "steady_state", None)):
         rows.append(case(
-            f"small_contraction_abcd-dbef-acef_f64_{arm}_d4", ("#1885",),
+            f"small_contraction_abcd-dbef-acef_f64_{arm}_d4", ("#1885", "#1897", "#1901"),
             "small_contraction_pool_hop", {"extent": 4}, arm=arm, dtype="f64", scope=scope,
             reference_for=ref and f"small_contraction_abcd-dbef-acef_f64_{ref}_d4",
             profiles=("amd-cpu", "mac-cpu"),
@@ -233,7 +237,7 @@ def b1_op_cases():
         for arm, backend, ref in arms:
             rows.append(case(
                 f"activation_{op}_f32_{arm}_{rows_}x{cols}",
-                ("#1975", "#2030") if op == "gelu" else ("#1975",), "activation",
+                ("#1975", "#2030", "#2069", "#2228") if op == "gelu" else ("#1975", "#2069"), "activation",
                 {"op": op, "rows": rows_, "cols": cols}, arm=arm, backend=backend, dtype="f32",
                 reference_for=ref and f"activation_{op}_f32_{ref}_{rows_}x{cols}",
                 intent=(f"tenferro-rs #1975 (#2010 PR-B1): elementwise {op} on a {rows_}x{cols} "
@@ -265,7 +269,7 @@ def b1_op_cases():
                                       ("pytorch", "pytorch-cpu", "eager-single-call")):
                 rows.append(case(
                     f"{op}_f32_{arm}_len{length}_b{batch}",
-                    ("#1976", "#2031") if op == "softmax" and length == 64 else ("#1976",), "softmax",
+                    ("#1976", "#2031", "#2231") if op == "softmax" and length == 64 else (("#1976", "#2231") if op == "softmax" else ("#1976",)), "softmax",
                     {"op": op, "len": length, "batch": batch, "axis": 0}, arm=arm,
                     backend=backend, dtype="f32",
                     reference_for=ref and f"{op}_f32_{ref}_len{length}_b{batch}",
@@ -357,9 +361,128 @@ def pool_state_cases():
     return rows
 
 
+def small_grad_cases():
+    """#2186: small linalg AD (grad_sum of one decomposition) on one prepared traced program."""
+    rows = []
+    for op in ("qr", "eigh", "lu", "svd", "solve"):
+        for n in (4, 16):
+            for arm, backend in (("trace-prepared", "tenferro-rs"), ("pytorch", "pytorch-cpu")):
+                rows.append(case(
+                    f"small_grad_{op}_f64_{arm}_n{n}", ("#2186",), "small_grad_trace",
+                    {"op": op, "n": n}, arm=arm, backend=backend, dtype="f64",
+                    reference_for=None if arm == "trace-prepared" else f"small_grad_{op}_f64_trace-prepared_n{n}",
+                    intent=(f"tenferro-rs #2186: grad_sum of {op} at {n}x{n} f64; the loss sums "
+                            "the decomposition's float outputs. The trace-prepared arm times one "
+                            "Runtime::run of the prepared gradient program on a caller-held engine "
+                            "(trace, AD transform, compile and prepare untimed); the gradient is "
+                            "checked against a finite difference. Latency regime: per-node dispatch "
+                            "overhead on a size-flat program, not compute throughput. "
+                            "PyTorch arm: autograd.grad on the same fixture.")))
+    return rows
+
+
+def fft_axis_cases():
+    """#1765: one complex FFT pass over a 128^3 tensor (lane-parallel work, not a 3-D FFT)."""
+    rows = []
+    for arm, backend in (("fft-executor", "tenferro-rs"), ("pytorch", "pytorch-cpu")):
+        rows.append(case(
+            f"fft_axis0_c64_{arm}_n128", ("#1765",), "fft_axis_c2c", {"n": 128},
+            arm=arm, backend=backend, dtype="c64",
+            reference_for=None if arm == "fft-executor" else "fft_axis0_c64_fft-executor_n128",
+            intent=("tenferro-rs #1765: complex-to-complex FFT along axis 0 of a 128x128x128 c64 "
+                    "tensor (16384 lanes of length 128); tenferro-fft has no N-dimensional public "
+                    "FFT, so this is one public single-axis operation, not a full 3-D FFT. "
+                    "FftExecutor reused on the borrowed caller-held session; the thread arms show "
+                    "whether lanes scale. PyTorch arm: torch.fft.fft(dim=0) on the same fixture.")))
+    return rows
+
+
+def degenerate_dot_cases():
+    """#2111: degenerate dot_general forms (Hadamard, outer product, rank-0 operand)."""
+    rows = []
+    for form, intent in (
+        ("hadamard", "pure Hadamard product, every axis batched (no contraction)"),
+        ("outer", "outer product, no contracted or batch axes"),
+        ("rank0", "rank-0 scalar operand times a matrix"),
+    ):
+        for arm, backend in (("dot-general-shared", "tenferro-rs"), ("pytorch", "pytorch-cpu")):
+            rows.append(case(
+                f"degenerate_dot_{form}_f64_{arm}_n1024", ("#2111",), "degenerate_dot_general",
+                {"form": form, "n": 1024}, arm=arm, backend=backend, dtype="f64",
+                reference_for=None if arm == "dot-general-shared"
+                else f"degenerate_dot_{form}_f64_dot-general-shared_n1024",
+                intent=(f"tenferro-rs #2111: {intent}, 1024x1024 f64, dot_general on the borrowed "
+                        "caller-held session; the rewrite should avoid the general contraction "
+                        "path. Setup and correctness untimed; output retained. PyTorch arm: "
+                        "the equivalent elementwise or outer op on the same fixture.")))
+    return rows
+
+
+def erased_binary_cases():
+    """#1766: erased Tensor binary op with matching shapes (operands must not be copied)."""
+    rows = []
+    for n in (256, 4096, 1048576):
+        for arm, backend in (("session-add", "tenferro-rs"), ("pytorch", "pytorch-cpu")):
+            rows.append(case(
+                f"erased_add_f64_{arm}_n{n}", ("#1766",), "erased_binary_add", {"n": n},
+                arm=arm, backend=backend, dtype="f64",
+                reference_for=None if arm == "session-add" else f"erased_add_f64_session-add_n{n}",
+                intent=(f"tenferro-rs #1766: erased Tensor add of two equal-shape f64 vectors "
+                        f"(length {n}) on the borrowed caller-held session; the operands are read, "
+                        "not deep-copied. Setup and correctness untimed; output retained. PyTorch "
+                        "arm: torch.add on the same fixture.")))
+    return rows
+
+
+def erased_construct_cases():
+    """#2177: erased Tensor construction from a prepared payload (col- and row-major)."""
+    rows = []
+    for n in (8, 4096, 65536):
+        for layout in ("col", "row"):
+            rows.append(case(
+                f"erased_construct_f64_{layout}_n{n}", ("#2177",), "erased_construct",
+                {"n": n, "layout": layout}, arm=f"{layout}-major", backend="tenferro-rs",
+                dtype="f64",
+                intent=(f"tenferro-rs #2177: erased Tensor::from_vec_{layout}_major of a prepared "
+                        f"{n}-element f64 payload shaped [8, {n // 8}]; the payload is consumed "
+                        "outside the clock and the host allocation count is reported from a separate "
+                        "counting pass. No PyTorch arm: no equivalent constructor consumes a payload "
+                        "without a copy or a metadata-only view, so this is a tenferro-rs-only "
+                        "allocation and layout probe.")))
+    return rows
+
+
+def eager_small_call_cases():
+    """#1704 / #1667 / #1904: eager small-call steady state inside one held session."""
+    rows = []
+    specs = (
+        ("leaf", ("#1704",), "EagerSession::constant_from, 8 f64 elements", None),
+        ("add", ("#1667",), "EagerSession::add, two 8-element leaves", "torch.add"),
+        ("gemm", ("#1904",), "EagerSession::dot_general, 4x4 f64", "torch.matmul"),
+    )
+    for op, issues, what, ref in specs:
+        rows.append(case(
+            f"eager_small_{op}_f64_eager-held-session", issues, "eager_small_call", {"op": op},
+            arm="eager-held-session", backend="tenferro-rs", dtype="f64",
+            intent=(f"tenferro-rs {', '.join(issues)}: {what}, timed inside one held eager session "
+                    "(entry outside the clock); latency regime: per-call eager overhead, not "
+                    "compute throughput. Outputs retained."
+                    + (" PyTorch arm on the same fixture." if ref else ""))))
+        if ref:
+            rows.append(case(
+                f"eager_small_{op}_f64_pytorch", issues, "eager_small_call", {"op": op},
+                arm="pytorch", backend="pytorch-cpu", dtype="f64",
+                reference_for=f"eager_small_{op}_f64_eager-held-session",
+                intent=(f"tenferro-rs {', '.join(issues)}: {ref} on the same 8-element or 4x4 "
+                        "fixture, the latency reference for the eager small-call row.")))
+    return rows
+
+
 def generate_cases():
     return (decode_cases() + other_cases() + b1_op_cases() + cpu_gap_cases()
-            + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases())
+            + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases()
+            + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
+            + erased_binary_cases() + erased_construct_cases() + eager_small_call_cases())
 
 
 def cpu_umbrella_cases():
@@ -491,6 +614,17 @@ def cpu_gap_cases():
 
 
 
+def followup_extra_issues(issue, cid):
+    """Later tenferro-rs fixes that touch an already-listed follow-up workload."""
+    if issue == 2039 and cid in ("fft.rfft", "fft.irfft"):
+        return ("#2230", "#2228")
+    if issue in (2037, 2038, 2039):
+        return ("#2228",)
+    if issue in (2036, 2040):
+        return ("#1719",)
+    return ()
+
+
 def cpu_followup_cases():
     """Confirmed current-main public operations and their independent references.
 
@@ -535,6 +669,7 @@ def cpu_followup_cases():
     for issue, ids in groups.items():
         for cid in ids:
             c = catalog[cid]
+            extra = followup_extra_issues(issue, cid)
             path = c["paths"][0]
             if c["category"] == "fft":
                 reference = "mkl-dfti"
@@ -555,7 +690,7 @@ def cpu_followup_cases():
                     "julia-base": "julia-base", "strided-rs": "strided-rs",
                     "mkl-dfti": "mkl-dfti"}[arm]
                 row = case("followup_" + cid.replace(".", "_") + "_" + arm,
-                           (f"#{issue}",), "cpu_followup_mwe", params,
+                           (f"#{issue}", *extra), "cpu_followup_mwe", params,
                            arm=arm, backend=backend, dtype=c["dtype"],
                            reference_for=target if arm != path else None,
                            intent=f"tenferro-rs #{issue}: {cid}, fixed public-API fixture "
@@ -578,6 +713,9 @@ def cpu_followup_cases():
                     typed["intent"] = (f"tenferro-rs #2040: {cid}; borrowed TypedTensorView<f64, R, Host>; "
                         "separate owners and all outputs retained; as_view untimed; same Julia reference fixture. "
                         "Static reshape input Rank<1> returns DynRank; slice/transpose retain rank.")
+                    missing = [i for i in typed["issues"] if i not in typed["intent"]]
+                    if missing:
+                        typed["intent"] += " Also tracks " + ", ".join(missing) + "."
                     rows.append(typed)
     return rows
 
@@ -865,7 +1003,7 @@ def gpu_linalg_driver_cases(gpu):
     for n in (64, 256, 1024):
         for driver in ("auto", "gesvdj", "gesvd", "xgesvdp"):
             rows.append(case(
-                f"svd_driver_c64_n{n}_{driver}", ("#1839", "#1849"), "svd_driver",
+                f"svd_driver_c64_n{n}_{driver}", ("#1839", "#1849", "#1720"), "svd_driver",
                 {"n": n, "driver": driver}, arm=driver, backend="tenferro-cuda", dtype="c64",
                 reference_for=None if driver == "auto" else f"svd_driver_c64_n{n}_auto",
                 profiles=gpu,
