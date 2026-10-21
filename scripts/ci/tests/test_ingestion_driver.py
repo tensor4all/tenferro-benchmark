@@ -53,6 +53,25 @@ class SourceSelectionTest(unittest.TestCase):
         self.assertEqual(json.loads(post.call_args.kwargs['input']),{'event_type':'benchmark-results-ingested'})
         self.assertIn('repos/tensor4all/tenferro-benchmark/dispatches',post.call_args.args[0])
 
+    def test_gated_gpu_slot_without_collection_is_a_no_op_but_a_lost_artifact_is_not(self):
+        from scripts.ci.ingest_benchmark_results import selected_source
+        run={'id':789,'run_attempt':1,'path':'.github/workflows/benchmark-runpod-gpu.yml',
+             'run_started_at':'2026-10-18T08:00:00Z'}
+        no_artifacts={'total_count':0,'artifacts':[]}
+        def jobs(conclusion):
+            return {'jobs':[{'name':'Skip if this week\'s GPU results already exist','conclusion':'success'},
+                            {'name':'Run GPU benchmark on RunPod','conclusion':conclusion}]}
+        with patch('scripts.ci.ingest_benchmark_results.gh_json',side_effect=[run,no_artifacts,jobs('skipped')]) as api:
+            self.assertIsNone(selected_source(789))
+        self.assertIn('runs/789/attempts/1/jobs',api.call_args.args[0])
+        with patch('scripts.ci.ingest_benchmark_results.gh_json',side_effect=[run,no_artifacts,jobs('success')]):
+            with self.assertRaisesRegex(ValueError,'exactly one'):
+                selected_source(789)
+        cpu=dict(run,path='.github/workflows/benchmark-nightly-linux-cpu.yml')
+        with patch('scripts.ci.ingest_benchmark_results.gh_json',side_effect=[cpu,no_artifacts]):
+            with self.assertRaisesRegex(ValueError,'exactly one'):
+                selected_source(789)
+
 
 class CommitRaceTest(unittest.TestCase):
     def test_race_replays_only_results_and_preserves_competing_commit(self):
