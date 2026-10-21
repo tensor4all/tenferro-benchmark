@@ -91,7 +91,7 @@ class PipelineTest(unittest.TestCase):
         load=lambda name:yaml.load((ROOT/'.github/workflows'/name).read_text(),Loader=yaml.BaseLoader)
         ingestion=load('ingest-results.yml')
         publish=load('publish-results.yml')
-        self.assertEqual(ingestion['permissions'],{'actions':'read','contents':'write'})
+        self.assertEqual(ingestion['permissions'],{'actions':'read','checks':'read','contents':'write'})
         self.assertEqual(ingestion['concurrency']['queue'],'max')
         self.assertEqual(publish['permissions']['contents'],'read')
         checkout=publish['jobs']['build']['steps'][0]
