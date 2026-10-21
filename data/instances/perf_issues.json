@@ -9929,6 +9929,160 @@
   "reference_for": "erased_add_f64_session-add_n1048576"
  },
  {
+  "id": "axpby_strided_source_f64_1024x1024_t1",
+  "issues": [
+   "#2220",
+   "#2214"
+  ],
+  "kind": "axpby_strided_source",
+  "arm": "strided-source",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 1024,
+   "kind": "axpby_strided_source",
+   "arm": "strided-source",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2220 (#2214 item 7): alpha=1, beta=1 axpby y <- alpha*x + beta*y on a 1024x1024 f64 tensor. x is a borrowed transposed/offset view (padded storage read through swapped strides) and y is a compact owned TensorWrite, so the update must take the strided path without staging x into a dense buffer. The contiguous-source control feeds the same logical x as an owned column-major tensor, and the rust-loop arm is the host strided update. Throughput regime: bandwidth-bound over the full tensor, not a per-call latency probe. Source/target allocation, view construction, per-sample destination restoration and verification are outside the timer.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "axpby_contiguous_source_f64_1024x1024_t1",
+  "issues": [
+   "#2220",
+   "#2214"
+  ],
+  "kind": "axpby_strided_source",
+  "arm": "contiguous-source",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 1024,
+   "kind": "axpby_strided_source",
+   "arm": "contiguous-source",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2220 (#2214 item 7): alpha=1, beta=1 axpby y <- alpha*x + beta*y on a 1024x1024 f64 tensor. x is a borrowed transposed/offset view (padded storage read through swapped strides) and y is a compact owned TensorWrite, so the update must take the strided path without staging x into a dense buffer. The contiguous-source control feeds the same logical x as an owned column-major tensor, and the rust-loop arm is the host strided update. Throughput regime: bandwidth-bound over the full tensor, not a per-call latency probe. Source/target allocation, view construction, per-sample destination restoration and verification are outside the timer.",
+  "reference_for": "axpby_strided_source_f64_1024x1024_t1",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "axpby_strided_source_f64_1024x1024_host_t1",
+  "issues": [
+   "#2220",
+   "#2214"
+  ],
+  "kind": "axpby_strided_source",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 1024,
+   "kind": "axpby_strided_source",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2220 (#2214 item 7): alpha=1, beta=1 axpby y <- alpha*x + beta*y on a 1024x1024 f64 tensor. x is a borrowed transposed/offset view (padded storage read through swapped strides) and y is a compact owned TensorWrite, so the update must take the strided path without staging x into a dense buffer. The contiguous-source control feeds the same logical x as an owned column-major tensor, and the rust-loop arm is the host strided update. Throughput regime: bandwidth-bound over the full tensor, not a per-call latency probe. Source/target allocation, view construction, per-sample destination restoration and verification are outside the timer.",
+  "reference_for": "axpby_strided_source_f64_1024x1024_t1",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "axpby_strided_source_f64_1024x1024_t4",
+  "issues": [
+   "#2220",
+   "#2214"
+  ],
+  "kind": "axpby_strided_source",
+  "arm": "strided-source",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 1024,
+   "kind": "axpby_strided_source",
+   "arm": "strided-source",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2220 (#2214 item 7): alpha=1, beta=1 axpby y <- alpha*x + beta*y on a 1024x1024 f64 tensor. x is a borrowed transposed/offset view (padded storage read through swapped strides) and y is a compact owned TensorWrite, so the update must take the strided path without staging x into a dense buffer. The contiguous-source control feeds the same logical x as an owned column-major tensor, and the rust-loop arm is the host strided update. Throughput regime: bandwidth-bound over the full tensor, not a per-call latency probe. Source/target allocation, view construction, per-sample destination restoration and verification are outside the timer.",
+  "thread_counts": [
+   4
+  ]
+ },
+ {
+  "id": "axpby_contiguous_source_f64_1024x1024_t4",
+  "issues": [
+   "#2220",
+   "#2214"
+  ],
+  "kind": "axpby_strided_source",
+  "arm": "contiguous-source",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "n": 1024,
+   "kind": "axpby_strided_source",
+   "arm": "contiguous-source",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2220 (#2214 item 7): alpha=1, beta=1 axpby y <- alpha*x + beta*y on a 1024x1024 f64 tensor. x is a borrowed transposed/offset view (padded storage read through swapped strides) and y is a compact owned TensorWrite, so the update must take the strided path without staging x into a dense buffer. The contiguous-source control feeds the same logical x as an owned column-major tensor, and the rust-loop arm is the host strided update. Throughput regime: bandwidth-bound over the full tensor, not a per-call latency probe. Source/target allocation, view construction, per-sample destination restoration and verification are outside the timer.",
+  "reference_for": "axpby_strided_source_f64_1024x1024_t4",
+  "thread_counts": [
+   4
+  ]
+ },
+ {
+  "id": "axpby_strided_source_f64_1024x1024_host_t4",
+  "issues": [
+   "#2220",
+   "#2214"
+  ],
+  "kind": "axpby_strided_source",
+  "arm": "host",
+  "backend": "rust-loop",
+  "dtype": "f64",
+  "params": {
+   "n": 1024,
+   "kind": "axpby_strided_source",
+   "arm": "host",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2220 (#2214 item 7): alpha=1, beta=1 axpby y <- alpha*x + beta*y on a 1024x1024 f64 tensor. x is a borrowed transposed/offset view (padded storage read through swapped strides) and y is a compact owned TensorWrite, so the update must take the strided path without staging x into a dense buffer. The contiguous-source control feeds the same logical x as an owned column-major tensor, and the rust-loop arm is the host strided update. Throughput regime: bandwidth-bound over the full tensor, not a per-call latency probe. Source/target allocation, view construction, per-sample destination restoration and verification are outside the timer.",
+  "reference_for": "axpby_strided_source_f64_1024x1024_t4",
+  "thread_counts": [
+   4
+  ]
+ },
+ {
   "id": "erased_construct_f64_col_n8",
   "issues": [
    "#2177"
