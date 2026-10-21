@@ -23,7 +23,24 @@ def gh_json(endpoint: str):
     return json.loads(subprocess.check_output(['gh', 'api', endpoint], text=True))
 
 
+# Workflows whose collection job can be skipped by design in a successful run
+# (the weekly GPU gate skips later slots once that week's results exist).
+GATED_COLLECTION_JOBS = {
+    '.github/workflows/benchmark-runpod-gpu.yml': 'Run GPU benchmark on RunPod',
+}
+
+
+def collection_skipped(run: dict) -> bool:
+    job_name = GATED_COLLECTION_JOBS.get(run.get('path'))
+    if job_name is None:
+        return False
+    jobs = gh_json(f"repos/{REPOSITORY}/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs?per_page=100")['jobs']
+    matching = [job for job in jobs if job['name'] == job_name]
+    return bool(matching) and all(job.get('conclusion') == 'skipped' for job in matching)
+
+
 def selected_source(run_id: int):
+    """Return (profile, source, artifact), or None when the run collected nothing."""
     run = gh_json(f'repos/{REPOSITORY}/actions/runs/{run_id}')
     workflow = run.get('path')
     if workflow not in WORKFLOWS:
@@ -45,6 +62,8 @@ def selected_source(run_id: int):
     selected = [item for item in artifacts if item['name'] in names
                 and datetime.fromisoformat(item['created_at'].replace('Z', '+00:00')) >=
                 datetime.fromisoformat(run['run_started_at'].replace('Z', '+00:00'))]
+    if not selected and collection_skipped(run):
+        return None
     if len(selected) != 1:
         raise ValueError('Selected run must contain exactly one named result artifact; no fallback is allowed')
     artifact = selected[0]
@@ -147,7 +166,15 @@ def main():
     args = parser.parse_args()
     if args.run_id < 1:
         parser.error('run-id must be positive')
-    profile, source, artifact = selected_source(args.run_id)
+    selection = selected_source(args.run_id)
+    if selection is None:
+        message = f'Run {args.run_id} skipped its collection job; there are no results to ingest.'
+        print(message)
+        if os.environ.get('GITHUB_STEP_SUMMARY'):
+            with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
+                output.write('## Benchmark ingestion\n\n' + message + '\n')
+        return
+    profile, source, artifact = selection
     with tempfile.TemporaryDirectory() as directory:
         bundle = Path(directory) / 'bundle'
         download_artifact(artifact, bundle)
