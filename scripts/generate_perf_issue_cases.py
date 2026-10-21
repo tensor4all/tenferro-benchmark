@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 15
+MANIFEST_VERSION = 16
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -103,6 +103,43 @@ def decode_cases():
                     arm=arm, backend=backend, dtype="f32", scope=scope,
                     reference_for=ref and f"decode_proj_f32_{ref}_in1024_out{out}_len{length}",
                     profiles=("amd-cpu", "mac-cpu"), intent=intent))
+    return rows
+
+
+def decode_view_operand_cases():
+    """#2216: prepared decode projection whose weight is a borrowed view operand."""
+    issues = ("#2216",)
+    intent = ("tenferro-rs #2216: prepared decode-shaped projection y = W^T x, "
+              "x [in, len] and W [in, out] f32, contracting the 1024 input axis. The "
+              "weight operand is a borrowed transposed/offset view: W is stored "
+              "[out, in] with a padded column offset and read [in, out] through "
+              "swapped strides. The cached dot read hook must consume that view "
+              "instead of staging a contiguous copy. The contiguous control feeds "
+              "the same logical W as an owned [in, out] tensor through the same "
+              "prepared cache slot, and PyTorch x @ W.T is the external reference. "
+              "Latency regime: per-call dispatch plus the operand staging the fix "
+              "removes, not GEMM throughput. Fixture and view construction, "
+              "correctness checks and session setup are outside the timer.")
+    rows = []
+    for threads in (1, 4):
+        target = f"decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t{threads}"
+        rows.append(case(
+            target, issues, "decode_projection_view_operand",
+            {"in": 1024, "out": 1024, "len": 8}, arm="prepared-view", dtype="f32",
+            intent=intent))
+        rows[-1]["thread_counts"] = [threads]
+        contiguous = f"decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t{threads}"
+        rows.append(case(
+            contiguous, issues, "decode_projection_view_operand",
+            {"in": 1024, "out": 1024, "len": 8}, arm="prepared-contiguous", dtype="f32",
+            reference_for=target, intent=intent))
+        rows[-1]["thread_counts"] = [threads]
+        pytorch = f"decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t{threads}"
+        rows.append(case(
+            pytorch, issues, "decode_projection_view_operand",
+            {"in": 1024, "out": 1024, "len": 8}, arm="pytorch", backend="pytorch-cpu",
+            dtype="f32", reference_for=target, intent=intent))
+        rows[-1]["thread_counts"] = [threads]
     return rows
 
 
@@ -479,7 +516,8 @@ def eager_small_call_cases():
 
 
 def generate_cases():
-    return (decode_cases() + other_cases() + b1_op_cases() + cpu_gap_cases()
+    return (decode_cases() + decode_view_operand_cases() + other_cases() + b1_op_cases()
+            + cpu_gap_cases()
             + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases()
             + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
             + erased_binary_cases() + erased_construct_cases() + eager_small_call_cases())

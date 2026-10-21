@@ -30,7 +30,9 @@ use tenferro_linalg::{TensorLinalgExt, TracedTensorLinalgExt};
 use tenferro_runtime::{
     DType, ExecutionEngine, GraphCompiler, Runtime, TensorSessionOpsExt, TracedTensor,
 };
-use tenferro_tensor::{DotGeneralConfig, Engine, GatherConfig, Tensor, TensorRead};
+use tenferro_tensor::{
+    DotGeneralConfig, Engine, GatherConfig, SliceConfig, Tensor, TensorRead, TensorValue,
+};
 
 #[path = "../../examples/cpu_gap_mwe.rs"]
 mod cpu_gap_mwe;
@@ -516,6 +518,104 @@ fn decode_projection(params: &Value, timing: &Timing, threads: usize) -> Result<
         timer,
         outside_timer,
         extra: json!({}),
+    })
+}
+
+// ---------------------------------------------------------------------------
+// #2216: prepared decode projection with a borrowed view weight operand.
+//
+// `W` is stored `[out, in]` with a padded column offset and read as the
+// `[in, out]` `dot_general` operand through swapped strides. The cached read
+// hook must consume that view instead of staging a contiguous copy. The
+// contiguous control feeds the same logical `W` as an owned `[in, out]` tensor,
+// and both use the caller's prepared cache slot.
+// ---------------------------------------------------------------------------
+
+fn decode_projection_view_operand(
+    params: &Value,
+    timing: &Timing,
+    threads: usize,
+) -> Result<CaseOutcome> {
+    let (din, dout, len) = (
+        param_usize(params, "in")?,
+        param_usize(params, "out")?,
+        param_usize(params, "len")?,
+    );
+    let arm = param_str(params, "arm")?;
+    let x_data = values_f32(din * len, 1);
+    let w_data = values_f32(din * dout, 2);
+    let x = Tensor::from_vec_col_major(vec![din, len], x_data.clone())?;
+    let w_contiguous = Tensor::from_vec_col_major(vec![din, dout], w_data.clone())?;
+
+    // Store W as `[out, in]` column-major, each column prefixed by `pad`
+    // padding rows, so the sliced-and-transposed view has a non-zero offset.
+    let pad = 4usize;
+    let mut storage = Vec::with_capacity((dout + pad) * din);
+    for p in 0..din {
+        for _ in 0..pad {
+            storage.push(0.0f32);
+        }
+        for j in 0..dout {
+            storage.push(w_data[p + din * j]);
+        }
+    }
+    let stored = Tensor::from_vec_col_major(vec![dout + pad, din], storage)?;
+    let w_view = TensorValue::from_tensor(stored)
+        .slice_view(&SliceConfig {
+            starts: vec![pad, 0],
+            limits: vec![pad + dout, din],
+            strides: vec![1, 1],
+        })?
+        .transpose_view([1, 0])?;
+    if w_view.shape() != [din, dout] {
+        return Err("view weight operand shape mismatch".into());
+    }
+
+    let out_bytes = len * dout * 4;
+    let probes: Vec<(usize, usize)> = (0..256)
+        .map(|i| ((i * 7) % len, (i * 131) % dout))
+        .collect();
+    let check = |y: &[f32]| -> Result<f64> {
+        let mut worst = 0.0f64;
+        for &(i, j) in &probes {
+            let expected: f64 = (0..din)
+                .map(|p| x_data[p + i * din] as f64 * w_data[p + din * j] as f64)
+                .sum();
+            worst = worst.max(rel_error(y[i + j * len] as f64, expected));
+        }
+        check_tol(worst, 1e-4, "decode projection view operand")
+    };
+    let cfg = matmul_config(&[0], &[0]);
+    let mut backend = tenferro_einsum_benchmark::cpu_engine(Some(threads))?;
+    let (error, measurement) =
+        backend.with_backend_session(|s| -> Result<(f64, Measurement)> {
+            let run = |s: &mut dyn Engine| -> Result<Tensor> {
+                let rhs = match arm {
+                    "prepared-view" => TensorRead::from_view(w_view.tensor_view()),
+                    "prepared-contiguous" => TensorRead::from_tensor(&w_contiguous),
+                    _ => return Err(format!("unknown decode view operand arm {arm}").into()),
+                };
+                Ok(s.dot_general_read_cached(Some(0), TensorRead::from_tensor(&x), rhs, &cfg)?)
+            };
+            let out = run(s)?;
+            let error = check(out.as_slice::<f32>()?)?;
+            let measurement = measure(timing, out_bytes, || run(s))?;
+            Ok((error, measurement))
+        })??;
+    Ok(CaseOutcome {
+        max_rel_error: error,
+        measurement: Some(measurement),
+        timer: vec![
+            "Session::dot_general_read_cached (prepared cache slot) on the borrowed caller-held session",
+            "output_allocation",
+        ],
+        outside_timer: vec![
+            "backend/session construction",
+            "input_construction",
+            "weight view construction (metadata only)",
+            "correctness_check",
+        ],
+        extra: json!({"in": din, "out": dout, "len": len, "operand": arm}),
     })
 }
 
@@ -2434,6 +2534,9 @@ fn main() -> Result<()> {
             })
         }
         "decode_projection" => decode_projection(&params, &timing, threads),
+        "decode_projection_view_operand" => {
+            decode_projection_view_operand(&params, &timing, threads)
+        }
         "copy_volume" => copy_volume(&params),
         "gemm_mm256" => gemm_mm256(&params, &timing),
         "rank1_dot" => rank1_dot(&params, &timing),

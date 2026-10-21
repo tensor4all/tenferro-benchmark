@@ -90,6 +90,18 @@ def torch_case(case):
             ref = x.double() @ w.double().T
             return float(((y.double() - ref).abs() / ref.abs().clamp(min=1.0)).max())
         return (lambda: torch.nn.functional.linear(x, w)), check, length * dout * 4, ["torch.nn.functional.linear", "output_allocation"]
+    if kind == "decode_projection_view_operand":
+        din, dout, length = p["in"], p["out"], p["len"]
+        # Same logical x (in, len) and W (in, out) as the Rust arms; PyTorch
+        # stores W as its native row-major [out, in] and reads it transposed.
+        x = torch.tensor(_values(din * length, 1), dtype=torch.float32).reshape(length, din)
+        w = torch.tensor(_values(din * dout, 2), dtype=torch.float32).reshape(dout, din)
+
+        def check():
+            y = x @ w.T
+            ref = x.double() @ w.double().T
+            return float(((y.double() - ref).abs() / ref.abs().clamp(min=1.0)).max())
+        return (lambda: x @ w.T), check, length * dout * 4, ["torch.matmul(x, W.T)", "output_allocation"]
     if kind == "rank1_dot":
         n = p["len"]
         re_x, im_x, re_y, im_y = _values(n, 9), _values(n, 10), _values(n, 11), _values(n, 12)
