@@ -2,6 +2,11 @@ name: debug-runpod-a100
 
 on:
   workflow_dispatch:
+    inputs:
+      startup_probe:
+        description: Rent one A4000 for a bounded startup/log probe (deleted afterward)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -20,15 +25,38 @@ jobs:
         with:
           persist-credentials: false
       - name: Compare production and unfiltered CUDA availability
+        if: ${{ !inputs.startup_probe }}
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
           PYTHONUNBUFFERED: "1"
         run: python3 -m scripts.ci.runpod_diagnostics --output-dir _runpod_diagnostics
+      - name: Probe one Pod and capture startup logs
+        id: probe
+        if: inputs.startup_probe
+        timeout-minutes: 7
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          PYTHONUNBUFFERED: "1"
+        run: python3 -m scripts.ci.runpod_startup_probe
+      - name: Ensure probe Pod is deleted
+        if: always() && steps.probe.outputs.pod_id != ''
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          POD_ID: ${{ steps.probe.outputs.pod_id }}
+        run: python3 -m scripts.ci.runpod_http delete --config scripts/ci/runpod_config.json
       - name: Upload diagnostics even when API checks fail
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: runpod-a100-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
           path: _runpod_diagnostics
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload startup probe diagnostics
+        if: always() && inputs.startup_probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: runpod-startup-probe-${{ github.run_id }}
+          path: _runpod_startup_probe
           if-no-files-found: warn
           retention-days: 7
