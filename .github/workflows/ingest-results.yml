@@ -44,8 +44,10 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.GH_APP_ID }}
-          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          # tensor4all-ai-bot (contents + pull-requests write on this repo);
+          # GH_APP_ID is the RunPod runner App and cannot open PRs.
+          app-id: ${{ secrets.INGEST_APP_ID }}
+          private-key: ${{ secrets.INGEST_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
           permission-contents: write

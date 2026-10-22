@@ -150,10 +150,11 @@ A failed bundle never produces a partial commit.
 
 Ingestion has `actions: read`, `checks: read` and `contents: write`. Its
 result commits are restricted to the three accepted file types. The
-`ingest/` branch push and the pull request use a token of the repository's
-GitHub App (`GH_APP_ID`/`GH_APP_PRIVATE_KEY`, contents and pull-requests
-write), because a pull request opened with `GITHUB_TOKEN` starts no workflows
-and its required checks would never report. No arbitrary artifact path may
+`ingest/` branch push and the pull request use a token of the
+tensor4all-ai-bot GitHub App (`INGEST_APP_ID`/`INGEST_APP_PRIVATE_KEY`,
+contents and pull-requests write), because a pull request opened with
+`GITHUB_TOKEN` starts no workflows and its required checks would never
+report. No arbitrary artifact path may
 be staged. After ingestion explicitly send a repository-dispatch event with
 an ingestion event type to trigger Pages; ordinary `GITHUB_TOKEN` pushes do
 not trigger another push workflow. Retry ingestion after a dispatch failure:
