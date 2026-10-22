@@ -1,45 +1,45 @@
 {
-  "collected_at": "2026-10-22T03:08:23.697691+00:00",
+  "collected_at": "2026-10-22T18:21:08.094003+00:00",
   "files": {
-    "data/results/mac-cpu/cpu/fft/20261022_030823/inputs/0/cpu_fft_20261022_030823.md": "1706363373790aba4b02b8411335122b152872cc99e2f71f913f74e85d8877e3",
-    "data/results/mac-cpu/cpu/fft/20261022_030823/inputs/0/cpu_fft_t1_20261022_030823.csv": "6388885126bf5b88e197cc05dd007ef2a2b1102939db4460401ce19ceec605d0",
-    "data/results/mac-cpu/cpu/fft/20261022_030823/inputs/0/cpu_fft_t4_20261022_030823.csv": "8f0f3451cc84fd00c034324c4a51d7d66444fc47cb87f1691b0fa733de7f0df1",
-    "data/results/mac-cpu/cpu/fft/20261022_030823/inputs/0/report.md": "819868877fe5824173539c01594f3f0fe40657fb3431c9b9c7663722aa9de628",
-    "data/results/mac-cpu/cpu/fft/20261022_030823/inputs/0/run.yaml": "6f4462f790b0c4eeb50537d8fa6203369ee10f6c040479dfdc30be0189a7c926",
-    "data/results/mac-cpu/cpu/fft/20261022_030823/inputs/0/run_t1.yaml": "6f4462f790b0c4eeb50537d8fa6203369ee10f6c040479dfdc30be0189a7c926",
-    "data/results/mac-cpu/cpu/fft/20261022_030823/inputs/0/run_t4.yaml": "aad3458332cc4b16289896fae811ebe077909656aebca1905900f630c5f071ec",
-    "data/results/mac-cpu/cpu/fft/20261022_030823/report.md": "819868877fe5824173539c01594f3f0fe40657fb3431c9b9c7663722aa9de628",
-    "data/results/mac-cpu/cpu/fft/20261022_030823/report.summary.json": "5cba47f2a067683bdbfceeee1f02d1b0cc79b067f2f0a32be194e041feb5caa3",
-    "data/results/mac-cpu/cpu/fft/20261022_030823/run.yaml": "1f22f0f0bddac772078a9542ce336439b965bef4d447f0d2909ceffce0633b5e",
-    "result/mac-cpu/cpu/fft.md": "819868877fe5824173539c01594f3f0fe40657fb3431c9b9c7663722aa9de628",
-    "result/mac-cpu/cpu/fft.summary.json": "5cba47f2a067683bdbfceeee1f02d1b0cc79b067f2f0a32be194e041feb5caa3"
+    "data/results/mac-cpu/cpu/fft/20261022_182108/inputs/0/cpu_fft_20261022_182108.md": "0991b01c3b83968d17a21a1526b8e5ceec92c15968d2d1daa3965811ee8c523f",
+    "data/results/mac-cpu/cpu/fft/20261022_182108/inputs/0/cpu_fft_t1_20261022_182108.csv": "76ed889257c006f0fab1f879b7dd361c77cb31869eaac238668651ea3bf25a58",
+    "data/results/mac-cpu/cpu/fft/20261022_182108/inputs/0/cpu_fft_t4_20261022_182108.csv": "07d574cedf50ae4ff19b4e092a4ebfa8794d7e58a6201cc92f17bc9f6ea0a679",
+    "data/results/mac-cpu/cpu/fft/20261022_182108/inputs/0/report.md": "a82355704a5c89b3dff7e9698fef8a781aa95a8c3ec446e8d4bc7c3073eb9fc4",
+    "data/results/mac-cpu/cpu/fft/20261022_182108/inputs/0/run.yaml": "a2859a44e67ec9b07bad8415505a0ef3b409804b87d927f028bba3e03980acd3",
+    "data/results/mac-cpu/cpu/fft/20261022_182108/inputs/0/run_t1.yaml": "a2859a44e67ec9b07bad8415505a0ef3b409804b87d927f028bba3e03980acd3",
+    "data/results/mac-cpu/cpu/fft/20261022_182108/inputs/0/run_t4.yaml": "e69ee01c55e73b2d766a388685f373bbe1368d62f5f1f2aebcbb7b8712f8d1a2",
+    "data/results/mac-cpu/cpu/fft/20261022_182108/report.md": "a82355704a5c89b3dff7e9698fef8a781aa95a8c3ec446e8d4bc7c3073eb9fc4",
+    "data/results/mac-cpu/cpu/fft/20261022_182108/report.summary.json": "8fc298d205555ee30b07b20e76d2ce213e96553315d0fb222fc7a8087871605d",
+    "data/results/mac-cpu/cpu/fft/20261022_182108/run.yaml": "10ac880d28512b35a477d22b06537ef6895e245784ff230372023bd7e00a433e",
+    "result/mac-cpu/cpu/fft.md": "a82355704a5c89b3dff7e9698fef8a781aa95a8c3ec446e8d4bc7c3073eb9fc4",
+    "result/mac-cpu/cpu/fft.summary.json": "8fc298d205555ee30b07b20e76d2ce213e96553315d0fb222fc7a8087871605d"
   },
   "hardware": {
     "cpu": "arm",
-    "host": "sat12-bq154-d7ab3148-c059-43aa-8396-42f7e64423bc-3E3EEB82DECD.local",
+    "host": "sjc22-bt147-49d8bcde-6d99-428d-954a-63ba63c634b1-C273702349B5.local",
     "threads": [
       1,
       4
     ]
   },
-  "harness_commit": "1711cc92c7d04a38b85df1170873ddd4cf029b5b",
+  "harness_commit": "12e0b50f983ca3253ff46841eb15912448ae3e20",
   "schema_version": 1,
   "source": {
-    "artifact_id": 12401205291,
-    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39711354696/artifacts/12401205291",
-    "created_at": "2026-10-22T04:04:29Z",
-    "digest": "sha256:2a6a498b153d2502a1cac2832192f30d8e3ced2dc8a770416bb362eca01b9630",
-    "expires_at": "2027-01-20T02:26:11Z",
+    "artifact_id": 12452787745,
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39822901283/artifacts/12452787745",
+    "created_at": "2026-10-22T19:34:34Z",
+    "digest": "sha256:c945d3b73330579059120d71d4d39452d5b0489b6310cedd8822aaa4ac143559",
+    "expires_at": "2027-01-20T17:27:51Z",
     "head_branch": "main",
-    "head_sha": "1711cc92c7d04a38b85df1170873ddd4cf029b5b",
+    "head_sha": "12e0b50f983ca3253ff46841eb15912448ae3e20",
     "repository": "tensor4all/tenferro-benchmark",
     "run_attempt": 1,
-    "run_id": 39711354696,
-    "run_started_at": "2026-10-22T02:26:10Z",
-    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39711354696",
+    "run_id": 39822901283,
+    "run_started_at": "2026-10-22T17:27:50Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39822901283",
     "workflow_path": ".github/workflows/benchmark-nightly-mac-cpu.yml"
   },
   "suite_id": "cpu/fft",
   "target_profile": "mac-cpu",
-  "tenferro_commit": "d5ef90538a4c05810fe63bc1b5713d871ac98279"
+  "tenferro_commit": "2007d101d23b5baf7deba4afb8c7b92da347dbba"
 }
