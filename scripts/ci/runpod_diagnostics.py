@@ -15,9 +15,9 @@ from pathlib import Path
 
 from scripts.ci.runpod_contract import (
     ContractError,
-    configured_cuda_versions,
+    configured_min_cuda_version,
     configured_gpu_tiers,
-    validate_cuda_versions,
+    validate_min_cuda_version,
     validate_gpu_type_ids,
 )
 from scripts.ci.runpod_http import Cooldown, request_with_retry
@@ -32,7 +32,7 @@ def catalog_url(config, *, cuda_filter):
         "count": config["gpu_count"],
     }
     if cuda_filter:
-        params["cudaVersions"] = ",".join(configured_cuda_versions(config))
+        params["minCudaVersion"] = configured_min_cuda_version(config)
     return config["catalog_url"] + "?" + urllib.parse.urlencode(params)
 
 
@@ -69,7 +69,7 @@ def diagnose(config, key, *, fetch=request_with_retry):
     tiers = [(name, ids) for name, ids in configured_gpu_tiers(config) if name == "a100"]
     if not tiers:
         raise ValueError("configuration has no a100 tier")
-    configured_cuda_versions(config)
+    configured_min_cuda_version(config)
     report = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "config": config,
@@ -105,7 +105,7 @@ def diagnose(config, key, *, fetch=request_with_retry):
     if "openapi" in payloads and "without_cuda_filter" in payloads:
         try:
             validate_gpu_type_ids(payloads["openapi"], tiers[0][1], payloads["without_cuda_filter"])
-            validate_cuda_versions(payloads["openapi"], configured_cuda_versions(config))
+            validate_min_cuda_version(payloads["openapi"], configured_min_cuda_version(config))
             report["contract"] = "passed (A100 IDs and CUDA syntax)"
         except (ContractError, KeyError, TypeError, AttributeError):
             report["contract"] = "failed"

@@ -103,13 +103,15 @@ price, startup duration, and rejection reason in the Actions logs. Successful
 provisioning publishes the accepted per-attempt label, preventing stale runners
 from receiving the benchmark job. Rust uses CUDA 12.8, while the locked PyTorch
 wheel is pinned to PyTorch 2.11.0+cu128 in the separate
-`scripts/ci/runpod_runtime/` project. Provisioning accepts CUDA 12.8, 12.9,
-13.0, 13.1, and 13.2 hosts; startup requires at least CUDA 12.8 driver support before
+`scripts/ci/runpod_runtime/` project. Catalog queries and Pod creation both use
+`minCudaVersion: "12.8"`, accepting CUDA 12.8 and newer hosts without an exact
+version allowlist; startup requires at least CUDA 12.8 driver support before
 transferring the runtime. Both hosted preparation and restoration check the
 wheel's version and CUDA version. The root CPU dependency environment is separate.
-RunPod's CUDA filter matches exact versions rather than a minimum: the A100
+RunPod's `cudaVersions`/`allowedCudaVersions` filters match exact versions: the A100
 catalog observed on 2026-10-22 advertised CUDA 13.2, so allowing only 13.0
-excluded compatible newer hosts as well as CUDA 12 hosts. Diagnostics retain
+excluded compatible newer hosts as well as CUDA 12 hosts. The minimum-version
+filter avoids having to add future driver versions by hand. Diagnostics retain
 the catalog's advertised CUDA versions to make future version gaps visible.
 
 ## REST v2 integration
@@ -120,7 +122,7 @@ and [the published OpenAPI](https://api.runpod.io/v2/openapi.json).
 
 | Purpose | REST v2 API and fields |
 | --- | --- |
-| Create | `POST /v2/pods`: `image`, `cloud`, `gpu.id/count/allowedCudaVersions`, `disk`, `mounts.persistent`, `entrypoint`, `cmd`, `env` |
+| Create | `POST /v2/pods`: `image`, `cloud`, `gpu.id/count/minCudaVersion`, `disk`, `mounts.persistent`, `entrypoint`, `cmd`, `env` |
 | Assigned hardware and cost | Created Pod's `gpu.id` and `cost` |
 | Pricing and stock | `GET /v2/catalog/gpus`: wrapped `gpus`, `price.secure`, `memory`, `availability` |
 | Startup and container liveness | `GET /v2/pods/{id}`: `status` and `runtime` |

@@ -150,8 +150,9 @@ def http_transport(
         "cloud": "SECURE",
         "count": config.get("gpu_count", 1),
     }
-    if config.get("allowed_cuda_versions"):
-        params["cudaVersions"] = ",".join(config["allowed_cuda_versions"])
+    if config.get("min_cuda_version"):
+        from scripts.ci.runpod_contract import configured_min_cuda_version
+        params["minCudaVersion"] = configured_min_cuda_version(config)
     catalog_url = url + "?" + urllib.parse.urlencode(params)
 
     def send() -> tuple[int, bytes]:
