@@ -101,7 +101,10 @@ termination after two consecutive created pods fail to register. Capacity
 failures do not count as paid startup failures. Every attempt records GPU,
 price, startup duration, and rejection reason in the Actions logs. Successful
 provisioning publishes the accepted per-attempt label, preventing stale runners
-from receiving the benchmark job. Rust uses CUDA 12.8, while the locked PyTorch
+from receiving the benchmark job. Readiness queries GitHub by that runner's
+unique name and verifies its label and online status, so registrations beyond
+the first 100 organization runners remain discoverable.
+Rust uses CUDA 12.8, while the locked PyTorch
 wheel is pinned to PyTorch 2.11.0+cu128 in the separate
 `scripts/ci/runpod_runtime/` project. Catalog queries and Pod creation both use
 `minCudaVersion: "12.8"`, accepting CUDA 12.8 and newer hosts without an exact
