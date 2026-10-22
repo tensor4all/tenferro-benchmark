@@ -57,6 +57,7 @@ def inspect_catalog(body, config, tiers):
             "availability": entry.get("availability"),
             "memory_gb": entry.get("memory"),
             "secure_price_per_hr": prices.get("secure") if isinstance(prices, dict) else None,
+            "cuda_versions": entry.get("cudaVersions"),
         })
     logs = io.StringIO()
     with contextlib.redirect_stdout(logs):
