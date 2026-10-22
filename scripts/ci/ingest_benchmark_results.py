@@ -11,6 +11,7 @@ import stat
 import sys
 import subprocess
 import tempfile
+import time
 import zipfile
 
 if __package__:
@@ -110,11 +111,81 @@ def git(root: Path, *args: str, check=True):
     return subprocess.run(['git', '-C', str(root), *args], text=True, capture_output=True, check=check)
 
 
+def gh_pull_request(*args: str, check=True):
+    """Pull-request API calls run as the ingestion App so the PR triggers CI.
+
+    Pull requests opened with GITHUB_TOKEN never start workflows, so the
+    required status checks on main would never report.
+    """
+    env = dict(os.environ, GH_TOKEN=os.environ.get('INGEST_PR_TOKEN') or os.environ.get('GH_TOKEN', ''))
+    return subprocess.run(['gh', 'api', *args], text=True, capture_output=True, check=check, env=env)
+
+
+def required_checks() -> set[str]:
+    rules = gh_json(f'repos/{REPOSITORY}/rules/branches/main')
+    return {check['context'] for rule in rules if rule['type'] == 'required_status_checks'
+            for check in rule['parameters']['required_status_checks']}
+
+
+def wait_for_checks(commit: str, names: set[str], timeout=40 * 60, interval=30):
+    """Wait for every required check on the exact result commit to succeed."""
+    deadline = time.monotonic() + timeout
+    while True:
+        runs = gh_json(f'repos/{REPOSITORY}/commits/{commit}/check-runs?per_page=100')['check_runs']
+        # A rerun leaves the older run in the list; the newest one counts.
+        latest = {}
+        for run in sorted(runs, key=lambda item: item.get('started_at') or ''):
+            if run['name'] in names:
+                latest[run['name']] = run
+        failed = sorted(name for name, run in latest.items()
+                        if run['status'] == 'completed' and run['conclusion'] != 'success')
+        if failed:
+            raise RuntimeError(f'Required checks failed on {commit}: {", ".join(failed)}')
+        if set(latest) == names and all(run['status'] == 'completed' for run in latest.values()):
+            return
+        if time.monotonic() > deadline:
+            raise RuntimeError(f'Required checks did not finish on {commit}')
+        time.sleep(interval)
+
+
+def merge_through_pull_request(branch: str, commit: str, title: str):
+    """Merge the exact result commit through a PR; None means main moved and a replay is needed."""
+    owner = REPOSITORY.split('/')[0]
+    found = json.loads(gh_pull_request(f'repos/{REPOSITORY}/pulls?head={owner}:{branch}&state=open').stdout)
+    if found:
+        number = found[0]['number']
+    else:
+        created = gh_pull_request('--method', 'POST', f'repos/{REPOSITORY}/pulls', '-f', f'title={title}',
+                                  '-f', f'head={branch}', '-f', 'base=main',
+                                  '-f', 'body=Validated benchmark results opened by ingest-results. '
+                                        'It merges itself once the required checks pass.')
+        number = json.loads(created.stdout)['number']
+    wait_for_checks(commit, required_checks())
+    # Pinning the head SHA merges exactly the validated commit or nothing.
+    merged = gh_pull_request('--method', 'PUT', f'repos/{REPOSITORY}/pulls/{number}/merge',
+                             '-f', 'merge_method=squash', '-f', f'sha={commit}',
+                             '-f', f'commit_title={title}', '-f', 'commit_message=', check=False)
+    if merged.returncode == 0:
+        return json.loads(merged.stdout)['sha']
+    state = json.loads(gh_pull_request(f'repos/{REPOSITORY}/pulls/{number}').stdout)
+    if state.get('merged'):
+        return state['merge_commit_sha']
+    if not state.get('mergeable'):
+        return None
+    raise RuntimeError(f'Could not merge result pull request #{number}: {merged.stderr.strip()}')
+
+
 def commit_results(root: Path, validated, source: dict, attempts=3):
-    """Reevaluate freshness on every fetched main; never force-push."""
+    """Reevaluate freshness on every fetched main; main itself is never pushed.
+
+    Results land through a pull request because main requires status checks.
+    The ingest/ branch is owned by this driver and is overwritten on replay.
+    """
     if git(root, 'status', '--porcelain').stdout.strip():
         raise ValueError('Ingestion checkout must be clean')
     decisions = {}
+    title = f"Accept benchmark run {source['run_id']} attempt {source['run_attempt']}"
+    branch = f"ingest/run-{source['run_id']}-attempt-{source['run_attempt']}"
     for _ in range(attempts):
         git(root, 'fetch', 'origin', 'main')
         git(root, 'checkout', '--detach', 'origin/main')
@@ -141,15 +212,16 @@ def commit_results(root: Path, validated, source: dict, attempts=3):
                 raise ValueError('Unexpected staged paths')
         git(root, '-c', 'user.name=github-actions[bot]',
             '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com',
-            'commit', '-m', f"Accept benchmark run {source['run_id']} attempt {source['run_attempt']}")
+            'commit', '-m', title)
         commit = git(root, 'rev-parse', 'HEAD').stdout.strip()
-        pushed = git(root, 'push', 'origin', 'HEAD:main', check=False)
-        if pushed.returncode == 0:
-            return decisions, commit
+        git(root, 'push', '--force', 'origin', f'HEAD:refs/heads/{branch}')
+        merged = merge_through_pull_request(branch, commit, title)
+        if merged:
+            return decisions, merged
         # Only discard our own generated tracked result changes in this
         # dedicated ingestion checkout before replaying against current main.
         git(root, 'checkout', '--detach', 'origin/main')
-    raise RuntimeError('Could not push accepted results after bounded retries')
+    raise RuntimeError('Could not merge accepted results after bounded retries')
 
 
 def request_publication():

@@ -18,9 +18,10 @@ on:
 
 permissions:
   actions: read
+  checks: read
   contents: write
 
-# One writer for all profiles. The driver also retries unrelated main pushes.
+# One writer for all profiles. The driver also replays onto a moved main.
 concurrency:
   group: benchmark-result-ingestion
   cancel-in-progress: false
@@ -34,14 +35,29 @@ jobs:
        (github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Includes waiting for the result PR's required checks (~5 min).
+    timeout-minutes: 60
     steps:
+      # main requires status checks, so results land through a PR. A PR or
+      # push made with GITHUB_TOKEN starts no workflows; the App token does.
+      - name: Create result pull request token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+
       - name: Checkout trusted ingestion implementation
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
-          # Needed only for the driver's restricted result commit/push.
+          # Needed only for the driver's restricted ingest/ branch push.
+          token: ${{ steps.app-token.outputs.token }}
           persist-credentials: true
 
       - name: Install uv
@@ -50,6 +66,7 @@ jobs:
       - name: Validate and ingest the selected run
         env:
           GH_TOKEN: ${{ github.token }}
+          INGEST_PR_TOKEN: ${{ steps.app-token.outputs.token }}
           SOURCE_RUN_ID: ${{ inputs.run_id || github.event.workflow_run.id }}
           VALIDATE_ONLY: ${{ inputs.validate_only || false }}
         run: |

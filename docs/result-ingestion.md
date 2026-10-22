@@ -137,15 +137,23 @@ single-pending queue would replace earlier pending ingestion requests; it is
 not suitable here. Queue overflow is visible as a canceled run and can be
 recovered by manual run-ID dispatch. Before committing, fetch current `main`, reevaluate
 ordering against that tree and replay only the accepted report, summary and
-provenance paths. If a push loses a race, fetch and revalidate/retry with a
-bounded limit; never force-push or drop unrelated changes. Zero accepted
+provenance paths. `main` requires status checks, so the result commit is
+pushed to a driver-owned `ingest/run-<id>-attempt-<n>` branch and merged
+through a pull request once the required checks pass, pinned to that exact
+commit (squash, so `main` gets one result commit). If `main` moved so the PR
+cannot merge, fetch and revalidate/retry with a bounded limit; never push or
+force-push `main` and never drop unrelated changes. Zero accepted
 entries means no commit. Each result commit names the source run and attempt.
 A failed bundle never produces a partial commit.
 
 ## Publication triggers and permissions
 
-Ingestion has `actions: read` and `contents: write`. It uses direct bot commits
-restricted to the three accepted file types. No arbitrary artifact path may
+Ingestion has `actions: read`, `checks: read` and `contents: write`. Its
+result commits are restricted to the three accepted file types. The
+`ingest/` branch push and the pull request use a token of the repository's
+GitHub App (`GH_APP_ID`/`GH_APP_PRIVATE_KEY`, contents and pull-requests
+write), because a pull request opened with `GITHUB_TOKEN` starts no workflows
+and its required checks would never report. No arbitrary artifact path may
 be staged. After ingestion explicitly send a repository-dispatch event with
 an ingestion event type to trigger Pages; ordinary `GITHUB_TOKEN` pushes do
 not trigger another push workflow. Retry ingestion after a dispatch failure:
@@ -284,5 +292,5 @@ report. The renderer has no artifact API permissions and never creates a
 For rollback, revert the accepted result commit (report, summary and provenance
 together) and dispatch Pages. Record and resolve the source-run problem before
 retrying ingestion; merely reverting a result is not a permanent exclusion.
-Use the ingestion concurrency queue and normal push retry path. Do not bypass
+Use the ingestion concurrency queue and normal pull-request retry path. Do not bypass
 validation, force-push, or manually change timing values.
