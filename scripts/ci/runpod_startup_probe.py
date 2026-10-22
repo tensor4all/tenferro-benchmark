@@ -16,6 +16,24 @@ REVISION = "9fcab989978a67d20bd9e253f8c774e4ab88bc67"
 IMAGE = "ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4"
 
 
+def paginated_runner_status(token, org, label):
+    total = 0
+    for page in range(1, 11):
+        request = urllib.request.Request(
+            f"https://api.github.com/orgs/{org}/actions/runners?per_page=100&page={page}",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"},
+        )
+        with urllib.request.urlopen(request, timeout=10) as response:
+            data = json.load(response)
+        total = data["total_count"]
+        for runner in data["runners"]:
+            if any(entry.get("name") == label for entry in runner.get("labels", [])):
+                return {"page": page, "status": runner["status"], "total_count": total}
+        if len(data["runners"]) < 100 or page * 100 >= total:
+            break
+    return {"page": None, "status": "missing", "total_count": total}
+
+
 def read_logs(url, key):
     """Read a bounded SSE snapshot, including both container and system logs."""
     request = urllib.request.Request(url, headers={
@@ -99,12 +117,12 @@ sleep 300
 '''
     if jit:
         startup = startup.replace("echo PROBE_READY\nsleep 300", 'echo PROBE_STAGE:jit-registration\nexec ./run.sh --jitconfig "${RUNNER_JIT_CONFIG}"')
-    payload = build_pod_payload(config, IMAGE, startup, jit, ["NVIDIA RTX A4000"], {
+    payload = build_pod_payload(config, IMAGE, startup, jit, ["NVIDIA A40"], {
         "NVIDIA_VISIBLE_DEVICES": "all", "NVIDIA_DRIVER_CAPABILITIES": "compute,utility",
     })
     if not jit:
         payload["env"].pop("RUNNER_JIT_CONFIG", None)
-    result = create_pod(config, [CreateRequest("startup-probe", json.dumps(payload).encode(), ("NVIDIA RTX A4000",))],
+    result = create_pod(config, [CreateRequest("startup-probe", json.dumps(payload).encode(), ("NVIDIA A40",))],
                         transport=_http_transport(config["api_url"], key), secrets=(key, jit))
     pod_id = result.pod_id
     with open(os.environ["GITHUB_OUTPUT"], "a") as stream:
@@ -139,7 +157,11 @@ sleep 300
                     ready |= event.get("line") == "PROBE_READY"
                 if runner_online:
                     ready = runner_online(label, deadline=deadline)
-                    print(f"Runner registry online={ready}", flush=True)
+                    actual = paginated_runner_status(gh_token, org, label)
+                    verdict = {"first_page_online": ready, "paginated": actual}
+                    print(json.dumps(verdict), flush=True)
+                    stream.write(json.dumps(verdict) + "\n")
+                    ready = actual["status"] == "online"
                 if ready:
                     break
                 time.sleep(8)
