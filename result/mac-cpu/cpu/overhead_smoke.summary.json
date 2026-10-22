@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "target_profile": "mac-cpu",
+  "suite_id": "cpu/overhead_smoke",
+  "timestamp": "2026-10-22T03:30:42Z",
+  "tenferro_commit": "d5ef90538a4c05810fe63bc1b5713d871ac98279",
+  "hardware": {
+    "host": "sat12-bq154-d7ab3148-c059-43aa-8396-42f7e64423bc-3E3EEB82DECD.local",
+    "threads": [
+      1
+    ]
+  },
+  "unit": "ns",
+  "rows": [
+    {
+      "case": "concatenate_axis1_f64_8x8x8",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 1677.2861328125,
+      "iqr": 156.6162109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "einsum_prepared_f64_n2",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 928.476806640625,
+      "iqr": 81.46142578125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "einsum_prepared_f64_n4",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 918.0703125,
+      "iqr": 51.44287109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "permute_materialize_f64_r4_4x4x4x4",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 1441.79296875,
+      "iqr": 76.22265625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "prepared_mul_add_f64_budget1_32x32x32_session_entry_diagnostic",
+      "group": "threads=1 / scope=public_path_latency_including_internal_session_entry",
+      "backend": "tenferro-rs",
+      "median": 29434.890625,
+      "iqr": 4176.1171875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "public_path_latency_including_internal_session_entry",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 36.0,
+      "host_allocated_bytes_per_op": 25988.0
+    },
+    {
+      "case": "prepared_mul_add_f64_budget2_32x32x32_session_entry_diagnostic",
+      "group": "threads=1 / scope=public_path_latency_including_internal_session_entry",
+      "backend": "tenferro-rs",
+      "median": 33030.59375,
+      "iqr": 2380.2109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "public_path_latency_including_internal_session_entry",
+      "backend_thread_budget": 2,
+      "host_allocations_per_op": 36.0,
+      "host_allocated_bytes_per_op": 25988.0
+    },
+    {
+      "case": "reduce_axis_f64_8x8x8",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 1770.3046875,
+      "iqr": 76.96533203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "typed_elemwise_f64_add_bcast_8x8x8",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 1331.31884765625,
+      "iqr": 81.827880859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "typed_elemwise_f64_add_bcast_n16",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 1118.2861328125,
+      "iqr": 134.582763671875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    },
+    {
+      "case": "typed_elemwise_f64_add_permuted_view_8x8x8",
+      "group": "threads=1 / scope=steady_state_host_api",
+      "backend": "tenferro-rs",
+      "median": 1442.54541015625,
+      "iqr": 89.762451171875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "steady_state_host_api",
+      "backend_thread_budget": 1,
+      "host_allocations_per_op": 0.0,
+      "host_allocated_bytes_per_op": 0.0
+    }
+  ]
+}

@@ -1,0 +1,882 @@
+{
+  "schema_version": 1,
+  "target_profile": "mac-cpu",
+  "suite_id": "cpu/fft",
+  "timestamp": "2026-10-22T03:08:23.697691+00:00",
+  "tenferro_commit": "d5ef90538a4c05810fe63bc1b5713d871ac98279",
+  "hardware": {
+    "host": "sat12-bq154-d7ab3148-c059-43aa-8396-42f7e64423bc-3E3EEB82DECD.local",
+    "cpu": "arm",
+    "threads": [
+      1,
+      4
+    ]
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 17.67775,
+      "iqr": 0.562626,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 7.458583,
+      "iqr": 1.076043,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 7.296917,
+      "iqr": 1.502583,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 7.387583,
+      "iqr": 1.355583,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 18.011875,
+      "iqr": 2.048041,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 7.975958,
+      "iqr": 0.979542,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 7.527709,
+      "iqr": 0.886666,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 7.407833,
+      "iqr": 1.041833,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 27.265459,
+      "iqr": 18.031916,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 21.819,
+      "iqr": 7.474584,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 16.06175,
+      "iqr": 4.393334,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 14.047042,
+      "iqr": 4.018708,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 17.161,
+      "iqr": 0.970292,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 13.769,
+      "iqr": 0.537959,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 13.821792,
+      "iqr": 0.555416,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "fft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 14.818584,
+      "iqr": 1.563583,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 17.227334,
+      "iqr": 0.599958,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 9.023416,
+      "iqr": 3.542958,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 9.304917,
+      "iqr": 6.953334,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 8.919,
+      "iqr": 4.416583,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 17.997833,
+      "iqr": 2.273458,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 8.361334,
+      "iqr": 2.217291,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 7.840292,
+      "iqr": 1.610375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 8.1255,
+      "iqr": 1.671709,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 17.993084,
+      "iqr": 0.693958,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 15.940125,
+      "iqr": 0.745709,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 16.959709,
+      "iqr": 1.832875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 16.944,
+      "iqr": 1.888916,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 19.216125,
+      "iqr": 1.091667,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 14.547375,
+      "iqr": 3.05125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 12.815208,
+      "iqr": 0.63325,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "ifft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 13.660709,
+      "iqr": 1.090374,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 6.3095,
+      "iqr": 0.363917,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 4.905834,
+      "iqr": 1.166375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 3.840625,
+      "iqr": 0.923041,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 4.420792,
+      "iqr": 2.35,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 7.099,
+      "iqr": 1.06425,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 3.864834,
+      "iqr": 0.627959,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 3.638666,
+      "iqr": 0.306667,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 3.588792,
+      "iqr": 0.301334,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 8.621375,
+      "iqr": 0.540208,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 7.13675,
+      "iqr": 1.169792,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 6.629208,
+      "iqr": 2.127624,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 6.5225,
+      "iqr": 0.416708,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 9.575959,
+      "iqr": 0.723167,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 6.243291,
+      "iqr": 0.154041,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 6.113334,
+      "iqr": 0.159541,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "irfft",
+      "group": "suite=cpu/fft / dtype=c64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 5.873,
+      "iqr": 0.704125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=1 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 5.920417,
+      "iqr": 0.525792,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 3.74925,
+      "iqr": 0.538125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 4.501125,
+      "iqr": 1.329292,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 3.711584,
+      "iqr": 0.444458,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=4 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 6.17525,
+      "iqr": 0.345166,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 3.582083,
+      "iqr": 0.21625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 3.901709,
+      "iqr": 1.911833,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f32 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 3.546709,
+      "iqr": 0.354333,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=1 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 8.027833,
+      "iqr": 0.557459,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 8.977917,
+      "iqr": 1.493416,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 7.68575,
+      "iqr": 1.171458,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=1 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 6.11325,
+      "iqr": 1.727667,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=4 / shape=1d_n1048576",
+      "backend": "pytorch-cpu",
+      "median": 8.949458,
+      "iqr": 0.583208,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-eager",
+      "median": 6.664709,
+      "iqr": 0.200125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-executor-cached",
+      "median": 6.398334,
+      "iqr": 0.828792,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-immediate",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-read",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "API includes per-call planning or session entry; use shared cached executor for short operation timing"
+    },
+    {
+      "case": "rfft",
+      "group": "suite=cpu/fft / dtype=f64 / threads=4 / shape=1d_n1048576",
+      "backend": "tenferro-fft-trace",
+      "median": 6.201666,
+      "iqr": 0.254458,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}
