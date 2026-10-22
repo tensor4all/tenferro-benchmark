@@ -16,7 +16,7 @@ class DiagnosticsTests(unittest.TestCase):
     def test_queries_differ_only_by_cuda_filter(self):
         filtered = parse_qs(urlsplit(catalog_url(CONFIG, cuda_filter=True)).query)
         plain = parse_qs(urlsplit(catalog_url(CONFIG, cuda_filter=False)).query)
-        self.assertEqual(filtered.pop("cudaVersions"), ["12.8,12.9,13.0"])
+        self.assertEqual(filtered.pop("cudaVersions"), ["12.8,12.9,13.0,13.1,13.2"])
         self.assertEqual(filtered, plain)
         self.assertEqual(plain["cloud"], ["SECURE"])
 
