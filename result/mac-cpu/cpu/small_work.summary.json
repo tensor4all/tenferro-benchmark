@@ -1,0 +1,2609 @@
+{
+  "schema_version": 1,
+  "target_profile": "mac-cpu",
+  "suite_id": "cpu/small_work",
+  "timestamp": "2026-10-22T03:22:52Z",
+  "tenferro_commit": "d5ef90538a4c05810fe63bc1b5713d871ac98279",
+  "hardware": {
+    "host": "sat12-bq154-d7ab3148-c059-43aa-8396-42f7e64423bc-3E3EEB82DECD.local",
+    "threads": [
+      1,
+      4
+    ]
+  },
+  "unit": "ns",
+  "rows": [
+    {
+      "case": "add_f64_concrete-shared_size16_dependent10",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 6259.845703125,
+      "iqr": 138.833984375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete-shared_size16_dependent10",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 6623.12890625,
+      "iqr": 361.490234375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_dependent10",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 6477.37890625,
+      "iqr": 1320.232421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_dependent10",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 7404.9453125,
+      "iqr": 739.662109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 695.088623046875,
+      "iqr": 61.7982177734375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete-shared_size256_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 761.525390625,
+      "iqr": 19.500732421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_dependent10",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 5815.34765625,
+      "iqr": 299.8046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_dependent10",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 6603.109375,
+      "iqr": 223.9169921875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 580.698486328125,
+      "iqr": 23.4884033203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete-shared_size4_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 688.78173828125,
+      "iqr": 45.588134765625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete_shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 599.904541015625,
+      "iqr": 28.5135498046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "add_f64_concrete_shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 698.923583984375,
+      "iqr": 35.4664306640625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n16_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4546.18359375,
+      "iqr": 188.78173828125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n16_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4555.419921875,
+      "iqr": 122.76220703125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2394.24609375,
+      "iqr": 208.6171875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2479.1259765625,
+      "iqr": 78.6337890625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n32_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 8448.32421875,
+      "iqr": 220.23583984375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n32_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 8895.181640625,
+      "iqr": 449.34033203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2712.1982421875,
+      "iqr": 123.98193359375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2586.669921875,
+      "iqr": 198.91357421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n8_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2837.3212890625,
+      "iqr": 132.689453125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n8_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3197.265625,
+      "iqr": 336.62890625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single",
+      "group": "threads=1",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2343.75,
+      "iqr": 60.505859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single",
+      "group": "threads=4",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2403.2392578125,
+      "iqr": 31.53466796875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single",
+      "group": "threads=1",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 907.65380859375,
+      "iqr": 46.6103515625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single",
+      "group": "threads=4",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 931.92529296875,
+      "iqr": 95.489501953125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single",
+      "group": "threads=1",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2444.6611328125,
+      "iqr": 31.1279296875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single",
+      "group": "threads=4",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2594.0751953125,
+      "iqr": 162.49658203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2446.1669921875,
+      "iqr": 45.43017578125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2761.759765625,
+      "iqr": 456.68603515625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 971.3544921875,
+      "iqr": 69.26513671875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 959.6962890625,
+      "iqr": 30.7109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2502.3193359375,
+      "iqr": 216.34912109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2626.3427734375,
+      "iqr": 189.77880859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4666.1787109375,
+      "iqr": 193.705078125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4784.7490234375,
+      "iqr": 269.24560546875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2550.8623046875,
+      "iqr": 202.37158203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2539.1845703125,
+      "iqr": 197.3876953125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4376.0986328125,
+      "iqr": 252.583984375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4296.630859375,
+      "iqr": 260.35546875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n16_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3197.671875,
+      "iqr": 121.7041015625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n16_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3111.41015625,
+      "iqr": 158.30517578125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2527.34375,
+      "iqr": 233.84619140625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2684.244140625,
+      "iqr": 136.3525390625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n32_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3414.794921875,
+      "iqr": 157.06396484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n32_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3512.654296875,
+      "iqr": 198.20166015625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2403.361328125,
+      "iqr": 79.833984375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2380.0048828125,
+      "iqr": 163.77783203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n8_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2537.8017578125,
+      "iqr": 132.2021484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n8_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2395.8330078125,
+      "iqr": 127.54296875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete-shared_size256_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1045.369140625,
+      "iqr": 84.47216796875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete-shared_size256_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 1064.39208984375,
+      "iqr": 54.728271484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete-shared_size4_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 780.57861328125,
+      "iqr": 60.607666015625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete-shared_size4_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 779.9482421875,
+      "iqr": 105.072021484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete_shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 696.63525390625,
+      "iqr": 52.561767578125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete_shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 760.25390625,
+      "iqr": 46.783447265625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 16799.15625,
+      "iqr": 676.921875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 17739.90625,
+      "iqr": 1346.03125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 18957.3515625,
+      "iqr": 3768.55078125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 16752.9296875,
+      "iqr": 1350.09375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 6863.28125,
+      "iqr": 736.328125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 6793.05078125,
+      "iqr": 946.2080078125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 6529.623046875,
+      "iqr": 934.1220703125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 6638.99609375,
+      "iqr": 518.2705078125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 7483.55859375,
+      "iqr": 566.73046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 8263.01953125,
+      "iqr": 729.8203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 7402.01953125,
+      "iqr": 511.1484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 9052.41015625,
+      "iqr": 2845.703125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 7972.49609375,
+      "iqr": 485.759765625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 8266.4375,
+      "iqr": 558.998046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 2993.5703125,
+      "iqr": 77.8798828125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 2994.384765625,
+      "iqr": 155.06982421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 2977.294921875,
+      "iqr": 57.16796875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 2918.8642578125,
+      "iqr": 177.02197265625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 6791.50390625,
+      "iqr": 590.005859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 7547.6875,
+      "iqr": 412.26953125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 6076.66015625,
+      "iqr": 994.140625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 6956.8671875,
+      "iqr": 1545.248046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 6353.271484375,
+      "iqr": 921.3056640625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 6225.341796875,
+      "iqr": 156.208984375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 2315.7548828125,
+      "iqr": 308.24755859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 2101.5224609375,
+      "iqr": 126.97314453125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 2165.974609375,
+      "iqr": 133.6259765625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 2128.7841796875,
+      "iqr": 113.9931640625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 3986.65234375,
+      "iqr": 584.1875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 4159.09765625,
+      "iqr": 287.2314453125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 3934.896484375,
+      "iqr": 85.1630859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 4215.412109375,
+      "iqr": 147.0537109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 5074.30078125,
+      "iqr": 1458.861328125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 4504.80078125,
+      "iqr": 350.259765625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 6665.0390625,
+      "iqr": 450.4375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 7090.66015625,
+      "iqr": 449.30078125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 6410.8046875,
+      "iqr": 214.2734375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n16_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 7625.0,
+      "iqr": 296.79296875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 977.3154296875,
+      "iqr": 130.02490234375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 933.59375,
+      "iqr": 34.39306640625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 879.67919921875,
+      "iqr": 61.421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 1028.66650390625,
+      "iqr": 90.44384765625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 868.93701171875,
+      "iqr": 51.16796875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 921.30517578125,
+      "iqr": 38.808349609375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 3395.01953125,
+      "iqr": 207.6015625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 3697.8359375,
+      "iqr": 95.826171875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 3173.3798828125,
+      "iqr": 174.25537109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_qr_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 3741.291015625,
+      "iqr": 102.865234375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2273.396484375,
+      "iqr": 214.84375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2289.998046875,
+      "iqr": 174.58056640625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2036.783203125,
+      "iqr": 166.0771484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 2031.412109375,
+      "iqr": 172.64794921875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 2033.1220703125,
+      "iqr": 63.94482421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2142.7412109375,
+      "iqr": 81.80712890625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4922.771484375,
+      "iqr": 545.451171875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4568.685546875,
+      "iqr": 232.0546875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 4228.923828125,
+      "iqr": 251.302734375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n16_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 4454.263671875,
+      "iqr": 184.408203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 765.625,
+      "iqr": 205.119140625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 771.158935546875,
+      "iqr": 38.6097412109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 784.8310546875,
+      "iqr": 144.2060546875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 819.966796875,
+      "iqr": 41.748046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 768.16796875,
+      "iqr": 67.809814453125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 844.482421875,
+      "iqr": 46.697021484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 3638.671875,
+      "iqr": 384.7666015625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 3406.494140625,
+      "iqr": 342.77392578125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 3749.0234375,
+      "iqr": 274.984375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_solve_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 3317.3828125,
+      "iqr": 151.02099609375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 2020.79296875,
+      "iqr": 283.36572265625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 1550.048828125,
+      "iqr": 47.9228515625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1490.6005859375,
+      "iqr": 81.70654296875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 1558.0849609375,
+      "iqr": 39.3369140625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4587.890625,
+      "iqr": 460.85546875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 4612.142578125,
+      "iqr": 299.0712890625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 4304.849609375,
+      "iqr": 340.3330078125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "nonad_svd_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 4705.322265625,
+      "iqr": 160.6044921875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "default linalg options"
+        ]
+      }
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size16_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 571.370361328125,
+      "iqr": 20.0145263671875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size16_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 667.185546875,
+      "iqr": 122.0245361328125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size256_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 638.966796875,
+      "iqr": 20.8485107421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size256_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 629.486083984375,
+      "iqr": 13.6312255859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size4_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 553.28369140625,
+      "iqr": 10.4930419921875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "reduce_sum_f64_concrete-shared_size4_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 670.156005859375,
+      "iqr": 80.459716796875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "solve_f64_concrete-shared_n16_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 2345.9072265625,
+      "iqr": 160.86767578125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "solve_f64_concrete-shared_n16_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 2156.494140625,
+      "iqr": 17.00830078125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "solve_f64_concrete-shared_n2_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 878.530029296875,
+      "iqr": 44.947265625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "solve_f64_concrete-shared_n2_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 813.17138671875,
+      "iqr": 29.912353515625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "solve_f64_concrete-shared_n4_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1056.74267578125,
+      "iqr": 35.532470703125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "solve_f64_concrete-shared_n4_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 893.208984375,
+      "iqr": 15.655517578125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    }
+  ]
+}

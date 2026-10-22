@@ -1,0 +1,846 @@
+{
+  "schema_version": 1,
+  "target_profile": "mac-cpu",
+  "suite_id": "cpu/permutation",
+  "timestamp": "2026-10-22T03:30:47.505981+00:00",
+  "tenferro_commit": "d5ef90538a4c05810fe63bc1b5713d871ac98279",
+  "hardware": {
+    "host": "sat12-bq154-d7ab3148-c059-43aa-8396-42f7e64423bc-3E3EEB82DECD.local",
+    "cpu": "Apple M1 (Virtual)",
+    "threads": [
+      1,
+      4
+    ]
+  },
+  "unit": "ms",
+  "rows": [
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 1 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 1 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "julia-base",
+      "median": 21.082458,
+      "iqr": 16.702125000000002,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 1 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "strided-jl",
+      "median": 17.520666000000002,
+      "iqr": 9.298915999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 1 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "strided-rs",
+      "median": 8.36,
+      "iqr": 0.6862079999999997,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 1 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "tenferro-rs",
+      "median": 6.691708,
+      "iqr": 0.43433299999999964,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 4 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 4 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "julia-base",
+      "median": 15.486875000000001,
+      "iqr": 6.730707999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 4 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "strided-jl",
+      "median": 12.503749999999998,
+      "iqr": 6.191918000000001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 4 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "strided-rs",
+      "median": 11.009167,
+      "iqr": 1.2180409999999995,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "cyclic_15d_3",
+      "group": "Threads: 4 / 15D 3^15 cyclic [1,2,...,0]",
+      "backend": "tenferro-rs",
+      "median": 8.014709,
+      "iqr": 0.27645699999999884,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "memcpy_24d_contiguous",
+      "group": "Threads: 1 / memcpy baseline (24D 2^24)",
+      "backend": "memcpy",
+      "median": 9.886167,
+      "iqr": 3.623501000000001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "memcpy_24d_contiguous",
+      "group": "Threads: 1 / memcpy baseline (24D 2^24)",
+      "backend": "strided-rs",
+      "median": 7.233166,
+      "iqr": 0.9998750000000003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "memcpy_24d_contiguous",
+      "group": "Threads: 4 / memcpy baseline (24D 2^24)",
+      "backend": "memcpy",
+      "median": 8.4955,
+      "iqr": 3.1317510000000004,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "memcpy_24d_contiguous",
+      "group": "Threads: 4 / memcpy baseline (24D 2^24)",
+      "backend": "strided-rs",
+      "median": 7.18425,
+      "iqr": 0.8746239999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 1 / 15D 3^15 reverse",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 1 / 15D 3^15 reverse",
+      "backend": "julia-base",
+      "median": 118.708625,
+      "iqr": 16.476707999999988,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 1 / 15D 3^15 reverse",
+      "backend": "strided-jl",
+      "median": 31.665917,
+      "iqr": 15.609208000000002,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 1 / 15D 3^15 reverse",
+      "backend": "strided-rs",
+      "median": 30.918042,
+      "iqr": 1.2848330000000026,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 1 / 15D 3^15 reverse",
+      "backend": "tenferro-rs",
+      "median": 30.37275,
+      "iqr": 0.757166999999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 4 / 15D 3^15 reverse",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 4 / 15D 3^15 reverse",
+      "backend": "julia-base",
+      "median": 114.591,
+      "iqr": 5.391083000000009,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 4 / 15D 3^15 reverse",
+      "backend": "strided-jl",
+      "median": 16.341874999999998,
+      "iqr": 1.3243329999999993,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 4 / 15D 3^15 reverse",
+      "backend": "strided-rs",
+      "median": 25.086375,
+      "iqr": 8.153042,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_15d_3",
+      "group": "Threads: 4 / 15D 3^15 reverse",
+      "backend": "tenferro-rs",
+      "median": 22.181833,
+      "iqr": 6.741291,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 1 / 23D 2^23 reverse",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 1 / 23D 2^23 reverse",
+      "backend": "julia-base",
+      "median": 88.876709,
+      "iqr": 24.55895799999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 1 / 23D 2^23 reverse",
+      "backend": "strided-jl",
+      "median": 33.440791,
+      "iqr": 15.765748999999996,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 1 / 23D 2^23 reverse",
+      "backend": "strided-rs",
+      "median": 28.561166999999998,
+      "iqr": 4.364667000000004,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 1 / 23D 2^23 reverse",
+      "backend": "tenferro-rs",
+      "median": 33.936084,
+      "iqr": 5.395958,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 4 / 23D 2^23 reverse",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 4 / 23D 2^23 reverse",
+      "backend": "julia-base",
+      "median": 62.607,
+      "iqr": 13.329291999999995,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 4 / 23D 2^23 reverse",
+      "backend": "strided-jl",
+      "median": 15.174833,
+      "iqr": 6.620291,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 4 / 23D 2^23 reverse",
+      "backend": "strided-rs",
+      "median": 15.055042,
+      "iqr": 5.541625999999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reverse_23d_2",
+      "group": "Threads: 4 / 23D 2^23 reverse",
+      "backend": "tenferro-rs",
+      "median": 29.131875,
+      "iqr": 9.612708000000001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 1 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 1 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "julia-base",
+      "median": 4177.979291,
+      "iqr": 2461.778625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 1 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "strided-jl",
+      "median": 3585.1050830000004,
+      "iqr": 1449.1065409999997,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 1 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "strided-rs",
+      "median": 4243.296875,
+      "iqr": 543.6423749999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 1 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "tenferro-rs",
+      "median": 4603.153125000001,
+      "iqr": 1822.5462500000003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 4 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 4 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "julia-base",
+      "median": 5121.00125,
+      "iqr": 2051.2069159999996,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 4 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "strided-jl",
+      "median": 3348.870083,
+      "iqr": 1217.539291,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 4 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "strided-rs",
+      "median": 5163.607,
+      "iqr": 1456.5157090000002,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rotation_6d_32_32_32_32_16_16",
+      "group": "Threads: 4 / 6D 32^4x16x16 rotation [5,0,4,1,3,2]",
+      "backend": "tenferro-rs",
+      "median": 3197.757708,
+      "iqr": 1538.5889170000005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 1 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 1 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "julia-base",
+      "median": 24.298125,
+      "iqr": 16.408666999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 1 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "strided-jl",
+      "median": 17.479791000000002,
+      "iqr": 12.052041,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 1 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "strided-rs",
+      "median": 11.371915999999999,
+      "iqr": 2.1232080000000018,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 1 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "tenferro-rs",
+      "median": 9.691666999999999,
+      "iqr": 0.7729169999999996,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 4 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 4 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "julia-base",
+      "median": 21.66875,
+      "iqr": 7.836082999999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 4 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "strided-jl",
+      "median": 14.339834,
+      "iqr": 7.410708999999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 4 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "strided-rs",
+      "median": 12.680708000000001,
+      "iqr": 1.1809580000000004,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_contiguous_same_perm",
+      "group": "Threads: 4 / 24D contiguous source, TN light 415 late-step permutation",
+      "backend": "tenferro-rs",
+      "median": 10.673083,
+      "iqr": 1.7625419999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor",
+      "group": "Threads: 1 / 24D scattered -> col-major",
+      "backend": "julia-base",
+      "median": 196.853625,
+      "iqr": 23.11470799999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor",
+      "group": "Threads: 1 / 24D scattered -> col-major",
+      "backend": "strided-jl",
+      "median": 24.386041000000002,
+      "iqr": 13.386584000000003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor",
+      "group": "Threads: 1 / 24D scattered -> col-major",
+      "backend": "strided-rs",
+      "median": 15.289083,
+      "iqr": 0.32433400000000034,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor",
+      "group": "Threads: 1 / 24D scattered -> col-major",
+      "backend": "tenferro-rs",
+      "median": 13.784832999999999,
+      "iqr": 0.8753340000000005,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor",
+      "group": "Threads: 4 / 24D scattered -> col-major",
+      "backend": "julia-base",
+      "median": 179.765875,
+      "iqr": 19.72750099999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor",
+      "group": "Threads: 4 / 24D scattered -> col-major",
+      "backend": "strided-jl",
+      "median": 16.778041,
+      "iqr": 2.5499990000000015,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor",
+      "group": "Threads: 4 / 24D scattered -> col-major",
+      "backend": "strided-rs",
+      "median": 13.581249999999999,
+      "iqr": 2.323124999999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tn_light_415_24d_scattered_to_colmajor",
+      "group": "Threads: 4 / 24D scattered -> col-major",
+      "backend": "tenferro-rs",
+      "median": 10.7435,
+      "iqr": 1.0065410000000004,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
+      "backend": "julia-base",
+      "median": 16.026520500000004,
+      "iqr": 6.779333000000001,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
+      "backend": "strided-jl",
+      "median": 9.3953745,
+      "iqr": 4.648333999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
+      "backend": "strided-rs",
+      "median": 9.023771,
+      "iqr": 0.7816669999999988,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 1 / 2D 2048^2 transpose [1,0]",
+      "backend": "tenferro-rs",
+      "median": 9.873354,
+      "iqr": 0.8868330000000011,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 4 / 2D 2048^2 transpose [1,0]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 4 / 2D 2048^2 transpose [1,0]",
+      "backend": "julia-base",
+      "median": 22.124499999999998,
+      "iqr": 5.129832999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 4 / 2D 2048^2 transpose [1,0]",
+      "backend": "strided-jl",
+      "median": 6.8929374999999995,
+      "iqr": 3.4950829999999993,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 4 / 2D 2048^2 transpose [1,0]",
+      "backend": "strided-rs",
+      "median": 4.356541,
+      "iqr": 0.2374590000000003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_2d_2048",
+      "group": "Threads: 4 / 2D 2048^2 transpose [1,0]",
+      "backend": "tenferro-rs",
+      "median": 4.4323749999999995,
+      "iqr": 2.177791,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 1 / 3D 256^3 transpose [1,0,2]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 1 / 3D 256^3 transpose [1,0,2]",
+      "backend": "julia-base",
+      "median": 22.837,
+      "iqr": 12.042833000000002,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 1 / 3D 256^3 transpose [1,0,2]",
+      "backend": "strided-jl",
+      "median": 22.30175,
+      "iqr": 6.586207999999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 1 / 3D 256^3 transpose [1,0,2]",
+      "backend": "strided-rs",
+      "median": 19.504417,
+      "iqr": 4.983082999999997,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 1 / 3D 256^3 transpose [1,0,2]",
+      "backend": "tenferro-rs",
+      "median": 15.991792000000002,
+      "iqr": 1.3160000000000025,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 4 / 3D 256^3 transpose [1,0,2]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 4 / 3D 256^3 transpose [1,0,2]",
+      "backend": "julia-base",
+      "median": 21.157584,
+      "iqr": 3.221874999999997,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 4 / 3D 256^3 transpose [1,0,2]",
+      "backend": "strided-jl",
+      "median": 14.965333000000001,
+      "iqr": 4.897207999999999,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 4 / 3D 256^3 transpose [1,0,2]",
+      "backend": "strided-rs",
+      "median": 13.564792,
+      "iqr": 2.0842080000000003,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_102",
+      "group": "Threads: 4 / 3D 256^3 transpose [1,0,2]",
+      "backend": "tenferro-rs",
+      "median": 12.237833,
+      "iqr": 2.567,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 1 / 3D 256^3 transpose [2,0,1]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 1 / 3D 256^3 transpose [2,0,1]",
+      "backend": "julia-base",
+      "median": 282.82099999999997,
+      "iqr": 19.828625999999986,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 1 / 3D 256^3 transpose [2,0,1]",
+      "backend": "strided-jl",
+      "median": 43.984458,
+      "iqr": 10.097500000000004,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 1 / 3D 256^3 transpose [2,0,1]",
+      "backend": "strided-rs",
+      "median": 21.278666,
+      "iqr": 1.4856240000000014,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 1 / 3D 256^3 transpose [2,0,1]",
+      "backend": "tenferro-rs",
+      "median": 24.059458,
+      "iqr": 5.032374999999998,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 4 / 3D 256^3 transpose [2,0,1]",
+      "backend": "hptt",
+      "median": null,
+      "status": "skipped",
+      "verified": false,
+      "reason": "rebuild with --features hptt"
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 4 / 3D 256^3 transpose [2,0,1]",
+      "backend": "julia-base",
+      "median": 267.66054099999997,
+      "iqr": 19.50287400000002,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 4 / 3D 256^3 transpose [2,0,1]",
+      "backend": "strided-jl",
+      "median": 19.476792,
+      "iqr": 3.6574579999999983,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 4 / 3D 256^3 transpose [2,0,1]",
+      "backend": "strided-rs",
+      "median": 15.47675,
+      "iqr": 0.6551669999999987,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "transpose_3d_256_201",
+      "group": "Threads: 4 / 3D 256^3 transpose [2,0,1]",
+      "backend": "tenferro-rs",
+      "median": 13.870083,
+      "iqr": 2.1260840000000005,
+      "status": "ok",
+      "verified": true
+    }
+  ]
+}
