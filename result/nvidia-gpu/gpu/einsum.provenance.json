@@ -1,40 +1,40 @@
 {
-  "collected_at": "2026-10-17T14:13:27.525120+00:00",
+  "collected_at": "2026-10-22T06:53:26.276259+00:00",
   "files": {
-    "data/results/nvidia-gpu/gpu/einsum/20261017_141327/chunk_pytorch-cuda.jsonl": "47b8029f232c7650c35734bb7b65b936b11879c0a8987d6066985183c70c1a2b",
-    "data/results/nvidia-gpu/gpu/einsum/20261017_141327/chunk_tenferro-cuda-eager.jsonl": "0d8138033af0c1d83a4421f889c57fdd7015de6eec02577d5e9ae50167217034",
-    "data/results/nvidia-gpu/gpu/einsum/20261017_141327/chunk_tenferro-cuda-trace.jsonl": "a0c562b19820474afb98ebc4ca276ea73b53722fe038c0d2d7d48e24580ac130",
-    "data/results/nvidia-gpu/gpu/einsum/20261017_141327/records.jsonl": "43c55909ef6eca8bcc691d7fafa880fceae6fbe0335f858c18cccec2319052ab",
-    "data/results/nvidia-gpu/gpu/einsum/20261017_141327/report.md": "ceeb8c839d5af06ab16cbbdeeb111d56220c61f6bb5150124b42d9480488d4e2",
-    "data/results/nvidia-gpu/gpu/einsum/20261017_141327/report.summary.json": "b9ddff2b8ff21b35b6841fa0a9bd54913e369ab6c0ddc74d90a1799a167ad94b",
-    "data/results/nvidia-gpu/gpu/einsum/20261017_141327/run.yaml": "2561fde3a1986890b60790f6976d54a69e64d997ef5eb9998754ef8f4befb7b7",
-    "data/results/nvidia-gpu/gpu/einsum/20261017_141327/wall_backends.jsonl": "fb1ea83e13ee9ac9dd0e913c21c5049287d69cf11691796caf4ee01a830bd589",
-    "data/results/nvidia-gpu/gpu/einsum/20261017_141327/wall_command.json": "cb1d2c42be0aa97ad082a8753cf9abbe8436cd9bf7e3b7dc78e10931b6c04f1d",
-    "result/nvidia-gpu/gpu/einsum.md": "ceeb8c839d5af06ab16cbbdeeb111d56220c61f6bb5150124b42d9480488d4e2",
-    "result/nvidia-gpu/gpu/einsum.summary.json": "b9ddff2b8ff21b35b6841fa0a9bd54913e369ab6c0ddc74d90a1799a167ad94b"
+    "data/results/nvidia-gpu/gpu/einsum/20261022_065326/chunk_pytorch-cuda.jsonl": "615f626585ee7e0fa4b7784786277d2939dd816824fda8f27f2f2e9efb4875a0",
+    "data/results/nvidia-gpu/gpu/einsum/20261022_065326/chunk_tenferro-cuda-eager.jsonl": "8f25400e42eea251209d9973efcb2acff535f950da38c2c2c4f459dc40b38a34",
+    "data/results/nvidia-gpu/gpu/einsum/20261022_065326/chunk_tenferro-cuda-trace.jsonl": "41d6c3a9973646e303d7406fd08ea5a4a89b6d52824d47fceeedd6b3dc12cec7",
+    "data/results/nvidia-gpu/gpu/einsum/20261022_065326/records.jsonl": "bf6ec3f7adc896fa80c67bf4558a59be756848d62aea01fc06ff64a78bfadd70",
+    "data/results/nvidia-gpu/gpu/einsum/20261022_065326/report.md": "b59ff759ef184266edb43139e7b68ec8ae5d57e083a9e5d1c84adcf72c5c7319",
+    "data/results/nvidia-gpu/gpu/einsum/20261022_065326/report.summary.json": "ec5f4ef89dee3ac5db9fedf3eb8f7171ee034ca902b30e1dc4f8558a7e011198",
+    "data/results/nvidia-gpu/gpu/einsum/20261022_065326/run.yaml": "18e6e7e1828ec198e4e77bab5578ff357d56ee48ff6e21f112cea9026d4f3d33",
+    "data/results/nvidia-gpu/gpu/einsum/20261022_065326/wall_backends.jsonl": "93bba290cf47040eba240b22aa00f5797a6ee4d555d500fbacfbb823b20f6e77",
+    "data/results/nvidia-gpu/gpu/einsum/20261022_065326/wall_command.json": "fd941d9ebd6fa5900dbe6d50a07b9fc517e9fb7326ae70b7d7cd1c4861b39ffb",
+    "result/nvidia-gpu/gpu/einsum.md": "b59ff759ef184266edb43139e7b68ec8ae5d57e083a9e5d1c84adcf72c5c7319",
+    "result/nvidia-gpu/gpu/einsum.summary.json": "ec5f4ef89dee3ac5db9fedf3eb8f7171ee034ca902b30e1dc4f8558a7e011198"
   },
   "hardware": {
     "gpu": "NVIDIA A100 80GB PCIe",
-    "host": "98b13ebfe249"
+    "host": "69e57cd24399"
   },
-  "harness_commit": "9bf102dc72d5262b09aa4555e96180871bb5ea08",
+  "harness_commit": "b8b3e6fdeaeb17f4d946e678bf3f734dbc77bd27",
   "schema_version": 1,
   "source": {
-    "artifact_id": 12104110991,
-    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39039069086/artifacts/12104110991",
-    "created_at": "2026-10-17T14:20:47Z",
-    "digest": "sha256:d86f6c7ba998f489fa1400143bbf056946bcbf0c2a324d1d5727a5d6b30879cc",
-    "expires_at": "2026-11-16T14:17:58Z",
+    "artifact_id": 12408125039,
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39735132118/artifacts/12408125039",
+    "created_at": "2026-10-22T06:58:37Z",
+    "digest": "sha256:b16ef9db7ccf93b276e91f91b145523563bd58b1622f838f6ff58d92f778e2be",
+    "expires_at": "2027-01-20T06:37:45Z",
     "head_branch": "main",
-    "head_sha": "9bf102dc72d5262b09aa4555e96180871bb5ea08",
+    "head_sha": "b8b3e6fdeaeb17f4d946e678bf3f734dbc77bd27",
     "repository": "tensor4all/tenferro-benchmark",
     "run_attempt": 1,
-    "run_id": 39039069086,
-    "run_started_at": "2026-10-17T14:02:39Z",
-    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39039069086",
+    "run_id": 39735132118,
+    "run_started_at": "2026-10-22T06:37:44Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39735132118",
     "workflow_path": ".github/workflows/benchmark-runpod-gpu.yml"
   },
   "suite_id": "gpu/einsum",
   "target_profile": "nvidia-gpu",
-  "tenferro_commit": "4de2e1226337e877066f129667b70c2a01308bfb"
+  "tenferro_commit": "b59cf27cbfea1f0d8cebcc1551f8dd919f9a3626"
 }
