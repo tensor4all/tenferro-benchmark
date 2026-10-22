@@ -207,9 +207,10 @@ class RunPodClientTests(unittest.TestCase):
         )
         self.assertEqual(payload["cloud"], "SECURE")
         self.assertEqual(
-            payload["gpu"]["allowedCudaVersions"],
-            ["13.0"],
+            payload["gpu"]["minCudaVersion"],
+            "12.8",
         )
+        self.assertNotIn("allowedCudaVersions", payload["gpu"])
         self.assertEqual(payload["gpu"]["id"], gpu_type_ids[0])
         self.assertEqual(payload["env"]["RUNNER_JIT_CONFIG"], "jit")
         self.assertEqual(payload["cmd"], ["startup"])

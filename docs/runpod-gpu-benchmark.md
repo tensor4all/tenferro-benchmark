@@ -102,9 +102,17 @@ failures do not count as paid startup failures. Every attempt records GPU,
 price, startup duration, and rejection reason in the Actions logs. Successful
 provisioning publishes the accepted per-attempt label, preventing stale runners
 from receiving the benchmark job. Rust uses CUDA 12.8, while the locked PyTorch
-wheel uses CUDA 13.0. Provisioning requests CUDA 13.0-capable hosts and startup
-rejects older drivers before transferring the runtime. Hosted preparation checks
-the wheel's CUDA version so dependency upgrades cannot bypass this requirement.
+wheel is pinned to PyTorch 2.11.0+cu128 in the separate
+`scripts/ci/runpod_runtime/` project. Catalog queries and Pod creation both use
+`minCudaVersion: "12.8"`, accepting CUDA 12.8 and newer hosts without an exact
+version allowlist; startup requires at least CUDA 12.8 driver support before
+transferring the runtime. Both hosted preparation and restoration check the
+wheel's version and CUDA version. The root CPU dependency environment is separate.
+RunPod's `cudaVersions`/`allowedCudaVersions` filters match exact versions: the A100
+catalog observed on 2026-10-22 advertised CUDA 13.2, so allowing only 13.0
+excluded compatible newer hosts as well as CUDA 12 hosts. The minimum-version
+filter avoids having to add future driver versions by hand. Diagnostics retain
+the catalog's advertised CUDA versions to make future version gaps visible.
 
 ## REST v2 integration
 
@@ -114,7 +122,7 @@ and [the published OpenAPI](https://api.runpod.io/v2/openapi.json).
 
 | Purpose | REST v2 API and fields |
 | --- | --- |
-| Create | `POST /v2/pods`: `image`, `cloud`, `gpu.id/count/allowedCudaVersions`, `disk`, `mounts.persistent`, `entrypoint`, `cmd`, `env` |
+| Create | `POST /v2/pods`: `image`, `cloud`, `gpu.id/count/minCudaVersion`, `disk`, `mounts.persistent`, `entrypoint`, `cmd`, `env` |
 | Assigned hardware and cost | Created Pod's `gpu.id` and `cost` |
 | Pricing and stock | `GET /v2/catalog/gpus`: wrapped `gpus`, `price.secure`, `memory`, `availability` |
 | Startup and container liveness | `GET /v2/pods/{id}`: `status` and `runtime` |
@@ -234,7 +242,7 @@ and verifies the artifact before sampling. Missing, stale, or modified artifacts
 fail rather than silently rebuilding on a paid GPU.
 
 Another hosted Ubuntu 24.04 job prepares a managed Python 3.12.12 interpreter,
-the frozen `uv.lock` environment, CUDA 12.8 shared runtime libraries and JIT headers, and
+the frozen `scripts/ci/runpod_runtime/uv.lock` environment, CUDA 12.8 shared runtime libraries and JIT headers, and
 cuTENSOR 2.2.0.0. JAX CUDA wheels are included only when `jax-cuda` is requested;
 their versions are also locked (`gpu` extra). The runtime archive is cached by
 the lockfile, preparation scripts, platform, and tool versions. Only `main`

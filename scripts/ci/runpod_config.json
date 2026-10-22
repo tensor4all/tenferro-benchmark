@@ -2,9 +2,7 @@
   "api_url": "https://api.runpod.io/v2/pods",
   "openapi_url": "https://api.runpod.io/v2/openapi.json",
   "cloud_type": "SECURE",
-  "allowed_cuda_versions": [
-    "13.0"
-  ],
+  "min_cuda_version": "12.8",
   "gpu_tiers": [
     {
       "name": "cost-preferred",

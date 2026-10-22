@@ -1,5 +1,6 @@
 import tarfile
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -9,6 +10,22 @@ from scripts.collect_gpu_info import _cuda_runtime_version
 
 
 class EnvironmentTests(unittest.TestCase):
+    def test_runpod_lock_uses_cuda12_wheel_and_covers_benchmark_dependencies(self):
+        root = Path(__file__).resolve().parents[3]
+        project = tomllib.loads((root / 'scripts/ci/runpod_runtime/pyproject.toml').read_text())
+        base = tomllib.loads((root / 'pyproject.toml').read_text())
+        # Only torch is intentionally replaced for RunPod driver compatibility.
+        self.assertEqual(
+            [dep for dep in project['project']['dependencies'] if not dep.startswith('torch')],
+            [dep for dep in base['project']['dependencies'] if not dep.startswith('torch')],
+        )
+        lock = tomllib.loads((root / 'scripts/ci/runpod_runtime/uv.lock').read_text())
+        packages = {package['name']: package for package in lock['package']}
+        self.assertEqual(packages['torch']['version'], '2.11.0+cu128')
+        self.assertEqual(packages['torch']['source']['registry'], 'https://download.pytorch.org/whl/cu128')
+        self.assertEqual(packages['nvidia-cuda-runtime-cu12']['version'].split('.')[:2], ['12', '8'])
+        self.assertFalse(any('cu13' in name for name in packages))
+
     def test_transfer_reconstructs_exact_archive_and_rejects_missing_or_corrupt_parts(self):
         with tempfile.TemporaryDirectory() as directory:
             bundle = Path(directory) / 'bundle'
@@ -48,6 +65,9 @@ class EnvironmentTests(unittest.TestCase):
             self.assertNotEqual(cache_key(original), cache_key(identity('jax-cuda', root)))
             (root / 'uv.lock').write_text('changed dependencies')
             self.assertNotEqual(cache_key(original), cache_key(identity('pytorch-cuda', root)))
+            before = cache_key(identity('pytorch-cuda', root))
+            (root / 'scripts/ci/runpod_runtime/uv.lock').write_text('changed RunPod dependencies')
+            self.assertNotEqual(before, cache_key(identity('pytorch-cuda', root)))
 
     @patch('scripts.ci.gpu_environment.platform.system', return_value='Linux')
     @patch('scripts.ci.gpu_environment.platform.machine', return_value='x86_64')

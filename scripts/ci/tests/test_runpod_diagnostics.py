@@ -16,7 +16,7 @@ class DiagnosticsTests(unittest.TestCase):
     def test_queries_differ_only_by_cuda_filter(self):
         filtered = parse_qs(urlsplit(catalog_url(CONFIG, cuda_filter=True)).query)
         plain = parse_qs(urlsplit(catalog_url(CONFIG, cuda_filter=False)).query)
-        self.assertEqual(filtered.pop("cudaVersions"), ["13.0"])
+        self.assertEqual(filtered.pop("minCudaVersion"), ["12.8"])
         self.assertEqual(filtered, plain)
         self.assertEqual(plain["cloud"], ["SECURE"])
 
@@ -55,7 +55,7 @@ class DiagnosticsTests(unittest.TestCase):
             entries = [{"id": gpu, "secure": True, "memory": 80,
                         "price": {"secure": 1.5}, "availability": "HIGH"}
                        for gpu in TIERS[0][1]]
-            if "cudaVersions=" in request.full_url:
+            if "minCudaVersion=" in request.full_url:
                 entries = []
             return Response(200, {}, json.dumps({"gpus": entries}).encode())
 

@@ -15,7 +15,7 @@ from scripts.ci.runpod_client import (
     create_pod,
     parse_create_response,
 )
-from scripts.ci.runpod_contract import validate_gpu_type_ids, validate_cuda_versions
+from scripts.ci.runpod_contract import validate_gpu_type_ids, validate_min_cuda_version
 from scripts.ci.runpod_http import Cooldown, Response, delete_pod, list_pods
 from scripts.ci.runpod_pricing import candidate_plan, http_transport, parse_gpu_offers
 from scripts.ci.runpod_provision import PodState, _pod_state_checker, parse_cost_per_hr
@@ -87,7 +87,7 @@ class V2FixtureTests(unittest.TestCase):
                 'product': ['POD'],
                 'cloud': ['SECURE'],
                 'count': ['1'],
-                'cudaVersions': ['13.0'],
+                'minCudaVersion': ['12.8'],
             },
         )
 
