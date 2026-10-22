@@ -30,12 +30,24 @@ jobs:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
           PYTHONUNBUFFERED: "1"
         run: python3 -m scripts.ci.runpod_diagnostics --output-dir _runpod_diagnostics
+      - name: Create registration token for startup investigation
+        id: app-token
+        if: inputs.startup_probe
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-organization-self-hosted-runners: write
       - name: Probe one Pod and capture startup logs
         id: probe
         if: inputs.startup_probe
         timeout-minutes: 7
         env:
           RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          PROBE_GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PROBE_ORG: ${{ github.repository_owner }}
+          PROBE_RUNNER_GROUP_ID: ${{ vars.RUNPOD_RUNNER_GROUP_ID || '4' }}
           PYTHONUNBUFFERED: "1"
         run: python3 -m scripts.ci.runpod_startup_probe
       - name: Ensure probe Pod is deleted
