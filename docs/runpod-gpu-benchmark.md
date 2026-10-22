@@ -20,6 +20,31 @@ The pod receives only the single-use JIT runner configuration. The workflow
 runs weekly and on manual dispatch; it does not add RunPod credentials to pull
 request jobs.
 
+## Debugging A100 availability
+
+Run **debug-runpod-a100** from the Actions tab using **Run workflow**. It needs
+only `RUNPOD_API_KEY`, runs on a GitHub-hosted runner, and performs read-only
+requests without building binaries, renting pods, or registering runners.
+
+The job compares the production Secure Cloud catalog query (including the
+configured CUDA versions and GPU count) with the same query without the CUDA
+filter. For each of the three reviewed A100 models it records catalog presence,
+stock, Secure Cloud eligibility, VRAM, price, and the existing provisioning
+code's candidate selection. It also checks the A100 IDs and CUDA syntax against
+the live OpenAPI schema. Production settings are unchanged.
+
+Read the job summary or download `runpod-a100-diagnostics-<run>-<attempt>`:
+`summary.md` and `diagnostics.json` include timestamps and HTTP statuses even
+when an API check fails. API failures fail the job; an empty stock snapshot is
+a successful diagnostic observation. Response bodies from failed requests,
+headers, and credentials are not archived.
+
+If stock appears only without the CUDA filter, investigate host driver
+availability. If both queries show no usable A100 offers, capacity may be the
+limiting factor. Catalog stock is a snapshot and does not prove a create request
+will succeed; account balance, placement errors, and CUDA startup/runner failures
+still require the provisioning logs from `benchmark-runpod-gpu`.
+
 ## Weekly schedule, GPU type, and rental cap
 
 The schedule fires four retry slots across the weekend (UTC): Saturday 08:00,
