@@ -15,7 +15,8 @@ UV_VERSION = '0.12.21'
 CUDA_VERSION = '12.8'
 INPUTS = ('pyproject.toml', 'uv.lock', 'scripts/ci/gpu_environment.py',
           'scripts/ci/prepare_gpu_environment.sh', 'scripts/ci/restore_gpu_environment.sh',
-          'scripts/ci/check_cuda_headers.py')
+          'scripts/ci/check_cuda_headers.py', 'scripts/ci/runpod_runtime/pyproject.toml',
+          'scripts/ci/runpod_runtime/uv.lock')
 PART_BYTES = 1024 ** 3
 MAX_PARTS = 8
 

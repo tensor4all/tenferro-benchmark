@@ -1,0 +1,28 @@
+[project]
+name = "tenferro-runpod-runtime"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "einsum-benchmark>=0.1.7",
+    "jax>=0.10.1",
+    "jsonschema>=4.0.0",
+    "markdown>=3.7",
+    "opt-einsum>=3.4.0",
+    "pyyaml>=6.0",
+    "torch==2.11.0+cu128",
+    "tqdm>=4.67.3",
+]
+
+[project.optional-dependencies]
+gpu = ["jax[cuda12]>=0.10.1"]
+
+[tool.uv]
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }

@@ -87,7 +87,7 @@ class V2FixtureTests(unittest.TestCase):
                 'product': ['POD'],
                 'cloud': ['SECURE'],
                 'count': ['1'],
-                'cudaVersions': ['13.0'],
+                'cudaVersions': ['12.8,12.9,13.0'],
             },
         )
 

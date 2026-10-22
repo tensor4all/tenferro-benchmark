@@ -43,13 +43,14 @@ extra=()
 if [[ ",${GPU_BENCH_BACKENDS:-}," == *,jax-cuda,* ]]; then
   extra=(--extra gpu)
 fi
-uv sync --python 3.12.12 --managed-python --frozen --no-dev "${extra[@]}"
+uv sync --project scripts/ci/runpod_runtime --python 3.12.12 --managed-python --frozen --no-dev "${extra[@]}"
 "$runtime_root/venv/bin/python" - <<'PY'
 import importlib.metadata as m
 import json, pathlib, sys
 assert sys.version_info[:3] == (3, 12, 12)
 import torch, yaml, jsonschema, jax
-assert torch.version.cuda == '13.0', 'Update RunPod driver requirement for the new locked PyTorch CUDA version'
+assert torch.__version__ == '2.11.0+cu128', 'RunPod requires its locked CUDA 12.8 PyTorch wheel'
+assert torch.version.cuda == '12.8', 'Update RunPod driver requirement for the new locked PyTorch CUDA version'
 pathlib.Path('/opt/tenferro-benchmark-ci/python-packages.json').write_text(
     json.dumps({d.metadata['Name']: d.version for d in m.distributions()}, sort_keys=True, indent=2) + '\n')
 print('Prepared Python', sys.version, 'PyTorch', torch.__version__, 'JAX', jax.__version__)

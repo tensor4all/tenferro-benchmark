@@ -20,6 +20,7 @@ export LD_LIBRARY_PATH="$runtime_root/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_
 uv run python - <<'PY'
 import sys, torch, jax, yaml, jsonschema
 assert sys.version_info[:3] == (3, 12, 12)
+assert torch.__version__ == '2.11.0+cu128' and torch.version.cuda == '12.8'
 print('Restored Python', sys.version, 'PyTorch', torch.__version__, 'JAX', jax.__version__)
 PY
 for name in UV_PROJECT_ENVIRONMENT UV_PYTHON_INSTALL_DIR UV_NO_SYNC UV_OFFLINE UV_PYTHON_DOWNLOADS CUDA_HOME CUDA_PATH TENFERRO_CUTENSOR_PATH LD_LIBRARY_PATH; do

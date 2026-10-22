@@ -102,9 +102,11 @@ failures do not count as paid startup failures. Every attempt records GPU,
 price, startup duration, and rejection reason in the Actions logs. Successful
 provisioning publishes the accepted per-attempt label, preventing stale runners
 from receiving the benchmark job. Rust uses CUDA 12.8, while the locked PyTorch
-wheel uses CUDA 13.0. Provisioning requests CUDA 13.0-capable hosts and startup
-rejects older drivers before transferring the runtime. Hosted preparation checks
-the wheel's CUDA version so dependency upgrades cannot bypass this requirement.
+wheel is pinned to PyTorch 2.11.0+cu128 in the separate
+`scripts/ci/runpod_runtime/` project. Provisioning accepts CUDA 12.8, 12.9,
+and 13.0 hosts; startup requires at least CUDA 12.8 driver support before
+transferring the runtime. Both hosted preparation and restoration check the
+wheel's version and CUDA version. The root CPU dependency environment is separate.
 
 ## REST v2 integration
 
@@ -234,7 +236,7 @@ and verifies the artifact before sampling. Missing, stale, or modified artifacts
 fail rather than silently rebuilding on a paid GPU.
 
 Another hosted Ubuntu 24.04 job prepares a managed Python 3.12.12 interpreter,
-the frozen `uv.lock` environment, CUDA 12.8 shared runtime libraries and JIT headers, and
+the frozen `scripts/ci/runpod_runtime/uv.lock` environment, CUDA 12.8 shared runtime libraries and JIT headers, and
 cuTENSOR 2.2.0.0. JAX CUDA wheels are included only when `jax-cuda` is requested;
 their versions are also locked (`gpu` extra). The runtime archive is cached by
 the lockfile, preparation scripts, platform, and tool versions. Only `main`
