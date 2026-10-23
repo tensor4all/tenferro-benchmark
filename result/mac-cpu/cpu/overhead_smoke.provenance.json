@@ -1,42 +1,42 @@
 {
-  "collected_at": "2026-10-22T18:45:42Z",
+  "collected_at": "2026-10-23T18:35:18Z",
   "files": {
-    "data/results/mac-cpu/cpu/overhead_smoke/20261022_184542/inputs/0/cpu_info.md": "bbffa2aa95305b0bcfa0bf4d6288b82c48cf5aa3b48c0794e2f345431a3e9e35",
-    "data/results/mac-cpu/cpu/overhead_smoke/20261022_184542/inputs/0/report.md": "57cfb1ef163087a73ee0c8dc1e47e9929e06dabd594f2809354ed59cb310d4ae",
-    "data/results/mac-cpu/cpu/overhead_smoke/20261022_184542/inputs/0/report.summary.json": "534881a9764080e6451ffa65e6bab24f7c0a98e45c752b561194daa066cf23bf",
-    "data/results/mac-cpu/cpu/overhead_smoke/20261022_184542/inputs/0/run.yaml": "5813355c254ccb90e79e4eb1b30916c45e9195dd6d24e4b5c811f23db70ede09",
-    "data/results/mac-cpu/cpu/overhead_smoke/20261022_184542/inputs/0/run_t1.yaml": "5813355c254ccb90e79e4eb1b30916c45e9195dd6d24e4b5c811f23db70ede09",
-    "data/results/mac-cpu/cpu/overhead_smoke/20261022_184542/inputs/0/samples_t1.jsonl": "edd4608b5f66a18757a407ee2246db82b578faf4e86b276640d82bd9cb001a96",
-    "data/results/mac-cpu/cpu/overhead_smoke/20261022_184542/report.md": "57cfb1ef163087a73ee0c8dc1e47e9929e06dabd594f2809354ed59cb310d4ae",
-    "data/results/mac-cpu/cpu/overhead_smoke/20261022_184542/report.summary.json": "534881a9764080e6451ffa65e6bab24f7c0a98e45c752b561194daa066cf23bf",
-    "data/results/mac-cpu/cpu/overhead_smoke/20261022_184542/run.yaml": "af7d3bdaefc54dd355396b3a275a0600294fc336dc7d95f312ee9a2cdd9033a1",
-    "result/mac-cpu/cpu/overhead_smoke.md": "57cfb1ef163087a73ee0c8dc1e47e9929e06dabd594f2809354ed59cb310d4ae",
-    "result/mac-cpu/cpu/overhead_smoke.summary.json": "534881a9764080e6451ffa65e6bab24f7c0a98e45c752b561194daa066cf23bf"
+    "data/results/mac-cpu/cpu/overhead_smoke/20261023_183518/inputs/0/cpu_info.md": "bbffa2aa95305b0bcfa0bf4d6288b82c48cf5aa3b48c0794e2f345431a3e9e35",
+    "data/results/mac-cpu/cpu/overhead_smoke/20261023_183518/inputs/0/report.md": "ccdfae1ff39e459caab5014e034d1fc6bb50e39b90cb281cfc5b32f3eedd4546",
+    "data/results/mac-cpu/cpu/overhead_smoke/20261023_183518/inputs/0/report.summary.json": "6efbf3231e2383c8a139d9aa7e6abfff0a614098f105a2b2b8ea78b54b0f3810",
+    "data/results/mac-cpu/cpu/overhead_smoke/20261023_183518/inputs/0/run.yaml": "f999e6b48f745d683fe42595a98b477be9ad57f7ef27ad2d6a60e3d183bbb430",
+    "data/results/mac-cpu/cpu/overhead_smoke/20261023_183518/inputs/0/run_t1.yaml": "f999e6b48f745d683fe42595a98b477be9ad57f7ef27ad2d6a60e3d183bbb430",
+    "data/results/mac-cpu/cpu/overhead_smoke/20261023_183518/inputs/0/samples_t1.jsonl": "fe523ea24055a67281d68b6028d5b3c090cc633fe04399f8133ba271aee56426",
+    "data/results/mac-cpu/cpu/overhead_smoke/20261023_183518/report.md": "ccdfae1ff39e459caab5014e034d1fc6bb50e39b90cb281cfc5b32f3eedd4546",
+    "data/results/mac-cpu/cpu/overhead_smoke/20261023_183518/report.summary.json": "6efbf3231e2383c8a139d9aa7e6abfff0a614098f105a2b2b8ea78b54b0f3810",
+    "data/results/mac-cpu/cpu/overhead_smoke/20261023_183518/run.yaml": "cc8d301fb10a7f1bf0c51d2b84682b4a389608a09c65dae922d8451707a66cc0",
+    "result/mac-cpu/cpu/overhead_smoke.md": "ccdfae1ff39e459caab5014e034d1fc6bb50e39b90cb281cfc5b32f3eedd4546",
+    "result/mac-cpu/cpu/overhead_smoke.summary.json": "6efbf3231e2383c8a139d9aa7e6abfff0a614098f105a2b2b8ea78b54b0f3810"
   },
   "hardware": {
-    "host": "sjc22-bt147-49d8bcde-6d99-428d-954a-63ba63c634b1-C273702349B5.local",
+    "host": "iad20-gt1021-36df5203-34f5-4c63-93ab-8a5bcea1e81f-CEBCF2CAFCF9.local",
     "threads": [
       1
     ]
   },
-  "harness_commit": "12e0b50f983ca3253ff46841eb15912448ae3e20",
+  "harness_commit": "cc2153b9548e1542f955c011dccfb77a98196fed",
   "schema_version": 1,
   "source": {
-    "artifact_id": 12452787745,
-    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39822901283/artifacts/12452787745",
-    "created_at": "2026-10-22T19:34:34Z",
-    "digest": "sha256:c945d3b73330579059120d71d4d39452d5b0489b6310cedd8822aaa4ac143559",
-    "expires_at": "2027-01-20T17:27:51Z",
+    "artifact_id": 12526820472,
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39995262249/artifacts/12526820472",
+    "created_at": "2026-10-23T19:21:14Z",
+    "digest": "sha256:d7b7d05286ecdb237735cc7f503f0eb98d71089b4e09b81f9e331118705299e1",
+    "expires_at": "2027-01-21T17:27:50Z",
     "head_branch": "main",
-    "head_sha": "12e0b50f983ca3253ff46841eb15912448ae3e20",
+    "head_sha": "cc2153b9548e1542f955c011dccfb77a98196fed",
     "repository": "tensor4all/tenferro-benchmark",
     "run_attempt": 1,
-    "run_id": 39822901283,
-    "run_started_at": "2026-10-22T17:27:50Z",
-    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39822901283",
+    "run_id": 39995262249,
+    "run_started_at": "2026-10-23T17:27:49Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39995262249",
     "workflow_path": ".github/workflows/benchmark-nightly-mac-cpu.yml"
   },
   "suite_id": "cpu/overhead_smoke",
   "target_profile": "mac-cpu",
-  "tenferro_commit": "2007d101d23b5baf7deba4afb8c7b92da347dbba"
+  "tenferro_commit": "74d138135bc227c5a1ff41db8863f853b647d863"
 }
