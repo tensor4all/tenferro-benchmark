@@ -60,6 +60,7 @@ existing Python environment or recursively change checkout ownership.
 Run the focused ownership regression test on Linux with Docker (no GPU needed):
 
 ```bash
+docker pull alpine:3.21
 python3 tests/test_cuda_venv_ownership.py
 ```
 
