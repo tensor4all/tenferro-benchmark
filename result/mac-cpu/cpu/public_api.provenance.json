@@ -1,46 +1,46 @@
 {
-  "collected_at": "2026-10-23T18:14:53.080723+00:00",
+  "collected_at": "2026-10-24T18:14:07.451862+00:00",
   "files": {
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/inputs/0/cpu_public_api_20261023_181453.md": "b559eb5fb22df06a310ce1b4e42c92e3d517bfa0efea85ef08f9f6967329229f",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/inputs/0/cpu_public_api_t1_20261023_181453.csv": "04ed26f383eb3d429e207a99fa5478cb3fe7ad50be463b6ff0e0b05b817655e9",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/inputs/0/cpu_public_api_t4_20261023_181453.csv": "5c5f5cc9f46caee5d0e1e5c2609e2af769208fd747e66589a334c929cb65a93e",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/inputs/0/public_api.summary.json": "38f63b76fc72e965b6da601924f920e48b451550f04173f60d34628b0121808b",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/inputs/0/report.md": "0bd591b4cba32e7b1a7d4a0acfa104ff9fdc30529f58e36cda7056ecc81c68e2",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/inputs/0/run.yaml": "cff3535b3c3b904515b179e22bc5ae5cdb6c4266166bb86d3f2111fecfd3bd2a",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/inputs/0/run_t1.yaml": "cff3535b3c3b904515b179e22bc5ae5cdb6c4266166bb86d3f2111fecfd3bd2a",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/inputs/0/run_t4.yaml": "33e824894f0a1184dae459ee5bfd15fc6d607a138f58257890e98e3fc9b005b2",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/report.md": "0bd591b4cba32e7b1a7d4a0acfa104ff9fdc30529f58e36cda7056ecc81c68e2",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/report.summary.json": "7b3eb5bc6aea83531bc371f232953f90a5065efbe1fb14fc89b3cc778c91867b",
-    "data/results/mac-cpu/cpu/public_api/20261023_181453/run.yaml": "31e2982d372a8c240db5830b612eddf6c6be376f6baef7a974f3144cc0a0d8a7",
-    "result/mac-cpu/cpu/public_api.md": "0bd591b4cba32e7b1a7d4a0acfa104ff9fdc30529f58e36cda7056ecc81c68e2",
-    "result/mac-cpu/cpu/public_api.summary.json": "7b3eb5bc6aea83531bc371f232953f90a5065efbe1fb14fc89b3cc778c91867b"
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/inputs/0/cpu_public_api_20261024_181407.md": "9cff71907a8c7f1367c19efaea7bca08340087f46a357563bcf434e61620a481",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/inputs/0/cpu_public_api_t1_20261024_181407.csv": "0943b5abb56019feac55097228e6124f7d75bad9d614d84e8c56b82290d5e896",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/inputs/0/cpu_public_api_t4_20261024_181407.csv": "b67a21d0c3b121c84985ea205ee1fb359c0a965e80ef2af53d7e36b00912f661",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/inputs/0/public_api.summary.json": "c84414286b2390273f7fae2ef9f0a6165661b362bc4dd8f108ad49fb478062a3",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/inputs/0/report.md": "1ee8c225de7e38b3138a7a9061847f7b4c57982b185ccacacb52d76b853816e4",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/inputs/0/run.yaml": "b4e8f3fc73d4073e6db33a26cdf59a786702b1750923fd9764e91d4568e5b608",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/inputs/0/run_t1.yaml": "b4e8f3fc73d4073e6db33a26cdf59a786702b1750923fd9764e91d4568e5b608",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/inputs/0/run_t4.yaml": "13f0d077719ae87aa731aa89afc108153806df546f1908b7ec00acb2d7d3c628",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/report.md": "1ee8c225de7e38b3138a7a9061847f7b4c57982b185ccacacb52d76b853816e4",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/report.summary.json": "9d19f77983e73946e46f9e9efa6af598a9a9b561001aa0b838930031574c3635",
+    "data/results/mac-cpu/cpu/public_api/20261024_181407/run.yaml": "44aaf26d7b74c692d736f091f880426e77cf86448cb49f238cb401c36d6d2801",
+    "result/mac-cpu/cpu/public_api.md": "1ee8c225de7e38b3138a7a9061847f7b4c57982b185ccacacb52d76b853816e4",
+    "result/mac-cpu/cpu/public_api.summary.json": "9d19f77983e73946e46f9e9efa6af598a9a9b561001aa0b838930031574c3635"
   },
   "hardware": {
     "cpu": "arm",
-    "host": "iad20-gt1021-36df5203-34f5-4c63-93ab-8a5bcea1e81f-CEBCF2CAFCF9.local",
+    "host": "iad20-fj922-9dc46341-0e5e-44ec-8c33-7c2622873f65-0A7060B00D9A.local",
     "threads": [
       1,
       4
     ]
   },
-  "harness_commit": "cc2153b9548e1542f955c011dccfb77a98196fed",
+  "harness_commit": "50a7dc9b3ea08f5dba14db07df1e09314cac56f0",
   "schema_version": 1,
   "source": {
-    "artifact_id": 12526820472,
-    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39995262249/artifacts/12526820472",
-    "created_at": "2026-10-23T19:21:14Z",
-    "digest": "sha256:d7b7d05286ecdb237735cc7f503f0eb98d71089b4e09b81f9e331118705299e1",
-    "expires_at": "2027-01-21T17:27:50Z",
+    "artifact_id": 12572416712,
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/40116053646/artifacts/12572416712",
+    "created_at": "2026-10-24T19:02:39Z",
+    "digest": "sha256:774e63607f54daf87e413de0b1343fc217242a3e197e226ca0aaad4252f868a4",
+    "expires_at": "2027-01-22T17:25:32Z",
     "head_branch": "main",
-    "head_sha": "cc2153b9548e1542f955c011dccfb77a98196fed",
+    "head_sha": "50a7dc9b3ea08f5dba14db07df1e09314cac56f0",
     "repository": "tensor4all/tenferro-benchmark",
     "run_attempt": 1,
-    "run_id": 39995262249,
-    "run_started_at": "2026-10-23T17:27:49Z",
-    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39995262249",
+    "run_id": 40116053646,
+    "run_started_at": "2026-10-24T17:25:32Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/40116053646",
     "workflow_path": ".github/workflows/benchmark-nightly-mac-cpu.yml"
   },
   "suite_id": "cpu/public_api",
   "target_profile": "mac-cpu",
-  "tenferro_commit": "74d138135bc227c5a1ff41db8863f853b647d863"
+  "tenferro_commit": "fa39e8d78d9c58e36575084b67448a8112ec1d6c"
 }
