@@ -34,6 +34,13 @@ The CUDA devcontainer mounts a container-only named volume over
 "source=tenferro-benchmark-cuda-venv-${devcontainerId},target=${containerWorkspaceFolder}/.venv,type=volume"
 ```
 
+`initializeCommand` runs `mkdir -p <workspace>/.venv` on the host before Docker
+mounts the volume. On a fresh checkout this creates the underlying mount point
+as the invoking host user; an existing host environment is left intact. Without
+this step, rootful Docker creates a root-owned host directory, and changing
+ownership inside the container only affects the overlaid volume. Start the
+devcontainer as your normal host user.
+
 `postCreateCommand` creates the virtualenv in that volume, `chown`ing it to
 `vscode` first because a fresh Docker volume is root-owned. The host checkout's
 `.venv` is a different directory, so a host `uv run`/`uv sync` can no longer
@@ -44,6 +51,23 @@ pure-Python checks that do not import `torch`.
 The CPU devcontainers do not use this volume: their collection scripts
 intentionally delete and recreate `.venv` (`reset_benchmark_python_venv`), which
 a volume mount point would prevent.
+
+If an older container already left an empty root-owned host `.venv`, stop/remove
+that container, then remove the empty directory with `rmdir .venv` as your host
+user and recreate the container with the updated configuration. Do not delete an
+existing Python environment or recursively change checkout ownership.
+
+Run the focused ownership regression test on Linux with Docker (no GPU needed):
+
+```bash
+docker pull alpine:3.21
+python3 tests/test_cuda_venv_ownership.py
+```
+
+It tests fresh and existing host environments as a non-root user, mounts a
+separate container volume, and checks the underlying host directory during and
+after container use. Set `CUDA_VENV_TEST_IMAGE` to use a locally available Linux
+image with `/bin/sh`, `mkdir`, and `chown` (default: `alpine:3.21`).
 
 ## Torch extension JIT build locks
 

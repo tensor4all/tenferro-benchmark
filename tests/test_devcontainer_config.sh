@@ -80,6 +80,8 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 config = json.loads((root / ".devcontainer/cuda/devcontainer.json").read_text())
+assert config["initializeCommand"] == ["mkdir", "-p", "${localWorkspaceFolder}/.venv"]
+assert config["containerEnv"]["UV_NO_SYNC"] == "1"
 mounts = "\n".join(config.get("mounts", []))
 assert "source=tenferro-benchmark-cuda-venv-${devcontainerId}" in mounts
 assert "target=${containerWorkspaceFolder}/.venv,type=volume" in mounts

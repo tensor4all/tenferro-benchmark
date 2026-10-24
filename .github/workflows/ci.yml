@@ -33,6 +33,12 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
+      - name: Check devcontainer configuration and host virtualenv ownership
+        run: |
+          bash tests/test_devcontainer_config.sh
+          docker pull alpine:3.21
+          python3 tests/test_cuda_venv_ownership.py
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 

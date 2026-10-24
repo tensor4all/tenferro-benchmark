@@ -4,6 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": "../.."
   },
+  "initializeCommand": ["mkdir", "-p", "${localWorkspaceFolder}/.venv"],
   "remoteUser": "vscode",
   "runArgs": ["--gpus", "all", "--memory=32g", "--memory-swap=34g"],
   "containerEnv": {
