@@ -1,45 +1,45 @@
 {
-  "collected_at": "2026-10-23T18:37:14.807327+00:00",
+  "collected_at": "2026-10-24T18:47:54.011377+00:00",
   "files": {
-    "data/results/amd-cpu/cpu/fft/20261023_183714/inputs/0/cpu_fft_20261023_183714.md": "3f38ec60eecd7e062a8749949c05169236b59d4ad5ec8f0f5e9a4e1c1c225b67",
-    "data/results/amd-cpu/cpu/fft/20261023_183714/inputs/0/cpu_fft_t1_20261023_183714.csv": "0f2cb6a03d10fc0ccf425d401ad7be2787a88ca6e373fd69378369dd1bf356a0",
-    "data/results/amd-cpu/cpu/fft/20261023_183714/inputs/0/cpu_fft_t4_20261023_183714.csv": "4929ebc43ca2ed8fde3cd81f7e58404447d1053f48ca7c014b7dfde65634bcb9",
-    "data/results/amd-cpu/cpu/fft/20261023_183714/inputs/0/report.md": "e3b78e00462a139ca9589f3e1ce2c66387c4372684cc794a96f787913764d88d",
-    "data/results/amd-cpu/cpu/fft/20261023_183714/inputs/0/run.yaml": "0404eb92a22636dd9d51e67df4c654cdb23347cf94765d3e9b175f56200f0cd9",
-    "data/results/amd-cpu/cpu/fft/20261023_183714/inputs/0/run_t1.yaml": "0404eb92a22636dd9d51e67df4c654cdb23347cf94765d3e9b175f56200f0cd9",
-    "data/results/amd-cpu/cpu/fft/20261023_183714/inputs/0/run_t4.yaml": "3da83375e4fe64821ed263942c46418099ba0f2478592abf6a98c4fc6c3d77cf",
-    "data/results/amd-cpu/cpu/fft/20261023_183714/report.md": "e3b78e00462a139ca9589f3e1ce2c66387c4372684cc794a96f787913764d88d",
-    "data/results/amd-cpu/cpu/fft/20261023_183714/report.summary.json": "7fbe9050a7cc999f88c821adc7ab05324b6b3c4b4141c7903b8b9e051a885952",
-    "data/results/amd-cpu/cpu/fft/20261023_183714/run.yaml": "346e81782275a72ed453a79a785500bcf06f54fde475a57b3a9e08411e917a05",
-    "result/amd-cpu/cpu/fft.md": "e3b78e00462a139ca9589f3e1ce2c66387c4372684cc794a96f787913764d88d",
-    "result/amd-cpu/cpu/fft.summary.json": "7fbe9050a7cc999f88c821adc7ab05324b6b3c4b4141c7903b8b9e051a885952"
+    "data/results/amd-cpu/cpu/fft/20261024_184754/inputs/0/cpu_fft_20261024_184754.md": "200720e36d9543dba9d893b81adff4f5b5e9b53e8a550bf703097c999772c4c1",
+    "data/results/amd-cpu/cpu/fft/20261024_184754/inputs/0/cpu_fft_t1_20261024_184754.csv": "da7e5bd12671635781086ed507671f8ffc30e273251554ac3090504f062e61b7",
+    "data/results/amd-cpu/cpu/fft/20261024_184754/inputs/0/cpu_fft_t4_20261024_184754.csv": "b6fc01e46bdd36c44b52bebe96be1ad38b44b25a0f79d9ef441b467f3c8ce46a",
+    "data/results/amd-cpu/cpu/fft/20261024_184754/inputs/0/report.md": "8716a9eec51bc8d9720ed92c686b5d494735c81909b7b89be3bd812e492c6a3b",
+    "data/results/amd-cpu/cpu/fft/20261024_184754/inputs/0/run.yaml": "c2fe75c63137988291fdb1d9d2bc8cc91e657926f8c505d0c66e8e116fd7245e",
+    "data/results/amd-cpu/cpu/fft/20261024_184754/inputs/0/run_t1.yaml": "c2fe75c63137988291fdb1d9d2bc8cc91e657926f8c505d0c66e8e116fd7245e",
+    "data/results/amd-cpu/cpu/fft/20261024_184754/inputs/0/run_t4.yaml": "e62acca1ed7a3f38b4a585a288f1bee872b3df19dd19e450355e48dee02216e4",
+    "data/results/amd-cpu/cpu/fft/20261024_184754/report.md": "8716a9eec51bc8d9720ed92c686b5d494735c81909b7b89be3bd812e492c6a3b",
+    "data/results/amd-cpu/cpu/fft/20261024_184754/report.summary.json": "aad98427c3cde3ff6d67549a6bcf0722fc34e514e6abdad63d9a58e477086f3e",
+    "data/results/amd-cpu/cpu/fft/20261024_184754/run.yaml": "cf22b0953aac782c709739993043606f7fd0d52fc2b64be42fa0a45a790a0b28",
+    "result/amd-cpu/cpu/fft.md": "8716a9eec51bc8d9720ed92c686b5d494735c81909b7b89be3bd812e492c6a3b",
+    "result/amd-cpu/cpu/fft.summary.json": "aad98427c3cde3ff6d67549a6bcf0722fc34e514e6abdad63d9a58e477086f3e"
   },
   "hardware": {
     "cpu": "x86_64",
-    "host": "cf271d206d5a",
+    "host": "02cd9164b175",
     "threads": [
       1,
       4
     ]
   },
-  "harness_commit": "cc2153b9548e1542f955c011dccfb77a98196fed",
+  "harness_commit": "50a7dc9b3ea08f5dba14db07df1e09314cac56f0",
   "schema_version": 1,
   "source": {
-    "artifact_id": 12525311609,
-    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39998161412/artifacts/12525311609",
-    "created_at": "2026-10-23T19:01:08Z",
-    "digest": "sha256:f3ab0ed201f62887cb035e96318c2b0d4171487e93a6bbf606d4b2e07c9693c7",
-    "expires_at": "2027-01-21T17:48:57Z",
+    "artifact_id": 12572188775,
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/40117817157/artifacts/12572188775",
+    "created_at": "2026-10-24T19:16:51Z",
+    "digest": "sha256:46925caf8d354f0506283fbcd46c1420093ff11d1fef1c71a8f2a0ff0bc30215",
+    "expires_at": "2027-01-22T17:48:40Z",
     "head_branch": "main",
-    "head_sha": "cc2153b9548e1542f955c011dccfb77a98196fed",
+    "head_sha": "50a7dc9b3ea08f5dba14db07df1e09314cac56f0",
     "repository": "tensor4all/tenferro-benchmark",
     "run_attempt": 1,
-    "run_id": 39998161412,
-    "run_started_at": "2026-10-23T17:48:56Z",
-    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/39998161412",
+    "run_id": 40117817157,
+    "run_started_at": "2026-10-24T17:48:40Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/40117817157",
     "workflow_path": ".github/workflows/benchmark-nightly-linux-cpu.yml"
   },
   "suite_id": "cpu/fft",
   "target_profile": "amd-cpu",
-  "tenferro_commit": "a24fccea2dc7cee09df442104201b7c52f9b943b"
+  "tenferro_commit": "fa39e8d78d9c58e36575084b67448a8112ec1d6c"
 }

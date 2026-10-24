@@ -2,10 +2,10 @@
   "schema_version": 1,
   "target_profile": "amd-cpu",
   "suite_id": "cpu/small_work",
-  "timestamp": "2026-10-23T18:46:42Z",
-  "tenferro_commit": "a24fccea2dc7cee09df442104201b7c52f9b943b",
+  "timestamp": "2026-10-24T18:59:20Z",
+  "tenferro_commit": "fa39e8d78d9c58e36575084b67448a8112ec1d6c",
   "hardware": {
-    "host": "cf271d206d5a",
+    "host": "02cd9164b175",
     "threads": [
       1,
       4
@@ -17,8 +17,8 @@
       "case": "add_f64_concrete-shared_size16_dependent10",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 4811.130859375,
-      "iqr": 44.05078125,
+      "median": 7792.7421875,
+      "iqr": 21.28125,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -27,8 +27,8 @@
       "case": "add_f64_concrete-shared_size16_dependent10",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 4973.80078125,
-      "iqr": 21.615234375,
+      "median": 7842.96484375,
+      "iqr": 44.404296875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -37,8 +37,8 @@
       "case": "add_f64_concrete-shared_size256_dependent10",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 5218.20703125,
-      "iqr": 45.16796875,
+      "median": 8270.05859375,
+      "iqr": 310.15234375,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -47,8 +47,8 @@
       "case": "add_f64_concrete-shared_size256_dependent10",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 5614.234375,
-      "iqr": 50.408203125,
+      "median": 9228.67578125,
+      "iqr": 45.6953125,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -57,8 +57,8 @@
       "case": "add_f64_concrete-shared_size256_single",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 548.66796875,
-      "iqr": 24.177001953125,
+      "median": 876.73046875,
+      "iqr": 37.3212890625,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -67,8 +67,8 @@
       "case": "add_f64_concrete-shared_size256_single",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 572.3125,
-      "iqr": 5.10302734375,
+      "median": 897.9814453125,
+      "iqr": 7.833984375,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -77,8 +77,8 @@
       "case": "add_f64_concrete-shared_size4_dependent10",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 4861.810546875,
-      "iqr": 70.0166015625,
+      "median": 7825.6796875,
+      "iqr": 18.740234375,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -87,8 +87,8 @@
       "case": "add_f64_concrete-shared_size4_dependent10",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 4988.080078125,
-      "iqr": 20.2548828125,
+      "median": 8169.703125,
+      "iqr": 80.66796875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -97,8 +97,8 @@
       "case": "add_f64_concrete-shared_size4_single",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 509.081787109375,
-      "iqr": 3.917236328125,
+      "median": 816.94384765625,
+      "iqr": 3.11962890625,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -107,8 +107,8 @@
       "case": "add_f64_concrete-shared_size4_single",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 526.698974609375,
-      "iqr": 2.8656005859375,
+      "median": 827.22998046875,
+      "iqr": 5.423095703125,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -117,8 +117,8 @@
       "case": "add_f64_concrete_shared",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 489.056640625,
-      "iqr": 1.92578125,
+      "median": 787.683837890625,
+      "iqr": 5.1907958984375,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -127,8 +127,8 @@
       "case": "add_f64_concrete_shared",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 514.074951171875,
-      "iqr": 4.07373046875,
+      "median": 817.9287109375,
+      "iqr": 8.298583984375,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -137,8 +137,8 @@
       "case": "einsum_c64_prepared-repeat_n16_single",
       "group": "threads=1",
       "backend": "tenferro-prepared-repeat",
-      "median": 2501.736328125,
-      "iqr": 97.62646484375,
+      "median": 3949.2529296875,
+      "iqr": 16.90478515625,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -147,8 +147,8 @@
       "case": "einsum_c64_prepared-repeat_n16_single",
       "group": "threads=4",
       "backend": "tenferro-prepared-repeat",
-      "median": 2587.109375,
-      "iqr": 68.755859375,
+      "median": 4138.7119140625,
+      "iqr": 39.169921875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -157,8 +157,8 @@
       "case": "einsum_c64_prepared-repeat_n2_single",
       "group": "threads=1",
       "backend": "tenferro-prepared-repeat",
-      "median": 1776.484375,
-      "iqr": 2.9150390625,
+      "median": 3053.490234375,
+      "iqr": 15.7900390625,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -167,8 +167,8 @@
       "case": "einsum_c64_prepared-repeat_n2_single",
       "group": "threads=4",
       "backend": "tenferro-prepared-repeat",
-      "median": 1785.6484375,
-      "iqr": 17.1162109375,
+      "median": 2944.7001953125,
+      "iqr": 11.0908203125,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -177,8 +177,8 @@
       "case": "einsum_c64_prepared-repeat_n32_single",
       "group": "threads=1",
       "backend": "tenferro-prepared-repeat",
-      "median": 7385.7734375,
-      "iqr": 279.89990234375,
+      "median": 9352.6044921875,
+      "iqr": 336.357421875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -187,8 +187,8 @@
       "case": "einsum_c64_prepared-repeat_n32_single",
       "group": "threads=4",
       "backend": "tenferro-prepared-repeat",
-      "median": 11986.6279296875,
-      "iqr": 186.580078125,
+      "median": 18688.609375,
+      "iqr": 169.74267578125,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -197,8 +197,8 @@
       "case": "einsum_c64_prepared-repeat_n4_single",
       "group": "threads=1",
       "backend": "tenferro-prepared-repeat",
-      "median": 1832.154296875,
-      "iqr": 10.85107421875,
+      "median": 2978.564453125,
+      "iqr": 18.68994140625,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -207,807 +207,807 @@
       "case": "einsum_c64_prepared-repeat_n4_single",
       "group": "threads=4",
       "backend": "tenferro-prepared-repeat",
-      "median": 1854.62890625,
+      "median": 3036.380859375,
+      "iqr": 13.50146484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n8_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3429.6279296875,
+      "iqr": 11.599609375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_c64_prepared-repeat_n8_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3380.0517578125,
+      "iqr": 26.119140625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single",
+      "group": "threads=1",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2731.4755859375,
+      "iqr": 5.81884765625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single",
+      "group": "threads=4",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2818.9052734375,
+      "iqr": 3.837890625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single",
+      "group": "threads=1",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 1359.623046875,
+      "iqr": 12.52099609375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single",
+      "group": "threads=4",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 1360.5751953125,
+      "iqr": 3.985107421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single",
+      "group": "threads=1",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2602.48828125,
+      "iqr": 9.02783203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single",
+      "group": "threads=4",
+      "backend": "tenferro-dot-general-into-shared",
+      "median": 2521.6220703125,
+      "iqr": 9.38427734375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2856.5068359375,
+      "iqr": 21.63818359375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2866.5556640625,
+      "iqr": 6.2158203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 1497.732421875,
+      "iqr": 4.7412109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 1467.796875,
+      "iqr": 4.5234375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2641.0615234375,
+      "iqr": 59.00390625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-into-repeat",
+      "median": 2731.1953125,
+      "iqr": 19.51123046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4784.80859375,
+      "iqr": 39.3994140625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4866.2607421875,
+      "iqr": 46.10888671875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3152.3291015625,
+      "iqr": 34.87646484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3089.1455078125,
+      "iqr": 24.28955078125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4207.666015625,
+      "iqr": 24.96484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 4237.658203125,
+      "iqr": 17.66796875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n16_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3713.7353515625,
+      "iqr": 64.10400390625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n16_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3687.759765625,
+      "iqr": 34.275390625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n2_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2919.8427734375,
+      "iqr": 30.7060546875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n2_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3021.7197265625,
+      "iqr": 10.8466796875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n32_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 5874.9931640625,
+      "iqr": 27.40380859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n32_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 9729.7724609375,
+      "iqr": 93.34814453125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n4_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2984.48046875,
+      "iqr": 19.87841796875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n4_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 2910.537109375,
+      "iqr": 9.046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n8_single",
+      "group": "threads=1",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3009.0390625,
+      "iqr": 22.396484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "einsum_f64_prepared-repeat_n8_single",
+      "group": "threads=4",
+      "backend": "tenferro-prepared-repeat",
+      "median": 3064.5966796875,
+      "iqr": 23.33544921875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete-shared_size256_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 1142.3916015625,
+      "iqr": 13.9130859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete-shared_size256_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 1163.4775390625,
+      "iqr": 24.94482421875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete-shared_size4_single",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 958.74755859375,
+      "iqr": 5.919189453125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete-shared_size4_single",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 961.80712890625,
+      "iqr": 6.87060546875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete_shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 937.18701171875,
+      "iqr": 10.44287109375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "gather_f64_concrete_shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 957.46923828125,
+      "iqr": 5.775146484375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": "many_operations_single_interval"
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 18636.1484375,
+      "iqr": 188.67578125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 18890.5078125,
+      "iqr": 139.078125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 18843.96875,
+      "iqr": 93.734375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 18598.9765625,
+      "iqr": 194.3203125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 7883.41796875,
+      "iqr": 53.9453125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 7984.265625,
+      "iqr": 54.26171875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 7963.890625,
+      "iqr": 52.12890625,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum3_n2_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 7993.1484375,
+      "iqr": 79.240234375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-fresh",
+      "median": 7848.6796875,
+      "iqr": 17.5859375,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-fresh",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-fresh",
+      "median": 7974.09765625,
+      "iqr": 61.419921875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-scoped",
+      "median": 7911.46875,
+      "iqr": 53.3046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-scoped",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-scoped",
+      "median": 7811.3515625,
+      "iqr": 12.419921875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction",
+          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=1",
+      "backend": "tenferro-concrete-shared",
+      "median": 8054.61328125,
+      "iqr": 85.96875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_concrete-shared",
+      "group": "threads=4",
+      "backend": "tenferro-concrete-shared",
+      "median": 7921.7890625,
+      "iqr": 81.861328125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=1",
+      "backend": "tenferro-eager-no-ad",
+      "median": 3571.23046875,
+      "iqr": 25.29296875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-no-ad",
+      "group": "threads=4",
+      "backend": "tenferro-eager-no-ad",
+      "median": 3528.544921875,
+      "iqr": 25.048828125,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "per-call session entry/exit diagnostic",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-shared",
+      "group": "threads=1",
+      "backend": "tenferro-eager-shared",
+      "median": 3484.576171875,
+      "iqr": 32.6748046875,
+      "status": "ok",
+      "verified": true,
+      "timing_scope": {
+        "outside_timer": [
+          "fixtures and view creation",
+          "backend/runtime construction",
+          "shared session entry/exit",
+          "initialization and warmups",
+          "validation/materialization",
+          "output destruction"
+        ],
+        "timer": [
+          "public extension call",
+          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
+          "session entry excluded",
+          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
+        ]
+      }
+    },
+    {
+      "case": "nonad_einsum_n16_col_major_contiguous_eager-shared",
+      "group": "threads=4",
+      "backend": "tenferro-eager-shared",
+      "median": 3556.02734375,
       "iqr": 22.4365234375,
       "status": "ok",
       "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_c64_prepared-repeat_n8_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-repeat",
-      "median": 2012.0439453125,
-      "iqr": 8.34228515625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_c64_prepared-repeat_n8_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-repeat",
-      "median": 2142.103515625,
-      "iqr": 18.34326171875,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single",
-      "group": "threads=1",
-      "backend": "tenferro-dot-general-into-shared",
-      "median": 1812.82763671875,
-      "iqr": 7.440673828125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_dot-general-into-shared_abcd-dbef-acef_d4_single",
-      "group": "threads=4",
-      "backend": "tenferro-dot-general-into-shared",
-      "median": 1858.392578125,
-      "iqr": 34.0107421875,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single",
-      "group": "threads=1",
-      "backend": "tenferro-dot-general-into-shared",
-      "median": 942.256591796875,
-      "iqr": 5.282470703125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_dot-general-into-shared_ax-asb-xsb_d4s2_single",
-      "group": "threads=4",
-      "backend": "tenferro-dot-general-into-shared",
-      "median": 927.0205078125,
-      "iqr": 6.156494140625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single",
-      "group": "threads=1",
-      "backend": "tenferro-dot-general-into-shared",
-      "median": 1748.6005859375,
-      "iqr": 20.494384765625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_dot-general-into-shared_ij-jk-ik_m95k95n1_single",
-      "group": "threads=4",
-      "backend": "tenferro-dot-general-into-shared",
-      "median": 1671.56396484375,
-      "iqr": 11.381591796875,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-into-repeat",
-      "median": 1924.041015625,
-      "iqr": 14.8662109375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-into-repeat_abcd-dbef-acef_d4_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-into-repeat",
-      "median": 1862.3447265625,
-      "iqr": 5.69189453125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-into-repeat",
-      "median": 947.13916015625,
-      "iqr": 4.941650390625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-into-repeat_ax-asb-xsb_d4s2_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-into-repeat",
-      "median": 987.9326171875,
-      "iqr": 7.909912109375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-into-repeat",
-      "median": 1815.9375,
-      "iqr": 10.15234375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-into-repeat_ij-jk-ik_m95k95n1_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-into-repeat",
-      "median": 1801.24609375,
-      "iqr": 14.8173828125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-repeat",
-      "median": 3148.345703125,
-      "iqr": 41.8603515625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_abcd-dbef-acef_d4_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-repeat",
-      "median": 3110.794921875,
-      "iqr": 102.244140625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-repeat",
-      "median": 1897.9169921875,
-      "iqr": 11.10107421875,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_ax-asb-xsb_d4s2_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-repeat",
-      "median": 1915.7353515625,
-      "iqr": 10.46484375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-repeat",
-      "median": 2742.0986328125,
-      "iqr": 22.24072265625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_ij-jk-ik_m95k95n1_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-repeat",
-      "median": 2703.8642578125,
-      "iqr": 46.2705078125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n16_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-repeat",
-      "median": 2218.732421875,
-      "iqr": 22.9111328125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n16_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-repeat",
-      "median": 2271.1845703125,
-      "iqr": 34.48583984375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n2_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-repeat",
-      "median": 1795.4970703125,
-      "iqr": 11.328369140625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n2_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-repeat",
-      "median": 1870.95751953125,
-      "iqr": 29.04541015625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n32_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-repeat",
-      "median": 4063.404296875,
-      "iqr": 105.26123046875,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n32_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-repeat",
-      "median": 6497.8720703125,
-      "iqr": 63.9677734375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n4_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-repeat",
-      "median": 1800.8818359375,
-      "iqr": 16.32861328125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n4_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-repeat",
-      "median": 1769.119140625,
-      "iqr": 17.09130859375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n8_single",
-      "group": "threads=1",
-      "backend": "tenferro-prepared-repeat",
-      "median": 1816.447265625,
-      "iqr": 10.78271484375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "einsum_f64_prepared-repeat_n8_single",
-      "group": "threads=4",
-      "backend": "tenferro-prepared-repeat",
-      "median": 1912.412109375,
-      "iqr": 10.06396484375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "gather_f64_concrete-shared_size256_single",
-      "group": "threads=1",
-      "backend": "tenferro-concrete-shared",
-      "median": 1025.51416015625,
-      "iqr": 9.62109375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "gather_f64_concrete-shared_size256_single",
-      "group": "threads=4",
-      "backend": "tenferro-concrete-shared",
-      "median": 964.89111328125,
-      "iqr": 16.0986328125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "gather_f64_concrete-shared_size4_single",
-      "group": "threads=1",
-      "backend": "tenferro-concrete-shared",
-      "median": 711.26416015625,
-      "iqr": 6.4586181640625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "gather_f64_concrete-shared_size4_single",
-      "group": "threads=4",
-      "backend": "tenferro-concrete-shared",
-      "median": 740.891357421875,
-      "iqr": 8.273681640625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "gather_f64_concrete_shared",
-      "group": "threads=1",
-      "backend": "tenferro-concrete-shared",
-      "median": 744.34130859375,
-      "iqr": 5.0196533203125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "gather_f64_concrete_shared",
-      "group": "threads=4",
-      "backend": "tenferro-concrete-shared",
-      "median": 743.0673828125,
-      "iqr": 8.6326904296875,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": "many_operations_single_interval"
-    },
-    {
-      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-fresh",
-      "group": "threads=1",
-      "backend": "tenferro-concrete-fresh",
-      "median": 13105.36328125,
-      "iqr": 74.798828125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-fresh",
-      "group": "threads=4",
-      "backend": "tenferro-concrete-fresh",
-      "median": 12921.4765625,
-      "iqr": 66.5078125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-shared",
-      "group": "threads=1",
-      "backend": "tenferro-concrete-shared",
-      "median": 13391.65234375,
-      "iqr": 96.515625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "session entry excluded",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum3_n2_col_major_contiguous_concrete-shared",
-      "group": "threads=4",
-      "backend": "tenferro-concrete-shared",
-      "median": 13436.39453125,
-      "iqr": 69.734375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "session entry excluded",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum3_n2_col_major_contiguous_eager-no-ad",
-      "group": "threads=1",
-      "backend": "tenferro-eager-no-ad",
-      "median": 5499.572265625,
-      "iqr": 43.66015625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum3_n2_col_major_contiguous_eager-no-ad",
-      "group": "threads=4",
-      "backend": "tenferro-eager-no-ad",
-      "median": 5445.521484375,
-      "iqr": 105.8916015625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum3_n2_col_major_contiguous_eager-shared",
-      "group": "threads=1",
-      "backend": "tenferro-eager-shared",
-      "median": 5327.1640625,
-      "iqr": 93.177734375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "session entry excluded",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum3_n2_col_major_contiguous_eager-shared",
-      "group": "threads=4",
-      "backend": "tenferro-eager-shared",
-      "median": 5406.556640625,
-      "iqr": 54.5849609375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "session entry excluded",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_concrete-fresh",
-      "group": "threads=1",
-      "backend": "tenferro-concrete-fresh",
-      "median": 5459.923828125,
-      "iqr": 62.78125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_concrete-fresh",
-      "group": "threads=4",
-      "backend": "tenferro-concrete-fresh",
-      "median": 5416.609375,
-      "iqr": 22.259765625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_concrete-scoped",
-      "group": "threads=1",
-      "backend": "tenferro-concrete-scoped",
-      "median": 5423.560546875,
-      "iqr": 24.4912109375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction",
-          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_concrete-scoped",
-      "group": "threads=4",
-      "backend": "tenferro-concrete-scoped",
-      "median": 5396.794921875,
-      "iqr": 8.861328125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction",
-          "caller-held engine construction; no execution scope exists after tenferro-rs #2206"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_concrete-shared",
-      "group": "threads=1",
-      "backend": "tenferro-concrete-shared",
-      "median": 5459.2578125,
-      "iqr": 91.1513671875,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "session entry excluded",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_concrete-shared",
-      "group": "threads=4",
-      "backend": "tenferro-concrete-shared",
-      "median": 5406.80859375,
-      "iqr": 21.3798828125,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "session entry excluded",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_eager-no-ad",
-      "group": "threads=1",
-      "backend": "tenferro-eager-no-ad",
-      "median": 2322.775390625,
-      "iqr": 19.4287109375,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_eager-no-ad",
-      "group": "threads=4",
-      "backend": "tenferro-eager-no-ad",
-      "median": 2233.6455078125,
-      "iqr": 16.34765625,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "per-call session entry/exit diagnostic",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_eager-shared",
-      "group": "threads=1",
-      "backend": "tenferro-eager-shared",
-      "median": 2315.0302734375,
-      "iqr": 20.5341796875,
-      "status": "ok",
-      "verified": true,
-      "timing_scope": {
-        "outside_timer": [
-          "fixtures and view creation",
-          "backend/runtime construction",
-          "shared session entry/exit",
-          "initialization and warmups",
-          "validation/materialization",
-          "output destruction"
-        ],
-        "timer": [
-          "public extension call",
-          "intrinsic public output allocation; stack output retention enum (no helper heap allocation)",
-          "session entry excluded",
-          "ordinary einsum default Auto planning/cache lookup included equally; parsed integer notation"
-        ]
-      }
-    },
-    {
-      "case": "nonad_einsum_n16_col_major_contiguous_eager-shared",
-      "group": "threads=4",
-      "backend": "tenferro-eager-shared",
-      "median": 2238.4765625,
-      "iqr": 26.8759765625,
-      "status": "ok",
-      "verified": true,
       "timing_scope": {
         "outside_timer": [
           "fixtures and view creation",
@@ -1029,8 +1029,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_concrete-fresh",
       "group": "threads=1",
       "backend": "tenferro-concrete-fresh",
-      "median": 5538.439453125,
-      "iqr": 39.39453125,
+      "median": 8073.919921875,
+      "iqr": 22.1318359375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1054,8 +1054,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_concrete-fresh",
       "group": "threads=4",
       "backend": "tenferro-concrete-fresh",
-      "median": 5530.90234375,
-      "iqr": 24.646484375,
+      "median": 7250.09765625,
+      "iqr": 59.8154296875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1079,8 +1079,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_concrete-scoped",
       "group": "threads=1",
       "backend": "tenferro-concrete-scoped",
-      "median": 5478.642578125,
-      "iqr": 30.1533203125,
+      "median": 7315.318359375,
+      "iqr": 19.58984375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1105,8 +1105,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_concrete-scoped",
       "group": "threads=4",
       "backend": "tenferro-concrete-scoped",
-      "median": 5447.8671875,
-      "iqr": 30.1044921875,
+      "median": 7969.67578125,
+      "iqr": 31.3662109375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1131,8 +1131,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_concrete-shared",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 5523.61328125,
-      "iqr": 42.173828125,
+      "median": 7976.490234375,
+      "iqr": 59.052734375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1156,8 +1156,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_concrete-shared",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 5495.380859375,
-      "iqr": 21.0166015625,
+      "median": 7995.357421875,
+      "iqr": 21.22265625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1181,8 +1181,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_eager-no-ad",
       "group": "threads=1",
       "backend": "tenferro-eager-no-ad",
-      "median": 1819.234375,
-      "iqr": 17.291015625,
+      "median": 2892.103515625,
+      "iqr": 10.1328125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1206,8 +1206,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_eager-no-ad",
       "group": "threads=4",
       "backend": "tenferro-eager-no-ad",
-      "median": 1834.5380859375,
-      "iqr": 27.189453125,
+      "median": 2947.4873046875,
+      "iqr": 7.037109375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1231,8 +1231,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_eager-shared",
       "group": "threads=1",
       "backend": "tenferro-eager-shared",
-      "median": 1776.484375,
-      "iqr": 8.3271484375,
+      "median": 2903.390625,
+      "iqr": 17.791015625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1256,8 +1256,8 @@
       "case": "nonad_einsum_n2_col_major_contiguous_eager-shared",
       "group": "threads=4",
       "backend": "tenferro-eager-shared",
-      "median": 1811.8779296875,
-      "iqr": 32.33837890625,
+      "median": 2877.87109375,
+      "iqr": 15.3408203125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1281,8 +1281,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_concrete-fresh",
       "group": "threads=1",
       "backend": "tenferro-concrete-fresh",
-      "median": 4260.4013671875,
-      "iqr": 60.0859375,
+      "median": 5876.455078125,
+      "iqr": 18.513671875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1306,8 +1306,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_concrete-fresh",
       "group": "threads=4",
       "backend": "tenferro-concrete-fresh",
-      "median": 4302.7060546875,
-      "iqr": 39.12646484375,
+      "median": 5891.66796875,
+      "iqr": 15.375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1331,8 +1331,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_concrete-scoped",
       "group": "threads=1",
       "backend": "tenferro-concrete-scoped",
-      "median": 4314.193359375,
-      "iqr": 31.7470703125,
+      "median": 5879.505859375,
+      "iqr": 17.95703125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1357,8 +1357,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_concrete-scoped",
       "group": "threads=4",
       "backend": "tenferro-concrete-scoped",
-      "median": 4355.12890625,
-      "iqr": 21.09619140625,
+      "median": 5958.95703125,
+      "iqr": 32.2353515625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1383,8 +1383,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_concrete-shared",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 4236.400390625,
-      "iqr": 24.09375,
+      "median": 5898.05078125,
+      "iqr": 23.5703125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1408,8 +1408,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_concrete-shared",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 4223.1435546875,
-      "iqr": 156.623046875,
+      "median": 5884.666015625,
+      "iqr": 12.8310546875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1433,8 +1433,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_eager-no-ad",
       "group": "threads=1",
       "backend": "tenferro-eager-no-ad",
-      "median": 5379.21484375,
-      "iqr": 104.7568359375,
+      "median": 7538.83984375,
+      "iqr": 100.73828125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1458,8 +1458,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_eager-no-ad",
       "group": "threads=4",
       "backend": "tenferro-eager-no-ad",
-      "median": 5452.26953125,
-      "iqr": 78.1728515625,
+      "median": 7549.00390625,
+      "iqr": 28.4609375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1483,8 +1483,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_eager-shared",
       "group": "threads=1",
       "backend": "tenferro-eager-shared",
-      "median": 5265.880859375,
-      "iqr": 64.833984375,
+      "median": 7590.55859375,
+      "iqr": 27.560546875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1508,8 +1508,8 @@
       "case": "nonad_qr_n16_col_major_contiguous_eager-shared",
       "group": "threads=4",
       "backend": "tenferro-eager-shared",
-      "median": 5309.044921875,
-      "iqr": 20.265625,
+      "median": 7640.390625,
+      "iqr": 35.71484375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1533,8 +1533,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_concrete-fresh",
       "group": "threads=1",
       "backend": "tenferro-concrete-fresh",
-      "median": 782.580078125,
-      "iqr": 5.82177734375,
+      "median": 1248.4501953125,
+      "iqr": 4.706298828125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1558,8 +1558,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_concrete-fresh",
       "group": "threads=4",
       "backend": "tenferro-concrete-fresh",
-      "median": 808.74658203125,
-      "iqr": 2.565185546875,
+      "median": 1242.05712890625,
+      "iqr": 5.782470703125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1583,8 +1583,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_concrete-scoped",
       "group": "threads=1",
       "backend": "tenferro-concrete-scoped",
-      "median": 772.3056640625,
-      "iqr": 9.831787109375,
+      "median": 1299.2783203125,
+      "iqr": 6.704345703125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1609,8 +1609,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_concrete-scoped",
       "group": "threads=4",
       "backend": "tenferro-concrete-scoped",
-      "median": 794.06640625,
-      "iqr": 5.51611328125,
+      "median": 1271.74072265625,
+      "iqr": 6.94921875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1635,8 +1635,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_concrete-shared",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 826.40576171875,
-      "iqr": 5.12255859375,
+      "median": 1267.21826171875,
+      "iqr": 7.83154296875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1660,8 +1660,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_concrete-shared",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 783.0732421875,
-      "iqr": 5.669921875,
+      "median": 1244.8935546875,
+      "iqr": 7.408203125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1685,8 +1685,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_eager-no-ad",
       "group": "threads=1",
       "backend": "tenferro-eager-no-ad",
-      "median": 3168.541015625,
-      "iqr": 11.638671875,
+      "median": 4341.001953125,
+      "iqr": 20.4697265625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1710,8 +1710,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_eager-no-ad",
       "group": "threads=4",
       "backend": "tenferro-eager-no-ad",
-      "median": 3143.158203125,
-      "iqr": 53.7041015625,
+      "median": 4364.001953125,
+      "iqr": 31.521484375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1735,8 +1735,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_eager-shared",
       "group": "threads=1",
       "backend": "tenferro-eager-shared",
-      "median": 3186.8115234375,
-      "iqr": 12.998046875,
+      "median": 4231.892578125,
+      "iqr": 67.6796875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1760,8 +1760,8 @@
       "case": "nonad_qr_n2_col_major_contiguous_eager-shared",
       "group": "threads=4",
       "backend": "tenferro-eager-shared",
-      "median": 3052.720703125,
-      "iqr": 21.69775390625,
+      "median": 4237.052734375,
+      "iqr": 32.3916015625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1785,8 +1785,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_concrete-fresh",
       "group": "threads=1",
       "backend": "tenferro-concrete-fresh",
-      "median": 2367.2568359375,
-      "iqr": 637.15625,
+      "median": 3523.208984375,
+      "iqr": 40.970703125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1810,8 +1810,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_concrete-fresh",
       "group": "threads=4",
       "backend": "tenferro-concrete-fresh",
-      "median": 2349.7177734375,
-      "iqr": 655.7666015625,
+      "median": 3511.861328125,
+      "iqr": 27.7373046875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1835,8 +1835,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_concrete-scoped",
       "group": "threads=1",
       "backend": "tenferro-concrete-scoped",
-      "median": 2323.2353515625,
-      "iqr": 659.50439453125,
+      "median": 3574.0859375,
+      "iqr": 32.96875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1861,8 +1861,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_concrete-scoped",
       "group": "threads=4",
       "backend": "tenferro-concrete-scoped",
-      "median": 2416.2734375,
-      "iqr": 683.42041015625,
+      "median": 3491.126953125,
+      "iqr": 57.185546875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1887,8 +1887,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_concrete-shared",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 2441.87109375,
-      "iqr": 655.39208984375,
+      "median": 3610.037109375,
+      "iqr": 417.2880859375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1912,8 +1912,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_concrete-shared",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 2349.6982421875,
-      "iqr": 654.87255859375,
+      "median": 3498.24609375,
+      "iqr": 9.4287109375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1937,8 +1937,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_eager-no-ad",
       "group": "threads=1",
       "backend": "tenferro-eager-no-ad",
-      "median": 4723.580078125,
-      "iqr": 63.3173828125,
+      "median": 6530.564453125,
+      "iqr": 22.30859375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1962,8 +1962,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_eager-no-ad",
       "group": "threads=4",
       "backend": "tenferro-eager-no-ad",
-      "median": 4689.16796875,
-      "iqr": 19.20703125,
+      "median": 6526.119140625,
+      "iqr": 21.5068359375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -1987,8 +1987,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_eager-shared",
       "group": "threads=1",
       "backend": "tenferro-eager-shared",
-      "median": 4857.2578125,
-      "iqr": 121.2470703125,
+      "median": 6372.923828125,
+      "iqr": 29.6259765625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2012,8 +2012,8 @@
       "case": "nonad_solve_n16_col_major_contiguous_eager-shared",
       "group": "threads=4",
       "backend": "tenferro-eager-shared",
-      "median": 4672.03125,
-      "iqr": 21.5966796875,
+      "median": 6422.798828125,
+      "iqr": 41.3427734375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2037,8 +2037,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_concrete-fresh",
       "group": "threads=1",
       "backend": "tenferro-concrete-fresh",
-      "median": 687.2021484375,
-      "iqr": 8.570068359375,
+      "median": 1178.34912109375,
+      "iqr": 6.26416015625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2062,8 +2062,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_concrete-fresh",
       "group": "threads=4",
       "backend": "tenferro-concrete-fresh",
-      "median": 694.296875,
-      "iqr": 5.919677734375,
+      "median": 1178.4609375,
+      "iqr": 8.081298828125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2087,8 +2087,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_concrete-scoped",
       "group": "threads=1",
       "backend": "tenferro-concrete-scoped",
-      "median": 686.634765625,
-      "iqr": 6.9169921875,
+      "median": 1161.0185546875,
+      "iqr": 11.4306640625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2113,8 +2113,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_concrete-scoped",
       "group": "threads=4",
       "backend": "tenferro-concrete-scoped",
-      "median": 689.5390625,
-      "iqr": 6.6357421875,
+      "median": 1160.4599609375,
+      "iqr": 4.8779296875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2139,8 +2139,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_concrete-shared",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 725.775390625,
-      "iqr": 11.88525390625,
+      "median": 1258.40625,
+      "iqr": 12.5361328125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2164,8 +2164,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_concrete-shared",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 693.802734375,
-      "iqr": 4.146728515625,
+      "median": 1187.00390625,
+      "iqr": 9.506591796875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2189,8 +2189,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_eager-no-ad",
       "group": "threads=1",
       "backend": "tenferro-eager-no-ad",
-      "median": 3071.833984375,
-      "iqr": 37.25830078125,
+      "median": 4139.642578125,
+      "iqr": 29.6630859375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2214,8 +2214,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_eager-no-ad",
       "group": "threads=4",
       "backend": "tenferro-eager-no-ad",
-      "median": 3013.7158203125,
-      "iqr": 59.8173828125,
+      "median": 4064.4296875,
+      "iqr": 22.640625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2239,8 +2239,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_eager-shared",
       "group": "threads=1",
       "backend": "tenferro-eager-shared",
-      "median": 3073.330078125,
-      "iqr": 24.49951171875,
+      "median": 4056.275390625,
+      "iqr": 24.01171875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2264,8 +2264,8 @@
       "case": "nonad_solve_n2_col_major_contiguous_eager-shared",
       "group": "threads=4",
       "backend": "tenferro-eager-shared",
-      "median": 3013.265625,
-      "iqr": 24.9150390625,
+      "median": 4087.16015625,
+      "iqr": 26.59375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2289,8 +2289,8 @@
       "case": "nonad_svd_n2_col_major_contiguous_concrete-fresh",
       "group": "threads=1",
       "backend": "tenferro-concrete-fresh",
-      "median": 1625.10888671875,
-      "iqr": 22.9130859375,
+      "median": 2394.0693359375,
+      "iqr": 9.5703125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2314,8 +2314,8 @@
       "case": "nonad_svd_n2_col_major_contiguous_concrete-fresh",
       "group": "threads=4",
       "backend": "tenferro-concrete-fresh",
-      "median": 1600.044921875,
-      "iqr": 50.95068359375,
+      "median": 2465.5517578125,
+      "iqr": 20.98828125,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2339,8 +2339,8 @@
       "case": "nonad_svd_n2_col_major_contiguous_concrete-shared",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 1591.05322265625,
-      "iqr": 15.7412109375,
+      "median": 2445.38671875,
+      "iqr": 7.0419921875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2364,8 +2364,8 @@
       "case": "nonad_svd_n2_col_major_contiguous_concrete-shared",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 1580.9296875,
-      "iqr": 12.690185546875,
+      "median": 2392.19921875,
+      "iqr": 15.61474609375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2389,8 +2389,8 @@
       "case": "nonad_svd_n2_col_major_contiguous_eager-no-ad",
       "group": "threads=1",
       "backend": "tenferro-eager-no-ad",
-      "median": 4106.205078125,
-      "iqr": 38.505859375,
+      "median": 5808.79296875,
+      "iqr": 58.9560546875,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2414,8 +2414,8 @@
       "case": "nonad_svd_n2_col_major_contiguous_eager-no-ad",
       "group": "threads=4",
       "backend": "tenferro-eager-no-ad",
-      "median": 4177.458984375,
-      "iqr": 54.0654296875,
+      "median": 5874.416015625,
+      "iqr": 37.166015625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2439,8 +2439,8 @@
       "case": "nonad_svd_n2_col_major_contiguous_eager-shared",
       "group": "threads=1",
       "backend": "tenferro-eager-shared",
-      "median": 4000.107421875,
-      "iqr": 6.9912109375,
+      "median": 5826.26171875,
+      "iqr": 16.3525390625,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2464,8 +2464,8 @@
       "case": "nonad_svd_n2_col_major_contiguous_eager-shared",
       "group": "threads=4",
       "backend": "tenferro-eager-shared",
-      "median": 4016.826171875,
-      "iqr": 18.7294921875,
+      "median": 5625.13671875,
+      "iqr": 33.693359375,
       "status": "ok",
       "verified": true,
       "timing_scope": {
@@ -2489,8 +2489,8 @@
       "case": "reduce_sum_f64_concrete-shared_size16_single",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 580.381103515625,
-      "iqr": 10.856201171875,
+      "median": 901.4453125,
+      "iqr": 6.26171875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2499,8 +2499,8 @@
       "case": "reduce_sum_f64_concrete-shared_size16_single",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 580.168212890625,
-      "iqr": 5.33154296875,
+      "median": 912.744140625,
+      "iqr": 4.736083984375,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2509,8 +2509,8 @@
       "case": "reduce_sum_f64_concrete-shared_size256_single",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 623.815673828125,
-      "iqr": 5.3902587890625,
+      "median": 863.47314453125,
+      "iqr": 8.895263671875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2519,8 +2519,8 @@
       "case": "reduce_sum_f64_concrete-shared_size256_single",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 597.293701171875,
-      "iqr": 6.6483154296875,
+      "median": 961.54296875,
+      "iqr": 4.168701171875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2529,8 +2529,8 @@
       "case": "reduce_sum_f64_concrete-shared_size4_single",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 621.7958984375,
-      "iqr": 10.5457763671875,
+      "median": 878.48095703125,
+      "iqr": 8.90966796875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2539,8 +2539,8 @@
       "case": "reduce_sum_f64_concrete-shared_size4_single",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 594.344970703125,
-      "iqr": 3.0074462890625,
+      "median": 898.84130859375,
+      "iqr": 5.482177734375,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2549,8 +2549,8 @@
       "case": "solve_f64_concrete-shared_n16_single",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 2564.576171875,
-      "iqr": 620.7685546875,
+      "median": 3584.6845703125,
+      "iqr": 816.318359375,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2559,8 +2559,8 @@
       "case": "solve_f64_concrete-shared_n16_single",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 2453.34375,
-      "iqr": 625.47314453125,
+      "median": 3610.544921875,
+      "iqr": 820.05126953125,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2569,8 +2569,8 @@
       "case": "solve_f64_concrete-shared_n2_single",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 709.65283203125,
-      "iqr": 4.0794677734375,
+      "median": 1262.99169921875,
+      "iqr": 8.6826171875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2579,8 +2579,8 @@
       "case": "solve_f64_concrete-shared_n2_single",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 715.327880859375,
-      "iqr": 3.7069091796875,
+      "median": 1231.33837890625,
+      "iqr": 8.60400390625,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2589,8 +2589,8 @@
       "case": "solve_f64_concrete-shared_n4_single",
       "group": "threads=1",
       "backend": "tenferro-concrete-shared",
-      "median": 811.153564453125,
-      "iqr": 2.5513916015625,
+      "median": 1266.6982421875,
+      "iqr": 15.196044921875,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
@@ -2599,8 +2599,8 @@
       "case": "solve_f64_concrete-shared_n4_single",
       "group": "threads=4",
       "backend": "tenferro-concrete-shared",
-      "median": 813.913818359375,
-      "iqr": 7.497802734375,
+      "median": 1285.4775390625,
+      "iqr": 5.0439453125,
       "status": "ok",
       "verified": true,
       "timing_scope": "many_operations_single_interval"
