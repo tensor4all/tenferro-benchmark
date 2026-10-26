@@ -2638,6 +2638,40 @@ fn eager_small_call(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     })
 }
 
+fn metadata_clone(timing: &Timing) -> Result<CaseOutcome> {
+    use tenferro_tensor::{DynRank, Host, TypedTensor};
+    let owner =
+        TypedTensor::<f64, DynRank, Host>::from_host_vec_col_major([2; 8], values(256, 2180))?;
+    let view = owner.as_view().transpose_view([7, 6, 5, 4, 3, 2, 1, 0])?;
+    let cloned = view.clone();
+    if cloned.shape() != [2; 8]
+        || cloned.strides() != [128, 64, 32, 16, 8, 4, 2, 1]
+        || cloned.offset() != 0
+        || !std::ptr::eq(
+            cloned.get(&[0; 8]).ok_or("missing view element")?,
+            &owner.as_slice()[0],
+        )
+    {
+        return Err("rank-8 metadata clone changed layout or storage alias".into());
+    }
+    let measurement = measure(timing, std::mem::size_of_val(&view), || {
+        Ok(black_box(&view).clone())
+    })?;
+    Ok(CaseOutcome {
+        max_rel_error: 0.0,
+        measurement: Some(measurement),
+        timer: vec!["clone of prepared borrowed rank-8 transpose-view metadata"],
+        outside_timer: vec![
+            "owner allocation and values",
+            "transpose-view construction",
+            "alias and layout validation",
+            "output destruction",
+        ],
+        extra: json!({"operation_requires_session": false, "payload_copied": false,
+                      "shape": vec![2; 8], "strides": [128,64,32,16,8,4,2,1]}),
+    })
+}
+
 fn main() -> Result<()> {
     let case_id = arg("--case").ok_or("--case is required")?;
     let params: Value = serde_json::from_str(&arg("--params").ok_or("--params is required")?)?;
@@ -2654,6 +2688,7 @@ fn main() -> Result<()> {
     };
     let kind = param_str(&params, "kind")?;
     let outcome = match kind {
+        "metadata_clone" => metadata_clone(&timing),
         "cpu_gap_mwe" => {
             let operation = param_str(&params, "operation")?;
             let mut row = cpu_gap_mwe::run(

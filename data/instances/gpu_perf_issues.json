@@ -2014,6 +2014,557 @@
   "intent": "tenferro-rs #1885 §3.4 addendum: first and second call of a materializing transpose (TensorViewCanonicalization::to_contiguous, or copy_into a compact destination, of a transposed device view) for 22 distinct [r, c] layouts after one warm-up layout, in one cold process. A first-call (NVRTC compile) diagnostic, never a steady-state row; the second call is the warm reference."
  },
  {
+  "id": "prepared_dot_general_f32_decode_len8",
+  "issues": [
+   "#2197"
+  ],
+  "kind": "prepared_decode",
+  "arm": "prepared",
+  "backend": "tenferro-cuda-trace",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "prepared_decode",
+   "arm": "prepared",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2197 (benchmark #253): prepared dot_general y=W^T x, W [1024,1024], x [1024,8]. Public Runtime::run of a prepared program on one caller-held engine (successor to run_prepared); eager control and torch.matmul(x.T,W). Upload, compile, prepare, session entry and verification untimed. Latency, not GEMM throughput.",
+  "regime": "latency",
+  "execution_path": "prepared"
+ },
+ {
+  "id": "prepared_dot_general_f32_decode_len8_eager-session",
+  "issues": [
+   "#2197"
+  ],
+  "kind": "prepared_decode",
+  "arm": "eager-session",
+  "backend": "tenferro-cuda-eager",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "prepared_decode",
+   "arm": "eager-session",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2197 (benchmark #253): prepared dot_general y=W^T x, W [1024,1024], x [1024,8]. Public Runtime::run of a prepared program on one caller-held engine (successor to run_prepared); eager control and torch.matmul(x.T,W). Upload, compile, prepare, session entry and verification untimed. Latency, not GEMM throughput.",
+  "reference_for": "prepared_dot_general_f32_decode_len8",
+  "regime": "latency",
+  "execution_path": "eager-session"
+ },
+ {
+  "id": "prepared_dot_general_f32_decode_len8_pytorch",
+  "issues": [
+   "#2197"
+  ],
+  "kind": "prepared_decode",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f32",
+  "params": {
+   "in": 1024,
+   "out": 1024,
+   "len": 8,
+   "kind": "prepared_decode",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2197 (benchmark #253): prepared dot_general y=W^T x, W [1024,1024], x [1024,8]. Public Runtime::run of a prepared program on one caller-held engine (successor to run_prepared); eager control and torch.matmul(x.T,W). Upload, compile, prepare, session entry and verification untimed. Latency, not GEMM throughput.",
+  "reference_for": "prepared_dot_general_f32_decode_len8",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "standard_batched_matmul_f64_b16_32_cublas",
+  "issues": [
+   "#2193"
+  ],
+  "kind": "standard_batched_matmul",
+  "arm": "batch-trailing",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "batch": 16,
+   "kind": "standard_batched_matmul",
+   "arm": "batch-trailing",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2193 (benchmark #252): compact column-major [m,k,b] and [k,n,b] select standard strided-batched cuBLAS; compact [b,m,k] and [b,k,n] are the cuTENSOR fallback control on identical values. torch.bmm reference; input layout construction/upload and engine setup untimed. Latency, not compute throughput.",
+  "regime": "latency",
+  "execution_path": "batch-trailing"
+ },
+ {
+  "id": "standard_batched_matmul_f64_b16_32_cublas_batch-outer",
+  "issues": [
+   "#2193"
+  ],
+  "kind": "standard_batched_matmul",
+  "arm": "batch-outer",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "batch": 16,
+   "kind": "standard_batched_matmul",
+   "arm": "batch-outer",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2193 (benchmark #252): compact column-major [m,k,b] and [k,n,b] select standard strided-batched cuBLAS; compact [b,m,k] and [b,k,n] are the cuTENSOR fallback control on identical values. torch.bmm reference; input layout construction/upload and engine setup untimed. Latency, not compute throughput.",
+  "reference_for": "standard_batched_matmul_f64_b16_32_cublas",
+  "regime": "latency",
+  "execution_path": "batch-outer"
+ },
+ {
+  "id": "standard_batched_matmul_f64_b16_32_cublas_pytorch",
+  "issues": [
+   "#2193"
+  ],
+  "kind": "standard_batched_matmul",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "n": 32,
+   "batch": 16,
+   "kind": "standard_batched_matmul",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "tenferro-rs #2193 (benchmark #252): compact column-major [m,k,b] and [k,n,b] select standard strided-batched cuBLAS; compact [b,m,k] and [b,k,n] are the cuTENSOR fallback control on identical values. torch.bmm reference; input layout construction/upload and engine setup untimed. Latency, not compute throughput.",
+  "reference_for": "standard_batched_matmul_f64_b16_32_cublas",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "solve_readback_latency_f64_n2",
+  "issues": [
+   "#2192",
+   "#2204"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 2,
+   "kind": "linalg_readback_latency",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA solve solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2192, #2204.",
+  "regime": "latency",
+  "execution_path": "direct"
+ },
+ {
+  "id": "solve_readback_latency_f64_n2_pytorch",
+  "issues": [
+   "#2192",
+   "#2204"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 2,
+   "kind": "linalg_readback_latency",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA solve solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2192, #2204.",
+  "reference_for": "solve_readback_latency_f64_n2",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "solve_readback_latency_f64_n4",
+  "issues": [
+   "#2192",
+   "#2204"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 4,
+   "kind": "linalg_readback_latency",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA solve solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2192, #2204.",
+  "regime": "latency",
+  "execution_path": "direct"
+ },
+ {
+  "id": "solve_readback_latency_f64_n4_pytorch",
+  "issues": [
+   "#2192",
+   "#2204"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 4,
+   "kind": "linalg_readback_latency",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA solve solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2192, #2204.",
+  "reference_for": "solve_readback_latency_f64_n4",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "solve_readback_latency_f64_n8",
+  "issues": [
+   "#2192",
+   "#2204"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 8,
+   "kind": "linalg_readback_latency",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA solve solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2192, #2204.",
+  "regime": "latency",
+  "execution_path": "direct"
+ },
+ {
+  "id": "solve_readback_latency_f64_n8_pytorch",
+  "issues": [
+   "#2192",
+   "#2204"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 8,
+   "kind": "linalg_readback_latency",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA solve solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2192, #2204.",
+  "reference_for": "solve_readback_latency_f64_n8",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "solve_readback_latency_f64_n32",
+  "issues": [
+   "#2192",
+   "#2204"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 32,
+   "kind": "linalg_readback_latency",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA solve solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2192, #2204.",
+  "regime": "latency",
+  "execution_path": "direct"
+ },
+ {
+  "id": "solve_readback_latency_f64_n32_pytorch",
+  "issues": [
+   "#2192",
+   "#2204"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "solve",
+   "n": 32,
+   "kind": "linalg_readback_latency",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA solve solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2192, #2204.",
+  "reference_for": "solve_readback_latency_f64_n32",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "qr_readback_latency_f64_n2",
+  "issues": [
+   "#2195"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 2,
+   "kind": "linalg_readback_latency",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA qr solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2195.",
+  "regime": "latency",
+  "execution_path": "direct"
+ },
+ {
+  "id": "qr_readback_latency_f64_n2_pytorch",
+  "issues": [
+   "#2195"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 2,
+   "kind": "linalg_readback_latency",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA qr solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2195.",
+  "reference_for": "qr_readback_latency_f64_n2",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "qr_readback_latency_f64_n4",
+  "issues": [
+   "#2195"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 4,
+   "kind": "linalg_readback_latency",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA qr solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2195.",
+  "regime": "latency",
+  "execution_path": "direct"
+ },
+ {
+  "id": "qr_readback_latency_f64_n4_pytorch",
+  "issues": [
+   "#2195"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 4,
+   "kind": "linalg_readback_latency",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA qr solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2195.",
+  "reference_for": "qr_readback_latency_f64_n4",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "qr_readback_latency_f64_n8",
+  "issues": [
+   "#2195"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 8,
+   "kind": "linalg_readback_latency",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA qr solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2195.",
+  "regime": "latency",
+  "execution_path": "direct"
+ },
+ {
+  "id": "qr_readback_latency_f64_n8_pytorch",
+  "issues": [
+   "#2195"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 8,
+   "kind": "linalg_readback_latency",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA qr solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2195.",
+  "reference_for": "qr_readback_latency_f64_n8",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
+  "id": "qr_readback_latency_f64_n32",
+  "issues": [
+   "#2195"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "direct",
+  "backend": "tenferro-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 32,
+   "kind": "linalg_readback_latency",
+   "arm": "direct",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA qr solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2195.",
+  "regime": "latency",
+  "execution_path": "direct"
+ },
+ {
+  "id": "qr_readback_latency_f64_n32_pytorch",
+  "issues": [
+   "#2195"
+  ],
+  "kind": "linalg_readback_latency",
+  "arm": "pytorch",
+  "backend": "pytorch-cuda",
+  "dtype": "f64",
+  "params": {
+   "op": "qr",
+   "n": 32,
+   "kind": "linalg_readback_latency",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "nvidia-gpu"
+  ],
+  "intent": "benchmark #247: CUDA qr solver-status readback latency. Prepared diagonally dominant f64 matrix; public direct API and torch.linalg reference. Upload and residual/reconstruction checks outside timing; device synchronization only at batch edge. Also tracks #2195.",
+  "reference_for": "qr_readback_latency_f64_n32",
+  "regime": "latency",
+  "execution_path": "pytorch"
+ },
+ {
   "id": "raw_scope_entry_f64_empty-idle",
   "issues": [
    "#2078"

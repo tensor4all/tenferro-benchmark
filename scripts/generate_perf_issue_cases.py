@@ -43,13 +43,13 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 17
+MANIFEST_VERSION = 18
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 7
+GPU_MANIFEST_VERSION = 8
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
@@ -547,9 +547,73 @@ def eager_small_call_cases():
     return rows
 
 
+def metadata_clone_cases():
+    rows = []
+    for threads in (1, 4):
+        target = f"metadata_transpose_view_f64_rank8_t{threads}"
+        for arm, backend in (("metadata-clone", "tenferro-rs"), ("julia-base", "julia-base")):
+            row = case(target if arm == "metadata-clone" else target + "_julia-base",
+                ("#2180",), "metadata_clone", {"shape": [2] * 8},
+                arm=arm, backend=backend, dtype="f64", profiles=("amd-cpu", "mac-cpu"),
+                reference_for=target if arm == "julia-base" else None,
+                intent="tenferro-rs #2180 (benchmark #254): rank-8 borrowed transpose-view "
+                       "metadata clone. Fixture and transposed view prepared outside timing; "
+                       "no payload copy or session. Julia PermutedDimsArray metadata reference. "
+                       "Latency only; 4T is a metadata control.")
+            row["thread_counts"] = [threads]
+            row["regime"] = "latency"
+            row["execution_path"] = arm
+            rows.append(row)
+    return rows
+
+
+def gpu_dispatch_regression_cases(gpu):
+    rows = []
+    target = "prepared_dot_general_f32_decode_len8"
+    for arm, backend in (("prepared", "tenferro-cuda-trace"),
+                         ("eager-session", "tenferro-cuda-eager"), ("pytorch", "pytorch-cuda")):
+        rows.append(case(target if arm == "prepared" else target + "_" + arm,
+            ("#2197",), "prepared_decode", {"in": 1024, "out": 1024, "len": 8},
+            arm=arm, backend=backend, dtype="f32", profiles=gpu,
+            reference_for=target if arm != "prepared" else None,
+            intent="tenferro-rs #2197 (benchmark #253): prepared dot_general y=W^T x, "
+                   "W [1024,1024], x [1024,8]. Public Runtime::run of a prepared program "
+                   "on one caller-held engine (successor to run_prepared); eager control "
+                   "and torch.matmul(x.T,W). Upload, compile, prepare, session entry and "
+                   "verification untimed. Latency, not GEMM throughput."))
+    target = "standard_batched_matmul_f64_b16_32_cublas"
+    for arm, backend in (("batch-trailing", "tenferro-cuda"),
+                         ("batch-outer", "tenferro-cuda"), ("pytorch", "pytorch-cuda")):
+        rows.append(case(target if arm == "batch-trailing" else target + "_" + arm,
+            ("#2193",), "standard_batched_matmul", {"n": 32, "batch": 16},
+            arm=arm, backend=backend, dtype="f64", profiles=gpu,
+            reference_for=target if arm != "batch-trailing" else None,
+            intent="tenferro-rs #2193 (benchmark #252): compact column-major [m,k,b] "
+                   "and [k,n,b] select standard strided-batched cuBLAS; compact [b,m,k] "
+                   "and [b,k,n] are the cuTENSOR fallback control on identical values. "
+                   "torch.bmm reference; input layout construction/upload and engine setup "
+                   "untimed. Latency, not compute throughput."))
+    for op, issues in (("solve", ("#2192", "#2204")), ("qr", ("#2195",))):
+        for n in (2, 4, 8, 32):
+            target = f"{op}_readback_latency_f64_n{n}"
+            for arm, backend in (("direct", "tenferro-cuda"), ("pytorch", "pytorch-cuda")):
+                rows.append(case(target if arm == "direct" else target + "_pytorch", issues,
+                    "linalg_readback_latency", {"op": op, "n": n}, arm=arm,
+                    backend=backend, dtype="f64", profiles=gpu,
+                    reference_for=target if arm == "pytorch" else None,
+                    intent=f"benchmark #247: CUDA {op} solver-status readback latency. "
+                           "Prepared diagonally dominant f64 matrix; public direct API and "
+                           "torch.linalg reference. Upload and residual/reconstruction checks "
+                           "outside timing; device synchronization only at batch edge."))
+    for row in rows:
+        row["regime"] = "latency"
+        row["execution_path"] = row["arm"]
+    return rows
+
+
 def generate_cases():
     return (decode_cases() + decode_view_operand_cases() + other_cases() + b1_op_cases()
-            + cpu_gap_cases()
+            + cpu_gap_cases() + metadata_clone_cases()
             + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases()
             + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
             + erased_binary_cases() + axpby_strided_source_cases()
@@ -885,6 +949,7 @@ def generate_gpu_cases():
                     "destination, of a transposed device view) for 22 distinct [r, c] layouts after "
                     "one warm-up layout, in one cold process. A first-call (NVRTC compile) "
                     "diagnostic, never a steady-state row; the second call is the warm reference.")))
+    rows += gpu_dispatch_regression_cases(gpu)
     rows += gpu_latency_cases(gpu)
     rows += gpu_memory_cases(gpu)
     rows += gpu_linalg_driver_cases(gpu)

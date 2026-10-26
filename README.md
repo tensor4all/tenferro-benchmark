@@ -232,8 +232,8 @@ reports numbers from those cases. There is no automated audit, gate or
 scheduled run. Each family carries its reference arm(s) (faer direct, host
 sgemm, PyTorch, cudarc memcpy, the eager or batched counterpart, ...);
 `reference_for` names the compared case. Cases are built only from public
-tenferro-rs APIs (`CpuBackend::new()` / `with_threads(n)`,
-`with_backend_session`, public concrete/eager/traced ops). Steady-state rows,
+tenferro-rs APIs (`CpuEngine` with a caller-owned `Pool`, a reused eager
+session, and public concrete/eager/prepared operations). Steady-state rows,
 per-call session-entry diagnostics, eager AD workflows, counter runs, GPU
 allocation-state diagnostics and the GPU first-call diagnostic are reported in
 separate sections.
@@ -254,6 +254,17 @@ low-repetition screen, `BENCH_INSTANCE` filters case IDs and
 `PERF_ISSUES_CORRECTNESS_ONLY=1` executes and validates every case without
 timing. Raw runs go to `data/results/<target_profile>/{cpu,gpu}/perf_issues/<timestamp>/`.
 
+For benchmark issues #247/#252/#253, first run the selected cases with
+`PERF_ISSUES_CORRECTNESS_ONLY=1` on an A100 in the CUDA devcontainer, then
+repeat the same selection without that flag, sequentially. Set `BENCH_INSTANCE`
+to the comma-separated literal case IDs (including references) from
+`data/instances/gpu_perf_issues.json` whose `kind` is `linalg_readback_latency`,
+`prepared_decode` or `standard_batched_matmul`.
+These are latency rows. The runner rebuilds the binary and records
+`GPU_BENCH_CLOCK_RAMP_MS` (default 300); fixture preparation, compilation,
+validation and output readback are outside the operation timer. Reports remain
+under `result/nvidia-gpu/gpu/perf_issues.md`.
+
 | tenferro-rs issue | Cases | Suite |
 |---|---|---|
 | #1897, #1899, #1904 | generic einsum cases (`*_abcd-dbef-acef_d4`, `*_ax-asb-xsb_d4s2`, `*_ij-jk-ik_m95k95n1`) | `cpu/small_work` |
@@ -273,6 +284,10 @@ timing. Raw runs go to `data/results/<target_profile>/{cpu,gpu}/perf_issues/<tim
 | #1976 (#2010 PR-B1) | `{softmax,log_softmax,masked_softmax}_f32_*`, `reduce_mean_f32_*` | `cpu/perf_issues` |
 | #2008 (#2010 PR-B1) | `take_along_axis_rows_f64_*` | `cpu/perf_issues` |
 | #1885 §4.1 | `small_contraction_abcd-dbef-acef_f64_*_d4` | `cpu/perf_issues` |
+| #2180 | `metadata_transpose_view_f64_rank8_t*` and Julia metadata reference | `cpu/perf_issues` |
+| #2197 | `prepared_dot_general_f32_decode_len8*` (prepared, eager, PyTorch) | `gpu/perf_issues` |
+| #2193 | `standard_batched_matmul_f64_b16_32_cublas*` (trailing-batch fast path, batch-outer fallback, PyTorch) | `gpu/perf_issues` |
+| #2192, #2204, #2195 | `{solve,qr}_readback_latency_f64_n*` and PyTorch references | `gpu/perf_issues` |
 | #2009 | `transfer_{up,down}_f64_*` (the cudarc arms are an output-reuse lower bound: they reuse one destination while the tenferro arms allocate) | `gpu/perf_issues` |
 | #1887 | `alloc_zero_f64_*` | `gpu/perf_issues` |
 | #1885 §3.1-§3.4 | `small_blocks_gemm_*`, `batched_{qr,svd}_*`, `qr_live_buffers_*`, `first_call_transpose_*` | `gpu/perf_issues` |

@@ -20,11 +20,10 @@ jobs:
     env:
       OPENBLAS_ROOT: /usr
       # Validate the recorded compatible revision: the tenferro-rs commit this
-      # harness now builds against (the caller-held engine API from tenferro-rs
-      # #2206; CPU public API gap cases #133–#138).
+      # harness builds against, including the caller-owned strided Pool API.
       # Latest upstream main is exercised separately by
       # benchmark-smoke-tenferro-main / nightly jobs.
-      TENFERRO_REF: 6aee629651957f1691fbf1c4797887dc1fcf725b
+      TENFERRO_REF: 9f54e10dad9bc7c7ba5a3aa25ee7210913c83624
       TENFERRO_UPDATE: "1"
     steps:
       - name: Checkout
@@ -138,11 +137,18 @@ jobs:
 
       - name: Validate performance-issue case generation and reports
         run: |
+          uv run python scripts/generate_perf_issue_cases.py --check
           uv run python scripts/generate_overhead_smoke_cases.py --check
-          uv run python -m unittest tests.test_perf_issues_suite tests.test_overhead_smoke
+          uv run python -m unittest tests.test_perf_issues_suite tests.test_overhead_smoke tests.test_gpu_perf_issue_references
 
       - name: Cargo check
         run: cargo check --all-targets
+
+      - name: Check CUDA runners without a GPU
+        run: cargo check --features cuda --all-targets
+
+      - name: Check caller-owned CPU engine thread counts
+        run: cargo test --lib cpu_engine_tests
 
       - name: Check overhead-smoke runtime timing scope
         run: cargo test --bin perf_issue_case umbrella::alloc_counter::tests -- --test-threads=1

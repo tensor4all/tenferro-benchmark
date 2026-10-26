@@ -123,6 +123,36 @@ class PerfIssueSuiteTest(unittest.TestCase):
                 self.assertEqual(len(allocation_controls), 10)
                 self.assertTrue(all(c["kind"] == "alloc_zero" for c in allocation_controls))
 
+    def test_dispatch_regressions_have_matched_latency_references(self):
+        rows = gen.gpu_dispatch_regression_cases(("nvidia-gpu",))
+        cases = {c["id"]: c for c in rows}
+        for c in rows:
+            self.assertEqual(c["regime"], "latency")
+            self.assertEqual(c["measurement_scope"], "steady_state")
+            for issue in c["issues"]:
+                self.assertIn(issue, c["intent"])
+            if "reference_for" in c:
+                target = cases[c["reference_for"]]
+                self.assertEqual(c["dtype"], target["dtype"])
+                self.assertEqual({k:v for k,v in c["params"].items() if k != "arm"},
+                                 {k:v for k,v in target["params"].items() if k != "arm"})
+        batched = [c for c in rows if c["kind"] == "standard_batched_matmul"]
+        self.assertEqual({c["arm"] for c in batched}, {"batch-trailing", "batch-outer", "pytorch"})
+        readback = [c for c in rows if c["kind"] == "linalg_readback_latency"]
+        self.assertEqual({c["params"]["op"] for c in readback}, {"solve", "qr"})
+        self.assertEqual(len(readback), 16)
+
+    def test_rank8_clone_has_metadata_reference_and_thread_controls(self):
+        cases = gen.metadata_clone_cases()
+        self.assertEqual(len(cases), 4)
+        for threads in (1, 4):
+            pair = [c for c in cases if c["thread_counts"] == [threads]]
+            self.assertEqual({c["backend"] for c in pair}, {"tenferro-rs", "julia-base"})
+            for c in pair:
+                self.assertEqual(c["params"]["shape"], [2]*8)
+                self.assertEqual(c["regime"], "latency")
+                self.assertEqual(c["issues"], ["#2180"])
+
     def test_issue_table_rows_are_present(self):
         cpu = {i for c in gen.generate_cases() for i in c["issues"]}
         gpu = {i for c in gen.generate_gpu_cases() for i in c["issues"]}
@@ -130,7 +160,7 @@ class PerfIssueSuiteTest(unittest.TestCase):
                          "#2006", "#1885", "#1975", "#1976", "#2008"} <= cpu)
         self.assertEqual(gpu, {"#2009", "#1887", "#1885", "#2078", "#2079", "#2080", "#2081",
                                "#2082", "#2083", "#1924", "#1839", "#1849", "#1846", "#1852",
-                               "#1923", "#1898", "#1873", "#1805", "#1949", "#1925", "#1720"})
+                               "#1923", "#1898", "#1873", "#1805", "#1949", "#1925", "#1720", "#2192", "#2204", "#2195", "#2193", "#2197"})
         einsum = (ROOT / "benchmarks/cpu/einsum.yaml").read_text()
         for name in gen.einsum_instances():
             self.assertIn(name, einsum)

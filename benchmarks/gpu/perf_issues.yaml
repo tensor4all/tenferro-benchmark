@@ -4,10 +4,11 @@ suite_id: gpu/perf_issues
 title: Workloads of open and resolved tenferro-rs performance issues (GPU)
 description: 'One case family per open or resolved tenferro-rs performance issue (#1720, #1805, #1839,
   #1846, #1849, #1852, #1873, #1885, #1887, #1898, #1923, #1924, #1925, #1949, #2009, #2078, #2079, #2080,
-  #2081, #2082, #2083), each with its reference arm(s); the issue numbers are recorded per case in data/instances/gpu_perf_issues.json.
-  Workloads are added when an issue is opened; perf-fix PRs report numbers from these cases. Steady-state
-  rows and labelled diagnostics are reported separately. Timed batches end with a device synchronize,
-  never a result download, except where the download is the declared operation (#2009).'
+  #2081, #2082, #2083, #2192, #2193, #2195, #2197, #2204), each with its reference arm(s); the issue numbers
+  are recorded per case in data/instances/gpu_perf_issues.json. Workloads are added when an issue is opened;
+  perf-fix PRs report numbers from these cases. Steady-state rows and labelled diagnostics are reported
+  separately. Timed batches end with a device synchronize, never a result download, except where the download
+  is the declared operation (#2009).'
 defaults:
   regime: latency
   device:
@@ -28,7 +29,10 @@ defaults:
     atol: 0
 backends:
 - cudarc
+- pytorch-cuda
 - tenferro-cuda
+- tenferro-cuda-eager
+- tenferro-cuda-trace
 problems:
   source: data/instances/gpu_perf_issues.json
   include:
@@ -121,6 +125,28 @@ problems:
   - qr_live_buffers_f64_n32_live1024
   - first_call_transpose_to-contiguous_f64_layouts_r2-12_c5-7
   - first_call_transpose_copy-into_f64_layouts_r2-12_c5-7
+  - prepared_dot_general_f32_decode_len8
+  - prepared_dot_general_f32_decode_len8_eager-session
+  - prepared_dot_general_f32_decode_len8_pytorch
+  - standard_batched_matmul_f64_b16_32_cublas
+  - standard_batched_matmul_f64_b16_32_cublas_batch-outer
+  - standard_batched_matmul_f64_b16_32_cublas_pytorch
+  - solve_readback_latency_f64_n2
+  - solve_readback_latency_f64_n2_pytorch
+  - solve_readback_latency_f64_n4
+  - solve_readback_latency_f64_n4_pytorch
+  - solve_readback_latency_f64_n8
+  - solve_readback_latency_f64_n8_pytorch
+  - solve_readback_latency_f64_n32
+  - solve_readback_latency_f64_n32_pytorch
+  - qr_readback_latency_f64_n2
+  - qr_readback_latency_f64_n2_pytorch
+  - qr_readback_latency_f64_n4
+  - qr_readback_latency_f64_n4_pytorch
+  - qr_readback_latency_f64_n8
+  - qr_readback_latency_f64_n8_pytorch
+  - qr_readback_latency_f64_n32
+  - qr_readback_latency_f64_n32_pytorch
   - raw_scope_entry_f64_empty-idle
   - raw_scope_entry_f64_empty-behind-queued-gemm
   - raw_scope_entry_f64_sync-behind-queued-gemm
