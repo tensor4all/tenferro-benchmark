@@ -4,9 +4,10 @@ This independent crate reproduces the operation groups selected from the
 2026-10-08 inventory of slow observations without an open issue, at the user's
 1.2× reporting threshold. `cases.json` retains the original shape, dtype,
 reference, execution paths and observation rows. Those historical ratios are
-screening evidence only. The current reproducers use the public APIs of
-`tenferro-rs b3f47296244ff7b7c55ac0a75f782cb0835418c1` (main when this campaign
-started), after its CPU provider feature/API changes.
+screening evidence only. The current reproducers use the caller-owned engine APIs of
+`tenferro-rs 9f54e10dad9bc7c7ba5a3aa25ee7210913c83624` and the explicit
+threadteam placement API of strided-perm 0.8. Historical results below retain
+their original revisions; rebuild before collecting current results.
 
 Use the Linux CPU devcontainer, which supplies oneMKL and the MKL-backed PyTorch
 wheel. No CUDA or external taskset/numactl pinning is used; the public CPU backend
@@ -22,7 +23,7 @@ devcontainer exec --workspace-folder . bash -lc '
   reset_benchmark_python_venv "$PWD"
   prepare_cpu_benchmark_python_venv "$PWD"'
 devcontainer exec --workspace-folder . bash -lc '
-  export CARGO_TARGET_DIR="$PWD/target/followup-b3f47296"
+  export CARGO_TARGET_DIR="$PWD/target/followup-current"
   cargo build --release --locked --manifest-path mwe/cpu_followup/Cargo.toml'
 ```
 
@@ -34,8 +35,9 @@ devcontainer exec --workspace-folder . bash -lc '
   configure_cpu_thread_env 4
   source scripts/benchmark_host_idle.sh
   assert_benchmark_host_idle
-  export LD_LIBRARY_PATH="$MKLROOT/lib:/opt/intel/oneapi/compiler/2026.1/lib:${LD_LIBRARY_PATH:-}"
-  target/followup-b3f47296/release/cpu-followup-mwe activation.sigmoid eager-shared 4 15'
+  source scripts/cpu_blas_provider.sh
+  ensure_blas_env_for_features blas-mkl
+  target/followup-current/release/cpu-followup-mwe activation.sigmoid eager-shared 4 15'
 devcontainer exec --workspace-folder . bash -lc '
   source scripts/thread_env.sh
   configure_cpu_thread_env 4
@@ -64,7 +66,7 @@ available for an explicitly different provider experiment.
 
 All fixtures, sessions, input descriptors, graph construction/compilation,
 FFT priming, correctness checks, retention containers and output destruction
-are outside the timer. Direct/eager calls reuse an already-entered session.
+are outside the timer. Direct calls reuse the caller-held engine; eager calls reuse one session borrowing it.
 A sample is one interval containing many operations, targeting 10 ms, bounded
 by 512 MiB of retained outputs (and retained owned inputs for metadata).
 Intrinsic output allocation and required native completion stay inside.
@@ -174,8 +176,10 @@ returns `DynRank`. Validation checks every logical output element and that its
 address aliases the expected owner's storage, outside timing. No session is
 required for any metadata arm.
 
-Run the balanced, A/A-controlled 1-thread comparison at the explicitly pinned
-`b3f47296244ff7b7c55ac0a75f782cb0835418c1` (not a moving latest checkout):
+The historical balanced, A/A-controlled 1-thread campaign was explicitly pinned
+to `b3f47296244ff7b7c55ac0a75f782cb0835418c1`. Reproducing that campaign requires
+its matching harness from git history; `collect_metadata_host.py` intentionally
+rejects a different library revision. Its original command was:
 
 ```bash
 python3 mwe/cpu_followup/collect_metadata_host.py \

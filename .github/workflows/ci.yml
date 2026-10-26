@@ -25,6 +25,8 @@ jobs:
       # benchmark-smoke-tenferro-main / nightly jobs.
       TENFERRO_REF: 9f54e10dad9bc7c7ba5a3aa25ee7210913c83624
       TENFERRO_UPDATE: "1"
+      STRIDED_RS_REF: d24474d89dd3c6ca8ebdc16a5638289787376575
+      STRIDED_RS_UPDATE: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -142,7 +144,7 @@ jobs:
           uv run python -m unittest tests.test_perf_issues_suite tests.test_overhead_smoke tests.test_gpu_perf_issue_references
 
       - name: Cargo check
-        run: cargo check --all-targets
+        run: cargo check --all-targets --features strided-rs,hptt
 
       - name: Check CUDA runners without a GPU
         run: cargo check --features cuda --all-targets
@@ -158,9 +160,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OPENBLAS_ROOT: /usr
-      TENFERRO_REF: b3f47296244ff7b7c55ac0a75f782cb0835418c1
+      TENFERRO_REF: 9f54e10dad9bc7c7ba5a3aa25ee7210913c83624
       TENFERRO_UPDATE: "1"
-      STRIDED_RS_REF: 12ff2de906f4d894a4329f7dbf195b0f874f846e
+      STRIDED_RS_REF: d24474d89dd3c6ca8ebdc16a5638289787376575
       STRIDED_RS_UPDATE: "1"
       CARGO_TARGET_DIR: target/followup-ci
     steps:
@@ -179,8 +181,13 @@ jobs:
         run: >-
           cargo build --release --locked --manifest-path mwe/cpu_followup/Cargo.toml
           --no-default-features --features system-openblas
+      - name: Check prepared graph execution on a caller-owned engine
+        run: >-
+          cargo test --release --locked --manifest-path mwe/cpu_followup/Cargo.toml
+          --no-default-features --features system-openblas
       - name: Check scalar and permutation oracles without timing collection
         run: |
           target/followup-ci/release/cpu-followup-mwe activation.gelu_tanh eager-shared 1 0
           target/followup-ci/release/cpu-followup-mwe metadata.transpose_view metadata 1 0
           target/followup-ci/release/cpu-followup-mwe perm.reverse_23d_2 materialize 1 0
+          target/followup-ci/release/cpu-followup-mwe perm.reverse_23d_2 strided-rs 4 0

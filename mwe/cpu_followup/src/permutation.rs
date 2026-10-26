@@ -33,13 +33,11 @@ pub fn run(case: &Value, path: &str, threads: usize, runs: usize, target: u128) 
     let mut row = if path == "strided-rs" || path.starts_with("strided-") {
         let array = strided_view::StridedArray::from_parts(source.clone(), &shape, &strides, 0)?;
         let src = array.view().permute(&perm)?;
-        let call = || -> Result<_> {
+        let pool = threadteam::Pool::builder().threads(threads).build()?;
+        let mut exec = threadteam::Exec::new(&pool, threads)?;
+        let mut call = || -> Result<_> {
             let mut dst = strided_view::StridedArray::<f64>::col_major(&outshape);
-            if threads == 1 {
-                strided_perm::copy_into_col_major(&mut dst.view_mut(), &src)?;
-            } else {
-                strided_perm::copy_into_col_major_par(&mut dst.view_mut(), &src)?;
-            }
+            strided_perm::copy_into_col_major(&mut dst.view_mut(), &src, exec.reborrow())?;
             Ok(dst)
         };
         let first = call()?;
@@ -56,7 +54,7 @@ pub fn run(case: &Value, path: &str, threads: usize, runs: usize, target: u128) 
         r["outputs"] = json!([sig]);
         r
     } else {
-        let mut b = CpuBackend::with_threads(threads)?;
+        let mut b = cpu_engine(threads)?;
         b.with_backend_session(|s| -> Result<Value> {
             let initial =
                 s.to_contiguous_read(TensorRead::from_view(TensorView::F64(view.clone())))?;

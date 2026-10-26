@@ -108,7 +108,7 @@ Backend column names follow [architecture terminology](architecture.md).
 |---|---|---|
 | `tenferro-rs` | Rust | view API `TypedTensorView::transpose_view(perm)` followed by allocation-inclusive `BackendSession::to_contiguous_read`; input view descriptors and one shared session are prepared outside timing |
 | `hptt` | Rust (`hptt` crate, feature-gated) | allocate destination + HPTT tensor transpose, contiguous cases only |
-| `strided-rs` (Rust `strided-rs` feature, on by default) | Rust | allocate destination + `strided_perm::copy_into` / `copy_into_col_major`, serial and parallel (`copy_into_par` / `copy_into_col_major_par`); the fastest of the (up to four) variants is reported |
+| `strided-rs` (Rust `strided-rs` feature, on by default) | Rust | allocate destination + `strided_perm::copy_into` / `copy_into_col_major`, serial and caller-owned threadteam pool placement; the fastest of the (up to four) variants is reported |
 | `julia-base` | Julia | allocate destination + `permutedims!` for contiguous sources or generic `copyto!` for explicit-stride sources |
 | `strided-jl` | Julia | allocate destination + Strided.jl `@strided` materialization |
 
@@ -173,8 +173,8 @@ One runner per implementation family, all consuming
   Cargo feature, `strided-rs` (on by default in `scripts/run_permutation.sh`),
   gates the `strided-rs` participant, which builds a `strided_view::StridedArray`
   from the pattern's source strides and times `strided_perm::copy_into` /
-  `copy_into_col_major` plus their `_par` counterparts (via strided-perm's own
-  `parallel` feature, always enabled alongside `strided-rs`), reporting the
+  `copy_into_col_major` with serial and caller-owned threadteam pool tokens
+  (the `parallel` feature is enabled alongside `strided-rs`), reporting the
   fastest variant. Thread-count reporting always uses
   `rayon::current_num_threads()`, not gated behind any feature.
 - Julia: `scripts/benchmark_permutation.jl`, ported from `permute.jl`.
@@ -211,8 +211,8 @@ investigating.
 - Thread-count variants (1 thread and 4 threads) are measured **sequentially,
   in separate runs**. Benchmark processes are never run concurrently, per
   AGENTS.md timing discipline.
-- Thread control per runner: `RAYON_NUM_THREADS` (Rust/rayon, including
-  tenferro via `CpuBackend::with_threads`), `OMP_NUM_THREADS` (HPTT), and
+- Thread control per runner: `RAYON_NUM_THREADS` (the requested width of Rust pools, including
+  the caller-owned tenferro `Pool` and strided-rs threadteam pool), `OMP_NUM_THREADS` (HPTT), and
   `JULIA_NUM_THREADS` (Julia). One report section per thread count; the same
   HPTT thread count as the Rust rayon count.
 - Timing: median with p25/p75 over per-pattern iteration counts scaled to the

@@ -3,16 +3,37 @@
 use num_complex::{Complex32, Complex64};
 use serde_json::{json, Value};
 use std::{error::Error, hint::black_box, time::Instant};
-use tenferro_ad::{EagerRuntime, EagerTensor};
-use tenferro_cpu::{with_cpu_exec_session, CpuBackend};
+use tenferro_ad::EagerRuntime;
+use tenferro_cpu::{with_cpu_engine, CpuEngine};
 use tenferro_fft::{FftExecutor, FftNorm, TracedTensorFftExt};
 use tenferro_linalg::{TensorLinalgExt, TracedTensorLinalgExt};
-use tenferro_runtime::{GraphCompiler, Runtime, TracedTensor};
+use tenferro_runtime::{ExecutionEngine, GraphCompiler, Runtime, TracedTensor};
 use tenferro_tensor::{
-    BackendSessionHost, DType, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor,
-    TensorRead, TensorValue, TensorView, TypedTensorView,
+    DType, GatherConfig, PadConfig, ScatterConfig, SliceConfig, Tensor, TensorAnalytic,
+    TensorIndexing, TensorRead, TensorReduction, TensorStructural, TensorValue, TensorView,
+    TypedTensorView,
 };
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
+
+fn cpu_engine(threads: usize) -> Result<CpuEngine> {
+    if threads == 0 {
+        return Err("thread count must be positive".into());
+    }
+    Ok(CpuEngine::new(
+        tenferro_cpu::Pool::builder().threads(threads).build()?,
+    ))
+}
+
+/// A caller-held engine is already the execution scope. Borrow it once for
+/// the operation batch; do not create a pool/session inside a timed call.
+trait EngineScope {
+    fn with_backend_session<R>(&mut self, f: impl FnOnce(&mut CpuEngine) -> R) -> Result<R>;
+}
+impl EngineScope for CpuEngine {
+    fn with_backend_session<R>(&mut self, f: impl FnOnce(&mut CpuEngine) -> R) -> Result<R> {
+        Ok(f(self))
+    }
+}
 
 fn value(i: usize, seed: u64) -> f64 {
     (((i as u64).wrapping_mul(1837).wrapping_add(seed * 335) % 2048) as f64 - 1024.) / 1024.
@@ -142,29 +163,32 @@ fn trace_measure(
 ) -> Result<Value> {
     let refs: Vec<_> = outputs.iter().collect();
     let program = GraphCompiler::new().compile_many(&refs)?;
-    let b = CpuBackend::with_threads(threads)?;
+    let mut b = cpu_engine(threads)?;
     let engine = tenferro_cpu::runtime_engine_id()?;
     let mut builder = Runtime::builder();
     builder.register_engine(tenferro_cpu::runtime_engine_registration(&b)?)?;
-    builder.install_extension_module(tenferro_linalg::extension_module::<CpuBackend>(
+    builder.install_extension_module(tenferro_linalg::extension_module::<CpuEngine>(
         engine.clone(),
     )?)?;
-    builder.install_extension_module(tenferro_fft::extension_module::<CpuBackend>(
-        engine.clone(),
-    )?)?;
+    builder
+        .install_extension_module(tenferro_fft::extension_module::<CpuEngine>(engine.clone())?)?;
     let runtime = builder.build()?;
-    let prepared = runtime.prepare_compiled(&program, &[])?;
-    let output = runtime.run_prepared(&prepared, &[])?;
+    let prepared = runtime.prepare(&program, &[], &[ExecutionEngine::target(&b)])?;
+    let output = runtime
+        .run(&mut [&mut b], &prepared, &[])?
+        .into_iter()
+        .map(|value| value.into_tensor(&mut b))
+        .collect::<tenferro_tensor::Result<Vec<_>>>()?;
     let sig = output.iter().map(signature).collect::<Result<Vec<_>>>()?;
     drop(output);
     let mut row = sample(bytes, runs, target, units, |()| {
-        Ok(runtime.run_prepared(&prepared, &[])?)
+        Ok(runtime.run(&mut [&mut b], &prepared, &[])?)
     })?;
     row["outputs"] = json!(sig);
-    // Runtime does not expose a borrowed execution-session call. Its internal
-    // admission/session work is included: these are GRAPH-CALL LATENCY diagnostics.
+    // Keep this separately labelled graph-call latency path: run the prepared
+    // program on the same caller-held engine, retaining unmaterialized outputs.
     row["timing_scope"] = json!(
-        "prepared graph-call latency diagnostic; internal runtime admission/session entry included"
+        "prepared graph-call latency diagnostic; caller-held engine, output inspection untimed"
     );
     Ok(row)
 }
@@ -246,7 +270,7 @@ fn real(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> 
         };
         return trace_measure(&[y], threads, bytes, runs, target);
     }
-    let mut b = CpuBackend::with_threads(threads)?;
+    let mut b = cpu_engine(threads)?;
     b.with_backend_session(|s| -> Result<Value> {
         tensor_measure(
             bytes,
@@ -291,13 +315,12 @@ fn activation(case: &Value, threads: usize, runs: usize, target: u128) -> Result
         .collect();
     // Cast after multiplication by 0.5 in the maintained fixture; multiplication
     // by 8 is exact in f32 and the formula above has the same binary rounding.
-    let runtime = EagerRuntime::with_cpu_backend(CpuBackend::with_threads(threads)?)?;
-    let x = EagerTensor::from_tensor_in(
-        Tensor::from_vec_col_major(vec![1024, 64], data)?,
-        runtime.clone(),
-    )?;
+    let runtime = EagerRuntime::new()?;
+    let mut engine = cpu_engine(threads)?;
+    let input = Tensor::from_vec_col_major(vec![1024, 64], data)?;
     runtime
-        .with_eager_session(|s| -> tenferro_ad::Result<Value> {
+        .with_eager_session(&mut engine, |s| -> tenferro_ad::Result<Value> {
+            let x = s.constant_from(input)?;
             let mut call = || match op {
                 "erf" => s.erf(&x),
                 "sigmoid" => s.sigmoid(&x),
@@ -444,7 +467,7 @@ fn indexing(case: &Value, path: &str, threads: usize, runs: usize, target: u128)
         };
         return trace_measure(&[out], threads, bytes, runs, target);
     }
-    let mut b = CpuBackend::with_threads(threads)?;
+    let mut b = cpu_engine(threads)?;
     b.with_backend_session(|s| -> Result<Value> {
         tensor_measure(bytes, runs, target, units, |()| {
             Ok(match op {
@@ -496,7 +519,7 @@ fn structural(
         };
         return trace_measure(&[out], threads, bytes, runs, target);
     }
-    let mut b = CpuBackend::with_threads(threads)?;
+    let mut b = cpu_engine(threads)?;
     b.with_backend_session(|s| -> Result<Value> {
         tensor_measure(
             bytes,
@@ -568,7 +591,7 @@ fn complex_or_linalg(
         };
         return trace_measure(&outs, threads, bytes, runs, target);
     }
-    let mut b = CpuBackend::with_threads(threads)?;
+    let mut b = cpu_engine(threads)?;
     b.with_backend_session(|s| -> Result<Value> {
         if matches!(op, "exp" | "log") {
             return tensor_measure(
@@ -585,7 +608,7 @@ fn complex_or_linalg(
                 },
             );
         }
-        with_cpu_exec_session(s, |s| -> Result<Value> {
+        with_cpu_engine(s, |s| -> Result<Value> {
             if op == "norm_fro" {
                 tensor_measure(bytes, runs, target, units, |()| {
                     Ok(x.norm(None, Some(&[0, 1]), false, s)?)
@@ -635,10 +658,10 @@ fn fft(case: &Value, path: &str, threads: usize, runs: usize, target: u128) -> R
         };
         return trace_measure(&[out], threads, bytes, runs, target);
     }
-    let mut b = CpuBackend::with_threads(threads)?;
+    let mut b = cpu_engine(threads)?;
     let mut executor = FftExecutor::default();
     b.with_backend_session(|s| -> Result<Value> {
-        with_cpu_exec_session(s, |s| -> Result<Value> {
+        with_cpu_engine(s, |s| -> Result<Value> {
             tensor_measure(bytes, runs, target, units, |()| {
                 Ok(match op {
                     "fft" => executor.fft(&x, None, -1, FftNorm::Backward, s)?,
@@ -729,4 +752,20 @@ fn main() -> Result<()> {
     row["scope"] = json!({"outside_timer":["fixtures","runtime/backend/session creation","input wrappers/descriptors","graph construction/compilation/preparation","FFT plans/scratch priming","validation/signatures","output retention allocation","input restoration","output destruction"],"inside_timer":["declared API call","intrinsic output allocation","native completion"]});
     println!("{row}");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn prepared_trace_runs_on_a_caller_owned_engine_without_sampling() {
+        let input = TracedTensor::from_vec_col_major(vec![2], vec![1.0_f64, 2.0]).unwrap();
+        let output = input.exp().unwrap();
+        let row = trace_measure(&[output], 1, 16, 0, 1_000_000).unwrap();
+        assert!(row["samples"].as_array().unwrap().is_empty());
+        assert_eq!(row["outputs"][0]["shape"], json!([2]));
+        let sum = row["outputs"][0]["sum"][0].as_f64().unwrap();
+        assert!((sum - (1.0_f64.exp() + 2.0_f64.exp())).abs() < 1e-12);
+    }
 }
