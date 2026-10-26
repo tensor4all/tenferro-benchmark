@@ -11,9 +11,9 @@ use std::io::Write;
 use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
-use tenferro_gpu::webgpu::{webgpu_available, with_webgpu_exec_session, WebGpuBackend};
+use tenferro_gpu::webgpu::{webgpu_available, WebGpuBackend};
 use tenferro_tensor::{
-    BackendSessionHost, Tensor, TensorDeviceTransfer, TensorViewCanonicalization, TypedTensor,
+    Tensor, TensorDeviceTransfer, TensorStructural, TensorViewCanonicalization, TypedTensor,
 };
 
 const PATTERN_PATH: &str = "data/instances/gpu_permutation_mac_patterns.json";
@@ -252,13 +252,10 @@ fn run_transpose(
         .upload_host_tensor(tenferro_tensor::TensorRead::from_tensor(&host))
         .unwrap();
     let output = backend
-        .with_backend_session(|session| {
-            session.transpose_read(
-                tenferro_tensor::TensorRead::from_tensor(&input),
-                &pattern.perm,
-            )
-        })
-        .unwrap()
+        .transpose_read(
+            tenferro_tensor::TensorRead::from_tensor(&input),
+            &pattern.perm,
+        )
         .unwrap();
     backend.synchronize().unwrap();
     let host_output = backend
@@ -277,18 +274,13 @@ fn run_transpose(
         );
     }
     let bytes = std::mem::size_of_val(data) * 2;
-    // tenferro-rs #1938 moved `transpose` onto the entered session. The
-    // pre-#1938 backend method entered once per call, so each timed call still
-    // enters its own session.
+    // Reuse the initialized caller-owned engine for every sample.
     let timing = measure(warmup, iters, bytes, || {
         let output = backend
-            .with_backend_session(|session| {
-                session.transpose_read(
-                    tenferro_tensor::TensorRead::from_tensor(&input),
-                    &pattern.perm,
-                )
-            })
-            .unwrap()
+            .transpose_read(
+                tenferro_tensor::TensorRead::from_tensor(&input),
+                &pattern.perm,
+            )
             .unwrap();
         backend.synchronize().unwrap();
         output
@@ -309,20 +301,12 @@ fn run_transpose(
     )
 }
 
-/// tenferro-rs #1946 F6 moved view canonicalization off the backend owner onto
-/// the entered session. The owner method used to enter once per call, so each
-/// timed call still enters its own session.
+/// Materialize through the reusable caller-owned WebGPU engine.
 fn webgpu_to_contiguous(
     backend: &mut WebGpuBackend,
     view: &tenferro_tensor::TypedTensorView<'_, f32>,
 ) -> TypedTensor<f32> {
-    backend
-        .with_backend_session(|session| {
-            with_webgpu_exec_session(session, |session| session.to_contiguous(view))
-        })
-        .unwrap()
-        .expect("a WebGPU backend session is a WebGPU execution session")
-        .unwrap()
+    backend.to_contiguous(view).unwrap()
 }
 
 fn run_to_contiguous(

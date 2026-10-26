@@ -149,6 +149,9 @@ jobs:
       - name: Check CUDA runners without a GPU
         run: cargo check --features cuda --all-targets
 
+      - name: Check WebGPU runner without a GPU
+        run: cargo check --features webgpu --all-targets
+
       - name: Check caller-owned CPU engine thread counts
         run: cargo test --lib cpu_engine_tests
 
