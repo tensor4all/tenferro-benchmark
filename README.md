@@ -59,11 +59,10 @@ All profiles:
 - Rust toolchain (`cargo`).
 - [uv](https://docs.astral.sh/uv/) for the Python environment (`uv sync`
   creates `.venv` from `pyproject.toml`).
-- External checkouts under `extern/` (tenferro-rs, strided-rs, and problem
-  data), fetched by `./scripts/setup_extern_deps.sh`. Note that
-  `extern/strided-rs` is required for **any** `cargo build` in this repository
-  (Cargo resolves optional path-dependency manifests even when their feature
-  is disabled), so run the setup script before building anything.
+- External checkouts under `extern/` (tenferro-rs and problem
+  data), fetched by `./scripts/setup_extern_deps.sh`. Only tenferro-rs is
+  pinned by revision; strided-perm / strided-view / threadteam come from
+  crates.io and are recorded in `run.yaml` (`resolved_deps`).
 
 For `mac-cpu`, run the "All profiles" commands directly on the host. For the
 devcontainer profiles (`amd-cpu` / `linux-cpu` / `nvidia-gpu`), run them

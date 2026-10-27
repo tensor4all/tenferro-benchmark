@@ -25,8 +25,6 @@ jobs:
       # benchmark-smoke-tenferro-main / nightly jobs.
       TENFERRO_REF: 8fec1ca70852b930c092e7177c30bb8af7594a57
       TENFERRO_UPDATE: "1"
-      STRIDED_RS_REF: c3e1958eeca0cd9393ecd305207e586048230cac
-      STRIDED_RS_UPDATE: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -180,8 +178,6 @@ jobs:
       OPENBLAS_ROOT: /usr
       TENFERRO_REF: 8fec1ca70852b930c092e7177c30bb8af7594a57
       TENFERRO_UPDATE: "1"
-      STRIDED_RS_REF: c3e1958eeca0cd9393ecd305207e586048230cac
-      STRIDED_RS_UPDATE: "1"
       CARGO_TARGET_DIR: target/followup-ci
     steps:
       - uses: actions/checkout@v4

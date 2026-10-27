@@ -24,8 +24,8 @@ num-complex = "0.4"
 libm = "0.2"
 rayon = "1"
 threadteam = { version = "0.1.0", features = ["parallel"] }
-strided-perm = { path = "../../extern/strided-rs/strided-perm", default-features = false, features = ["parallel"] }
-strided-view = { path = "../../extern/strided-rs/strided-view" }
+strided-perm = { version = "0.8", default-features = false, features = ["parallel"] }
+strided-view = "0.7"
 
 [profile.dev]
 debug = 0

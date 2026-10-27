@@ -84,7 +84,6 @@ record its rev. The rev that was measured is recorded in each `run.yaml`
 
 ```bash
 TENFERRO_UPDATE=1 TENFERRO_REF=<REV> \
-STRIDED_RS_UPDATE=1 STRIDED_RS_REF=<STRIDED_REV> \
   ./scripts/setup_extern_deps.sh
 git -C extern/tenferro-rs rev-parse HEAD        # must equal <REV>
 git -C extern/tenferro-rs status --short        # must be clean (tenferro_rs.dirty=false)
@@ -93,16 +92,16 @@ git -C extern/tenferro-rs status --short        # must be clean (tenferro_rs.dir
 - If `extern/tenferro-rs` does not exist, the script clones it, then checks out `<REV>`
   detached. If it exists it must be clean for the move; `TENFERRO_UPDATE=1` fetches and
   `git checkout --detach`es the ref.
-- `STRIDED_REV`: the strided-rs commit the tenferro rev builds against (`main`, 0.8.0, is
-  `c3e1958` at the time of writing; CI pins `d24474d`, which is older).
+- strided-rs is no longer checked out or pinned; strided-perm / strided-view / threadteam
+  resolve from crates.io and are recorded in `run.yaml` (`resolved_deps`).
 - Do not set `SETUP_EXTERN_MIGRATE_SIBLINGS=1` here: it would `mv` `../tenferro-rs`.
 - Do not use `git pull` in `extern/tenferro-rs` for this measurement: `AGENTS.md` says to
   keep a pinned/detached checkout.
 - Check it builds before timing (not a timing run):
   `taskset -c 4-11,16-23 cargo check --no-default-features --features blas-mkl --bins`
   (and `--features native`).
-- Optional, in the results PR: bump `TENFERRO_REF` (twice) and `STRIDED_RS_REF` in
-  `.github/workflows/ci.yml` to the same revs so CI validates what was measured.
+- Optional, in the results PR: bump `TENFERRO_REF` (twice) in
+  `.github/workflows/ci.yml` to the same rev so CI validates what was measured.
 
 ## 3. Build everything before timing
 

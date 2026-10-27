@@ -99,8 +99,8 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "strided-perm 0.8.0",
- "strided-view 0.7.0",
+ "strided-perm",
+ "strided-view",
  "tenferro-ad",
  "tenferro-cpu",
  "tenferro-fft",
@@ -117,7 +117,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c10dc3812ac8258efc67bc896c4edd04c98bcb7837ca766ab56e0b8816cedd9e"
 dependencies = [
  "num-complex",
- "strided-view 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-view",
  "tcontract",
  "tcontract-exec",
  "thiserror 1.0.69",
@@ -133,7 +133,7 @@ dependencies = [
  "cpueinsum",
  "num-complex",
  "strided-basic",
- "strided-view 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-view",
  "thiserror 1.0.69",
  "threadteam",
 ]
@@ -986,8 +986,8 @@ dependencies = [
  "num-complex",
  "num-traits",
  "pulp",
- "strided-perm 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "strided-view 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-perm",
+ "strided-view",
  "threadteam",
  "tinyvec",
 ]
@@ -1028,31 +1028,13 @@ dependencies = [
 [[package]]
 name = "strided-perm"
 version = "0.8.0"
-dependencies = [
- "strided-view 0.7.0",
- "thiserror 1.0.69",
- "threadteam",
- "tinyvec",
-]
-
-[[package]]
-name = "strided-perm"
-version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94760f77ebeb54610918c5fb72264d56292b5270f12505444bfac50e970766bb"
 dependencies = [
- "strided-view 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-view",
  "thiserror 1.0.69",
  "threadteam",
  "tinyvec",
-]
-
-[[package]]
-name = "strided-traits"
-version = "0.7.0"
-dependencies = [
- "num-complex",
- "num-traits",
 ]
 
 [[package]]
@@ -1068,23 +1050,12 @@ dependencies = [
 [[package]]
 name = "strided-view"
 version = "0.7.0"
-dependencies = [
- "num-complex",
- "num-traits",
- "strided-traits 0.7.0",
- "thiserror 1.0.69",
- "tinyvec",
-]
-
-[[package]]
-name = "strided-view"
-version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af817b291f1ed116c05ca320aca0f854b29a68aabcddc6546061042c6b790c14"
 dependencies = [
  "num-complex",
  "num-traits",
- "strided-traits 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-traits",
  "thiserror 1.0.69",
  "tinyvec",
 ]
@@ -1202,7 +1173,7 @@ dependencies = [
  "num-complex",
  "num-traits",
  "strided-basic",
- "strided-view 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-view",
  "t4a-faer",
  "tcontract-exec",
  "tcontract-kernel",
@@ -1363,7 +1334,7 @@ dependencies = [
  "lapack",
  "num-complex",
  "num-traits",
- "strided-view 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-view",
  "tcontract-exec",
  "tenferro-ad",
  "tenferro-cpu",
@@ -1489,7 +1460,7 @@ dependencies = [
  "cblas-sys",
  "lapack",
  "num-complex",
- "strided-view 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strided-view",
  "thiserror 2.0.21",
 ]
 

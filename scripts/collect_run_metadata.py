@@ -654,6 +654,34 @@ def collect_julia_backend() -> dict[str, Any]:
     }
 
 
+RESOLVED_DEP_NAMES = ("strided-perm", "strided-view", "threadteam")
+
+
+def collect_resolved_deps(harness_dir: Path) -> dict[str, list[str]]:
+    """Versions of the upstream crates the harness Cargo.lock resolved.
+
+    Only tenferro-rs is pinned by revision; strided-perm, strided-view and
+    threadteam come from the dependency graph and are recorded here.
+    Read from the harness Cargo.lock the build used; crates it does not
+    resolve are omitted.
+    """
+    for lock in (harness_dir / "Cargo.lock",):
+        if not lock.is_file():
+            continue
+        found: dict[str, list[str]] = {}
+        name = None
+        for line in lock.read_text().splitlines():
+            m = re.match(r'name = "([^"]+)"', line)
+            if m:
+                name = m.group(1)
+                continue
+            m = re.match(r'version = "([^"]+)"', line)
+            if m and name in RESOLVED_DEP_NAMES:
+                found.setdefault(name, []).append(m.group(1))
+        return found
+    return {}
+
+
 def collect_harness(harness_dir: Path) -> dict[str, Any]:
     """Revision and dirty state of this benchmark repository."""
     try:
@@ -698,6 +726,7 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
             "features": parse_features(args.features),
         },
         "harness": collect_harness(args.harness_dir),
+        "resolved_deps": collect_resolved_deps(args.harness_dir),
         "environment": collect_environment(),
         "timing_policy": {
             "version": 2,
