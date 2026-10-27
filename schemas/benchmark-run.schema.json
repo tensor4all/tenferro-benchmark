@@ -51,7 +51,7 @@
     },
     "schema_version": { "const": 1 },
     "target_profile": {
-      "enum": ["mac-cpu", "mac-gpu", "amd-cpu", "nvidia-gpu"]
+      "enum": ["mac-cpu", "mac-gpu", "amd-cpu", "zen5-cpu", "nvidia-gpu"]
     },
     "suite_id": {
       "type": "string",
@@ -117,10 +117,28 @@
         "os": { "type": ["string", "null"] },
         "arch": { "type": ["string", "null"] },
         "cpu": { "type": ["string", "null"] },
+        "affinity": { "$ref": "#/$defs/affinity" },
         "env": {
           "type": "object",
           "additionalProperties": { "type": ["string", "null"] }
         }
+      }
+    },
+    "affinity": {
+      "type": "object",
+      "description": "CPU placement of the measured process (pinned profiles run each thread row under taskset).",
+      "additionalProperties": false,
+      "properties": {
+        "pinning": { "enum": ["none", "taskset"] },
+        "requested_measured_cpus": { "type": ["string", "null"] },
+        "observer_cpus": { "type": ["string", "null"] },
+        "override_of": { "type": ["string", "null"] },
+        "thread_budget": { "type": ["string", "null"] },
+        "measured_cpus": { "type": ["string", "null"] },
+        "l3_domains": { "type": ["array", "null"], "items": { "type": "string" } },
+        "cpu_boost": { "type": ["string", "null"] },
+        "scaling_governor": { "type": ["string", "null"] },
+        "scaling_driver": { "type": ["string", "null"] }
       }
     },
     "blas": {

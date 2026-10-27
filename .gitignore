@@ -234,3 +234,6 @@ docs/superpowers
 docs/test-reports
 
 Cargo.lock
+
+# Generated Pages site (scripts/generate_dashboard.py, built in CI on every deploy)
+_site/

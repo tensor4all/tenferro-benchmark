@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
+# shellcheck source=scripts/cpu_pinning.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/cpu_pinning.sh"
+
 configure_cpu_thread_env() {
     local threads="${1:?threads required}"
+    # Pinned profiles (zen5-cpu) run each thread row under its taskset mask.
+    apply_cpu_affinity "$threads" || return 1
     local xla_multi_thread="false"
     if [[ "$threads" =~ ^[0-9]+$ ]] && (( threads > 1 )); then
         xla_multi_thread="true"
@@ -43,7 +48,10 @@ print_cpu_thread_env() {
         BLIS_NUM_THREADS \
         PJRT_NPROC \
         XLA_FLAGS \
-        JULIA_NUM_THREADS; do
+        JULIA_NUM_THREADS \
+        BENCHMARK_CPU_PINNING \
+        BENCHMARK_MEASURED_CPUS \
+        BENCHMARK_OBSERVER_CPUS; do
         printf '  %s=%s\n' "$key" "${!key:-}"
     done
 }

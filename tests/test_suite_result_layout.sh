@@ -174,6 +174,7 @@ assert safe_suite_id_parts("cpu/einsum") == ("cpu", "einsum")
 assert safe_suite_id_parts("gpu/dense") == ("gpu", "dense")
 assert safe_target_profile("mac-cpu") == "mac-cpu"
 assert safe_target_profile("amd-cpu") == "amd-cpu"
+assert safe_target_profile("zen5-cpu") == "zen5-cpu"
 assert safe_target_profile("nvidia-gpu") == "nvidia-gpu"
 
 try:

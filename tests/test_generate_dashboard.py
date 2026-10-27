@@ -105,7 +105,8 @@ class DashboardTests(unittest.TestCase):
             "  - {id: case_lat, regime: latency}\n"
         )
 
-    def generate(self, output):
+    def generate(self, output, latest_profiles=None):
+        # The fixtures use a legacy profile (linux-cpu); None keeps every profile.
         return dashboard.generate(
             self.result,
             output,
@@ -113,7 +114,38 @@ class DashboardTests(unittest.TestCase):
             git_repo=None,
             instances_dir=self.root / "instances",
             benchmarks_dir=self.root / "benchmarks",
+            latest_profiles=latest_profiles,
         )
+
+    def test_latest_generation_only_is_published_and_linked(self):
+        # The default publication covers zen5-cpu and nvidia-gpu; the legacy
+        # linux-cpu/amd-cpu/mac-cpu reports are neither generated nor linked.
+        for legacy in ("amd-cpu", "mac-cpu"):
+            (self.result / legacy / "cpu").mkdir(parents=True)
+            (self.result / legacy / "cpu" / "cpu_ops.md").write_text("# old\n")
+        output = self.root / "site"
+        self.assertEqual(self.generate(output, dashboard.LATEST_PROFILES), 0)
+        pages = "".join(path.read_text() for path in output.rglob("*.html"))
+        for legacy in ("linux-cpu", "amd-cpu", "mac-cpu", "mac-gpu"):
+            self.assertNotIn(legacy, pages)
+            self.assertFalse((output / legacy).exists(), legacy)
+        self.assertTrue((output / "nvidia-gpu/gpu/dense.html").exists())
+        index = (output / "index.html").read_text()
+        self.assertIn('href="gpu/index.html"', index)
+        # zen5-cpu has no committed report yet: an unlinked placeholder, not an old CPU page.
+        self.assertNotIn('href="cpu/index.html"', index)
+        self.assertIn("no results published yet", index)
+        self.assertIn("zen5-cpu", index)
+
+    def test_zen5_cpu_report_gets_the_cpu_family_page(self):
+        (self.result / "zen5-cpu" / "cpu").mkdir(parents=True)
+        (self.result / "zen5-cpu" / "cpu" / "einsum.md").write_text("# einsum\n")
+        output = self.root / "site"
+        self.assertEqual(self.generate(output, dashboard.LATEST_PROFILES), 0)
+        index = (output / "index.html").read_text()
+        self.assertIn('href="cpu/index.html"', index)
+        self.assertIn("AMD Ryzen AI 9 HX 470", (output / "cpu/index.html").read_text())
+        self.assertTrue((output / "zen5-cpu/cpu/einsum.html").exists())
 
     def test_two_summaries_produce_expected_ratios_and_flags(self):
         current = json.loads((self.result / "nvidia-gpu/gpu/dense.summary.json").read_text())

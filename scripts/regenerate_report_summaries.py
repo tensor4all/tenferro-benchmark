@@ -46,6 +46,7 @@ MAINTAINED: dict[tuple[str, str], str] = {
     ("nvidia-gpu", "gpu/perf_issues"): "perf_issues",
     ("mac-cpu", "cpu/permutation"): "cpu_permutation",
     ("amd-cpu", "cpu/permutation"): "cpu_permutation",
+    ("zen5-cpu", "cpu/permutation"): "cpu_permutation",
 }
 
 

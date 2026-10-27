@@ -5,14 +5,20 @@ profile where the suite was run.
 
 Current target profiles:
 
-- `mac-cpu`
-- `amd-cpu`
-- `nvidia-gpu`
+- `zen5-cpu` (latest CPU generation; pinned 1/4/8-thread rows)
+- `nvidia-gpu` (latest GPU generation)
+- `mac-cpu`, `amd-cpu`, `linux-cpu`, `mac-gpu` (older generations: kept in `result/`
+  and git history, not linked from the README or the Pages site)
 
 Latest human-facing reports are kept under `result/<target_profile>/...`:
 
 ```text
 result/
+  zen5-cpu/
+    cpu/einsum.md
+    cpu/cpu_ops.md
+    cpu/linalg_jvp_vjp.md
+    cpu/permutation.md
   mac-cpu/
     cpu/einsum.md
     cpu/cpu_ops.md

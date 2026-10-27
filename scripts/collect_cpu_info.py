@@ -19,6 +19,13 @@ def _run(args: list[str]) -> str | None:
     return value or None
 
 
+def _read_text(path: Path) -> str | None:
+    try:
+        return path.read_text().strip() or None
+    except OSError:
+        return None
+
+
 def _sysctl_value(key: str) -> str | None:
     return _run(["sysctl", "-n", key])
 
@@ -154,6 +161,22 @@ def collect_cpu_info() -> dict[str, str]:
         "NUMA nodes": lscpu.get("NUMA node(s)") or "unknown",
         "Python platform": platform.platform(),
     }
+    # Linux sysfs facts that decide how a pinned run is read; omitted when absent.
+    l3_domains = sorted(
+        {
+            text
+            for index in Path("/sys/devices/system/cpu").glob("cpu[0-9]*/cache/index*")
+            if _read_text(index / "level") == "3"
+            for text in [_read_text(index / "shared_cpu_list")]
+            if text
+        },
+        key=lambda item: int(item.replace("-", ",").split(",")[0]),
+    )
+    if l3_domains:
+        info["L3 domains (shared CPUs)"] = "; ".join(l3_domains)
+    boost = _read_text(Path("/sys/devices/system/cpu/cpufreq/boost"))
+    if boost is not None:
+        info["CPU boost"] = {"1": "enabled", "0": "disabled"}.get(boost, boost)
     return info
 
 
