@@ -51,15 +51,17 @@ separate step on a quiet machine.
    For this agent session: `taskset -apc 4-11,16-23 "$(pgrep -x claude)"` for the 1T and
    4T rows, then check with `taskset -pc "$(pgrep -x claude)"`. Start the run from a *new*
    shell so it inherits the mask. A process already forked keeps its old mask.
-3. The 8T row needs the other observer set (`0-3,12-15`), so a single multi-row invocation
-   cannot satisfy the table by itself:
+3. The 8T row needs the other observer set (`0-3,12-15`), and the rows interleave:
+   `run_all.sh 1 4 8` runs 1, 4, 8 for each suite in turn, so the observer moves back and
+   forth many times in one invocation. Do not move it by hand or by watching the log.
    - On the host (no container), set `BENCHMARK_OBSERVER_FOLLOW=1`: at every row the
      runner moves its own ancestors (shell, multiplexer, the agent) to the row's observer
      set. It reaches only processes in its PID namespace.
-   - In the devcontainer it cannot reach a host agent. Leave the agent idle (waiting, not
-     polling) and move it by hand when the log shows `BENCHMARK_MEASURED_CPUS=4-11`:
-     `taskset -apc 0-3,12-15 "$(pgrep -x claude)"`. An idle waiting agent costs about
-     nothing, but the move is what the protocol prescribes.
+   - In the devcontainer, set `BENCHMARK_OBSERVER_HANDSHAKE=/workspaces/tenferro-benchmark/target/observer-handshake`
+     inside, and on the host run
+     `scripts/observer_follow_host.sh target/observer-handshake "$(pgrep -x claude)" $(pgrep -x herdr)`
+     in the background. At every row the runner waits until the helper has moved those
+     processes to the row's observer set, before the idle check.
 
 ## 1. Check the checkout
 

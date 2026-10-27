@@ -25,6 +25,13 @@
 # runner's PID namespace: from inside the devcontainer it cannot move a host agent, which
 # then has to be moved by hand (see the handoff).
 #
+# BENCHMARK_OBSERVER_HANDSHAKE=<dir> covers that case. At every row the runner writes the
+# row's observer mask to <dir>/request and waits (up to 120 s) until <dir>/ack echoes the
+# request, before the idle check and the timings. scripts/observer_follow_host.sh, run on
+# the host, answers each request by moving the given host processes to the mask. The
+# directory must be the same files on both sides (a path under the bind-mounted checkout).
+# Note that the rows interleave: `run_all.sh 1 4 8` runs 1, 4, 8 for every suite in turn.
+#
 # BENCHMARK_CPU_AFFINITY overrides the measured mask for diagnostics only; the
 # override is recorded, and a run that sets it is not a publication run.
 
@@ -73,6 +80,22 @@ cpu_pinning_move_ancestors() {
     done
 }
 
+# Ask the host helper in DIR to move the observer to MASK and wait for its ack.
+cpu_pinning_handshake() {
+    local dir="${1:?dir required}" mask="${2:?mask required}" token waited=0
+    mkdir -p "$dir"
+    token="$$-$(date +%s%N) $mask"
+    printf '%s\n' "$token" > "$dir/request.tmp" && mv "$dir/request.tmp" "$dir/request"
+    until [[ "$(cat "$dir/ack" 2>/dev/null)" == "$token" ]]; do
+        if (( waited >= 1200 )); then
+            echo "ERROR: no observer ack for '$mask' in $dir after 120 s (is scripts/observer_follow_host.sh running?)." >&2
+            return 1
+        fi
+        sleep 0.1
+        waited=$((waited + 1))
+    done
+}
+
 # Pin the current shell (and so every process it starts afterwards) to the
 # measured mask of the active profile's THREADS row, and export the recorded
 # masks for collect_run_metadata.py. No-op for unpinned profiles.
@@ -104,6 +127,9 @@ apply_cpu_affinity() {
     }
     if [[ "${BENCHMARK_OBSERVER_FOLLOW:-0}" == "1" ]]; then
         cpu_pinning_move_ancestors "$observer"
+    fi
+    if [[ -n "${BENCHMARK_OBSERVER_HANDSHAKE:-}" ]]; then
+        cpu_pinning_handshake "$BENCHMARK_OBSERVER_HANDSHAKE" "$observer" || return 1
     fi
     export BENCHMARK_CPU_PINNING=taskset
     export BENCHMARK_MEASURED_CPUS="$mask"
