@@ -3,7 +3,7 @@
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
 # GPU quick also includes fixed/mixed/fresh sequence and allocation-entry controls.
-manifest_version: 7
+manifest_version: 8
 suite_id: gpu/perf_issues
 source: data/instances/gpu_perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -96,6 +96,28 @@ coverage:
   - qr_live_buffers_f64_n32_live16
   - qr_live_buffers_f64_n32_live256
   - qr_live_buffers_f64_n32_live1024
+  - prepared_dot_general_f32_decode_len8
+  - prepared_dot_general_f32_decode_len8_eager-session
+  - prepared_dot_general_f32_decode_len8_pytorch
+  - standard_batched_matmul_f64_b16_32_cublas
+  - standard_batched_matmul_f64_b16_32_cublas_batch-outer
+  - standard_batched_matmul_f64_b16_32_cublas_pytorch
+  - solve_readback_latency_f64_n2
+  - solve_readback_latency_f64_n2_pytorch
+  - solve_readback_latency_f64_n4
+  - solve_readback_latency_f64_n4_pytorch
+  - solve_readback_latency_f64_n8
+  - solve_readback_latency_f64_n8_pytorch
+  - solve_readback_latency_f64_n32
+  - solve_readback_latency_f64_n32_pytorch
+  - qr_readback_latency_f64_n2
+  - qr_readback_latency_f64_n2_pytorch
+  - qr_readback_latency_f64_n4
+  - qr_readback_latency_f64_n4_pytorch
+  - qr_readback_latency_f64_n8
+  - qr_readback_latency_f64_n8_pytorch
+  - qr_readback_latency_f64_n32
+  - qr_readback_latency_f64_n32_pytorch
   - eager_op_f32_add_decode_eager-session
   - eager_op_f32_add_decode_eager-session-streaming
   - eager_op_f32_add_decode_launch-only-floor
@@ -238,6 +260,28 @@ coverage:
   - qr_live_buffers_f64_n32_live1024
   - first_call_transpose_to-contiguous_f64_layouts_r2-12_c5-7
   - first_call_transpose_copy-into_f64_layouts_r2-12_c5-7
+  - prepared_dot_general_f32_decode_len8
+  - prepared_dot_general_f32_decode_len8_eager-session
+  - prepared_dot_general_f32_decode_len8_pytorch
+  - standard_batched_matmul_f64_b16_32_cublas
+  - standard_batched_matmul_f64_b16_32_cublas_batch-outer
+  - standard_batched_matmul_f64_b16_32_cublas_pytorch
+  - solve_readback_latency_f64_n2
+  - solve_readback_latency_f64_n2_pytorch
+  - solve_readback_latency_f64_n4
+  - solve_readback_latency_f64_n4_pytorch
+  - solve_readback_latency_f64_n8
+  - solve_readback_latency_f64_n8_pytorch
+  - solve_readback_latency_f64_n32
+  - solve_readback_latency_f64_n32_pytorch
+  - qr_readback_latency_f64_n2
+  - qr_readback_latency_f64_n2_pytorch
+  - qr_readback_latency_f64_n4
+  - qr_readback_latency_f64_n4_pytorch
+  - qr_readback_latency_f64_n8
+  - qr_readback_latency_f64_n8_pytorch
+  - qr_readback_latency_f64_n32
+  - qr_readback_latency_f64_n32_pytorch
   - raw_scope_entry_f64_empty-idle
   - raw_scope_entry_f64_empty-behind-queued-gemm
   - raw_scope_entry_f64_sync-behind-queued-gemm

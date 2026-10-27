@@ -29,22 +29,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     for threads in [1, 4] {
         // tenferro-rs #2206 removed the shared CPU context; the equivalent
-        // empty-pool probe builds a caller-held pool with tenferro's preset.
-        let ctx = tenferro_cpu::thread_pool_builder()
-            .num_threads(threads)
-            .build()?;
+        // empty placement probe uses the public external-provider entry.
+        let ctx = tenferro_cpu::Pool::builder().threads(threads).build()?;
+        let mut exec = tenferro_cpu::strided_exec::Exec::new(&ctx, threads)?;
         for _ in 0..100 {
-            black_box(ctx.install(|| black_box(1)));
+            black_box(exec.reborrow().external(|_| black_box(1)));
         }
         let mut times = Vec::new();
         for _ in 0..1001 {
             let start = Instant::now();
-            let out = ctx.install(|| black_box(1));
+            let out = exec.reborrow().external(|_| black_box(1));
             times.push(start.elapsed().as_nanos());
             black_box(out);
         }
         times.sort();
-        println!("EMPTY_INSTALL threads={threads} median_ns={}", times[500]);
+        println!("EMPTY_EXTERNAL threads={threads} median_ns={}", times[500]);
     }
     Ok(())
 }

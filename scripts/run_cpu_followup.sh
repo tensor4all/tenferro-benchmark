@@ -20,12 +20,13 @@ if [[ "${1:-}" == --prepare ]]; then
         git -C extern/tenferro-rs pull --ff-only
     fi
     test -d "$MKLROOT/include"
-    export CARGO_TARGET_DIR="$PWD/target/followup-b3f47296"
+    export CARGO_TARGET_DIR="$PWD/target/followup-current"
     cargo build --release --locked --manifest-path mwe/cpu_followup/Cargo.toml
     exit 0
 fi
 THREADS="${1:?thread count required}"; shift
 configure_cpu_thread_env "$THREADS"
 assert_benchmark_host_idle
-export LD_LIBRARY_PATH="$MKLROOT/lib:/opt/intel/oneapi/compiler/2026.1/lib:${LD_LIBRARY_PATH:-}"
+source scripts/cpu_blas_provider.sh
+ensure_blas_env_for_features blas-mkl
 exec .venv/bin/python scripts/cpu_followup_cases.py --threads "$THREADS" "$@"

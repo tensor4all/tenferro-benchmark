@@ -59,6 +59,7 @@ require_idle_gpu() {
 }
 require_idle_gpu "before the run"
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-nvidia-gpu}"
+export GPU_BENCH_CLOCK_RAMP_MS="${GPU_BENCH_CLOCK_RAMP_MS:-300}"
 if [[ "$BENCHMARK_TARGET_PROFILE" != nvidia-gpu ]]; then
     echo "ERROR: gpu/perf_issues requires BENCHMARK_TARGET_PROFILE=nvidia-gpu." >&2
     exit 1
@@ -86,7 +87,7 @@ require_idle_gpu "at measurement time"
 export BENCH_GPU_APPS_START="$REQUIRE_IDLE_SNAPSHOT"
 "$PYTHON" "$SCRIPT_DIR/collect_gpu_info.py" --device-ordinal "$PHYSICAL_DEVICE_ORDINAL" --markdown > "$RUN_DIR/gpu_info.md" || true
 export BENCHMARK_COMMIT="${BENCHMARK_COMMIT:-$(git rev-parse HEAD)}"
-export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE GPU_BENCH_DEVICE BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE PERF_ISSUES_CORRECTNESS_ONLY BENCHMARK_ALLOW_BUSY_GPU; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
+export BENCH_COMMAND="${BENCH_COMMAND:-$(for v in BENCHMARK_TARGET_PROFILE GPU_BENCH_DEVICE GPU_BENCH_CLOCK_RAMP_MS BENCH_COVERAGE BENCH_EFFORT BENCH_INSTANCE PERF_ISSUES_CORRECTNESS_ONLY BENCHMARK_ALLOW_BUSY_GPU; do if [[ -n "${!v:-}" ]]; then printf '%s=%q ' "$v" "${!v}"; fi; done)$(printf '%q ' "$0" "$@")}"
 "$PYTHON" "$SCRIPT_DIR/collect_run_metadata.py" \
     --suite-id gpu/perf_issues --target-profile "$BENCHMARK_TARGET_PROFILE" \
     --suite-file benchmarks/gpu/perf_issues.yaml --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \

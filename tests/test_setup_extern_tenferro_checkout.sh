@@ -29,8 +29,11 @@ cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-main/scripts/cpu_blas_prov
 
 (
   cd "$TMP/project-main"
+  # Simulate a fresh macOS environment even inside the Linux devcontainer.
+  unset OPENBLAS_ROOT MKLROOT TENFERRO_CPU_FEATURES
   BENCHMARK_HOST_OS=Darwin \
   TENFERRO_REPO_URL="$TMP/tenferro-rs.git" \
+  STRIDED_RS_REPO_URL="$TMP/tenferro-rs.git" \
   TENFERRO_REF=main \
     bash scripts/setup_extern_deps.sh >"$TMP/project-main.log" 2>&1
 

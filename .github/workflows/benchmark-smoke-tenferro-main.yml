@@ -63,8 +63,6 @@ jobs:
     if: github.repository == 'tensor4all/tenferro-benchmark'
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    env:
-      OPENBLAS_ROOT: /usr
     steps:
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
@@ -72,35 +70,21 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install devcontainer CLI
+        run: npm install --global @devcontainers/cli
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          version: "latest"
+      - name: Create current MKL CPU devcontainer
+        run: devcontainer up --workspace-folder . --remove-existing-container
 
-      - name: Install system dependencies
+      - name: Check out latest tenferro-rs and run minimal einsum smoke test
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libopenblas-dev libomp-dev cmake
-
-      - name: Prepare environment and check out latest tenferro-rs main
-        env:
-          TENFERRO_REF: main
-          TENFERRO_UPDATE: "1"
-        run: |
-          uv sync --frozen || uv sync
-          ./scripts/setup_extern_deps.sh
-          echo "tenferro-rs commit: $(git -C extern/tenferro-rs rev-parse HEAD)"
-
-      - name: Run minimal einsum smoke test
-        env:
-          BENCHMARK_TARGET_PROFILE: amd-cpu
-          TENFERRO_CPU_FEATURES: blas-openblas
-          OPENBLAS_ROOT: /usr
-          BENCHMARK_ALLOW_BUSY_HOST: "1"
-          BENCH_INSTANCE: bin_matmul_256
-          BENCH_WARMUPS: "1"
-          BENCH_RUNS: "1"
-        run: ./scripts/run_all_rust.sh 1
+          devcontainer exec --workspace-folder . bash -lc '
+            set -euo pipefail
+            test -d "$MKLROOT/include"
+            export TENFERRO_CPU_FEATURES=blas-mkl
+            export BENCHMARK_TARGET_PROFILE=amd-cpu
+            export TENFERRO_REF=main TENFERRO_UPDATE=1
+            ./scripts/setup_extern_deps.sh
+            echo "tenferro-rs commit: $(git -C extern/tenferro-rs rev-parse HEAD)"
+            export BENCH_INSTANCE=bin_matmul_256 BENCH_WARMUPS=1 BENCH_RUNS=1
+            ./scripts/run_all_rust.sh 1'

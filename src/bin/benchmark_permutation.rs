@@ -39,8 +39,8 @@
 //! `strided_perm::copy_into` and `copy_into_col_major` into a freshly allocated
 //! destination `StridedArray` on every iteration. This matches tenferro's
 //! allocation-inclusive owned-tensor API semantics. The `strided-rs` feature also enables
-//! `strided-perm/parallel`, so `copy_into_par` / `copy_into_col_major_par`
-//! are timed too; whichever of the (up to four) variants is fastest is
+//! `strided-perm/parallel`; both APIs are timed with serial and caller-owned
+//! pool placement tokens. Whichever of the (up to four) variants is fastest is
 //! reported as the single `strided-rs` cell, with the winning variant name
 //! recorded in the JSONL `notes` field.
 
@@ -830,38 +830,47 @@ fn run_strided_rs_participant(
         .expect("strided-rs permute must succeed on a validated pattern");
     let mut dst = strided_view::StridedArray::<f64>::col_major(&prepared.out_shape);
 
-    // Same function-pointer signature once monomorphized at T = f64; the
-    // `Send + Sync` bounds on the `_par` variants are compile-time only.
+    // strided-perm 0.8 takes a caller-owned threadteam placement token.
+    // Build the private pool once, outside correctness and every sample.
+    let pool = threadteam::Pool::builder()
+        .threads(threads)
+        .build()
+        .expect("strided-rs worker pool");
+    let mut exec = threadteam::Exec::new(&pool, threads).expect("strided-rs placement");
     type CopyFn = fn(
         &mut strided_view::StridedViewMut<f64>,
         &strided_view::StridedView<f64>,
+        threadteam::Exec<'_>,
     ) -> strided_view::Result<()>;
-
-    // The `strided-rs` Cargo feature always enables strided-perm's own
-    // `parallel` feature (see Cargo.toml), so the `_par` variants are always
-    // linked in here; whether they win a given pattern/thread-count depends
-    // on the actual rayon pool size (`threads`) at runtime.
-    let candidates: [(&'static str, CopyFn); 4] = [
-        ("copy_into", strided_perm::copy_into as CopyFn),
+    let candidates: [(&'static str, CopyFn, bool); 4] = [
+        ("copy_into_serial", strided_perm::copy_into as CopyFn, false),
         (
-            "copy_into_col_major",
+            "copy_into_col_major_serial",
             strided_perm::copy_into_col_major as CopyFn,
+            false,
         ),
-        ("copy_into_par", strided_perm::copy_into_par as CopyFn),
+        ("copy_into_pool", strided_perm::copy_into as CopyFn, true),
         (
-            "copy_into_col_major_par",
-            strided_perm::copy_into_col_major_par as CopyFn,
+            "copy_into_col_major_pool",
+            strided_perm::copy_into_col_major as CopyFn,
+            true,
         ),
     ];
 
     // Correctness gate before any timing: run each variant once and keep
     // only the ones whose output matches the naive reference.
-    let mut verified: Vec<(&'static str, CopyFn)> = Vec::new();
+    let mut verified: Vec<(&'static str, CopyFn, bool)> = Vec::new();
     let mut failures: Vec<String> = Vec::new();
-    for (name, f) in candidates {
-        f(&mut dst.view_mut(), &src_perm).expect("strided-rs correctness run must succeed");
+    for (name, f, parallel) in candidates {
+        let placement = if parallel {
+            exec.reborrow()
+        } else {
+            threadteam::Exec::serial()
+        };
+        f(&mut dst.view_mut(), &src_perm, placement)
+            .expect("strided-rs correctness run must succeed");
         match verify_output(dst.data(), &prepared.reference) {
-            Ok(()) => verified.push((name, f)),
+            Ok(()) => verified.push((name, f, parallel)),
             Err(msg) => failures.push(format!("{name}: {msg}")),
         }
     }
@@ -876,10 +885,15 @@ fn run_strided_rs_participant(
     // Time every correct variant with a fresh destination allocation per
     // call and keep the fastest as the single reported `strided-rs` cell.
     let mut best: Option<(&'static str, Timing)> = None;
-    for (name, f) in verified.iter().copied() {
+    for (name, f, parallel) in verified.iter().copied() {
         let timing = bench_n(warmup, iters, bytes, || {
             let mut dst = strided_view::StridedArray::<f64>::col_major(&prepared.out_shape);
-            f(&mut dst.view_mut(), &src_perm).unwrap();
+            let placement = if parallel {
+                exec.reborrow()
+            } else {
+                threadteam::Exec::serial()
+            };
+            f(&mut dst.view_mut(), &src_perm, placement).unwrap();
             black_box(&dst);
             dst
         });

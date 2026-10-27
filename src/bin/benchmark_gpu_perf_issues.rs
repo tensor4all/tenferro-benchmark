@@ -34,6 +34,8 @@ use tenferro_tensor::{
 type BoxError = Box<dyn Error + Send + Sync>;
 type Result<T> = std::result::Result<T, BoxError>;
 
+#[path = "benchmark_gpu_perf_issues/dispatch.rs"]
+mod dispatch;
 #[path = "benchmark_gpu_perf_issues/shape_stream.rs"]
 mod shape_stream;
 
@@ -91,7 +93,23 @@ fn measure(
     retained_bytes: usize,
     mut batch: impl FnMut(usize) -> Result<u128>,
 ) -> Result<Measurement> {
-    for _ in 0..timing.warmups.max(1) {
+    if timing.samples == 0 {
+        return Ok(Measurement {
+            iterations: 0,
+            samples: vec![],
+        });
+    }
+    // Explicit per-case initialization and clock ramp, including zero-warmup runs.
+    batch(1)?;
+    let ramp_ms = std::env::var("GPU_BENCH_CLOCK_RAMP_MS")
+        .ok()
+        .and_then(|s| s.parse::<u64>().ok())
+        .unwrap_or(300);
+    let deadline = Instant::now() + std::time::Duration::from_millis(ramp_ms);
+    while Instant::now() < deadline {
+        batch(1)?;
+    }
+    for _ in 0..timing.warmups {
         batch(1)?;
     }
     let cap = (RETENTION_BUDGET_BYTES / retained_bytes.max(1)).clamp(1, CALIBRATION_MAX_ITERATIONS);
@@ -2168,23 +2186,25 @@ fn linalg_readback_latency(params: &Value, timing: &Timing, device: usize) -> Re
             for i in 0..n {
                 for j in 0..n {
                     let qr: f64 = (0..n).map(|p| qs[i + n * p] * rs[p + n * j]).sum();
-                    worst = worst_of(worst, (qr - data[i + n * j]).abs() / data[i + n * j].abs().max(1.0));
+                    worst = worst_of(
+                        worst,
+                        (qr - data[i + n * j]).abs() / data[i + n * j].abs().max(1.0),
+                    );
                 }
             }
             check_tol(worst, 1e-10, "qr reconstruction")
         }
     })??;
     let m = bk.with_backend_session(|s| {
-        measure(timing, bytes, |it| {
-            timed_in_session(it, s, |s| {
-                if op == "solve" {
-                    Ok(vec![a.solve(&b, s)?])
-                } else {
-                    let (q, r) = a.qr(s)?;
-                    Ok(vec![q, r])
-                }
+        if op == "solve" {
+            measure(timing, n * 8, |it| {
+                timed_in_session(it, s, |s| Ok(a.solve(&b, s)?))
             })
-        })
+        } else {
+            measure(timing, bytes * 2, |it| {
+                timed_in_session(it, s, |s| Ok(a.qr(s)?))
+            })
+        }
     })??;
     Ok(CaseOutcome {
         max_rel_error: error,
@@ -2802,6 +2822,8 @@ fn main() -> Result<()> {
     };
     let kind = param_str(&params, "kind")?;
     let outcome = match kind {
+        "prepared_decode" => dispatch::decode(&params, &timing, device),
+        "standard_batched_matmul" => dispatch::batched(&params, &timing, device),
         "transfer" => transfer(&params, &timing, device),
         "alloc_zero" => alloc_zero(&params, &timing, device),
         "small_blocks" => small_blocks(&params, &timing, device),

@@ -15,7 +15,7 @@ def command(case_id, path, threads, runs):
                 str(ROOT/'mwe/cpu_followup/reference.jl'),case_id,str(threads),str(runs)]
     if path in ('pytorch','jax','mkl-dfti'):
         return [sys.executable,str(ROOT/'mwe/cpu_followup/reference.py'),case_id,path,str(threads),str(runs)]
-    return [os.environ.get('CPU_FOLLOWUP_BIN',str(ROOT/'target/followup-b3f47296/release/cpu-followup-mwe')),
+    return [os.environ.get('CPU_FOLLOWUP_BIN',str(ROOT/'target/followup-current/release/cpu-followup-mwe')),
             case_id,path,str(threads),str(runs)]
 
 

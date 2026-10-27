@@ -4150,6 +4150,152 @@
   "reference_for": "reshape_f64_concrete-shared_n33554432_to8192x4096"
  },
  {
+  "id": "metadata_transpose_view_f64_rank8_t1",
+  "issues": [
+   "#2180"
+  ],
+  "kind": "metadata_clone",
+  "arm": "metadata-clone",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "shape": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+   ],
+   "kind": "metadata_clone",
+   "arm": "metadata-clone",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2180 (benchmark #254): rank-8 borrowed transpose-view metadata clone. Fixture and transposed view prepared outside timing; no payload copy or session. Julia PermutedDimsArray metadata reference. Latency only; 4T is a metadata control.",
+  "thread_counts": [
+   1
+  ],
+  "regime": "latency",
+  "execution_path": "metadata-clone"
+ },
+ {
+  "id": "metadata_transpose_view_f64_rank8_t1_julia-base",
+  "issues": [
+   "#2180"
+  ],
+  "kind": "metadata_clone",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "shape": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+   ],
+   "kind": "metadata_clone",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2180 (benchmark #254): rank-8 borrowed transpose-view metadata clone. Fixture and transposed view prepared outside timing; no payload copy or session. Julia PermutedDimsArray metadata reference. Latency only; 4T is a metadata control.",
+  "reference_for": "metadata_transpose_view_f64_rank8_t1",
+  "thread_counts": [
+   1
+  ],
+  "regime": "latency",
+  "execution_path": "julia-base"
+ },
+ {
+  "id": "metadata_transpose_view_f64_rank8_t4",
+  "issues": [
+   "#2180"
+  ],
+  "kind": "metadata_clone",
+  "arm": "metadata-clone",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "shape": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+   ],
+   "kind": "metadata_clone",
+   "arm": "metadata-clone",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2180 (benchmark #254): rank-8 borrowed transpose-view metadata clone. Fixture and transposed view prepared outside timing; no payload copy or session. Julia PermutedDimsArray metadata reference. Latency only; 4T is a metadata control.",
+  "thread_counts": [
+   4
+  ],
+  "regime": "latency",
+  "execution_path": "metadata-clone"
+ },
+ {
+  "id": "metadata_transpose_view_f64_rank8_t4_julia-base",
+  "issues": [
+   "#2180"
+  ],
+  "kind": "metadata_clone",
+  "arm": "julia-base",
+  "backend": "julia-base",
+  "dtype": "f64",
+  "params": {
+   "shape": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+   ],
+   "kind": "metadata_clone",
+   "arm": "julia-base",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu",
+   "mac-cpu"
+  ],
+  "intent": "tenferro-rs #2180 (benchmark #254): rank-8 borrowed transpose-view metadata clone. Fixture and transposed view prepared outside timing; no payload copy or session. Julia PermutedDimsArray metadata reference. Latency only; 4T is a metadata control.",
+  "reference_for": "metadata_transpose_view_f64_rank8_t4",
+  "thread_counts": [
+   4
+  ],
+  "regime": "latency",
+  "execution_path": "julia-base"
+ },
+ {
   "id": "followup_structural_broadcast_in_dim_direct-shared",
   "issues": [
    "#2021"

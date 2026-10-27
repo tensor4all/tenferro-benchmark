@@ -397,6 +397,22 @@ def collect(binary, output, threads, correctness_only=False, suite_key="cpu", de
                     row.update(run_followup(case, threads, config, correctness_only))
                 except Exception as error:
                     row.update(correctness_status="failed", samples=[], error=repr(error))
+            elif case["kind"] == "metadata_clone" and case["backend"] == "julia-base":
+                try:
+                    command = [os.environ.get("JULIA", "julia"), "--project=.",
+                               str(ROOT / "scripts/benchmark_metadata_clone.jl"),
+                               str(0 if correctness_only else config["runs"]),
+                               str(int(config["min_runtime_ms"] * 1_000_000))]
+                    result = subprocess.run(command, text=True, capture_output=True, check=True)
+                    row.update(json.loads(result.stdout.strip().splitlines()[-1]))
+                except Exception as error:
+                    row.update(correctness_status="failed", samples=[], error=repr(error))
+            elif case["backend"] == "pytorch-cuda":
+                try:
+                    from gpu_perf_issue_references import run as run_gpu_reference
+                    row.update(run_gpu_reference(case, config, correctness_only, device))
+                except Exception as error:
+                    row.update(correctness_status="failed", samples=[], error=repr(error))
             elif case["backend"] == "pytorch-cpu":
                 try:
                     row.update(run_torch(case, threads, config, correctness_only))

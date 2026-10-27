@@ -39,15 +39,15 @@ pub fn cpu_thread_count() -> Result<usize, String> {
 /// tenferro-rs #2206 removed backend sessions: the caller owns the engine and
 /// passes it as `&mut` to every operation. Build it once per run, outside the
 /// timed region, and reuse it across samples. `threads: None` sizes the pool
-/// from [`cpu_thread_count`]; the pool is a private one, built with tenferro's
-/// provider worker-stack preset, exactly as tenferro's own benches do.
+/// from [`cpu_thread_count`]; the pool is a private caller-owned strided pool,
+/// built through tenferro's public placement API.
 pub fn cpu_engine(threads: Option<usize>) -> Result<tenferro_cpu::CpuEngine, String> {
     let threads = threads.map_or_else(cpu_thread_count, Ok)?;
     if threads == 0 {
         return Err("requested thread count must be at least 1".into());
     }
-    let pool = tenferro_cpu::thread_pool_builder()
-        .num_threads(threads)
+    let pool = tenferro_cpu::Pool::builder()
+        .threads(threads)
         .build()
         .map_err(|err| format!("build CPU engine pool: {err}"))?;
     Ok(tenferro_cpu::CpuEngine::new(pool))
@@ -122,5 +122,27 @@ where
         Ok(Ok(value)) => Ok(value),
         Ok(Err(err)) => Err(err.to_string()),
         Err(_) => Err(panic_message.to_string()),
+    }
+}
+
+#[cfg(test)]
+mod cpu_engine_tests {
+    use super::cpu_engine;
+    use tenferro_tensor::{Tensor, TensorElementwise, TensorRead};
+
+    #[test]
+    fn requested_worker_counts_execute_on_reusable_engine() {
+        for threads in [1, 4] {
+            let mut engine = cpu_engine(Some(threads)).unwrap();
+            assert_eq!(engine.num_threads(), threads);
+            let x = Tensor::from_vec_col_major(vec![4096], vec![2.0_f64; 4096]).unwrap();
+            for _ in 0..2 {
+                let result = engine
+                    .add_read(TensorRead::from_tensor(&x), TensorRead::from_tensor(&x))
+                    .unwrap();
+                assert!(result.as_slice::<f64>().unwrap().iter().all(|&v| v == 4.0));
+            }
+        }
+        assert!(cpu_engine(Some(0)).is_err());
     }
 }

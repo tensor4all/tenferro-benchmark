@@ -58,6 +58,8 @@ libm = "0.2"
 # unconditionally, the same as extern/tenferro-rs.
 strided-perm = { path = "extern/strided-rs/strided-perm", default-features = false, optional = true }
 strided-view = { path = "extern/strided-rs/strided-view", optional = true }
+# Match the placement type used by the checked-out strided-perm 0.8 API.
+threadteam = { git = "https://github.com/tensor4all/threadteam-rs", rev = "97404b580951aa9d89910a739618ce044e988b16", version = "0.1.0", features = ["parallel"], optional = true }
 
 [features]
 allocation-diagnostics = []
@@ -77,10 +79,9 @@ hptt = ["dep:hptt"]
 # strided view built directly from the pattern's source strides, using
 # extern/strided-rs's strided-perm + strided-view crates (cloned by
 # scripts/setup_extern_deps.sh, mirroring how extern/tenferro-rs is fetched).
-# Also enables strided-perm's own `parallel` feature (copy_into_par /
-# copy_into_col_major_par) so 4-thread runs exercise strided-perm's rayon
-# path, matching this repo's other rayon-backed backends.
-strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel"]
+# Also enables strided-perm's `parallel` feature and caller-owned threadteam
+# pool, so the placement budget matches the runner's requested thread count.
+strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel", "dep:threadteam"]
 # CPU backend selection (tenferro-rs #2004): a build compiles exactly one of
 # `native` (tenferro's own faer kernels and thread pool) or `blas` (cpueinsum
 # contractions plus tlinalg linear algebra on a vendor BLAS/LAPACK); enabling
