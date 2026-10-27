@@ -37,11 +37,11 @@ default_target_profile() {
 
 BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-$(default_target_profile)}"
 case "$BENCHMARK_TARGET_PROFILE" in
-    mac-cpu|amd-cpu|linux-cpu)
+    mac-cpu|amd-cpu|zen5-cpu|linux-cpu)
         export BENCHMARK_TARGET_PROFILE
         ;;
     *)
-        echo "ERROR: BENCHMARK_TARGET_PROFILE must be mac-cpu, amd-cpu, or linux-cpu for CPU FFT." >&2
+        echo "ERROR: BENCHMARK_TARGET_PROFILE must be mac-cpu, amd-cpu, zen5-cpu, or linux-cpu for CPU FFT." >&2
         exit 1
         ;;
 esac

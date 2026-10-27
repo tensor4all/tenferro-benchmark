@@ -1,13 +1,7 @@
 # tenferro-benchmark
 
-The [M5 CPU refresh from tenferro-rs origin/main](docs/m5-cpu-origin-main-refresh-20260913.md) contains the latest CPU results, including the merged BLAS shared-session fix.
-
-Short operations now use [many operations in one session](docs/short-operation-sessions.md); see the [M5 root-cause investigation](docs/m5-short-operation-root-causes.md).
-
-Timing corrections are documented in [timing policy revision 2](docs/timing-policy.md).
-The [M5 Max CPU refresh](docs/m5-cpu-refresh-20260913.md) reran all CPU suites
-with revision 2 at 1 and 4 threads. Other targets retain earlier measurements
-and require affected-participant reruns before operation-performance comparisons.
+Timing policy: [timing policy revision 2](docs/timing-policy.md); short operations use
+[many operations in one session](docs/short-operation-sessions.md).
 
 Benchmark suite for [tenferro-rs](https://github.com/tensor4all/tenferro-rs),
 comparing tenferro against PyTorch, JAX, Julia, HPTT, cuTENSOR, and other
@@ -15,31 +9,22 @@ reference backends on CPU and GPU workloads.
 
 ## Latest Results
 
-The tracked reports under [`result/`](result/) are the source of truth for
-benchmark numbers (they are never duplicated into this README). Each file is
-the latest report for one `target_profile` × `suite_id` pair; older results
-live in git history only.
+The published pages cover only the latest hardware generation, so older data
+is never mistaken for current: **`zen5-cpu`** (AMD Ryzen AI 9 HX 470 workstation,
+pinned 1/4/8-thread rows; see [AGENTS.md](AGENTS.md#zen5-cpu-workflow-pinned-workstation-rows)) and
+**`nvidia-gpu`** (A100). Older profiles (`amd-cpu`, `linux-cpu`, `mac-cpu`,
+`mac-gpu`) are kept in `result/` and git history but are not linked from here
+or from the Pages site.
+
+- Live pages, generated in CI on every deploy: <https://tensor4all.org/tenferro-benchmark/>
+  (landing page, per-suite pages, and a per-commit
+  [history](https://tensor4all.org/tenferro-benchmark/history.html)).
+- Source of truth (never duplicated into this README): the tracked reports under
+  `result/zen5-cpu/` (once measured) and [`result/nvidia-gpu/`](result/nvidia-gpu/).
+  Each file is the latest report for one `target_profile` x `suite_id` pair.
 
 | Target profile | Suite | Report |
 |---|---|---|
-| `mac-cpu` (Apple Silicon, native) | `cpu/einsum` | [result/mac-cpu/cpu/einsum.md](result/mac-cpu/cpu/einsum.md) |
-| `mac-cpu` | `cpu/cpu_ops` | [result/mac-cpu/cpu/cpu_ops.md](result/mac-cpu/cpu/cpu_ops.md) |
-| `mac-cpu` | `cpu/linalg_jvp_vjp` | [result/mac-cpu/cpu/linalg_jvp_vjp.md](result/mac-cpu/cpu/linalg_jvp_vjp.md) |
-| `mac-cpu` | `cpu/fft` | [result/mac-cpu/cpu/fft.md](result/mac-cpu/cpu/fft.md) |
-| `mac-cpu` | `cpu/public_api` | [result/mac-cpu/cpu/public_api.md](result/mac-cpu/cpu/public_api.md) |
-| `mac-cpu` | `cpu/session_matrix` | [result/mac-cpu/cpu/session_matrix.md](result/mac-cpu/cpu/session_matrix.md) |
-| `mac-cpu` | `cpu/small_work` | [result/mac-cpu/cpu/small_work.md](result/mac-cpu/cpu/small_work.md) |
-| `mac-cpu` | `cpu/permutation` | [result/mac-cpu/cpu/permutation.md](result/mac-cpu/cpu/permutation.md) |
-| `mac-cpu` | `cpu/overhead_smoke` | [result/mac-cpu/cpu/overhead_smoke.md](result/mac-cpu/cpu/overhead_smoke.md) |
-| `linux-cpu` (Linux devcontainer; collected as `amd-cpu`) | `cpu/einsum` | [result/linux-cpu/cpu/einsum.md](result/linux-cpu/cpu/einsum.md) |
-| `linux-cpu` | `cpu/cpu_ops` | [result/linux-cpu/cpu/cpu_ops.md](result/linux-cpu/cpu/cpu_ops.md) |
-| `linux-cpu` | `cpu/linalg_jvp_vjp` | [result/linux-cpu/cpu/linalg_jvp_vjp.md](result/linux-cpu/cpu/linalg_jvp_vjp.md) |
-| `linux-cpu` | `cpu/permutation` | [result/linux-cpu/cpu/permutation.md](result/linux-cpu/cpu/permutation.md) |
-| `amd-cpu` (Linux devcontainer) | `cpu/small_work` | [result/amd-cpu/cpu/small_work.md](result/amd-cpu/cpu/small_work.md) |
-| `amd-cpu` | `cpu/large_ad` | [result/amd-cpu/cpu/large_ad.md](result/amd-cpu/cpu/large_ad.md) |
-| `amd-cpu` (Linux devcontainer) | `cpu/perf_issues` | [result/amd-cpu/cpu/perf_issues.md](result/amd-cpu/cpu/perf_issues.md) |
-| `amd-cpu` (Linux devcontainer) | `cpu/overhead_smoke` | [result/amd-cpu/cpu/overhead_smoke.md](result/amd-cpu/cpu/overhead_smoke.md) |
-| `linux-cpu` | linalg JVP/JVP repro | [result/linux-cpu/cpu/linalg_jvp_jvp.md](result/linux-cpu/cpu/linalg_jvp_jvp.md) |
 | `nvidia-gpu` (CUDA devcontainer) | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
 | `nvidia-gpu` | `gpu/sparse` | [result/nvidia-gpu/gpu/sparse.md](result/nvidia-gpu/gpu/sparse.md) |
@@ -61,7 +46,7 @@ A live dashboard is published to GitHub Pages at
 <https://tensor4all.org/tenferro-benchmark/> (`scripts/generate_dashboard.py`).
 It reads machine-readable `result/<profile>/<suite>.summary.json` sidecars
 written next to each maintained report (schema `summary-schema-v1`), shows the
-A100 `nvidia-gpu` results first, and flags per-case anomalies. Rebuild the
+latest-generation profiles only (`zen5-cpu`, `nvidia-gpu`), and flags per-case anomalies. Rebuild the
 sidecars for a local checkout from the raw runs with
 `uv run python scripts/regenerate_report_summaries.py`. Collection uploads raw
 bundles; validated ingestion commits the published subset; Pages renders only
@@ -89,6 +74,8 @@ container's `OPENBLAS_ROOT` / `MKLROOT` environment, and the container's
 
 Profile-specific:
 
+- `zen5-cpu`: the AMD Ryzen AI 9 HX 470 workstation; thread rows 1/4/8 run under
+  `taskset` (see AGENTS.md).
 - `mac-cpu`: runs natively (no Docker); tenferro uses Accelerate.
 - `amd-cpu` / `linux-cpu`: the [devcontainer CLI](https://github.com/devcontainers/cli)
   and Docker; tenferro defaults to OpenBLAS, oneMKL is optional.

@@ -33,6 +33,8 @@ jobs:
         with:
           submodules: recursive
           persist-credentials: false
+          # The Pages generation step below reads per-commit history.
+          fetch-depth: 0
 
       - name: Check devcontainer configuration and host virtualenv ownership
         run: |
@@ -101,6 +103,7 @@ jobs:
         run: |
           uv run python -m py_compile \
             scripts/generate_dashboard.py \
+            scripts/generate_history.py \
             scripts/report_summary.py \
             scripts/regenerate_report_summaries.py \
             scripts/validate_benchmark_suite.py \
@@ -122,7 +125,19 @@ jobs:
         run: bash tests/test_suite_result_layout.sh
 
       - name: Validate results dashboard
-        run: uv run python -m unittest tests.test_generate_dashboard tests.test_result_pipeline tests.test_cpu_thread_reports
+        run: uv run python -m unittest tests.test_generate_dashboard tests.test_generate_history tests.test_result_pipeline tests.test_cpu_thread_reports
+
+      - name: Generate the Pages site and check it links only the latest generation
+        run: |
+          uv run python scripts/generate_dashboard.py --result-dir result --output-dir _site --git-repo .
+          test -f _site/index.html && test -f _site/history.html
+          if grep -rlE 'amd-cpu|linux-cpu|mac-cpu|mac-gpu' _site; then
+            echo "ERROR: the generated site mentions an older hardware profile" >&2
+            exit 1
+          fi
+
+      - name: Check zen5-cpu pinning and affinity metadata
+        run: bash tests/test_cpu_pinning.sh
 
       - name: Check public API report output without runner stdout
         run: bash tests/test_public_api_table_output.sh

@@ -81,11 +81,11 @@ default_target_profile() {
 
 BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-$(default_target_profile)}"
 case "$BENCHMARK_TARGET_PROFILE" in
-    mac-cpu|amd-cpu)
+    mac-cpu|amd-cpu|zen5-cpu)
         export BENCHMARK_TARGET_PROFILE
         ;;
     *)
-        echo "ERROR: BENCHMARK_TARGET_PROFILE must be mac-cpu or amd-cpu for cpu/permutation." >&2
+        echo "ERROR: BENCHMARK_TARGET_PROFILE must be mac-cpu, amd-cpu or zen5-cpu for cpu/permutation." >&2
         exit 1
         ;;
 esac

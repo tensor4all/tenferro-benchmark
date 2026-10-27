@@ -11,6 +11,7 @@ cp "$ROOT/scripts/format_cpu_thread_reports.py" "$TMP/scripts/format_cpu_thread_
 cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/scripts/cpu_blas_provider.sh"
 cp "$ROOT/scripts/collect_cpu_info.py" "$TMP/scripts/collect_cpu_info.py"
 cp "$ROOT/scripts/thread_env.sh" "$TMP/scripts/thread_env.sh"
+cp "$ROOT/scripts/cpu_pinning.sh" "$TMP/scripts/cpu_pinning.sh"
 cat > "$TMP/scripts/suite_instances.py" <<'PY'
 #!/usr/bin/env python3
 print("bin_matmul_256")

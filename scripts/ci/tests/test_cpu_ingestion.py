@@ -199,7 +199,7 @@ class OverheadIngestionTest(unittest.TestCase):
                     path=root/'accepted'/relative
                     path.parent.mkdir(parents=True,exist_ok=True)
                     path.write_bytes(data)
-                self.assertEqual(dashboard.generate(root/'accepted/result',root/'site'),0)
+                self.assertEqual(dashboard.generate(root/'accepted/result',root/'site',latest_profiles=None),0)
                 html=(root/f'site/{profile}/cpu/overhead_smoke.html').read_text()
                 self.assertIn('Non-gating trend',html)
                 self.assertIn('Steady-state operations',html)

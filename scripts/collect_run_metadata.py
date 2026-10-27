@@ -13,7 +13,7 @@ import shutil
 import socket
 import subprocess
 import sys
-from typing import Any
+from typing import Any, Iterable
 
 import yaml
 
@@ -146,12 +146,86 @@ def non_empty_or_none(value: str | None) -> str | None:
     return stripped or None
 
 
+SYSFS_CPU = Path("/sys/devices/system/cpu")
+
+
+def format_cpu_list(cpus: Iterable[int]) -> str:
+    """Format CPU ids as a taskset-style list: ``0-3,12-15``."""
+    ordered = sorted(set(cpus))
+    ranges: list[str] = []
+    start = prev = None
+    for cpu in ordered:
+        if start is None:
+            start = prev = cpu
+        elif cpu == prev + 1:
+            prev = cpu
+        else:
+            ranges.append(str(start) if start == prev else f"{start}-{prev}")
+            start = prev = cpu
+    if start is not None:
+        ranges.append(str(start) if start == prev else f"{start}-{prev}")
+    return ",".join(ranges)
+
+
+def read_sysfs(path: Path) -> str | None:
+    try:
+        return non_empty_or_none(path.read_text())
+    except OSError:
+        return None
+
+
+def collect_cache_domains(sysfs: Path = SYSFS_CPU) -> list[str]:
+    """Distinct ``shared_cpu_list`` of the last-level (L3) cache, sorted by first CPU."""
+    domains: set[str] = set()
+    for index in sysfs.glob("cpu[0-9]*/cache/index*"):
+        if read_sysfs(index / "level") == "3":
+            shared = read_sysfs(index / "shared_cpu_list")
+            if shared:
+                domains.add(shared)
+    return sorted(domains, key=lambda item: int(re.split(r"[-,]", item)[0]))
+
+
+def collect_affinity(sysfs: Path = SYSFS_CPU) -> dict[str, Any]:
+    """CPU placement of the measured process: the facts a pinned row is judged by.
+
+    ``measured_cpus`` is the affinity this process actually has (inherited from
+    the runner's ``taskset``); ``requested_*`` are what the runner asked for.
+    Everything unavailable on the host (non-Linux, no sysfs) is ``None``.
+    """
+    affinity: dict[str, Any] = {
+        "pinning": os.environ.get("BENCHMARK_CPU_PINNING") or "none",
+        "requested_measured_cpus": os.environ.get("BENCHMARK_MEASURED_CPUS"),
+        "observer_cpus": os.environ.get("BENCHMARK_OBSERVER_CPUS"),
+        "override_of": os.environ.get("BENCHMARK_CPU_AFFINITY_OVERRIDE"),
+        "thread_budget": os.environ.get("RAYON_NUM_THREADS") or os.environ.get("OMP_NUM_THREADS"),
+    }
+    measured: list[int] | None = None
+    if hasattr(os, "sched_getaffinity"):
+        measured = sorted(os.sched_getaffinity(0))
+        affinity["measured_cpus"] = format_cpu_list(measured)
+    else:
+        affinity["measured_cpus"] = None
+    affinity["l3_domains"] = collect_cache_domains(sysfs) or None
+    # `cpufreq/boost` is 1 when frequency boost is allowed, 0 when disabled.
+    boost = read_sysfs(sysfs / "cpufreq" / "boost")
+    affinity["cpu_boost"] = {"1": "enabled", "0": "disabled"}.get(boost or "", boost)
+    first = measured[0] if measured else None
+    affinity["scaling_governor"] = (
+        read_sysfs(sysfs / f"cpu{first}" / "cpufreq" / "scaling_governor") if first is not None else None
+    )
+    affinity["scaling_driver"] = (
+        read_sysfs(sysfs / f"cpu{first}" / "cpufreq" / "scaling_driver") if first is not None else None
+    )
+    return affinity
+
+
 def collect_environment() -> dict[str, Any]:
     environment: dict[str, Any] = {
         "hostname": non_empty_or_none(socket.gethostname()),
         "os": non_empty_or_none(platform.platform()),
         "arch": non_empty_or_none(platform.machine()),
         "cpu": non_empty_or_none(platform.processor()),
+        "affinity": collect_affinity(),
     }
     env_values = {key: os.environ[key] for key in ENV_KEYS if key in os.environ}
     if env_values:

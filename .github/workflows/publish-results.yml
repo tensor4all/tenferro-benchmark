@@ -6,6 +6,7 @@ on:
     paths:
       - 'result/**'
       - 'scripts/generate_dashboard.py'
+      - 'scripts/generate_history.py'
       - 'scripts/report_summary.py'
       - 'scripts/dashboard-requirements.txt'
       - 'benchmarks/**'
@@ -37,12 +38,18 @@ jobs:
         with:
           ref: main
           persist-credentials: false
+          # history.html reads the publication commits, and the dashboard reads
+          # the previous summaries, from git history.
           fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
-      - name: Generate dashboard from repository only
+      - name: Generate the landing page, suite pages and history page
+        # Generated on every deploy from the committed result/ tree and git history;
+        # none of it is committed (_site/ is git-ignored). Only the latest hardware
+        # generation (LATEST_PROFILES in scripts/generate_dashboard.py) is published
+        # or linked, so the top page cannot show stale data or point at old hardware.
         run: |
           uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt \
             python scripts/generate_dashboard.py --result-dir result --output-dir _site --git-repo .

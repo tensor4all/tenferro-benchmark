@@ -18,4 +18,22 @@ for listed_command in \
 done
 listed_command='/usr/bin/sleep infinity'
 assert_benchmark_host_idle
-echo 'PASS: active compilers are rejected; an idle host is admitted'
+
+# A pinned row also needs its measured CPUs idle, seen host-wide through /proc/stat.
+TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
+export BENCHMARK_PROC_STAT="$TMP/stat"
+# Fields after the name: user nice system idle. The mocked sleep swaps in the
+# second snapshot: cpu4 spends the whole window busy, cpu5 stays idle.
+sleep() { cp "$TMP/next" "$BENCHMARK_PROC_STAT"; }
+printf 'cpu4 0 0 0 100 0 0 0 0 0 0\ncpu5 0 0 0 100 0 0 0 0 0 0\n' > "$BENCHMARK_PROC_STAT"
+printf 'cpu4 100 0 0 100 0 0 0 0 0 0\ncpu5 0 0 0 200 0 0 0 0 0 0\n' > "$TMP/next"
+export BENCHMARK_MEASURED_CPUS=4
+if assert_benchmark_host_idle >/dev/null 2>&1; then
+    echo "FAIL: idle guard admitted a busy measured CPU" >&2
+    exit 1
+fi
+export BENCHMARK_MEASURED_CPUS=5
+assert_benchmark_host_idle
+unset BENCHMARK_MEASURED_CPUS BENCHMARK_PROC_STAT
+unset -f sleep
+echo 'PASS: active compilers are rejected; an idle host is admitted; busy measured CPUs are rejected'
