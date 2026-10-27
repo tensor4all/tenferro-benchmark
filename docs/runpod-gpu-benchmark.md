@@ -336,3 +336,35 @@ By default the cleanup job deletes the pod, including after benchmark failure
 or cancellation. `keep_failed_pod=true` retains the pod only when the benchmark
 job fails; it is for debugging and leaves the pod billable until manually
 deleted.
+
+## Solve/QR readback collection (#247)
+
+Use the maintained RunPod execution environment for the standalone readback
+cases (an alternative to local CUDA-devcontainer collection):
+
+```bash
+gh workflow run benchmark-runpod-gpu.yml --repo tensor4all/tenferro-benchmark \
+  -f suite=perf-issues-readback -f gpu_type=a100 -f keep_failed_pod=false
+```
+
+The hosted job rebuilds `benchmark_gpu_perf_issues` and records its source
+commits, digest and compiler version. The A100 verifies that build before use;
+no compiler or Python installation is needed on the paid runner. The runner
+uses the prepared CUDA runtime and locked PyTorch environment, records
+`BENCHMARK_EXECUTION_ENVIRONMENT=runpod`, and leaves the 300 ms clock ramp enabled.
+
+`scripts/ci/run_gpu_readback.sh` selects all 16 `linalg_readback_latency` rows:
+solve/QR at n=2,4,8,32, with tenferro and PyTorch references. It fixes physical GPU
+0 and CPU thread environment to 1, verifies every row without sampling, then
+collects standard-effort timings sequentially on the same pod. A missing,
+unsupported or failed correctness row stops before timing. Setup and downloads
+remain outside the timed operation, with device synchronization at batch edges.
+`backends` does not filter this selection: both reference arms are required.
+
+Download `runpod-gpu-readback-<run_id>-attempt<attempt>` for the verification
+and measurement raw runs, metadata, commands, and generated report at
+`result/nvidia-gpu/gpu/perf_issues.md`. This filtered standalone report is reviewed
+and committed through a PR; it does not carry the standard-suite publication
+receipt. `ingest-results.yml` skips runs titled `RunPod readback (manual report)`
+so they cannot automatically replace the complete performance-issues report.
+The existing cleanup job and pod lifetime watchdog apply to this selection too.

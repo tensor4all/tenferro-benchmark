@@ -1,4 +1,5 @@
 name: benchmark-runpod-gpu
+run-name: ${{ inputs.suite == 'perf-issues-readback' && 'RunPod readback (manual report)' || 'RunPod GPU benchmark' }}
 
 on:
   # Weekly collection with weekend retry slots. The first slot that succeeds
@@ -12,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       suite:
-        description: GPU suite YAML, or all GPU suites
+        description: GPU suite YAML, all GPU suites, or perf-issues-readback
         required: true
         default: all
         type: string
@@ -89,6 +90,8 @@ jobs:
     timeout-minutes: 60
     outputs:
       tenferro_commit: ${{ steps.build.outputs.tenferro_commit }}
+      binary_name: ${{ steps.build.outputs.binary_name }}
+      rustc_version: ${{ steps.build.outputs.rustc_version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -120,18 +123,26 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Build current CUDA benchmark with Cargo cache
         id: build
+        env:
+          REQUESTED_SUITE: ${{ inputs.suite || 'all' }}
         run: |
           set -euo pipefail
           export PATH="$CUDA_HOME/bin:$PATH"
-          cargo build --locked --release --features cuda --bin benchmark_gpu_rust
-          python3 scripts/ci/gpu_artifact.py target/release/benchmark_gpu_rust --write
+          binary_name=benchmark_gpu_rust
+          if [[ "$REQUESTED_SUITE" == perf-issues-readback ]]; then
+            binary_name=benchmark_gpu_perf_issues
+          fi
+          cargo build --locked --release --features cuda --bin "$binary_name"
+          python3 scripts/ci/gpu_artifact.py "target/release/$binary_name" --write
+          echo "binary_name=$binary_name" >> "$GITHUB_OUTPUT"
+          echo "rustc_version=$(rustc --version)" >> "$GITHUB_OUTPUT"
           echo "tenferro_commit=$(git -C extern/tenferro-rs rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
           name: gpu-benchmark-build-${{ github.run_id }}
           path: |
-            target/release/benchmark_gpu_rust
-            target/release/benchmark_gpu_rust.json
+            target/release/${{ steps.build.outputs.binary_name }}
+            target/release/${{ steps.build.outputs.binary_name }}.json
           retention-days: 7
           if-no-files-found: error
 
@@ -352,6 +363,9 @@ jobs:
       TENFERRO_REF: ${{ needs.prepare-benchmark.outputs.tenferro_commit }}
       TENFERRO_UPDATE: "1"
       GPU_BENCH_PREBUILT_RUST: "1"
+      GPU_BENCH_BINARY_NAME: ${{ needs.prepare-benchmark.outputs.binary_name }}
+      BENCHMARK_RUSTC_VERSION: ${{ needs.prepare-benchmark.outputs.rustc_version }}
+      BENCHMARK_EXECUTION_ENVIRONMENT: runpod
       GPU_RUNTIME_SHA256: ${{ needs.prepare-environment.outputs.sha256 }}
     steps:
       - name: Verify pod lifetime watchdog is armed
@@ -391,8 +405,8 @@ jobs:
           path: target/release
       - name: Verify hosted benchmark build
         run: |
-          chmod +x target/release/benchmark_gpu_rust
-          python3 scripts/ci/gpu_artifact.py target/release/benchmark_gpu_rust
+          chmod +x "target/release/$GPU_BENCH_BINARY_NAME"
+          python3 scripts/ci/gpu_artifact.py "target/release/$GPU_BENCH_BINARY_NAME"
 
       - name: Verify CUDA benchmark environment
         run: |
@@ -421,6 +435,10 @@ jobs:
           set -euo pipefail
           GPU_BENCH_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
           export GPU_BENCH_TIMESTAMP
+          if [[ "$REQUESTED_SUITE" == perf-issues-readback ]]; then
+            ./scripts/ci/run_gpu_readback.sh
+            exit 0
+          fi
           if [[ "$REQUESTED_SUITE" == all ]]; then
             ./scripts/run_gpu_suite.sh
           else
@@ -429,12 +447,24 @@ jobs:
           uv run python scripts/ci/check_gpu_run.py --timestamp "$GPU_BENCH_TIMESTAMP" --backends "$GPU_BENCH_BACKENDS" --suites "$REQUESTED_SUITE"
 
       - name: Archive benchmark results
-        if: always()
+        if: always() && inputs.suite != 'perf-issues-readback'
         uses: actions/upload-artifact@v4
         with:
           name: runpod-gpu-benchmark-${{ github.run_id }}-attempt${{ github.run_attempt }}
           path: |
             _benchmark_artifact
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Archive standalone readback results for review
+        if: always() && inputs.suite == 'perf-issues-readback'
+        uses: actions/upload-artifact@v4
+        with:
+          name: runpod-gpu-readback-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: |
+            data/results/nvidia-gpu/gpu/perf_issues
+            result/nvidia-gpu/gpu/perf_issues.md
+            result/nvidia-gpu/gpu/perf_issues.summary.json
           if-no-files-found: warn
           retention-days: 90
 
