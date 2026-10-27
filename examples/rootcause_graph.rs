@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // tenferro-rs #2206 removed the shared CPU context; the equivalent
         // empty placement probe uses the public external-provider entry.
         let ctx = tenferro_cpu::Pool::builder().threads(threads).build()?;
-        let mut exec = tenferro_cpu::strided_exec::Exec::new(&ctx, threads)?;
+        let mut exec = tenferro_cpu::threadteam::Exec::new(&ctx, threads)?;
         for _ in 0..100 {
             black_box(exec.reborrow().external(|_| black_box(1)));
         }

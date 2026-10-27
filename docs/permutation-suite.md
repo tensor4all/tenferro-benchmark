@@ -120,14 +120,12 @@ Notes:
   when available.
 - `strided-rs` is kept as a reference column because it directly exercises
   specialized strided-copy entry points against the same materialization
-  semantics. It depends on `extern/strided-rs`'s
-  `strided-perm` / `strided-view` crates as optional path dependencies (Cargo
-  feature `strided-rs`, on by default in `scripts/run_permutation.sh`);
-  `scripts/setup_extern_deps.sh` clones `extern/strided-rs` unconditionally
-  (alongside `extern/tenferro-rs`) because Cargo resolves every path
-  dependency's manifest to build the unit graph even when the feature
-  enabling it is disabled, so a checkout without `extern/strided-rs` would
-  fail `cargo build` regardless of `--features strided-rs`.
+  semantics. It depends on the crates.io
+  `strided-perm` / `strided-view` crates as optional dependencies (Cargo
+  feature `strided-rs`, on by default in `scripts/run_permutation.sh`). They
+  are not pinned separately: caret requirements let Cargo unify them with
+  tenferro-rs's own copies, and the resolved versions are recorded in
+  `run.yaml` (`resolved_deps`).
 - LibTorch/PyTorch is intentionally not part of this suite; the CPU backend
   policy comparison set for einsum does not apply to this copy-kernel suite.
 

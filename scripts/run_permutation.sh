@@ -6,7 +6,7 @@ set -euo pipefail
 #   - tenferro-rs view-to-contiguous materialization (Rust), verified against
 #     an internal untimed odometer reference
 #   - strided-rs (Rust, `strided-rs` Cargo feature, enabled by default here;
-#     requires extern/strided-rs, cloned by scripts/setup_extern_deps.sh)
+#     uses the crates.io strided-perm / strided-view the dependency graph resolves)
 #   - HPTT (Rust, `hptt` Cargo feature, NOT enabled by default; requires cmake
 #     and a C++ toolchain. Builds on both macOS, e.g. `brew install cmake`,
 #     and Linux; opt in via PERMUTATION_EXTRA_FEATURES=hptt below)
@@ -39,8 +39,7 @@ set -euo pipefail
 # - PERMUTATION_EXTRA_FEATURES: comma-separated extra Cargo features appended
 #   to benchmark_permutation's build (e.g. `hptt` once cmake and a C++
 #   toolchain are available). Empty by default; `strided-rs` is already on by
-#   default (see CARGO_FEATURES below) since extern/strided-rs is fetched by
-#   scripts/setup_extern_deps.sh the same as extern/tenferro-rs.
+#   default (see CARGO_FEATURES below); its crates come from crates.io.
 # - PATTERN_ID / BENCH_RUNS / BENCH_WARMUPS: forwarded to both runners, as in
 #   src/bin/benchmark_permutation.rs / scripts/benchmark_permutation.jl.
 #
@@ -65,9 +64,8 @@ TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}
 export TENFERRO_CPU_FEATURES
 
 PERMUTATION_EXTRA_FEATURES="${PERMUTATION_EXTRA_FEATURES:-}"
-# `strided-rs` is on by default: extern/strided-rs is fetched unconditionally
-# by setup_extern_deps.sh (below), so the strided-rs participant is available
-# out of the box. `hptt` stays opt-in via PERMUTATION_EXTRA_FEATURES since it
+# `strided-rs` is on by default: its crates come from crates.io, so the
+# participant is available out of the box. `hptt` stays opt-in via PERMUTATION_EXTRA_FEATURES since it
 # additionally requires cmake and a C++ toolchain.
 CARGO_FEATURES="$TENFERRO_CPU_FEATURES,strided-rs"
 [[ -n "$PERMUTATION_EXTRA_FEATURES" ]] && CARGO_FEATURES="$CARGO_FEATURES,$PERMUTATION_EXTRA_FEATURES"

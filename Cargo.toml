@@ -49,17 +49,13 @@ matrixmultiply = { version = "0.3", features = ["threading"] }
 # f64 erf reference for the cpu/perf_issues erf / exact-gelu checks (tenferro-rs
 # #1975, #2010 PR-B1); the same crate tenferro-cpu evaluates erf with.
 libm = "0.2"
-# Optional path deps on extern/strided-rs (see scripts/setup_extern_deps.sh,
-# which clones it alongside extern/tenferro-rs), gated by the `strided-rs`
-# feature below. Cargo resolves every path dependency's manifest to build the
-# unit graph even when the feature enabling it is off, so a checkout without
-# extern/strided-rs would fail `cargo build` outright regardless of
-# `--features strided-rs`; that is why setup_extern_deps.sh fetches it
-# unconditionally, the same as extern/tenferro-rs.
-strided-perm = { path = "extern/strided-rs/strided-perm", default-features = false, optional = true }
-strided-view = { path = "extern/strided-rs/strided-view", optional = true }
-# Match the placement type used by the checked-out strided-perm 0.8 API.
-threadteam = { git = "https://github.com/tensor4all/threadteam-rs", rev = "97404b580951aa9d89910a739618ce044e988b16", version = "0.1.0", features = ["parallel"], optional = true }
+# strided-perm / strided-view / threadteam are not pinned here: they come from
+# crates.io with caret requirements so Cargo unifies them with the copies
+# tenferro-rs itself resolves (one version each; the resolved versions are
+# recorded in run.yaml `resolved_deps`).
+strided-perm = { version = "0.8", default-features = false, optional = true }
+strided-view = { version = "0.7", optional = true }
+threadteam = { version = "0.1.0", features = ["parallel"], optional = true }
 
 [features]
 allocation-diagnostics = []
@@ -77,8 +73,7 @@ hptt = ["dep:hptt"]
 # Gates the `strided-rs` participant in benchmark_permutation (cpu/permutation
 # suite): strided_perm::copy_into / copy_into_col_major materializing a
 # strided view built directly from the pattern's source strides, using
-# extern/strided-rs's strided-perm + strided-view crates (cloned by
-# scripts/setup_extern_deps.sh, mirroring how extern/tenferro-rs is fetched).
+# the crates.io strided-perm + strided-view crates.
 # Also enables strided-perm's `parallel` feature and caller-owned threadteam
 # pool, so the placement budget matches the runner's requested thread count.
 strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel", "dep:threadteam"]

@@ -85,6 +85,10 @@
     },
     "environment": { "$ref": "#/$defs/environment" },
     "blas": { "$ref": "#/$defs/blas" },
+    "resolved_deps": {
+      "type": "object",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } }
+    },
     "python_backends": { "$ref": "#/$defs/python_backends" },
     "julia": { "$ref": "#/$defs/julia_backend" },
     "cuda": { "$ref": "#/$defs/cuda" },

@@ -31,9 +31,9 @@
 //! ## `strided-rs` backend
 //!
 //! The `strided-rs` participant (feature `strided-rs`) depends on
-//! `extern/strided-rs`'s `strided-perm` and `strided-view` crates as optional
-//! path dependencies (see `scripts/setup_extern_deps.sh`, which clones
-//! `extern/strided-rs` alongside `extern/tenferro-rs`). It builds a
+//! crates.io `strided-perm` and `strided-view` crates as optional
+//! dependencies (versions unified with tenferro-rs's own and recorded in
+//! `run.yaml` `resolved_deps`, not pinned separately). It builds a
 //! `strided_view::StridedArray` directly from the pattern's source strides,
 //! permutes it with `.view().permute(perm)`, and times both
 //! `strided_perm::copy_into` and `copy_into_col_major` into a freshly allocated
