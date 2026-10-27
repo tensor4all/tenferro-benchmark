@@ -431,6 +431,7 @@ jobs:
           PY
 
       - name: Run GPU benchmark suite
+        id: collect
         run: |
           set -euo pipefail
           GPU_BENCH_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -457,12 +458,13 @@ jobs:
           retention-days: 90
 
       - name: Archive standalone readback results for review
-        if: always() && inputs.suite == 'perf-issues-readback'
+        if: always() && inputs.suite == 'perf-issues-readback' && steps.collect.outputs.readback_timestamp != ''
         uses: actions/upload-artifact@v4
         with:
           name: runpod-gpu-readback-${{ github.run_id }}-attempt${{ github.run_attempt }}
           path: |
-            data/results/nvidia-gpu/gpu/perf_issues
+            data/results/nvidia-gpu/gpu/perf_issues/${{ steps.collect.outputs.readback_timestamp }}
+            data/results/nvidia-gpu/gpu/perf_issues/${{ steps.collect.outputs.readback_timestamp }}_verify
             result/nvidia-gpu/gpu/perf_issues.md
             result/nvidia-gpu/gpu/perf_issues.summary.json
           if-no-files-found: warn

@@ -577,7 +577,15 @@ def report(run_dir, target, suite_key="cpu"):
               "`reference_for` in the case file names the case each reference arm is compared with. "
               "GPU batches end with one device synchronize (a per-call synchronize where the transfer is the operation); "
               "the Threads column is the host thread setting.", ""]
-    lines += table(steady)
+    default_regime = yaml.safe_load(SUITES[suite_key][0].read_text())["defaults"].get("regime", "throughput")
+    for regime, title in (("throughput", "Compute- and bandwidth-bound operations"),
+                          ("latency", "Latency and per-call overhead")):
+        selected = [r for r in steady if (r.get("regime") or default_regime) == regime]
+        if selected:
+            lines += [f"### {title}", ""]
+            if regime == "latency":
+                lines += ["These rows measure dispatch/operation latency; they do not measure compute throughput.", ""]
+            lines += table(selected) + [""]
     for scope, title, note in (
             ("session_entry_diagnostic", "Per-call session entry diagnostics (not operation comparisons)",
              "The measured call includes session/scope entry or exit: the eager-per-call arms enter and "

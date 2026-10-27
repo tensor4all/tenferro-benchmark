@@ -9,6 +9,9 @@ device_name="$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader)"
 [[ "$device_name" == NVIDIA\ A100* ]] || { echo "A100 required, got $device_name" >&2; exit 1; }
 export BENCH_INSTANCE="$(python3 scripts/ci/gpu_readback.py)"
 timestamp="$(date -u +%Y%m%d_%H%M%S)"
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+    echo "readback_timestamp=$timestamp" >> "$GITHUB_OUTPUT"
+fi
 root=data/results/nvidia-gpu/gpu/perf_issues
 PERF_ISSUES_CORRECTNESS_ONLY=1 GPU_BENCH_SKIP_LATEST=1 BENCHMARK_TIMESTAMP="${timestamp}_verify" \
     ./scripts/run_gpu_perf_issues.sh
