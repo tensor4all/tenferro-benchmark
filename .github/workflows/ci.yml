@@ -23,9 +23,9 @@ jobs:
       # harness builds against, including the caller-owned strided Pool API.
       # Latest upstream main is exercised separately by
       # benchmark-smoke-tenferro-main / nightly jobs.
-      TENFERRO_REF: 9f54e10dad9bc7c7ba5a3aa25ee7210913c83624
+      TENFERRO_REF: 8fec1ca70852b930c092e7177c30bb8af7594a57
       TENFERRO_UPDATE: "1"
-      STRIDED_RS_REF: d24474d89dd3c6ca8ebdc16a5638289787376575
+      STRIDED_RS_REF: c3e1958eeca0cd9393ecd305207e586048230cac
       STRIDED_RS_UPDATE: "1"
     steps:
       - name: Checkout
@@ -178,9 +178,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OPENBLAS_ROOT: /usr
-      TENFERRO_REF: 9f54e10dad9bc7c7ba5a3aa25ee7210913c83624
+      TENFERRO_REF: 8fec1ca70852b930c092e7177c30bb8af7594a57
       TENFERRO_UPDATE: "1"
-      STRIDED_RS_REF: d24474d89dd3c6ca8ebdc16a5638289787376575
+      STRIDED_RS_REF: c3e1958eeca0cd9393ecd305207e586048230cac
       STRIDED_RS_UPDATE: "1"
       CARGO_TARGET_DIR: target/followup-ci
     steps:
