@@ -67,17 +67,22 @@ fi
 # This suite carries explicit setup/lifecycle diagnostics (raw-session entry,
 # vendor-handle lifetime, issue workflows), so run.yaml declares them.
 export BENCH_INCLUDE_SETUP_DIAGNOSTICS="${BENCH_INCLUDE_SETUP_DIAGNOSTICS:-1}"
-PYTHON="$PROJECT_DIR/.venv/bin/python"
+PYTHON="${UV_PROJECT_ENVIRONMENT:-$PROJECT_DIR/.venv}/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
 "$PYTHON" "$SCRIPT_DIR/generate_perf_issue_cases.py" --check
 "$PYTHON" "$SCRIPT_DIR/validate_benchmark_suite.py" benchmarks/gpu/perf_issues.yaml
-# Always rebuild before measuring (AGENTS.md GPU timing fairness).
-if [[ -e extern/tenferro-rs/.git && "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
-    git -C extern/tenferro-rs -c 'url.https://github.com/.insteadOf=git@github.com:' pull --ff-only
-fi
-CUBECL_DEBUG_LOG=0 CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
-    cargo build --release --features cuda --bin benchmark_gpu_perf_issues
+# Local collection rebuilds. RunPod verifies a fresh hosted build against both
+# source commits and its digest, matching run_gpu_suite.sh.
 BINARY="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_perf_issues"
+if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == 1 ]]; then
+    "$PYTHON" "$SCRIPT_DIR/ci/gpu_artifact.py" "$BINARY"
+else
+    if [[ -e extern/tenferro-rs/.git && "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
+        git -C extern/tenferro-rs -c 'url.https://github.com/.insteadOf=git@github.com:' pull --ff-only
+    fi
+    CUBECL_DEBUG_LOG=0 CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+        cargo build --release --features cuda --bin benchmark_gpu_perf_issues
+fi
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
 RUN_DIR="$PROJECT_DIR/data/results/$BENCHMARK_TARGET_PROFILE/gpu/perf_issues/$TIMESTAMP"
 mkdir -p "$RUN_DIR"
@@ -100,7 +105,9 @@ path = Path(sys.argv[1])
 metadata = yaml.safe_load(path.read_text())
 metadata['environment'].setdefault('env', {}).update({
     'BENCHMARK_COMMIT': os.environ['BENCHMARK_COMMIT'], 'BENCHMARK_BUILD_PROFILE': 'release',
-    'RUSTC_VERSION': subprocess.check_output(['rustc', '--version'], text=True).strip(),
+    'RUSTC_VERSION': os.environ.get('BENCHMARK_RUSTC_VERSION') or subprocess.check_output(['rustc', '--version'], text=True).strip(),
+    'GPU_BENCH_PREBUILT_RUST': os.environ.get('GPU_BENCH_PREBUILT_RUST', '0'),
+    'BENCHMARK_EXECUTION_ENVIRONMENT': os.environ.get('BENCHMARK_EXECUTION_ENVIRONMENT'),
     'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None,
     'CUDA_VISIBLE_DEVICES': os.environ.get('CUDA_VISIBLE_DEVICES'),
     'GPU_BENCH_PHYSICAL_DEVICE': os.environ.get('GPU_BENCH_PHYSICAL_DEVICE'),

@@ -33,6 +33,7 @@ jobs:
       github.repository == 'tensor4all/tenferro-benchmark' &&
       (github.event_name != 'workflow_run' ||
        (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.display_title != 'RunPod readback (manual report)' &&
         github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
     # Includes waiting for the result PR's required checks (~5 min).

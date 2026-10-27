@@ -398,7 +398,14 @@ sequential: one devcontainer benchmark command at a time, with no concurrent
 
 ## GPU Devcontainer Workflow
 
-Use the CUDA devcontainer for NVIDIA GPU measurements.
+For local NVIDIA GPU measurements, use the CUDA devcontainer. Managed A100
+collection uses the existing `.github/workflows/benchmark-runpod-gpu.yml`:
+it provisions an ephemeral RunPod runner, restores the prepared CUDA runtime,
+verifies a freshly built binary against its source commits and digest, and
+deletes the pod after collection. See `docs/runpod-gpu-benchmark.md`. Repository
+Secrets provide the credentials; no local GPU, API key, persistent runner, or
+SSH host is needed to dispatch this workflow. The `perf-issues-readback`
+selection runs the solve/QR correctness gate before sequential timing.
 
 The CUDA devcontainer mounts a container-only named volume over
 `<workspace>/.venv`, so the host and container Python environments are separate.

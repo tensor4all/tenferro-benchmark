@@ -94,6 +94,28 @@ class PerfIssueSuiteTest(unittest.TestCase):
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_steady_report_separates_latency_and_throughput(self):
+        cases = json.loads((ROOT / 'data/instances/gpu_perf_issues.json').read_text())
+        base = next(c for c in cases if c['kind'] == 'linalg_readback_latency')
+        base = dict(base, threads=1, correctness_status='passed',
+                    samples=[dict(elapsed_ns=2000, iterations=8)])
+        rows = [dict(base, case_id='latency-case', regime='latency'),
+                dict(base, case_id='compute-case', regime='throughput')]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run = root / 'run'
+            run.mkdir()
+            (run / 'samples_t1.jsonl').write_text(''.join(json.dumps(r) + '\n' for r in rows))
+            with patch.object(suite, 'ROOT', root), patch.dict(os.environ, {'GPU_BENCH_SKIP_LATEST': '1'}):
+                suite.report(run, 'nvidia-gpu', 'gpu')
+            text = (run / 'report.md').read_text()
+            compute, latency = text.split('### Latency and per-call overhead')
+            self.assertIn('| compute-case |', compute)
+            self.assertNotIn('| latency-case |', compute)
+            self.assertIn('| latency-case |', latency)
+            self.assertNotIn('| compute-case |', latency)
+            self.assertIn('do not measure compute throughput', latency)
+
     def test_every_case_names_its_issue_and_reference(self):
         for key in ("cpu", "gpu"):
             with patch.dict(os.environ, {"BENCH_INSTANCE": "", "BENCH_COVERAGE": "full"}):
