@@ -1,0 +1,40 @@
+schema_version: 1
+suite_id: cpu/elementwise
+title: CPU Elementwise Unary-Kernel Benchmarks
+description: >-
+  f64 sqrt / rsqrt / exp on 33_554_432 elements through the tenferro-rs eager
+  CPU API, measured twice per op: once with the default 100 MiB CPU buffer-pool
+  retention limit and once with a raised 4 GiB limit. Nothing retains the
+  output, so the default/raised ratio is the allocation/first-touch overhead
+  rather than the kernel. There is deliberately no external reference backend.
+  See docs/elementwise-suite.md and tensor4all/tenferro-rs#2284.
+defaults:
+  device: {kind: cpu, ordinal: 0}
+  run: {warmups: 3, runs: 7, timing_scope: steady_state_host_api}
+backends:
+  - tenferro-rs
+problems:
+  - id: sqrt_f64_n33554432
+    family: elementwise
+    op: sqrt
+    intent: >-
+      Elementwise sqrt on the 256 MiB f64 output size from
+      tensor4all/tenferro-rs#2284.
+    notes: >-
+      Measured under both buffer-pool configurations; the pool configuration is
+      not expressible in this schema, so it is a column of the runner's output
+      rows (pool_limit_bytes) rather than a problem field.
+    dtype: {x: f64, y: f64}
+    data: {generator: positive_ramp, seed: 0}
+  - id: rsqrt_f64_n33554432
+    family: elementwise
+    op: rsqrt
+    intent: Elementwise rsqrt on the same 256 MiB f64 output size.
+    dtype: {x: f64, y: f64}
+    data: {generator: positive_ramp, seed: 0}
+  - id: exp_f64_n33554432
+    family: elementwise
+    op: exp
+    intent: Elementwise exp on the same 256 MiB f64 output size.
+    dtype: {x: f64, y: f64}
+    data: {generator: positive_ramp, seed: 0}

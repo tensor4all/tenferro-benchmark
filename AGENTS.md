@@ -169,6 +169,7 @@ Expected latest report paths:
 - `result/amd-cpu/cpu/cpu_ops.md`
 - `result/amd-cpu/cpu/linalg_jvp_vjp.md`
 - `result/amd-cpu/cpu/permutation.md`
+- `result/amd-cpu/cpu/elementwise.md`
 - `result/amd-cpu/cpu/perf_issues.md`
 - `result/amd-cpu/cpu/overhead_smoke.md`
 - `result/linux-cpu/cpu/linalg_jvp_jvp.md`
@@ -378,6 +379,17 @@ Thread counts are controlled only via the runner's thread environment
 thread count in `run_t<N>.yaml`); no `taskset` / `numactl` CPU-affinity pinning
 is applied to `amd-cpu`, matching the other devcontainer CPU suites (`zen5-cpu` rows are
 pinned, see above).
+
+`cpu/elementwise` is a second standalone entry point (also not wired into
+`run_all.sh`; opt in there with `RUN_ELEMENTWISE_SUITE=1`). It measures f64
+`sqrt` / `rsqrt` / `exp` under the default and a raised CPU buffer-pool limit,
+so its `default`/`raised` ratio is an allocation/first-touch signal rather than
+a kernel comparison. It needs no BLAS and no devcontainer; see
+`docs/elementwise-suite.md`:
+
+```bash
+BENCHMARK_TARGET_PROFILE=amd-cpu ./scripts/run_elementwise.sh 1 4
+```
 
 `OPENBLAS_ROOT=/opt/openblas` is also configured for tenferro `blas-openblas`
 runs, but treat that as an alternate backend for experiments, not the standard

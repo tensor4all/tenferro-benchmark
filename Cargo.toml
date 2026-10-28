@@ -77,6 +77,10 @@ hptt = ["dep:hptt"]
 # Also enables strided-perm's `parallel` feature and caller-owned threadteam
 # pool, so the placement budget matches the runner's requested thread count.
 strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel", "dep:threadteam"]
+# Enables the CPU stack (tenferro-cpu) without selecting a backend; `native`,
+# `blas*`, `cuda` and `webgpu` each turn this on. The cpu/elementwise benchmark
+# binary needs the CPU stack but not a particular backend.
+cpu-engine = ["dep:tenferro-cpu"]
 # CPU backend selection (tenferro-rs #2004): a build compiles exactly one of
 # `native` (tenferro's own faer kernels and thread pool) or `blas` (cpueinsum
 # contractions plus tlinalg linear algebra on a vendor BLAS/LAPACK); enabling
@@ -97,7 +101,7 @@ native = [
     "tenferro-linalg/autodiff",
     "tenferro-linalg/native",
     "tenferro-runtime/native",
-    "dep:tenferro-cpu",
+    "cpu-engine",
     "tenferro-cpu?/native",
 ]
 # Shared base of the three supported BLAS selections below. On its own it has no
@@ -111,7 +115,7 @@ blas = [
     "tenferro-linalg/autodiff",
     "tenferro-linalg/blas",
     "tenferro-runtime/blas",
-    "dep:tenferro-cpu",
+    "cpu-engine",
     "tenferro-cpu?/blas",
 ]
 blas-openblas = ["blas"]
@@ -126,7 +130,7 @@ cuda = [
     "tenferro-linalg/autodiff",
     "dep:tenferro-gpu",
     "tenferro-gpu?/cuda",
-    "dep:tenferro-cpu",
+    "cpu-engine",
     "tenferro-cpu?/native",
     "dep:libloading",
     "dep:cudarc",
@@ -134,7 +138,7 @@ cuda = [
 webgpu = [
     "dep:tenferro-gpu",
     "tenferro-gpu?/webgpu",
-    "dep:tenferro-cpu",
+    "cpu-engine",
     "tenferro-cpu?/native",
 ]
 
@@ -153,6 +157,13 @@ path = "src/bin/benchmark_cpu_fft.rs"
 [[bin]]
 name = "benchmark_cpu_public_api"
 path = "src/bin/benchmark_cpu_public_api.rs"
+
+# `cpu/elementwise` suite: needs the CPU stack (tenferro-cpu) but no BLAS, so
+# it builds under either backend selection; `native` is the crate default.
+[[bin]]
+name = "benchmark_cpu_elementwise"
+path = "src/bin/benchmark_cpu_elementwise.rs"
+required-features = ["cpu-engine"]
 
 [[bin]]
 name = "benchmark_gpu_rust"
