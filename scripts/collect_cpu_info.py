@@ -78,6 +78,25 @@ def _darwin_perflevels() -> str:
     return "; ".join(levels) if levels else "unknown"
 
 
+def _thp_field(name: str) -> str:
+    """Transparent-hugepage mode from sysfs, with the active value marked.
+
+    A mapping above 4 KiB pages changes the cost of a fresh large allocation by
+    several times, so a row's absolute time only means something next to the mode
+    it ran under. `always [madvise] never` becomes `madvise (always [madvise]
+    never)`; the mode the kernel is in is the bracketed one.
+    """
+    path = Path("/sys/kernel/mm/transparent_hugepage") / name
+    try:
+        raw = path.read_text(errors="replace").strip()
+    except OSError:
+        return "unavailable"
+    if "[" in raw and "]" in raw:
+        active = raw[raw.index("[") + 1 : raw.index("]")]
+        return f"{active} ({raw})"
+    return raw or "unavailable"
+
+
 def _darwin_cpu_info() -> dict[str, str]:
     model = _sysctl_value("machdep.cpu.brand_string") or platform.processor() or "unknown"
     physical = _sysctl_value("hw.physicalcpu") or "unknown"
@@ -159,6 +178,8 @@ def collect_cpu_info() -> dict[str, str]:
         "Cores per socket": lscpu.get("Core(s) per socket") or cpuinfo.get("cpu cores") or "unknown",
         "Threads per core": lscpu.get("Thread(s) per core") or "unknown",
         "NUMA nodes": lscpu.get("NUMA node(s)") or "unknown",
+        "Transparent huge pages": _thp_field("enabled"),
+        "Transparent huge page defrag": _thp_field("defrag"),
         "Python platform": platform.platform(),
     }
     # Linux sysfs facts that decide how a pinned run is read; omitted when absent.
