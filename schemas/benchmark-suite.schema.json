@@ -139,7 +139,8 @@
             "spd",
             "symmetric_normal",
             "suitesparse",
-            "tensornetwork_fill"
+            "tensornetwork_fill",
+            "positive_ramp"
           ]
         },
         "seed": { "type": "integer" }
@@ -175,7 +176,10 @@
             "spmv",
             "spmm",
             "jvp",
-            "vjp"
+            "vjp",
+            "sqrt",
+            "rsqrt",
+            "exp"
           ]
         },
         "dtype": { "$ref": "#/$defs/dtype" },
@@ -218,7 +222,18 @@
         },
         {
           "if": { "properties": { "family": { "const": "elementwise" } } },
-          "then": { "properties": { "op": { "const": "elementwise_chain" } } }
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "elementwise_chain",
+                  "sqrt",
+                  "rsqrt",
+                  "exp"
+                ]
+              }
+            }
+          }
         },
         {
           "if": { "properties": { "family": { "const": "tensornetwork" } } },

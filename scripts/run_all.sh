@@ -94,6 +94,12 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
         echo ""
     fi
 
+    if [[ "${RUN_ELEMENTWISE_SUITE:-0}" == "1" ]]; then
+        echo "Running cpu/elementwise suite for threads: ${THREAD_COUNTS[*]}..."
+        "$SCRIPT_DIR/run_elementwise.sh" "${THREAD_COUNTS[@]}"
+        echo ""
+    fi
+
     echo "============================================"
     echo " Benchmark complete"
     echo "============================================"
@@ -746,6 +752,14 @@ fi
 if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_PERMUTATION_SUITE:-0}" == "1" ]]; then
     echo "Running cpu/permutation suite (RUN_PERMUTATION_SUITE=1)..."
     SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_permutation.sh" "$NUM_THREADS"
+    echo ""
+fi
+
+# Opt-in: cpu/elementwise suite (CPU buffer-pool allocation/first-touch signal),
+# run sequentially after every suite above. Off by default.
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_ELEMENTWISE_SUITE:-0}" == "1" ]]; then
+    echo "Running cpu/elementwise suite (RUN_ELEMENTWISE_SUITE=1)..."
+    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_elementwise.sh" "$NUM_THREADS"
     echo ""
 fi
 
