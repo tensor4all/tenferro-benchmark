@@ -247,6 +247,33 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
   bash -lc './scripts/setup_gpu_vendors.sh all'
 ```
 
+## Container User and Build Artifact Ownership
+
+Builds write into the bind-mounted workspace, so the container user's UID owns
+`target/` on these hosts afterwards. On the A100 host `primerose` the login
+account is `shinaoka` (UID 2000), a container `vscode` that was never UID-remapped
+is 1000 (the host's unrelated `user` account), and root is 0.
+
+Only the Dev Containers CLI / VS Code extension path remaps `vscode` to the host
+UID (`updateRemoteUserUID`, the reason the images are tagged `vsc-...-uid`). Start
+the same image any other way and it keeps its own user: `.devcontainer/cuda/Dockerfile`
+ends with `USER root`, and the `-uid` image also reports `Config.User = root`, so a
+container created without `--user vscode` runs every command as root. A `cargo`
+build in that shell leaves `target/` owned by root, which the host account can no
+longer delete or reuse.
+
+- Run benchmark commands through `devcontainer exec` (or `docker exec -u vscode`),
+  never as root.
+- Do not `sudo` a build, and do not keep a root shell open "just for cargo".
+- `CARGO_HOME` in the CUDA config points inside the workspace (`.cargo-home`), so it
+  inherits the same ownership.
+- Foreign-owned artifacts stay inside gitignored build output (`target/`,
+  `.cargo-home/`). Check before treating one as a config bug:
+  `find target ! -user "$(id -un)" | wc -l`, then remove it with `sudo rm -rf`
+  instead of rebuilding around it.
+
+`docs/gpu-devcontainer.md` states the same rule for the CUDA `.venv` volume.
+
 ## GPU Timing Fairness
 
 GPU benchmark timings must synchronize queued device work without using a full
