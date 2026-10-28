@@ -177,8 +177,10 @@ def format_markdown(
         "lets the next call reuse the previous output buffer. There is "
         "deliberately no external reference backend: JAX and PyTorch differ in "
         "allocator and caching strategy, which is the difference this suite "
-        "isolates. See `docs/elementwise-suite.md` and "
-        "tensor4all/tenferro-rs#2284."
+        "isolates. The huge-page mode above is part of the reading: with "
+        "`madvise` a fresh large destination faults 4 KiB pages, with `always` the "
+        "kernel may hand out 2 MiB pages and the default arm gets cheaper. See "
+        "`docs/elementwise-suite.md` and tensor4all/tenferro-rs#2284."
     )
     lines.append("")
     lines.append(

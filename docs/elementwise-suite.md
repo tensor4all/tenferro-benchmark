@@ -39,6 +39,15 @@ counts (the #2284 investigation attributes the dominant term to first touch). It
 speedup and should not be read as one. A ratio near 1 means the op is not
 limited by output allocation on this host.
 
+## Huge pages
+
+The report records the host's transparent-hugepage mode next to the CPU data.
+It is not set by the suite: with `madvise` a fresh large destination faults 4 KiB
+pages, with `always` the kernel may hand out 2 MiB pages and the `default` arm
+gets several times cheaper without any change in tenferro. Compare absolute
+medians only between runs whose recorded mode matches; the `default`/`raised`
+ratio is the quantity that survives a mode change.
+
 ## No external reference
 
 The suite deliberately has no JAX/PyTorch/HPTT/Julia participant. Those
