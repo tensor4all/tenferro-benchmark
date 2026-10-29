@@ -1573,6 +1573,58 @@ fn activation(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     ))
 }
 
+fn trace_metadata_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
+    let (rows, cols, steps) = (param_usize(params, "rows")?, param_usize(params, "cols")?, param_usize(params, "steps")?);
+    let arm = param_str(params, "arm")?;
+    let data = values_f32(rows * cols, 60);
+    let mut expected = data.clone();
+    let (mut m, mut n) = (rows, cols);
+    for _ in 0..steps {
+        let mut next = vec![0.0f32; m * n];
+        for j in 0..n { for i in 0..m { if i <= j { next[j + n * i] = expected[i + m * j]; } } }
+        expected = next;
+        (m, n) = (n, m);
+    }
+    expected.iter_mut().for_each(|v| *v = -*v);
+    let check = |t: &Tensor| -> Result<f64> {
+        let actual = t.as_slice::<f32>()?;
+        if actual.len() != expected.len() { return Err("incorrect output length".into()); }
+        let error = actual.iter().zip(&expected).map(|(a, b)| (*a as f64 - *b as f64).abs()).fold(0.0f64, f64::max);
+        check_tol(error, 1e-6, "trace metadata")
+    };
+    let x = Tensor::from_vec_col_major(vec![rows, cols], data)?;
+    let bytes = rows * cols * 4;
+    let (error, measurement) = if arm == "eager" {
+        let mut runtime = eager_runtime()?;
+        let input = eager_const(&mut runtime, x)?;
+        time_eager_op(&mut runtime, timing, bytes, &check, |s| {
+            let mut y = input.clone();
+            for _ in 0..steps { let upper = s.triu(&y, 0)?; y = s.transpose(&upper, &[1, 0])?; }
+            s.neg(&y)
+        })?
+    } else {
+        let input = TracedTensor::from_tensor_concrete_shape(x)?;
+        let mut y = input;
+        let mut views = Vec::new();
+        for _ in 0..steps { y = y.triu(0)?.transpose(&[1, 0])?; if arm == "trace-outputs" { views.push(y.clone()); } }
+        y = y.neg()?;
+        views.push(y);
+        let refs: Vec<_> = views.iter().collect();
+        let program = GraphCompiler::new().compile_many(&refs)?;
+        let mut backend = tenferro_einsum_benchmark::cpu_engine(None)?;
+        let mut builder = Runtime::builder();
+        builder.register_engine(runtime_engine_registration(&backend)?)?;
+        let runtime = builder.build()?;
+        let target = ExecutionEngine::target(&backend);
+        let prepared = runtime.prepare(&program, &[], std::slice::from_ref(&target))?;
+        let output = runtime.run(&mut [&mut backend], &prepared, &[])?.pop().ok_or("missing output")?.into_tensor(&mut backend)?;
+        let error = check(&output)?;
+        let measurement = measure(timing, bytes * views.len(), || Ok(runtime.run(&mut [&mut backend], &prepared, &[])?))?;
+        (error, measurement)
+    };
+    Ok(CaseOutcome { max_rel_error: error, measurement: Some(measurement), timer: vec!["triu transpose chain and neg", "output allocation"], outside_timer: vec!["fixture, engine, session, tracing, compilation and preparation", "correctness check"], extra: json!({"arm": arm}) })
+}
+
 fn softmax_pool_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let (rows, cols) = (param_usize(params, "rows")?, param_usize(params, "cols")?);
     let arm = param_str(params, "arm")?;
@@ -2782,6 +2834,8 @@ fn main() -> Result<()> {
         "small_contraction_pool_hop" => small_contraction_pool_hop(&params, &timing),
         "activation" => activation(&params, &timing),
         "softmax" => softmax_case(&params, &timing),
+        "trace_metadata" => trace_metadata_case(&params, &timing),
+
         "softmax_pool" => softmax_pool_case(&params, &timing),
         "reduce_mean" => reduce_mean_case(&params, &timing),
         "take_along_axis" => take_along_axis_case(&params, &timing),

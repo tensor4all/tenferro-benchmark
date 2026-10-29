@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 20
+MANIFEST_VERSION = 21
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -625,6 +625,27 @@ def gpu_dispatch_regression_cases(gpu):
     return rows
 
 
+def trace_metadata_cases():
+    rows = []
+    for arm, backend, ref in (("trace-fold", "tenferro-rs", None),
+                              ("trace-outputs", "tenferro-rs", None),
+                              ("eager", "tenferro-rs", "trace-fold"),
+                              ("pytorch", "pytorch-cpu", "trace-fold")):
+        row = case(f"trace_metadata_{arm}_f32_1024x64_k50", ("#2226", "#2238"),
+                   "trace_metadata", {"rows": 1024, "cols": 64, "steps": 50},
+                   arm=arm, backend=backend, dtype="f32",
+                   reference_for=ref and f"trace_metadata_{ref}_f32_1024x64_k50",
+                   intent="tenferro-rs #2226 / #2238: prepared triu and transpose chain with final neg consumer; latency measures dispatch overhead. The output control exposes each transpose to prevent folding.")
+        row["thread_counts"] = [1, 4]
+        rows.append(row)
+    control = case("trace_metadata_fixed_neg_f32_8", ("#2226", "#2238"),
+                   "trace_metadata", {"rows": 8, "cols": 1, "steps": 0},
+                   arm="trace-fold", dtype="f32",
+                   intent="tenferro-rs #2226 / #2238: one prepared neg on eight elements as a per-run fixed-cost latency control.")
+    control["thread_counts"] = [1, 4]
+    rows.append(control)
+    return rows
+
 def softmax_pool_cases():
     rows = []
     for threads, arm, backend in ((1, "serial", "tenferro-rs"), (4, "pool4", "tenferro-rs"),
@@ -647,7 +668,7 @@ def generate_cases():
             + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases()
             + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
             + erased_binary_cases() + axpby_strided_source_cases()
-            + erased_construct_cases() + eager_small_call_cases() + softmax_pool_cases())
+            + erased_construct_cases() + eager_small_call_cases() + trace_metadata_cases() + softmax_pool_cases())
 
 
 def cpu_umbrella_cases():
