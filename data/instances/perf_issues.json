@@ -3827,6 +3827,178 @@
   "reference_for": "masked_softmax_f32_eager-single-call_len512_b8"
  },
  {
+  "id": "softmax_f32_eager-single-call_len64_b8_t1",
+  "issues": [
+   "#2233",
+   "#2235"
+  ],
+  "kind": "softmax",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2233 / #2235: attention-shaped axis-0 softmax with pooled output, compared at one and four threads. Latency regime: per-call overhead.",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "softmax_f32_eager-composed_len64_b8_t1",
+  "issues": [
+   "#2233",
+   "#2235"
+  ],
+  "kind": "softmax",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2233 / #2235: attention-shaped axis-0 softmax with pooled output, compared at one and four threads. Latency regime: per-call overhead.",
+  "reference_for": "softmax_f32_eager-single-call_len64_b8_t1",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "softmax_f32_pytorch_len64_b8_t1",
+  "issues": [
+   "#2233",
+   "#2235"
+  ],
+  "kind": "softmax",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2233 / #2235: attention-shaped axis-0 softmax with pooled output, compared at one and four threads. Latency regime: per-call overhead.",
+  "reference_for": "softmax_f32_eager-single-call_len64_b8_t1",
+  "thread_counts": [
+   1
+  ]
+ },
+ {
+  "id": "softmax_f32_eager-single-call_len64_b8_t4",
+  "issues": [
+   "#2233",
+   "#2235"
+  ],
+  "kind": "softmax",
+  "arm": "eager-single-call",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-single-call",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2233 / #2235: attention-shaped axis-0 softmax with pooled output, compared at one and four threads. Latency regime: per-call overhead.",
+  "thread_counts": [
+   4
+  ]
+ },
+ {
+  "id": "softmax_f32_eager-composed_len64_b8_t4",
+  "issues": [
+   "#2233",
+   "#2235"
+  ],
+  "kind": "softmax",
+  "arm": "eager-composed",
+  "backend": "tenferro-rs",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "eager-composed",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2233 / #2235: attention-shaped axis-0 softmax with pooled output, compared at one and four threads. Latency regime: per-call overhead.",
+  "reference_for": "softmax_f32_eager-single-call_len64_b8_t4",
+  "thread_counts": [
+   4
+  ]
+ },
+ {
+  "id": "softmax_f32_pytorch_len64_b8_t4",
+  "issues": [
+   "#2233",
+   "#2235"
+  ],
+  "kind": "softmax",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f32",
+  "params": {
+   "op": "softmax",
+   "len": 64,
+   "batch": 8,
+   "axis": 0,
+   "kind": "softmax",
+   "arm": "pytorch",
+   "dtype": "f32"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2233 / #2235: attention-shaped axis-0 softmax with pooled output, compared at one and four threads. Latency regime: per-call overhead.",
+  "reference_for": "softmax_f32_eager-single-call_len64_b8_t4",
+  "thread_counts": [
+   4
+  ]
+ },
+ {
   "id": "reduce_mean_f32_eager-single-call_1024x64_axis0",
   "issues": [
    "#1976"
