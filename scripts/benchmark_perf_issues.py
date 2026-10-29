@@ -187,6 +187,16 @@ def torch_case(case):
                 y = torch.triu(y).T
             return float((op().double() + y).abs().max())
         return op, check, rows * cols * 4, ["triu and transpose chain", "neg", "output allocation"]
+
+    if kind == "softmax_pool":
+        rows, cols = p["rows"], p["cols"]
+        x = torch.tensor(_values(rows * cols, 60), dtype=torch.float64).reshape(cols, rows)
+        def check():
+            y = torch.softmax(x, -1)
+            ref = (x - x.max(dim=-1, keepdim=True).values).exp()
+            ref = ref / ref.sum(dim=-1, keepdim=True)
+            return float((y - ref).abs().max())
+        return (lambda: torch.softmax(x, -1)), check, rows * cols * 8, ["torch softmax", "output_allocation"]
     if kind == "softmax":
         length, batch, name = p["len"], p["batch"], p["op"]
         # Column-major (key, query, batch) == row-major (batch, query, key); reduce the key axis.

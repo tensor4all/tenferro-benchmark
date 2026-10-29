@@ -1625,6 +1625,37 @@ fn trace_metadata_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     Ok(CaseOutcome { max_rel_error: error, measurement: Some(measurement), timer: vec!["triu transpose chain and neg", "output allocation"], outside_timer: vec!["fixture, engine, session, tracing, compilation and preparation", "correctness check"], extra: json!({"arm": arm}) })
 }
 
+fn softmax_pool_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
+    let (rows, cols) = (param_usize(params, "rows")?, param_usize(params, "cols")?);
+    let arm = param_str(params, "arm")?;
+    let data = values(rows * cols, 60);
+    let x = Tensor::from_vec_col_major(vec![rows, cols], data.clone())?;
+    let mut engine = match arm {
+        "serial" => CpuEngine::serial(),
+        "pool4" => tenferro_einsum_benchmark::cpu_engine(Some(4))?,
+        _ => return Err(format!("unknown softmax pool arm {arm}").into()),
+    };
+    let (error, measurement) = engine.with_backend_session(|s| -> Result<_> {
+        let output = x.softmax(0, s)?;
+        let got = output.as_slice::<f64>()?;
+        let mut error = 0.0f64;
+        for (xs, ys) in data.chunks_exact(rows).zip(got.chunks_exact(rows)) {
+            let max = xs.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+            let sum: f64 = xs.iter().map(|v| (v - max).exp()).sum();
+            for (&v, &y) in xs.iter().zip(ys) {
+                error = error.max((y - (v - max).exp() / sum).abs());
+            }
+        }
+        check_tol(error, 1e-10, "softmax pool")?;
+        let measurement = measure(timing, rows * cols * 8, || Ok(x.softmax(0, s)?))?;
+        Ok((error, measurement))
+    })??;
+    Ok(CaseOutcome { max_rel_error: error, measurement: Some(measurement),
+        timer: vec!["axis-0 softmax", "output allocation"],
+        outside_timer: vec!["input and engine construction", "session entry", "correctness check"],
+        extra: json!({"engine": arm}) })
+}
+
 fn softmax_case(params: &Value, timing: &Timing) -> Result<CaseOutcome> {
     let (len, batch, axis) = (
         param_usize(params, "len")?,
@@ -2804,6 +2835,8 @@ fn main() -> Result<()> {
         "activation" => activation(&params, &timing),
         "softmax" => softmax_case(&params, &timing),
         "trace_metadata" => trace_metadata_case(&params, &timing),
+
+        "softmax_pool" => softmax_pool_case(&params, &timing),
         "reduce_mean" => reduce_mean_case(&params, &timing),
         "take_along_axis" => take_along_axis_case(&params, &timing),
         kind if kind.starts_with("umbrella_") => umbrella::run(&params, &timing, threads),
