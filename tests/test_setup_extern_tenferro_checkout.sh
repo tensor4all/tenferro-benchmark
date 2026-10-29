@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
+# Each case sets the setup variables it needs; CI jobs export some of them.
+unset TENFERRO_REF TENFERRO_UPDATE TENFERRO_RS_DIR
 
 git_config() {
   git -C "$1" config user.email "benchmark-test@example.com"
