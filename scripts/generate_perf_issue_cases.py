@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 18
+MANIFEST_VERSION = 19
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -611,13 +611,29 @@ def gpu_dispatch_regression_cases(gpu):
     return rows
 
 
+def softmax_pool_cases():
+    rows = []
+    for threads, arm, backend in ((1, "serial", "tenferro-rs"), (4, "pool4", "tenferro-rs"),
+                                  (1, "pytorch", "pytorch-cpu"), (4, "pytorch", "pytorch-cpu")):
+        target = f"softmax_f64_pool_{'serial' if threads == 1 else 'pool4'}_1024x4096"
+        cid = target if arm != "pytorch" else f"softmax_f64_pool_pytorch_t{threads}_1024x4096"
+        row = case(cid, ("#2273", "#2274", "#2276"), "softmax_pool",
+                   {"rows": 1024, "cols": 4096, "axis": 0}, arm=arm, backend=backend,
+                   dtype="f64", reference_for=target if arm == "pytorch" else None,
+                   intent="tenferro-rs #2273 / #2274 / #2276: axis-0 softmax on a caller-owned serial or four-worker engine; throughput, bandwidth-bound.")
+        row["thread_counts"] = [threads]
+        row["regime"] = "throughput"
+        rows.append(row)
+    return rows
+
+
 def generate_cases():
     return (decode_cases() + decode_view_operand_cases() + other_cases() + b1_op_cases()
             + cpu_gap_cases() + metadata_clone_cases()
             + cpu_followup_cases() + cpu_umbrella_cases() + pool_state_cases()
             + small_grad_cases() + fft_axis_cases() + degenerate_dot_cases()
             + erased_binary_cases() + axpby_strided_source_cases()
-            + erased_construct_cases() + eager_small_call_cases())
+            + erased_construct_cases() + eager_small_call_cases() + softmax_pool_cases())
 
 
 def cpu_umbrella_cases():
