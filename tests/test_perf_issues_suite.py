@@ -16,6 +16,18 @@ import generate_perf_issue_cases as gen  # noqa: E402
 
 
 class PerfIssueSuiteTest(unittest.TestCase):
+    def test_metadata_fold_controls_and_references(self):
+        cases = {row['id']: row for row in gen.trace_metadata_cases()}
+        target = 'trace_metadata_trace-fold_f32_1024x64_k50'
+        self.assertEqual(cases[target]['thread_counts'], [1, 4])
+        self.assertEqual(cases['trace_metadata_trace-outputs_f32_1024x64_k50']['params']['steps'], 50)
+        for arm in ('eager', 'pytorch'):
+            ref = cases[f'trace_metadata_{arm}_f32_1024x64_k50']
+            self.assertEqual(ref['reference_for'], target)
+            self.assertEqual(ref['thread_counts'], [1, 4])
+        control = cases['trace_metadata_fixed_neg_f32_8']
+        self.assertEqual((control['params']['rows'], control['params']['cols'], control['params']['steps']), (8, 1, 0))
+
     def test_umbrella_thread_domains_and_reference_arms(self):
         rows = gen.cpu_umbrella_cases()
         cases = {row['id']: row for row in rows}
