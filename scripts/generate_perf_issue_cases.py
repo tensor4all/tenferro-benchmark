@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INSTANCES = ROOT / "data/instances/perf_issues.json"
 MANIFEST = ROOT / "benchmarks/cpu/manifests/perf_issues.yaml"
 SUITE = ROOT / "benchmarks/cpu/perf_issues.yaml"
-MANIFEST_VERSION = 18
+MANIFEST_VERSION = 19
 SUITE_ID = "cpu/perf_issues"
 
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
@@ -326,6 +326,20 @@ def b1_op_cases():
                             "reference."
                             + (" #2031 tracks the confirmed borrowed-session len64 CPU softmax gap."
                                if op == "softmax" and length == 64 else ""))))
+    for threads in (1, 4):
+        for arm, backend, ref in (("eager-single-call", "tenferro-rs", None),
+                                  ("eager-composed", "tenferro-rs", "eager-single-call"),
+                                  ("pytorch", "pytorch-cpu", "eager-single-call")):
+            rows.append(case(
+                f"softmax_f32_{arm}_len64_b8_t{threads}",
+                ("#2233", "#2235"), "softmax",
+                {"op": "softmax", "len": 64, "batch": 8, "axis": 0},
+                arm=arm, backend=backend, dtype="f32",
+                reference_for=ref and f"softmax_f32_{ref}_len64_b8_t{threads}",
+                intent=("tenferro-rs #2233 / #2235: attention-shaped axis-0 softmax "
+                        "with pooled output, compared at one and four threads. "
+                        "Latency regime: per-call overhead.")))
+            rows[-1]["thread_counts"] = [threads]
     for arm, backend, ref in (("eager-single-call", "tenferro-rs", None),
                               ("session-single-call", "tenferro-rs", None),
                               ("eager-composed", "tenferro-rs", "eager-single-call"),

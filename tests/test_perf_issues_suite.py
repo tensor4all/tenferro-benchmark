@@ -16,6 +16,20 @@ import generate_perf_issue_cases as gen  # noqa: E402
 
 
 class PerfIssueSuiteTest(unittest.TestCase):
+    def test_attention_softmax_thread_pairs_have_matching_references(self):
+        with patch.dict(os.environ, {'BENCH_COVERAGE': 'full', 'BENCH_INSTANCE': ''}):
+            for threads in (1, 4):
+                _, cases, _, _, expected, _, _ = suite.plan(threads=threads)
+                target = f'softmax_f32_eager-single-call_len64_b8_t{threads}'
+                self.assertIn(target, expected)
+                for arm in ('eager-composed', 'pytorch'):
+                    ref = f'softmax_f32_{arm}_len64_b8_t{threads}'
+                    self.assertIn(ref, expected)
+                    self.assertEqual(cases[ref]['reference_for'], target)
+                    self.assertEqual(cases[ref]['params']['axis'], 0)
+                other = 4 if threads == 1 else 1
+                self.assertNotIn(f'softmax_f32_eager-single-call_len64_b8_t{other}', expected)
+
     def test_umbrella_thread_domains_and_reference_arms(self):
         rows = gen.cpu_umbrella_cases()
         cases = {row['id']: row for row in rows}
