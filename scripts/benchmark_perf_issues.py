@@ -173,6 +173,20 @@ def torch_case(case):
             ref = op_fn(x.double())
             return float(((op_fn(x).double() - ref).abs() / ref.abs().clamp(min=1.0)).max())
         return (lambda: op_fn(x)), check, rows * cols * 4, [f"torch {name}", "output_allocation"]
+    if kind == "trace_metadata":
+        rows, cols, steps = p["rows"], p["cols"], p["steps"]
+        x = torch.tensor(_values(rows * cols, 60), dtype=torch.float32).reshape(cols, rows).T
+        def op():
+            y = x
+            for _ in range(steps):
+                y = torch.triu(y).T
+            return -y
+        def check():
+            y = x.double()
+            for _ in range(steps):
+                y = torch.triu(y).T
+            return float((op().double() + y).abs().max())
+        return op, check, rows * cols * 4, ["triu and transpose chain", "neg", "output allocation"]
     if kind == "softmax":
         length, batch, name = p["len"], p["batch"], p["op"]
         # Column-major (key, query, batch) == row-major (batch, query, key); reduce the key axis.
