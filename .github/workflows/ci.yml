@@ -19,11 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OPENBLAS_ROOT: /usr
-      # Validate the recorded compatible revision: the tenferro-rs commit this
-      # harness builds against, including the caller-owned strided Pool API.
-      # Latest upstream main is exercised separately by
-      # benchmark-smoke-tenferro-main / nightly jobs.
-      TENFERRO_REF: 8fec1ca70852b930c092e7177c30bb8af7594a57
+      # setup_extern_deps.sh checks out the pinned revision
+      # (pins/tenferro-rs.rev). Latest upstream main is exercised separately by
+      # benchmark-smoke-tenferro-main.
       TENFERRO_UPDATE: "1"
     steps:
       - name: Checkout
@@ -122,6 +120,9 @@ jobs:
       - name: Run layout validation test
         run: bash tests/test_suite_result_layout.sh
 
+      - name: Check tenferro-rs checkout setup and pin
+        run: bash tests/test_setup_extern_tenferro_checkout.sh
+
       - name: Validate results dashboard
         run: uv run python -m unittest tests.test_generate_dashboard tests.test_generate_history tests.test_result_pipeline tests.test_cpu_thread_reports
 
@@ -162,9 +163,6 @@ jobs:
       - name: Check CUDA runners without a GPU
         run: cargo check --features cuda --all-targets
 
-      - name: Check WebGPU runner without a GPU
-        run: cargo check --features webgpu --all-targets
-
       - name: Check caller-owned CPU engine thread counts
         run: cargo test --lib cpu_engine_tests
 
@@ -176,7 +174,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OPENBLAS_ROOT: /usr
-      TENFERRO_REF: 8fec1ca70852b930c092e7177c30bb8af7594a57
       TENFERRO_UPDATE: "1"
       CARGO_TARGET_DIR: target/followup-ci
     steps:
@@ -189,7 +186,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libopenblas-dev cmake build-essential
-      - name: Setup the recorded latest-main API revision
+      - name: Setup the pinned tenferro-rs revision
         run: ./scripts/setup_extern_deps.sh
       - name: Build independent public-API MWE
         run: >-

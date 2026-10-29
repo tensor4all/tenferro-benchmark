@@ -70,7 +70,7 @@ those comparisons; preserve the original raw data for provenance.
 
 Run `python tests/test_timing_boundaries.py` in the benchmark Python environment,
 the public-API harness tests, and the repository's suite/formatter contract tests.
-Build CPU, CUDA and WebGPU runners against the recorded tenferro checkout.
+Build CPU and CUDA runners against the recorded tenferro checkout.
 CUDA/vendor execution still requires the NVIDIA devcontainer and GPU hardware;
 a successful `cargo check` alone does not validate kernels or vendor bindings.
 

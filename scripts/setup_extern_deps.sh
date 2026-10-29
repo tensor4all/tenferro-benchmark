@@ -13,7 +13,10 @@ EXTERN_DIR="$PROJECT_DIR/extern"
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
 
 TENFERRO_REPO_URL="${TENFERRO_REPO_URL:-https://github.com/tensor4all/tenferro-rs.git}"
-TENFERRO_REF="${TENFERRO_REF:-main}"
+# The tenferro-rs revision this harness builds against. An explicit
+# TENFERRO_REF (a branch, tag or commit) overrides the pin.
+TENFERRO_PIN_FILE="$PROJECT_DIR/pins/tenferro-rs.rev"
+TENFERRO_REF="${TENFERRO_REF:-$(tr -d '[:space:]' < "$TENFERRO_PIN_FILE")}"
 TENFERRO_UPDATE="${TENFERRO_UPDATE:-0}"
 SETUP_EXTERN_MIGRATE_SIBLINGS="${SETUP_EXTERN_MIGRATE_SIBLINGS:-0}"
 

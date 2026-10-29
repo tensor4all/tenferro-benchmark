@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tenferro_ref:
-        description: "tenferro-rs ref to benchmark (default: latest main; pinned once per run)"
+        description: "tenferro-rs ref to benchmark (default: pins/tenferro-rs.rev)"
         required: false
         default: ""
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Run sequential Linux CPU suites in MKL devcontainer
         env:
-          TENFERRO_REF: ${{ inputs.tenferro_ref || 'main' }}
+          TENFERRO_REF: ${{ inputs.tenferro_ref }}
         run: |
           # shellcheck disable=SC2016
           collection_script=$(cat <<'SCRIPT'

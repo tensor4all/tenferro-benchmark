@@ -61,8 +61,11 @@ All profiles:
   creates `.venv` from `pyproject.toml`).
 - External checkouts under `extern/` (tenferro-rs and problem
   data), fetched by `./scripts/setup_extern_deps.sh`. Only tenferro-rs is
-  pinned by revision; strided-perm / strided-view / threadteam come from
-  crates.io and are recorded in `run.yaml` (`resolved_deps`).
+  pinned by revision, in `pins/tenferro-rs.rev`: `TENFERRO_UPDATE=1` checks
+  out that revision (`TENFERRO_REF=<ref>` overrides the pin); without it the
+  script reuses or clones the checkout as it is. strided-perm / strided-view /
+  threadteam come from crates.io and are recorded in `run.yaml`
+  (`resolved_deps`).
 
 For `mac-cpu`, run the "All profiles" commands directly on the host. For the
 devcontainer profiles (`amd-cpu` / `linux-cpu` / `nvidia-gpu`), run them

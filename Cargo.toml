@@ -78,7 +78,7 @@ hptt = ["dep:hptt"]
 # pool, so the placement budget matches the runner's requested thread count.
 strided-rs = ["dep:strided-perm", "dep:strided-view", "strided-perm/parallel", "dep:threadteam"]
 # Enables the CPU stack (tenferro-cpu) without selecting a backend; `native`,
-# `blas*`, `cuda` and `webgpu` each turn this on. The cpu/elementwise benchmark
+# `blas*` and `cuda` each turn this on. The cpu/elementwise benchmark
 # binary needs the CPU stack but not a particular backend.
 cpu-engine = ["dep:tenferro-cpu"]
 # CPU backend selection (tenferro-rs #2004): a build compiles exactly one of
@@ -135,12 +135,6 @@ cuda = [
     "dep:libloading",
     "dep:cudarc",
 ]
-webgpu = [
-    "dep:tenferro-gpu",
-    "tenferro-gpu?/webgpu",
-    "cpu-engine",
-    "tenferro-cpu?/native",
-]
 
 [[bin]]
 name = "publication_gate"
@@ -189,11 +183,6 @@ required-features = ["cuda"]
 name = "benchmark_gpu_permutation"
 path = "src/bin/benchmark_gpu_permutation.rs"
 required-features = ["cuda"]
-
-[[bin]]
-name = "benchmark_gpu_permutation_webgpu"
-path = "src/bin/benchmark_gpu_permutation_webgpu.rs"
-required-features = ["webgpu"]
 
 # Dev and test builds do not read DWARF, and it multiplies what every target directory and the
 # shared build cache hold. A session that wants it can ask for it with
