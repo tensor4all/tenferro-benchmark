@@ -10638,5 +10638,123 @@
   ],
   "intent": "tenferro-rs #1904: torch.matmul on the same 8-element or 4x4 fixture, the latency reference for the eager small-call row.",
   "reference_for": "eager_small_gemm_f64_eager-held-session"
+ },
+ {
+  "id": "softmax_f64_pool_serial_1024x4096",
+  "issues": [
+   "#2273",
+   "#2274",
+   "#2276"
+  ],
+  "kind": "softmax_pool",
+  "arm": "serial",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "rows": 1024,
+   "cols": 4096,
+   "axis": 0,
+   "kind": "softmax_pool",
+   "arm": "serial",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2273 / #2274 / #2276: axis-0 softmax on a caller-owned serial or four-worker engine; throughput, bandwidth-bound.",
+  "thread_counts": [
+   1
+  ],
+  "regime": "throughput"
+ },
+ {
+  "id": "softmax_f64_pool_pool4_1024x4096",
+  "issues": [
+   "#2273",
+   "#2274",
+   "#2276"
+  ],
+  "kind": "softmax_pool",
+  "arm": "pool4",
+  "backend": "tenferro-rs",
+  "dtype": "f64",
+  "params": {
+   "rows": 1024,
+   "cols": 4096,
+   "axis": 0,
+   "kind": "softmax_pool",
+   "arm": "pool4",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2273 / #2274 / #2276: axis-0 softmax on a caller-owned serial or four-worker engine; throughput, bandwidth-bound.",
+  "thread_counts": [
+   4
+  ],
+  "regime": "throughput"
+ },
+ {
+  "id": "softmax_f64_pool_pytorch_t1_1024x4096",
+  "issues": [
+   "#2273",
+   "#2274",
+   "#2276"
+  ],
+  "kind": "softmax_pool",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "rows": 1024,
+   "cols": 4096,
+   "axis": 0,
+   "kind": "softmax_pool",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2273 / #2274 / #2276: axis-0 softmax on a caller-owned serial or four-worker engine; throughput, bandwidth-bound.",
+  "reference_for": "softmax_f64_pool_serial_1024x4096",
+  "thread_counts": [
+   1
+  ],
+  "regime": "throughput"
+ },
+ {
+  "id": "softmax_f64_pool_pytorch_t4_1024x4096",
+  "issues": [
+   "#2273",
+   "#2274",
+   "#2276"
+  ],
+  "kind": "softmax_pool",
+  "arm": "pytorch",
+  "backend": "pytorch-cpu",
+  "dtype": "f64",
+  "params": {
+   "rows": 1024,
+   "cols": 4096,
+   "axis": 0,
+   "kind": "softmax_pool",
+   "arm": "pytorch",
+   "dtype": "f64"
+  },
+  "measurement_scope": "steady_state",
+  "profiles": [
+   "amd-cpu"
+  ],
+  "intent": "tenferro-rs #2273 / #2274 / #2276: axis-0 softmax on a caller-owned serial or four-worker engine; throughput, bandwidth-bound.",
+  "reference_for": "softmax_f64_pool_pool4_1024x4096",
+  "thread_counts": [
+   4
+  ],
+  "regime": "throughput"
  }
 ]

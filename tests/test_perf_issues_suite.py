@@ -16,6 +16,17 @@ import generate_perf_issue_cases as gen  # noqa: E402
 
 
 class PerfIssueSuiteTest(unittest.TestCase):
+    def test_softmax_pool_arms_follow_thread_budget_and_regime(self):
+        cases = {row['id']: row for row in gen.softmax_pool_cases()}
+        for threads, arm in ((1, 'serial'), (4, 'pool4')):
+            target = f'softmax_f64_pool_{arm}_1024x4096'
+            ref = f'softmax_f64_pool_pytorch_t{threads}_1024x4096'
+            for cid in (target, ref):
+                self.assertEqual(cases[cid]['thread_counts'], [threads])
+                self.assertEqual(cases[cid]['regime'], 'throughput')
+                self.assertEqual((cases[cid]['params']['rows'], cases[cid]['params']['cols'], cases[cid]['params']['axis']), (1024, 4096, 0))
+            self.assertEqual(cases[ref]['reference_for'], target)
+
     def test_attention_softmax_thread_pairs_have_matching_references(self):
         with patch.dict(os.environ, {'BENCH_COVERAGE': 'full', 'BENCH_INSTANCE': ''}):
             for threads in (1, 4):

@@ -2,7 +2,7 @@
 # quick: steady-state operation rows and their reference arms; full adds the
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
-manifest_version: 19
+manifest_version: 20
 suite_id: cpu/perf_issues
 source: data/instances/perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -334,6 +334,10 @@ coverage:
   - eager_small_add_f64_pytorch
   - eager_small_gemm_f64_eager-held-session
   - eager_small_gemm_f64_pytorch
+  - softmax_f64_pool_serial_1024x4096
+  - softmax_f64_pool_pool4_1024x4096
+  - softmax_f64_pool_pytorch_t1_1024x4096
+  - softmax_f64_pool_pytorch_t4_1024x4096
   full:
   - decode_proj_f32_eager-shared_in1024_out1024_len8
   - decode_proj_f32_eager-per-call_in1024_out1024_len8
@@ -725,3 +729,7 @@ coverage:
   - eager_small_add_f64_pytorch
   - eager_small_gemm_f64_eager-held-session
   - eager_small_gemm_f64_pytorch
+  - softmax_f64_pool_serial_1024x4096
+  - softmax_f64_pool_pool4_1024x4096
+  - softmax_f64_pool_pytorch_t1_1024x4096
+  - softmax_f64_pool_pytorch_t4_1024x4096
