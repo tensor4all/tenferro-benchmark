@@ -14,25 +14,32 @@ occur afterward. The raw row records enqueue and synchronized sequence durations
 exact keys, shapes and strides. These are workflow latency screens, not
 steady-state throughput or confirmed baseline/candidate performance comparisons.
 
-Before each sample, clear CUDA extension-owned plans/workspace and drain the
-device. Keep compiled CubeCL kernels, the cuTENSOR library handle and allocator
-pools initialized. Set the contraction-plan capacity to 64. The modes are:
+Before each sample, clear the CUDA extension-owned caches and drain the device.
+Keep the compiled kernel modules, the cuTENSOR library handle and allocator pools
+initialized. The engine-owned cuTENSOR plan cache has neither a public reset nor
+a public capacity knob (tenferro-gpu v0.8.0's kernel-catalogue cutover made it
+private to the engine's handle), so a sequence after the first sample reuses it.
+The modes are:
 
 | Mode | Sequence | Precondition |
 | --- | --- | --- |
 | `fixed-warm` | 32 calls to one key | Warm the key after reset |
 | `mixed-warm` | 32 ordered revisits of three keys | Warm all three after reset |
 | `fresh` | Eight distinct keys | Start with empty contraction cache |
-| `capacity-thrash` | 72 distinct keys, then revisit key zero | Start empty; exceed the 64-plan bound |
+| `capacity-thrash` | 72 distinct keys, then revisit key zero | Start empty; exceed the internal plan bound |
 | `equal-shape-strides` | 32 alternating compact/transposed borrowed reads | Same logical shape/values; warm both layouts |
 
 All modes use F64 batched contractions with base sizes 16 and 64. The versioned
 quick selection contains fixed/mixed/fresh latency cases; full adds capacity and
 stride cases and every counter pass. Coverage and sampling effort remain separate.
 Counter cases run the same declared precondition and sequence with no clocks,
-observing public plan hits/misses/evictions/bytes, workspace bytes and retirement
-state after enqueue, completion and output drop. Counters are cumulative; compare
-snapshots within the pass. Raw timing rows contain no counter queries.
+observing the runtime's public counters — live device bytes, cumulative
+allocations, kernel launches, zero fills, artifact/module cache entries and
+pending retirement bytes — after enqueue, completion and output drop. The cuTENSOR
+plan and vendor-workspace counters this section used to report were removed from
+the public surface by tenferro-gpu v0.8.0's kernel-catalogue cutover; nothing is
+substituted for them. Counters are cumulative; compare snapshots within the pass.
+Raw timing rows contain no counter queries.
 
 Run builds and checks in the repository CUDA devcontainer. Physical GPU1 is for
 correctness/counter work; GPU0 is for sequential timing collection. For example:

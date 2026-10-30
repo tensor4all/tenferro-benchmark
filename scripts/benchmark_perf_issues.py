@@ -689,16 +689,21 @@ def render_report(run_dir, target, suite_key="cpu"):
                 lines += ["FAILED", ""]
                 continue
             if row.get("kind") == "shape_stream":
-                lines += ["Untimed public cache/workspace/retirement observations; cumulative counters. "
+                # tenferro-gpu v0.8.0's kernel-catalogue cutover removed the cuTENSOR
+                # plan, vendor-workspace and workspace-retirement counters, so the
+                # observations below are the runtime's own public counters.
+                lines += ["Untimed public runtime observations; cumulative counters. "
                           "Exact sequence and reset scope are recorded in the raw row.", "",
-                          "| Phase | Index | Key | Plans | Hits | Misses | Evictions | Plan bytes | Workspace bytes | In flight |",
+                          "| Phase | Index | Key | Live bytes | Pool reserved | Pending bytes | Allocations | Launches | Artifact entries | Module entries |",
                           "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
                 for observation in row.get("counter_observations", []):
                     stats = observation["stats"]
-                    plans = stats["plans"]
+                    device = stats["device"]
+                    retirement = stats["retirement"]
                     fields = [observation["phase"], observation.get("index", "—"), observation.get("key", "—"),
-                              plans["entries"], plans["hits"], plans["misses"], plans["evictions"],
-                              plans["retained_bytes"], stats["workspace"]["bytes"], stats["retirement"]["in_flight"]]
+                              device["live_bytes"], device["pool_reserved_bytes"], retirement["pending_bytes"],
+                              retirement["allocations"], retirement["launches"],
+                              stats["artifact_cache"]["entries"], stats["module_cache"]["entries"]]
                     lines.append("| " + " | ".join(map(str, fields)) + " |")
                 lines.append("")
                 continue

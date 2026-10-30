@@ -49,7 +49,7 @@ SUITE_ID = "cpu/perf_issues"
 GPU_INSTANCES = ROOT / "data/instances/gpu_perf_issues.json"
 GPU_MANIFEST = ROOT / "benchmarks/gpu/manifests/perf_issues.yaml"
 GPU_SUITE = ROOT / "benchmarks/gpu/perf_issues.yaml"
-GPU_MANIFEST_VERSION = 8
+GPU_MANIFEST_VERSION = 9
 GPU_SUITE_ID = "gpu/perf_issues"
 
 DIAGNOSTIC_SCOPES = {"session_entry_diagnostic", "counter_diagnostic", "eager_ad_workflow",
@@ -941,27 +941,32 @@ def generate_gpu_cases():
                         dtype="f64",
                         reference_for=ref and f"transfer_{direction}_f64_{ref}_{size}B", profiles=gpu,
                         intent=("tenferro-rs #2009 allocation-equivalence arms for the download "
-                                "direction: `tenferro-into` reuses one caller-owned Vec through "
-                                "download_tensor_into, and `cudarc-pageable-fresh` allocates a "
-                                "fresh pageable Vec per memcpy_dtoh call. Every call includes its "
-                                "own synchronize; both are references for the tenferro download "
-                                "case, which allocates its output through download_tensor.")))
+                                "direction: `tenferro-into` reuses one caller-owned pinned host "
+                                "buffer through download_pending (tenferro-gpu v0.8.0's reusable "
+                                "download route, replacing download_tensor_into), and "
+                                "`cudarc-pageable-fresh` allocates a fresh pageable Vec per "
+                                "memcpy_dtoh call. Every call includes its own synchronize; both "
+                                "are references for the tenferro download case, which allocates "
+                                "its output through download_tensor.")))
     for elements in (0, 16, 512, 32768, 2 << 20):
         for arm, ref in (("alloc-zero-within-callback", None), ("alloc-zero-per-callback", None),
-                         ("host-zero-upload", "alloc-zero-per-callback"),
-                         ("alloc-fill-per-callback", "alloc-zero-per-callback")):
+                         ("host-zero-upload", "alloc-zero-per-callback")):
             rows.append(case(
                 f"alloc_zero_f64_{arm}_{elements}el", ("#1887",), "alloc_zero", {"elements": elements},
                 arm=arm, backend="tenferro-cuda", dtype="f64",
-                scope="session_entry_diagnostic" if arm in {"alloc-zero-per-callback", "alloc-fill-per-callback"} else "steady_state",
+                scope="session_entry_diagnostic" if arm == "alloc-zero-per-callback" else "steady_state",
                 reference_for=ref and f"alloc_zero_f64_{ref}_{elements}el", profiles=gpu,
-                intent=("tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, "
-                        "256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per "
-                        "callback, vs uploading a host zero buffer and vs alloc_output + "
-                        "fill_zero_write (device fill) per callback. Each batch ends with one device "
-                        "synchronize. Scope and output-retention container preparation are outside "
-                        "the shared-scope timer; per-callback arms explicitly include raw-scope "
-                        "entry/exit and are session-entry diagnostics, not operation comparisons.")))
+                intent=("tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, "
+                        "256 KiB, 16 MiB) many times inside one entered raw scope and once per "
+                        "raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 "
+                        "zero-fills the raw `alloc_output`, which replaces the removed "
+                        "`alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm "
+                        "has no equivalent, because a fill-write entry no longer exists and the "
+                        "allocation is already zeroed. Each batch ends with one device "
+                        "synchronize. Scope and output-retention container preparation are "
+                        "outside the shared-scope timer; per-callback arms explicitly include "
+                        "raw-scope entry/exit and are session-entry diagnostics, not operation "
+                        "comparisons.")))
     for n in (8, 16, 32, 64):
         for arm, ref in (("loop", None), ("batched", "loop")):
             rows.append(case(
@@ -1023,13 +1028,16 @@ def gpu_shape_stream_cases(gpu):
                     scope="counter_diagnostic" if instrument else "shape_stream_diagnostic",
                     reference_for=None if mode == "fixed-warm" else f"shape_stream_f64_n{n}_fixed-warm_{suffix}",
                     intent=("tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, "
-                            "with CUDA extension plans/workspace reset before each sequence; "
+                            "with the CUDA extension-owned caches reset before each sequence; "
                             "fixed/mixed and stride streams explicitly warm their keys, fresh and "
                             "72-key capacity-thrashing streams include planning. Retain every output "
                             "through native synchronization; verify every element outside timing. "
                             "Counter passes have no clocks and observe enqueue/completion/drop "
-                            "separately. This is workflow latency, not steady-state throughput or "
-                            "a baseline/candidate regression claim.")))
+                            "separately, reporting the runtime's public allocation, launch and "
+                            "artifact/module cache counters (tenferro-gpu v0.8.0 removed the "
+                            "cuTENSOR plan/workspace counters and their capacity knob). This is "
+                            "workflow latency, not steady-state throughput or a "
+                            "baseline/candidate regression claim.")))
     return rows
 
 
@@ -1140,8 +1148,7 @@ def gpu_memory_cases(gpu):
                     "`constant` reshapes the uploaded constant and `op-output` reshapes an "
                     "elementwise result, with the op-output arm as the reference the constant "
                     "route has to reach. A compact reshape must be a view, not a device copy.")))
-    for arm, ref in (("create-destroy", None), ("reused", "create-destroy"),
-                     ("runtime-handle", "create-destroy")):
+    for arm, ref in (("create-destroy", None), ("reused", "create-destroy")):
         rows.append(case(
             f"vendor_handle_cublas_f64_{arm}", ("#2083",), "vendor_handle",
             {"arm": arm}, arm=arm, backend="tenferro-cuda", dtype="f64",
@@ -1150,7 +1157,9 @@ def gpu_memory_cases(gpu):
             intent=("tenferro-rs #2083: the documented raw-session pattern creates and destroys "
                     "a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and "
                     "10 MiB per session on the issue's card); the reused arm keeps one handle. "
-                    "Both arms are per-iteration inside the raw scope.")))
+                    "Both arms are per-iteration inside the raw scope. tenferro-gpu v0.8.0 no "
+                    "longer lends a runtime-owned cuBLAS handle to a raw scope, so the former "
+                    "`runtime-handle` arm has no public equivalent and is not generated.")))
     for cycles in (8, 64):
         rows.append(case(
             f"vendor_churn_f64_cycles{cycles}", ("#1924",), "vendor_churn",
@@ -1161,7 +1170,7 @@ def gpu_memory_cases(gpu):
                     "410 -> 3114 MB over 50 cycles, so process RSS is recorded before, per cycle "
                     "and after as the primary observable, with the driver free device bytes kept "
                     "as supplementary. A state diagnostic, not a timing row.")))
-    for arm in ("alloc-free", "trim-after-drop", "runtime-recreate", "driver-alloc-after-free"):
+    for arm in ("alloc-free", "runtime-recreate", "driver-alloc-after-free"):
         rows.append(case(
             f"pool_retention_f64_{arm}", ("#2081",), "pool_retention",
             {"arm": arm, "gib": 1, "count": 8, "probe_gib": 6}, arm=arm,
@@ -1174,9 +1183,11 @@ def gpu_memory_cases(gpu):
                     "runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver "
                     "allocation the issue could not serve. State diagnostic: bytes, not "
                     "nanoseconds. A caller must see the memory back or get an Err, never a panic "
-                    "with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the "
-                    "merged slice 1 (#2113): the blocks whose owners are gone must come back "
-                    "without recreating the runtime.")))
+                    "with Ok from alloc_output. tenferro-gpu v0.8.0's kernel-catalogue cutover "
+                    "removed the explicit `CudaRuntime::trim_memory`, so the former "
+                    "`trim-after-drop` arm (an explicit trim between the drops and the reading, "
+                    "without recreating the runtime) has no public equivalent and is not "
+                    "generated.")))
     return rows
 
 
@@ -1348,7 +1359,7 @@ def render(cases, *, suite_id=SUITE_ID, manifest_version=MANIFEST_VERSION,
         # Preserve the existing quick allocation controls while correcting their
         # timing classification. This does not move IDs between quick/full.
         quick += [c["id"] for c in cases if c["kind"] == "alloc_zero"
-                  and c["arm"] in ("alloc-zero-per-callback", "alloc-fill-per-callback")]
+                  and c["arm"] == "alloc-zero-per-callback"]
         quick += [c["id"] for c in cases if c["kind"] == "shape_stream"
                   and not c["params"]["instrument"]
                   and c["arm"] in ("fixed-warm", "mixed-warm", "fresh")]

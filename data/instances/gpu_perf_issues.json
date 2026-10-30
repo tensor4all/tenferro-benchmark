@@ -495,7 +495,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_8B"
  },
  {
@@ -518,7 +518,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_8B"
  },
  {
@@ -609,7 +609,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_4096B"
  },
  {
@@ -632,7 +632,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_4096B"
  },
  {
@@ -723,7 +723,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_65536B"
  },
  {
@@ -746,7 +746,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_65536B"
  },
  {
@@ -837,7 +837,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_1048576B"
  },
  {
@@ -860,7 +860,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_1048576B"
  },
  {
@@ -951,7 +951,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_16777216B"
  },
  {
@@ -974,7 +974,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_16777216B"
  },
  {
@@ -1065,7 +1065,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_268435456B"
  },
  {
@@ -1088,7 +1088,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned Vec through download_tensor_into, and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
+  "intent": "tenferro-rs #2009 allocation-equivalence arms for the download direction: `tenferro-into` reuses one caller-owned pinned host buffer through download_pending (tenferro-gpu v0.8.0's reusable download route, replacing download_tensor_into), and `cudarc-pageable-fresh` allocates a fresh pageable Vec per memcpy_dtoh call. Every call includes its own synchronize; both are references for the tenferro download case, which allocates its output through download_tensor.",
   "reference_for": "transfer_down_f64_tenferro_268435456B"
  },
  {
@@ -1110,7 +1110,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_0el",
@@ -1131,7 +1131,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_0el",
@@ -1152,29 +1152,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
-  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_0el"
- },
- {
-  "id": "alloc_zero_f64_alloc-fill-per-callback_0el",
-  "issues": [
-   "#1887"
-  ],
-  "kind": "alloc_zero",
-  "arm": "alloc-fill-per-callback",
-  "backend": "tenferro-cuda",
-  "dtype": "f64",
-  "params": {
-   "elements": 0,
-   "kind": "alloc_zero",
-   "arm": "alloc-fill-per-callback",
-   "dtype": "f64"
-  },
-  "measurement_scope": "session_entry_diagnostic",
-  "profiles": [
-   "nvidia-gpu"
-  ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_0el"
  },
  {
@@ -1196,7 +1174,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_16el",
@@ -1217,7 +1195,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_16el",
@@ -1238,29 +1216,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
-  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_16el"
- },
- {
-  "id": "alloc_zero_f64_alloc-fill-per-callback_16el",
-  "issues": [
-   "#1887"
-  ],
-  "kind": "alloc_zero",
-  "arm": "alloc-fill-per-callback",
-  "backend": "tenferro-cuda",
-  "dtype": "f64",
-  "params": {
-   "elements": 16,
-   "kind": "alloc_zero",
-   "arm": "alloc-fill-per-callback",
-   "dtype": "f64"
-  },
-  "measurement_scope": "session_entry_diagnostic",
-  "profiles": [
-   "nvidia-gpu"
-  ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_16el"
  },
  {
@@ -1282,7 +1238,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_512el",
@@ -1303,7 +1259,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_512el",
@@ -1324,29 +1280,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
-  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_512el"
- },
- {
-  "id": "alloc_zero_f64_alloc-fill-per-callback_512el",
-  "issues": [
-   "#1887"
-  ],
-  "kind": "alloc_zero",
-  "arm": "alloc-fill-per-callback",
-  "backend": "tenferro-cuda",
-  "dtype": "f64",
-  "params": {
-   "elements": 512,
-   "kind": "alloc_zero",
-   "arm": "alloc-fill-per-callback",
-   "dtype": "f64"
-  },
-  "measurement_scope": "session_entry_diagnostic",
-  "profiles": [
-   "nvidia-gpu"
-  ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_512el"
  },
  {
@@ -1368,7 +1302,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_32768el",
@@ -1389,7 +1323,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_32768el",
@@ -1410,29 +1344,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
-  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_32768el"
- },
- {
-  "id": "alloc_zero_f64_alloc-fill-per-callback_32768el",
-  "issues": [
-   "#1887"
-  ],
-  "kind": "alloc_zero",
-  "arm": "alloc-fill-per-callback",
-  "backend": "tenferro-cuda",
-  "dtype": "f64",
-  "params": {
-   "elements": 32768,
-   "kind": "alloc_zero",
-   "arm": "alloc-fill-per-callback",
-   "dtype": "f64"
-  },
-  "measurement_scope": "session_entry_diagnostic",
-  "profiles": [
-   "nvidia-gpu"
-  ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_32768el"
  },
  {
@@ -1454,7 +1366,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_alloc-zero-per-callback_2097152el",
@@ -1475,7 +1387,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons."
  },
  {
   "id": "alloc_zero_f64_host-zero-upload_2097152el",
@@ -1496,29 +1408,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
-  "reference_for": "alloc_zero_f64_alloc-zero-per-callback_2097152el"
- },
- {
-  "id": "alloc_zero_f64_alloc-fill-per-callback_2097152el",
-  "issues": [
-   "#1887"
-  ],
-  "kind": "alloc_zero",
-  "arm": "alloc-fill-per-callback",
-  "backend": "tenferro-cuda",
-  "dtype": "f64",
-  "params": {
-   "elements": 2097152,
-   "kind": "alloc_zero",
-   "arm": "alloc-fill-per-callback",
-   "dtype": "f64"
-  },
-  "measurement_scope": "session_entry_diagnostic",
-  "profiles": [
-   "nvidia-gpu"
-  ],
-  "intent": "tenferro-rs #1887: Session::alloc_zero_output (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered with_cubecl scope and once per callback, vs uploading a host zero buffer and vs alloc_output + fill_zero_write (device fill) per callback. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
+  "intent": "tenferro-rs #1887: zero-filled output allocation (0, 16 elements, 4 KiB, 256 KiB, 16 MiB) many times inside one entered raw scope and once per raw-scope entry, vs uploading a host zero buffer. tenferro-gpu v0.8.0 zero-fills the raw `alloc_output`, which replaces the removed `alloc_zero_output`; the separate `alloc_output + fill_zero_write` arm has no equivalent, because a fill-write entry no longer exists and the allocation is already zeroed. Each batch ends with one device synchronize. Scope and output-retention container preparation are outside the shared-scope timer; per-callback arms explicitly include raw-scope entry/exit and are session-entry diagnostics, not operation comparisons.",
   "reference_for": "alloc_zero_f64_alloc-zero-per-callback_2097152el"
  },
  {
@@ -3031,7 +2921,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2083: the documented raw-session pattern creates and destroys a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and 10 MiB per session on the issue's card); the reused arm keeps one handle. Both arms are per-iteration inside the raw scope."
+  "intent": "tenferro-rs #2083: the documented raw-session pattern creates and destroys a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and 10 MiB per session on the issue's card); the reused arm keeps one handle. Both arms are per-iteration inside the raw scope. tenferro-gpu v0.8.0 no longer lends a runtime-owned cuBLAS handle to a raw scope, so the former `runtime-handle` arm has no public equivalent and is not generated."
  },
  {
   "id": "vendor_handle_cublas_f64_reused",
@@ -3051,28 +2941,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2083: the documented raw-session pattern creates and destroys a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and 10 MiB per session on the issue's card); the reused arm keeps one handle. Both arms are per-iteration inside the raw scope.",
-  "reference_for": "vendor_handle_cublas_f64_create-destroy"
- },
- {
-  "id": "vendor_handle_cublas_f64_runtime-handle",
-  "issues": [
-   "#2083"
-  ],
-  "kind": "vendor_handle",
-  "arm": "runtime-handle",
-  "backend": "tenferro-cuda",
-  "dtype": "f64",
-  "params": {
-   "arm": "runtime-handle",
-   "kind": "vendor_handle",
-   "dtype": "f64"
-  },
-  "measurement_scope": "session_entry_diagnostic",
-  "profiles": [
-   "nvidia-gpu"
-  ],
-  "intent": "tenferro-rs #2083: the documented raw-session pattern creates and destroys a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and 10 MiB per session on the issue's card); the reused arm keeps one handle. Both arms are per-iteration inside the raw scope.",
+  "intent": "tenferro-rs #2083: the documented raw-session pattern creates and destroys a cuBLAS handle in every session (cublasCreate + cublasDestroy, 0.45 ms and 10 MiB per session on the issue's card); the reused arm keeps one handle. Both arms are per-iteration inside the raw scope. tenferro-gpu v0.8.0 no longer lends a runtime-owned cuBLAS handle to a raw scope, so the former `runtime-handle` arm has no public equivalent and is not generated.",
   "reference_for": "vendor_handle_cublas_f64_create-destroy"
  },
  {
@@ -3140,30 +3009,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the merged slice 1 (#2113): the blocks whose owners are gone must come back without recreating the runtime."
- },
- {
-  "id": "pool_retention_f64_trim-after-drop",
-  "issues": [
-   "#2081"
-  ],
-  "kind": "pool_retention",
-  "arm": "trim-after-drop",
-  "backend": "tenferro-cuda",
-  "dtype": "f64",
-  "params": {
-   "arm": "trim-after-drop",
-   "gib": 1,
-   "count": 8,
-   "probe_gib": 6,
-   "kind": "pool_retention",
-   "dtype": "f64"
-  },
-  "measurement_scope": "state_diagnostic",
-  "profiles": [
-   "nvidia-gpu"
-  ],
-  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the merged slice 1 (#2113): the blocks whose owners are gone must come back without recreating the runtime."
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. tenferro-gpu v0.8.0's kernel-catalogue cutover removed the explicit `CudaRuntime::trim_memory`, so the former `trim-after-drop` arm (an explicit trim between the drops and the reading, without recreating the runtime) has no public equivalent and is not generated."
  },
  {
   "id": "pool_retention_f64_runtime-recreate",
@@ -3186,7 +3032,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the merged slice 1 (#2113): the blocks whose owners are gone must come back without recreating the runtime."
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. tenferro-gpu v0.8.0's kernel-catalogue cutover removed the explicit `CudaRuntime::trim_memory`, so the former `trim-after-drop` arm (an explicit trim between the drops and the reading, without recreating the runtime) has no public equivalent and is not generated."
  },
  {
   "id": "pool_retention_f64_driver-alloc-after-free",
@@ -3209,7 +3055,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. `trim-after-drop` adds the explicit trim of the merged slice 1 (#2113): the blocks whose owners are gone must come back without recreating the runtime."
+  "intent": "tenferro-rs #2081: device memory of dropped CUDA tensors (and of a dropped runtime) is never returned to the driver. The issue's sequence: eight 1 GiB tensors alive at the high-water mark (one of them downloaded and compared with its host payload), then all dropped. The driver free memory is reported before, at the high-water mark, after the drops, and after recreating the runtime; `driver-alloc-after-free` adds the synchronous 6 GiB driver allocation the issue could not serve. State diagnostic: bytes, not nanoseconds. A caller must see the memory back or get an Err, never a panic with Ok from alloc_output. tenferro-gpu v0.8.0's kernel-catalogue cutover removed the explicit `CudaRuntime::trim_memory`, so the former `trim-after-drop` arm (an explicit trim between the drops and the reading, without recreating the runtime) has no public equivalent and is not generated."
  },
  {
   "id": "svd_driver_c64_n64_auto",
@@ -4236,7 +4082,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
  },
  {
   "id": "shape_stream_f64_n16_fixed-warm_counters",
@@ -4259,7 +4105,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
  },
  {
   "id": "shape_stream_f64_n16_mixed-warm_latency",
@@ -4282,7 +4128,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_latency"
  },
  {
@@ -4306,7 +4152,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_counters"
  },
  {
@@ -4330,7 +4176,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_latency"
  },
  {
@@ -4354,7 +4200,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_counters"
  },
  {
@@ -4378,7 +4224,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_latency"
  },
  {
@@ -4402,7 +4248,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_counters"
  },
  {
@@ -4426,7 +4272,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_latency"
  },
  {
@@ -4450,7 +4296,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n16_fixed-warm_counters"
  },
  {
@@ -4474,7 +4320,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
  },
  {
   "id": "shape_stream_f64_n64_fixed-warm_counters",
@@ -4497,7 +4343,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim."
  },
  {
   "id": "shape_stream_f64_n64_mixed-warm_latency",
@@ -4520,7 +4366,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_latency"
  },
  {
@@ -4544,7 +4390,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_counters"
  },
  {
@@ -4568,7 +4414,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_latency"
  },
  {
@@ -4592,7 +4438,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_counters"
  },
  {
@@ -4616,7 +4462,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_latency"
  },
  {
@@ -4640,7 +4486,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_counters"
  },
  {
@@ -4664,7 +4510,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_latency"
  },
  {
@@ -4688,7 +4534,7 @@
   "profiles": [
    "nvidia-gpu"
   ],
-  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with CUDA extension plans/workspace reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately. This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
+  "intent": "tenferro-rs #1873 / #1805; benchmark #107: entire ordered batched-contraction shape stream, with the CUDA extension-owned caches reset before each sequence; fixed/mixed and stride streams explicitly warm their keys, fresh and 72-key capacity-thrashing streams include planning. Retain every output through native synchronization; verify every element outside timing. Counter passes have no clocks and observe enqueue/completion/drop separately, reporting the runtime's public allocation, launch and artifact/module cache counters (tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters and their capacity knob). This is workflow latency, not steady-state throughput or a baseline/candidate regression claim.",
   "reference_for": "shape_stream_f64_n64_fixed-warm_counters"
  }
 ]

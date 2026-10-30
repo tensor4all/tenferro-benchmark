@@ -20,15 +20,15 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use tenferro_ad::{EagerRuntime, EagerTensor};
 use tenferro_gpu::cuda::cudarc::cublas::{result as cublas, sys as cublas_sys};
+use tenferro_gpu::cuda::raw::with_cuda_engine;
 use tenferro_gpu::cuda::{
-    download_tensor, download_tensor_into, upload_tensor, with_cuda_engine, CudaDeviceId,
-    CudaEngine,
+    download_pending, download_tensor, upload_tensor, CudaDeviceId, CudaEngine, PinnedHostBuffer,
 };
 use tenferro_linalg::{EighDriver, EighOptions, SvdDriver, SvdOptions, TensorLinalgExt};
-use tenferro_runtime::TensorSessionOpsExt;
+use tenferro_runtime::{ExecutionEngine, TensorSessionOpsExt};
 use tenferro_tensor::{
     DotGeneralConfig, Engine, GatherConfig, Tensor, TensorDot, TensorElementwise, TensorRead,
-    TensorView, TensorViewCanonicalization, TensorWrite,
+    TensorStructural, TensorView, TensorViewMut, TensorWrite,
 };
 
 type BoxError = Box<dyn Error + Send + Sync>;
@@ -419,28 +419,44 @@ fn transfer(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
             let host_t = host(vec![n], data.clone())?;
             let resident = upload_tensor(&rt, &host_t)?;
             rt.synchronize()?;
-            // Move the same Vec out and back on every call: `Option::take`
-            // preserves its capacity, so `download_tensor_into` refills one
-            // allocation instead of first-touching a new one.
-            let mut reuse: Option<Vec<f64>> = Some(Vec::new());
-            let buffer = reuse.take().expect("reuse buffer present");
-            reuse = Some(
-                download_tensor_into(&rt, &resident, buffer)
-                    .map_err(|e| format!("download_tensor_into round trip: {e}"))?,
-            );
+            // Move the same pinned host buffer out and back on every call: the
+            // pending download hands the filled buffer back on `wait`, so one
+            // caller-owned allocation is refilled instead of first-touched. The
+            // resident value is handed in and returned the same way, because
+            // `download_pending` takes ownership of it for the copy.
+            let mut reuse: Option<PinnedHostBuffer> = Some(PinnedHostBuffer::new(&rt, n * 8)?);
+            let mut resident = Some(resident);
+            let mut round_trip = |buffer: Option<PinnedHostBuffer>| -> Result<PinnedHostBuffer> {
+                let (value, filled) = download_pending(
+                    &rt,
+                    resident.take().expect("resident value retained"),
+                    buffer.expect("reuse buffer present"),
+                )
+                .map_err(|e| -> BoxError { format!("download_pending: {e}").into() })?
+                .wait()
+                .map_err(|e| -> BoxError { format!("download_pending wait: {e}").into() })?;
+                resident = Some(value);
+                Ok(filled)
+            };
+            let buffer = round_trip(reuse.take())?;
+            let filled: Vec<f64> = buffer
+                .as_slice()
+                .chunks_exact(8)
+                .map(|word| f64::from_ne_bytes(word.try_into().expect("8-byte chunk")))
+                .collect();
             let error = check_tol(
-                max_rel(reuse.as_deref().unwrap_or(&[]), &data),
+                max_rel(&filled, &data),
                 0.0,
                 "round trip into a reused buffer",
             )?;
+            drop(filled);
+            reuse = Some(buffer);
             let m = measure(timing, bytes, |it| {
                 timed(
                     it,
                     &mut || -> Result<()> {
-                        let buffer = reuse.take().expect("reused buffer retained");
-                        reuse = Some(download_tensor_into(&rt, &resident, buffer).map_err(
-                            |e| -> BoxError { format!("download_tensor_into: {e}").into() },
-                        )?);
+                        let buffer = round_trip(reuse.take())?;
+                        reuse = Some(buffer);
                         Ok(())
                     },
                     &mut || Ok(()),
@@ -450,8 +466,8 @@ fn transfer(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
                 error,
                 m,
                 vec![
-                    "download_tensor_into into one caller-owned Vec reused across calls",
-                    "the copy synchronizes itself",
+                    "download_pending into one caller-owned pinned host buffer reused across calls",
+                    "the pending download's wait synchronizes itself",
                 ],
             )
         }
@@ -565,7 +581,7 @@ fn transfer(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcom
 }
 
 // ---------------------------------------------------------------------------
-// #1887: alloc_zero_output within / across with_cubecl callbacks
+// #1887: zero-filled output allocation within / across raw-scope callbacks
 // ---------------------------------------------------------------------------
 
 fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
@@ -584,52 +600,51 @@ fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
         }
         Ok(0.0)
     };
+    // tenferro-gpu v0.8.0's raw `alloc_output` is zero-filled (`alloc_zeroed` under
+    // the session's scope), so it replaces the removed `alloc_zero_output`.
     let alloc_zero_once = |s: &mut dyn Engine| -> Result<Tensor> {
         let typed = with_cuda_engine(s, |cs| {
-            cs.with_cubecl("perf_issues.alloc_zero", |cub| {
-                cub.alloc_zero_output::<f64>(&shape)
+            cs.with_raw("perf_issues.alloc_zero", |raw| {
+                raw.alloc_output::<f64>(&shape)
             })
         })
         .ok_or("not a CUDA execution session")??;
         Ok(Tensor::from(typed))
     };
-    let alloc_fill_once = |s: &mut dyn Engine| -> Result<Tensor> {
-        Ok(with_cuda_engine(s, |cs| {
-            cs.with_cubecl("perf_issues.alloc_fill", |cub| {
-                let mut out = Tensor::from(cub.alloc_output::<f64>(&shape)?);
-                cub.fill_zero_write(TensorWrite::from_tensor(&mut out))?;
-                Ok(out)
-            })
-        })
-        .ok_or("not a CUDA execution session")??)
-    };
     let first = match arm {
         "alloc-zero-within-callback" | "alloc-zero-per-callback" => {
             bk.with_backend_session(|s| alloc_zero_once(s))??
         }
-        "alloc-fill-per-callback" => bk.with_backend_session(|s| alloc_fill_once(s))??,
         "host-zero-upload" => upload_tensor(&rt, &zeros)?,
         _ => return Err(format!("unknown alloc-zero arm {arm}").into()),
     };
     let error = check(&first)?;
     let (measurement, timer): (Measurement, Vec<&str>) = match arm {
         "alloc-zero-within-callback" => {
-            // Enter the raw execution scope once, before initialization and
-            // every sample. Retention-container allocation is also untimed.
+            // Initialize the route explicitly before any interval, even when the
+            // caller asks for zero warmups: one allocation, validated on the host
+            // outside a raw scope. (A host read inside the scope would take the
+            // runtime's submission lock that the scope already holds.)
+            let initialized = bk.with_backend_session(|s| alloc_zero_once(s))??;
+            rt.synchronize()?;
+            check(&initialized)?;
+            drop(initialized);
+            rt.synchronize()?;
+            // Then enter one raw execution scope for every sample.
+            // Retention-container allocation is also untimed.
             let m = bk.with_backend_session(|s| -> Result<Measurement> {
                 with_cuda_engine(s, |cs| {
-                    cs.with_cubecl("perf_issues.alloc_zero_samples", |cub| {
+                    cs.with_raw("perf_issues.alloc_zero_samples", |raw| {
                         Ok((|| -> Result<Measurement> {
-                            let initialized = cub.alloc_zero_output::<f64>(&shape)?;
-                            rt.synchronize()?;
-                            check(&Tensor::from(initialized))?;
                             measure(timing, bytes, |it| {
                                 let mut outputs = Vec::with_capacity(it);
                                 let start = Instant::now();
                                 for _ in 0..it {
-                                    outputs.push(cub.alloc_zero_output::<f64>(&shape)?);
+                                    outputs.push(raw.alloc_output::<f64>(&shape)?);
                                 }
-                                rt.synchronize()?;
+                                // A stream barrier on this scope's stream, which is
+                                // the engine's only stream.
+                                raw.synchronize()?;
                                 let elapsed = start.elapsed().as_nanos();
                                 black_box(&outputs);
                                 Ok(elapsed)
@@ -642,23 +657,18 @@ fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
             (
                 m,
                 vec![
-                    "alloc_zero_output x iterations",
-                    "device synchronize at batch end",
+                    "alloc_output (zero-filled) x iterations",
+                    "stream synchronize at batch end",
                 ],
             )
         }
-        "alloc-zero-per-callback" | "alloc-fill-per-callback" => {
-            let fill = arm == "alloc-fill-per-callback";
+        "alloc-zero-per-callback" => {
             let m = bk.with_backend_session(|s| {
                 measure(timing, bytes, |it| {
                     let mut outputs = Vec::with_capacity(it);
                     let start = Instant::now();
                     for _ in 0..it {
-                        outputs.push(if fill {
-                            alloc_fill_once(s)?
-                        } else {
-                            alloc_zero_once(s)?
-                        });
+                        outputs.push(alloc_zero_once(s)?);
                     }
                     device_sync(s)?;
                     let elapsed = start.elapsed().as_nanos();
@@ -668,19 +678,11 @@ fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
             })??;
             (
                 m,
-                if fill {
-                    vec![
-                        "with_cubecl entry/exit per allocation",
-                        "alloc_output + fill_zero_write (device fill)",
-                        "device synchronize at batch end",
-                    ]
-                } else {
-                    vec![
-                        "with_cubecl entry/exit per allocation",
-                        "alloc_zero_output",
-                        "device synchronize at batch end",
-                    ]
-                },
+                vec![
+                    "with_raw entry/exit per allocation",
+                    "alloc_output (zero-filled)",
+                    "device synchronize at batch end",
+                ],
             )
         }
         "host-zero-upload" => {
@@ -706,7 +708,8 @@ fn alloc_zero(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutc
         outside_timer: vec![
             "backend construction",
             "backend session entry/exit",
-            "shared raw execution scope entry/exit for within-callback arm",
+            "initialization allocation and its raw-scope entry/exit (within-callback arm)",
+            "shared raw execution scope entry/exit for the measured batches (within-callback arm)",
             "output-retention container allocation",
             "host zero buffer construction",
             "zero check (download)",
@@ -1045,18 +1048,27 @@ fn first_call_layouts(params: &Value, device: usize) -> Result<CaseOutcome> {
         rt.synchronize()?;
         let mut call = |s: &mut dyn Engine| -> Result<(u128, Option<Tensor>)> {
             let typed = t.as_typed::<f64>().ok_or("device tensor is not f64")?;
-            let view = typed.as_view().transpose_view([1, 0])?;
             if copy_into {
                 let dst_typed = dst.as_typed_mut::<f64>().ok_or("destination is not f64")?;
-                let mut dst_view = dst_typed.as_view_mut();
+                let dst_view = dst_typed.as_view_mut();
+                let src_view = typed.as_view().transpose_view([1, 0])?;
                 let start = Instant::now();
-                with_cuda_engine(s, |cs| cs.copy_into(&view, &mut dst_view))
-                    .ok_or("not a CUDA execution session")??;
+                // tenferro-gpu v0.8.0 moved the view canonicalization entry to
+                // `TensorStructural`: `copy_into` became `copy_read_into` over
+                // public read/write handles.
+                with_cuda_engine(s, |cs| {
+                    cs.copy_read_into(
+                        TensorRead::from_view(TensorView::F64(src_view)),
+                        TensorWrite::from_view(TensorViewMut::F64(dst_view)),
+                    )
+                })
+                .ok_or("not a CUDA execution session")??;
                 device_sync(s)?;
                 return Ok((start.elapsed().as_nanos(), None));
             }
+            let view = typed.as_view().transpose_view([1, 0])?;
             let start = Instant::now();
-            let out = with_cuda_engine(s, |cs| cs.to_contiguous(&view))
+            let out = with_cuda_engine(s, |cs| cs.to_contiguous_view(&view))
                 .ok_or("not a CUDA execution session")??;
             device_sync(s)?;
             Ok((start.elapsed().as_nanos(), Some(Tensor::from(out))))
@@ -1100,7 +1112,7 @@ fn first_call_layouts(params: &Value, device: usize) -> Result<CaseOutcome> {
     Ok(CaseOutcome {
         max_rel_error: 0.0,
         measurement: None,
-        timer: vec!["to_contiguous (or copy_into a compact destination) of a transposed device view + device synchronize, first and second call per distinct layout"],
+        timer: vec!["to_contiguous_view (or copy_read_into a compact destination) of a transposed device view + device synchronize, first and second call per distinct layout"],
         outside_timer: vec!["backend construction", "upload", "warm-up layout", "download check"],
         extra: json!({
             "first_call_layouts": rows,
@@ -1769,69 +1781,6 @@ fn cublas_dgemm_raw(
     }
 }
 
-/// One dgemm through the handle the runtime already owns (#2083's ask), inside
-/// a raw scope, with the same host barrier as the other arms.
-fn cublas_dgemm_runtime_handle(
-    bk: &mut CudaEngine,
-    a: &Tensor,
-    b: &Tensor,
-    n: usize,
-) -> Result<Tensor> {
-    use tenferro_tensor::Error;
-    let dim = i32::try_from(n).map_err(|error| format!("{error}"))?;
-    let out = bk.with_backend_session(|s| -> Result<Tensor> {
-        let out = with_cuda_engine(s, |cs| {
-            cs.with_raw(VENDOR_OP, |raw| {
-                let ar = raw.tensor(
-                    a.as_typed::<f64>()
-                        .ok_or_else(|| Error::invalid_argument(VENDOR_OP, "a", "not f64"))?,
-                )?;
-                let br = raw.tensor(
-                    b.as_typed::<f64>()
-                        .ok_or_else(|| Error::invalid_argument(VENDOR_OP, "b", "not f64"))?,
-                )?;
-                let mut c = raw.alloc_output::<f64>(&[n, n])?;
-                let cr = raw.tensor_mut(&mut c)?;
-                let (alpha, beta) = (1.0_f64, 0.0_f64);
-                raw.with_cublas_handle(
-                    VENDOR_OP,
-                    cublas_sys::cublasPointerMode_t::CUBLAS_POINTER_MODE_HOST,
-                    |handle| {
-                        // SAFETY: the device pointers come from references that
-                        // stay borrowed until the synchronize below; all three
-                        // operands are n x n compact column-major, cuBLAS's
-                        // native layout, with C the only buffer written.
-                        unsafe {
-                            cublas::dgemm(
-                                handle,
-                                cublas_sys::cublasOperation_t::CUBLAS_OP_N,
-                                cublas_sys::cublasOperation_t::CUBLAS_OP_N,
-                                dim,
-                                dim,
-                                dim,
-                                &alpha,
-                                ar.raw_ptr().cast(),
-                                dim,
-                                br.raw_ptr().cast(),
-                                dim,
-                                &beta,
-                                cr.raw_ptr().cast(),
-                                dim,
-                            )
-                        }
-                        .map_err(|e| Error::backend_source(VENDOR_OP, e))
-                    },
-                )?;
-                raw.synchronize()?;
-                Ok(Tensor::from(c))
-            })
-        })
-        .ok_or("not a CUDA execution session")??;
-        Ok(out)
-    })??;
-    Ok(out)
-}
-
 fn destroy_raw_handle(bk: &mut CudaEngine, handle: cublas_sys::cublasHandle_t) -> Result<()> {
     use tenferro_tensor::Error;
     bk.with_backend_session(|s| -> Result<()> {
@@ -1883,28 +1832,18 @@ fn vendor_handle(params: &Value, timing: &Timing, device: usize) -> Result<CaseO
     };
     let keep = arm == "reused";
     let bytes = n * n * 8;
-    let measurement = if arm == "runtime-handle" {
+    let measurement = bk.with_backend_session(|s| {
         measure(timing, bytes, |it| {
             timed(
                 it,
-                &mut || cublas_dgemm_runtime_handle(&mut bk, &a, &b, n),
+                &mut || {
+                    let (_, out) = cublas_dgemm_raw(s, &a, &b, n, keep, persistent)?;
+                    Ok(out)
+                },
                 &mut || Ok(()),
             )
-        })?
-    } else {
-        bk.with_backend_session(|s| {
-            measure(timing, bytes, |it| {
-                timed(
-                    it,
-                    &mut || {
-                        let (_, out) = cublas_dgemm_raw(s, &a, &b, n, keep, persistent)?;
-                        Ok(out)
-                    },
-                    &mut || Ok(()),
-                )
-            })
-        })??
-    };
+        })
+    })??;
     if let Some(handle) = persistent {
         destroy_raw_handle(&mut bk, handle)?;
     }
@@ -1913,9 +1852,6 @@ fn vendor_handle(params: &Value, timing: &Timing, device: usize) -> Result<CaseO
         measurement: Some(measurement),
         timer: vec![
             match arm.as_str() {
-                "runtime-handle" => {
-                    "dgemm inside one with_raw scope per operation, on the runtime's own cuBLAS handle"
-                }
                 "reused" => "cublasSetStream + dgemm inside one with_raw scope per operation (handle reused)",
                 _ => "cublasCreate + cublasSetStream + dgemm + cublasDestroy inside one with_raw scope per operation",
             },
@@ -2056,15 +1992,6 @@ fn pool_retention(params: &Value, device: usize) -> Result<CaseOutcome> {
         let recreated = backend(device)?;
         free_after_recreate = device_free_bytes(&ctx)?;
         drop(recreated);
-    } else if arm == "trim-after-drop" {
-        // The ownership half this arm pins: the owners are gone, so an explicit
-        // trim must hand the blocks back to the driver without recreating the
-        // runtime.
-        rt.trim_memory();
-        drop(bk);
-        drop(rt);
-        free_after_drop = device_free_bytes(&ctx)?;
-        free_after_recreate = free_after_drop;
     } else {
         drop(bk);
         drop(rt);

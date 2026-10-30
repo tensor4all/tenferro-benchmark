@@ -22,7 +22,7 @@ def render(path: Path) -> str:
              'Driver free memory covers the whole device. Its change cannot isolate an output pool, '
              'prove a leak, or explain the separately observed latency growth. '
              'No public output-pool statistics or clear API is available.', '',
-             '| Case | Batches | Operations/batch | Maximum normalized error | Driver free-byte change after final drop | Workspace retained bytes | Retirement in flight / leaked |',
+             '| Case | Batches | Operations/batch | Maximum normalized error | Driver free-byte change after final drop | Live device bytes at final drop | Extension cache entries at final drop |',
              '|---|---:|---:|---:|---:|---:|---:|']
     for start in before:
         if start['gpu_role'] != 'debug' or start['physical_device_index'] != 1:
@@ -34,16 +34,17 @@ def render(path: Path) -> str:
                not 0 <= row['max_error_over_tolerance'] <= 1 for row in batches):
             raise ValueError('invalid counts or numerical verification')
         end = batches[-1]['after_drop_and_barrier']
-        retirement = end['workspace_retirement']
         lines.append(f"| {start['case_id']} | {len(batches)} | {start['operations_per_batch']} | "
                      f"{max(row['max_error_over_tolerance'] for row in batches):.6g} | "
                      f"{end['driver_free_bytes'] - start['snapshot']['driver_free_bytes']} | "
-                     f"{end['workspace']['retained_bytes']} | {retirement['in_flight']} / {retirement['leaked']} |")
+                     f"{end['device']['live_bytes']} | {end['cuda_extensions']['entries']} |")
     if len(rows) != sum(start['batches'] + 1 for start in before):
         raise ValueError('unexpected observations')
-    lines += ['', 'Raw JSONL preserves the cache entries, bytes, hits, misses, evictions, clears, '
-              'workspace retirement counters, and pending transfer retirements at enqueue, completion, '
-              'and output drop. Queries can perturb execution; they are not synchronization primitives.', '']
+    lines += ['', 'Raw JSONL preserves the extension cache entries, bytes, hits, misses, evictions and clears, '
+              'the runtime device/pool/pending and retirement counters, the artifact/module cache counters, and the '
+              'pending transfer retirements at enqueue, completion, and output drop. tenferro-gpu v0.8.0 removed the '
+              'cuTENSOR plan, permutation-plan, vendor-workspace and workspace-retirement counters, so they are not '
+              'reported. Queries can perturb execution; they are not synchronization primitives.', '']
     return '\n'.join(lines)
 
 

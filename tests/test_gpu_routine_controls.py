@@ -14,7 +14,7 @@ class RoutineControlsTest(unittest.TestCase):
         quick = controls.plan("quick", "standard")
         full = controls.plan("full", "scan")
         self.assertEqual((len(quick["timing"]), len(quick["state"])), (10, 8))
-        self.assertEqual((len(full["timing"]), len(full["state"])), (30, 12))
+        self.assertEqual((len(full["timing"]), len(full["state"])), (25, 12))
         self.assertEqual(controls.plan("quick", "scan")["timing"], quick["timing"])
         for n in (16, 64):
             for mode in ("fixed-warm", "mixed-warm", "fresh"):

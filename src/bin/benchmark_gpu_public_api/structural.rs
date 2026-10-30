@@ -202,7 +202,7 @@ pub(super) fn verify_materialized(
     if !matches!(case.op.as_str(), "reshape" | "stack") {
         return Ok(());
     }
-    tenferro_gpu::cuda::with_cuda_engine(session, |cuda| {
+    tenferro_gpu::cuda::raw::with_cuda_engine(session, |cuda| {
         cuda.with_raw("verification.materialized", |raw| {
             macro_rules! check {
                 ($ty:ty) => {{

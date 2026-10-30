@@ -211,13 +211,12 @@ fn dispatch(
         // Independently constructed backends target the same CUDA device but own
         // distinct allocation domains, so tensors uploaded through the transfer
         // backend are rejected by the compute engine and by the traced runtime.
-        let engine_id = tenferro_runtime::EngineId::new("benchmark.cuda")
-            .map_err(|e| format!("CUDA engine id: {e}"))?;
+        // tenferro-gpu v0.8.0 fixes an engine's runtime engine id
+        // (`tenferro.cuda.default.v1`); the extensions below use the reported id.
         let mut compute_bk = CudaEngine::open(tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
             u32::try_from(device_ordinal).expect("device ordinal fits u32"),
         ))
-        .map_err(|e| format!("compute engine: {e}"))?
-        .with_runtime_engine_id(engine_id);
+        .map_err(|e| format!("compute engine: {e}"))?;
         // Transfers use the compute engine's own runtime (tenferro-rs #2206:
         // one engine owns one logical stream and allocation domain).
         let transfer_rt = compute_bk.runtime().clone();
@@ -776,8 +775,7 @@ fn vjp(
 }
 
 fn cuda_runtime_with_extensions(engine: &CudaEngine) -> Result<Runtime, String> {
-    let engine_id = tenferro_runtime::EngineId::new("benchmark.cuda")
-        .map_err(|e| format!("CUDA engine id: {e}"))?;
+    let engine_id = engine.runtime_engine_id().clone();
     let mut builder = Runtime::builder();
     builder
         .register_engine(

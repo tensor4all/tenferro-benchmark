@@ -113,7 +113,7 @@ Notes:
   retains both columns because they answer these different questions; they
   should not be treated as interchangeable tenferro-rs modes.
 - tenferro's production cuTENSOR FFI bindings
-  (`extern/tenferro-rs/crates/tenferro-gpu/src/cubecl/ffi/cutensor.rs`) cover
+  (`extern/tenferro-rs/crates/tenferro-gpu/src/cuda/cutensor.rs`) cover
   contraction and structural permutation. This suite independently dlopens
   the same vendor cuTENSOR library from a small self-contained FFI module inside
   `src/bin/benchmark_gpu_permutation.rs` (`mod cutensor_ffi`), binding just

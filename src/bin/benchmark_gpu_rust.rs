@@ -328,20 +328,18 @@ fn build_trace_inputs(
 
 /// Open the caller-held CUDA engine the runner passes to every operation.
 ///
-/// The engine carries the runtime engine id the extension modules below are
-/// installed under (tenferro-rs #2206: an engine's id is its registration key).
+/// tenferro-gpu v0.8.0 gives an engine a fixed runtime engine id
+/// (`tenferro.cuda.default.v1`) and no longer lets a caller override it, so the
+/// extension modules below are installed under the id the engine reports.
 fn open_cuda_engine(device_ordinal: usize) -> Result<CudaEngine, String> {
     let device = tenferro_gpu::cuda::CudaDeviceId::from_ordinal(
         u32::try_from(device_ordinal).map_err(|e| format!("device ordinal: {e}"))?,
     );
-    let engine_id = tenferro_runtime::EngineId::new("benchmark.cuda")
-        .map_err(|e| format!("CUDA engine id: {e}"))?;
-    Ok(CudaEngine::open(device)
-        .map_err(|e| format!("compute engine: {e}"))?
-        .with_runtime_engine_id(engine_id))
+    Ok(CudaEngine::open(device).map_err(|e| format!("compute engine: {e}"))?)
 }
 
 fn cuda_runtime_with_extensions(engine: &CudaEngine, linalg: bool) -> Result<Runtime, String> {
+    let engine_id = engine.runtime_engine_id().clone();
     let mut builder = Runtime::builder();
     builder
         .register_engine(
@@ -350,21 +348,15 @@ fn cuda_runtime_with_extensions(engine: &CudaEngine, linalg: bool) -> Result<Run
         .map_err(|e| format!("register CUDA engine: {e}"))?;
     builder
         .install_extension_module(
-            tenferro_einsum::extension_module::<CudaEngine>(
-                tenferro_runtime::EngineId::new("benchmark.cuda")
-                    .map_err(|e| format!("CUDA engine id: {e}"))?,
-            )
-            .map_err(|e| format!("einsum extension: {e}"))?,
+            tenferro_einsum::extension_module::<CudaEngine>(engine_id.clone())
+                .map_err(|e| format!("einsum extension: {e}"))?,
         )
         .map_err(|e| format!("install einsum extension: {e}"))?;
     if linalg {
         builder
             .install_extension_module(
-                tenferro_linalg::extension_module::<CudaEngine>(
-                    tenferro_runtime::EngineId::new("benchmark.cuda")
-                        .map_err(|e| format!("CUDA engine id: {e}"))?,
-                )
-                .map_err(|e| format!("linalg extension: {e}"))?,
+                tenferro_linalg::extension_module::<CudaEngine>(engine_id)
+                    .map_err(|e| format!("linalg extension: {e}"))?,
             )
             .map_err(|e| format!("install linalg extension: {e}"))?;
     }

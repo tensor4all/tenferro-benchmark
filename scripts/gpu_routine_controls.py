@@ -71,15 +71,20 @@ def account(selection, paths, verify_only=False, restrict=False):
         elif key in selection["state"]:
             status["failed" if samples else "observed"].append(key)
             if not samples and row.get("kind") == "shape_stream":
+                # tenferro-gpu v0.8.0 removed the cuTENSOR plan/workspace counters
+                # from the public surface; these are the runtime's own counters.
                 snapshots = row["counter_observations"]
                 first, last = snapshots[0]["stats"], snapshots[-1]["stats"]
                 status["state_statistics"][key] = dict(
-                    entries_before=first["plans"]["entries"], entries_after=last["plans"]["entries"],
-                    hits=last["plans"]["hits"]-first["plans"]["hits"],
-                    misses=last["plans"]["misses"]-first["plans"]["misses"],
-                    evictions=last["plans"]["evictions"]-first["plans"]["evictions"],
-                    plan_bytes=last["plans"]["retained_bytes"], workspace_bytes=last["workspace"]["bytes"],
-                    observed_in_flight_peak=max(item["stats"]["retirement"]["in_flight"] for item in snapshots))
+                    live_bytes_before=first["device"]["live_bytes"],
+                    live_bytes_after=last["device"]["live_bytes"],
+                    allocations=last["retirement"]["allocations"]-first["retirement"]["allocations"],
+                    launches=last["retirement"]["launches"]-first["retirement"]["launches"],
+                    zero_fills=last["retirement"]["zero_fills"]-first["retirement"]["zero_fills"],
+                    artifact_entries=last["artifact_cache"]["entries"],
+                    module_entries=last["module_cache"]["entries"],
+                    observed_pending_bytes_peak=max(item["stats"]["retirement"]["pending_bytes"]
+                                                    for item in snapshots))
             elif not samples and row.get("kind") == "vendor_churn":
                 status["state_statistics"][key] = {field: row[field] for field in (
                     "cycles", "rss_bytes_before", "rss_bytes_after", "rss_growth_bytes",
@@ -138,10 +143,11 @@ def report(status, source):
                      f"{value['median_ns']/1000:.3f} | {value['iqr_ns']/1000:.3f} | "
                      f"{enqueue/1000 if enqueue is not None else '—'} |")
     lines += ["", "## Untimed state observations", "",
-              "Plan bytes and workspace describe public extension retention, not the whole allocator. "
-              "A separate plan-build count is unavailable; misses are not substituted for builds. "
-              "Observed in-flight peak uses snapshots and can miss activity between them. "
-              "RSS/free-memory changes alone do not establish a leak.", "",
+              "Live bytes and pool reservations describe public runtime retention, not the whole allocator. "
+              "A plan-cache entry/hit/miss/byte count is unavailable after tenferro-gpu v0.8.0's "
+              "kernel-catalogue cutover (the cuTENSOR plan cache is private to the engine's handle); "
+              "nothing is substituted for it. The pending-byte peak uses snapshots and can miss "
+              "activity between them. RSS/free-memory changes alone do not establish a leak.", "",
               "| Case | Public observation |", "|---|---|"]
     for key, value in status["state_statistics"].items():
         lines.append(f"| {key} | `{json.dumps(value, sort_keys=True)}` |")

@@ -1,4 +1,3 @@
-import copy
 import json
 from pathlib import Path
 import sys
@@ -36,14 +35,22 @@ class ShapeStreamFormatterTest(unittest.TestCase):
             (path / "provenance.json").write_text(json.dumps(provenance))
             row = dict(case_id=key, kind="shape_stream", dtype="f64", threads=1, status="passed",
                        correctness_status="passed", max_rel_error=0.0, params=params,
-                       measurement_scope=scope, plan_cache_capacity=64, retained_output_bytes=8,
+                       measurement_scope=scope, retained_output_bytes=8,
                        sequence=[dict(key=0, lhs_shape=[1], lhs_strides=[1])], operations_per_sequence=1,
                        instrumentation_only=instrument, samples=[], counter_observations=[])
             if instrument:
-                before = dict(plans=dict(entries=1, hits=0, misses=1, evictions=0, retained_bytes=100),
-                              workspace=dict(bytes=8), retirement=dict(in_flight=0))
-                after = copy.deepcopy(before)
-                after["plans"]["hits"] = 1
+                def snapshot(launches, allocations, live_bytes):
+                    return dict(
+                        device=dict(live_allocations=1, live_bytes=live_bytes, pool_used_bytes=live_bytes,
+                                    pool_reserved_bytes=live_bytes, idle_pinned_bytes=0),
+                        retirement=dict(pending_bytes=live_bytes, module_bytes=0, pending_records=1,
+                                        epochs=1, frontiers=0, reclaimed_epochs=0, launches=launches,
+                                        allocations=allocations, zero_fills=0, events_recorded=0),
+                        artifact_cache=dict(entries=1, bytes=100),
+                        module_cache=dict(entries=1, bytes=100),
+                        compile_attempts=1, module_loads=1, artifact_cache_hits=0)
+                before = snapshot(0, 0, 8)
+                after = snapshot(1, 2, 8)
                 row["counter_observations"] = [dict(phase="before", stats=before),
                     dict(phase="enqueue", index=0, key=0, stats=after),
                     dict(phase="completion", stats=after), dict(phase="drop", stats=after)]
@@ -64,7 +71,7 @@ class ShapeStreamFormatterTest(unittest.TestCase):
         text = self.render()
         self.assertIn("µs per **sequence**", text)
         self.assertIn("| latency | 1 | 0.91 (0.01) | 1.01 (0.01)", text)
-        self.assertIn("| counters | 1→1 | 1 | 0 | 0 |", text)
+        self.assertIn("| counters | 8→8 | 2 | 1 | 0 | 1 | 1 | 8 |", text)
         self.assertIn('"order":[0]', text)
 
     def test_duplicate_is_rejected(self):

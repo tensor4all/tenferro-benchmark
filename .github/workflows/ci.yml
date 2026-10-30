@@ -126,6 +126,9 @@ jobs:
       - name: Check tenferro-rs checkout setup and pin
         run: bash tests/test_setup_extern_tenferro_checkout.sh
 
+      - name: Check the pins against the stack
+        run: uv run campaign-sync-pins . --repo tenferro-benchmark --check
+
       - name: Validate results dashboard
         run: uv run python -m unittest tests.test_generate_dashboard tests.test_generate_history tests.test_result_pipeline tests.test_cpu_thread_reports tests.test_publish_runs
 

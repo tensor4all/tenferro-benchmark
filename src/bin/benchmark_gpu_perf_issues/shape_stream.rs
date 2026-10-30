@@ -2,17 +2,36 @@
 use super::*;
 use tenferro_tensor::TensorDot;
 
+/// Public CUDA runtime counters, one snapshot per phase.
+///
+/// tenferro-gpu v0.8.0's kernel-catalogue cutover removed the cuTENSOR plan
+/// cache, vendor workspace and workspace-retirement counters: the plan cache
+/// now lives inside the engine's private cuTENSOR handle and has no public
+/// counter or capacity knob. The runtime's own counters remain public, so a
+/// counter pass reports the allocations, zero fills, launches, retirement state
+/// and artifact/module cache activity each phase causes instead. `stats()` may
+/// retire detached work, so these snapshots are observation-only and never a
+/// synchronisation primitive (the timing rows never call them).
 fn counters(b: &CudaEngine) -> Result<Value> {
-    let p = b.cutensor_plan_cache_stats()?;
-    let w = b.cutensor_workspace_stats()?;
-    let r = b.cutensor_workspace_retirement_stats()?;
-    Ok(
-        json!({"plans":{"entries":p.entries,"hits":p.hits,"misses":p.misses,
-        "evictions":p.evictions,"retained_bytes":p.retained_bytes,"clears":p.clears},
-        "workspace":{"entries":w.retained_entries,"bytes":w.retained_bytes},
-        "retirement":{"deferred":r.deferred,"released":r.released,"in_flight":r.in_flight,
-            "max_in_flight":r.max_in_flight,"leaked":r.leaked}}),
-    )
+    let rt = b.runtime();
+    let s = rt.stats();
+    Ok(json!({
+        "device":{"live_allocations":s.live_allocations,"live_bytes":s.live_bytes,
+            "pool_used_bytes":s.pool_used_bytes,"pool_reserved_bytes":s.pool_reserved_bytes,
+            "idle_pinned_bytes":s.idle_pinned_bytes},
+        "retirement":{"pending_bytes":s.retirement.pending_bytes,
+            "module_bytes":s.retirement.module_bytes,
+            "pending_records":s.retirement.pending_records,
+            "epochs":s.retirement.epochs,"frontiers":s.retirement.frontiers,
+            "reclaimed_epochs":s.retirement.reclaimed_epochs,
+            "launches":s.retirement.launches,"allocations":s.retirement.allocations,
+            "zero_fills":s.retirement.zero_fills,
+            "events_recorded":s.retirement.events_recorded},
+        "artifact_cache":{"entries":s.artifact_entries,"bytes":s.artifact_bytes},
+        "module_cache":{"entries":s.module_entries,"bytes":s.module_bytes},
+        "compile_attempts":rt.compile_attempts(),"module_loads":rt.module_loads(),
+        "artifact_cache_hits":rt.artifact_cache_hits(),
+    }))
 }
 
 pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<CaseOutcome> {
@@ -162,11 +181,14 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
         drop(initialized);
         rt.synchronize()?;
         let mut batch = || -> Result<u128> {
-            // Clear only CUDA extension-owned plans/workspace. CubeCL compiled
-            // kernels, cuTENSOR library handle and allocator pools remain initialized.
-            s.clear_cuda_extension_cache()?;
+            // Clear only the CUDA extension-owned caches. Compiled kernels,
+            // the cuTENSOR library handle and allocator pools remain
+            // initialized. tenferro-gpu v0.8.0 owns the extension cache store
+            // through `ExecutionEngine`; taking it out and dropping it is the
+            // reset, and the engine-owned cuTENSOR plan cache has neither a
+            // public reset nor a capacity knob (its cache bound is internal).
+            drop(s.take_extension_caches());
             rt.synchronize()?;
-            s.set_cutensor_plan_cache_max_entries(std::num::NonZeroUsize::new(64).unwrap())?;
             if mode.ends_with("warm") || mode == "equal-shape-strides" {
                 for (a, b) in &reads {
                     let out = s.dot_general_read(a.clone(), b.clone(), &cfg)?;
@@ -239,7 +261,7 @@ pub(super) fn run(params: &Value, timing: &Timing, device: usize) -> Result<Case
             "controlled CUDA extension-cache reset and declared warm-key precondition",
             "full-output download/verification and output destruction"],
         extra:json!({"sequence":sequence,"operations_per_sequence":order.len(),"retained_output_bytes":retained_bytes,
-            "cache_mode":mode,"plan_cache_capacity":64,"cache_reset_scope":"CUDA extension-owned plans/workspace; excludes CubeCL kernels, cuTENSOR handle and output/allocator pools",
+            "cache_mode":mode,"cache_reset_scope":"CUDA extension-owned caches; excludes compiled kernels, cuTENSOR handle and output/allocator pools",
             "instrumentation_only":instrument,"counter_observations":observations,
             "host_enqueue_samples_ns":measured_enqueue,
             "host_enqueue_ns_including_warmups":enqueue_ns,
