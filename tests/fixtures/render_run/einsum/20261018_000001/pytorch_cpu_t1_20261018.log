@@ -1,0 +1,5 @@
+pytorch-cpu einsum benchmark
+OMP_NUM_THREADS=1
+Strategy: opt_flops
+Instance Tensors log10FLOPS log2SIZE Median (ms) IQR (ms)
+bin_matmul_256 2 0 0 0.7 0.1

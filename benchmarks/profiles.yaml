@@ -1,0 +1,13 @@
+# Hardware profiles by role. `maintained` profiles have published pages that the
+# site generates and CI checks; `optional` profiles are accepted collection
+# targets without a maintained page (e.g. an on-demand host measured when the
+# stack moves).
+#
+# A profile is a fact about a machine, so its CPU label, SMT layout, power
+# policy and thread rows live in campaign_toolkit's shared profile library.
+# `scripts/sync_pinning_rows.py` copies the thread rows of these profiles into
+# `benchmarks/cpu_pinning_rows.tsv`, which `scripts/cpu_pinning.sh` reads.
+maintained:
+  - zen5-cpu
+optional:
+  - zen2-cpu

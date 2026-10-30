@@ -7,6 +7,7 @@ on:
       - 'result/**'
       - 'scripts/generate_dashboard.py'
       - 'scripts/generate_history.py'
+      - 'scripts/trend_points.py'
       - 'scripts/report_summary.py'
       - 'scripts/dashboard-requirements.txt'
       - 'benchmarks/**'
@@ -44,6 +45,14 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
+
+      - name: Export trend points and render the trend chart
+        # The points come from the published summary sidecars in git history and are
+        # drawn by the toolkit's trend renderer; nothing is committed. The CPU family
+        # page embeds the charts the step below generates.
+        run: |
+          uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt \
+            python scripts/trend_points.py --out _site/trend/points.json --render _site/trend
 
       - name: Generate the landing page, suite pages and history page
         # Generated on every deploy from the committed result/ tree and git history;

@@ -17,6 +17,8 @@ from typing import Any, Iterable
 
 import yaml
 
+from campaign_toolkit import hostinfo as campaign_hostinfo
+
 from collect_gpu_info import collect_cuda_metadata
 
 from benchmark_layout import safe_suite_id_parts, safe_target_profile
@@ -696,6 +698,21 @@ def collect_harness(harness_dir: Path) -> dict[str, Any]:
             "dirty": git_dirty(harness_dir, include_untracked=False, exclude=("result",))}
 
 
+def collect_host() -> dict[str, Any]:
+    """``host``: campaign-toolkit's record of what this host exposes.
+
+    Power controls, the NUMA layout, SMT and the L3 domains decide whether two
+    measurements are comparable, so they come from the same ``hostinfo`` module
+    the toolkit's own campaigns record. Anything sysfs does not expose is null.
+    """
+    return campaign_hostinfo.collect()
+
+
+def collect_build() -> dict[str, Any]:
+    """``build``: the toolchain this recorder's environment hands to the build."""
+    return {"toolchain": campaign_hostinfo.toolchain()}
+
+
 def collect_collection(args: argparse.Namespace) -> dict[str, Any]:
     """Exact command and case selection of this collection, when provided."""
     collection: dict[str, Any] = {}
@@ -728,6 +745,8 @@ def build_metadata(args: argparse.Namespace) -> dict[str, Any]:
         },
         "harness": collect_harness(args.harness_dir),
         "resolved_deps": collect_resolved_deps(args.harness_dir),
+        "host": collect_host(),
+        "build": collect_build(),
         "environment": collect_environment(),
         "timing_policy": {
             "version": 2,

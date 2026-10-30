@@ -10,7 +10,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 THREAD_COUNTS=("${@:-1}")
+export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_ns())')"
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
+# shellcheck source=scripts/publish_run.sh
+source "$SCRIPT_DIR/publish_run.sh"
 source "$SCRIPT_DIR/thread_env.sh"
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
 export TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
@@ -59,12 +62,13 @@ metadata['environment'].setdefault('env', {}).update({
     'BENCH_INSTANCE': os.environ.get('BENCH_INSTANCE') or None})
 sys.path.insert(0, 'scripts')
 import benchmark_perf_issues as suite
-_, _, manifest, coverage, expected, selected, raw = suite.plan(threads=int(sys.argv[2]))
+suite_document, _, manifest, coverage, expected, selected, raw = suite.plan(threads=int(sys.argv[2]))
 metadata['collection'] = {
     'command': os.environ.get('BENCH_COMMAND', ''), 'coverage': coverage,
     'manifest_version': manifest['manifest_version'], 'selection_filter': raw,
     'expected_cases': len(expected), 'selected_cases': len(selected),
     'effort': os.environ.get('BENCH_EFFORT') or 'standard',
+    'default_regime': (suite_document.get('defaults') or {}).get('regime') or 'throughput',
     'correctness_only': os.environ.get('PERF_ISSUES_CORRECTNESS_ONLY') == '1'}
 path.write_text(yaml.safe_dump(metadata, sort_keys=False))
 PY
@@ -75,5 +79,6 @@ PY
         --threads "$threads" --output "$RUN_DIR/samples_t${threads}.jsonl" "${EXTRA[@]}" || failed=1
 done
 cp "$RUN_DIR/run_t${THREAD_COUNTS[0]}.yaml" "$RUN_DIR/run.yaml"
-"$PYTHON" "$SCRIPT_DIR/benchmark_perf_issues.py" --report "$RUN_DIR" --target-profile "$BENCHMARK_TARGET_PROFILE"
+finalize_benchmark_run "$PROJECT_DIR" "$RUN_DIR"
+publish_cpu_runs "$PROJECT_DIR" "$RUN_DIR"
 exit "$failed"

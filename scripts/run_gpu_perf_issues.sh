@@ -116,12 +116,13 @@ metadata['environment']['gpu_compute_apps_at_start'] = (
     os.environ.get('BENCH_GPU_APPS_START', '').strip().splitlines())
 sys.path.insert(0, 'scripts')
 import benchmark_perf_issues as suite
-_, _, manifest, coverage, expected, selected, raw = suite.plan('gpu')
+suite_document, _, manifest, coverage, expected, selected, raw = suite.plan('gpu')
 metadata['collection'] = {
     'command': os.environ.get('BENCH_COMMAND', ''), 'coverage': coverage,
     'manifest_version': manifest['manifest_version'], 'selection_filter': raw,
     'expected_cases': len(expected), 'selected_cases': len(selected),
     'effort': os.environ.get('BENCH_EFFORT') or 'standard',
+    'default_regime': (suite_document.get('defaults') or {}).get('regime') or 'throughput',
     'correctness_only': os.environ.get('PERF_ISSUES_CORRECTNESS_ONLY') == '1'}
 path.write_text(yaml.safe_dump(metadata, sort_keys=False))
 PY

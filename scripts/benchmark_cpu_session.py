@@ -28,7 +28,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bench_selection  # noqa: E402
 import case_status as cs  # noqa: E402
-from benchmark_wall import record_report_wall
+import report_summary  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SUITE = ROOT / "benchmarks/cpu/session_matrix.yaml"
@@ -36,7 +36,14 @@ MANIFEST = ROOT / "benchmarks/cpu/manifests/session_matrix.yaml"
 INSTANCES = ROOT / "data/instances/session_matrix.json"
 SUITE_ID = "cpu/session_matrix"
 BATCHED = {"batched_dot", "batched_einsum", "hadamard", "chain3", "stream", "eager_stream"}
-CASE_TIMEOUT_S = int(os.environ.get("BENCH_CASE_TIMEOUT_S", "900"))
+BLAS_IMPLEMENTATIONS = ("accelerate", "openblas", "mkl")
+DEFAULT_CASE_TIMEOUT_S = 900
+
+
+def case_timeout_seconds(env=None):
+    """Collection-time liveness timeout; read where a case process is spawned."""
+    env = os.environ if env is None else env
+    return int(env.get("BENCH_CASE_TIMEOUT_S", str(DEFAULT_CASE_TIMEOUT_S)))
 
 
 def torch_case(n, count, samples, threads, op, warmups=3):
@@ -99,8 +106,10 @@ def per_op(row):
     return [v / ops for v in row.get("samples_ns", [])]
 
 
-def run_one(command, timeout=CASE_TIMEOUT_S):
+def run_one(command, timeout=None):
     """Run one case process; failures and timeouts become rows, never latencies."""
+    if timeout is None:
+        timeout = case_timeout_seconds()
     started = time.monotonic()
     try:
         result = subprocess.run(command, text=True, capture_output=True, timeout=timeout)
@@ -199,15 +208,79 @@ def fmt(values, scale=1.0):
     return f"{med:.2f}", f"{(q[2]-q[0])/scale:.2f}", "—" if cov is None else f"{cov*100:.1f}%"
 
 
-def report(run_dir, target, latest=True):
-    run_dir = run_dir.resolve()
+def merged_case_status(run_dir):
+    parts = [json.loads(path.read_text()) for path in sorted(Path(run_dir).glob('case_status_t*.json'))]
+    return cs.merge_case_status(parts) if parts else None
+
+
+def build_summary(run_dir, *, cpu_model=None):
+    """Machine-readable sidecar for the same records the report is built from."""
+    run_dir = Path(run_dir).resolve()
+    metadata = {}
+    run_yaml = run_dir / "run.yaml"
+    if run_yaml.is_file():
+        metadata = yaml.safe_load(run_yaml.read_text()) or {}
+    rows = []
+    threads = set()
+    for path in sorted(run_dir.glob('samples_t*.jsonl')):
+        for line in path.read_text().splitlines():
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            count = record.get('operations_per_sample', 1)
+            values = [value / count for value in record.get('samples_ns', [])]
+            verified = record.get('correctness') == 'passed'
+            provider = str(record.get('provider', 'unknown'))
+            provider = 'blas' if provider in BLAS_IMPLEMENTATIONS else provider
+            backend = 'pytorch-cpu' if provider == 'pytorch' else 'tenferro-' + provider
+            status = 'ok' if verified and values else 'failed'
+            reason = record.get('unsupported_reason') or record.get('reason') or record.get('error')
+            if record.get('status') == 'unsupported' and reason:
+                status = 'unsupported'
+            quartiles = (
+                statistics.quantiles(values, n=4, method='inclusive')
+                if len(values) > 1
+                else [values[0]] * 3 if values else []
+            )
+            threads.add(int(record['threads']))
+            rows.append(
+                report_summary.make_row(
+                    record['case_id'],
+                    backend,
+                    statistics.median(values) if status == 'ok' else None,
+                    status=status,
+                    verified=verified,
+                    iqr=quartiles[2] - quartiles[0] if quartiles and status == 'ok' else None,
+                    group=f"threads={record['threads']}",
+                    reason=reason,
+                )
+            )
+    header = report_summary.metadata_from_run_metadata(metadata)
+    hardware = dict(header['hardware'])
+    if cpu_model:
+        hardware['cpu'] = cpu_model
+    hardware.setdefault('cpu', 'unknown')
+    if threads:
+        hardware['threads'] = sorted(threads)
+    return report_summary.build_document(
+        rows,
+        target_profile=header['target_profile'],
+        suite_id='cpu/session_matrix',
+        timestamp=header['timestamp'],
+        tenferro_commit=header['tenferro_commit'],
+        hardware=hardware,
+        unit='ns',
+        **report_summary.v2_provenance(run_dir, metadata),
+    )
+
+
+def render_report(run_dir, target):
+    """Report text built only from files recorded in the run directory."""
+    run_dir = Path(run_dir).resolve()
     rows = [json.loads(line) for p in sorted(run_dir.glob('samples_t*.jsonl'))
             for line in p.read_text().splitlines() if line.strip()]
-    parts = [json.loads(p.read_text()) for p in sorted(run_dir.glob('case_status_t*.json'))]
-    status = cs.merge_case_status(parts) if parts else None
-    if status:
-        cs.write_case_status(run_dir / "case_status.json", status)
-    rel = run_dir.relative_to(ROOT) if run_dir.is_relative_to(ROOT) else run_dir
+    status = merged_case_status(run_dir)
+    rel = report_summary.repo_relative(run_dir)
     lines = ['# CPU shared-session matrix results', '',
              f'Raw data and provenance: `{rel}`.', '']
     for path in sorted(run_dir.glob("run_t*.yaml")):
@@ -296,15 +369,25 @@ def report(run_dir, target, latest=True):
                 deltas = [sum(s['after'][key]-s['before'][key] for s in samples) for key in ('hits','misses','evictions')]
                 final = samples[-1]['after'] if samples else {}
                 lines.append(f"| {row['case_id']} | {row['threads']} | {deltas[0]} | {deltas[1]} | {deltas[2]} | {final.get('entries', '—')} | {final.get('retained_bytes', '—')} | unavailable | {row.get('correctness')} |")
-    record_report_wall(run_dir)
     for path in sorted(run_dir.glob('wall*.json')):
         lines += ['', f'Wall observations `{path.name}`:', '```json', path.read_text().rstrip(), '```']
-    text = '\n'.join(lines) + '\n'
+    return '\n'.join(lines) + '\n'
+
+
+def report(run_dir, target, latest=True):
+    run_dir = Path(run_dir).resolve()
+    text = render_report(run_dir, target)
+    document = build_summary(run_dir, cpu_model=report_summary.cpu_model_from_run_dir(run_dir))
+    status = merged_case_status(run_dir)
+    if status:
+        cs.write_case_status(run_dir / 'case_status.json', status)
     (run_dir / 'report.md').write_text(text)
+    report_summary.write_document(run_dir / 'session_matrix.summary.json', document)
     if latest:
         path = ROOT / 'result' / target / 'cpu/session_matrix.md'
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text)
+        report_summary.write_document(report_summary.summary_path_for_report(path), document)
         print(path)
 
 

@@ -37,6 +37,8 @@ from typing import Any, Iterable
 import markdown
 import yaml
 
+from campaign_toolkit.descriptor import profiles_dir
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
@@ -45,7 +47,8 @@ import generate_history  # noqa: E402
 import report_summary  # noqa: E402
 
 # Maintained reports from AGENTS.md "Expected latest report paths" plus the
-# three GPU reports it lists in the design.  Everything else is a diagnostic.
+# CPU per-call latency suites and the three GPU reports it lists in the design.
+# Everything else is a diagnostic.
 MAINTAINED: set[tuple[str, str]] = {
     ("mac-cpu", "cpu/einsum"),
     ("mac-cpu", "cpu/cpu_ops"),
@@ -64,6 +67,9 @@ MAINTAINED: set[tuple[str, str]] = {
     ("zen5-cpu", "cpu/linalg_jvp_vjp"),
     ("zen5-cpu", "cpu/permutation"),
     ("zen5-cpu", "cpu/perf_issues"),
+    ("zen5-cpu", "cpu/overhead_smoke"),
+    ("zen5-cpu", "cpu/small_work"),
+    ("zen5-cpu", "cpu/session_matrix"),
     ("nvidia-gpu", "gpu/dense"),
     ("nvidia-gpu", "gpu/einsum"),
     ("nvidia-gpu", "gpu/tensornetwork"),
@@ -75,14 +81,28 @@ MAINTAINED: set[tuple[str, str]] = {
     ("nvidia-gpu", "gpu/perf_issues"),
 }
 
-PROFILE_ORDER = ["nvidia-gpu", "zen5-cpu", "linux-cpu", "mac-cpu", "amd-cpu"]
+PROFILE_ORDER = ["nvidia-gpu", "zen5-cpu", "zen2-cpu", "linux-cpu", "mac-cpu", "amd-cpu"]
 
 # The latest hardware generation per family.  The published site (landing page,
-# family pages, suite pages, history) covers only these profiles: people mistake
-# older data for current, so older profiles (amd-cpu, linux-cpu, mac-cpu,
-# mac-gpu) are neither generated nor linked.  Their reports stay under result/
-# and in git history.  Moving to a new hardware generation is a change here.
-LATEST_PROFILES = ("zen5-cpu", "nvidia-gpu")
+# family pages, suite pages, history) covers the maintained profiles from
+# `benchmarks/profiles.yaml` plus the GPU profile below: people mistake older
+# data for current, so older profiles (amd-cpu, linux-cpu, mac-cpu, mac-gpu) are
+# neither generated nor linked.  Their reports stay under result/ and in git
+# history.  Moving to a new hardware generation is a change to those files.
+PROFILES_FILE = SCRIPT_DIR.parent / "benchmarks/profiles.yaml"
+GPU_LATEST_PROFILES = ("nvidia-gpu",)
+
+
+def declared_latest_profiles(path: Path = PROFILES_FILE) -> tuple[str, ...]:
+    """The `maintained` profiles of `benchmarks/profiles.yaml`, then the GPU profile."""
+    document = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    maintained = [str(name) for name in document.get("maintained") or []]
+    if not maintained:
+        raise SystemExit(f"ERROR: {path} declares no maintained profiles")
+    return tuple(maintained + [p for p in GPU_LATEST_PROFILES if p not in maintained])
+
+
+LATEST_PROFILES = declared_latest_profiles()
 
 # Hardware families are the top-level navigation entries.  A profile belongs to
 # exactly one family; unknown ids fall back to their "-gpu"/"-cpu" suffix.
@@ -100,14 +120,32 @@ PROFILE_FAMILY = {
     "amd-cpu": "cpu",
     "zen5-cpu": "cpu",
 }
-PROFILE_LABEL = {
+# Hardware labels for the GPU and legacy profiles, which have no toolkit profile.
+LOCAL_PROFILE_LABEL = {
     "nvidia-gpu": "NVIDIA A100",
     "mac-gpu": "Apple GPU (GitHub runner)",
     "linux-cpu": "Linux CPU",
     "mac-cpu": "Apple silicon (GitHub runner)",
     "amd-cpu": "AMD CPU",
-    "zen5-cpu": "AMD Ryzen AI 9 HX 470",
 }
+
+
+def library_profile_labels() -> dict[str, str]:
+    """CPU labels of the toolkit's shared hardware profiles, keyed by profile name."""
+    labels: dict[str, str] = {}
+    for path in sorted(profiles_dir().glob("*.yaml")):
+        try:
+            profile = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except (OSError, yaml.YAMLError):
+            continue
+        if isinstance(profile, dict) and profile.get("cpu"):
+            labels[str(profile.get("name") or path.stem)] = str(profile["cpu"])
+    return labels
+
+
+# A profile's hardware label is a fact about the machine, so a profile in the
+# toolkit library takes its label from there; GPU and legacy profiles stay local.
+PROFILE_LABEL = {**LOCAL_PROFILE_LABEL, **library_profile_labels()}
 
 THROUGHPUT = "throughput"
 LATENCY = "latency"
@@ -300,6 +338,8 @@ def load_summaries(result_dir: Path) -> dict[tuple[str, str], dict[str, Any]]:
             continue
         profile = path.parent.parent.name
         suite_id = f"{path.parent.name}/{path.name[: -len(report_summary.SUMMARY_SUFFIX)]}"
+        if document.get("schema_version") not in (1, report_summary.SCHEMA_VERSION_V2):
+            continue
         summaries[(profile, suite_id)] = document
     return summaries
 
@@ -948,6 +988,7 @@ footer { margin-top: 3rem; font-size: .85rem; color: var(--muted); border-top: 1
 .family-card h2 { margin: 0 0 .4rem; font-size: 1.4rem; }
 .family-card p { margin: .2rem 0; }
 .family-card .facts { color: var(--muted); font-size: .9rem; }
+.trend svg { display: block; max-width: 100%; height: auto; margin: .4rem 0 1rem; }
 .suite-block { margin: 1rem 0; }
 .suite-block > summary { font-size: 1rem; }
 @media (max-width: 640px) {
@@ -1343,7 +1384,8 @@ def render_top(
     body.append(
         '<footer>Generated by <code>scripts/generate_dashboard.py</code> from the '
         '<a href="https://github.com/tensor4all/tenferro-benchmark">tensor4all/tenferro-benchmark</a> '
-        "repository on every deploy; it is not committed. Summary schema: <code>summary-schema-v1</code>.</footer>"
+        "repository on every deploy; it is not committed. Summary schema: <code>summary-schema-v1</code> "
+        "or <code>summary-schema-v2</code> (adds the recorded source runs and timing policy).</footer>"
     )
     return page("tenferro-benchmark results", "\n".join(body))
 
@@ -1365,12 +1407,78 @@ def profile_header_from_views(profile: str, views: list[SuiteView]) -> str:
     return '<div class="profile-head">' + "".join(pieces) + "</div>"
 
 
+def load_trend(
+    trend_dir: Path | None, metadata: dict[str, dict[str, Any]] | None = None
+) -> list[dict[str, str]]:
+    """The rendered trend charts of ``trend_dir``, as HTML fragments.
+
+    ``scripts/trend_points.py --render`` writes one ``trend-<slug>.svg`` and a
+    ``trend-<slug>.md`` table per representative case next to ``points.json``.
+    The SVG is embedded; the table and the points document are linked relative
+    to the site root, so each family page applies its own depth prefix.  Each
+    chart carries the regime of its suite, so a latency case stays on the
+    latency page.
+    """
+    if trend_dir is None or not Path(trend_dir).is_dir():
+        return []
+    trend_dir = Path(trend_dir)
+    points = trend_dir / "points.json"
+    items: list[dict[str, str]] = []
+    for chart in sorted(trend_dir.glob("trend-*.svg")):
+        table = chart.with_suffix(".md")
+        title = chart.stem
+        if table.is_file():
+            heading = table.read_text(encoding="utf-8").splitlines()[:1]
+            if heading and heading[0].startswith("# "):
+                title = heading[0][2:].removesuffix(" - plotted data")
+        suite = title.split(":", 1)[0].strip()
+        items.append(
+            {
+                "title": title,
+                "regime": case_regime(metadata or {}, suite, ""),
+                "svg": chart.read_text(encoding="utf-8"),
+                "table": f"trend/{table.name}",
+                "points": f"trend/{points.name}" if points.is_file() else "",
+            }
+        )
+    return sorted(items, key=lambda item: (item["regime"], item["title"]))
+
+
+def render_trend(trend: list[dict[str, str]], prefix: str = "") -> str:
+    """The representative cases across revisions, one chart per case and thread row."""
+    if not trend:
+        return ""
+    blocks = []
+    for item in trend:
+        links = f'<a href="{esc(prefix + item["table"])}">plotted data and the run behind each point</a>'
+        if item["points"]:
+            links += f' · <a href="{esc(prefix + item["points"])}">trend points (JSON)</a>'
+        blocks.append(
+            '<details class="suite-block" open>'
+            f'<summary>{esc(item["title"])}</summary>'
+            '<p class="chart-legend">One line per engine and thread budget. A line joins only points '
+            "measured under the same profile, timing policy, power state and vendor arm; an older "
+            "contract or another power state is a separate line, never a jump in one.</p>"
+            f'<div class="trend">{item["svg"]}</div>'
+            f'<p class="chart-legend">{links}</p>'
+            "</details>"
+        )
+    return (
+        '<section class="profile-card" id="trend"><h2>Trend</h2>'
+        '<p class="chart-legend">Representative cases across tenferro-rs revisions, drawn from the '
+        "published summary sidecars by <code>scripts/trend_points.py</code> and the toolkit trend "
+        "renderer.</p>" + "".join(blocks) + "</section>"
+    )
+
+
 def render_family(
     family: str,
     views: list[SuiteView],
     previous_by_key: dict[tuple[str, str], list[dict[str, Any]] | None],
     reference_map: dict[str, list[str]],
     regime: str,
+    trend: list[dict[str, str]] | None = None,
+    trend_prefix: str = "",
 ) -> str:
     label = FAMILY_LABEL[family]
     body = [
@@ -1386,6 +1494,9 @@ def render_family(
     else:
         body.append(how_to_read())
         body.append(family_notice(family))
+    shown_trend = [item for item in trend or [] if item["regime"] == regime]
+    if shown_trend:
+        body.append('<p class="chart-legend"><a href="#trend">Trend across revisions</a></p>')
     for profile in ordered_profiles({view.profile for view in views}):
         profile_views = [view for view in views if view.profile == profile]
         body.append('<section class="profile-card">')
@@ -1451,6 +1562,8 @@ def render_family(
                 body.append(f'<p class="chart-legend">Report only (no machine-readable summary): {links}</p>')
         body.append("</section>")
     prefix = "../../" if regime == LATENCY else "../"
+    if family == "cpu":
+        body.append(render_trend(shown_trend, trend_prefix))
     body.append(render_diagnostics(views, prefix))
     body.append(
         '<footer>Generated by <code>scripts/generate_dashboard.py</code>. '
@@ -1636,6 +1749,7 @@ def generate(
     instances_dir: Path = GPU_PERF_ISSUES_INSTANCES.parent,
     benchmarks_dir: Path = Path("benchmarks"),
     latest_profiles: Iterable[str] | None = LATEST_PROFILES,
+    trend_dir: Path | None = None,
 ) -> int:
     """Write the site.  ``latest_profiles=None`` keeps every profile (local review only)."""
     latest = tuple(latest_profiles) if latest_profiles is not None else None
@@ -1658,6 +1772,11 @@ def generate(
             )
             previous_by_key[(profile, suite_id)] = previous
     views = build_suite_views(reports, summaries, metadata)
+    # The trend charts and their tables are rendered next to the site by
+    # `scripts/trend_points.py --render`; the CPU page embeds and links them.
+    # The charts live at the site root; each family page applies its own depth
+    # prefix when linking them (`cpu/` is one level below, `cpu/latency/` two).
+    trend = load_trend(trend_dir, metadata)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     for view in views:
@@ -1684,13 +1803,13 @@ def generate(
         family_dir = output_dir / family
         family_dir.mkdir(parents=True, exist_ok=True)
         (family_dir / "index.html").write_text(
-            render_family(family, family_views, previous_by_key, reference_map, THROUGHPUT),
+            render_family(family, family_views, previous_by_key, reference_map, THROUGHPUT, trend, "../"),
             encoding="utf-8",
         )
         latency_dir = family_dir / "latency"
         latency_dir.mkdir(parents=True, exist_ok=True)
         (latency_dir / "index.html").write_text(
-            render_family(family, family_views, previous_by_key, reference_map, LATENCY),
+            render_family(family, family_views, previous_by_key, reference_map, LATENCY, trend, "../../"),
             encoding="utf-8",
         )
     has_history = False
@@ -1715,8 +1834,12 @@ def main() -> int:
                         help=f"publish only this profile (repeatable; default: latest generation {list(LATEST_PROFILES)})")
     parser.add_argument("--all-profiles", action="store_true",
                         help="include every profile under result/ (local review; never deployed)")
+    parser.add_argument("--trend-dir", type=Path, default=None,
+                        help="embed the charts `scripts/trend_points.py --render` wrote there "
+                             "(default: <output-dir>/trend when it exists)")
     args = parser.parse_args()
     latest = None if args.all_profiles else (tuple(args.profiles) if args.profiles else LATEST_PROFILES)
+    trend_dir = args.trend_dir if args.trend_dir is not None else args.output_dir / "trend"
     return generate(
         args.result_dir,
         args.output_dir,
@@ -1726,6 +1849,7 @@ def main() -> int:
         args.instances_dir,
         args.benchmarks_dir,
         latest,
+        trend_dir,
     )
 
 

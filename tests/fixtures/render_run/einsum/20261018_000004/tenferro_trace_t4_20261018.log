@@ -1,0 +1,6 @@
+tenferro-trace einsum benchmark
+Backend: tenferro-trace
+RAYON_NUM_THREADS=4
+Strategy: opt_flops
+Instance Tensors log10FLOPS log2SIZE Median (ms) IQR (ms) Compile (ms)
+bin_matmul_256 2 0 0 4.0 0.1 0.0

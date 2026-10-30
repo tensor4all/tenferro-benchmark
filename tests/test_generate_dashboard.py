@@ -147,6 +147,54 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("AMD Ryzen AI 9 HX 470", (output / "cpu/index.html").read_text())
         self.assertTrue((output / "zen5-cpu/cpu/einsum.html").exists())
 
+    def test_zen5_cpu_latency_suites_count_as_latency_cases(self):
+        # The per-call suites declare `regime: latency`; their maintained pages
+        # must show up as latency cases on the CPU family card, never as compute.
+        suites = {
+            "cpu/overhead_smoke": ["typed_elemwise_f64_add_bcast_n16"],
+            "cpu/small_work": ["add_f64_concrete_fresh"],
+            "cpu/session_matrix": ["matmul_n2_count1024"],
+        }
+        cpu_benchmarks = self.root / "benchmarks" / "cpu"
+        cpu_benchmarks.mkdir(parents=True)
+        zen5 = self.result / "zen5-cpu" / "cpu"
+        zen5.mkdir(parents=True)
+        for suite_id, cases in suites.items():
+            stem = suite_id.split("/", 1)[1]
+            (zen5 / f"{stem}.md").write_text(f"# {suite_id}\n")
+            (zen5 / f"{stem}.summary.json").write_text(
+                json.dumps(
+                    summary_document(
+                        [row(case, "tenferro-rs", 100.0, group="ns/op") for case in cases]
+                    )
+                )
+            )
+            (cpu_benchmarks / f"{stem}.yaml").write_text(
+                "schema_version: 1\n"
+                f"suite_id: {suite_id}\n"
+                "defaults:\n  regime: latency\n"
+                "problems:\n" + "".join(f"  - {{id: {case}}}\n" for case in cases)
+            )
+        output = self.root / "site"
+        self.assertEqual(self.generate(output, dashboard.LATEST_PROFILES), 0)
+        index = (output / "index.html").read_text()
+        match = re.search(
+            r'<a class="family-card" href="cpu/index\.html">(.*?)</a>', index, re.S
+        )
+        self.assertIsNotNone(match)
+        card = match.group(1)
+        self.assertIn("0 compute cases", card)
+        self.assertIn("3 latency cases", card)
+        for suite in suites:
+            self.assertTrue((output / "zen5-cpu" / f"{suite}.html").exists(), suite)
+
+    def test_library_profile_supplies_labels_and_latest_profiles(self):
+        self.assertEqual(dashboard.LATEST_PROFILES, ("zen5-cpu", "nvidia-gpu"))
+        self.assertEqual(dashboard.profile_label("zen5-cpu"), "AMD Ryzen AI 9 HX 470")
+        self.assertEqual(dashboard.profile_label("zen2-cpu"), "AMD EPYC 7702P")
+        # GPU and legacy labels stay local.
+        self.assertEqual(dashboard.profile_label("nvidia-gpu"), "NVIDIA A100")
+
     def test_two_summaries_produce_expected_ratios_and_flags(self):
         current = json.loads((self.result / "nvidia-gpu/gpu/dense.summary.json").read_text())
         ratios = dashboard.suite_ratios(current, "gpu/dense")

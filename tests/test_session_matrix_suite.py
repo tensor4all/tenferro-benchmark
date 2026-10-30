@@ -150,9 +150,21 @@ class CollectTest(unittest.TestCase):
         self.assertEqual(status["executed"], [])
 
     def test_timeout_is_a_liveness_failure(self):
-        with patch.object(suite, "CASE_TIMEOUT_S", 1):
-            row = suite.run_one(["sleep", "5"], timeout=1)
+        # The default comes from the collection environment, read when the case
+        # process is spawned rather than when the module is imported.
+        with patch.dict(os.environ, {"BENCH_CASE_TIMEOUT_S": "1"}):
+            row = suite.run_one(["sleep", "5"])
         self.assertEqual(row["correctness"], "timeout")
+
+    def test_import_does_not_parse_the_collection_timeout(self):
+        import importlib
+
+        with patch.dict(os.environ, {"BENCH_CASE_TIMEOUT_S": "not-a-number"}):
+            importlib.reload(suite)
+            self.assertEqual(suite.DEFAULT_CASE_TIMEOUT_S, 900)
+            with self.assertRaises(ValueError):
+                suite.case_timeout_seconds()
+        importlib.reload(suite)
 
 
 if __name__ == "__main__":

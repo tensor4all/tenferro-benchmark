@@ -165,6 +165,9 @@ Expected latest report paths:
 - `result/zen5-cpu/cpu/permutation.md`
 - `result/zen5-cpu/cpu/perf_issues.md`
 - `result/zen5-cpu/cpu/overhead_smoke.md`
+- `result/zen5-cpu/cpu/fft.md`
+- `result/zen5-cpu/cpu/session_matrix.md`
+- `result/zen5-cpu/cpu/small_work.md`
 - `result/amd-cpu/cpu/einsum.md`
 - `result/amd-cpu/cpu/cpu_ops.md`
 - `result/amd-cpu/cpu/linalg_jvp_vjp.md`
@@ -190,6 +193,18 @@ Raw runs are written under:
 ```text
 data/results/<target_profile>/<suite_id>/<timestamp>/
 ```
+
+A run directory is the record of a measurement. It is tracked in git for the
+maintained and optional profiles (`data/results/zen5-cpu/`,
+`data/results/zen2-cpu/`, without build noise) and local-only for every other
+profile, so each published page can be traced to the record it names.
+`scripts/regenerate_report_summaries.py --publish <run dir>...` renders the
+selected runs and writes `result/<profile>/cpu/<suite>.{md,summary.json}`;
+`--check` (run by CI) re-derives every maintained page from the runs its summary
+records and fails on a byte difference, and reports pages listed in
+`benchmarks/unverified-pages.txt` as UNVERIFIED instead of hiding them.
+`BENCHMARK_RAW_ONLY=1` stops every CPU runner after it finalizes the run record
+(merged `case_status.json`, `wall_command.json`) and before any rendering.
 
 ## CPU Backend Policy
 

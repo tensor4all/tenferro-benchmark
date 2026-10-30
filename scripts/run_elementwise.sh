@@ -51,9 +51,12 @@ THREAD_COUNTS=("$@")
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_ns())')"
 
 # shellcheck source=scripts/cpu_blas_provider.sh
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
+# shellcheck source=scripts/publish_run.sh
+source "$SCRIPT_DIR/publish_run.sh"
 
 TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-native}")"
 export TENFERRO_CPU_FEATURES
@@ -103,7 +106,7 @@ RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/cpu/elementwise/$TIMESTAMP"
 RUN_YAML="$RUN_DIR/run.yaml"
 LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/elementwise.md"
 
-mkdir -p "$RUN_DIR" "$(dirname "$LATEST_REPORT")"
+mkdir -p "$RUN_DIR"
 
 PYTHON=(python3)
 if command -v uv >/dev/null 2>&1; then
@@ -181,13 +184,23 @@ done
 
 # ---------------------------------------------------------------------------
 # Format the latest report once, over every thread count's CSV.
+# ponytail: cpu/elementwise has no scripts/render_run.py renderer, so its page is
+# formatted straight from the run directory and `regenerate_report_summaries.py
+# --check` cannot re-derive it; the suite is a standalone mac-cpu/amd-cpu
+# diagnostic, not a maintained profile page.
 # ---------------------------------------------------------------------------
-echo ""
-echo "Formatting cpu/elementwise results as markdown..."
-"${PYTHON[@]}" "$SCRIPT_DIR/format_elementwise_results.py" \
-    "${INPUTS[@]}" \
-    --run-metadata "$RUN_YAML" \
-    --output "$LATEST_REPORT"
+finalize_benchmark_run "$PROJECT_DIR" "$RUN_DIR"
+if benchmark_raw_only; then
+    echo "BENCHMARK_RAW_ONLY=1: the run record ends here; no report, summary or result/ page is written." >&2
+else
+    echo ""
+    echo "Formatting cpu/elementwise results as markdown..."
+    mkdir -p "$(dirname "$LATEST_REPORT")"
+    "${PYTHON[@]}" "$SCRIPT_DIR/format_elementwise_results.py" \
+        "${INPUTS[@]}" \
+        --run-metadata "$RUN_YAML" \
+        --output "$LATEST_REPORT"
+fi
 
 echo ""
 echo "CPU elementwise benchmark suite complete: $SUITE_ID"

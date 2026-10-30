@@ -505,7 +505,7 @@ def _numeric_summary(row):
     return median, q[2] - q[0]
 
 
-def build_summary(run_dir, target, suite_key="cpu"):
+def build_summary(run_dir, target, suite_key="cpu", *, cpu_model=None):
     """Machine-readable sidecar for the same records the report is built from."""
     rows = [json.loads(line) for path in sorted(run_dir.glob("samples_t*.jsonl"))
             for line in path.read_text().splitlines()]
@@ -516,11 +516,8 @@ def build_summary(run_dir, target, suite_key="cpu"):
     header = report_summary.metadata_from_run_metadata(metadata)
     hardware = dict(header["hardware"])
     if suite_key != "gpu":
-        try:
-            from collect_cpu_info import collect_cpu_info
-            hardware.setdefault("cpu", collect_cpu_info().get("Model", "unknown"))
-        except Exception:  # pragma: no cover - best-effort host label
-            hardware.setdefault("cpu", "unknown")
+        recorded = cpu_model or report_summary.cpu_model_from_run_dir(run_dir)
+        hardware.setdefault("cpu", recorded or "unknown")
     threads = sorted({int(row["threads"]) for row in rows if row.get("threads") is not None})
     if threads:
         hardware["threads"] = threads
@@ -535,7 +532,7 @@ def build_summary(run_dir, target, suite_key="cpu"):
                 median,
                 status=status,
                 iqr=iqr,
-                group=row.get("measurement_scope"),
+                group=f"threads={row.get('threads')} / {row.get('measurement_scope')}",
                 verified=row.get("correctness_status") == "passed",
                 reason=(row.get("unsupported_reason") or row.get("error")) if status != "ok" else None,
             )
@@ -548,28 +545,70 @@ def build_summary(run_dir, target, suite_key="cpu"):
         tenferro_commit=header["tenferro_commit"],
         hardware=hardware,
         unit="ns/op",
+        **(
+            report_summary.v2_provenance(run_dir, metadata)
+            if suite_key != "gpu"
+            else {}
+        ),
     )
 
 
-def report(run_dir, target, suite_key="cpu"):
+def merged_case_status(run_dir):
+    parts = [json.loads(path.read_text()) for path in sorted(Path(run_dir).glob("case_status_t*.json"))]
+    return cs.merge_case_status(parts) if parts else None
+
+
+def recorded_default_regime(run_dir, metadata, suite_key="cpu"):
+    """The suite's default regime as the run recorded it.
+
+    Collection writes ``collection.default_regime``.  A record from before that
+    field falls back to the suite YAML at the run's harness commit, and only
+    when that revision is unreadable here to the current checkout's copy.
+    """
+    collection = (metadata or {}).get("collection") or {}
+    if collection.get("default_regime"):
+        return str(collection["default_regime"])
+    suite_path = SUITES[suite_key][0]
+    commit = ((metadata or {}).get("harness") or {}).get("commit")
+    if commit and suite_path.is_relative_to(ROOT):
+        completed = subprocess.run(
+            ["git", "-C", str(ROOT), "show", f"{commit}:{suite_path.relative_to(ROOT).as_posix()}"],
+            capture_output=True, text=True, check=False)
+        if completed.returncode == 0:
+            try:
+                defaults = (yaml.safe_load(completed.stdout) or {}).get("defaults") or {}
+            except yaml.YAMLError:
+                defaults = {}
+            if defaults.get("regime"):
+                return str(defaults["regime"])
+    document = yaml.safe_load(suite_path.read_text()) or {}
+    return str((document.get("defaults") or {}).get("regime") or "throughput")
+
+
+def render_report(run_dir, target, suite_key="cpu"):
+    """Report text built only from files recorded in the run directory."""
     suite_id = SUITES[suite_key][2]
-    run_dir = run_dir.resolve()
+    run_dir = Path(run_dir).resolve()
+    metadata = None
+    for candidate in (run_dir / "run.yaml", *sorted(run_dir.glob("run_t*.yaml"))):
+        if candidate.is_file():
+            metadata = report_summary.load_run_metadata(candidate)
+            if metadata is not None:
+                break
     rows = [json.loads(line) for path in sorted(run_dir.glob("samples_t*.jsonl"))
             for line in path.read_text().splitlines()]
     lines = [f"# {suite_key.upper()} Performance-Issue Workloads", "", f"- Suite: `{suite_id}`",
-             f"- Raw run: `{run_dir.relative_to(ROOT)}`", ""]
+             f"- Raw run: `{report_summary.repo_relative(run_dir)}`", ""]
     for info in ("cpu_info.md", "gpu_info.md"):
         if (run_dir / info).exists():
             lines += [(run_dir / info).read_text().rstrip(), ""]
     for path in sorted(run_dir.glob("run_t*.yaml")):
         metadata = yaml.safe_load(path.read_text())
         conditions = {k: metadata[k] for k in ("timestamp", "tenferro_rs", "blas", "environment") if k in metadata}
-        lines += [f"## {path.stem}", "", f"Full metadata: `{path.relative_to(ROOT)}`", "",
+        lines += [f"## {path.stem}", "", f"Full metadata: `{report_summary.repo_relative(path)}`", "",
                   "```yaml", yaml.safe_dump(conditions, sort_keys=False).rstrip(), "```", ""]
-    parts = [json.loads(p.read_text()) for p in sorted(run_dir.glob("case_status_t*.json"))]
-    if parts:
-        status = cs.merge_case_status(parts)
-        cs.write_case_status(run_dir / "case_status.json", status)
+    status = merged_case_status(run_dir)
+    if status:
         lines += cs.markdown_section(status)
     passed = sum(r["correctness_status"] == "passed" for r in rows)
     lines += [f"Numerical checks: **{passed}/{len(rows)} recorded rows passed** (case × thread count).", ""]
@@ -601,7 +640,7 @@ def report(run_dir, target, suite_key="cpu"):
               "`reference_for` in the case file names the case each reference arm is compared with. "
               "GPU batches end with one device synchronize (a per-call synchronize where the transfer is the operation); "
               "the Threads column is the host thread setting.", ""]
-    default_regime = yaml.safe_load(SUITES[suite_key][0].read_text())["defaults"].get("regime", "throughput")
+    default_regime = recorded_default_regime(run_dir, metadata, suite_key)
     for regime, title in (("throughput", "Compute- and bandwidth-bound operations"),
                           ("latency", "Latency and per-call overhead")):
         selected = [r for r in steady if (r.get("regime") or default_regime) == regime]
@@ -745,7 +784,17 @@ def report(run_dir, target, suite_key="cpu"):
     for row in rows:
         if row.get("error"):
             lines += ["", f"### FAILED: {row['case_id']} ({row['threads']} threads)", "```", row["error"], "```"]
-    text = "\n".join(lines) + "\n"
+    return "\n".join(lines) + "\n"
+
+
+def report(run_dir, target, suite_key="cpu"):
+    suite_id = SUITES[suite_key][2]
+    run_dir = Path(run_dir).resolve()
+    text = render_report(run_dir, target, suite_key)
+    document = build_summary(run_dir, target, suite_key)
+    status = merged_case_status(run_dir)
+    if status:
+        cs.write_case_status(run_dir / "case_status.json", status)
     (run_dir / "report.md").write_text(text)
     if suite_key == "gpu" and os.environ.get("GPU_BENCH_SKIP_LATEST") == "1":
         print(run_dir / "report.md")
@@ -754,9 +803,10 @@ def report(run_dir, target, suite_key="cpu"):
     latest.parent.mkdir(parents=True, exist_ok=True)
     latest.write_text(text)
     report_summary.write_document(
-        report_summary.summary_path_for_report(latest),
-        build_summary(run_dir, target, suite_key),
+        report_summary.summary_path_for_report(latest), document
     )
+    if suite_key != "gpu":
+        report_summary.write_document(run_dir / f"{suite_id.split('/')[-1]}.summary.json", document)
     print(latest)
 
 

@@ -273,13 +273,17 @@ def build_summary(
     all_results: dict[tuple[str, str, str], tuple[float | None, float | None]],
     metadata: dict[str, str],
     run_metadata: dict | None = None,
+    *,
+    run_dir: Path | None = None,
+    cpu_model: str | None = None,
 ) -> dict:
     """Machine-readable sidecar for the same parsed log results."""
     header = report_summary.metadata_from_run_metadata(run_metadata)
     hardware = dict(header["hardware"])
+    if cpu_model:
+        hardware["cpu"] = cpu_model
     if not hardware.get("cpu"):
-        cpu_model = (run_metadata or {}).get("environment", {}).get("cpu") if run_metadata else None
-        hardware["cpu"] = cpu_model or "unknown"
+        hardware["cpu"] = "unknown"
     threads = sorted({int(value) for value in metadata.values() if str(value).isdigit()})
     if threads:
         hardware["threads"] = threads
@@ -307,6 +311,7 @@ def build_summary(
         tenferro_commit=header["tenferro_commit"],
         hardware=hardware,
         unit="ms",
+        **(report_summary.v2_provenance(run_dir, run_metadata) if run_dir is not None else {}),
     )
 
 
@@ -338,11 +343,17 @@ def main() -> None:
         if args.run_metadata
         else report_summary.env_run_metadata()
     )
+    run_dir = args.run_metadata.parent if args.run_metadata else None
     report_summary.maybe_write(
-        build_summary(all_results, all_metadata, run_metadata),
+        build_summary(all_results, all_metadata, run_metadata, run_dir=run_dir, cpu_model=cpu_model_for(run_dir)),
         summary_path=report_summary.summary_path_for_report(args.output) if args.output else None,
         env=os.environ,
     )
+
+
+def cpu_model_for(run_dir: Path | None) -> str | None:
+    """Recorded CPU model from the run's own cpu_info.md snapshot."""
+    return report_summary.cpu_model_from_run_dir(run_dir)
 
 
 if __name__ == "__main__":

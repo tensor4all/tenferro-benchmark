@@ -24,7 +24,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import platform
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -35,7 +34,6 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import report_summary  # noqa: E402
-from collect_cpu_info import collect_cpu_info, markdown as cpu_info_markdown  # noqa: E402
 from validate_benchmark_suite import (  # noqa: E402
     PERMUTATION_RESULT_SCHEMA,
     validate_results as validate_permutation_result_jsonl,
@@ -162,9 +160,58 @@ def format_thread_section(threads: str, records: list[dict[str, Any]]) -> list[s
     return lines
 
 
+def recorded_cpu_section(run_dir: Path | None) -> list[str]:
+    """CPU block from this run's recorded snapshot; never probes the render host."""
+    if run_dir is not None:
+        path = Path(run_dir) / "cpu_info.md"
+        if path.is_file():
+            return [path.read_text().rstrip(), ""]
+    return [
+        "## CPU Information",
+        "",
+        "- unavailable: this run did not record `cpu_info.md`.",
+        "",
+    ]
+
+
+def pinning_section(run_metadata: dict[str, Any] | None) -> list[str]:
+    """Pinning prose from the run's recorded affinity, not the current OS."""
+    affinity = ((run_metadata or {}).get("environment") or {}).get("affinity") or {}
+    pinning = affinity.get("pinning")
+    if pinning == "taskset":
+        details = [
+            f"measured CPUs `{affinity.get('measured_cpus') or affinity.get('requested_measured_cpus') or 'unrecorded'}`",
+            f"observer CPUs `{affinity.get('observer_cpus') or 'unrecorded'}`",
+        ]
+        if affinity.get("l3_domains"):
+            details.append("L3 domains " + ", ".join(f"`{domain}`" for domain in affinity["l3_domains"]))
+        if affinity.get("thread_budget"):
+            details.append(f"thread budget `{affinity['thread_budget']}`")
+        return [
+            "Each thread row was pinned with `taskset` to the measured CPUs recorded in "
+            "the run's `run_t<N>.yaml`: " + "; ".join(details) + ".",
+            "",
+        ]
+    if pinning == "none":
+        return [
+            "Thread counts are controlled via `RAYON_NUM_THREADS` / `OMP_NUM_THREADS` / "
+            "`JULIA_NUM_THREADS`; no CPU-affinity pinning (`taskset` / `numactl`) was "
+            "applied. The controlled thread environment is recorded per thread count "
+            "in the run's `run_t<N>.yaml`.",
+            "",
+        ]
+    return [
+        "CPU placement was not recorded for this run; the thread environment is what "
+        "the run's `run_t<N>.yaml` records.",
+        "",
+    ]
+
+
 def format_markdown(
     records: list[dict[str, Any]],
     run_metadata: dict[str, Any] | None = None,
+    *,
+    run_dir: Path | None = None,
 ) -> str:
     lines = ["# CPU Permutation Benchmark Results", ""]
     if run_metadata:
@@ -181,24 +228,8 @@ def format_markdown(
             lines.append(f"- tenferro-rs commit: `{tenferro['commit']}`")
         lines.append("")
 
-    lines.append(cpu_info_markdown(collect_cpu_info()).rstrip())
-    lines.append("")
-
-    if platform.system() == "Darwin":
-        lines.append(
-            "CPU pinning is unavailable on macOS; thread counts are controlled only "
-            "via `RAYON_NUM_THREADS` / `OMP_NUM_THREADS` / `JULIA_NUM_THREADS`."
-        )
-        lines.append("")
-    elif platform.system() == "Linux":
-        lines.append(
-            "On the Linux CPU devcontainer, thread counts are controlled via "
-            "`RAYON_NUM_THREADS` / `OMP_NUM_THREADS` / `JULIA_NUM_THREADS`; no "
-            "CPU-affinity pinning (`taskset` / `numactl`) is applied, matching the "
-            "repository devcontainer convention. The controlled thread environment "
-            "is recorded per thread count in the run's `run_t<N>.yaml`."
-        )
-        lines.append("")
+    lines.extend(recorded_cpu_section(run_dir))
+    lines.extend(pinning_section(run_metadata))
 
     lines.append(
         "`tenferro-rs` measures `TypedTensorView::transpose_view` followed by "
@@ -237,18 +268,16 @@ def parse_args() -> argparse.Namespace:
 def build_summary(
     records: list[dict[str, Any]],
     run_metadata: dict[str, Any] | None = None,
-    *, cpu_model: str | None = None,
+    *,
+    cpu_model: str | None = None,
+    run_dir: Path | None = None,
 ) -> dict[str, Any]:
     """Machine-readable sidecar for the same records the Markdown is built from."""
     header = report_summary.metadata_from_run_metadata(run_metadata)
     hardware = dict(header["hardware"])
     if cpu_model:
         hardware["cpu"] = cpu_model
-    if not hardware.get("cpu"):
-        try:
-            hardware["cpu"] = collect_cpu_info().get("Model", "unknown")
-        except Exception:  # pragma: no cover - best-effort host label
-            hardware["cpu"] = "unknown"
+    hardware.setdefault("cpu", "unknown")
     threads = sorted({int(record["threads"]) for record in records if record.get("threads") is not None})
     if threads:
         hardware["threads"] = threads
@@ -277,6 +306,7 @@ def build_summary(
         tenferro_commit=header["tenferro_commit"],
         hardware=hardware,
         unit="ms",
+        **(report_summary.v2_provenance(run_dir, run_metadata) if run_dir is not None else {}),
     )
 
 
@@ -305,8 +335,14 @@ def main() -> None:
         sys.exit(1)
 
     run_metadata = load_run_metadata(args.run_metadata)
-    markdown = format_markdown(records, run_metadata)
-    summary = build_summary(records, run_metadata)
+    run_dir = args.run_metadata.parent if args.run_metadata else None
+    markdown = format_markdown(records, run_metadata, run_dir=run_dir)
+    summary = build_summary(
+        records,
+        run_metadata,
+        cpu_model=report_summary.cpu_model_from_run_dir(run_dir),
+        run_dir=run_dir,
+    )
 
     if args.output is not None:
         args.output.parent.mkdir(parents=True, exist_ok=True)

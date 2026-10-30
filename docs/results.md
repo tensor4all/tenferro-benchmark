@@ -112,8 +112,24 @@ recorded reason stays an anomaly.
 Backends keep their report column ids (`tenferro-cuda-eager`,
 `tenferro-cuda-trace`, `pytorch-cuda`, `jax-cuda`, `cublaslt`, ...; CPU suites
 their own ids and thread counts). `unit` is `ms` for the dense/linalg/permutation
-suites and `ns/op` for `*/perf_issues`. Rebuild the sidecars from the local raw
-runs (gitignored) with:
+suites and `ns/op` for `*/perf_issues`. CPU pages and their sidecars are
+published from explicitly selected run directories, and every maintained page is
+checked against them:
+
+```bash
+uv run python scripts/regenerate_report_summaries.py --publish \
+    data/results/zen5-cpu/cpu/perf_issues/20261028_101500
+uv run python scripts/regenerate_report_summaries.py --check
+```
+
+`--publish` renders the selected runs with `scripts/render_run.py` and writes
+`result/<profile>/cpu/<suite>.md` plus its `.summary.json`; the summary names the
+source runs and their recorded conditions. `--check` re-renders every page of the
+maintained profiles from those sources and fails on a byte difference; pages
+whose raw records are not in git yet are listed in
+`benchmarks/unverified-pages.txt` and reported as UNVERIFIED.
+
+GPU sidecars are rebuilt from the local raw runs (gitignored) with:
 
 ```bash
 uv run python scripts/regenerate_report_summaries.py

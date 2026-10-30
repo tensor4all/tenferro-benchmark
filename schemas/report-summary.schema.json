@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tensor4all.example/schemas/report-summary.schema.json",
+  "title": "Benchmark Report Summary",
+  "description": "Machine-readable sidecar published next to a benchmark report. Version 2 adds the recorded source runs and the timing policy; version 1 documents remain valid.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "target_profile",
+    "suite_id",
+    "timestamp",
+    "tenferro_commit",
+    "hardware",
+    "unit",
+    "rows"
+  ],
+  "properties": {
+    "schema_version": { "enum": [1, 2] },
+    "target_profile": { "type": ["string", "null"] },
+    "suite_id": { "type": ["string", "null"] },
+    "timestamp": { "type": ["string", "null"] },
+    "tenferro_commit": { "type": ["string", "null"] },
+    "hardware": {
+      "type": "object",
+      "properties": {
+        "cpu": { "type": "string" },
+        "gpu": { "type": "string" },
+        "host": { "type": "string" },
+        "threads": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "unit": { "type": "string", "minLength": 1 },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["case", "backend", "median", "status", "verified"],
+        "properties": {
+          "case": { "type": "string", "minLength": 1 },
+          "group": { "type": "string" },
+          "backend": { "type": "string", "minLength": 1 },
+          "median": { "type": ["number", "null"] },
+          "iqr": { "type": ["number", "null"] },
+          "status": { "type": "string", "minLength": 1 },
+          "verified": { "type": "boolean" },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "source_runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["run", "threads", "host", "toolchain", "power"],
+        "properties": {
+          "run": { "type": "string", "minLength": 1 },
+          "threads": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 },
+            "uniqueItems": true
+          },
+          "host": { "type": ["object", "null"] },
+          "toolchain": { "type": ["object", "null"] },
+          "power": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "timing_policy": { "type": ["object", "null"] }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": { "schema_version": { "const": 2 } },
+        "required": ["schema_version"]
+      },
+      "then": { "required": ["source_runs", "timing_policy"] }
+    }
+  ]
+}

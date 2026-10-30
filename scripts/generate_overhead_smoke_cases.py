@@ -206,6 +206,7 @@ def render(cases):
             ),
             "defaults": {
                 "device": {"kind": "cpu", "ordinal": 0},
+                "regime": "latency",
                 "run": {"warmups": 3, "runs": 15, "min_runtime_ms": 2},
                 "verify": {
                     "reference": "independent f64 scalar host loops",

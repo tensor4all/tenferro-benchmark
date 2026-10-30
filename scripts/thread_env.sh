@@ -55,3 +55,46 @@ print_cpu_thread_env() {
         printf '  %s=%s\n' "$key" "${!key:-}"
     done
 }
+
+# The thread-environment lines a report header prints, recorded into the run
+# directory at collection time so rendering does not need the collecting shell.
+THREAD_ENV_KEYS=(
+    OMP_NUM_THREADS
+    OMP_THREAD_LIMIT
+    OMP_DYNAMIC
+    RAYON_NUM_THREADS
+    OPENBLAS_NUM_THREADS
+    GOTO_NUM_THREADS
+    MKL_NUM_THREADS
+    VECLIB_MAXIMUM_THREADS
+    VECLIB_NUM_THREADS
+    NUMEXPR_NUM_THREADS
+    BLIS_NUM_THREADS
+    XLA_FLAGS
+)
+# Variables a suite's own report also prints (for example JULIA_NUM_THREADS).
+THREAD_ENV_EXTRA_KEYS=()
+
+thread_env_lines() {
+    local key
+    for key in "${THREAD_ENV_KEYS[@]}" "${THREAD_ENV_EXTRA_KEYS[@]}"; do
+        echo "- ${key}: \`${!key:-}\`"
+    done
+}
+
+# A run directory that holds one run_t<N>.yaml per thread count: start the
+# snapshot, then append each row as collection configures it.
+begin_thread_envs_snapshot() {
+    echo "## Thread Environments" > "${1:?output path required}"
+}
+
+append_thread_env_section() {
+    local output="${1:?output path required}"
+    local threads="${2:?threads required}"
+    {
+        echo ""
+        echo "### Threads: $threads"
+        echo ""
+        thread_env_lines
+    } >> "$output"
+}

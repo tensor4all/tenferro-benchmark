@@ -211,8 +211,21 @@ __marimo__/
 # Claude
 plans/
 
-# Benchmark results (machine-specific)
-data/results/
+# Benchmark results (machine-specific). The run directories of the maintained
+# and optional profiles are tracked so every published page can be checked
+# against the raw record it names; recordings of any other profile stay local.
+# `*.log` is ignored globally, so the timing logs a run records are re-included
+# here; compiler and build output stays ignored because no renderer reads it.
+data/results/*
+!data/results/zen5-cpu/
+!data/results/zen2-cpu/
+!data/results/**/*.log
+data/results/**/build*.log
+data/results/**/cargo*.log
+data/results/**/target/
+data/results/**/*.tmp
+data/results/**/*.rlib
+data/results/**/*.rmeta
 data/verification/
 data/cache/
 result/**

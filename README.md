@@ -20,18 +20,57 @@ or from the Pages site.
   (landing page, per-suite pages, and a per-commit
   [history](https://tensor4all.org/tenferro-benchmark/history.html)).
 - Source of truth (never duplicated into this README): the tracked reports under
-  `result/zen5-cpu/` (once measured) and [`result/nvidia-gpu/`](result/nvidia-gpu/).
-  Each file is the latest report for one `target_profile` x `suite_id` pair.
+  [`result/zen5-cpu/`](result/zen5-cpu/) and [`result/nvidia-gpu/`](result/nvidia-gpu/).
+  Each file is the latest report for one `target_profile` x `suite_id` pair;
+  the table below is generated from them
+  (`scripts/generate_readme_results.py`, checked by CI).
 
+<!-- results:begin -->
 | Target profile | Suite | Report |
 |---|---|---|
-| `nvidia-gpu` (CUDA devcontainer) | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
+| `zen5-cpu` | `cpu/cpu_ops` | [result/zen5-cpu/cpu/cpu_ops.md](result/zen5-cpu/cpu/cpu_ops.md) |
+| `zen5-cpu` | `cpu/einsum` | [result/zen5-cpu/cpu/einsum.md](result/zen5-cpu/cpu/einsum.md) |
+| `zen5-cpu` | `cpu/fft` | [result/zen5-cpu/cpu/fft.md](result/zen5-cpu/cpu/fft.md) |
+| `zen5-cpu` | `cpu/linalg_jvp_vjp` | [result/zen5-cpu/cpu/linalg_jvp_vjp.md](result/zen5-cpu/cpu/linalg_jvp_vjp.md) |
+| `zen5-cpu` | `cpu/overhead_smoke` | [result/zen5-cpu/cpu/overhead_smoke.md](result/zen5-cpu/cpu/overhead_smoke.md) |
+| `zen5-cpu` | `cpu/permutation` | [result/zen5-cpu/cpu/permutation.md](result/zen5-cpu/cpu/permutation.md) |
+| `zen5-cpu` | `cpu/public_api` | [result/zen5-cpu/cpu/public_api.md](result/zen5-cpu/cpu/public_api.md) |
+| `zen5-cpu` | `cpu/session_matrix` | [result/zen5-cpu/cpu/session_matrix.md](result/zen5-cpu/cpu/session_matrix.md) |
+| `zen5-cpu` | `cpu/small_work` | [result/zen5-cpu/cpu/small_work.md](result/zen5-cpu/cpu/small_work.md) |
+| `nvidia-gpu` | `gpu/command_wall` | [result/nvidia-gpu/gpu/command_wall.md](result/nvidia-gpu/gpu/command_wall.md) |
+| `nvidia-gpu` | `gpu/compare_lifetime` | [result/nvidia-gpu/gpu/compare_lifetime.md](result/nvidia-gpu/gpu/compare_lifetime.md) |
+| `nvidia-gpu` | `gpu/compare_lifetime_counters` | [result/nvidia-gpu/gpu/compare_lifetime_counters.md](result/nvidia-gpu/gpu/compare_lifetime_counters.md) |
+| `nvidia-gpu` | `gpu/dense` | [result/nvidia-gpu/gpu/dense.md](result/nvidia-gpu/gpu/dense.md) |
+| `nvidia-gpu` | `gpu/dense_throughput` | [result/nvidia-gpu/gpu/dense_throughput.md](result/nvidia-gpu/gpu/dense_throughput.md) |
 | `nvidia-gpu` | `gpu/einsum` | [result/nvidia-gpu/gpu/einsum.md](result/nvidia-gpu/gpu/einsum.md) |
-| `nvidia-gpu` | `gpu/sparse` | [result/nvidia-gpu/gpu/sparse.md](result/nvidia-gpu/gpu/sparse.md) |
-| `nvidia-gpu` | `gpu/tensornetwork` | [result/nvidia-gpu/gpu/tensornetwork.md](result/nvidia-gpu/gpu/tensornetwork.md) |
+| `nvidia-gpu` | `gpu/elementwise` | [result/nvidia-gpu/gpu/elementwise.md](result/nvidia-gpu/gpu/elementwise.md) |
+| `nvidia-gpu` | `gpu/fft` | [result/nvidia-gpu/gpu/fft.md](result/nvidia-gpu/gpu/fft.md) |
+| `nvidia-gpu` | `gpu/isolated_ops` | [result/nvidia-gpu/gpu/isolated_ops.md](result/nvidia-gpu/gpu/isolated_ops.md) |
+| `nvidia-gpu` | `gpu/linalg_ad_latency` | [result/nvidia-gpu/gpu/linalg_ad_latency.md](result/nvidia-gpu/gpu/linalg_ad_latency.md) |
+| `nvidia-gpu` | `gpu/linalg_ad_throughput` | [result/nvidia-gpu/gpu/linalg_ad_throughput.md](result/nvidia-gpu/gpu/linalg_ad_throughput.md) |
+| `nvidia-gpu` | `gpu/linalg_capability` | [result/nvidia-gpu/gpu/linalg_capability.md](result/nvidia-gpu/gpu/linalg_capability.md) |
 | `nvidia-gpu` | `gpu/linalg_jvp_vjp` | [result/nvidia-gpu/gpu/linalg_jvp_vjp.md](result/nvidia-gpu/gpu/linalg_jvp_vjp.md) |
-| `nvidia-gpu` | `gpu/permutation` | [result/nvidia-gpu/gpu/permutation.md](result/nvidia-gpu/gpu/permutation.md) |
+| `nvidia-gpu` | `gpu/linalg_public_api` | [result/nvidia-gpu/gpu/linalg_public_api.md](result/nvidia-gpu/gpu/linalg_public_api.md) |
+| `nvidia-gpu` | `gpu/lstsq` | [result/nvidia-gpu/gpu/lstsq.md](result/nvidia-gpu/gpu/lstsq.md) |
+| `nvidia-gpu` | `gpu/nn` | [result/nvidia-gpu/gpu/nn.md](result/nvidia-gpu/gpu/nn.md) |
 | `nvidia-gpu` | `gpu/perf_issues` | [result/nvidia-gpu/gpu/perf_issues.md](result/nvidia-gpu/gpu/perf_issues.md) |
+| `nvidia-gpu` | `gpu/perf_issues_aa` | [result/nvidia-gpu/gpu/perf_issues_aa.md](result/nvidia-gpu/gpu/perf_issues_aa.md) |
+| `nvidia-gpu` | `gpu/perf_issues_paired` | [result/nvidia-gpu/gpu/perf_issues_paired.md](result/nvidia-gpu/gpu/perf_issues_paired.md) |
+| `nvidia-gpu` | `gpu/permutation` | [result/nvidia-gpu/gpu/permutation.md](result/nvidia-gpu/gpu/permutation.md) |
+| `nvidia-gpu` | `gpu/reuse_contraction` | [result/nvidia-gpu/gpu/reuse_contraction.md](result/nvidia-gpu/gpu/reuse_contraction.md) |
+| `nvidia-gpu` | `gpu/routine_command_wall` | [result/nvidia-gpu/gpu/routine_command_wall.md](result/nvidia-gpu/gpu/routine_command_wall.md) |
+| `nvidia-gpu` | `gpu/routine_controls` | [result/nvidia-gpu/gpu/routine_controls.md](result/nvidia-gpu/gpu/routine_controls.md) |
+| `nvidia-gpu` | `gpu/routine_coverage` | [result/nvidia-gpu/gpu/routine_coverage.md](result/nvidia-gpu/gpu/routine_coverage.md) |
+| `nvidia-gpu` | `gpu/routine_full_command_wall` | [result/nvidia-gpu/gpu/routine_full_command_wall.md](result/nvidia-gpu/gpu/routine_full_command_wall.md) |
+| `nvidia-gpu` | `gpu/routine_full_controls` | [result/nvidia-gpu/gpu/routine_full_controls.md](result/nvidia-gpu/gpu/routine_full_controls.md) |
+| `nvidia-gpu` | `gpu/routine_full_coverage` | [result/nvidia-gpu/gpu/routine_full_coverage.md](result/nvidia-gpu/gpu/routine_full_coverage.md) |
+| `nvidia-gpu` | `gpu/routine_full_workflow` | [result/nvidia-gpu/gpu/routine_full_workflow.md](result/nvidia-gpu/gpu/routine_full_workflow.md) |
+| `nvidia-gpu` | `gpu/routine_workflow` | [result/nvidia-gpu/gpu/routine_workflow.md](result/nvidia-gpu/gpu/routine_workflow.md) |
+| `nvidia-gpu` | `gpu/shape_stream` | [result/nvidia-gpu/gpu/shape_stream.md](result/nvidia-gpu/gpu/shape_stream.md) |
+| `nvidia-gpu` | `gpu/sparse` | [result/nvidia-gpu/gpu/sparse.md](result/nvidia-gpu/gpu/sparse.md) |
+| `nvidia-gpu` | `gpu/structural` | [result/nvidia-gpu/gpu/structural.md](result/nvidia-gpu/gpu/structural.md) |
+| `nvidia-gpu` | `gpu/tensornetwork` | [result/nvidia-gpu/gpu/tensornetwork.md](result/nvidia-gpu/gpu/tensornetwork.md) |
+<!-- results:end -->
 
 The [CUDA public API suites](docs/gpu-public-api-suite.md) add FFT, NN, isolated
 operations, structural operations, linear algebra and output reuse comparisons
@@ -46,9 +85,11 @@ A live dashboard is published to GitHub Pages at
 <https://tensor4all.org/tenferro-benchmark/> (`scripts/generate_dashboard.py`).
 It reads machine-readable `result/<profile>/<suite>.summary.json` sidecars
 written next to each maintained report (schema `summary-schema-v1`), shows the
-latest-generation profiles only (`zen5-cpu`, `nvidia-gpu`), and flags per-case anomalies. Rebuild the
-sidecars for a local checkout from the raw runs with
-`uv run python scripts/regenerate_report_summaries.py`. Collection uploads raw
+latest-generation profiles only (`zen5-cpu`, `nvidia-gpu`), and flags per-case anomalies. A CPU
+sidecar is written by `scripts/regenerate_report_summaries.py --publish`, which
+derives both the page and its summary from explicitly selected run directories;
+`--check` re-derives every maintained page from the runs its summary records and
+fails on a byte difference. Collection uploads raw
 bundles; validated ingestion commits the published subset; Pages renders only
 committed results. See [result ingestion and recovery](docs/result-ingestion.md).
 
@@ -144,9 +185,20 @@ Useful environment variables: `BENCH_INSTANCE` (restrict to one einsum
 instance), `BENCH_RUNS` / `BENCH_WARMUPS` (iteration counts),
 `TENFERRO_CPU_FEATURES` (`native` or a BLAS provider: `blas-openblas`,
 `blas-mkl`, `blas-accelerate`; **Linux defaults to `blas-openblas`**,
-macOS defaults to `blas-accelerate`), `RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, and `RUN_PERMUTATION_SUITE=0`
+macOS defaults to `blas-accelerate`), `RUN_FFT_SUITE=0`, `RUN_PUBLIC_API_SUITE=0`, `RUN_SMALL_WORK_SUITE=0`,
+`RUN_PERF_ISSUES_SUITE=0`, and `RUN_PERMUTATION_SUITE=0`
 (skip one of the follow-up suites in a multi-thread-count `run_all.sh`
 invocation; HPTT still needs `PERMUTATION_EXTRA_FEATURES=hptt`).
+
+`BENCHMARK_RAW_ONLY=1` records a run and stops: every CPU runner closes the run
+record after collection (the per-thread `case_status` files are merged into
+`case_status.json` and `wall_command.json` reports the command time through
+collection), and then renders nothing — no run report, no summary and no
+`result/` page is written or replaced. Use it when the recordings are published
+separately: `uv run python scripts/regenerate_report_summaries.py --publish
+data/results/<profile>/cpu/<suite>/<timestamp>` renders the selected runs and
+writes `result/<profile>/cpu/<suite>.md` plus its `.summary.json`, and
+`--check` verifies every published page against the runs its summary names.
 
 Note: a full or smoke `run_all.sh` invocation **overwrites** the tracked
 latest reports under `result/<target_profile>/`. If you only ran a smoke

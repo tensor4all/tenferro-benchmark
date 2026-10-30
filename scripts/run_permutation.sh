@@ -56,9 +56,12 @@ THREAD_COUNTS=("$@")
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_ns())')"
 
 # shellcheck source=scripts/cpu_blas_provider.sh
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
+# shellcheck source=scripts/publish_run.sh
+source "$SCRIPT_DIR/publish_run.sh"
 
 TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export TENFERRO_CPU_FEATURES
@@ -114,7 +117,7 @@ RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/cpu/permutation/$TIMESTAMP"
 RUN_YAML="$RUN_DIR/run.yaml"
 LATEST_REPORT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/cpu/permutation.md"
 
-mkdir -p "$RUN_DIR" "$(dirname "$LATEST_REPORT")"
+mkdir -p "$RUN_DIR"
 
 PYTHON=(python3)
 if command -v uv >/dev/null 2>&1; then
@@ -122,6 +125,11 @@ if command -v uv >/dev/null 2>&1; then
 fi
 
 "${PYTHON[@]}" "$SCRIPT_DIR/validate_benchmark_suite.py" "$SUITE_FILE"
+
+# Host and thread-environment snapshots for this run's report header.
+"${PYTHON[@]}" "$SCRIPT_DIR/collect_cpu_info.py" --markdown > "$RUN_DIR/cpu_info.md"
+THREAD_ENV_EXTRA_KEYS=(JULIA_NUM_THREADS)
+begin_thread_envs_snapshot "$RUN_DIR/thread_env.txt"
 
 blas_impl="$(blas_impl_for_features "$TENFERRO_CPU_FEATURES")"
 tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
@@ -203,6 +211,7 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     # exports JULIA_NUM_THREADS.
     configure_cpu_thread_env "$NUM_THREADS"
     print_cpu_thread_env
+    append_thread_env_section "$RUN_DIR/thread_env.txt" "$NUM_THREADS"
 
     RUST_JSONL="$RUN_DIR/rust_output_t${NUM_THREADS}.jsonl"
     RUN_T_YAML="$RUN_DIR/run_t${NUM_THREADS}.yaml"
@@ -216,8 +225,10 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
     INPUTS+=("$RUST_JSONL")
 
     JULIA_JSONL="$RUN_DIR/julia_output_t${NUM_THREADS}.jsonl"
-    : > "$JULIA_JSONL"
     if [[ "$HAVE_JULIA" == "1" ]]; then
+        # No placeholder file when Julia does not run: an empty optional output
+        # is not a record, and the renderer rejects empty JSONL.
+        : > "$JULIA_JSONL"
         echo "Running Julia permutation benchmarks (threads=$NUM_THREADS)..."
         assert_benchmark_host_idle
         (
@@ -228,19 +239,20 @@ for NUM_THREADS in "${THREAD_COUNTS[@]}"; do
         if [[ -s "$JULIA_JSONL" ]]; then
             validate_permutation_jsonl "$JULIA_JSONL"
             INPUTS+=("$JULIA_JSONL")
+        else
+            rm -f "$JULIA_JSONL"
         fi
     fi
 done
 
 # ---------------------------------------------------------------------------
-# Format the latest report once, over every thread count's JSONL output.
+# Finalize the run record, then publish it once over every thread count's
+# JSONL output.
 # ---------------------------------------------------------------------------
 echo ""
-echo "Formatting cpu/permutation results as markdown..."
-"${PYTHON[@]}" "$SCRIPT_DIR/format_permutation_results.py" \
-    "${INPUTS[@]}" \
-    --run-metadata "$RUN_YAML" \
-    --output "$LATEST_REPORT"
+echo "Finalizing and publishing the cpu/permutation run..."
+finalize_benchmark_run "$PROJECT_DIR" "$RUN_DIR"
+publish_cpu_runs "$PROJECT_DIR" "$RUN_DIR"
 
 echo ""
 echo "CPU permutation benchmark suite complete: $SUITE_ID"

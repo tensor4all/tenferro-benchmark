@@ -1,0 +1,1 @@
+{"case_id": "loop_matmul_n2", "workload": "loop", "threads": 1, "provider": "blas", "route": "shared-session", "execution_mode": "ProviderDefaultExclusive", "operations_per_sample": 1024, "samples_ns": [1200000, 1210000, 1195000, 1204000, 1199000], "correctness": "passed", "status": "passed", "cov": 0.0053}
