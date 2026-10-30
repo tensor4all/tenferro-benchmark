@@ -9,6 +9,8 @@ on:
 # Smoke-test the benchmark harness against the latest tenferro-rs main.
 # This answers "can we clone tenferro-rs main and run a tiny benchmark?"
 # It is not a regression detector; use the full nightly suites for that.
+# This is the only workflow that follows main: everything else builds the
+# revision in pins/tenferro-rs.rev, so a main-only breakage shows up here first.
 permissions:
   contents: read
 

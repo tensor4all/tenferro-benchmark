@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
+# Each case sets the setup variables it needs; CI jobs export some of them.
+unset TENFERRO_REF TENFERRO_UPDATE TENFERRO_RS_DIR
 
 git_config() {
   git -C "$1" config user.email "benchmark-test@example.com"
@@ -104,3 +106,26 @@ git -C "$TMP/tenferro-rs" checkout -q --detach "$OLD_COMMIT"
   test "$(git -C "$TMP/tenferro-rs" rev-parse HEAD)" = "$OLD_COMMIT"
   test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$NEW_COMMIT"
 )
+
+# Without TENFERRO_REF, an update checks out the revision in pins/tenferro-rs.rev.
+mkdir -p "$TMP/project-pinned/scripts" "$TMP/project-pinned/pins"
+cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project-pinned/scripts/setup_extern_deps.sh"
+cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-pinned/scripts/cpu_blas_provider.sh"
+printf '%s\n' "$OLD_COMMIT" >"$TMP/project-pinned/pins/tenferro-rs.rev"
+
+(
+  cd "$TMP/project-pinned"
+  unset TENFERRO_REF
+  export SETUP_EXTERN_DEPS_SKIP_MAIN=1
+  export TENFERRO_REPO_URL="$TMP/tenferro-rs.git"
+  export TENFERRO_UPDATE=1
+
+  # shellcheck source=/dev/null
+  source scripts/setup_extern_deps.sh
+
+  test "$TENFERRO_REF" = "$OLD_COMMIT"
+  ensure_tenferro_checkout
+  test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$OLD_COMMIT"
+)
+
+test "$(tr -d '[:space:]' <"$ROOT/pins/tenferro-rs.rev")" != ""

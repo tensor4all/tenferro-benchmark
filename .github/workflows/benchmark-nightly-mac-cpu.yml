@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tenferro_ref:
-        description: "tenferro-rs ref to benchmark (default: latest main; pinned once per run)"
+        description: "tenferro-rs ref to benchmark (default: pins/tenferro-rs.rev)"
         required: false
         default: ""
 
@@ -56,7 +56,7 @@ jobs:
 
       - name: Prepare environment and pin tenferro-rs revision
         env:
-          TENFERRO_REF: ${{ inputs.tenferro_ref || 'main' }}
+          TENFERRO_REF: ${{ inputs.tenferro_ref }}
           TENFERRO_UPDATE: "1"
         run: |
           uv sync --frozen || uv sync
