@@ -11,6 +11,8 @@ THREAD_COUNTS=("${@:-1}")
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
 source "$SCRIPT_DIR/thread_env.sh"
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
+# shellcheck source=scripts/publish_run.sh
+source "$SCRIPT_DIR/publish_run.sh"
 export TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-amd-cpu}"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
@@ -89,7 +91,6 @@ for threads in "${THREAD_COUNTS[@]}"; do
         --output "$RUN_DIR/allocations_t${threads}.jsonl" || failed=1
 done
 REPORT_START_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
-export BENCH_REPORT_START_NS="$REPORT_START_NS"
 "$PYTHON" - "$RUN_DIR/wall_phases.json" "$START_NS" "$BUILD_END_NS" "$DIAGNOSTIC_BUILD_START_NS" "$DIAGNOSTIC_BUILD_END_NS" "$REPORT_START_NS" <<'PY'
 import json,sys
 from pathlib import Path
@@ -101,5 +102,6 @@ Path(sys.argv[1]).write_text(json.dumps({'validation_and_latency_build_seconds':
     'command_before_report_seconds':(report-start)/1e9},indent=2)+'\n')
 PY
 cp "$RUN_DIR/run_t${THREAD_COUNTS[0]}.yaml" "$RUN_DIR/run.yaml"
-"$PYTHON" "$SCRIPT_DIR/benchmark_small_work.py" --report "$RUN_DIR" --target-profile "$BENCHMARK_TARGET_PROFILE"
+finalize_benchmark_run "$PROJECT_DIR" "$RUN_DIR"
+publish_cpu_runs "$PROJECT_DIR" "$RUN_DIR"
 exit "$failed"

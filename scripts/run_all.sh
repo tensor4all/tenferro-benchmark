@@ -20,10 +20,12 @@ set -euo pipefail
 #   result/<target_profile>/cpu/linalg_jvp_vjp.md
 #
 # Passing multiple thread counts runs the main einsum / cpu_ops / linalg JVP/VJP
-# path once per thread count, then runs cpu/fft, cpu/public_api, and
-# cpu/permutation once over the same thread-count list. Set RUN_FFT_SUITE=0,
-# RUN_PUBLIC_API_SUITE=0, or RUN_PERMUTATION_SUITE=0 to skip one of those
-# multi-thread-count follow-up suites.
+# path once per thread count, then runs cpu/fft, cpu/public_api, cpu/small_work,
+# cpu/session_matrix, cpu/overhead_smoke and cpu/perf_issues once over the same
+# thread-count list. Set RUN_FFT_SUITE=0, RUN_PUBLIC_API_SUITE=0,
+# RUN_SMALL_WORK_SUITE=0, RUN_OVERHEAD_SMOKE_SUITE=0, RUN_PERF_ISSUES_SUITE=0, or
+# RUN_PERMUTATION_SUITE=0 to skip one of those multi-thread-count follow-up
+# suites.
 #
 # Set RUN_FFT_SUITE=1 in a single-thread-count invocation to also run
 # scripts/run_cpu_fft.sh (the cpu/fft suite) sequentially after CPU ops.
@@ -31,13 +33,18 @@ set -euo pipefail
 # Set RUN_PUBLIC_API_SUITE=1 to also run scripts/run_cpu_public_api.sh (the
 # cpu/public_api suite) sequentially after CPU FFT if enabled.
 #
-# cpu/small_work and cpu/session_matrix run sequentially by default; set
-# RUN_SMALL_WORK_SUITE=0 to skip them. BENCH_COVERAGE=quick|full and BENCH_EFFORT=scan|standard|confirm
-# apply to these suites.
+# cpu/small_work, cpu/session_matrix and cpu/perf_issues run sequentially by
+# default; set RUN_SMALL_WORK_SUITE=0 or RUN_PERF_ISSUES_SUITE=0 to skip them.
+# BENCH_COVERAGE=quick|full and BENCH_EFFORT=scan|standard|confirm apply to
+# these suites.
 #
 # cpu/overhead_smoke (scripts/run_overhead_smoke.sh, one run thread, a few
 # minutes) runs once after them by default; set RUN_OVERHEAD_SMOKE_SUITE=0 to
 # skip it.
+#
+# Each run directory is finalized after collection and then published. Set
+# BENCHMARK_RAW_ONLY=1 to stop after finalization: no report, summary or page is
+# written (see scripts/publish_run.sh).
 #
 # Set RUN_PERMUTATION_SUITE=1 to also run scripts/run_permutation.sh (the
 # cpu/permutation suite) sequentially after everything above completes; see
@@ -48,6 +55,10 @@ NUM_THREADS="${1:-1}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 export BENCHMARK_COMMIT="${BENCHMARK_COMMIT:-$(git -C "$PROJECT_DIR" rev-parse HEAD)}"
+export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_ns())')"
+
+# shellcheck source=scripts/publish_run.sh
+source "$SCRIPT_DIR/publish_run.sh"
 
 if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     THREAD_COUNTS=("$@")
@@ -58,10 +69,20 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
         RUN_ALL_MAIN_ONLY=1 "$0" "$threads"
     done
 
-    if command -v uv >/dev/null 2>&1; then
-        uv run --project "$PROJECT_DIR" python "$SCRIPT_DIR/format_cpu_thread_reports.py" --runs-manifest "$RUN_ALL_COLLECTED_RUNS_FILE" --root "$PROJECT_DIR"
-    else
-        python3 "$SCRIPT_DIR/format_cpu_thread_reports.py" --runs-manifest "$RUN_ALL_COLLECTED_RUNS_FILE" --root "$PROJECT_DIR"
+    # Read the per-thread run directories one line at a time: macOS ships
+    # bash 3.2, which has no array-file builtin. The count keeps an empty file
+    # from expanding an empty array under `set -u`.
+    COLLECTED_CPU_RUNS=()
+    collected_count=0
+    while IFS= read -r collected_run; do
+        [[ -n "$collected_run" ]] || continue
+        COLLECTED_CPU_RUNS+=("$collected_run")
+        collected_count=$((collected_count + 1))
+    done < "$RUN_ALL_COLLECTED_RUNS_FILE"
+    if [[ "$collected_count" -gt 0 ]]; then
+        echo "Publishing the combined CPU pages from: ${COLLECTED_CPU_RUNS[*]}"
+        publish_cpu_runs "$PROJECT_DIR" "${COLLECTED_CPU_RUNS[@]}"
+        echo ""
     fi
 
     if [[ "${RUN_FFT_SUITE:-1}" == "1" ]]; then
@@ -81,6 +102,12 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     if [[ "${RUN_SMALL_WORK_SUITE:-1}" == "1" ]]; then
         "$SCRIPT_DIR/run_small_work.sh" "${THREAD_COUNTS[@]}"
         "$SCRIPT_DIR/run_cpu_session.sh" "${THREAD_COUNTS[@]}"
+    fi
+
+    if [[ "${RUN_PERF_ISSUES_SUITE:-1}" == "1" ]]; then
+        echo "Running cpu/perf_issues suite for threads: ${THREAD_COUNTS[*]}..."
+        "$SCRIPT_DIR/run_perf_issues.sh" "${THREAD_COUNTS[@]}"
+        echo ""
     fi
 
     if [[ "${RUN_OVERHEAD_SMOKE_SUITE:-1}" == "1" ]]; then
@@ -116,6 +143,7 @@ if [[ $# -gt 1 && "${RUN_ALL_MAIN_ONLY:-0}" != "1" ]]; then
     echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/linalg_jvp_vjp.md"
     echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/fft.md"
     echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/public_api.md"
+    echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/perf_issues.md"
     echo "  $PROJECT_DIR/result/$multi_target_profile/cpu/permutation.md"
     exit 0
 fi
@@ -140,11 +168,11 @@ default_target_profile() {
 
 BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-$(default_target_profile)}"
 case "$BENCHMARK_TARGET_PROFILE" in
-    mac-cpu|amd-cpu|zen5-cpu|nvidia-gpu)
+    mac-cpu|amd-cpu|zen5-cpu|zen2-cpu|nvidia-gpu)
         export BENCHMARK_TARGET_PROFILE
         ;;
     *)
-        echo "ERROR: BENCHMARK_TARGET_PROFILE must be mac-cpu, amd-cpu, zen5-cpu, or nvidia-gpu." >&2
+        echo "ERROR: BENCHMARK_TARGET_PROFILE must be mac-cpu, amd-cpu, zen5-cpu, zen2-cpu, or nvidia-gpu." >&2
         exit 1
         ;;
 esac
@@ -204,175 +232,6 @@ write_thread_env_section() {
     done
 }
 
-read_run_yaml_section_scalar() {
-    local run_yaml="$1"
-    local section="$2"
-    local key="$3"
-    awk -v section="$section" -v key="$key" '
-        $0 == section ":" {
-            in_section = 1
-            next
-        }
-        in_section && $0 ~ /^[^[:space:]]/ {
-            exit
-        }
-        in_section {
-            line = $0
-            sub(/^[[:space:]]+/, "", line)
-            if (line ~ "^" key ":[[:space:]]*") {
-                sub("^" key ":[[:space:]]*", "", line)
-                gsub(/^'\''|'\''$/, "", line)
-                gsub(/^"|"$/, "", line)
-                print line
-                exit
-            }
-        }
-    ' "$run_yaml"
-}
-
-write_blas_backend_section() {
-    local run_yaml="$1"
-    local implementation version root library
-    implementation="$(read_run_yaml_section_scalar "$run_yaml" "blas" "implementation")"
-    version="$(read_run_yaml_section_scalar "$run_yaml" "blas" "version")"
-    root="$(read_run_yaml_section_scalar "$run_yaml" "blas" "root")"
-    library="$(read_run_yaml_section_scalar "$run_yaml" "blas" "library")"
-
-    echo "## Tenferro CPU BLAS Backend"
-    echo ""
-    echo "- tenferro-rs features: \`$TENFERRO_CPU_FEATURES\`"
-    if [[ -n "$implementation" ]]; then
-        echo "- BLAS implementation: \`$implementation\`"
-    fi
-    if [[ -n "$version" ]]; then
-        echo "- BLAS version: \`$version\`"
-    fi
-    if [[ -n "$root" ]]; then
-        echo "- BLAS root: \`$root\`"
-    fi
-    if [[ -n "$library" ]]; then
-        echo "- BLAS library: \`$library\`"
-    fi
-}
-
-write_python_backend_section() {
-    local run_yaml="$1"
-    echo "## Python Backend Providers"
-    echo ""
-    run_python_script - "$run_yaml" <<'PY'
-import sys
-from pathlib import Path
-
-try:
-    import yaml
-except Exception as exc:  # noqa: BLE001
-    print(f"- unavailable: PyYAML is not available ({exc})")
-    raise SystemExit(0)
-
-run_path = Path(sys.argv[1])
-try:
-    run = yaml.safe_load(run_path.read_text())
-except Exception as exc:  # noqa: BLE001
-    print(f"- unavailable: failed to read run metadata ({exc})")
-    raise SystemExit(0)
-
-backends = (run or {}).get("python_backends") or {}
-if not backends:
-    print("- unavailable: provider metadata was not collected")
-    raise SystemExit(0)
-
-labels = {"pytorch": "PyTorch", "jax": "JAX"}
-for key in ("pytorch", "jax"):
-    info = backends.get(key) or {}
-    label = labels[key]
-    if not info.get("available"):
-        reason = info.get("reason") or "unavailable"
-        print(f"- {label}: unavailable ({reason})")
-        continue
-    provider = info.get("provider") or "unknown"
-    version = info.get("version") or "unknown"
-    if key == "jax":
-        dot_backend = info.get("dot_backend") or provider
-        details = [f"dot backend `{dot_backend}`", f"version `{version}`"]
-        if info.get("jaxlib_version"):
-            details.append(f"jaxlib `{info['jaxlib_version']}`")
-        if info.get("backend"):
-            details.append(f"default backend `{info['backend']}`")
-        if info.get("lapack_provider"):
-            details.append(f"LAPACK provider `{info['lapack_provider']}`")
-    else:
-        details = [f"BLAS provider `{provider}`", f"version `{version}`"]
-        if info.get("blas_info"):
-            details.append(f"BLAS_INFO `{info['blas_info']}`")
-        if info.get("lapack_info"):
-            details.append(f"LAPACK_INFO `{info['lapack_info']}`")
-        if info.get("backend"):
-            details.append(f"backend `{info['backend']}`")
-    print(f"- {label}: " + ", ".join(details))
-    deps = info.get("linked_libraries") or []
-    if deps:
-        dep_label = "linked LAPACK libs" if key == "jax" else "linked BLAS/LAPACK libs"
-        print(f"  - {dep_label}: " + "; ".join(f"`{dep}`" for dep in deps))
-PY
-}
-
-write_julia_backend_section() {
-    local run_yaml="$1"
-    echo "## Julia / OMEinsum.jl Backend"
-    echo ""
-    run_python_script - "$run_yaml" <<'PY'
-import sys
-from pathlib import Path
-
-try:
-    import yaml
-except Exception as exc:  # noqa: BLE001
-    print(f"- unavailable: PyYAML is not available ({exc})")
-    raise SystemExit(0)
-
-run_path = Path(sys.argv[1])
-try:
-    run = yaml.safe_load(run_path.read_text())
-except Exception as exc:  # noqa: BLE001
-    print(f"- unavailable: failed to read run metadata ({exc})")
-    raise SystemExit(0)
-
-julia = (run or {}).get("julia") or {}
-if not julia.get("available"):
-    reason = julia.get("reason") or "unavailable"
-    print(f"- Julia: unavailable ({reason})")
-    raise SystemExit(0)
-
-details = [f"version `{julia.get('version') or 'unknown'}`"]
-if julia.get("omeinsum_version"):
-    details.append(f"OMEinsum.jl `{julia['omeinsum_version']}`")
-if julia.get("blas_provider"):
-    details.append(f"BLAS provider `{julia['blas_provider']}`")
-if julia.get("threads") is not None:
-    details.append(f"probe threads `{julia['threads']}`")
-print("- Julia: " + ", ".join(details))
-PY
-    echo ""
-    echo "- \`omeinsum-jl\` (mode \`omeinsum_path\` in the log/report) always"
-    echo "  executes the instance's precomputed \`opt_flops\`/\`opt_size\` path via"
-    echo "  \`OMEinsum.DynamicEinCode\` pairwise contractions; OMEinsum's own"
-    echo "  contraction-order optimizer is never invoked, so the comparison"
-    echo "  against tenferro/PyTorch/JAX (which also use the precomputed path)"
-    echo "  stays fair."
-    echo "- \`JULIA_NUM_THREADS\` also pins \`LinearAlgebra.BLAS.set_num_threads\`,"
-    echo "  matching the BLAS thread pinning used by the other CPU backends."
-    echo "- Julia is column-major like tenferro-rs, so the einsum runner uses"
-    echo "  \`format_string_colmajor\` / \`shapes_colmajor\` directly with no"
-    echo "  PyTorch/JAX-style layout reconstruction."
-    echo "- OMEinsum dispatches its pairwise contractions to Julia's own BLAS"
-    echo "  (libblastrampoline, OpenBLAS by default; the provider that ran is"
-    echo "  reported above). When that differs from the provider tenferro-rs and"
-    echo "  PyTorch link against, matmul-shaped rows partly compare BLAS"
-    echo "  implementations rather than einsum-runtime overhead; read them"
-    echo "  together with the recorded providers. \`docs/einsum-suite.md\` records"
-    echo "  the measured OMEinsum-over-its-own-BLAS overhead."
-}
-
 run_python_script() {
     local script="$1"
     shift
@@ -410,126 +269,6 @@ write_run_metadata() {
     run_python_script "$PROJECT_DIR/scripts/collect_run_metadata.py" "${args[@]}"
 }
 
-write_einsum_report() {
-    local report="$1"
-    mkdir -p "$(dirname "$report")"
-    {
-        echo "# Einsum Benchmark Results"
-        echo ""
-        echo "- Suite: \`$CPU_SUITE_ID\`"
-        echo "- Target profile: \`$BENCHMARK_TARGET_PROFILE\`"
-        echo "- Suite file: \`${CPU_SUITE_FILE#$PROJECT_DIR/}\`"
-        echo "- Run metadata: \`${CPU_RUN_YAML#$PROJECT_DIR/}\`"
-        echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
-        echo ""
-        echo "Latest run: \`./scripts/run_all.sh $NUM_THREADS\`."
-        echo ""
-        echo "This file is generated from one suite run under \`${CPU_RUN_DIR#$PROJECT_DIR/}\`."
-        echo ""
-        if [[ -n "$TENFERRO_COMMIT" ]]; then
-            echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
-            echo ""
-        fi
-        write_cpu_info_section
-        echo ""
-        write_thread_env_section
-        echo ""
-        write_blas_backend_section "$CPU_RUN_YAML"
-        echo ""
-        write_python_backend_section "$CPU_RUN_YAML"
-        echo ""
-        write_julia_backend_section "$CPU_RUN_YAML"
-        echo ""
-
-        echo "## Threads: $NUM_THREADS"
-        echo ""
-        echo "- Source table: \`${MARKDOWN_TABLE#$PROJECT_DIR/}\`"
-        echo ""
-        echo "Logs:"
-        echo ""
-        for log in \
-            "$TENFERRO_TRACE_LOG" \
-            "$TENFERRO_EAGER_LOG" \
-            "$PYTORCH_LOG" \
-            "$JAX_LOG" \
-            "$JULIA_LOG"; do
-            [[ -f "$log" && -s "$log" ]] && echo "- \`${log#$PROJECT_DIR/}\`"
-        done
-        echo ""
-        cat "$MARKDOWN_TABLE"
-    } > "$report"
-}
-
-write_linalg_ad_report() {
-    local report="$1"
-    mkdir -p "$(dirname "$report")"
-    {
-        echo "# CPU Linalg JVP/VJP Benchmark Results"
-        echo ""
-        echo "- Suite: \`cpu/linalg_jvp_vjp\`"
-        echo "- Target profile: \`$BENCHMARK_TARGET_PROFILE\`"
-        echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
-        echo ""
-        echo "Latest run: \`./scripts/run_all.sh $NUM_THREADS\`."
-        echo ""
-        echo "Derived from the CPU ops CSV under \`${CPU_RUN_DIR#$PROJECT_DIR/}\`."
-        echo ""
-        if [[ -n "$TENFERRO_COMMIT" ]]; then
-            echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
-            echo ""
-        fi
-        write_cpu_info_section
-        echo ""
-        write_thread_env_section
-        echo ""
-        write_blas_backend_section "$CPU_RUN_YAML"
-        echo ""
-        write_python_backend_section "$CPU_RUN_YAML"
-        echo ""
-        echo "## Threads: $NUM_THREADS"
-        echo ""
-        [[ -f "$CPU_OPS_LOG" ]] && echo "- CSV: \`${CPU_OPS_LOG#$PROJECT_DIR/}\`"
-        echo "- Source table: \`${LINALG_AD_MD#$PROJECT_DIR/}\`"
-        echo ""
-        cat "$LINALG_AD_MD"
-    } > "$report"
-}
-
-write_cpu_report() {
-    local report="$1"
-    mkdir -p "$(dirname "$report")"
-    {
-        echo "# CPU Benchmark Results"
-        echo ""
-        echo "- Suite: \`cpu/cpu_ops\`"
-        echo "- Target profile: \`$BENCHMARK_TARGET_PROFILE\`"
-        echo "- Timestamp: \`$BENCHMARK_TIMESTAMP\`"
-        echo ""
-        echo "Latest run: \`./scripts/run_all.sh $NUM_THREADS\`."
-        echo ""
-        echo "This file is generated from one CPU ops run under \`${CPU_RUN_DIR#$PROJECT_DIR/}\`."
-        echo ""
-        if [[ -n "$TENFERRO_COMMIT" ]]; then
-            echo "- tenferro-rs commit: \`$TENFERRO_COMMIT\`"
-            echo ""
-        fi
-        write_cpu_info_section
-        echo ""
-        write_thread_env_section
-        echo ""
-        write_blas_backend_section "$CPU_RUN_YAML"
-        echo ""
-        write_python_backend_section "$CPU_RUN_YAML"
-        echo ""
-        echo "## Threads: $NUM_THREADS"
-        echo ""
-        [[ -f "$CPU_OPS_LOG" ]] && echo "- CSV: \`${CPU_OPS_LOG#$PROJECT_DIR/}\`"
-        echo "- Source table: \`${CPU_OPS_MD#$PROJECT_DIR/}\`"
-        echo ""
-        cat "$CPU_OPS_MD"
-    } > "$report"
-}
-
 TENFERRO_DIR_FOR_COMMIT="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
 TENFERRO_COMMIT="$(resolve_git_commit "$TENFERRO_DIR_FOR_COMMIT")"
 
@@ -553,6 +292,10 @@ export BENCHMARK_RESULTS_DIR="$CPU_RUN_DIR"
 
 ensure_blas_env_for_features "$TENFERRO_CPU_FEATURES"
 configure_cpu_thread_env "$NUM_THREADS"
+
+# Host and thread-environment snapshots for this run's report header.
+write_cpu_info_section > "$CPU_RUN_DIR/cpu_info.md"
+write_thread_env_section > "$CPU_RUN_DIR/thread_env.txt"
 
 export BENCH_SUITE_FILE="${BENCH_SUITE_FILE:-${CPU_SUITE_FILE#$PROJECT_DIR/}}"
 BENCH_SUITE_INCLUDE="$(resolve_suite_instance_ids "$CPU_SUITE_FILE")"
@@ -613,8 +356,6 @@ fi
 # Focused CPU benchmark items (primal linalg, JVP/VJP on trace, backward on eager)
 # ---------------------------------------------------------------------------
 CPU_OPS_LOG="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.csv"
-CPU_OPS_MD="$CPU_RUN_DIR/cpu_ops_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
-LINALG_AD_MD="$CPU_RUN_DIR/linalg_jvp_vjp_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
 export PUBLICATION_GATE_TENFERRO_MODE="${PUBLICATION_GATE_TENFERRO_MODE:-both}"
 if [[ "${SKIP_CPU_OPS:-0}" != "1" ]]; then
     echo ""
@@ -641,14 +382,13 @@ fi
 write_run_metadata "$CPU_RUN_YAML" "$RUN_TIMESTAMP_RFC3339"
 
 # ---------------------------------------------------------------------------
-# Collect all logs and format as markdown table
+# Collect all logs, then render this run's reports from its recorded inputs
 # ---------------------------------------------------------------------------
 TENFERRO_TRACE_LOG="$CPU_RUN_DIR/tenferro_trace_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 TENFERRO_EAGER_LOG="$CPU_RUN_DIR/tenferro_eager_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 PYTORCH_LOG="$CPU_RUN_DIR/pytorch_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 JAX_LOG="$CPU_RUN_DIR/jax_cpu_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.log"
 # JULIA_LOG is already set above (before the Julia run step); reused here.
-MARKDOWN_TABLE="$CPU_RUN_DIR/einsum_table_t${NUM_THREADS}_${BENCHMARK_TIMESTAMP}.md"
 EINSUM_REPORT="$CPU_RUN_DIR/report.md"
 CPU_REPORT="$CPU_RUN_DIR/cpu_ops_report.md"
 LINALG_AD_REPORT="$CPU_RUN_DIR/linalg_jvp_vjp_report.md"
@@ -660,65 +400,10 @@ LOGS=()
 [ -f "$JAX_LOG" ]            && LOGS+=("$JAX_LOG")
 [ "$HAVE_JULIA" == "1" ] && [ -f "$JULIA_LOG" ] && [ -s "$JULIA_LOG" ] && LOGS+=("$JULIA_LOG")
 
-if [ ${#LOGS[@]} -gt 0 ]; then
-    echo "Formatting einsum results as markdown..."
-    mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_LATEST_REPORT")" "$(dirname "$CPU_OPS_LATEST_REPORT")" "$(dirname "$CPU_LINALG_AD_LATEST_REPORT")"
-    export BENCHMARK_RUN_METADATA="$CPU_RUN_YAML"
-    export BENCHMARK_REPORT_SUMMARY="$CPU_RUN_DIR/einsum.summary.json"
-    if command -v uv >/dev/null 2>&1; then
-        uv run python "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE" \
-            || python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE"
-    else
-        python3 "$PROJECT_DIR/scripts/format_results.py" "${LOGS[@]}" | tee "$MARKDOWN_TABLE"
-    fi
-    unset BENCHMARK_REPORT_SUMMARY BENCHMARK_RUN_METADATA
-
-    write_einsum_report "$EINSUM_REPORT"
-    cp "$EINSUM_REPORT" "$CPU_LATEST_REPORT"
-    if [ -f "$CPU_RUN_DIR/einsum.summary.json" ]; then
-        cp "$CPU_RUN_DIR/einsum.summary.json" "$(dirname "$CPU_LATEST_REPORT")/einsum.summary.json"
-    fi
-    echo ""
-fi
-
-if [ -f "$CPU_OPS_LOG" ]; then
-    echo "Formatting CPU ops results as markdown..."
-    mkdir -p "$CPU_RUN_DIR" "$(dirname "$CPU_OPS_LATEST_REPORT")" "$(dirname "$CPU_LINALG_AD_LATEST_REPORT")"
-    export BENCHMARK_RUN_METADATA="$CPU_RUN_YAML"
-    export BENCHMARK_REPORT_SUMMARY="$CPU_RUN_DIR/cpu_ops.summary.json"
-    if command -v uv >/dev/null 2>&1; then
-        uv run python "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD" \
-            || python3 "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD"
-    else
-        python3 "$PROJECT_DIR/scripts/format_cpu_ops_results.py" "$CPU_OPS_LOG" | tee "$CPU_OPS_MD"
-    fi
-    unset BENCHMARK_REPORT_SUMMARY
-    write_cpu_report "$CPU_REPORT"
-    cp "$CPU_REPORT" "$CPU_OPS_LATEST_REPORT"
-    if [ -f "$CPU_RUN_DIR/cpu_ops.summary.json" ]; then
-        cp "$CPU_RUN_DIR/cpu_ops.summary.json" "$(dirname "$CPU_OPS_LATEST_REPORT")/cpu_ops.summary.json"
-    fi
-
-    export BENCHMARK_REPORT_SUMMARY="$CPU_RUN_DIR/linalg_jvp_vjp.summary.json"
-    if grep -Eq '_jvp,|_vjp,' "$CPU_OPS_LOG"; then
-        if command -v uv >/dev/null 2>&1; then
-            uv run python "$PROJECT_DIR/scripts/format_linalg_ad_results.py" "$CPU_OPS_LOG" | tee "$LINALG_AD_MD" \
-                || python3 "$PROJECT_DIR/scripts/format_linalg_ad_results.py" "$CPU_OPS_LOG" | tee "$LINALG_AD_MD"
-        else
-            python3 "$PROJECT_DIR/scripts/format_linalg_ad_results.py" "$CPU_OPS_LOG" | tee "$LINALG_AD_MD"
-        fi
-        unset BENCHMARK_REPORT_SUMMARY BENCHMARK_RUN_METADATA
-        write_linalg_ad_report "$LINALG_AD_REPORT"
-        cp "$LINALG_AD_REPORT" "$CPU_LINALG_AD_LATEST_REPORT"
-        if [ -f "$CPU_RUN_DIR/linalg_jvp_vjp.summary.json" ]; then
-            cp "$CPU_RUN_DIR/linalg_jvp_vjp.summary.json" "$(dirname "$CPU_LINALG_AD_LATEST_REPORT")/linalg_jvp_vjp.summary.json"
-        fi
-    else
-        unset BENCHMARK_REPORT_SUMMARY BENCHMARK_RUN_METADATA
-        echo "WARNING: no linalg JVP/VJP rows in $CPU_OPS_LOG; skipping linalg_jvp_vjp report." >&2
-    fi
-    echo ""
-fi
+echo "Finalizing and publishing this run from its recorded inputs..."
+finalize_benchmark_run "$PROJECT_DIR" "$CPU_RUN_DIR"
+publish_cpu_runs "$PROJECT_DIR" "$CPU_RUN_DIR"
+echo ""
 
 # Opt-in: cpu/fft suite, run sequentially after CPU ops so FFT timing does not
 # overlap other CPU benchmark processes.
@@ -741,6 +426,10 @@ fi
 if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_SMALL_WORK_SUITE:-1}" == "1" ]]; then
     SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_small_work.sh" "$NUM_THREADS"
     "$SCRIPT_DIR/run_cpu_session.sh" "$NUM_THREADS"
+fi
+
+if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_PERF_ISSUES_SUITE:-1}" == "1" ]]; then
+    SKIP_EXTERN_SETUP=1 "$SCRIPT_DIR/run_perf_issues.sh" "$NUM_THREADS"
 fi
 
 if [[ "${RUN_ALL_MAIN_ONLY:-0}" != "1" && "${RUN_OVERHEAD_SMOKE_SUITE:-1}" == "1" ]]; then
@@ -770,7 +459,6 @@ echo "Results:"
 for log in "${LOGS[@]}"; do
     echo "  $log"
 done
-[ -f "$MARKDOWN_TABLE" ] && echo "  Markdown: $MARKDOWN_TABLE"
 [ -f "$CPU_RUN_YAML" ] && echo "  Run YAML: $CPU_RUN_YAML"
 [ -f "$EINSUM_REPORT" ] && echo "  Report:   $EINSUM_REPORT"
 [ -f "$CPU_LATEST_REPORT" ] && echo "  Latest:   $CPU_LATEST_REPORT"

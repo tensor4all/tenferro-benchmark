@@ -35,7 +35,6 @@ mkdir -p "$RESULTS_DIR"
 
 RAW_LOG="$RESULTS_DIR/publication_gate_${PUBLICATION_GATE_FEATURES}_t${NUM_THREADS}_${PUBLICATION_GATE_PROFILE:-quick}_${PUBLICATION_GATE_SUITE:-all}_${TIMESTAMP}.csv"
 CPU_OPS_LOG="$RESULTS_DIR/cpu_ops_t${NUM_THREADS}_${TIMESTAMP}.csv"
-LINALG_AD_MD="$RESULTS_DIR/linalg_jvp_vjp_t${NUM_THREADS}_${TIMESTAMP}.md"
 export CPU_OPS_RAW_SAMPLES="$RESULTS_DIR/cpu_ops_samples_t${NUM_THREADS}_${TIMESTAMP}.jsonl"
 
 ensure_blas_env_for_features "$PUBLICATION_GATE_FEATURES"
@@ -112,19 +111,14 @@ else
         --output "$CPU_OPS_LOG"
 fi
 
+# Collection only: the run directory is the record, and scripts/render_run.py
+# derives the CPU-ops and linalg JVP/VJP reports from this CSV.
 echo "CPU ops results saved to: $CPU_OPS_LOG"
 if [[ -f "$CPU_OPS_LOG" ]]; then
     linalg_ad_count="$(grep -Ec '_jvp,|_vjp,' "$CPU_OPS_LOG" || true)"
     if [[ -z "$linalg_ad_count" || "$linalg_ad_count" == "0" ]]; then
         echo "WARNING: no linalg JVP/VJP rows found in $CPU_OPS_LOG" >&2
     else
-        echo "Linalg JVP/VJP rows: $linalg_ad_count"
-        if command -v uv >/dev/null 2>&1; then
-            uv run python "$SCRIPT_DIR/format_linalg_ad_results.py" "$CPU_OPS_LOG" > "$LINALG_AD_MD" \
-                || python3 "$SCRIPT_DIR/format_linalg_ad_results.py" "$CPU_OPS_LOG" > "$LINALG_AD_MD"
-        else
-            python3 "$SCRIPT_DIR/format_linalg_ad_results.py" "$CPU_OPS_LOG" > "$LINALG_AD_MD"
-        fi
-        echo "Linalg JVP/VJP markdown saved to: $LINALG_AD_MD"
+        echo "Linalg JVP/VJP rows recorded: $linalg_ad_count"
     fi
 fi

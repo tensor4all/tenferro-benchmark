@@ -11,6 +11,7 @@ defaults:
   device:
     kind: cpu
     ordinal: 0
+  regime: latency
   run:
     warmups: 3
     runs: 15

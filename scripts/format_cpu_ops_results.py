@@ -460,13 +460,18 @@ def format_table(paths: list[Path]) -> str:
 def build_summary(
     paths: list[Path],
     run_metadata: dict | None = None,
+    *,
+    suite_id: str | None = None,
+    run_dir: Path | None = None,
+    cpu_model: str | None = None,
 ) -> dict:
     """Machine-readable sidecar for the same CSV rows the table is built from."""
     header = report_summary.metadata_from_run_metadata(run_metadata)
     hardware = dict(header["hardware"])
+    if cpu_model:
+        hardware["cpu"] = cpu_model
     if not hardware.get("cpu"):
-        cpu_model = (run_metadata or {}).get("environment", {}).get("cpu") if run_metadata else None
-        hardware["cpu"] = cpu_model or "unknown"
+        hardware["cpu"] = "unknown"
     rows = []
     threads_seen: set[int] = set()
     for path in paths:
@@ -502,14 +507,18 @@ def build_summary(
                 )
     if threads_seen:
         hardware["threads"] = sorted(threads_seen)
+    resolved_suite = suite_id or header["suite_id"]
+    if resolved_suite in (None, "", "cpu/einsum"):
+        resolved_suite = "cpu/cpu_ops"
     return report_summary.build_document(
         rows,
         target_profile=header["target_profile"],
-        suite_id=header["suite_id"],
+        suite_id=resolved_suite,
         timestamp=header["timestamp"],
         tenferro_commit=header["tenferro_commit"],
         hardware=hardware,
         unit="ms",
+        **(report_summary.v2_provenance(run_dir, run_metadata) if run_dir is not None else {}),
     )
 
 
@@ -530,8 +539,14 @@ def main() -> None:
         if args.run_metadata
         else report_summary.env_run_metadata()
     )
+    run_dir = args.run_metadata.parent if args.run_metadata else None
     report_summary.maybe_write(
-        build_summary(args.csvfiles, run_metadata),
+        build_summary(
+            args.csvfiles,
+            run_metadata,
+            run_dir=run_dir,
+            cpu_model=report_summary.cpu_model_from_run_dir(run_dir),
+        ),
         summary_path=report_summary.summary_path_for_report(args.output) if args.output else None,
         env=os.environ,
     )

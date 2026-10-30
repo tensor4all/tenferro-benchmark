@@ -1,0 +1,4 @@
+suite,benchmark,dtype,threads,shape,backend,median_ms,iqr_ms,status,notes
+cpu/fft,fft_1d_f64_1024,f64,1,1024,tenferro-fft-executor-cached,0.012345,0.000321,ok,"cached executor; operations_per_sample=512; median_batch_ms=6.320640"
+cpu/fft,fft_1d_f64_1024,f64,1,1024,pytorch-cpu,0.014000,0.000400,ok,"warmed torch.fft"
+cpu/fft_setup,fft_1d_f64_immediate,f64,1,1024,tenferro-fft-immediate,,,unsupported: BENCH_INCLUDE_SETUP_DIAGNOSTICS=1,"one-shot planning"

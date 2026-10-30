@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
-"""Combine explicitly selected CPU run reports without mixing commits or threads."""
-import argparse
+"""Combine explicitly selected CPU run reports without mixing commits or threads.
+
+``combine`` is called by ``scripts/regenerate_report_summaries.py --publish``; the
+published page comes from rendering the selected run directories, never from a
+report copied out of one.
+"""
 import json
 from pathlib import Path
 import re
@@ -70,10 +74,3 @@ def combine(run_dirs, root=Path(".")):
                 json.dumps(merged, indent=2) + "\n"
             )
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--runs-manifest", type=Path, required=True)
-    parser.add_argument("--root", type=Path, default=Path("."))
-    args = parser.parse_args()
-    combine([line for line in args.runs_manifest.read_text().splitlines() if line], args.root)

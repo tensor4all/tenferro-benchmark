@@ -31,13 +31,16 @@ def main():
         phases = json.loads((directory / "wall_phases.json").read_text())
         threads = ",".join(p.stem.removeprefix("run_t") for p in metadata_files)
         features = ",".join(metadata["tenferro_rs"]["features"])
+        command = wall.get("command_seconds_through_collection",
+                           wall.get("command_seconds_before_final_report_write", 0.0))
+        report = wall.get("report_generation_seconds")
         values = [metadata["suite_id"], collection["coverage"], collection["effort"], features, threads,
-                  f"{wall['command_seconds_before_final_report_write']:.3f}",
+                  f"{command:.3f}",
                   f"{phases.get('build_and_checkout_seconds', phases.get('validation_and_latency_build_seconds', 0)):.3f}",
                   f"{phases.get('validation_metadata_and_collection_seconds', phases.get('metadata_and_latency_collection_seconds', 0)):.3f}",
                   f"{phases.get('allocation_diagnostic_build_seconds', 0):.3f}",
                   f"{phases.get('allocation_collection_seconds', 0):.3f}",
-                  f"{wall['report_generation_seconds']:.3f}", wall["budget_seconds"] or "unconfigured",
+                  "—" if report is None else f"{report:.3f}", wall["budget_seconds"] or "unconfigured",
                   wall["budget_status"], f"`{directory.relative_to(ROOT)}`"]
         lines.append("| " + " | ".join(map(str, values)) + " |")
     args.output.parent.mkdir(parents=True, exist_ok=True)

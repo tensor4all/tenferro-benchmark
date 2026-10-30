@@ -1,0 +1,72 @@
+schema_version: 1
+target_profile: mac-cpu
+suite_id: cpu/einsum
+suite_file: benchmarks/cpu/einsum.yaml
+timestamp: '2026-10-18T00:00:01+00:00'
+tenferro_rs:
+  path: /fixture/tenferro-rs
+  commit: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  dirty: false
+  features:
+  - blas-openblas
+harness:
+  path: /fixture
+  commit: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  dirty: false
+host:
+  cpu: Fixture Zen 5 CPU
+  logical_cpus: 24
+  power:
+    cpufreq_boost: '0'
+    governor: performance
+    platform_profile: balanced
+    smt:
+      active: '1'
+      control: auto
+build:
+  toolchain:
+    rustc: rustc 1.90.0
+    rustc_release: 1.90.0
+    rustflags: -C target-cpu=native
+    target_cpu: native
+environment:
+  hostname: fixture-host
+  os: Linux-fixture
+  arch: x86_64
+  cpu: x86_64
+  affinity:
+    pinning: taskset
+    measured_cpus: '0'
+    observer_cpus: 4-11,16-23
+    l3_domains:
+    - 0-3,12-15
+    thread_budget: '1'
+    cpu_boost: disabled
+    scaling_governor: performance
+  env:
+    RAYON_NUM_THREADS: '1'
+    OMP_NUM_THREADS: '1'
+    BENCHMARK_COMMIT: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+blas:
+  implementation: openblas
+  version: 0.3.30
+  root: /opt/openblas
+  library: /opt/openblas/lib/libopenblas.so
+python_backends:
+  pytorch:
+    available: true
+    provider: openblas
+    version: 2.12.0
+  jax:
+    available: true
+    provider: xla_cpu
+    version: 0.10.1
+    jaxlib_version: 0.10.1
+    backend: cpu
+timing_policy:
+  version: 2
+  scope: operation execution
+  setup: inputs outside timer
+  cleanup: outputs retained
+  minimum_untimed_priming_runs: 1
+  setup_diagnostics: false

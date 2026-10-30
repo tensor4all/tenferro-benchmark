@@ -19,6 +19,8 @@ cd "$PROJECT_DIR"
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
 source "$SCRIPT_DIR/thread_env.sh"
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
+# shellcheck source=scripts/publish_run.sh
+source "$SCRIPT_DIR/publish_run.sh"
 export TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-mac-cpu}"
 TENFERRO_DIR="${BENCH_TENFERRO_DIR:-extern/tenferro-rs}"
@@ -77,8 +79,9 @@ for threads in "${THREAD_COUNTS[@]}"; do
     "$PYTHON" scripts/benchmark_cpu_session.py --binary "$BINARY" \
         --threads "$threads" --run-dir "$RUN_DIR" || failed=1
 done
+# Canonical run.yaml for the whole invocation, as the other CPU suites write.
+cp "$RUN_DIR/run_t${THREAD_COUNTS[0]}.yaml" "$RUN_DIR/run.yaml"
 REPORT_START_NS="$($PYTHON -c 'import time; print(time.monotonic_ns())')"
-export BENCH_REPORT_START_NS="$REPORT_START_NS"
 "$PYTHON" - "$RUN_DIR/wall_phases.json" "$START_NS" "$BUILD_END_NS" "$REPORT_START_NS" <<'PY'
 import json,sys
 from pathlib import Path
@@ -87,11 +90,12 @@ Path(sys.argv[1]).write_text(json.dumps({'build_and_checkout_seconds':(build-sta
     'validation_metadata_and_collection_seconds':(report-build)/1e9,
     'command_before_report_seconds':(report-start)/1e9},indent=2)+'\n')
 PY
-if [[ "${BENCH_SKIP_LATEST:-0}" == 1 ]]; then
-    "$PYTHON" scripts/benchmark_cpu_session.py --report --run-dir "$RUN_DIR" \
-        --target-profile "$BENCHMARK_TARGET_PROFILE" --no-latest
+finalize_benchmark_run "$PROJECT_DIR" "$RUN_DIR"
+# A paired run keeps only its own report; BENCHMARK_RAW_ONLY=1 still wins and
+# skips rendering entirely.
+if [[ "${BENCH_SKIP_LATEST:-0}" == 1 && "${BENCHMARK_RAW_ONLY:-0}" != 1 ]]; then
+    render_run_record "$PROJECT_DIR" "$RUN_DIR"
 else
-    "$PYTHON" scripts/benchmark_cpu_session.py --report --run-dir "$RUN_DIR" \
-        --target-profile "$BENCHMARK_TARGET_PROFILE"
+    publish_cpu_runs "$PROJECT_DIR" "$RUN_DIR"
 fi
 exit "$failed"

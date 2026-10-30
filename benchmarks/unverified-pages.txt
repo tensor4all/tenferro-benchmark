@@ -1,0 +1,13 @@
+# Maintained pages whose source run directories are not in git yet. A line is
+# `<page path>  # <reason>`; `scripts/regenerate_report_summaries.py --check`
+# prints them as UNVERIFIED instead of checking their bytes. Remove a line once
+# its raw run records are tracked: nothing is verified until then.
+result/zen5-cpu/cpu/einsum.md             # run records from the measurement host are not imported yet
+result/zen5-cpu/cpu/cpu_ops.md            # run records from the measurement host are not imported yet
+result/zen5-cpu/cpu/linalg_jvp_vjp.md     # run records from the measurement host are not imported yet
+result/zen5-cpu/cpu/public_api.md         # run records from the measurement host are not imported yet
+result/zen5-cpu/cpu/permutation.md        # run records from the measurement host are not imported yet
+result/zen5-cpu/cpu/fft.md                # run records from the measurement host are not imported yet
+result/zen5-cpu/cpu/overhead_smoke.md     # run records from the measurement host are not imported yet
+result/zen5-cpu/cpu/small_work.md         # run records from the measurement host are not imported yet
+result/zen5-cpu/cpu/session_matrix.md     # run records from the measurement host are not imported yet

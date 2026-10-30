@@ -51,7 +51,7 @@
     },
     "schema_version": { "const": 1 },
     "target_profile": {
-      "enum": ["mac-cpu", "mac-gpu", "amd-cpu", "zen5-cpu", "nvidia-gpu"]
+      "enum": ["mac-cpu", "mac-gpu", "amd-cpu", "zen5-cpu", "zen2-cpu", "nvidia-gpu"]
     },
     "suite_id": {
       "type": "string",
@@ -84,6 +84,8 @@
       }
     },
     "environment": { "$ref": "#/$defs/environment" },
+    "host": { "$ref": "#/$defs/host" },
+    "build": { "$ref": "#/$defs/build" },
     "blas": { "$ref": "#/$defs/blas" },
     "resolved_deps": {
       "type": "object",
@@ -95,6 +97,80 @@
     "metal": { "$ref": "#/$defs/metal" }
   },
   "$defs": {
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The `campaign_toolkit.hostinfo` record: the power, NUMA, SMT and L3 facts that decide whether two measurements are comparable. Optional, and fields the host does not expose are null, so the block is recorded wherever the module can run.",
+      "properties": {
+        "cpu": { "type": ["string", "null"] },
+        "logical_cpus": { "type": ["integer", "null"], "minimum": 1 },
+        "power": {
+          "type": ["object", "null"],
+          "description": "Power/frequency controls in force while measuring, read from sysfs when the host exposes them.",
+          "additionalProperties": false,
+          "properties": {
+            "cpufreq_boost": { "type": "string" },
+            "intel_no_turbo": { "type": "string" },
+            "amd_pstate_status": { "type": "string" },
+            "platform_profile": { "type": "string" },
+            "governor": { "type": "string" },
+            "energy_performance_preference": { "type": "string" },
+            "scaling_max_freq_khz": { "type": "string" },
+            "smt": {
+              "type": "object",
+              "description": "Simultaneous multithreading as the kernel reports it, raw strings: `active` is 1 or 0, `control` is on, off, forceoff or notsupported.",
+              "additionalProperties": false,
+              "properties": {
+                "active": { "type": "string" },
+                "control": { "type": "string" }
+              }
+            }
+          }
+        },
+        "numa": {
+          "type": ["object", "null"],
+          "description": "The NUMA layout the host exposed: the node count, which on a Zen 2 host is the NPS setting, and each node's CPU list.",
+          "additionalProperties": false,
+          "required": ["nodes"],
+          "properties": {
+            "nodes": { "type": "integer", "minimum": 1 },
+            "cpulists": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          }
+        },
+        "smt_siblings": {
+          "type": ["array", "null"],
+          "items": { "type": "string" }
+        },
+        "l3_domains": {
+          "type": ["array", "null"],
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How the measured binary was built, as far as the recorder can state it. Optional: manifests recorded before this block existed do not have it.",
+      "properties": {
+        "toolchain": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The compiler and flags in the recorder's environment, which the build inherits; flags set only in a cargo config file are not visible here. `rustc` is the verbatim `rustc -vV`.",
+          "properties": {
+            "rustc": { "type": ["string", "null"] },
+            "rustc_release": { "type": ["string", "null"] },
+            "rustflags": { "type": ["string", "null"] },
+            "target_cpu": {
+              "type": ["string", "null"],
+              "description": "The `-C target-cpu` named by the flags, null when they name none."
+            }
+          }
+        }
+      }
+    },
     "tenferro_rs": {
       "type": "object",
       "required": ["path", "commit", "dirty", "features"],

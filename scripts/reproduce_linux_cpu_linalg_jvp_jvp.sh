@@ -177,13 +177,34 @@ for threads in "${THREAD_COUNTS[@]}"; do
         exit 1
     fi
 
-    source_run_dir="$ROOT/data/results/$RUN_TARGET_PROFILE/cpu/einsum/$timestamp"
-    alias_run_dir="$ROOT/data/results/$REPORT_TARGET_PROFILE/cpu/einsum/$timestamp"
-    if [[ -d "$source_run_dir" ]]; then
-        mkdir -p "$(dirname "$alias_run_dir")"
-        rm -rf "$alias_run_dir"
-        cp -a "$source_run_dir" "$alias_run_dir"
+    # The report header timestamp is RFC3339 while a raw run directory is named
+    # YYYYMMDD_HHMMSS; the published page's summary records the exact run
+    # directory it was rendered from.
+    source_summary="$ROOT/result/$RUN_TARGET_PROFILE/cpu/linalg_jvp_vjp.summary.json"
+    if [[ ! -f "$source_summary" ]]; then
+        echo "Expected source summary was not generated: $source_summary" >&2
+        exit 1
     fi
+    source_run_rel="$(python3 - "$source_summary" <<'PY'
+import json
+import sys
+
+document = json.load(open(sys.argv[1]))
+runs = [entry.get("run") for entry in document.get("source_runs") or [] if entry.get("run")]
+if len(runs) != 1:
+    sys.exit(f"expected exactly one source run, found {runs}")
+print(runs[0])
+PY
+)"
+    source_run_dir="$ROOT/$source_run_rel"
+    if [[ ! -d "$source_run_dir" ]]; then
+        echo "The summary names a missing raw run: $source_run_dir" >&2
+        exit 1
+    fi
+    alias_run_dir="$ROOT/data/results/$REPORT_TARGET_PROFILE/cpu/einsum/$(basename "$source_run_dir")"
+    mkdir -p "$(dirname "$alias_run_dir")"
+    rm -rf "$alias_run_dir"
+    cp -a "$source_run_dir" "$alias_run_dir"
 
     tmp_report="$(mktemp "${TMPDIR:-/tmp}/linux-cpu-linalg-jvp-jvp.${threads}.XXXXXX.md")"
     rewrite_report "$source_report" "$tmp_report" "$reproduce_cmd"

@@ -79,7 +79,9 @@ def source_from_api(run: dict, artifact: dict) -> tuple[str, dict]:
 
 
 def validate_summary(document: dict, profile: str, entry: dict) -> None:
-    if document.get('schema_version') != 1:
+    # Version 2 adds the recorded source runs and timing policy; the identity
+    # and row checks below are the same for both versions.
+    if document.get('schema_version') not in (1, 2):
         raise ValueError('Unsupported summary schema')
     for key, expected in [('target_profile', profile), ('suite_id', entry['suite_id']),
                           ('tenferro_commit', entry['tenferro_commit']), ('hardware', entry['hardware'])]:

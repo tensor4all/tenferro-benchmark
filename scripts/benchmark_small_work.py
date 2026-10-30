@@ -14,7 +14,7 @@ import yaml
 from benchmark_layout import safe_target_profile
 import bench_selection
 import case_status as cs
-from benchmark_wall import record_report_wall
+import report_summary
 from suite_instances import resolve_suite_instance_ids
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -167,12 +167,76 @@ def shape_label(row):
     return f"`{row['subscripts']}` {operands} → {shape}"
 
 
-def report(run_dir, target):
-    run_dir = run_dir.resolve()
+def build_summary(run_dir, *, cpu_model=None):
+    """Machine-readable sidecar for the same records the report is built from."""
+    run_dir = Path(run_dir).resolve()
+    metadata = {}
+    run_yaml = run_dir / "run.yaml"
+    if run_yaml.is_file():
+        metadata = yaml.safe_load(run_yaml.read_text()) or {}
+    rows = []
+    threads = set()
+    for path in sorted(run_dir.glob("samples_t*.jsonl")):
+        for line in path.read_text().splitlines():
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            samples = record.get("samples", [])
+            values = [sample["elapsed_ns"] / sample["iterations"] for sample in samples]
+            verified = record.get("correctness_status") == "passed"
+            status = "ok" if verified and values else "failed"
+            reason = record.get("unsupported_reason") or record.get("reason") or record.get("error")
+            if record.get("status") == "unsupported" and reason:
+                status = "unsupported"
+            quartiles = (
+                statistics.quantiles(values, n=4, method="inclusive")
+                if len(values) > 1
+                else [values[0]] * 3 if values else []
+            )
+            threads.add(int(record["threads"]))
+            rows.append(
+                report_summary.make_row(
+                    record["case_id"],
+                    "tenferro-" + record["api_tier"],
+                    statistics.median(values) if status == "ok" else None,
+                    status=status,
+                    verified=verified,
+                    iqr=quartiles[2] - quartiles[0] if quartiles and status == "ok" else None,
+                    group=f"threads={record['threads']}",
+                    reason=reason,
+                )
+            )
+    header = report_summary.metadata_from_run_metadata(metadata)
+    hardware = dict(header["hardware"])
+    if cpu_model:
+        hardware["cpu"] = cpu_model
+    hardware.setdefault("cpu", "unknown")
+    if threads:
+        hardware["threads"] = sorted(threads)
+    return report_summary.build_document(
+        rows,
+        target_profile=header["target_profile"],
+        suite_id="cpu/small_work",
+        timestamp=header["timestamp"],
+        tenferro_commit=header["tenferro_commit"],
+        hardware=hardware,
+        unit="ns",
+        **report_summary.v2_provenance(run_dir, metadata),
+    )
+
+
+def merged_case_status(run_dir):
+    parts = [json.loads(path.read_text()) for path in sorted(Path(run_dir).glob("case_status_t*.json"))]
+    return cs.merge_case_status(parts) if parts else None
+
+
+def render_report(run_dir, target):
+    """Report text built only from files recorded in the run directory."""
+    run_dir = Path(run_dir).resolve()
     rows = [json.loads(line) for path in sorted(run_dir.glob("samples_t*.jsonl"))
             for line in path.read_text().splitlines()]
     lines = ["# CPU Small-Work Benchmark Results", "", "- Suite: `cpu/small_work`",
-             f"- Raw run: `{run_dir.relative_to(ROOT)}`", ""]
+             f"- Raw run: `{report_summary.repo_relative(run_dir)}`", ""]
     cpu_info = run_dir / "cpu_info.md"
     if cpu_info.exists():
         lines += [cpu_info.read_text().rstrip(), ""]
@@ -182,12 +246,10 @@ def report(run_dir, target):
     for path in sorted(run_dir.glob("run_t*.yaml")):
         metadata = yaml.safe_load(path.read_text())
         conditions = {k: metadata[k] for k in ("timestamp", "tenferro_rs", "blas", "environment") if k in metadata}
-        lines += [f"## {path.stem}", "", f"Full metadata: `{path.relative_to(ROOT)}`", "",
+        lines += [f"## {path.stem}", "", f"Full metadata: `{report_summary.repo_relative(path)}`", "",
                   "```yaml", yaml.safe_dump(conditions, sort_keys=False).rstrip(), "```", ""]
-    parts = [json.loads(p.read_text()) for p in sorted(run_dir.glob("case_status_t*.json"))]
-    if parts:
-        status = cs.merge_case_status(parts)
-        cs.write_case_status(run_dir / "case_status.json", status)
+    status = merged_case_status(run_dir)
+    if status:
         lines += cs.markdown_section(status)
     passed = sum(r["correctness_status"] == "passed" for r in rows)
     lines += [f"Numerical checks: **{passed}/{len(rows)} recorded rows passed** (case × thread count).", ""]
@@ -267,14 +329,24 @@ def report(run_dir, target):
     for row in rows:
         if row.get("error"):
             lines += ["", f"### FAILED: {row['case_id']} ({row['threads']} threads)", "```", row["error"], "```"]
-    record_report_wall(run_dir)
     for path in sorted(run_dir.glob('wall*.json')):
         lines += ['', f'Wall observations `{path.name}`:', '```json', path.read_text().rstrip(), '```']
-    text = "\n".join(lines) + "\n"
+    return "\n".join(lines) + "\n"
+
+
+def report(run_dir, target):
+    run_dir = Path(run_dir).resolve()
+    text = render_report(run_dir, target)
+    document = build_summary(run_dir, cpu_model=report_summary.cpu_model_from_run_dir(run_dir))
+    status = merged_case_status(run_dir)
+    if status:
+        cs.write_case_status(run_dir / "case_status.json", status)
     (run_dir / "report.md").write_text(text)
+    report_summary.write_document(run_dir / "small_work.summary.json", document)
     latest = ROOT / "result" / safe_target_profile(target) / "cpu/small_work.md"
     latest.parent.mkdir(parents=True, exist_ok=True)
     latest.write_text(text)
+    report_summary.write_document(report_summary.summary_path_for_report(latest), document)
     print(latest)
 
 

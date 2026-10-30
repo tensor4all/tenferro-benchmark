@@ -92,7 +92,7 @@ def collect(binary, output, threads):
     return failed
 
 
-def build_summary(records, metadata):
+def build_summary(records, metadata, *, run_dir=None, cpu_model=None):
     """Rebuild ns/op and allocator trends from original retained-output samples."""
     rows = []
     for record in records:
@@ -122,8 +122,15 @@ def build_summary(records, metadata):
             row[key] = value
         rows.append(row)
     header = report_summary.metadata_from_run_metadata(metadata)
+    if cpu_model:
+        header["hardware"]["cpu"] = cpu_model
     header["hardware"]["threads"] = sorted({record["threads"] for record in records})
-    return report_summary.build_document(rows, **header, unit="ns")
+    return report_summary.build_document(
+        rows,
+        **header,
+        unit="ns",
+        **(report_summary.v2_provenance(run_dir, metadata) if run_dir is not None else {}),
+    )
 
 
 def summary(row):
@@ -180,8 +187,8 @@ def report_table(rows):
     return lines
 
 
-def report(run_dir, target):
-    safe_target_profile(target)
+def render_report(run_dir, target):
+    """Report text and summary built only from files recorded in the run directory."""
     run_dir = run_dir.resolve()
     rows = [
         json.loads(line)
@@ -194,8 +201,9 @@ def report(run_dir, target):
         "",
         f"- Suite: `{SUITE_ID}`",
         f"- Target profile: `{target}`",
-        f"- Raw run: `{run_dir.relative_to(ROOT)}`",
+        f"- Raw run: `{report_summary.repo_relative(run_dir)}`",
     ]
+    metadata = {}
     run_yaml = run_dir / "run.yaml"
     if run_yaml.exists():
         metadata = yaml.safe_load(run_yaml.read_text())
@@ -297,20 +305,32 @@ def report(run_dir, target):
         lines += [
             "## Run metadata",
             "",
-            f"Full metadata: `{run_yaml.relative_to(ROOT)}`",
+            f"Full metadata: `{report_summary.repo_relative(run_yaml)}`",
             "",
             "```yaml",
             yaml.safe_dump(conditions, sort_keys=False).rstrip(),
             "```",
             "",
         ]
-    text = "\n".join(lines)
+    document = build_summary(
+        rows,
+        metadata,
+        run_dir=run_dir,
+        cpu_model=report_summary.cpu_model_from_run_dir(run_dir),
+    )
+    return "\n".join(lines), document
+
+
+def report(run_dir, target):
+    safe_target_profile(target)
+    run_dir = Path(run_dir).resolve()
+    text, document = render_report(run_dir, target)
     (run_dir / "report.md").write_text(text)
-    latest = ROOT / "result" / target / "cpu" / "overhead_smoke.md"
+    report_summary.write_document(run_dir / "report.summary.json", document)
+    report_summary.write_document(run_dir / f"{Path(SUITE_ID).name}.summary.json", document)
+    latest = ROOT / "result" / safe_target_profile(target) / "cpu" / "overhead_smoke.md"
     latest.parent.mkdir(parents=True, exist_ok=True)
     latest.write_text(text)
-    document = build_summary(rows, metadata if run_yaml.exists() else {})
-    report_summary.write_document(run_dir / "report.summary.json", document)
     report_summary.write_document(latest.with_suffix(".summary.json"), document)
     print(latest)
 

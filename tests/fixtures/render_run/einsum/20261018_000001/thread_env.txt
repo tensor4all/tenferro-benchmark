@@ -1,0 +1,6 @@
+## Thread Environment
+
+- OMP_NUM_THREADS: `1`
+- RAYON_NUM_THREADS: `1`
+- OPENBLAS_NUM_THREADS: `1`
+- XLA_FLAGS: `--xla_cpu_multi_thread_eigen=false`

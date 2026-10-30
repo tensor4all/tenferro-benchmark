@@ -11,7 +11,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 THREADS=1
+export BENCH_COMMAND_START_NS="$(python3 -c 'import time; print(time.monotonic_ns())')"
 source "$SCRIPT_DIR/cpu_blas_provider.sh"
+# shellcheck source=scripts/publish_run.sh
+source "$SCRIPT_DIR/publish_run.sh"
 source "$SCRIPT_DIR/thread_env.sh"
 source "$SCRIPT_DIR/benchmark_host_idle.sh"
 export TENFERRO_CPU_FEATURES="$(normalize_cpu_blas_features "${TENFERRO_CPU_FEATURES:-}")"
@@ -62,5 +65,6 @@ assert_benchmark_host_idle
 failed=0
 "$PYTHON" "$SCRIPT_DIR/benchmark_overhead_smoke.py" --binary "$BINARY" \
     --threads "$THREADS" --output "$RUN_DIR/samples_t${THREADS}.jsonl" || failed=1
-"$PYTHON" "$SCRIPT_DIR/benchmark_overhead_smoke.py" --report "$RUN_DIR" --target-profile "$BENCHMARK_TARGET_PROFILE"
+finalize_benchmark_run "$PROJECT_DIR" "$RUN_DIR"
+publish_cpu_runs "$PROJECT_DIR" "$RUN_DIR"
 exit "$failed"

@@ -131,6 +131,59 @@ class PerfIssueSuiteTest(unittest.TestCase):
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_default_regime_comes_from_the_run_record(self):
+        """A row without its own regime is classified by what the run recorded."""
+        import yaml
+
+        row = dict(gen.cpu_umbrella_cases()[0], case_id="unlabelled-case", threads=1,
+                   measurement_scope="steady_state", correctness_status="passed",
+                   samples=[dict(elapsed_ns=2000, iterations=8)])
+        row.pop("regime", None)
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp) / "run"
+            run.mkdir()
+            (run / "samples_t1.jsonl").write_text(json.dumps(row) + "\n")
+            metadata = {"schema_version": 1, "target_profile": "zen5-cpu",
+                        "suite_id": "cpu/perf_issues",
+                        "collection": {"default_regime": "latency"}}
+            (run / "run.yaml").write_text(yaml.safe_dump(metadata, sort_keys=False))
+            text = suite.render_report(run, "zen5-cpu")
+        # The current suite file declares throughput; the recorded default wins.
+        self.assertIn("### Latency and per-call overhead", text)
+        self.assertNotIn("### Compute- and bandwidth-bound operations", text)
+
+    def test_default_regime_falls_back_to_the_harness_commit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            def git(*arguments):
+                return subprocess.run(["git", "-C", str(root), *arguments],
+                                      check=True, capture_output=True, text=True)
+
+            git("init", "-q", "-b", "main")
+            git("config", "user.email", "fixture@example.invalid")
+            git("config", "user.name", "fixture")
+            suite_path = root / "benchmarks/cpu/perf_issues.yaml"
+            suite_path.parent.mkdir(parents=True)
+            suite_path.write_text("schema_version: 1\ndefaults:\n  regime: latency\n")
+            git("add", "-A")
+            git("commit", "-q", "-m", "record the collected suite")
+            commit = git("rev-parse", "HEAD").stdout.strip()
+            # The checkout moves on: the current file no longer declares latency.
+            suite_path.write_text("schema_version: 1\ndefaults:\n  regime: throughput\n")
+            with patch.object(suite, "ROOT", root), patch.dict(
+                    suite.SUITES, {"cpu": (suite_path, ROOT / "benchmarks/cpu/manifests/perf_issues.yaml",
+                                        "cpu/perf_issues")}):
+                self.assertEqual(
+                    suite.recorded_default_regime(
+                        root, {"harness": {"commit": commit}, "collection": {}}, "cpu"),
+                    "latency",
+                )
+                # Without a readable harness revision the current file is the last resort.
+                self.assertEqual(
+                    suite.recorded_default_regime(root, {"collection": {}}, "cpu"), "throughput"
+                )
+
     def test_steady_report_separates_latency_and_throughput(self):
         cases = json.loads((ROOT / 'data/instances/gpu_perf_issues.json').read_text())
         base = next(c for c in cases if c['kind'] == 'linalg_readback_latency')

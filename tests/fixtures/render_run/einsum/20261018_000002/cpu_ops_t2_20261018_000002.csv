@@ -1,0 +1,3 @@
+suite,benchmark,dtype,threads,shape,backend,median_ms,iqr_ms,sampling_policy,status
+small,matmul,f64,2,64x64,tenferro-eager,0.027213,0.000661,bounded_batch_shared_cpu,ok
+large,solve_jvp,f64,2,256x256,tenferro-trace,2.294136,0.019444,bounded_batch_shared_cpu,ok

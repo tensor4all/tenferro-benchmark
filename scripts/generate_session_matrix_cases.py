@@ -331,6 +331,7 @@ def suite_yaml(ids: list[str]) -> str:
             "session_matrix.yaml; effort (scan/standard/confirm) is chosen separately."),
         "defaults": {
             "device": {"kind": "cpu", "ordinal": 0},
+            "regime": "latency",
             "run": {"warmups": 3, "runs": 15, "min_runtime_ms": 1,
                     "timing_scope": "steady_state_host_api"},
             "effort": {"scan": {"warmups": 1, "runs": 3}},

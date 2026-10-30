@@ -3,6 +3,7 @@ name = "tenferro-runpod-runtime"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "campaign-toolkit",
     "einsum-benchmark>=0.1.7",
     "jax>=0.10.1",
     "jsonschema>=4.0.0",
@@ -26,3 +27,4 @@ explicit = true
 
 [tool.uv.sources]
 torch = { index = "pytorch-cu128" }
+campaign-toolkit = { git = "https://github.com/tensor4all/campaign-toolkit", rev = "bed620651a1428fd8e29810567073a3a680280bc" }
