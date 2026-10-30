@@ -232,7 +232,7 @@ class PerfIssueSuiteTest(unittest.TestCase):
                 self.assertTrue(all(not c["params"]["instrument"] for c in streams))
                 allocation_controls = [cases[i] for i in selected
                                        if cases[i]["measurement_scope"] == "session_entry_diagnostic"]
-                self.assertEqual(len(allocation_controls), 10)
+                self.assertEqual(len(allocation_controls), 5)
                 self.assertTrue(all(c["kind"] == "alloc_zero" for c in allocation_controls))
 
     def test_dispatch_regressions_have_matched_latency_references(self):
@@ -349,15 +349,16 @@ class PerfIssueSuiteTest(unittest.TestCase):
                            samples=[dict(sample_index=0, elapsed_ns=123456, iterations=1)])
             counter = dict(base, case_id="stream-counters", measurement_scope="counter_diagnostic", samples=[],
                            counter_observations=[dict(phase="completion", stats=dict(
-                               plans=dict(entries=8, hits=0, misses=8, evictions=0, retained_bytes=4096),
-                               workspace=dict(bytes=2048), retirement=dict(in_flight=0)))])
+                               device=dict(live_bytes=4096, pool_reserved_bytes=8192),
+                               retirement=dict(pending_bytes=0, allocations=8, launches=2),
+                               artifact_cache=dict(entries=1), module_cache=dict(entries=1)))])
             (run_dir / "samples_t1.jsonl").write_text(json.dumps(latency) + "\n" + json.dumps(counter) + "\n")
             with patch.object(suite, "ROOT", Path(tmp)):
                 suite.report(run_dir, "nvidia-gpu", "gpu")
             text = (Path(tmp) / "result/nvidia-gpu/gpu/perf_issues.md").read_text()
             self.assertIn("Median ns/sequence", text)
             self.assertIn('"lhs_strides":[1,16,32]', text)
-            self.assertIn("| completion | — | — | 8 | 0 | 8 | 0 | 4096 | 2048 | 0 |", text)
+            self.assertIn("| completion | — | — | 4096 | 8192 | 0 | 8 | 2 | 1 | 1 |", text)
             self.assertNotIn("stream-counters |", text)
 
     def test_failed_binary_is_a_failed_row(self):

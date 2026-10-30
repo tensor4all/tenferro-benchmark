@@ -9,8 +9,8 @@
 //!   `CudaBackend` (compact col-major source only)
 //! - `tenferro-cuda-to-contiguous`: `TypedTensor::backend_region_view` (over
 //!   the source layout) + `TypedTensorView::transpose_view(perm)` +
-//!   `TensorViewCanonicalization::to_contiguous` (accepts arbitrary source
-//!   strides), mirroring the CPU runner's view composition
+//!   `CudaEngine::to_contiguous_view` (accepts arbitrary source strides),
+//!   mirroring the CPU runner's view composition
 //! - `tenferro-cuda-destination-reuse`: public
 //!   `TensorStructural::copy_read_into` from a compact source into an
 //!   inverse-permuted caller-owned destination view
@@ -56,8 +56,7 @@ use serde::{Deserialize, Serialize};
 
 use tenferro_gpu::cuda::{download_tensor, gpu_available, upload_tensor, CudaEngine};
 use tenferro_tensor::{
-    Tensor, TensorRead, TensorStructural, TensorViewCanonicalization, TensorViewMut, TensorWrite,
-    TypedTensor,
+    Tensor, TensorRead, TensorStructural, TensorViewMut, TensorWrite, TypedTensor,
 };
 
 /// Borrow the caller-held CUDA engine for one operation sequence.
@@ -805,7 +804,7 @@ fn finish_skip(record: ResultRecord, sink: &mut RecordSink) {
 // Raw-control cuTENSOR permutation FFI (dlopen). tenferro-gpu's production
 // FFI binds contraction and permutation, but those internals and cached plan
 // types are intentionally private. Style mirrors
-// extern/tenferro-rs/crates/tenferro-gpu/src/cubecl/ffi/cutensor.rs, with
+// extern/tenferro-rs/crates/tenferro-gpu/src/cuda/cutensor.rs, with
 // the extra function pointer surfaced by
 // extern/tenferro-rs/docs/plans/2026-02-23-cuda-backend-impl-plan.md
 // (`cutensorCreatePermutation` / `cutensorPermute`, ~line 385).
@@ -1343,12 +1342,14 @@ fn run_tenferro_cuda_transpose(
 #[allow(clippy::too_many_arguments)]
 /// tenferro-rs #1946 F6 moved view canonicalization off the backend owner onto
 /// the entered session. The owner method used to enter once per call, so each
-/// timed call still enters its own session.
+/// timed call still enters its own session. tenferro-gpu v0.8.0 renamed the
+/// typed form to `CudaEngine::to_contiguous_view` (the borrowed-view overload of
+/// `to_contiguous`).
 fn cuda_to_contiguous(
     backend: &mut CudaEngine,
     view: &tenferro_tensor::TypedTensorView<'_, f64>,
 ) -> tenferro_tensor::Result<TypedTensor<f64>> {
-    backend.with_backend_session(|session| session.to_contiguous(view))
+    backend.with_backend_session(|session| session.to_contiguous_view(view))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1485,8 +1486,26 @@ fn run_tenferro_cuda_destination_reuse(
         })
     };
 
-    execute(backend, &mut gpu_destination)
-        .expect("CudaEngine::copy_read_into must succeed on a validated pattern");
+    // A destination view the backend cannot serve (e.g. wider than its layout
+    // rank) is a recorded skip with tenferro's reason, not an abort of the
+    // whole run.
+    if let Err(error) = execute(backend, &mut gpu_destination) {
+        finish_skip(
+            base_record(
+                pattern,
+                name,
+                total,
+                bytes,
+                device_name,
+                "skipped",
+                "skipped",
+                false,
+            )
+            .with_note(format!("CudaEngine::copy_read_into rejected this destination: {error}")),
+            sink,
+        );
+        return;
+    }
     if let Err(msg) = prepared.check_output(backend, &gpu_destination) {
         finish_skip(
             base_record(

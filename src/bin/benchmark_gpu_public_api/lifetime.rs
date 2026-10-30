@@ -4,28 +4,59 @@ use serde_json::{json, Value};
 use std::{fs, io::Write, path::Path};
 use tenferro_fft::FftExecutor;
 use tenferro_gpu::cuda::{CudaDeviceId, CudaEngine};
-use tenferro_tensor::CacheStats;
+use tenferro_runtime::ExecutionEngine;
 
-fn cache(stats: CacheStats) -> Value {
+/// The engine's extension-owned caches, read and put back in place.
+///
+/// tenferro-gpu v0.8.0 borrows the cache store from the engine for the length
+/// of one operation (`ExecutionEngine::take_extension_caches` /
+/// `restore_extension_caches`), so a snapshot takes it out, reads its counters
+/// and restores it unchanged. The store is moved, never re-planned.
+fn extension_cache(backend: &mut CudaEngine) -> Value {
+    let store = backend.take_extension_caches();
+    let stats = store.stats(tenferro_runtime::ExtensionCacheSelector::All);
+    backend.restore_extension_caches(store);
     json!({"entries":stats.entries,"retained_bytes":stats.retained_bytes,
-           "hits":stats.hits,"misses":stats.misses,"evictions":stats.evictions,"clears":stats.clears})
+           "hits":stats.hits,"misses":stats.misses,"evictions":stats.evictions,
+           "clears":stats.clears})
 }
-pub(super) fn snapshot(backend: &CudaEngine) -> Result<Value> {
+
+/// Public counters of one untimed observation.
+///
+/// tenferro-gpu v0.8.0's kernel-catalogue cutover removed the cuTENSOR plan
+/// cache, permutation-plan cache, vendor workspace and workspace-retirement
+/// counters from the engine: a plan cache is now private to the engine's
+/// cuTENSOR handle, has no public capacity knob and is not reachable from a
+/// downstream crate. The public counters below replace them: the runtime's
+/// device/pool/pending accounting, its artifact and module caches, and the
+/// extension-owned cache store.
+pub(super) fn snapshot(backend: &mut CudaEngine) -> Result<Value> {
     let rt = backend.runtime();
     let (free, total) = rt.with_current_context(
         "benchmark.counter_memory",
         cudarc::driver::result::mem_get_info,
     )??;
-    let workspace = backend.cutensor_workspace_stats()?;
-    let retirement = backend.cutensor_workspace_retirement_stats()?;
+    let stats = rt.stats();
+    let extensions = extension_cache(backend);
+    let rt = backend.runtime();
     Ok(json!({"driver_free_bytes":free,"driver_total_bytes":total,
-        "cuda_extensions":cache(backend.cuda_extension_cache_stats()?),
-        "cutensor_plans":cache(backend.cutensor_plan_cache_stats()?),
-        "permutation_plans":cache(backend.cutensor_permutation_plan_cache_stats()?),
-        "workspace":{"retained_entries":workspace.retained_entries,"retained_bytes":workspace.retained_bytes},
-        "workspace_retirement":{"deferred":retirement.deferred,"released":retirement.released,
-            "barrier_fallbacks":retirement.barrier_fallbacks,"leaked":retirement.leaked,
-            "in_flight":retirement.in_flight,"max_in_flight":retirement.max_in_flight},
+        "cuda_extensions":extensions,
+        "device":{"live_allocations":stats.live_allocations,"live_bytes":stats.live_bytes,
+            "pool_used_bytes":stats.pool_used_bytes,
+            "pool_reserved_bytes":stats.pool_reserved_bytes,
+            "idle_pinned_bytes":stats.idle_pinned_bytes},
+        "retirement":{"pending_bytes":stats.retirement.pending_bytes,
+            "module_bytes":stats.retirement.module_bytes,
+            "pending_records":stats.retirement.pending_records,
+            "epochs":stats.retirement.epochs,"frontiers":stats.retirement.frontiers,
+            "reclaimed_epochs":stats.retirement.reclaimed_epochs,
+            "launches":stats.retirement.launches,"allocations":stats.retirement.allocations,
+            "zero_fills":stats.retirement.zero_fills,
+            "events_recorded":stats.retirement.events_recorded},
+        "artifact_cache":{"entries":stats.artifact_entries,"bytes":stats.artifact_bytes},
+        "module_cache":{"entries":stats.module_entries,"bytes":stats.module_bytes},
+        "compile_attempts":rt.compile_attempts(),"module_loads":rt.module_loads(),
+        "artifact_cache_hits":rt.artifact_cache_hits(),
         "pending_transfer_retirements":rt.pending_transfer_retirements(),
         "output_pool":{"status":"unavailable","reason":"No public output-pool stats/clear API; driver free memory covers the whole device, not just that pool"}}))
 }

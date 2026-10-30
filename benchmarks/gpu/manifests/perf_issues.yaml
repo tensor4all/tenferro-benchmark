@@ -3,7 +3,7 @@
 # explicitly labelled diagnostics (per-call session entry, eager AD workflows,
 # counter runs). Bump MANIFEST_VERSION in the generator on any change.
 # GPU quick also includes fixed/mixed/fresh sequence and allocation-entry controls.
-manifest_version: 8
+manifest_version: 9
 suite_id: gpu/perf_issues
 source: data/instances/gpu_perf_issues.json
 generated_by: scripts/generate_perf_issue_cases.py
@@ -60,23 +60,18 @@ coverage:
   - alloc_zero_f64_alloc-zero-within-callback_0el
   - alloc_zero_f64_alloc-zero-per-callback_0el
   - alloc_zero_f64_host-zero-upload_0el
-  - alloc_zero_f64_alloc-fill-per-callback_0el
   - alloc_zero_f64_alloc-zero-within-callback_16el
   - alloc_zero_f64_alloc-zero-per-callback_16el
   - alloc_zero_f64_host-zero-upload_16el
-  - alloc_zero_f64_alloc-fill-per-callback_16el
   - alloc_zero_f64_alloc-zero-within-callback_512el
   - alloc_zero_f64_alloc-zero-per-callback_512el
   - alloc_zero_f64_host-zero-upload_512el
-  - alloc_zero_f64_alloc-fill-per-callback_512el
   - alloc_zero_f64_alloc-zero-within-callback_32768el
   - alloc_zero_f64_alloc-zero-per-callback_32768el
   - alloc_zero_f64_host-zero-upload_32768el
-  - alloc_zero_f64_alloc-fill-per-callback_32768el
   - alloc_zero_f64_alloc-zero-within-callback_2097152el
   - alloc_zero_f64_alloc-zero-per-callback_2097152el
   - alloc_zero_f64_host-zero-upload_2097152el
-  - alloc_zero_f64_alloc-fill-per-callback_2097152el
   - small_blocks_gemm_f64_loop_n8_count256
   - small_blocks_gemm_f64_batched_n8_count256
   - small_blocks_gemm_f64_loop_n16_count256
@@ -222,23 +217,18 @@ coverage:
   - alloc_zero_f64_alloc-zero-within-callback_0el
   - alloc_zero_f64_alloc-zero-per-callback_0el
   - alloc_zero_f64_host-zero-upload_0el
-  - alloc_zero_f64_alloc-fill-per-callback_0el
   - alloc_zero_f64_alloc-zero-within-callback_16el
   - alloc_zero_f64_alloc-zero-per-callback_16el
   - alloc_zero_f64_host-zero-upload_16el
-  - alloc_zero_f64_alloc-fill-per-callback_16el
   - alloc_zero_f64_alloc-zero-within-callback_512el
   - alloc_zero_f64_alloc-zero-per-callback_512el
   - alloc_zero_f64_host-zero-upload_512el
-  - alloc_zero_f64_alloc-fill-per-callback_512el
   - alloc_zero_f64_alloc-zero-within-callback_32768el
   - alloc_zero_f64_alloc-zero-per-callback_32768el
   - alloc_zero_f64_host-zero-upload_32768el
-  - alloc_zero_f64_alloc-fill-per-callback_32768el
   - alloc_zero_f64_alloc-zero-within-callback_2097152el
   - alloc_zero_f64_alloc-zero-per-callback_2097152el
   - alloc_zero_f64_host-zero-upload_2097152el
-  - alloc_zero_f64_alloc-fill-per-callback_2097152el
   - small_blocks_gemm_f64_loop_n8_count256
   - small_blocks_gemm_f64_batched_n8_count256
   - small_blocks_gemm_f64_loop_n16_count256
@@ -303,11 +293,9 @@ coverage:
   - reshape_constant_f32_64M_op-output
   - vendor_handle_cublas_f64_create-destroy
   - vendor_handle_cublas_f64_reused
-  - vendor_handle_cublas_f64_runtime-handle
   - vendor_churn_f64_cycles8
   - vendor_churn_f64_cycles64
   - pool_retention_f64_alloc-free
-  - pool_retention_f64_trim-after-drop
   - pool_retention_f64_runtime-recreate
   - pool_retention_f64_driver-alloc-after-free
   - svd_driver_c64_n64_auto

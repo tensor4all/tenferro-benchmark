@@ -452,10 +452,14 @@ them, synchronizes again, and records observations without any clocks.
 Records have `status=instrumentation_only`, `timing=null` and a separate
 measurement scope; they must never be passed off as standard operation rows.
 
-Public observations include CUDA extension/cuTENSOR/permutation cache
-entries/bytes/hits/misses/evictions, retained workspace, workspace retirement
-counters and pending transfer retirements. Driver free/total bytes cover the
-whole device, not just this process or the output pool. The numeric/Bool
+Public observations include the CUDA extension cache store's
+entries/bytes/hits/misses/evictions, the runtime's device/pool/pending and
+retirement counters, its artifact/module cache counters, and pending transfer
+retirements. tenferro-gpu v0.8.0's kernel-catalogue cutover removed the cuTENSOR
+plan, permutation-plan, vendor-workspace and workspace-retirement counters from
+the public surface (the plan cache is private to the engine's cuTENSOR handle),
+so they are not reported. Driver free/total bytes cover the whole device, not
+just this process or the output pool. The numeric/Bool
 output-pool stats and clear controls are unavailable through the public API;
 record that limitation rather than calling private hooks. After-enqueue
 queries can perturb execution and are observational, not completion barriers

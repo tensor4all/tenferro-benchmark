@@ -20,7 +20,7 @@ dependencies = [
 gpu = ["jax[cuda12]>=0.10.1; sys_platform == 'linux' and platform_machine == 'x86_64'"]
 
 [tool.uv.sources]
-campaign-toolkit = { git = "https://github.com/tensor4all/campaign-toolkit", rev = "bed620651a1428fd8e29810567073a3a680280bc" }
+campaign-toolkit = { git = "https://github.com/tensor4all/campaign-toolkit", rev = "74e50e8199cb2c2f07e810744a0943fc3a8c1170" }
 
 [dependency-groups]
 dev = [

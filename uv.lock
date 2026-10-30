@@ -36,7 +36,7 @@ wheels = [
 [[package]]
 name = "campaign-toolkit"
 version = "0.1.0"
-source = { git = "https://github.com/tensor4all/campaign-toolkit?rev=bed620651a1428fd8e29810567073a3a680280bc#bed620651a1428fd8e29810567073a3a680280bc" }
+source = { git = "https://github.com/tensor4all/campaign-toolkit?rev=74e50e8199cb2c2f07e810744a0943fc3a8c1170#74e50e8199cb2c2f07e810744a0943fc3a8c1170" }
 dependencies = [
     { name = "markdown" },
     { name = "pyyaml" },
@@ -1549,7 +1549,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "campaign-toolkit", git = "https://github.com/tensor4all/campaign-toolkit?rev=bed620651a1428fd8e29810567073a3a680280bc" },
+    { name = "campaign-toolkit", git = "https://github.com/tensor4all/campaign-toolkit?rev=74e50e8199cb2c2f07e810744a0943fc3a8c1170" },
     { name = "einsum-benchmark", specifier = ">=0.1.7" },
     { name = "jax", specifier = ">=0.10.1" },
     { name = "jax", extras = ["cuda12"], marker = "platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'gpu'", specifier = ">=0.10.1" },

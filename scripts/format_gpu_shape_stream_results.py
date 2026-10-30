@@ -57,8 +57,7 @@ def render(cases, timing_path, counter_path):
         for rows in (timed, checked):
             if case["id"] in rows:
                 row = rows[case["id"]]
-                if (row["params"] != case["params"] or row["measurement_scope"] != case["measurement_scope"]
-                        or row["plan_cache_capacity"] != 64):
+                if (row["params"] != case["params"] or row["measurement_scope"] != case["measurement_scope"]):
                     raise ValueError(f"case contract mismatch: {case['id']}")
     for case in (c for c in selected if c["params"]["instrument"]):
         match = next(c["id"] for c in selected if not c["params"]["instrument"]
@@ -89,10 +88,11 @@ def render(cases, timing_path, counter_path):
              "CoV > 10% is a descriptive NOISY label. No paired baseline/candidate performance conclusion is drawn.", "",
              "Each sample times an entire F64 batched-contraction sequence, including required planning, "
              "then native CUDA synchronization. Host enqueue is the interval before that final synchronization; "
-             "neither column is device-kernel-only time. Inputs/uploads, entered session, library initialization, "
-             "cache reset, declared key prewarming and retention storage are outside timing. "
-             "Full-output validation/download/destruction follow clock stop. The plan bound is 64. "
-             "CubeCL compiled kernels, cuTENSOR handle and allocator pools remain initialized.", "",
+             "neither column is device-kernel-only time. Inputs/uploads, engine, library initialization, "
+             "extension-cache reset, declared key prewarming and retention storage are outside timing. "
+             "Full-output validation/download/destruction follow clock stop. Compiled modules, the cuTENSOR "
+             "handle and allocator pools remain initialized; the engine-owned cuTENSOR plan cache has no "
+             "public reset or capacity knob after tenferro-gpu v0.8.0's kernel-catalogue cutover.", "",
              "## Sequence latency", "",
              "Values are median (inclusive IQR) µs per **sequence**. Sequence lengths and shapes differ by mode; "
              "the table reports each declared workflow without converting their differences into operation-speed ratios.", "",
@@ -118,11 +118,14 @@ def render(cases, timing_path, counter_path):
                      f"{stats_text(elapsed)} | {cov:.1%} | {'NOISY' if cov > .10 else 'scan'} |")
 
     lines += ["", "## Untimed public counters on GPU1", "",
-              "Deltas use the first snapshot after reset/prewarming and the final snapshot after output drop. "
-              "Workspace bytes describe retained shared scratch, not total allocator reservations. "
-              "Public stats expose no separate plan-build counter; cache misses are reported without substituting them for builds. "
+              "Deltas use the first snapshot after cache reset/prewarming and the final snapshot after output drop. "
+              "These are the CUDA runtime's own public counters: live device bytes, cumulative allocations, kernel "
+              "launches and zero fills, artifact/module cache entries and pending retirement bytes. tenferro-gpu "
+              "v0.8.0's kernel-catalogue cutover removed the cuTENSOR plan, vendor-workspace and "
+              "workspace-retirement counters (the plan cache is private to the engine's cuTENSOR handle), so this "
+              "table no longer reports plan entries, hits, misses or evictions; nothing is substituted for them. "
               "All per-command enqueue/completion/drop observations remain in the raw records.", "",
-              "| Case | Entries before→drop | Hits Δ | Misses Δ | Evictions Δ | Plan bytes at drop | Workspace bytes at drop | Observed enqueue in-flight peak |",
+              "| Case | Live bytes before→drop | Allocations Δ | Launches Δ | Zero fills Δ | Artifact entries at drop | Module entries at drop | Pending bytes peak |",
               "|---|---:|---:|---:|---:|---:|---:|---:|"]
     for key in counter_ids:
         row = checked[key]
@@ -135,16 +138,16 @@ def render(cases, timing_path, counter_path):
         for i, observation in enumerate(observations[1:1 + count]):
             if observation["index"] != i or observation["key"] != row["sequence"][i]["key"]:
                 raise ValueError(f"counter sequence mismatch: {key}")
-        before = observations[0]["stats"]["plans"]
+        before = observations[0]["stats"]
         final = observations[-1]["stats"]
-        after = final["plans"]
-        deltas = [after[k] - before[k] for k in ("hits", "misses", "evictions")]
+        deltas = [final["retirement"][k] - before["retirement"][k]
+                  for k in ("allocations", "launches", "zero_fills")]
         if any(v < 0 for v in deltas):
             raise ValueError(f"counter reset within pass: {key}")
-        peak = max(o["stats"]["retirement"]["in_flight"] for o in observations[1:1 + count])
-        lines.append(f"| {key} | {before['entries']}→{after['entries']} | " +
+        peak = max(o["stats"]["retirement"]["pending_bytes"] for o in observations[1:1 + count])
+        lines.append(f"| {key} | {before['device']['live_bytes']}→{final['device']['live_bytes']} | " +
                      " | ".join(map(str, deltas)) +
-                     f" | {after['retained_bytes']} | {final['workspace']['bytes']} | {peak} |")
+                     f" | {final['artifact_cache']['entries']} | {final['module_cache']['entries']} | {peak} |")
     lines += ["", "## Exact sequence definitions", "",
               "Ordered keys and public input shape/stride descriptors used by each timing case. "
               "Repeated keys share the descriptor recorded once below; dtype is F64."]
