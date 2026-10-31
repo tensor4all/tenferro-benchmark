@@ -1,0 +1,8 @@
+{
+  "date": "20261030",
+  "executor": "pi",
+  "model": "openai/gpt-6.1-sol",
+  "note": "sidecar; becomes threads.observer.executor in run.yaml once campaign-toolkit item 7.6 lands",
+  "recorded_by": "skills/weekly-cpu-benchmark/run.sh",
+  "version": "1.0.4"
+}
