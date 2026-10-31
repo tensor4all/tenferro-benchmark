@@ -35,6 +35,11 @@
       "additionalProperties": true
     },
     "unit": { "type": "string", "minLength": 1 },
+    "counts": {
+      "description": "Optional case accounting for new perf_issues runs; skipped is not failed or executed.",
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
     "rows": {
       "type": "array",
       "items": {

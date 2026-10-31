@@ -423,7 +423,8 @@ def collect(binary, output, threads, correctness_only=False, suite_key="cpu", de
                     row.update(correctness_status="failed", samples=[], error=repr(error))
             elif case["kind"] == "metadata_clone" and case["backend"] == "julia-base":
                 try:
-                    command = [os.environ.get("JULIA", "julia"), "--project=.",
+                    from cpu_followup_cases import resolve_julia
+                    command = [resolve_julia(), "--project=.",
                                str(ROOT / "scripts/benchmark_metadata_clone.jl"),
                                str(0 if correctness_only else config["runs"]),
                                str(int(config["min_runtime_ms"] * 1_000_000))]
@@ -461,7 +462,7 @@ def collect(binary, output, threads, correctness_only=False, suite_key="cpu", de
             if suite_key == "gpu":
                 row["case_process_and_validation_wall_ns"] = time.monotonic_ns() - case_wall_start
             row["status"] = row["correctness_status"]
-            failed |= row["status"] not in ("passed", "unsupported")
+            failed |= row["status"] not in ("passed", "unsupported", "skipped")
             values = [s["elapsed_ns"] / s["iterations"] for s in row["samples"]]
             row["cov"] = cs.coefficient_of_variation(values) if row["status"] == "passed" else None
             fh.write(json.dumps(row) + "\n")
@@ -473,10 +474,15 @@ def collect(binary, output, threads, correctness_only=False, suite_key="cpu", de
         effort=effort["effort"], expected=[cs.case_key(i, threads) for i in expected],
         selected=[cs.case_key(i, threads) for i in selected], rows=rows, selection_filter=raw)
     cs.write_case_status(output.parent / f"case_status_t{threads}.json", status)
+    counts = status['counts']
+    print(f"Case status t{threads}: " + ' '.join(f'{key}={counts[key]}' for key in
+          ('executed', 'failed', 'skipped', 'missing')), flush=True)
     return failed or bool(status["missing"])
 
 
 def summary(row):
+    if row["correctness_status"] == "skipped":
+        return "—", "—", "—", "SKIPPED"
     if row["correctness_status"] == "unsupported":
         return "—", "—", "—", "UNSUPPORTED"
     if row["correctness_status"] != "passed":
@@ -534,10 +540,10 @@ def build_summary(run_dir, target, suite_key="cpu", *, cpu_model=None):
                 iqr=iqr,
                 group=f"threads={row.get('threads')} / {row.get('measurement_scope')}",
                 verified=row.get("correctness_status") == "passed",
-                reason=(row.get("unsupported_reason") or row.get("error")) if status != "ok" else None,
+                reason=(row.get("skip_reason") or row.get("unsupported_reason") or row.get("error")) if status != "ok" else None,
             )
         )
-    return report_summary.build_document(
+    document = report_summary.build_document(
         out_rows,
         target_profile=header["target_profile"] or target,
         suite_id=header["suite_id"] or SUITES[suite_key][2],
@@ -551,6 +557,11 @@ def build_summary(run_dir, target, suite_key="cpu", *, cpu_model=None):
             else {}
         ),
     )
+
+    status = merged_case_status(run_dir)
+    if status and 'skipped' in status['counts']:
+        document['counts'] = status['counts']
+    return document
 
 
 def merged_case_status(run_dir):
@@ -787,6 +798,9 @@ def render_report(run_dir, target, suite_key="cpu"):
         lines.append(f"- **{kind} / {arm}** — inside: {', '.join(scope['timer']) or '—'}; "
                      f"outside: {', '.join(scope['outside_timer'])}.")
     for row in rows:
+        if row.get('skip_reason'):
+            lines += ['', f"### SKIPPED: {row['case_id']} ({row['threads']} threads)",
+                      '```', row['skip_reason'], '```']
         if row.get("error"):
             lines += ["", f"### FAILED: {row['case_id']} ({row['threads']} threads)", "```", row["error"], "```"]
     return "\n".join(lines) + "\n"

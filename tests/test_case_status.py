@@ -17,7 +17,8 @@ class CompletionTests(unittest.TestCase):
         passed = {"case_key": "a", "status": "passed"}
         self.assertTrue(self.status([passed])["complete"])
         for rows in ([], [{"case_key": "a", "status": "unsupported"}],
-                     [{"case_key": "a", "status": "failed"}], [passed, passed],
+                     [{"case_key": "a", "status": "failed"}],
+                     [{"case_key": "a", "status": "skipped"}], [passed, passed],
                      [passed, {"case_key": "b", "status": "passed"}]):
             self.assertFalse(self.status(rows)["complete"])
 
@@ -25,6 +26,23 @@ class CompletionTests(unittest.TestCase):
         old = self.status([{"case_key": "a", "status": "unsupported"}])
         old["complete"] = True
         self.assertFalse(cs.merge_case_status([old])["complete"])
+
+    def test_skip_is_accounted_but_never_passed_or_failed(self):
+        status = self.status([{'case_key':'a','status':'skipped'}])
+        self.assertEqual(status['counts']['skipped'],1)
+        for field in ('executed','failed','missing'):
+            self.assertEqual(status[field],[])
+        self.assertFalse(status['complete'])
+        self.assertIn('| expected | selected | executed | unsupported | failed | skipped |',
+                      '\n'.join(cs.markdown_section(status)))
+        old = self.status([{'case_key':'a','status':'failed'}])
+        old.pop('skipped'); old['counts'].pop('skipped')
+        self.assertNotIn('skipped',cs.merge_case_status([old]))
+        self.assertNotIn('skipped','\n'.join(cs.markdown_section(old)))
+        merged = cs.merge_case_status([old,status])
+        self.assertEqual(merged['counts']['skipped'],1)
+        self.assertEqual(merged['counts']['failed'],1)
+        self.assertFalse(merged['complete'])
 
 
 if __name__ == "__main__":

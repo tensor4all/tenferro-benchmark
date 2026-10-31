@@ -5,27 +5,39 @@ call(). Descriptor creation/configuration/commit and thread setup are untimed.
 Constants and signatures follow the installed public mkl_dfti.h (LP64 Linux).
 """
 import ctypes as C
+import ctypes.util
 import os
 from pathlib import Path
 
 
-def mkl_rt_path():
-    # MKLROOT comes from the oneAPI setvars scripts, but the benchmark runner
-    # unsets it on purpose (build.rs asks for -liomp5 when MKLROOT leaks), so
-    # fall back to the installed oneAPI tree instead of requiring the variable.
-    candidates=[]
-    root=os.environ.get('MKLROOT')
-    if root:candidates.append(Path(root)/'lib/libmkl_rt.so')
-    candidates.append(Path('/opt/intel/oneapi/mkl/latest/lib/libmkl_rt.so'))
-    candidates.extend(sorted(Path('/opt/intel/oneapi/mkl').glob('*/lib/libmkl_rt.so'),reverse=True))
-    for path in candidates:
-        if path.is_file():return path
-    raise RuntimeError('libmkl_rt.so not found: set MKLROOT or install oneMKL')
+class MklRuntimeUnavailable(RuntimeError):
+    """No loadable oneMKL reference runtime (not a DFTI execution failure)."""
+
+
+def load_runtime():
+    """Search at runtime only; never set MKLROOT in the build environment."""
+    candidates = []
+    root = os.environ.get('MKLROOT')
+    if root:
+        candidates.extend(str(Path(root) / suffix) for suffix in
+                          ('lib/libmkl_rt.so', 'lib/intel64/libmkl_rt.so'))
+    system = ctypes.util.find_library('mkl_rt')
+    if system:
+        candidates.append(system)
+    candidates.extend(('/opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_rt.so',
+                       '/usr/lib/x86_64-linux-gnu/libmkl_rt.so'))
+    errors = []
+    for library in dict.fromkeys(candidates):
+        try:
+            return C.CDLL(library), library
+        except OSError as error:
+            errors.append(f'{library}: {error}')
+    raise MklRuntimeUnavailable('oneMKL runtime not found: install oneMKL or set MKLROOT for the reference process; '
+                                + '; '.join(errors))
 
 
 def prepared_fft(torch, x, operation, n, threads):
-    library=mkl_rt_path()
-    lib=C.CDLL(str(library))
+    lib,library=load_runtime()
     lib.DftiCreateDescriptor.argtypes=[C.POINTER(C.c_void_p),C.c_int,C.c_int,C.c_long]
     lib.DftiCreateDescriptor.restype=C.c_long
     lib.DftiSetValue.argtypes=[C.c_void_p,C.c_int];lib.DftiSetValue.restype=C.c_long
