@@ -15,9 +15,9 @@ import time
 import zipfile
 
 if __package__:
-    from .result_ingestion import REPOSITORY, WORKFLOWS, plan_updates, source_from_api, validate_bundle
+    from .result_ingestion import REPOSITORY, WORKFLOWS, plan_updates, source_from_api, validate_bundle, validate_source_run
 else:
-    from result_ingestion import REPOSITORY, WORKFLOWS, plan_updates, source_from_api, validate_bundle
+    from result_ingestion import REPOSITORY, WORKFLOWS, plan_updates, source_from_api, validate_bundle, validate_source_run
 
 
 def gh_json(endpoint: str):
@@ -43,9 +43,8 @@ def collection_skipped(run: dict) -> bool:
 def selected_source(run_id: int):
     """Return (profile, source, artifact), or None when the run collected nothing."""
     run = gh_json(f'repos/{REPOSITORY}/actions/runs/{run_id}')
-    workflow = run.get('path')
-    if workflow not in WORKFLOWS:
-        raise ValueError('Unsupported source workflow')
+    validate_source_run(run)
+    workflow = run['path']
     # Verify the run before downloading anything, including fork and branch.
     prefix = WORKFLOWS[workflow][1]
     artifacts = []
@@ -63,10 +62,21 @@ def selected_source(run_id: int):
     selected = [item for item in artifacts if item['name'] in names
                 and datetime.fromisoformat(item['created_at'].replace('Z', '+00:00')) >=
                 datetime.fromisoformat(run['run_started_at'].replace('Z', '+00:00'))]
-    if not selected and collection_skipped(run):
+    if not selected and run['conclusion'] == 'success' and collection_skipped(run):
         return None
+    if not selected and run['conclusion'] == 'failure':
+        diagnostic_prefix = {
+            'amd-cpu': 'linux-cpu-benchmark-diagnostics',
+            'mac-cpu': 'mac-cpu-benchmark-diagnostics',
+            'nvidia-gpu': 'runpod-gpu-diagnostics',
+        }[WORKFLOWS[workflow][0]]
+        selected = [item for item in artifacts if item['name'] == f'{diagnostic_prefix}-{run_id}'
+                    and datetime.fromisoformat(item['created_at'].replace('Z', '+00:00')) >=
+                    datetime.fromisoformat(run['run_started_at'].replace('Z', '+00:00'))]
     if len(selected) != 1:
-        raise ValueError('Selected run must contain exactly one named result artifact; no fallback is allowed')
+        raise ValueError(f'Run {run_id} must contain exactly one named result artifact ({sorted(names)}) '
+                         'or its same-attempt failure diagnostics with complete collection outputs; '
+                         'required artifact missing or ambiguous; no other run/attempt fallback is allowed')
     artifact = selected[0]
     profile, source = source_from_api(run, artifact)
     return profile, source, artifact
@@ -250,7 +260,16 @@ def main():
     with tempfile.TemporaryDirectory() as directory:
         bundle = Path(directory) / 'bundle'
         download_artifact(artifact, bundle)
-        validated = validate_bundle(bundle, profile, source)
+        if source['artifact_kind'] == 'diagnostics':
+            if profile == 'nvidia-gpu' and source['event'] != 'schedule':
+                raise ValueError('GPU diagnostic recovery requires a scheduled default-suite run; custom selection is unknown')
+            if __package__:
+                from .prepare_result_bundle import prepare_bundle
+            else:
+                from prepare_result_bundle import prepare_bundle
+            validated = prepare_bundle(bundle, profile, source, Path(directory) / 'recovered')
+        else:
+            validated = validate_bundle(bundle, profile, source)
         if args.validate_only:
             decisions = {receipt['suite_id']: 'validated' for receipt, _ in validated}
             commit = None
@@ -259,7 +278,10 @@ def main():
             # Dispatch even after duplicate/stale ingestion to recover a
             # previous successful commit followed by a failed dispatch.
             request_publication()
-        summary = json.dumps({'source_run': args.run_id, 'commit': commit, 'suites': decisions}, indent=2)
+        summary = json.dumps({'source_run': args.run_id, 'commit': commit, 'suites': decisions,
+                              'records': {receipt['suite_id']: {key: receipt[key] for key in
+                                          ('status', 'case_outcomes', 'missing_suites')}
+                                          for receipt, _ in validated}}, indent=2)
         print(summary)
         if os.environ.get('GITHUB_STEP_SUMMARY'):
             with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:

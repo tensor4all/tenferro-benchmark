@@ -8,11 +8,9 @@ from pathlib import Path
 import yaml
 
 if __package__:
-    from .check_gpu_run import validate_records
-    from .result_ingestion import digest, instant, safe_file
+    from .result_ingestion import FAILED_STATUSES, digest, instant, safe_file
 else:
-    from check_gpu_run import validate_records
-    from result_ingestion import digest, instant, safe_file
+    from result_ingestion import FAILED_STATUSES, digest, instant, safe_file
 
 
 def adapt_publication(bundle: Path, source: dict) -> dict:
@@ -43,8 +41,21 @@ def adapt_publication(bundle: Path, source: dict) -> dict:
         expected_rows = original['expected_rows']
         if len(expected_rows) != len({tuple(row) for row in expected_rows}):
             raise ValueError('Duplicate expected GPU rows')
-        validate_records(safe_file(bundle, run+'/records.jsonl'), suite,
-                         {tuple(row) for row in expected_rows})
+        records = [json.loads(line) for line in safe_file(bundle, run+'/records.jsonl').read_text().splitlines() if line.strip()]
+        seen = set()
+        for row in records:
+            key = (row['problem_id'], row['backend'])
+            if row['suite_id'] != suite or key in seen:
+                raise ValueError(f'{suite}: duplicate row or incorrect suite: {key}')
+            seen.add(key)
+            timing = row.get('timing', {})
+            if row['status'] == 'ok' and timing.get('timed_runs', 0) < 1:
+                raise ValueError(f'{suite}: no measured samples: {key}')
+            if row['status'] in FAILED_STATUSES and any(timing.get(metric) is not None for metric in
+                    ('first_run_ms', 'median_ms', 'min_ms', 'p95_ms', 'iqr_ms')):
+                raise ValueError(f'{suite}: failed row has timing: {key}')
+        if seen != {tuple(row) for row in expected_rows}:
+            raise ValueError(f'{suite}: missing/unexpected raw rows')
         metadata = yaml.safe_load(safe_file(bundle, run+'/run.yaml').read_text())
         if (metadata.get('target_profile') != 'nvidia-gpu' or metadata.get('suite_id') != suite
                 or metadata.get('tenferro_rs', {}).get('commit') != summary.get('tenferro_commit')
@@ -62,7 +73,6 @@ def adapt_publication(bundle: Path, source: dict) -> dict:
             from format_gpu_linalg_ad_results import build_summary
         else:
             from format_gpu_results import build_summary
-        records = [json.loads(line) for line in safe_file(bundle, run+'/records.jsonl').read_text().splitlines() if line.strip()]
         rebuilt = build_summary(records, metadata)
         if rebuilt != summary:
             raise ValueError('GPU summary differs from raw records')
@@ -79,4 +89,5 @@ def adapt_publication(bundle: Path, source: dict) -> dict:
     if not entries:
         raise ValueError('No GPU suites in publication')
     return {'schema_version': 1, 'target_profile': 'nvidia-gpu',
-            'harness_commit': source['head_sha'], 'suites': entries}
+            'harness_commit': source['head_sha'], 'suites': entries,
+            'missing_suites': publication.get('missing_suites', [])}

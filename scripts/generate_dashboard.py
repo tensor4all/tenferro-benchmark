@@ -31,6 +31,7 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -45,6 +46,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import generate_history  # noqa: E402
 import report_summary  # noqa: E402
+from result_status import case_outcomes  # noqa: E402
 
 # Maintained reports from AGENTS.md "Expected latest report paths" plus the
 # CPU per-call latency suites and the three GPU reports it lists in the design.
@@ -1117,6 +1119,185 @@ def render_provenance(view: SuiteView) -> str:
     )
 
 
+# ---------------------------------------------------------------------------
+# Accepted-run status: partial runs, non-ok cases, campaign coverage
+# ---------------------------------------------------------------------------
+
+CASE_OUTCOME_KINDS = ("failed", "skipped", "unsupported")
+
+
+def receipt_case_outcomes(view: SuiteView) -> dict[str, list[tuple[str, str]]]:
+    """Non-ok case names per category, as ``[(suite_id, case)]``.
+
+    Distinct names come from the recorded case list, never from the backend or
+    thread row count.  A legacy receipt without the field (or a report with no
+    receipt at all) derives them from its summary rows, so old results stay
+    readable.
+    """
+    recorded = (view.provenance or {}).get("case_outcomes")
+    if isinstance(recorded, dict):
+        outcomes = recorded
+    elif view.document:
+        outcomes = case_outcomes(view.document.get("rows") or [])
+    else:
+        outcomes = {}
+    result: dict[str, list[tuple[str, str]]] = {}
+    for kind in CASE_OUTCOME_KINDS:
+        names = sorted({str(name) for name in (outcomes.get(kind) or {}).get("cases") or []})
+        if names:
+            result[kind] = [(view.suite_id, name) for name in names]
+    return result
+
+
+def aggregate_case_outcomes(views: Iterable[SuiteView]) -> dict[str, list[tuple[str, str]]]:
+    """Outcomes across suites, keyed by ``(suite, case)`` so suites never dedup each other."""
+    collected: dict[str, set[tuple[str, str]]] = {kind: set() for kind in CASE_OUTCOME_KINDS}
+    for view in views:
+        for kind, pairs in receipt_case_outcomes(view).items():
+            collected[kind].update(pairs)
+    return {kind: sorted(collected[kind]) for kind in CASE_OUTCOME_KINDS if collected[kind]}
+
+
+def outcome_counts(outcomes: dict[str, list[tuple[str, str]]]) -> str:
+    """Compact counts for a card or profile line, using the same case unit as details."""
+    return " · ".join(
+        f"{len(outcomes[kind])} case{'s' if len(outcomes[kind]) != 1 else ''} {kind}"
+        for kind in CASE_OUTCOME_KINDS if outcomes.get(kind)
+    )
+
+
+def render_case_outcomes(
+    outcomes: dict[str, list[tuple[str, str]]], qualified: bool = True
+) -> str:
+    """Counts with the escaped case names behind them, one collapsible block per category."""
+    blocks = []
+    for kind in CASE_OUTCOME_KINDS:
+        pairs = outcomes.get(kind) or []
+        if not pairs:
+            continue
+        items = "".join(
+            f"<li><code>{esc(case)}</code>"
+            + (f' <span class="muted">{esc(suite)}</span>' if qualified else "")
+            + "</li>"
+            for suite, case in pairs
+        )
+        blocks.append(
+            f'<details class="outcomes"><summary>{len(pairs)} case'
+            f'{"s" if len(pairs) != 1 else ""} {kind}</summary><ul>{items}</ul></details>'
+        )
+    if not blocks:
+        return ""
+    return '<div class="notice"><strong>Non-ok cases.</strong> ' + "".join(blocks) + "</div>"
+
+
+def partial_run_reason(view: SuiteView) -> str | None:
+    """Why an accepted run is partial; ``None`` for a complete or legacy receipt.
+
+    A failed source workflow is a run state, not a failed case, so it never adds
+    a case to the outcome counts.
+    """
+    receipt = view.provenance or {}
+    if (receipt.get("source") or {}).get("conclusion") == "failure":
+        return "source workflow failed"
+    if receipt.get("status") == "partial":
+        return "accepted with non-ok cases or suites missing from the run"
+    return None
+
+
+def partial_run_count(views: Iterable[SuiteView]) -> int:
+    return len({(view.profile, view.provenance['source']['run_id'], view.provenance['source']['run_attempt'])
+                for view in views if partial_run_reason(view)})
+
+
+def render_partial_run(reason: str | None) -> str:
+    if not reason:
+        return ""
+    return (
+        '<p class="notice"><strong>Partial run</strong> &middot; ' + esc(reason)
+        + ". The numbers below are the accepted measurements; a missing case is not a "
+        "failed case.</p>"
+    )
+
+
+def receipt_order_key(receipt: dict[str, Any]) -> tuple:
+    """Ingestion's acceptance order: collection time, then the source run identity."""
+    source = receipt.get("source") or {}
+    numbers = [source.get(key) if type(source.get(key)) is int else 0
+               for key in ("run_id", "run_attempt", "artifact_id")]
+    collected = datetime.fromisoformat(receipt['collected_at'].replace('Z', '+00:00'))
+    return (collected.astimezone(timezone.utc), *numbers)
+
+
+def latest_campaigns(views: Iterable[SuiteView]) -> dict[str, dict[str, Any]]:
+    """The latest accepted receipt per profile: the campaign that defines current coverage."""
+    latest: dict[str, tuple[tuple, dict[str, Any]]] = {}
+    for view in views:
+        if not view.provenance:
+            continue
+        key = receipt_order_key(view.provenance)
+        if view.profile not in latest or key > latest[view.profile][0]:
+            latest[view.profile] = (key, view.provenance)
+    return {profile: receipt for profile, (_key, receipt) in latest.items()}
+
+
+def campaign_missing_suites(views: Iterable[SuiteView]) -> dict[str, list[str]]:
+    """Suites the latest accepted campaign of each profile declared missing."""
+    missing: dict[str, list[str]] = {}
+    for profile, receipt in latest_campaigns(views).items():
+        names = {str(name) for name in receipt.get("missing_suites") or []}
+        # The suite carrying the campaign receipt was produced by that campaign.
+        names.discard(str(receipt.get("suite_id")))
+        if names:
+            missing[profile] = sorted(names)
+    return missing
+
+
+def coverage_gap(
+    view: SuiteView, campaigns: dict[str, dict[str, Any]]
+) -> dict[str, Any] | None:
+    """The latest campaign of this suite's profile that did not produce it."""
+    receipt = campaigns.get(view.profile)
+    if not receipt or view.suite_id not in {str(name) for name in receipt.get("missing_suites") or []}:
+        return None
+    own = (view.provenance or {}).get("source") or {}
+    source = receipt.get("source") or {}
+    if (own.get("run_id"), own.get("run_attempt")) == (source.get("run_id"), source.get("run_attempt")):
+        return None
+    return receipt
+
+
+def render_coverage_notice(missing: dict[str, list[str]]) -> str:
+    """Published suites the latest accepted campaign of a profile did not produce."""
+    if not missing:
+        return ""
+    blocks = []
+    for profile in ordered_profiles(missing):
+        names = missing[profile]
+        items = "".join(f"<li><code>{esc(name)}</code></li>" for name in names)
+        blocks.append(
+            f'<details class="coverage"><summary>{esc(profile)}: {len(names)} suite'
+            f'{"s" if len(names) != 1 else ""} not in the latest campaign</summary>'
+            "<p>A suite listed here keeps its earlier published result if one exists.</p>"
+            f"<ul>{items}</ul></details>"
+        )
+    return (
+        '<div class="notice"><strong>Coverage.</strong> The latest accepted campaign of a profile '
+        "did not produce every expected suite; older results are retained, never deleted."
+        + "".join(blocks) + "</div>"
+    )
+
+
+def render_suite_coverage(view: SuiteView, campaign: dict[str, Any]) -> str:
+    source = campaign.get("source") or {}
+    collected = str(campaign.get("collected_at") or "")[:10]
+    return (
+        '<p class="notice"><strong>Not in the latest campaign.</strong> The latest accepted '
+        f'{esc(view.profile)} campaign (run {esc(source.get("run_id"))}, collected '
+        f'{esc(collected)}) did not produce <code>{esc(view.suite_id)}</code>. The report '
+        "below is retained from an earlier accepted run.</p>"
+    )
+
+
 def build_suite_views(
     reports: list[tuple[str, str, Path]],
     summaries: dict[tuple[str, str], dict[str, Any]],
@@ -1352,6 +1533,9 @@ def render_top(
     ]
     if has_history:
         body.append('<p><a href="history.html">History of published results, per commit</a></p>')
+    maintained_views = [view for view in views if (view.profile, view.suite_id) in MAINTAINED]
+    missing_by_profile = campaign_missing_suites(views)
+    body.append(render_coverage_notice(missing_by_profile))
     body.append('<div class="family-grid">')
     for family in FAMILY_ORDER:
         family_views = [view for view in views if family_of(view.profile) == family]
@@ -1371,6 +1555,26 @@ def render_top(
             pieces.append(f'<p class="facts">{esc(facts["hardware"])}</p>')
         counts = f'{facts["throughput"]} compute cases · {facts["latency"]} latency cases'
         pieces.append(f'<p class="facts">{counts}</p>')
+        family_maintained = [v for v in maintained_views if family_of(v.profile) == family]
+        non_ok = outcome_counts(aggregate_case_outcomes(family_maintained))
+        if non_ok:
+            pieces.append(f'<p class="facts">non-ok cases: {esc(non_ok)}</p>')
+        run_notes = []
+        partial_runs = partial_run_count(family_maintained)
+        if partial_runs:
+            run_notes.append(f"{partial_runs} partial run{'s' if partial_runs != 1 else ''}")
+        missing = [
+            name
+            for profile, names in missing_by_profile.items()
+            if family_of(profile) == family
+            for name in names
+        ]
+        if missing:
+            run_notes.append(
+                f"{len(missing)} suite{'s' if len(missing) != 1 else ''} missing from the latest campaign"
+            )
+        if run_notes:
+            pieces.append(f'<p class="facts">{esc(" · ".join(run_notes))}</p>')
         if facts["timestamp"]:
             pieces.append(
                 f'<p class="facts">updated {esc(facts["timestamp"][:19].replace("T", " "))}Z'
@@ -1504,6 +1708,20 @@ def render_family(
         body.append(profile_header_from_views(profile, profile_views))
         if profile in GITHUB_HOSTED_PROFILES or any(is_hosted(view) for view in profile_views):
             body.append(f'<p class="notice">{REPORT_QUALITY_NOTICE}</p>')
+        profile_maintained = [
+            view for view in profile_views if (view.profile, view.suite_id) in MAINTAINED
+        ]
+        outcomes = aggregate_case_outcomes(profile_maintained)
+        notes = outcome_counts(outcomes)
+        partial_runs = partial_run_count(profile_maintained)
+        if partial_runs:
+            notes = (notes + " · " if notes else "") + (
+                f"{partial_runs} partial run{'s' if partial_runs != 1 else ''}"
+            )
+        if notes:
+            body.append(f'<p class="chart-legend">{esc(notes)}</p>')
+        body.append(render_case_outcomes(outcomes))
+        body.append(render_coverage_notice(campaign_missing_suites(profile_views)))
         any_suite = False
         for view in sorted(profile_views, key=lambda item: item.suite_id):
             if (view.profile, view.suite_id) not in MAINTAINED:
@@ -1656,6 +1874,7 @@ def render_suite_page(
     reference_map: dict[str, list[str]],
     metadata: dict[str, dict[str, Any]],
     markdown_html: str,
+    campaigns: dict[str, dict[str, Any]] | None = None,
 ) -> str:
     profile = view.profile
     suite_id = view.suite_id
@@ -1686,6 +1905,11 @@ def render_suite_page(
     if profile in GITHUB_HOSTED_PROFILES or is_hosted(view):
         body.append(f'<p class="notice">{REPORT_QUALITY_NOTICE}</p>')
     body.append(render_provenance(view))
+    body.append(render_partial_run(partial_run_reason(view)))
+    body.append(render_case_outcomes(aggregate_case_outcomes([view]), qualified=False))
+    gap = coverage_gap(view, campaigns or {})
+    if gap:
+        body.append(render_suite_coverage(view, gap))
     if suite_id == "cpu/fft":
         body.append('<p class="notice">Timing diagnostic: the original report identifies setup-inclusive paths. These values are not compliant operation-performance evidence.</p>')
     if suite_id == "cpu/overhead_smoke":
@@ -1772,6 +1996,7 @@ def generate(
             )
             previous_by_key[(profile, suite_id)] = previous
     views = build_suite_views(reports, summaries, metadata)
+    campaigns = latest_campaigns(views)
     # The trend charts and their tables are rendered next to the site by
     # `scripts/trend_points.py --render`; the CPU page embeds and links them.
     # The charts live at the site root; each family page applies its own depth
@@ -1788,6 +2013,7 @@ def generate(
             reference_map,
             metadata,
             render_markdown(view.report.read_text(encoding="utf-8")),
+            campaigns,
         )
         (target / f"{view.report.stem}.html").write_text(page_html, encoding="utf-8")
         shutil.copyfile(view.report, target / view.report.name)

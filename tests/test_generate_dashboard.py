@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sys
@@ -14,19 +15,89 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import generate_dashboard as dashboard  # noqa: E402
 import report_summary  # noqa: E402
+import result_status  # noqa: E402
+
+ZERO_OUTCOMES = {
+    kind: {"count": 0, "cases": []} for kind in ("failed", "skipped", "unsupported")
+}
 
 
-def summary_document(rows, *, hardware=None, timestamp="2026-10-17T00:00:00+00:00", commit="abc123"):
+def summary_document(
+    rows,
+    *,
+    hardware=None,
+    timestamp="2026-10-17T00:00:00+00:00",
+    commit="abc123",
+    profile="nvidia-gpu",
+    suite_id="gpu/dense",
+):
     return {
         "schema_version": report_summary.SCHEMA_VERSION,
-        "target_profile": "nvidia-gpu",
-        "suite_id": "gpu/dense",
+        "target_profile": profile,
+        "suite_id": suite_id,
         "timestamp": timestamp,
         "tenferro_commit": commit,
         "hardware": hardware or {"gpu": "NVIDIA A100 80GB PCIe"},
         "unit": "ms",
         "rows": rows,
     }
+
+
+def receipt_document(
+    report,
+    summary,
+    *,
+    profile="nvidia-gpu",
+    suite_id="gpu/dense",
+    status="complete",
+    case_outcomes=None,
+    missing_suites=None,
+    conclusion="success",
+    collected_at="2026-10-17T00:00:00+00:00",
+    run_id=1,
+    run_attempt=1,
+    artifact_id=1,
+):
+    """An accepted-result receipt; ``None`` leaves an additive field out."""
+    files = {}
+    for candidate in (report, summary):
+        relative = f"result/{profile}/{candidate.parent.name}/{candidate.name}"
+        files[relative] = hashlib.sha256(candidate.read_bytes()).hexdigest()
+    source = {
+        "repository": "tensor4all/tenferro-benchmark",
+        "workflow_path": ".github/workflows/benchmark-runpod-gpu.yml",
+        "head_branch": "main",
+        "head_sha": "a" * 40,
+        "run_id": run_id,
+        "run_attempt": run_attempt,
+        "artifact_id": artifact_id,
+        "run_started_at": "2026-10-17T00:00:00Z",
+        "run_url": f"https://github.com/tensor4all/tenferro-benchmark/actions/runs/{run_id}",
+        "artifact_url": f"https://github.com/tensor4all/tenferro-benchmark/actions/runs/{run_id}/artifacts/{artifact_id}",
+        "created_at": "2026-10-17T01:00:00Z",
+        "expires_at": "2027-01-17T00:00:00Z",
+        "digest": "sha256:" + "b" * 64,
+        "conclusion": conclusion,
+    }
+    document = {
+        "schema_version": 1,
+        "target_profile": profile,
+        "suite_id": suite_id,
+        "collected_at": collected_at,
+        "harness_commit": "c" * 40,
+        "tenferro_commit": "abc123",
+        "hardware": {"gpu": "NVIDIA A100 80GB PCIe"},
+        "source": source,
+        "files": files,
+    }
+    for key, value in (
+        ("status", status),
+        ("case_outcomes", case_outcomes),
+        ("missing_suites", missing_suites),
+    ):
+        if value is not None:
+            document[key] = value
+    return document
 
 
 def row(case, backend, median, status="ok", group="matmul", reason=None, iqr=None):
@@ -512,6 +583,299 @@ class SummaryHelperTests(unittest.TestCase):
         merged = report_summary.merge_thread_documents([first, second])
         self.assertEqual(merged["hardware"]["threads"], [1, 4])
         self.assertEqual(len(merged["rows"]), 2)
+
+
+class PartialReceiptDashboardTests(unittest.TestCase):
+    """Accepted receipts add run status, non-ok cases and campaign coverage.
+
+    These fields annotate the pages; they never change a number, the original
+    report or the ``updated`` line.
+    """
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.result = self.root / "result"
+        self.benchmarks = self.root / "benchmarks" / "gpu"
+        self.benchmarks.mkdir(parents=True)
+        (self.benchmarks / "dense.yaml").write_text(
+            "schema_version: 1\nsuite_id: gpu/dense\ndefaults:\n  regime: throughput\n"
+            "problems:\n  - {id: case_ok}\n  - {id: case_bad}\n"
+        )
+
+    def test_campaign_order_uses_utc_and_counts_one_run_across_suites(self):
+        first = {'collected_at':'2026-10-18T09:00:00+09:00', 'status':'partial',
+                 'source':{'run_id':123,'run_attempt':1,'artifact_id':456}, 'missing_suites':['gpu/sparse']}
+        newer = dict(first, collected_at='2026-10-18T00:01:00Z', missing_suites=[])
+        views = [dashboard.SuiteView('nvidia-gpu', 'gpu/dense', Path('dense.md'), None, [], first),
+                 dashboard.SuiteView('nvidia-gpu', 'gpu/einsum', Path('einsum.md'), None, [], newer)]
+        self.assertEqual(dashboard.latest_campaigns(views)['nvidia-gpu'], newer)
+        self.assertEqual(dashboard.partial_run_count(views), 1)
+
+    def write_suite(self, suite_id="gpu/dense", rows=None, receipt=None, body="body\n"):
+        suite_dir = self.result / "nvidia-gpu" / suite_id.split("/", 1)[0]
+        suite_dir.mkdir(parents=True, exist_ok=True)
+        stem = suite_id.split("/", 1)[1]
+        report = suite_dir / f"{stem}.md"
+        summary = suite_dir / f"{stem}.summary.json"
+        rows = rows if rows is not None else [row("case_ok", "tenferro-cuda-eager", 10.0)]
+        report.write_text(f"# {suite_id}\n\n{body}")
+        summary.write_text(json.dumps(summary_document(rows, suite_id=suite_id)))
+        if receipt is not None:
+            document = receipt_document(report, summary, suite_id=suite_id, **receipt)
+            report.with_suffix(".provenance.json").write_text(
+                json.dumps(document, indent=2, sort_keys=True) + "\n"
+            )
+        return report
+
+    def generate(self, name="site"):
+        output = self.root / name
+        self.assertEqual(
+            dashboard.generate(
+                self.result,
+                output,
+                baseline_dir=self.root / "baseline",
+                git_repo=None,
+                instances_dir=self.root / "instances",
+                benchmarks_dir=self.root / "benchmarks",
+                latest_profiles=None,
+            ),
+            0,
+        )
+        return output
+
+    def test_complete_receipt_adds_no_annotation(self):
+        self.write_suite(
+            receipt={"status": "complete", "case_outcomes": ZERO_OUTCOMES, "missing_suites": []}
+        )
+        output = self.generate()
+        suite = (output / "nvidia-gpu/gpu/dense.html").read_text()
+        self.assertIn("Accepted result provenance", suite)
+        self.assertNotIn("Partial run", suite)
+        self.assertNotIn("Non-ok cases", suite)
+        self.assertNotIn("Not in the latest campaign", suite)
+        for relative in ("index.html", "gpu/index.html"):
+            page = (output / relative).read_text()
+            self.assertNotIn("Coverage.", page)
+            self.assertNotIn("non-ok cases", page)
+            self.assertNotIn("partial run", page)
+
+    def test_partial_receipt_shows_distinct_escaped_failed_and_skipped_cases(self):
+        rows = [
+            row("case_ok", "tenferro-cuda-eager", 10.0),
+            row("case_ok", "tenferro-cuda-trace", 12.0),
+            # The same case on two backends and in two groups is one case.
+            row("case_<bad>", "tenferro-cuda-eager", None, status="failed", reason="bad launch"),
+            row("case_<bad>", "tenferro-cuda-trace", None, status="failed", reason="bad launch"),
+            row("case_beta", "tenferro-cuda-eager", None, status="failed", reason="bad launch"),
+            row("case_beta", "tenferro-cuda-eager", None, status="failed", reason="bad launch", group="lat"),
+            row("case_gamma", "tenferro-cuda-trace", None, status="runtime_failed", reason="crash"),
+            row("case_skip", "tenferro-cuda-trace", None, status="skipped", reason="policy"),
+            row("case_unsup", "tenferro-cuda-eager", None, status="unsupported", reason="policy"),
+        ]
+        self.write_suite(
+            rows=rows,
+            receipt={"status": "partial", "case_outcomes": result_status.case_outcomes(rows)},
+        )
+        output = self.generate()
+        suite = (output / "nvidia-gpu/gpu/dense.html").read_text()
+        self.assertIn("Partial run", suite)
+        self.assertIn("3 cases failed", suite)
+        self.assertIn("1 case skipped", suite)
+        self.assertIn("1 case unsupported", suite)
+        self.assertIn("case_&lt;bad&gt;", suite)
+        self.assertNotIn("case_<bad>", suite)
+        details = re.search(
+            r'<div class="notice"><strong>Non-ok cases\.</strong>.*?</div>', suite, re.S
+        )
+        self.assertIsNotNone(details)
+        self.assertEqual(details.group(0).count("<code>case_beta</code>"), 1)
+
+        family = (output / "gpu/index.html").read_text()
+        self.assertIn("3 cases failed · 1 case skipped · 1 case unsupported", family)
+        self.assertIn("case_&lt;bad&gt;</code> <span class=\"muted\">gpu/dense</span>", family)
+
+        index = (output / "index.html").read_text()
+        card = re.search(r'<a class="family-card" href="gpu/index\.html">(.*?)</a>', index, re.S)
+        self.assertIsNotNone(card)
+        self.assertIn("non-ok cases: 3 cases failed · 1 case skipped · 1 case unsupported", card.group(1))
+        # Compact counts only: interactive details never nest inside the card link.
+        self.assertNotIn("<details", card.group(1))
+
+    def test_family_counts_qualify_suites_so_a_shared_case_name_is_not_deduped(self):
+        outcomes = {
+            "failed": {"count": 1, "cases": ["shared_case"]},
+            "skipped": {"count": 0, "cases": []},
+            "unsupported": {"count": 0, "cases": []},
+        }
+        failing = [row("shared_case", "tenferro-cuda-eager", None, status="failed", reason="x")]
+        for suite_id in ("gpu/dense", "gpu/sparse"):
+            self.write_suite(
+                suite_id=suite_id,
+                rows=failing,
+                receipt={"status": "partial", "case_outcomes": outcomes},
+            )
+        output = self.generate()
+        family = (output / "gpu/index.html").read_text()
+        self.assertIn("2 cases failed", family)
+        self.assertIn("<code>shared_case</code> <span class=\"muted\">gpu/dense</span>", family)
+        self.assertIn("<code>shared_case</code> <span class=\"muted\">gpu/sparse</span>", family)
+        for suite_id in ("gpu/dense", "gpu/sparse"):
+            suite = (output / f"nvidia-gpu/{suite_id}.html").read_text()
+            self.assertIn("1 case failed", suite)
+            self.assertNotIn("2 cases failed", suite)
+        self.assertIn("non-ok cases: 2 cases failed", (output / "index.html").read_text())
+
+    def test_workflow_failure_with_all_ok_rows_is_a_partial_run(self):
+        self.write_suite(
+            receipt={
+                "status": "partial",
+                "conclusion": "failure",
+                "case_outcomes": ZERO_OUTCOMES,
+                "missing_suites": [],
+            }
+        )
+        output = self.generate()
+        suite = (output / "nvidia-gpu/gpu/dense.html").read_text()
+        self.assertIn("Partial run", suite)
+        self.assertIn("source workflow failed", suite)
+        # A failed workflow never invents a failed case.
+        self.assertNotIn("Non-ok cases", suite)
+        self.assertIn("1 partial run", (output / "gpu/index.html").read_text())
+        index = (output / "index.html").read_text()
+        self.assertIn("1 partial run", index)
+        self.assertNotIn("non-ok cases", index)
+
+    def test_suite_missing_from_latest_campaign_keeps_its_old_report(self):
+        self.write_suite(
+            suite_id="gpu/dense",
+            receipt={
+                "status": "partial",
+                "case_outcomes": ZERO_OUTCOMES,
+                "missing_suites": ["gpu/sparse"],
+                "run_id": 2,
+                "collected_at": "2026-10-18T00:00:00+00:00",
+            },
+        )
+        self.write_suite(
+            suite_id="gpu/sparse",
+            body="sparse original report body\n",
+            receipt={"status": "complete", "case_outcomes": ZERO_OUTCOMES, "missing_suites": []},
+        )
+        output = self.generate()
+        sparse = (output / "nvidia-gpu/gpu/sparse.html").read_text()
+        self.assertIn("Not in the latest campaign", sparse)
+        self.assertIn("run 2", sparse)
+        self.assertIn("sparse original report body", sparse)
+        dense = (output / "nvidia-gpu/gpu/dense.html").read_text()
+        self.assertNotIn("Not in the latest campaign", dense)
+
+        family = (output / "gpu/index.html").read_text()
+        self.assertIn("Coverage.", family)
+        self.assertIn("nvidia-gpu: 1 suite not in the latest campaign", family)
+        coverage = re.search(r'<details class="coverage">(.*?)</details>', family, re.S)
+        self.assertIsNotNone(coverage)
+        self.assertIn("<code>gpu/sparse</code>", coverage.group(1))
+        self.assertNotIn("<code>gpu/dense</code>", coverage.group(1))
+
+        index = (output / "index.html").read_text()
+        self.assertIn("Coverage.", index)
+        self.assertIn("1 suite missing from the latest campaign", index)
+
+    def test_older_campaign_does_not_drive_coverage(self):
+        self.write_suite(
+            suite_id="gpu/dense",
+            receipt={
+                "status": "complete",
+                "case_outcomes": ZERO_OUTCOMES,
+                "missing_suites": [],
+                "run_id": 2,
+                "collected_at": "2026-10-18T00:00:00+00:00",
+            },
+        )
+        self.write_suite(
+            suite_id="gpu/sparse",
+            receipt={
+                "status": "partial",
+                "case_outcomes": ZERO_OUTCOMES,
+                "missing_suites": ["gpu/dense"],
+                "run_id": 1,
+                "collected_at": "2026-10-17T00:00:00+00:00",
+            },
+        )
+        output = self.generate()
+        for relative in ("index.html", "gpu/index.html", "nvidia-gpu/gpu/dense.html",
+                         "nvidia-gpu/gpu/sparse.html"):
+            page = (output / relative).read_text()
+            self.assertNotIn("Coverage.", page)
+            self.assertNotIn("Not in the latest campaign", page)
+
+    def test_legacy_receipt_and_plain_report_derive_row_outcomes(self):
+        legacy_rows = [
+            row("case_ok", "tenferro-cuda-eager", 10.0),
+            row("legacy_skip", "tenferro-cuda-trace", None, status="skipped", reason="policy"),
+            row("legacy_fail", "tenferro-cuda-eager", None, status="compile_failed", reason="boom"),
+        ]
+        self.write_suite(
+            suite_id="gpu/dense",
+            rows=legacy_rows,
+            # A historical receipt: none of the additive fields exist.
+            receipt={"status": None, "case_outcomes": None, "missing_suites": None},
+        )
+        self.write_suite(
+            suite_id="gpu/sparse",
+            rows=[row("plain_fail", "tenferro-cuda-eager", None, status="failed", reason="x")],
+        )
+        output = self.generate()
+        legacy = (output / "nvidia-gpu/gpu/dense.html").read_text()
+        self.assertNotIn("Partial run", legacy)
+        self.assertIn("1 case failed", legacy)
+        self.assertIn("1 case skipped", legacy)
+        self.assertIn("<code>legacy_fail</code>", legacy)
+        self.assertIn("1 case failed", (output / "nvidia-gpu/gpu/sparse.html").read_text())
+        self.assertIn("2 cases failed · 1 case skipped", (output / "gpu/index.html").read_text())
+
+    def test_receipt_status_keeps_numbers_report_and_updated_line(self):
+        rows = [
+            row("case_ok", "tenferro-cuda-eager", 20.0),
+            row("case_ok", "tenferro-cuda-trace", 30.0),
+            row("case_ok", "pytorch-cuda", 10.0),
+        ]
+        self.write_suite(
+            rows=rows,
+            receipt={
+                "status": "partial",
+                "collected_at": "2026-10-20T00:00:00+00:00",
+                "missing_suites": ["gpu/sparse"],
+                "case_outcomes": {
+                    "failed": {"count": 3, "cases": ["case_x", "case_y", "case_z"]},
+                    "skipped": {"count": 0, "cases": []},
+                    "unsupported": {"count": 0, "cases": []},
+                },
+            },
+        )
+        annotated = self.generate("site-a")
+        (self.result / "nvidia-gpu/gpu/dense.provenance.json").unlink()
+        plain = self.generate("site-b")
+
+        def updated(output):
+            return re.search(r"updated [^<]*", (output / "index.html").read_text()).group(0)
+
+        self.assertEqual(updated(annotated), updated(plain))
+        self.assertIn("2026-10-17", updated(annotated))
+
+        def pages(output):
+            return (output / "nvidia-gpu/gpu/dense.html").read_text()
+
+        for page in (pages(annotated), pages(plain)):
+            self.assertIn('<span class="ratio ratio-much-slower">eager 2.00x</span>', page)
+        self.assertEqual(
+            pages(annotated).split("<h2>Original report</h2>")[1],
+            pages(plain).split("<h2>Original report</h2>")[1],
+        )
+        self.assertIn("3 cases failed", pages(annotated))
+        self.assertNotIn("Non-ok cases", pages(plain))
 
 
 if __name__ == "__main__":
