@@ -43,6 +43,7 @@
     "status": {
       "enum": [
         "ok",
+        "skipped",
         "unsupported",
         "not_configured",
         "compile_failed",
@@ -137,6 +138,34 @@
   "allOf": [
     {
       "if": {
+        "properties": { "status": { "enum": ["skipped", "unsupported", "not_configured"] } },
+        "required": ["status"]
+      },
+      "then": {
+        "anyOf": [
+          {
+            "properties": {
+              "execution": {
+                "required": ["unsupported_reason"],
+                "properties": { "unsupported_reason": { "type": "string", "pattern": "\\S" } }
+              }
+            },
+            "required": ["execution"]
+          },
+          {
+            "properties": {
+              "verification": {
+                "required": ["reason"],
+                "properties": { "reason": { "type": "string", "pattern": "\\S" } }
+              }
+            },
+            "required": ["verification"]
+          }
+        ]
+      }
+    },
+    {
+      "if": {
         "properties": { "status": { "const": "ok" } },
         "required": ["status"]
       },
@@ -179,7 +208,7 @@
       "if": {
         "properties": {
           "status": {
-            "enum": ["not_configured", "compile_failed", "runtime_failed", "oom"]
+            "enum": ["skipped", "not_configured", "compile_failed", "runtime_failed", "oom"]
           }
         },
         "required": ["status"]

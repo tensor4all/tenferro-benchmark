@@ -294,6 +294,7 @@ PY
 }
 
 RESULT_PATHS=()
+VALIDATION_FAILED=0
 for suite in "${SUITES[@]}"; do
     suite_id="$(suite_id_for_file "$suite")"
     if [[ ! "$suite_id" =~ ^gpu/[a-z0-9][a-z0-9_.-]*$ ]]; then
@@ -325,19 +326,14 @@ for suite in "${SUITES[@]}"; do
         continue
     fi
     if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" == 1 ]]; then
-        "${PYTHON[@]}" - "$RESULT_JSONL" <<'PY'
-import json, sys
-rows = [json.loads(line) for line in open(sys.argv[1]) if line.strip()]
-failures = [row for row in rows if row["status"] not in {"verification_only", "unsupported"}]
-if failures:
-    raise SystemExit(f"GPU numerical verification failed: {failures}")
-print(f"Verified {sum(row['status']=='verification_only' for row in rows)} rows; no timing report published")
-PY
+        # The final accounting owns classification, including verification failures.
         continue
     fi
 
-    "${VALIDATOR[@]}" --kind run "$RUN_YAML"
-    "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"
+    if ! "${VALIDATOR[@]}" --kind run "$RUN_YAML" || ! "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"; then
+        VALIDATION_FAILED=1
+        continue
+    fi
 
     REPORT_START_NS="$(wall_now)"
     "${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
@@ -371,6 +367,7 @@ PY
 done
 
 "${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$SELECTION_DIR" --records "${RESULT_PATHS[@]}"
+[[ "$VALIDATION_FAILED" == 0 ]] || exit 1
 "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$SELECTION_DIR/case_status.json" \
     --output "$SELECTION_DIR/report.md"
 if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then

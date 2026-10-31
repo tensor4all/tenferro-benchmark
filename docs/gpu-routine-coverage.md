@@ -64,13 +64,35 @@ and full-profile IDs left unselected. Each suite's run metadata points to this
 selection. Verification-only commands use `data/verification` instead and
 default to physical GPU1; standard timing defaults to physical GPU0.
 
-After collection, `case_status.json` distinguishes executed, unsupported,
+After collection, `case_status.json` distinguishes executed, skipped, unsupported,
 failed, missing, verification-only, raw-samples-unavailable and noisy pairs.
 Only successful numerical validation with retained positive raw batch samples
-counts as executed. Verification-only and unselected pairs never count as
-measured coverage. Duplicate or unexpected rows fail accounting. The descriptive
-noise flag uses sample standard deviation divided by mean above 10%; it is not
-a regression decision or a functional failure.
+counts as executed. Skipped, unsupported, verification-only and unselected pairs
+never count as measured coverage.
+
+A case with no reference implementation or an unconfigured optional reference
+uses `status: skipped` (legacy `not_configured` is accounted as skipped). A
+library or GPU SKU that does not support the case uses `status: unsupported`.
+Both require a nonblank `execution.unsupported_reason` or `verification.reason`;
+the accounting preserves it in `reasons`. They are explicit capability decisions,
+not a way to reinterpret an exception. Runtime/compile errors, timeouts, OOM and
+numerical mismatches remain failed even if verification itself was skipped.
+A numerical failure also overrides a contradictory skipped/unsupported status.
+
+The collector writes `case_status.json` and prints separate failed, skipped,
+unsupported, missing, duplicates and unexpected counts before returning.
+Verification-only failures use this same accounting path. Run/result schema
+validation failures are deferred until accounting is written and still force
+a nonzero exit, even if the case status itself is benign. Its exit
+code is nonzero for any failed, missing, duplicate or unexpected case, and zero
+for skipped/unsupported-only collections. A reasonless skipped/unsupported row
+fails. Quick-from-full accounting ignores only known unselected full cases;
+selected duplicates and unknown IDs still fail. The existing weekly success gate
+can therefore skip later slots after a benign-only successful collection, but a
+real runtime failure still permits retries. The retry schedule is unchanged.
+
+The descriptive noise flag uses sample standard deviation divided by mean above
+10%; it is not a regression decision or a functional failure.
 
 `BENCH_EFFORT=scan` uses one warmup and three measured samples without changing
 selection. A scan can identify suspects; it cannot establish a performance

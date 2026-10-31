@@ -76,23 +76,40 @@ def account(plan, paths, restrict=False):
             if key in by_id: duplicates.append(key)
             by_id[key] = row
     if restrict:
-        # Quick-from-full: account a full run's record set against the quick
-        # selection, ignoring records outside that selection instead of
-        # reporting every full-only pair as unexpected.
-        allowed = set(plan["selected"])
-        by_id = {key: row for key, row in by_id.items() if key in allowed}
-        duplicates = []
-    result = {name:[] for name in ("executed","unsupported","failed","missing","noisy","verification_only","raw_samples_unavailable")}
+        # Quick-from-full may omit known full-only pairs, never unknown IDs
+        # or duplicates of selected pairs.
+        full_only = set(plan["unselected"]) - set(plan["selected"])
+        by_id = {key: row for key, row in by_id.items() if key not in full_only}
+        duplicates = [key for key in duplicates if key not in full_only]
+    result = {name:[] for name in ("executed","skipped","unsupported","failed","missing","noisy","verification_only","raw_samples_unavailable")}
+    reasons = {}
     for key in plan["selected"]:
         row = by_id.get(key)
         if row is None:
             result["missing"].append(key); continue
-        if row["status"] in {"unsupported","not_configured"}:
-            result["unsupported"].append(key); continue
+        verification = row.get("verification", {})
+        reason = next((value.strip() for value in (
+            row.get("execution", {}).get("unsupported_reason"), verification.get("reason"))
+            if isinstance(value, str) and value.strip()), None)
+        if verification.get("status") == "failed":
+            result["failed"].append(key)
+            reasons[key] = reason or "numerical verification failed"
+            continue
+        if row["status"] in {"skipped", "unsupported", "not_configured"}:
+            if reason is None:
+                result["failed"].append(key)
+                reasons[key] = f"{row['status']} requires a nonblank reason"
+            else:
+                category = "unsupported" if row["status"] == "unsupported" else "skipped"
+                result[category].append(key)
+                reasons[key] = reason
+            continue
         if row["status"] == "verification_only" and row["verification"]["status"] == "passed":
             result["verification_only"].append(key); continue
-        if row["status"] != "ok" or row["verification"]["status"] != "passed":
-            result["failed"].append(key); continue
+        if row["status"] != "ok" or verification.get("status") != "passed":
+            result["failed"].append(key)
+            reasons[key] = reason or f"status={row['status']}, verification={verification.get('status')}"
+            continue
         try:
             notes = json.loads(row["execution"].get("notes") or "{}")
             samples = notes["sampling"]["batch_ms"]
@@ -107,7 +124,8 @@ def account(plan, paths, restrict=False):
             result["noisy"].append(key)
     result.update(manifest_version=plan["manifest_version"],coverage=plan["coverage"],effort=plan["effort"],
                   expected=plan["expected"],selected=plan["selected"],unselected=plan["unselected"],
-                  duplicates=duplicates,unexpected=sorted(set(by_id)-set(plan["selected"])))
+                  duplicates=duplicates,unexpected=sorted(set(by_id)-set(plan["selected"])),
+                  reasons=reasons)
     result["complete"] = (len(result["executed"])==len(plan["expected"]) and
                           not result["duplicates"] and not result["unexpected"])
     result["counts"] = {key:len(value) for key,value in result.items() if isinstance(value,list)}
@@ -131,6 +149,10 @@ def main():
         plan = json.loads((args.output/"selection.json").read_text())
         status = account(plan,args.records,restrict=args.restrict)
         (args.output/"case_status.json").write_text(json.dumps(status,indent=2)+"\n")
+        for category in ("failed", "skipped", "unsupported", "missing", "duplicates", "unexpected"):
+            print(f"{category}: {status['counts'][category]}")
+            for key in status[category]:
+                print(f"  {key}: {status['reasons'].get(key, category)}")
         if status["failed"] or status["missing"] or status["duplicates"] or status["unexpected"]:
             raise SystemExit("GPU collection has failed/missing/duplicate/unexpected cases")
         return

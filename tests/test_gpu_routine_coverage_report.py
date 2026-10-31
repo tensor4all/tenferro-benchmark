@@ -21,6 +21,14 @@ class CoverageReportTest(unittest.TestCase):
         self.assertIn("| executed | 0 |", report)
         self.assertIn("## verification_only\n\n- `s:a:b`", report)
         self.assertIn("## unselected\n\n- `s:large:b`", report)
+        self.assertIn("## skipped\n\nNone.", report)
+        status.update(skipped=["s:no_ref:b"], unsupported=["s:sku:b"],
+                      reasons={"s:no_ref:b": "no reference implementation", "s:sku:b": "GPU SKU unsupported"})
+        status["counts"].update(skipped=1, unsupported=1)
+        report = render(status)
+        self.assertIn("| skipped | 1 |", report)
+        self.assertIn("- `s:no_ref:b`: no reference implementation", report)
+        self.assertIn("- `s:sku:b`: GPU SKU unsupported", report)
 
 
 if __name__ == "__main__":

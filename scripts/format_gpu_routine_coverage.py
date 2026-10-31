@@ -9,18 +9,22 @@ def render(status, source=None):
              f"Manifest version: {status['manifest_version']}; coverage: {status['coverage']}; "
              f"effort: {status['effort']}.", "",
              "Measured coverage complete: " + ("yes" if status['complete'] else "no") + ".", "",
-             "Verification-only, unsupported, missing and unselected rows are not measured coverage. "
+             "Verification-only, skipped, unsupported, missing and unselected rows are not measured coverage. "
              "Noise flags are descriptive screens, not regression conclusions.", "",
              "| Classification | Count |", "|---|---:|"]
     if source is not None:
         lines[2:2] = [f"Source accounting: `{source}`.", ""]
     for category, count in status['counts'].items():
         lines.append(f"| {category} | {count} |")
-    for category in ("expected", "selected", "executed", "unsupported", "failed", "missing",
+    for category in ("expected", "selected", "executed", "skipped", "unsupported", "failed", "missing",
                      "verification_only", "raw_samples_unavailable", "noisy", "unselected",
                      "duplicates", "unexpected"):
         lines.extend(["", f"## {category}", ""])
-        lines.extend([f"- `{key}`" for key in status[category]] or ["None."])
+        for key in status.get(category, []):
+            reason = status.get("reasons", {}).get(key)
+            lines.append(f"- `{key}`" + (f": {reason}" if reason else ""))
+        if not status.get(category):
+            lines.append("None.")
     return "\n".join(lines) + "\n"
 
 
