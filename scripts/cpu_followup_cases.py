@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 ROOT=Path(__file__).resolve().parents[1]
@@ -9,9 +10,17 @@ sys.path.insert(0,str(ROOT/'mwe/cpu_followup'))
 from validation import verify
 
 
+def julia():
+    explicit=os.environ.get('JULIA')
+    if explicit:return explicit
+    found=shutil.which('julia')
+    if found:return found
+    return str(Path.home()/'.juliaup/bin/julia')
+
+
 def command(case_id, path, threads, runs):
     if path=='julia-base':
-        return [os.environ.get('JULIA', '/home/vscode/.juliaup/bin/julia'), '--project=.',
+        return [julia(), '--project=.',
                 str(ROOT/'mwe/cpu_followup/reference.jl'),case_id,str(threads),str(runs)]
     if path in ('pytorch','jax','mkl-dfti'):
         return [sys.executable,str(ROOT/'mwe/cpu_followup/reference.py'),case_id,path,str(threads),str(runs)]

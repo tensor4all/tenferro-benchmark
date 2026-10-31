@@ -9,8 +9,22 @@ import os
 from pathlib import Path
 
 
+def mkl_rt_path():
+    # MKLROOT comes from the oneAPI setvars scripts, but the benchmark runner
+    # unsets it on purpose (build.rs asks for -liomp5 when MKLROOT leaks), so
+    # fall back to the installed oneAPI tree instead of requiring the variable.
+    candidates=[]
+    root=os.environ.get('MKLROOT')
+    if root:candidates.append(Path(root)/'lib/libmkl_rt.so')
+    candidates.append(Path('/opt/intel/oneapi/mkl/latest/lib/libmkl_rt.so'))
+    candidates.extend(sorted(Path('/opt/intel/oneapi/mkl').glob('*/lib/libmkl_rt.so'),reverse=True))
+    for path in candidates:
+        if path.is_file():return path
+    raise RuntimeError('libmkl_rt.so not found: set MKLROOT or install oneMKL')
+
+
 def prepared_fft(torch, x, operation, n, threads):
-    library=Path(os.environ['MKLROOT'])/'lib/libmkl_rt.so'
+    library=mkl_rt_path()
     lib=C.CDLL(str(library))
     lib.DftiCreateDescriptor.argtypes=[C.POINTER(C.c_void_p),C.c_int,C.c_int,C.c_long]
     lib.DftiCreateDescriptor.restype=C.c_long
