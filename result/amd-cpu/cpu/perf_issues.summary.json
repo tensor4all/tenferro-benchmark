@@ -1,0 +1,5700 @@
+{
+  "schema_version": 2,
+  "target_profile": "amd-cpu",
+  "suite_id": "cpu/perf_issues",
+  "timestamp": "2026-10-31T23:30:03Z",
+  "tenferro_commit": "a9f494cc4679387c75af698b299c316fd2295fe4",
+  "hardware": {
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "host": "1e1b19251763",
+    "threads": [
+      1,
+      4
+    ]
+  },
+  "unit": "ns/op",
+  "rows": [
+    {
+      "case": "activation_erf_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_erf_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_erf_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_erf_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_erf_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 165001.5,
+      "iqr": 370.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_erf_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 72839.78125,
+      "iqr": 495.421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 38287.75,
+      "iqr": 276.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 20701.65625,
+      "iqr": 243.4765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 36495.578125,
+      "iqr": 174.234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 24055.0078125,
+      "iqr": 91.15234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 37346.65625,
+      "iqr": 226.109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 20115.171875,
+      "iqr": 183.7109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_tanh_f32_eager-composed_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 198541.9375,
+      "iqr": 1325.09375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_tanh_f32_eager-composed_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 163610.1875,
+      "iqr": 2551.53125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_tanh_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_gelu_tanh_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_gelu_tanh_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_gelu_tanh_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_gelu_tanh_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 105139.875,
+      "iqr": 560.8125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_gelu_tanh_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 49953.0,
+      "iqr": 988531.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_sigmoid_f32_eager-composed_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 49902.59375,
+      "iqr": 759.234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_sigmoid_f32_eager-composed_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 45414.1875,
+      "iqr": 513.078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_sigmoid_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_sigmoid_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_sigmoid_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_sigmoid_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_sigmoid_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 25799.09375,
+      "iqr": 154.921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_sigmoid_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 14626.796875,
+      "iqr": 98.2734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_silu_f32_eager-composed_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 59993.96875,
+      "iqr": 670.203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_silu_f32_eager-composed_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 58422.96875,
+      "iqr": 309.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_silu_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_silu_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_silu_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_silu_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_silu_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 26732.96875,
+      "iqr": 142.390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_silu_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 14992.484375,
+      "iqr": 58.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_softplus_f32_eager-composed_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 103801.6875,
+      "iqr": 1502.53125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_softplus_f32_eager-composed_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 83493.84375,
+      "iqr": 892.890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_softplus_f32_eager-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_softplus_f32_eager-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_softplus_f32_pytorch_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_softplus_f32_pytorch_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "activation_softplus_f32_session-single-call_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 91543.6875,
+      "iqr": 739.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "activation_softplus_f32_session-single-call_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 40626.53125,
+      "iqr": 176.5859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "analytic_neg_f64_sweep_32MiB_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1616126.5,
+      "iqr": 39808.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "analytic_neg_f64_sweep_32MiB_t1_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 12784257.0,
+      "iqr": 493439.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "analytic_neg_f64_sweep_8MiB_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 233112.0,
+      "iqr": 7433.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "analytic_neg_f64_sweep_8MiB_t1_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2076032.125,
+      "iqr": 58137.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_accum_strided_dest_f64_block",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 6138.185546875,
+      "iqr": 286.2412109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_accum_strided_dest_f64_block_host",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 5407.2109375,
+      "iqr": 353.3505859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_contiguous_source_f64_1024x1024_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 418447.75,
+      "iqr": 5985.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_contiguous_source_f64_1024x1024_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 313179.0,
+      "iqr": 24561.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_strided_source_f64_1024x1024_host_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 1531121.5,
+      "iqr": 86790.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_strided_source_f64_1024x1024_host_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 1251274.0,
+      "iqr": 49442.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_strided_source_f64_1024x1024_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3077566.0,
+      "iqr": 174165.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "axpby_strided_source_f64_1024x1024_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 914658.0,
+      "iqr": 45483.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1184.8779296875,
+      "iqr": 11.69189453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2331.6162109375,
+      "iqr": 7.25146484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 9372.19140625,
+      "iqr": 34.443359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 10583.625,
+      "iqr": 22.513671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 870785.25,
+      "iqr": 8889.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_dot-general-rank1_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 880259.75,
+      "iqr": 8454.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 86.42135620117188,
+      "iqr": 0.201385498046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 86.57943725585938,
+      "iqr": 0.328399658203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 8321.8984375,
+      "iqr": 55.646484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 8249.84765625,
+      "iqr": 41.193359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 870775.25,
+      "iqr": 6143.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_portable-loop_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 889866.25,
+      "iqr": 7054.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 964.37890625,
+      "iqr": 6.557861328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 965.7783203125,
+      "iqr": 4.083251953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 5668.140625,
+      "iqr": 68.4892578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 5215.25390625,
+      "iqr": 55.1787109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 632843.5,
+      "iqr": 9446.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_c64_pytorch-vdot_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 291451.625,
+      "iqr": 5221.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1060.388671875,
+      "iqr": 7.58935546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2263.078125,
+      "iqr": 11.86767578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5217.810546875,
+      "iqr": 38.7197265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 6455.78515625,
+      "iqr": 18.1806640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 416254.375,
+      "iqr": 2891.8125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_dot-general-rank1_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 418196.5,
+      "iqr": 2129.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 58.9200439453125,
+      "iqr": 0.3383026123046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 59.0374755859375,
+      "iqr": 0.517852783203125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 8177.50390625,
+      "iqr": 38.45703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 8162.37109375,
+      "iqr": 14.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 822218.75,
+      "iqr": 1541.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_portable-loop_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 821771.5,
+      "iqr": 2202.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len100",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1075.95361328125,
+      "iqr": 15.227294921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len100",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1082.9765625,
+      "iqr": 3.65478515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len10000",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2547.7900390625,
+      "iqr": 22.73779296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len10000",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 3729.13671875,
+      "iqr": 23.041015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len1000000",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 166379.75,
+      "iqr": 1922.8125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "conj_dot_f64_pytorch-vdot_len1000000",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 86636.875,
+      "iqr": 2121.859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 856781.75,
+      "iqr": 3926.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_contiguous_operand_f32_prepared_in1024_out1024_len8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1084387.0,
+      "iqr": 4800.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 10255383.0,
+      "iqr": 19123.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 6549904.0,
+      "iqr": 17250.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1421185.0,
+      "iqr": 9566.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 940132.25,
+      "iqr": 5729.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 857806.75,
+      "iqr": 4298.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out1024_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1092087.5,
+      "iqr": 5923.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 47577525.0,
+      "iqr": 929068.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 27500391.0,
+      "iqr": 572557.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5778996.0,
+      "iqr": 40319.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3709044.0,
+      "iqr": 27631.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3506634.0,
+      "iqr": 32728.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_eager-shared_in1024_out4096_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4377936.0,
+      "iqr": 25552.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 9551690.0,
+      "iqr": 26979.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 4819444.0,
+      "iqr": 13980.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 1185889.5,
+      "iqr": 4258.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 660677.25,
+      "iqr": 3541.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 303959.625,
+      "iqr": 2382.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out1024_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 176263.75,
+      "iqr": 1436.8125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 38505877.0,
+      "iqr": 693437.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 18962247.0,
+      "iqr": 75671.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 4742347.0,
+      "iqr": 20275.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 2409667.0,
+      "iqr": 14085.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "faer-direct",
+      "median": 1245877.5,
+      "iqr": 6287.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_faer-direct_in1024_out4096_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "faer-direct",
+      "median": 626331.75,
+      "iqr": 3396.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 10870074.0,
+      "iqr": 27795.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 6099693.0,
+      "iqr": 8958.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 2155962.0,
+      "iqr": 7550.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 1640673.5,
+      "iqr": 6564.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 1235738.0,
+      "iqr": 5703.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out1024_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 1156588.0,
+      "iqr": 5370.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 43678896.0,
+      "iqr": 137912.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 24590929.0,
+      "iqr": 269936.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 8698591.0,
+      "iqr": 29388.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 6592397.0,
+      "iqr": 18707.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 4963891.0,
+      "iqr": 27696.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_host-sgemm_in1024_out4096_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "matrixmultiply-sgemm",
+      "median": 4656805.0,
+      "iqr": 32999.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 10455115.0,
+      "iqr": 39949.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 6869463.0,
+      "iqr": 24917.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1496705.5,
+      "iqr": 9205.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 985559.0,
+      "iqr": 5929.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 371663.875,
+      "iqr": 1778.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out1024_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 282176.625,
+      "iqr": 7319.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len512",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 43123731.0,
+      "iqr": 654229.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len512",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 27400094.0,
+      "iqr": 1426406.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 6142320.0,
+      "iqr": 17511.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 4009525.0,
+      "iqr": 70814.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1585776.0,
+      "iqr": 20039.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_f32_pytorch_in1024_out4096_len8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1213236.0,
+      "iqr": 33263.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2810663.0,
+      "iqr": 21506.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_view_operand_f32_prepared_in1024_out1024_len8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3691409.0,
+      "iqr": 53964.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 372313.625,
+      "iqr": 3456.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "decode_proj_view_operand_f32_pytorch_in1024_out1024_len8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 280425.375,
+      "iqr": 3465.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_hadamard_f64_dot-general-shared_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 528770.5,
+      "iqr": 14974.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_hadamard_f64_dot-general-shared_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 228417.75,
+      "iqr": 8739.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_hadamard_f64_pytorch_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 441728.0,
+      "iqr": 48270.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_hadamard_f64_pytorch_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 918310.25,
+      "iqr": 34315.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_outer_f64_dot-general-shared_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 166534.5,
+      "iqr": 12678.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_outer_f64_dot-general-shared_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 161016.5,
+      "iqr": 9201.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_outer_f64_pytorch_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2030352.875,
+      "iqr": 64334.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_outer_f64_pytorch_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 190643.5,
+      "iqr": 5161.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_rank0_f64_dot-general-shared_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 850067.0,
+      "iqr": 20638.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_rank0_f64_dot-general-shared_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 840464.0,
+      "iqr": 8522.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_rank0_f64_pytorch_n1024",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 305613.25,
+      "iqr": 13507.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "degenerate_dot_rank0_f64_pytorch_n1024",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 817606.25,
+      "iqr": 31606.6875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_add_f64_eager-held-session",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1707.5458984375,
+      "iqr": 15.74609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_add_f64_eager-held-session",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3089.615234375,
+      "iqr": 27.705078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_add_f64_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1170.16015625,
+      "iqr": 17.105224609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_add_f64_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1197.41748046875,
+      "iqr": 12.11962890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_gemm_f64_eager-held-session",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2562.2177734375,
+      "iqr": 6.57666015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_gemm_f64_eager-held-session",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3903.232421875,
+      "iqr": 12.380859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_gemm_f64_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1322.6787109375,
+      "iqr": 15.1396484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_gemm_f64_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1331.173828125,
+      "iqr": 18.310791015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_leaf_f64_eager-held-session",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2916.283203125,
+      "iqr": 158.04443359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_small_leaf_f64_eager-held-session",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2844.705078125,
+      "iqr": 44.361328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n1048576",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 439087.0,
+      "iqr": 10688.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n1048576",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 206201.25,
+      "iqr": 6284.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n256",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1266.97607421875,
+      "iqr": 12.72607421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n256",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1271.86962890625,
+      "iqr": 29.93896484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n4096",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 3474.8544921875,
+      "iqr": 134.22119140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_pytorch_n4096",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 3275.638671875,
+      "iqr": 95.1064453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n1048576",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 461207.0,
+      "iqr": 7603.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n1048576",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 216081.0,
+      "iqr": 31732.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 846.388671875,
+      "iqr": 26.692138671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n256",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2012.3310546875,
+      "iqr": 11.2763671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1959.4765625,
+      "iqr": 33.09765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_add_f64_session-add_n4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3159.7734375,
+      "iqr": 43.23046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 229.108154296875,
+      "iqr": 3.333404541015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 225.732421875,
+      "iqr": 6.312103271484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n65536",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 103.2568359375,
+      "iqr": 0.9482421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n65536",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 107.0712890625,
+      "iqr": 4.9287109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 104.5980224609375,
+      "iqr": 2.1632080078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_col_n8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 103.89459228515625,
+      "iqr": 1.17486572265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 18207.890625,
+      "iqr": 79.37109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 17211.9921875,
+      "iqr": 1558.03125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n65536",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 303817.25,
+      "iqr": 10100.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n65536",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 281904.0,
+      "iqr": 1651.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 240.04345703125,
+      "iqr": 2.3807373046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "erased_construct_f64_row_n8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 218.1363525390625,
+      "iqr": 4.979248046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_axis0_c64_fft-executor_n128",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5772449.0,
+      "iqr": 45482.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_axis0_c64_fft-executor_n128",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5386746.0,
+      "iqr": 66973.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_axis0_c64_pytorch_n128",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 28636837.0,
+      "iqr": 3973369.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "fft_axis0_c64_pytorch_n128",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 8297829.0,
+      "iqr": 691639.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "followup_complex_exp_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_complex_exp_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_complex_exp_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_complex_exp_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_complex_norm_fro_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_complex_norm_fro_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_complex_norm_fro_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_complex_norm_fro_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_fft_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_fft_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_fft_mkl-dfti",
+      "group": "threads=1 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_fft_mkl-dfti",
+      "group": "threads=4 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_ifft_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_ifft_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_ifft_mkl-dfti",
+      "group": "threads=1 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_ifft_mkl-dfti",
+      "group": "threads=4 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_irfft_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_irfft_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_irfft_mkl-dfti",
+      "group": "threads=1 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_irfft_mkl-dfti",
+      "group": "threads=4 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_rfft_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_rfft_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_rfft_mkl-dfti",
+      "group": "threads=1 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_fft_rfft_mkl-dfti",
+      "group": "threads=4 / steady_state",
+      "backend": "mkl-dfti",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_dynamic_update_slice_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_dynamic_update_slice_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_dynamic_update_slice_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_dynamic_update_slice_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_gather_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_gather_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_gather_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_gather_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_scatter_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_scatter_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_scatter_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_index_scatter_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_reshape_view_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_reshape_view_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata-host-dyn",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata-host-dyn",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata-host-static",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_reshape_view_metadata-host-static",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_slice_view_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_slice_view_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata-host-dyn",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata-host-dyn",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata-host-static",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_slice_view_metadata-host-static",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_transpose_view_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_transpose_view_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata-host-dyn",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata-host-dyn",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata-host-static",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_metadata_transpose_view_metadata-host-static",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_cyclic_15d_3_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_cyclic_15d_3_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_cyclic_15d_3_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_cyclic_15d_3_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_reverse_15d_3_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_reverse_15d_3_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_reverse_15d_3_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_reverse_15d_3_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_reverse_23d_2_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_reverse_23d_2_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_reverse_23d_2_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_reverse_23d_2_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_rotation_6d_32_32_32_32_16_16_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_rotation_6d_32_32_32_32_16_16_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_rotation_6d_32_32_32_32_16_16_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_contiguous_same_perm_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_contiguous_same_perm_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_contiguous_same_perm_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_scattered_to_colmajor_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_tn_light_415_24d_scattered_to_colmajor_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_102_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_102_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_102_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_102_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_201_materialize",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_201_materialize",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_201_strided-rs",
+      "group": "threads=1 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_perm_transpose_3d_256_201_strided-rs",
+      "group": "threads=4 / steady_state",
+      "backend": "strided-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_cos_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_cos_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_cos_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_cos_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_exp_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_exp_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_exp_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_exp_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_expm1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_expm1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_expm1_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_expm1_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_log1p_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_log1p_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_log1p_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_log1p_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_log_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_log_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_log_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_log_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_pow_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_pow_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_pow_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_pow_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_all_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_all_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_all_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_all_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_axis0_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_axis0_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_axis0_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_axis0_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_axis1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_axis1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_axis1_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_max_axis1_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_all_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_all_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_all_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_all_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_axis0_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_axis0_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_axis0_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_axis0_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_axis1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_axis1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_axis1_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_min_axis1_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_prod_axis1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_prod_axis1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_prod_axis1_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_prod_axis1_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_sum_axis1_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_sum_axis1_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_sum_axis1_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_reduce_sum_axis1_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_sin_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_sin_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_sin_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_sin_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_tanh_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_tanh_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_tanh_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_real_tanh_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_broadcast_in_dim_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_broadcast_in_dim_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_broadcast_in_dim_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_broadcast_in_dim_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_extract_diagonal_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_extract_diagonal_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_extract_diagonal_jax",
+      "group": "threads=1 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_extract_diagonal_jax",
+      "group": "threads=4 / steady_state",
+      "backend": "jax-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_transpose_direct-shared",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_transpose_direct-shared",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_transpose_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "followup_structural_transpose_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": null,
+      "status": "failed",
+      "verified": false,
+      "reason": "FileNotFoundError(2, 'No such file or directory')"
+    },
+    {
+      "case": "gemm_bound_f64_t1_t8_scaling",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 134835073.0,
+      "iqr": 1558785.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_bound_f64_t1_t8_scaling_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 134478961.0,
+      "iqr": 771683.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_c64_mm256_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2631230.0,
+      "iqr": 18067.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_c64_mm256_t1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1642671.5,
+      "iqr": 5007.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_f64_mm256_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 688723.0,
+      "iqr": 3382.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "gemm_f64_mm256_t1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 392985.625,
+      "iqr": 1642.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 86391.75,
+      "iqr": 1049.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 153794.5625,
+      "iqr": 1337.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 383305.0,
+      "iqr": 8477.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 516513.5,
+      "iqr": 16925.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 46465.84375,
+      "iqr": 308.8828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 59896.0625,
+      "iqr": 1668.984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 86115.75,
+      "iqr": 1598.59375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-composed_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 154401.0,
+      "iqr": 2209.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 84522.75,
+      "iqr": 1469.6875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 148442.3125,
+      "iqr": 2113.71875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 387225.5,
+      "iqr": 7305.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 425364.5,
+      "iqr": 5386.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 49261.171875,
+      "iqr": 276.03125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 66106.4375,
+      "iqr": 1639.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 86086.25,
+      "iqr": 1162.34375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_eager-single-call_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 167317.5625,
+      "iqr": 1988.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 26575.2421875,
+      "iqr": 1178.4453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 15587.4140625,
+      "iqr": 185.546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 199084.625,
+      "iqr": 31468.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 98135.34375,
+      "iqr": 593.828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 5357.841796875,
+      "iqr": 143.8544921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 6981.734375,
+      "iqr": 94.8564453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 27437.9921875,
+      "iqr": 769.44921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "layer_norm_f32_pytorch-fused_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 15121.8125,
+      "iqr": 807.16015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-composed_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2187199.0,
+      "iqr": 64905.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-composed_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1624265.0,
+      "iqr": 88903.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-composed_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 82880.375,
+      "iqr": 584.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-composed_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 72699.90625,
+      "iqr": 467.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2053132.0,
+      "iqr": 82156.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1347844.0,
+      "iqr": 17312.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 98021.03125,
+      "iqr": 594.609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 98346.90625,
+      "iqr": 1055.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_pytorch_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1237405.5,
+      "iqr": 10190.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_pytorch_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 620238.25,
+      "iqr": 7860.375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_pytorch_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 23012.75,
+      "iqr": 994.66015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_pytorch_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 14610.7109375,
+      "iqr": 97.4453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_session-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2124737.0,
+      "iqr": 47509.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_session-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1534933.5,
+      "iqr": 111030.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_session-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 79929.125,
+      "iqr": 1349.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "log_softmax_f32_session-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 70301.34375,
+      "iqr": 718.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lstsq_f64_eager-shared_m768_n384_rhs16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 17158802.0,
+      "iqr": 243572.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lstsq_f64_eager-shared_m768_n384_rhs16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 33304633.0,
+      "iqr": 913175.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lstsq_f64_pytorch_m768_n384_rhs16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 7334629.0,
+      "iqr": 35272.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lstsq_f64_pytorch_m768_n384_rhs16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 5113228.0,
+      "iqr": 88821.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n16_b1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 814224.5,
+      "iqr": 4672.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n16_b1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 816914.0,
+      "iqr": 8249.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n16_b1024_host",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 1829995.0,
+      "iqr": 11141.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n16_b1024_host",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 1822700.0,
+      "iqr": 6466.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n8_b1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 279324.75,
+      "iqr": 1585.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n8_b1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 273407.5,
+      "iqr": 2207.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n8_b1024_host",
+      "group": "threads=1 / steady_state",
+      "backend": "rust-loop",
+      "median": 464829.5,
+      "iqr": 3298.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_factor_n8_b1024_host",
+      "group": "threads=4 / steady_state",
+      "backend": "rust-loop",
+      "median": 463142.25,
+      "iqr": 2831.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n16_b1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 249086.75,
+      "iqr": 634.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n16_b1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 247722.25,
+      "iqr": 823.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n16_b1024_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 299310.375,
+      "iqr": 1316.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n16_b1024_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 299986.5,
+      "iqr": 1152.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n8_b1024",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 165183.5625,
+      "iqr": 732.34375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n8_b1024",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 165099.8125,
+      "iqr": 488.53125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n8_b1024_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 139550.375,
+      "iqr": 947.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "lu_batched_f64_solve_n8_b1024_pytorch",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 139609.25,
+      "iqr": 561.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-composed_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2885726.0,
+      "iqr": 74434.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-composed_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2651012.0,
+      "iqr": 2519945.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-composed_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 102153.625,
+      "iqr": 829.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-composed_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 86637.84375,
+      "iqr": 663.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 6717473.0,
+      "iqr": 106291.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3009870.0,
+      "iqr": 22873.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 192667.125,
+      "iqr": 2583.15625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 146801.1875,
+      "iqr": 2275.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_pytorch_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2968879.0,
+      "iqr": 52256.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_pytorch_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1466338.0,
+      "iqr": 331123.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_pytorch_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 52603.125,
+      "iqr": 592.828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_pytorch_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 61983.515625,
+      "iqr": 914.15625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_session-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 6731893.0,
+      "iqr": 36203.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_session-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3072561.0,
+      "iqr": 40374.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_session-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 168485.3125,
+      "iqr": 880.09375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "masked_softmax_f32_session-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 122719.5625,
+      "iqr": 574.90625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "metadata_transpose_view_f64_rank8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 65.2899169921875,
+      "iqr": 1.720703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "metadata_transpose_view_f64_rank8_t1_julia-base",
+      "group": "threads=1 / steady_state",
+      "backend": "julia-base",
+      "median": 0.15607929229736328,
+      "iqr": 0.012383460998535156,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "metadata_transpose_view_f64_rank8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 65.5098876953125,
+      "iqr": 1.1131591796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "metadata_transpose_view_f64_rank8_t4_julia-base",
+      "group": "threads=4 / steady_state",
+      "backend": "julia-base",
+      "median": 0.15500831604003906,
+      "iqr": 0.00911092758178711,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_eager-composed_1024x64_axis0",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 12103.9453125,
+      "iqr": 125.279296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_eager-composed_1024x64_axis0",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 16813.28125,
+      "iqr": 331.1484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_eager-single-call_1024x64_axis0",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 12231.359375,
+      "iqr": 61.517578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_eager-single-call_1024x64_axis0",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 17149.0078125,
+      "iqr": 85.27734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_pytorch_1024x64_axis0",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 6416.53125,
+      "iqr": 67.748046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_pytorch_1024x64_axis0",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 8741.30859375,
+      "iqr": 41.56640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_session-single-call_1024x64_axis0",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5435.5,
+      "iqr": 41.9462890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reduce_mean_f32_session-single-call_1024x64_axis0",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 9239.26953125,
+      "iqr": 64.236328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_f64_concrete-shared_n33554432_to8192x4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 116275702.0,
+      "iqr": 7416327.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_f64_concrete-shared_n33554432_to8192x4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 35618436.0,
+      "iqr": 142256.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_f64_pytorch_n33554432_to8192x4096",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 112451968.0,
+      "iqr": 4429105.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "reshape_f64_pytorch_n33554432_to8192x4096",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 36540353.0,
+      "iqr": 1245984.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 45659.5,
+      "iqr": 455.671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 77319.8125,
+      "iqr": 1022.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 196052.75,
+      "iqr": 9940.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 198899.75,
+      "iqr": 13061.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 24220.375,
+      "iqr": 211.796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 33251.953125,
+      "iqr": 313.9765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 44199.21875,
+      "iqr": 706.03125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-composed_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 80471.9375,
+      "iqr": 2692.96875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 49850.0,
+      "iqr": 486.96875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 72529.625,
+      "iqr": 1147.34375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 189067.5,
+      "iqr": 4482.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 260312.25,
+      "iqr": 7296.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 29058.734375,
+      "iqr": 185.734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 38340.203125,
+      "iqr": 220.1640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 48759.0625,
+      "iqr": 518.09375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_eager-single-call_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 83687.25,
+      "iqr": 1477.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len64_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 33173.828125,
+      "iqr": 261.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len64_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 43236.453125,
+      "iqr": 752.3671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 246571.8125,
+      "iqr": 20855.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 176216.25,
+      "iqr": 13095.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len8_b1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 12842.28125,
+      "iqr": 72.80078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len8_b1",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 12930.2734375,
+      "iqr": 42.193359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len8_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 33262.71875,
+      "iqr": 793.0390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "rms_norm_f32_pytorch-fused_d1024_len8_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 42705.828125,
+      "iqr": 706.1796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2752.2705078125,
+      "iqr": 8.56201171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_contraction_abcd-dbef-acef_f64_shared-session-default-pool_d4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4021.609375,
+      "iqr": 6.1044921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 104738.6875,
+      "iqr": 1667.453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 106930.375,
+      "iqr": 1865.71875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 85026.625,
+      "iqr": 1555.859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 85903.59375,
+      "iqr": 1964.140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 64168.84375,
+      "iqr": 808.359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 101011.375,
+      "iqr": 1957.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 44440.984375,
+      "iqr": 345.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_eigh_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 78380.96875,
+      "iqr": 872.53125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 97761.5625,
+      "iqr": 1322.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 131290.1875,
+      "iqr": 1094.40625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 89695.34375,
+      "iqr": 1435.53125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 121974.0,
+      "iqr": 1266.21875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 26608.96875,
+      "iqr": 83.01171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 43006.234375,
+      "iqr": 193.796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 21472.6796875,
+      "iqr": 256.859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_lu_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 37923.0,
+      "iqr": 211.7109375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 91559.03125,
+      "iqr": 1159.984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 118058.25,
+      "iqr": 1700.921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 82844.375,
+      "iqr": 1771.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 108332.4375,
+      "iqr": 1427.40625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 43347.1875,
+      "iqr": 335.015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 69174.65625,
+      "iqr": 771.296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 35615.234375,
+      "iqr": 354.125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_qr_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 61453.0,
+      "iqr": 743.59375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 72970.8125,
+      "iqr": 1318.328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 74324.0625,
+      "iqr": 780.96875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 82606.21875,
+      "iqr": 35602.53125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 63939.15625,
+      "iqr": 1449.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 20933.8359375,
+      "iqr": 112.15625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 32495.1875,
+      "iqr": 88.3359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 15217.484375,
+      "iqr": 3281.26171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_solve_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 26233.03125,
+      "iqr": 329.46484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_pytorch_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 162276.875,
+      "iqr": 3189.3125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_pytorch_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 161532.125,
+      "iqr": 2360.6875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_pytorch_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 122582.375,
+      "iqr": 1040.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_pytorch_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 122897.25,
+      "iqr": 1415.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_trace-prepared_n16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 109656.8125,
+      "iqr": 4981.046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_trace-prepared_n16",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 171749.5625,
+      "iqr": 2417.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_trace-prepared_n4",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 74207.625,
+      "iqr": 2664.84375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_grad_svd_f64_trace-prepared_n4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 128171.25,
+      "iqr": 1251.21875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-batched_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 147045.125,
+      "iqr": 924.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-batched_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 198987.6875,
+      "iqr": 925.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-batched_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 3926841.0,
+      "iqr": 39513.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-batched_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2670009.0,
+      "iqr": 12649.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-triangular-batched_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 56631.53125,
+      "iqr": 304.828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-triangular-batched_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 56540.1875,
+      "iqr": 364.140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-triangular-batched_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1264375.0,
+      "iqr": 4626.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_pytorch-solve-triangular-batched_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 757021.25,
+      "iqr": 6674.75,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-batched_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 211074.6875,
+      "iqr": 3725.4375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-batched_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 214944.3125,
+      "iqr": 3351.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-batched_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5373435.0,
+      "iqr": 48141.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-batched_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5913781.0,
+      "iqr": 54034.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-loop_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 230056.25,
+      "iqr": 495.1875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-loop_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 309573.125,
+      "iqr": 937.0625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-loop_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3940681.0,
+      "iqr": 7530.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_solve-loop_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4679420.0,
+      "iqr": 45918.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_triangular-solve-loop_k16_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 166998.125,
+      "iqr": 834.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_triangular-solve-loop_k16_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 241605.3125,
+      "iqr": 1767.5625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_triangular-solve-loop_k64_b64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1242383.0,
+      "iqr": 16849.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "small_solve_f64_triangular-solve-loop_k64_b64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2015123.0,
+      "iqr": 12223.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2229121.0,
+      "iqr": 29413.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1731838.0,
+      "iqr": 29618.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 92371.78125,
+      "iqr": 643.921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 68603.875,
+      "iqr": 624.671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len64_b8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 92313.34375,
+      "iqr": 559.71875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-composed_len64_b8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 67301.3125,
+      "iqr": 734.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1136152.0,
+      "iqr": 7866.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 503840.0,
+      "iqr": 9892.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 19377.96875,
+      "iqr": 179.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 14594.390625,
+      "iqr": 288.3984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len64_b8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 20173.515625,
+      "iqr": 170.0078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_eager-single-call_len64_b8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 14561.703125,
+      "iqr": 47.6484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1320437.5,
+      "iqr": 4677.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 520632.0,
+      "iqr": 2826.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 24868.5234375,
+      "iqr": 102.76953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 13221.953125,
+      "iqr": 138.9140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len64_b8_t1",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 24859.703125,
+      "iqr": 179.75390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_pytorch_len64_b8_t4",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 13554.70703125,
+      "iqr": 130.796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_session-single-call_len512_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1121511.0,
+      "iqr": 19396.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_session-single-call_len512_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 511075.5,
+      "iqr": 7253.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_session-single-call_len64_b8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 18965.796875,
+      "iqr": 176.265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f32_session-single-call_len64_b8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 13875.21875,
+      "iqr": 94.734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f64_pool_pool4_1024x4096",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4094352.0,
+      "iqr": 15237.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f64_pool_pytorch_t1_1024x4096",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 19526215.0,
+      "iqr": 486068.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f64_pool_pytorch_t4_1024x4096",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 6849748.0,
+      "iqr": 136405.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "softmax_f64_pool_serial_1024x4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 10691155.0,
+      "iqr": 63032.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 6324786.0,
+      "iqr": 40720.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_eager-gather-prebuilt_n64_b256",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3933005.0,
+      "iqr": 9634.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_eager-single-call_n64_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 6573211.0,
+      "iqr": 44670.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_eager-single-call_n64_b256",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4191364.0,
+      "iqr": 20049.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_pytorch_n64_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2778479.0,
+      "iqr": 55391.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_pytorch_n64_b256",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1374823.5,
+      "iqr": 10943.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_session-single-call_n64_b256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 6434958.0,
+      "iqr": 54284.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "take_along_axis_rows_f64_session-single-call_n64_b256",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4061033.0,
+      "iqr": 9449.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k100_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 9409046.0,
+      "iqr": 16434.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k100_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4311610.0,
+      "iqr": 6945.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k10_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 951536.5,
+      "iqr": 1940.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k10_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 440182.5,
+      "iqr": 1889.625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k200_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 18862777.0,
+      "iqr": 23575.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_compiled-prepared_k200_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 8628096.0,
+      "iqr": 13560.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k100_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 9471567.0,
+      "iqr": 18963.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k100_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4806216.0,
+      "iqr": 15944.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k10_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 950605.0,
+      "iqr": 7135.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k10_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 482448.25,
+      "iqr": 2993.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k200_1024x64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 18972658.0,
+      "iqr": 24441.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tanh_chain_f32_eager-shared_k200_1024x64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 9648684.0,
+      "iqr": 57494.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tiny_matmul_2x2_typed_held",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1284.36962890625,
+      "iqr": 12.728759765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "tiny_matmul_2x2_typed_held_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1266.26708984375,
+      "iqr": 12.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_eager_f32_1024x64_k50",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 5198401.0,
+      "iqr": 70278.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_eager_f32_1024x64_k50",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3186479.0,
+      "iqr": 19243.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_fixed_neg_f32_8",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2667.236328125,
+      "iqr": 6.71435546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_fixed_neg_f32_8",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 3947.181640625,
+      "iqr": 25.955078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_pytorch_f32_1024x64_k50",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 2099041.0,
+      "iqr": 9878.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_pytorch_f32_1024x64_k50",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1699155.5,
+      "iqr": 5508.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_trace-fold_f32_1024x64_k50",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 4556659.0,
+      "iqr": 31130.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_trace-fold_f32_1024x64_k50",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2019886.0,
+      "iqr": 7595.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_trace-outputs_f32_1024x64_k50",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2278234.5,
+      "iqr": 143465.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "trace_metadata_trace-outputs_f32_1024x64_k50",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2037947.5,
+      "iqr": 20282.25,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "triangular_f64_concrete-shared_n4096_rhs64",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 30054545.0,
+      "iqr": 101113.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "triangular_f64_concrete-shared_n4096_rhs64",
+      "group": "threads=4 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 23275517.0,
+      "iqr": 88565.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "triangular_f64_pytorch_n4096_rhs64",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 25106881.0,
+      "iqr": 176559.0,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "triangular_f64_pytorch_n4096_rhs64",
+      "group": "threads=4 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 21370890.0,
+      "iqr": 3000330.5,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1117.3623046875,
+      "iqr": 134.799560546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len16_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1182.46728515625,
+      "iqr": 32.66748046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1097.31298828125,
+      "iqr": 4.802001953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len256_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1266.541015625,
+      "iqr": 6.6748046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 2153.546875,
+      "iqr": 41.52734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_held_len4096_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 3206.8037109375,
+      "iqr": 278.91064453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len16",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 700.466064453125,
+      "iqr": 4.1185302734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len16_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1050.7607421875,
+      "iqr": 7.67724609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len256",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 737.901611328125,
+      "iqr": 2.6429443359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len256_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1082.75048828125,
+      "iqr": 7.921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len4096",
+      "group": "threads=1 / steady_state",
+      "backend": "tenferro-rs",
+      "median": 1714.26806640625,
+      "iqr": 5.259521484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "typed_elemwise_f64_add_into_held_len4096_pytorch",
+      "group": "threads=1 / steady_state",
+      "backend": "pytorch-cpu",
+      "median": 1960.689453125,
+      "iqr": 9.7548828125,
+      "status": "ok",
+      "verified": true
+    }
+  ],
+  "source_runs": [
+    {
+      "run": "data/results/amd-cpu/cpu/perf_issues/20261031_233003",
+      "threads": [
+        1
+      ],
+      "host": {
+        "cpu": "AMD EPYC 9V74 80-Core Processor",
+        "logical_cpus": 4,
+        "power": {
+          "smt": {
+            "active": "1",
+            "control": "on"
+          }
+        },
+        "numa": {
+          "nodes": 1,
+          "cpulists": {
+            "0": "0-3"
+          }
+        },
+        "smt_siblings": [
+          "0-1",
+          "2-3"
+        ],
+        "l3_domains": [
+          "0-3"
+        ]
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.1\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.1",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "smt {'active': '1', 'control': 'on'}"
+    },
+    {
+      "run": "data/results/amd-cpu/cpu/perf_issues/20261031_233003",
+      "threads": [
+        4
+      ],
+      "host": {
+        "cpu": "AMD EPYC 9V74 80-Core Processor",
+        "logical_cpus": 4,
+        "power": {
+          "smt": {
+            "active": "1",
+            "control": "on"
+          }
+        },
+        "numa": {
+          "nodes": 1,
+          "cpulists": {
+            "0": "0-3"
+          }
+        },
+        "smt_siblings": [
+          "0-1",
+          "2-3"
+        ],
+        "l3_domains": [
+          "0-3"
+        ]
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.1\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.1",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "smt {'active': '1', 'control': 'on'}"
+    }
+  ],
+  "timing_policy": {
+    "version": 2,
+    "scope": "operation execution and completion synchronization",
+    "setup": "inputs, transfers, runtime/session/handles, plans and compilation outside timer",
+    "cleanup": "returned outputs retained until after timer stops",
+    "minimum_untimed_priming_runs": 1,
+    "short_operation_sampling": "many operations per interval; shared session where supported; see docs/short-operation-sessions.md",
+    "trace_execution": "prepare_compiled and caller-held session entry outside timing; run_prepared_in inside",
+    "setup_diagnostics": false
+  }
+}
