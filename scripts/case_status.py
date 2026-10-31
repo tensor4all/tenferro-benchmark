@@ -5,7 +5,7 @@ Every runner that uses this writes ``case_status.json`` next to its raw rows.
 The accounting is deliberately one-directional: a case counts as *executed*
 (and therefore as covered) only when a row for it exists and passed its
 numerical check. Missing, failed (including compile/launch failures that
-produce no row) and unsupported cases are listed separately and can never be
+produce no row), skipped and unsupported cases are listed separately and can never be
 promoted to success. ``noisy`` is a descriptive subset of executed.
 
 Case keys are ``<case_id>`` or ``<case_id>[<provider>]`` when one case runs on
@@ -44,7 +44,7 @@ def build_case_status(*, suite_id: str, manifest_version: int, coverage: str,
                       rows: Iterable[dict], selection_filter: str | None) -> dict:
     """Classify rows (each with ``case_key`` and ``status``) against the plan.
 
-    ``status`` is ``passed``/``observed`` (success), ``unsupported``, or anything
+    ``status`` is ``passed``/``observed`` (success), ``unsupported``, ``skipped``, or anything
     else (failure). ``cov`` may be given for noisy labelling.
     """
     expected = list(dict.fromkeys(expected))
@@ -56,7 +56,7 @@ def build_case_status(*, suite_id: str, manifest_version: int, coverage: str,
         if key in by_key:
             duplicates.append(key)
         by_key[key] = row
-    executed, unsupported, failed, noisy = [], [], [], []
+    executed, unsupported, skipped, failed, noisy = [], [], [], [], []
     for key in selected:
         row = by_key.get(key)
         if row is None:
@@ -69,9 +69,11 @@ def build_case_status(*, suite_id: str, manifest_version: int, coverage: str,
                 noisy.append(key)
         elif status in UNSUPPORTED:
             unsupported.append(key)
+        elif status == 'skipped':
+            skipped.append(key)
         else:
             failed.append(key)
-    accounted = set(executed) | set(unsupported) | set(failed)
+    accounted = set(executed) | set(unsupported) | set(skipped) | set(failed)
     missing = [k for k in selected if k not in accounted]
     unexpected = sorted(set(by_key) - set(selected))
     not_selected = [k for k in expected if k not in set(selected)]
@@ -85,17 +87,18 @@ def build_case_status(*, suite_id: str, manifest_version: int, coverage: str,
         "counts": {
             "expected": len(expected), "selected": len(selected),
             "executed": len(executed), "unsupported": len(unsupported),
-            "failed": len(failed), "missing": len(missing), "noisy": len(noisy),
+            "failed": len(failed), "skipped": len(skipped), "missing": len(missing), "noisy": len(noisy),
         },
         # A run is complete only when everything expected was selected and
         # every selected case actually passed. Unsupported is accounted for,
         # but is never covered; duplicates/unexpected rows invalidate completion.
-        "complete": not (not_selected or missing or failed or unsupported or duplicates or unexpected),
+        "complete": not (not_selected or missing or failed or skipped or unsupported or duplicates or unexpected),
         "expected": expected,
         "selected": selected,
         "not_selected": not_selected,
         "executed": executed,
         "unsupported": unsupported,
+        "skipped": skipped,
         "failed": failed,
         "missing": missing,
         "noisy": noisy,
@@ -117,16 +120,21 @@ def merge_case_status(parts: list[dict]) -> dict:
                                     "coverage", "effort", "selection_filter")}
     lists = ("expected", "selected", "not_selected", "executed", "unsupported", "failed",
              "missing", "noisy", "unexpected_rows", "duplicate_rows")
+    # Keep legacy renderings byte-stable; only new records declare skipped.
+    if any('skipped' in part for part in parts):
+        lists += ('skipped',)
     for field in lists:
-        merged[field] = [k for part in parts for k in part[field]]
+        merged[field] = [k for part in parts for k in part.get(field, [])]
     merged["counts"] = {f: len(merged[f]) for f in
                         ("expected", "selected", "executed", "unsupported", "failed",
                          "missing", "noisy")}
+    if 'skipped' in merged:
+        merged['counts']['skipped'] = len(merged['skipped'])
     # Recompute when formatting older raw campaigns: their cached `complete`
     # field treated unsupported rows as complete accounting, not coverage.
     merged["complete"] = not any(merged[field] for field in
                                 ("not_selected", "missing", "failed", "unsupported",
-                                 "unexpected_rows", "duplicate_rows"))
+                                 "unexpected_rows", "duplicate_rows")) and not merged.get('skipped')
     return merged
 
 
@@ -148,8 +156,15 @@ def markdown_section(status: dict) -> list[str]:
         f"- Complete: **{'yes' if status['complete'] else 'NO'}** — only executed "
         "cases count as covered; unsupported, failed, missing and unselected cases never do.",
     ]
-    for field in ("not_selected", "missing", "failed", "unsupported", "noisy"):
-        if status[field]:
+    if 'skipped' in counts:
+        lines[3] = lines[3].replace(', missing', f", skipped {counts['skipped']}, missing")
+        lines[4] = lines[4].replace('unsupported, failed', 'unsupported, skipped, failed')
+        columns = ('expected', 'selected', 'executed', 'unsupported', 'failed', 'skipped', 'missing', 'noisy')
+        lines += ['', '| ' + ' | '.join(columns) + ' |',
+                  '|' + '---:|' * len(columns),
+                  '| ' + ' | '.join(str(counts[c]) for c in columns) + ' |', '']
+    for field in ("not_selected", "missing", "failed", "skipped", "unsupported", "noisy"):
+        if status.get(field):
             shown = ", ".join(f"`{k}`" for k in status[field][:40])
             more = f" (+{len(status[field]) - 40} more)" if len(status[field]) > 40 else ""
             lines.append(f"- {field.replace('_', ' ').capitalize()}: {shown}{more}")

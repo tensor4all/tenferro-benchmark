@@ -126,6 +126,37 @@ allocation (`torch.empty`) and DftiComputeForward/Backward are timed. This is
 a **cached oneMKL reference**, not a PyTorch FFT row. Native completion is
 synchronous. Its explicit thread limit is recorded in the JSON provider field.
 
+### Reference runtime discovery in `cpu/perf_issues`
+
+Julia is resolved in this order: an explicit `JULIA` executable, `julia` on
+`PATH` (`shutil.which`), then `$HOME/.juliaup/bin/julia`. An invalid explicit
+`JULIA` is an error, not permission to choose another installation. When none
+is executable, the row fails with `julia not found: set JULIA or install juliaup`.
+
+The cached DFTI reference tries to load `libmkl_rt` at **runtime only**, in order:
+
+1. If set, `MKLROOT/lib/libmkl_rt.so`, then `MKLROOT/lib/intel64/libmkl_rt.so`.
+2. `ctypes.util.find_library("mkl_rt")` (the system loader search).
+3. `/opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_rt.so`, then
+   `/usr/lib/x86_64-linux-gnu/libmkl_rt.so`.
+
+The first loadable library is recorded as `provider.library` in the raw
+reference output. Discovery never exports or changes `MKLROOT`, loader paths
+or build/link settings. On primerose, an execution-only check with `MKLROOT`
+unset selected `/opt/intel/oneapi/mkl/latest/lib/intel64/libmkl_rt.so`; all four
+FFT operations ran and matched the reference at an effective one thread, with
+no timing samples. Do not set a global build-time `MKLROOT` to enable this
+reference: that can break the build's `-liomp5` linkage.
+
+If no candidate loads, the reference and its dependent matched-check cases
+are recorded as `skipped`, with `samples: []` and a `skip_reason` listing the
+attempts. No Rust arm or timing runs for a missing reference. DFTI setup,
+execution and numerical-check errors remain `failed`; a skip is not a passed
+check or complete coverage. `run_perf_issues.sh` / `run_all.sh` return zero
+when there are no failures or missing rows, even when references are skipped.
+For an execution/validation-only pass use `PERF_ISSUES_CORRECTNESS_ONLY=1`;
+this disables sampling, not correctness checks.
+
 Julia primes the exact typed batch-loop specialization, including output
 assignment, before every interval. Each output escapes to an observable root
 after the clock, held until the next untimed setup. This prevents JIT setup

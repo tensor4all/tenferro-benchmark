@@ -2,25 +2,34 @@
 import json
 import os
 from pathlib import Path
-import shutil
 import subprocess
+import shutil
 import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'mwe/cpu_followup'))
 from validation import verify
 
 
-def julia():
-    explicit=os.environ.get('JULIA')
-    if explicit:return explicit
-    found=shutil.which('julia')
-    if found:return found
-    return str(Path.home()/'.juliaup/bin/julia')
+def resolve_julia():
+    """Honor an explicit JULIA; otherwise search PATH, then juliaup's default."""
+    override = os.environ.get('JULIA')
+    if override:
+        executable = shutil.which(override)
+        if executable:
+            return executable
+        raise RuntimeError(f'julia not found: JULIA={override!r} is not executable; set JULIA or install juliaup')
+    executable = shutil.which('julia')
+    if executable:
+        return executable
+    juliaup = Path.home() / '.juliaup/bin/julia'
+    if juliaup.is_file() and os.access(juliaup, os.X_OK):
+        return str(juliaup)
+    raise RuntimeError('julia not found: set JULIA or install juliaup')
 
 
 def command(case_id, path, threads, runs):
     if path=='julia-base':
-        return [julia(), '--project=.',
+        return [resolve_julia(), '--project=.',
                 str(ROOT/'mwe/cpu_followup/reference.jl'),case_id,str(threads),str(runs)]
     if path in ('pytorch','jax','mkl-dfti'):
         return [sys.executable,str(ROOT/'mwe/cpu_followup/reference.py'),case_id,path,str(threads),str(runs)]
@@ -33,7 +42,8 @@ def execute(case_id,path,threads,runs,target_ns):
     result=subprocess.run(command(case_id,path,threads,runs),cwd=ROOT,env=env,capture_output=True,text=True)
     if result.returncode:
         raise RuntimeError(f'{path}: {result.stderr.strip()}')
-    row=json.loads(result.stdout.strip().splitlines()[-1]);row['status']='ok'
+    row=json.loads(result.stdout.strip().splitlines()[-1])
+    row['status']='skipped' if row.get('correctness_status')=='skipped' else 'ok'
     return row
 
 
@@ -41,12 +51,16 @@ def run(case,threads,config,correctness_only=False):
     p=case.get('followup_mwe',case['params']); cid=p['case_id'];path=p.get('path',case['arm']);target=int(config['min_runtime_ms']*1_000_000)
     # Two independent completed operations establish correctness before this
     # arm's collection. Fixture creation, validation and processes are untimed.
-    rust=execute(cid,p['rust_path'],threads,0,target)
     reference=execute(cid,p['reference_path'],threads,0,target)
+    if reference['status']=='skipped':
+        return dict(correctness_status='skipped',samples=[],skip_reason=reference['skip_reason'])
+    rust=execute(cid,p['rust_path'],threads,0,target)
     valid,reason=verify(rust,reference)
     if not valid:
         return dict(correctness_status='failed',samples=[],error=reason)
     row=execute(cid,path,threads,0 if correctness_only else config['runs'],target)
+    if row['status']=='skipped':
+        return dict(correctness_status='skipped',samples=[],skip_reason=row['skip_reason'])
     row.update(correctness_status='passed',validation=reason,warmups=3,
                correctness_method='matched output shape, aggregates and deterministic probes')
     # Preserve the suite identity. The standalone binary emits its own case ID.
@@ -73,7 +87,7 @@ def main():
                 row=run(c,args.threads,dict(runs=args.runs,min_runtime_ms=10),args.runs==0)
             except Exception as error:
                 row=dict(correctness_status='failed',samples=[],error=str(error))
-            failed |= row['correctness_status']!='passed'
+            failed |= row['correctness_status'] not in ('passed','skipped')
             record=dict(c);record.update(row);record.update(case_id=c['id'],threads=args.threads)
             stream.write(json.dumps(record)+'\n');stream.flush()
             print(c['id'],row['correctness_status'],flush=True)

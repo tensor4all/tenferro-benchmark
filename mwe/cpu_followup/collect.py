@@ -30,7 +30,7 @@ def arm(case,path,threads,runs,name):
  if r.returncode:
   row=dict(status='failed',command=command,returncode=r.returncode,stderr=r.stderr)
  else:
-  try:row=json.loads(r.stdout.strip().splitlines()[-1]);row['status']='ok'
+  try:row=json.loads(r.stdout.strip().splitlines()[-1]);row['status']='skipped' if row.get('correctness_status')=='skipped' else 'ok'
   except Exception:row=dict(status='failed',stdout=r.stdout,stderr=r.stderr)
  row['command']=command;row['started_utc']=started;row['library_commit']=lib;row['harness_commit']=harness;row['wall_seconds']=time.time()-start
  dest.write_text(json.dumps(row,indent=2)+'\n');print(name,row['status'],round(row['wall_seconds'],1),flush=True)
@@ -57,6 +57,8 @@ if a.phase=='scan':
   for t in (1,4):
    ref=arm(c,reference(c),t,3,f"scan-{c['id']}-t{t}-ref")
    for path in c['paths']:
+    if ref['status']=='skipped':
+     results.append(dict(case_id=c['id'],threads=t,path=path,status='skipped',reason=ref['skip_reason']));continue
     # Trace sessions are intrinsic API-call diagnostics and are not eligible for
     # standard operation evidence under AGENTS.md. Retain an explicit disposition.
     if path=='prepared-trace-call':
@@ -75,15 +77,18 @@ else:
   if not candidates:continue
   selected=max(candidates,key=lambda r:r['ratio']);t=selected['threads'];path=selected['path'];refpath=reference(c)
   prefix=f"confirm-{c['id']}-t{t}"
-  aa=[]
+  aa=[];failed=False
   for rnd,order in enumerate(config.get('aa_order',['AB']*4)):
    arms={}
    for label in order:arms[label]=arm(c,path,t,15,f'{prefix}-aa{rnd}-{label}')
+   failed |= any(r['status'] not in ('ok','skipped') for r in arms.values())
    aa.append((timing(arms['A']),timing(arms['B'])))
-  paired=[];correct=True;why=[]
+  paired=[];correct=True;why=[];skipped=None
   for rnd,order in enumerate(config['order']):
    arms={}
    for label in order:arms[label]=arm(c,path if label=='A' else refpath,t,15,f'{prefix}-pair{rnd}-{label}')
+   failed |= any(r['status'] not in ('ok','skipped') for r in arms.values())
+   skipped=next((r for r in arms.values() if r['status']=='skipped'),skipped)
    ok,reason=verify(arms['A'],arms['B']);correct &=ok;why.append(reason)
    paired.append((timing(arms['A']),timing(arms['B'])))
   valid=all(x and y for x,y in aa+paired)
@@ -93,5 +98,6 @@ else:
    round_ok=config.get('noise_round_gate') is None or aa_spread<=config['noise_round_gate']
    status='confirmed' if correct and ratio>=1.2 and abs(aa_ratio-1)<=.1 and cov<=.2 and round_ok else 'below-threshold' if correct and abs(aa_ratio-1)<=.1 and cov<=.2 and round_ok else 'inconclusive'
    row=dict(case_id=c['id'],threads=t,path=path,reference=refpath,status=status,ratio=ratio,round_ratios=ratios,aa_ratio=aa_ratio,aa_round_max_relative_spread=aa_spread,max_cov=cov,correct=correct,validation=why,tenferro_ns=statistics.median(x['median_ns'] for x,y in paired),reference_ns=statistics.median(y['median_ns'] for x,y in paired))
+  elif skipped and not failed:row=dict(case_id=c['id'],status='skipped',reason=skipped['skip_reason'],threads=t,path=path)
   else:row=dict(case_id=c['id'],status='failed',threads=t,path=path)
   results.append(row);(out/'confirm.json').write_text(json.dumps(results,indent=2)+'\n');print('VERDICT',json.dumps(row),flush=True)

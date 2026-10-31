@@ -121,8 +121,12 @@ else:raise ValueError('unsupported reference category')
 
 if backend=='mkl-dfti':
  if cat!='fft':raise ValueError('oneMKL DFTI reference only supports FFT cases')
- from mkl_fft import prepared_fft
- call,cleanup,provider_metadata=prepared_fft(torch,x,op,n,threads)
+ from mkl_fft import prepared_fft, MklRuntimeUnavailable
+ try:
+  call,cleanup,provider_metadata=prepared_fft(torch,x,op,n,threads)
+ except MklRuntimeUnavailable as error:
+  print(json.dumps(dict(case_id=case_id,correctness_status='skipped',skip_reason=str(error),samples=[])))
+  raise SystemExit(0)
  original_input=np.array(numpy(x),copy=True)
 
 # Compiled JAX graphs are separately labelled; compilation and first execution untimed.

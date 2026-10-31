@@ -109,6 +109,20 @@ public operation). The dashboard treats those as neutral
 "not measured" rows rather than anomalies; an `unsupported` row without a
 recorded reason stays an anomaly.
 
+New `cpu/perf_issues` records distinguish an unavailable reference runtime
+(`skipped`, with a reason and no samples) from an execution or numerical-check
+failure (`failed`). The report's case-status table includes a `skipped` column;
+`perf_issues.summary.json` includes run-level `counts`, including `failed` and
+`skipped`, alongside the per-row status/reason. Skipped rows are accounted for
+but never counted as executed, passed, or complete coverage. They do not make
+`run_all.sh` fail when `failed=0` and `missing=0`. See the
+[reference runtime search order](../mwe/cpu_followup/README.md#reference-runtime-discovery-in-cpuperf_issues).
+
+Older raw runs and result files are immutable: their recorded failures are not
+reclassified, and rendering legacy records retains their original accounting
+format. These changes apply to newly collected records only. Runtime discovery
+and execution-only checks establish no performance claim.
+
 Backends keep their report column ids (`tenferro-cuda-eager`,
 `tenferro-cuda-trace`, `pytorch-cuda`, `jax-cuda`, `cublaslt`, ...; CPU suites
 their own ids and thread counts). `unit` is `ms` for the dense/linalg/permutation
