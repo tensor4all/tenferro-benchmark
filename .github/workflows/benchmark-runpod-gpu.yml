@@ -436,6 +436,8 @@ jobs:
           set -euo pipefail
           GPU_BENCH_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
           export GPU_BENCH_TIMESTAMP
+          echo "timestamp=$GPU_BENCH_TIMESTAMP" >> "$GITHUB_OUTPUT"
+          echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
           if [[ "$REQUESTED_SUITE" == perf-issues-readback ]]; then
             ./scripts/ci/run_gpu_readback.sh
             exit 0
@@ -445,16 +447,26 @@ jobs:
           else
             GPU_BENCH_SUITE="$REQUESTED_SUITE" ./scripts/run_gpu_suite.sh
           fi
-          uv run python scripts/ci/check_gpu_run.py --timestamp "$GPU_BENCH_TIMESTAMP" --backends "$GPU_BENCH_BACKENDS" --suites "$REQUESTED_SUITE"
+
+      - name: Package this collection's GPU results
+        if: always() && inputs.suite != 'perf-issues-readback' && steps.collect.outputs.timestamp != ''
+        env:
+          COLLECTION_TIMESTAMP: ${{ steps.collect.outputs.timestamp }}
+          COLLECTION_STARTED_AT: ${{ steps.collect.outputs.started_at }}
+        run: |
+          uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt --with jsonschema \
+            python scripts/ci/prepare_result_bundle.py --profile nvidia-gpu --harness-commit "$GITHUB_SHA" \
+            --started-at "$COLLECTION_STARTED_AT" --timestamp "$COLLECTION_TIMESTAMP" \
+            --backends "$GPU_BENCH_BACKENDS" --suites "$REQUESTED_SUITE" --bundle-dir _benchmark_artifact
 
       - name: Archive benchmark results
-        if: always() && inputs.suite != 'perf-issues-readback'
+        if: always() && inputs.suite != 'perf-issues-readback' && hashFiles('_benchmark_artifact/publication.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: runpod-gpu-benchmark-${{ github.run_id }}-attempt${{ github.run_attempt }}
           path: |
             _benchmark_artifact
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 90
 
       - name: Archive standalone readback results for review

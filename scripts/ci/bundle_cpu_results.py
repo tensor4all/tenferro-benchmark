@@ -74,6 +74,9 @@ def package_cpu(root: Path, profile: str, head_sha: str, bundle: Path, suites=CP
             elif name == 'permutation':
                 paths = sorted(run.glob('*_output_t*.jsonl'))
                 metadata_paths = [run/'run.yaml']
+            elif name == 'perf_issues':
+                metadata_paths = sorted(run.glob('run_t*.yaml'))[:1]
+                paths = sorted(run.glob('samples_t*.jsonl'))
             else:
                 metadata_paths = sorted(run.glob('run_t*.yaml'))
                 paths = sorted(run.glob('samples_t*.jsonl'))
@@ -88,6 +91,8 @@ def package_cpu(root: Path, profile: str, head_sha: str, bundle: Path, suites=CP
                               'raw_files': [str(path.relative_to(root)) for path in selected_paths]}
                 thread_metadata = sorted(run.glob('run_t*.yaml')) if name not in ('small_work', 'session_matrix', 'overhead_smoke') else [metadata]
                 descriptor['thread_metadata'] = [str(path.relative_to(root)) for path in thread_metadata] or [str(metadata.relative_to(root))]
+                if name == 'perf_issues':
+                    descriptor['source_run_directory'] = directory
                 if name == 'permutation':
                     match = re.search(r'^- Model: `([^`]+)`', report.read_text(), re.MULTILINE)
                     if not match:

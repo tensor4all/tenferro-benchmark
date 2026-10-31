@@ -8,6 +8,9 @@ from __future__ import annotations
 import json
 import math
 import re
+
+import jsonschema
+
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 
@@ -15,6 +18,10 @@ if __package__:
     from .check_gpu_run import digest
 else:
     from check_gpu_run import digest
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from result_status import FAILED_STATUSES, case_outcomes
 
 REPOSITORY = 'tensor4all/tenferro-benchmark'
 WORKFLOWS = {
@@ -46,15 +53,31 @@ def safe_file(root: Path, relative: str) -> Path:
     return current
 
 
-def source_from_api(run: dict, artifact: dict) -> tuple[str, dict]:
-    workflow = run['path']
+def validate_source_run(run: dict) -> None:
+    """Check run eligibility before artifact discovery, including manual dispatch."""
+    workflow = run.get('path')
     if (run.get('repository', {}).get('full_name') != REPOSITORY
             or run.get('head_repository', {}).get('full_name') != REPOSITORY
-            or run.get('head_branch') != 'main' or run.get('conclusion') != 'success'
-            or run.get('status') != 'completed' or workflow not in WORKFLOWS):
-        raise ValueError('Run is not a successful canonical main workflow')
+            or run.get('head_branch') != 'main'
+            or run.get('status') != 'completed' or workflow not in WORKFLOWS
+            or run.get('display_title') == 'RunPod readback (manual report)'):
+        raise ValueError('Run is not an eligible canonical main benchmark workflow (fork/readback excluded)')
+    if run.get('conclusion') not in ('success', 'failure'):
+        raise ValueError(f"Run conclusion must be success or failure, not {run.get('conclusion')!r}")
+
+
+def source_from_api(run: dict, artifact: dict) -> tuple[str, dict]:
+    validate_source_run(run)
+    workflow = run['path']
     profile, prefix = WORKFLOWS[workflow]
     names = {f"{prefix}-{run['id']}", f"{prefix}-{run['id']}-attempt{run['run_attempt']}"}
+    diagnostics = {
+        'amd-cpu': f"linux-cpu-benchmark-diagnostics-{run['id']}",
+        'mac-cpu': f"mac-cpu-benchmark-diagnostics-{run['id']}",
+        'nvidia-gpu': f"runpod-gpu-diagnostics-{run['id']}",
+    }
+    if run['conclusion'] == 'failure':
+        names.add(diagnostics[profile])
     if artifact.get('expired') or artifact['name'] not in names:
         raise ValueError('Artifact is expired or has an unexpected name')
     if instant(artifact['created_at']) < instant(run['run_started_at']):
@@ -68,7 +91,10 @@ def source_from_api(run: dict, artifact: dict) -> tuple[str, dict]:
         'artifact_id': artifact['id'], 'run_started_at': run['run_started_at'], 'run_url': f"https://github.com/{REPOSITORY}/actions/runs/{run['id']}",
         'artifact_url': f"https://github.com/{REPOSITORY}/actions/runs/{run['id']}/artifacts/{artifact['id']}",
         'created_at': artifact['created_at'], 'expires_at': artifact['expires_at'],
-        'digest': artifact.get('digest'),
+        'digest': artifact.get('digest'), 'conclusion': run['conclusion'],
+        'artifact_name': artifact['name'],
+        'artifact_kind': 'diagnostics' if artifact['name'] == diagnostics[profile] else 'results',
+        'event': run.get('event'),
     }
     for key in ('run_id', 'run_attempt', 'artifact_id'):
         if type(source[key]) is not int or source[key] < 1:
@@ -102,7 +128,6 @@ def validate_summary(document: dict, profile: str, entry: dict) -> None:
     if not expected or len(set(expected)) != len(expected) or any(len(row) != 3 for row in expected):
         raise ValueError('Invalid expected summary identities')
     seen = set()
-    measured = 0
     for row in document['rows']:
         key = (row['case'], row.get('group', ''), row['backend'])
         if key in seen:
@@ -115,11 +140,20 @@ def validate_summary(document: dict, profile: str, entry: dict) -> None:
             iqr = row.get('iqr')
             if iqr is not None and (type(iqr) not in (int, float) or not math.isfinite(iqr) or iqr < 0):
                 raise ValueError(f'Invalid timing IQR: {key}')
-            measured += 1
-        elif (row['status'] not in ('unsupported', 'skipped') and not str(row['status']).startswith('unsupported:')) or not row.get('reason') or row.get('median') is not None:
-            raise ValueError(f'Incomplete or unexplained row: {key}')
-    if seen != set(expected) or measured == 0:
-        raise ValueError('Missing/unexpected rows or no measured rows')
+        else:
+            status = row['status']
+            explained_skip = status in ('unsupported', 'skipped') or str(status).startswith('unsupported:')
+            if (not explained_skip and status not in FAILED_STATUSES
+                    or explained_skip and not row.get('reason')
+                    or row.get('median') is not None or row.get('iqr') is not None):
+                raise ValueError(f'Incomplete or unexplained row: {key}')
+    if seen != set(expected):
+        raise ValueError('Missing/unexpected rows')
+    schema = Path(__file__).resolve().parents[2] / 'schemas/report-summary.schema.json'
+    try:
+        jsonschema.validate(document, json.loads(schema.read_text()))
+    except jsonschema.ValidationError as error:
+        raise ValueError(f'Invalid summary schema: {error.message}') from error
 
 
 def validate_bundle(bundle: Path, profile: str, source: dict) -> list[tuple[dict, dict[str, bytes]]]:
@@ -138,6 +172,12 @@ def validate_bundle(bundle: Path, profile: str, source: dict) -> list[tuple[dict
     entries = manifest['suites']
     if not entries:
         raise ValueError('Empty bundle')
+    missing = manifest.get('missing_suites', [])
+    if (not isinstance(missing, list) or any(not isinstance(suite, str) for suite in missing)
+            or len(set(missing)) != len(missing)
+            or any(not re.fullmatch(r'(cpu|gpu)/[a-z0-9][a-z0-9_.-]*', suite) for suite in missing)
+            or set(missing) & {entry['suite_id'] for entry in entries}):
+        raise ValueError('Invalid missing-suite inventory')
     validated = []
     seen = set()
     for entry in entries:
@@ -180,6 +220,11 @@ def validate_bundle(bundle: Path, profile: str, source: dict) -> list[tuple[dict
                    'collected_at': entry['timestamp'], 'harness_commit': manifest['harness_commit'],
                    'tenferro_commit': entry['tenferro_commit'], 'hardware': entry['hardware'],
                    'source': source, 'files': files}
+        outcomes = case_outcomes(document['rows'])
+        missing = manifest.get('missing_suites', [])
+        receipt.update(status='partial' if (any(item['count'] for item in outcomes.values())
+                                           or missing or source.get('conclusion') == 'failure') else 'complete',
+                       case_outcomes=outcomes, missing_suites=missing)
         validated.append((receipt, payload))
     return validated
 

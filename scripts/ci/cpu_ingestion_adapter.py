@@ -33,6 +33,20 @@ def validate_selection(document):
         raise ValueError('Unsupported CPU workload inventory')
     rows = sorted(identities(document))
     fingerprint = hashlib.sha256(json.dumps(rows, separators=(',', ':')).encode()).hexdigest()
+    if document['suite_id'] == 'cpu/perf_issues':
+        import benchmark_perf_issues
+        suite_path, manifest_path, _ = benchmark_perf_issues.SUITES['cpu']
+        suite = yaml.safe_load(suite_path.read_text())
+        cases = {case['id']: case for case in json.loads((suite_path.parents[2] / suite['problems']['source']).read_text())}
+        manifest = yaml.safe_load(manifest_path.read_text())
+        expected_rows = sorted([
+            [case_id, f"threads={thread} / {cases[case_id]['measurement_scope']}", cases[case_id]['backend']]
+            for thread in (1, 4) for case_id in manifest['coverage']['quick']
+            if thread in cases[case_id].get('thread_counts', [thread])
+        ])
+        if rows != expected_rows or document['hardware'].get('threads') != [1, 4]:
+            raise ValueError('CPU perf_issues workload selection does not match declared nightly inventory')
+        return
     expected = plan['suites'].get(document['suite_id'])
     if expected != {'row_count': len(rows), 'identities_sha256': fingerprint}:
         raise ValueError(f"CPU workload selection does not match declared nightly inventory: {document['suite_id']}")
@@ -44,7 +58,7 @@ def validate_selection(document):
 BLAS_IMPLEMENTATIONS = ('accelerate', 'openblas', 'mkl')
 
 CPU_SUITES = ('einsum', 'cpu_ops', 'linalg_jvp_vjp', 'fft', 'public_api',
-              'small_work', 'session_matrix', 'permutation', 'overhead_smoke')
+              'small_work', 'session_matrix', 'permutation', 'overhead_smoke', 'perf_issues')
 
 
 def identities(document):
@@ -79,7 +93,24 @@ def build_source(bundle: Path, descriptor: dict, suite: str, profile: str, sourc
     if profile == 'mac-cpu' and 'blas-accelerate' not in features:
         raise ValueError('Standard macOS CPU publication requires recorded Accelerate collection')
     metadata = dict(metadata, suite_id=suite)
-    if suite == 'cpu/einsum':
+    if suite == 'cpu/perf_issues':
+        from benchmark_perf_issues import build_summary
+        run = raw[0].parent
+        if (set(raw) != set(run.glob('samples_t*.jsonl'))
+                or {safe_file(bundle, path) for path in descriptor['thread_metadata']} != set(run.glob('run_t*.yaml'))):
+            raise ValueError('CPU perf_issues inputs must cover exactly the recorded thread files')
+        for path in raw:
+            for record in read_jsonl(path):
+                for sample in record.get('samples', []):
+                    if (type(sample.get('iterations')) is not int or sample['iterations'] < 1
+                            or type(sample.get('elapsed_ns')) not in (int, float)
+                            or not math.isfinite(sample['elapsed_ns']) or sample['elapsed_ns'] < 0):
+                        raise ValueError('Invalid CPU perf_issues sample')
+        document = build_summary(run, profile, cpu_model=descriptor.get('cpu_model'))
+        # Paths identify the original run, never the temporary extraction root.
+        for item in document.get('source_runs', []):
+            item['run'] = descriptor['source_run_directory']
+    elif suite == 'cpu/einsum':
         import format_results
         results, environment = {}, {}
         for path in raw:
@@ -194,12 +225,18 @@ def build_source(bundle: Path, descriptor: dict, suite: str, profile: str, sourc
     recorded_threads = set()
     for relative in descriptor.get('thread_metadata', [descriptor['metadata']]):
         thread_metadata = yaml.safe_load(safe_file(bundle, relative).read_text())
+        recorded = (thread_metadata.get('environment', {}).get('env', {}).get('BENCHMARK_COMMIT')
+                    or thread_metadata.get('harness', {}).get('commit'))
         if (thread_metadata.get('tenferro_rs', {}).get('commit') != document['tenferro_commit']
-                or thread_metadata.get('target_profile') != profile):
+                or thread_metadata.get('target_profile') != profile
+                or thread_metadata.get('suite_id') != allowed_suite or recorded != source['head_sha']):
             raise ValueError('CPU per-thread metadata identity mismatch')
         if (thread_metadata.get('tenferro_rs', {}).get('features') != metadata.get('tenferro_rs', {}).get('features')
                 or thread_metadata.get('blas', {}).get('implementation') != metadata.get('blas', {}).get('implementation')):
             raise ValueError('CPU sources mix BLAS providers/features')
+        if (thread_metadata.get('python_backends', {}).get('pytorch', {}).get('provider')
+                != metadata.get('python_backends', {}).get('pytorch', {}).get('provider')):
+            raise ValueError('CPU sources mix PyTorch providers')
         if 'run_started_at' in source and not (instant(source['run_started_at']) <= instant(thread_metadata['timestamp']) <= instant(source['created_at'])):
             raise ValueError('CPU source timestamp is outside the selected run attempt')
         value = thread_metadata.get('environment', {}).get('env', {}).get('RAYON_NUM_THREADS')

@@ -108,6 +108,7 @@ class PipelineTest(unittest.TestCase):
         self.assertNotIn('workflow_run',publish['on'])
         self.assertEqual(publish['on']['repository_dispatch']['types'],['benchmark-results-ingested'])
         self.assertIn('scripts/generate_dashboard.py',publish['on']['push']['paths'])
+        self.assertIn('scripts/result_status.py',publish['on']['push']['paths'])
         self.assertIn('result/**',publish['on']['push']['paths'])
         text=(ROOT/'.github/workflows/publish-results.yml').read_text()
         for forbidden in ('download-artifact','collect_gpu_pages_results','gh run','_artifacts','_site/raw'):
@@ -117,7 +118,7 @@ class PipelineTest(unittest.TestCase):
             self.assertEqual(collection['permissions']['contents'],'read')
             self.assertNotIn('push',collection['on'])
             steps=next(iter(collection['jobs'].values()))['steps']
-            bundle=[step for step in steps if 'bundle_cpu_results.py' in step.get('run','')]
+            bundle=[step for step in steps if 'prepare_result_bundle.py' in step.get('run','')]
             self.assertEqual(len(bundle),1)
             uploads=[step for step in steps if step.get('uses')=='actions/upload-artifact@v4']
             self.assertEqual(uploads[0]['with']['path'],'_cpu_benchmark_artifact/')

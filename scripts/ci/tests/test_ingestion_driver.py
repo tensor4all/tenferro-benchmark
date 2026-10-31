@@ -56,7 +56,10 @@ class SourceSelectionTest(unittest.TestCase):
     def test_gated_gpu_slot_without_collection_is_a_no_op_but_a_lost_artifact_is_not(self):
         from scripts.ci.ingest_benchmark_results import selected_source
         run={'id':789,'run_attempt':1,'path':'.github/workflows/benchmark-runpod-gpu.yml',
-             'run_started_at':'2026-10-18T08:00:00Z'}
+             'run_started_at':'2026-10-18T08:00:00Z', 'head_branch':'main',
+             'repository':{'full_name':'tensor4all/tenferro-benchmark'},
+             'head_repository':{'full_name':'tensor4all/tenferro-benchmark'},
+             'status':'completed', 'conclusion':'success'}
         no_artifacts={'total_count':0,'artifacts':[]}
         def jobs(conclusion):
             return {'jobs':[{'name':'Skip if this week\'s GPU results already exist','conclusion':'success'},

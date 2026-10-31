@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: Exact successful benchmark run ID to ingest (no latest-run discovery)
+        description: Exact success/failure benchmark run ID to ingest (no latest-run discovery)
         required: true
         type: string
       validate_only:
@@ -32,7 +32,7 @@ jobs:
     if: >-
       github.repository == 'tensor4all/tenferro-benchmark' &&
       (github.event_name != 'workflow_run' ||
-       (github.event.workflow_run.conclusion == 'success' &&
+       (contains(fromJSON('["success", "failure"]'), github.event.workflow_run.conclusion) &&
         github.event.workflow_run.display_title != 'RunPod readback (manual report)' &&
         github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
@@ -75,5 +75,5 @@ jobs:
         run: |
           args=(--run-id "$SOURCE_RUN_ID")
           if [[ "$VALIDATE_ONLY" == true ]]; then args+=(--validate-only); fi
-          uv run --no-project --python 3.12 --with pyyaml --with jsonschema \
+          uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt --with jsonschema \
             python scripts/ci/ingest_benchmark_results.py "${args[@]}"

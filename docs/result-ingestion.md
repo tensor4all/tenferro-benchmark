@@ -8,7 +8,7 @@ controlled performance evidence.
 
 1. Collection runs the existing suites and uploads raw samples, metadata,
    generated reports and summaries. It has read-only repository permissions.
-2. Ingestion selects exactly one successful run, validates its bundle, and
+2. Ingestion selects exactly one `success` or `failure` run, validates its bundle, and
    commits accepted reports, summaries and provenance to `main`.
 3. Pages renders committed `result/` with the checkout's git history. It never
    discovers benchmark runs or downloads benchmark artifacts.
@@ -20,7 +20,9 @@ Installation of dependencies and deployment still need network access.
 ## Trusted source and supported profiles
 
 Only runs of the canonical repository `tensor4all/tenferro-benchmark`, on
-`main`, with a successful conclusion and one of these workflow paths qualify:
+`main`, with conclusion `success` or `failure` and one of these workflow paths qualify.
+`cancelled`, `skipped`, `timed_out` and all other conclusions are rejected.
+Forks and `RunPod readback (manual report)` are excluded, including manual ingestion dispatches:
 
 | Workflow | Artifact name | Target profile |
 | --- | --- | --- |
@@ -70,24 +72,30 @@ contains:
 The manifest identifies each suite's `run_directory` under
 `data/results/<profile>/<suite>/<timestamp-directory>/`. Reports and summaries
 must be byte-identical to their per-run copies. All digests are checked before
-any repository writes. Summary schema 1 is required. Rows must match declared
+any repository writes. Summary schema 1 or 2 is required. Rows must match declared
 identities exactly with no duplicates; `ok` rows have finite nonnegative medians
 and the existing runner/formatter verification result. This does not add a
 numerical parity guarantee beyond that runner. `unsupported` rows and declared
 policy `skipped` rows have a raw-data explanation and no median. Legacy
 `unsupported: <reason>` statuses remain readable. Skips never count as coverage.
-Missing, failed and unexpected rows reject the bundle. At least one row must
-be measured for every suite. CPU suite-specific selectors/thread counts must
+Explicit `failed`, `compile_failed`, `runtime_failed`, `verification_failed`,
+`oom` and `not_configured` rows are accepted as failures, never as measurements:
+they must have no median or IQR. Missing/unexpected rows and unknown statuses
+still reject the bundle. Summary documents must pass the existing JSON schema.
+A suite with a complete set of failed rows can publish its failure annotations
+without any timing values; it does not suppress other suites' valid results.
+CPU suite-specific selectors/thread counts must
 be checked against collection declarations, and raw-to-summary identities and
 values checked using the appropriate formatter/record adapter.
 
 Existing GPU `publication.json` schema 2 remains supported through a strict
-adapter: revalidate its digests and expected raw rows with `check_gpu_run`,
+adapter: revalidate its digests and exact expected raw identities in the ingestion adapter,
+preserving verification and measured-sample checks on `ok` rows and rejecting
+numeric measurement metrics on failed raw rows before summary normalization,
 require summary identity/value consistency, matching run metadata and exact
 standard hardware, and construct the same internal entries. A legacy GPU
-bundle without a summary is rejected explicitly. Old CPU artifacts without a
-manifest are not silently accepted: backfill requires a manifest produced from
-the original raw data and declared selected workloads, not a fresh timing run.
+bundle without a summary is rejected explicitly. A failed run without a result artifact can recover from its exact named diagnostic
+artifact as described below. Backfill never starts a fresh timing run.
 
 ## Durable accepted-result provenance
 
@@ -106,6 +114,23 @@ bundle, or acceptance wall-clock time. Source and measurement provenance are
 separate: the harness commit is the verified source run's head SHA; the
 measured tenferro commit comes from collection metadata.
 
+New receipts add `status` (`complete` / `partial`), `case_outcomes` and
+`missing_suites` without changing schema 1 or rewriting older receipts.
+`case_outcomes` has `failed`, `skipped` and `unsupported` objects, each with
+`count` and sorted `cases`. Counts are distinct case names, deduplicated across
+backends and thread groups within that suite; a case may occur in multiple
+categories. The original rows preserve the backend/group/status details.
+`partial` means at least one non-ok case, an unproduced suite, or a source
+workflow with conclusion `failure`. Source also records the API `conclusion`,
+`artifact_name`, `artifact_kind` (`results` / `diagnostics`) and `event`.
+A workflow failure outside case collection does not invent failed cases.
+
+Pages shows nonzero outcome counts and collapsible case names, and explicitly
+labels source-workflow failure and unproduced suites. Zero-count notes are
+omitted. An old report retained for an unproduced suite is labelled against the
+latest accepted collection's coverage. The `updated` line keeps its original
+revision/time meaning; timing values, ratios and raw reports are unchanged.
+
 Illustrative accepted CPU and GPU receipts are in
 `docs/examples/result-provenance/`. Their IDs and digests are placeholders,
 not measurement evidence.
@@ -120,8 +145,10 @@ with source IDs. A newer attempt does not make older measurements newer.
 
 Validate every entry in a bundle before changing any file. Then decide each
 suite independently: a valid newer subset can update its suites without
-removing other suites. Partial **suite** measurements fail; an explicitly
-selected subset of complete suites is allowed. Duplicate suite entries fail.
+removing other suites. Partial suites are allowed only when every declared case
+has an explicit result row (including failures/skips/unsupported); absent case
+rows still fail. Duplicate suite entries fail. No case is dropped, interpolated
+or zero-filled. A few failed cases do not block publication.
 
 An identical source key and digest map is a duplicate no-op. The same source
 key with different content is an error. Older valid entries are stale no-ops.
@@ -197,9 +224,9 @@ source run must be explicit before ingestion is retried.
 
 ## CPU normalized bundle details
 
-The default nightly publication subset is the nine suites explicitly declared
+The nightly publication inventory is the ten suites explicitly declared
 in `scripts/ci/cpu_ingestion_adapter.py`: einsum, cpu_ops, linalg_jvp_vjp, fft,
-public_api, small_work, session_matrix, permutation and overhead_smoke. Existing other reports
+public_api, small_work, session_matrix, permutation, overhead_smoke and perf_issues. Existing other reports
 remain maintained in git. CPU packaging is non-timing work after collection.
 
 Combined core reports name two original runs. Packaging copies these into
@@ -234,16 +261,47 @@ Update this inventory deliberately when the suite's selected workloads change,
 with fixture evidence for the intended selection. Custom CPU filters or thread
 counts are diagnostic and cannot replace these standard nightly reports.
 Selected complete suites may be ingested independently; a missing workload
-inside a suite is rejected.
+inside a produced suite is rejected.
 
 Only explicit source paths named by a report are selected. Permutation's ISO
 timestamp identifies exactly one metadata-matching run when its report does
-not name a path. No newest-directory fallback is used. CPU artifacts without
-`ingestion.json` are rejected by ingestion. For an existing valid legacy CPU
-artifact, maintainers may run the packager offline against its exact sources
-for validation/backfill preparation, preserving its original source revision;
-that local bundle is not silently substituted for the API-selected artifact.
+not name a path. No newest-directory fallback is used. Results artifacts without
+`ingestion.json` are rejected. The explicit same-run diagnostic recovery below
+uses the original API-selected raw artifact and preserves its source revision;
+an unrelated locally prepared bundle is never substituted.
 Failed collection diagnostics use a separate artifact name.
+
+## Packaging failed collections and recovering old runs
+
+CPU and GPU workflows run packaging after collection even when collection exits
+nonzero. They upload a result artifact only after a validated manifest exists;
+`if-no-files-found: error` remains enforced. A collection with no outputs or an
+attempted suite missing required files fails explicitly. GPU diagnostics and
+prepared-runtime artifacts keep their existing names, contents and retention.
+Collection failure remains a workflow failure; packaging does not turn it green.
+
+`scripts/ci/prepare_result_bundle.py` is shared by live packaging and recovery.
+It selects current-attempt outputs by recorded time, never stale checked-in
+reports. An attempted suite must have all its metadata/raw/report inputs and
+exact expected case identities. Truly unproduced suites are listed in
+`missing_suites`; their older published reports remain, explicitly labelled as
+not produced by this collection. CPU perf_issues is replayed once over its
+explicit per-thread inputs, with every thread's identity and the trusted quick
+inventory checked. No collector or case selection is changed.
+
+Manual `run_id` dispatch uses the same validation as automatic ingestion. Prefer
+the exact results artifact; if absent on a `failure` run, select only that run's
+`linux-cpu-benchmark-diagnostics-<id>`, `mac-cpu-benchmark-diagnostics-<id>` or
+`runpod-gpu-diagnostics-<id>`, created within the selected attempt. Expired,
+ambiguous, missing or older-attempt artifacts are rejected. Runtime/build
+artifacts are never substituted. GPU diagnostic recovery is restricted to
+scheduled default-suite collections: custom selections cannot be inferred from
+successful rows. Recovery executes only the trusted checkout's packager and
+formatters, not any artifact code, and validates the resulting schema, digests,
+raw-to-summary values, expected rows, hardware, revision and time window before
+any commit. A malformed result artifact is rejected, not replaced by diagnostics.
+Missing required raw outputs remain a rejection, not permission to fabricate them.
+Existing profile visibility and `pub-` label policy are unchanged.
 
 Source `run_started_at` is also retained. Artifacts predating the latest run
 attempt and collection timestamps outside the selected attempt are rejected.

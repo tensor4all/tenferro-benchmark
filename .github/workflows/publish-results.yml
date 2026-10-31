@@ -9,6 +9,7 @@ on:
       - 'scripts/generate_history.py'
       - 'scripts/trend_points.py'
       - 'scripts/report_summary.py'
+      - 'scripts/result_status.py'
       - 'scripts/dashboard-requirements.txt'
       - 'benchmarks/**'
       - 'data/instances/**'

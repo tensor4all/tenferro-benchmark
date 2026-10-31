@@ -124,7 +124,7 @@ class IngestionTest(unittest.TestCase):
             safe_file(self.bundle, 'link')
 
     def test_untrusted_sources_expired_artifact_and_wrong_run_rejected(self):
-        for field, value in [('head_branch', 'feature'), ('conclusion', 'failure'), ('head_repository', {'full_name': 'fork/repo'}), ('path', '.github/workflows/ci.yml')]:
+        for field, value in [('head_branch', 'feature'), ('conclusion', 'cancelled'), ('head_repository', {'full_name': 'fork/repo'}), ('path', '.github/workflows/ci.yml')]:
             run = dict(self.run, **{field: value})
             with self.subTest(field=field), self.assertRaises(ValueError):
                 source_from_api(run, self.artifact)
