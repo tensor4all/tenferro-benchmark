@@ -1,0 +1,188 @@
+schema_version: 1
+target_profile: zen5-cpu
+suite_id: cpu/einsum
+suite_file: benchmarks/cpu/einsum.yaml
+timestamp: '2026-10-30T23:57:19.436239+00:00'
+tenferro_rs:
+  path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
+  commit: a9f494cc4679387c75af698b299c316fd2295fe4
+  dirty: false
+  features:
+  - blas-openblas
+  resolved_path: /home/shinaoka/projects/tensor4all/tenferro-benchmark/extern/tenferro-rs
+harness:
+  path: /home/shinaoka/projects/tensor4all/tenferro-benchmark
+  commit: dae444a6a8f82e39fb37b05009ddc67d7d143d60
+  dirty: false
+resolved_deps:
+  strided-perm:
+  - 0.8.0
+  - 0.9.1
+  strided-view:
+  - 0.7.0
+  threadteam:
+  - 0.1.0
+  - 0.2.0
+host:
+  cpu: AMD Ryzen AI 9 HX 470 w/ Radeon 890M
+  logical_cpus: 24
+  power:
+    cpufreq_boost: '0'
+    amd_pstate_status: active
+    governor: performance
+    energy_performance_preference: performance
+    scaling_max_freq_khz: '2000000'
+    smt:
+      active: '1'
+      control: 'on'
+  numa:
+    nodes: 1
+    cpulists:
+      '0': 0-23
+  smt_siblings:
+  - 0,12
+  - 1,13
+  - 2,14
+  - 3,15
+  - 4,16
+  - 5,17
+  - 6,18
+  - 7,19
+  - 8,20
+  - 9,21
+  - 10,22
+  - 11,23
+  l3_domains:
+  - 0-3,12-15
+  - 4-11,16-23
+build:
+  toolchain:
+    rustc: 'rustc 1.99.0 (b940084d7 2026-09-28)
+
+      binary: rustc
+
+      commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+
+      commit-date: 2026-09-28
+
+      host: x86_64-unknown-linux-gnu
+
+      release: 1.99.0
+
+      LLVM version: 23.1.1
+
+      '
+    rustc_release: 1.99.0
+    rustflags: null
+    target_cpu: null
+environment:
+  hostname: shinaoka-EVO-X1Pro
+  os: Linux-7.0.0-38-generic-x86_64-with-glibc2.39
+  arch: x86_64
+  cpu: x86_64
+  affinity:
+    pinning: taskset
+    requested_measured_cpus: '0'
+    observer_cpus: 4-11,16-23
+    override_of: null
+    thread_budget: '1'
+    measured_cpus: '0'
+    l3_domains:
+    - 0-3,12-15
+    - 4-11,16-23
+    cpu_boost: disabled
+    scaling_governor: performance
+    scaling_driver: amd-pstate-epp
+  env:
+    OMP_NUM_THREADS: '1'
+    OMP_THREAD_LIMIT: '1'
+    OMP_DYNAMIC: 'FALSE'
+    RAYON_NUM_THREADS: '1'
+    BENCHMARK_TARGET_PROFILE: zen5-cpu
+    BENCHMARK_COMMIT: dae444a6a8f82e39fb37b05009ddc67d7d143d60
+    OPENBLAS_ROOT: /usr
+    MKLROOT: /opt/intel/oneapi/mkl/latest
+    OPENBLAS_NUM_THREADS: '1'
+    GOTO_NUM_THREADS: '1'
+    MKL_NUM_THREADS: '1'
+    MKL_DYNAMIC: 'FALSE'
+    VECLIB_MAXIMUM_THREADS: '1'
+    VECLIB_NUM_THREADS: '1'
+    NUMEXPR_NUM_THREADS: '1'
+    BLIS_NUM_THREADS: '1'
+    PJRT_NPROC: '1'
+    XLA_FLAGS: --xla_cpu_multi_thread_eigen=false --xla_cpu_experimental_ynn_fusion_type=
+      intra_op_parallelism_threads=1
+    JULIA_NUM_THREADS: '1'
+    PUBLICATION_GATE_PROFILE: full
+timing_policy:
+  version: 2
+  scope: operation execution and completion synchronization
+  setup: inputs, transfers, runtime/session/handles, plans and compilation outside
+    timer
+  cleanup: returned outputs retained until after timer stops
+  minimum_untimed_priming_runs: 1
+  short_operation_sampling: many operations per interval; shared session where supported;
+    see docs/short-operation-sessions.md
+  trace_execution: prepare_compiled and caller-held session entry outside timing;
+    run_prepared_in inside
+  setup_diagnostics: false
+blas:
+  implementation: openblas
+  version: unknown
+  root: /usr
+  library: /usr
+python_backends:
+  pytorch:
+    available: true
+    version: 2.12.0+cpu
+    file: /home/shinaoka/projects/tensor4all/tenferro-benchmark/.venv/lib/python3.12/site-packages/torch/__init__.py
+    provider: mkl
+    blas_info: mkl
+    lapack_info: mkl
+    config: "PyTorch built with:\n  - GCC 13.3\n  - C++ Version: 202002\n  - Intel(R)\
+      \ oneAPI Math Kernel Library Version 2024.2-Product Build 20240605 for Intel(R)\
+      \ 64 architecture applications\n  - Intel(R) MKL-DNN v3.11.2 (Git Hash 03c022d3ffdcee958cfacbe720048e725fdf644c)\n\
+      \  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided\
+      \ by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - Build\
+      \ settings: BLAS_INFO=mkl, BUILD_TYPE=Release, COMMIT_SHA=7661cd9c6b841b62b7f411aa52ec51f05457263b,\
+      \ CUDA_FLAGS= -DLIBCUDACXX_ENABLE_SIMPLIFIED_COMPLEX_OPERATIONS -Xfatbin -compress-all\
+      \  -Wno-deprecated-gpu-targets --expt-extended-lambda -DCUB_WRAPPED_NAMESPACE=at_cuda_detail\
+      \ -DDISABLE_CUSPARSE_DEPRECATED -DCUDA_HAS_FP16=1 -D__CUDA_NO_HALF_OPERATORS__\
+      \ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__\
+      \ -DC10_NODEPRECATED, CXX_COMPILER=/opt/rh/gcc-toolset-13/root/usr/bin/c++,\
+      \ CXX_FLAGS= -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO\
+      \ -DLIBKINETO_NOCUPTI -DLIBKINETO_NOROCTRACER -DLIBKINETO_NOXPUPTI=ON -DUSE_FBGEMM\
+      \ -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2\
+      \ -fPIC -DC10_NODEPRECATED -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor\
+      \ -Werror=range-loop-construct -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers\
+      \ -Wno-unknown-pragmas -Wno-unused-parameter -Wno-strict-overflow -Wno-strict-aliasing\
+      \ -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=old-style-cast\
+      \ -faligned-new -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math\
+      \ -Werror=format -Wno-dangling-reference -Wno-error=dangling-reference -Wno-stringop-overflow,\
+      \ LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, TORCH_VERSION=2.12.0,\
+      \ USE_CUDA=0, USE_CUDNN=OFF, USE_CUSPARSELT=OFF, USE_GFLAGS=OFF, USE_GLOG=OFF,\
+      \ USE_GLOO=ON, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=OFF, USE_NNPACK=ON,\
+      \ USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, USE_XCCL=OFF, USE_XPU=OFF,\
+      \ \n"
+    library: /home/shinaoka/projects/tensor4all/tenferro-benchmark/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so
+    linked_libraries:
+    - /home/shinaoka/projects/tensor4all/tenferro-benchmark/.venv/lib/python3.12/site-packages/torch/lib/libgomp.so.1
+  jax:
+    available: true
+    version: 0.10.1
+    jaxlib_version: 0.10.1
+    backend: cpu
+    file: /home/shinaoka/projects/tensor4all/tenferro-benchmark/.venv/lib/python3.12/site-packages/jaxlib/__init__.py
+    provider: xla_cpu
+    dot_backend: xla_cpu
+    lapack_provider: none_detected
+    library: /home/shinaoka/projects/tensor4all/tenferro-benchmark/.venv/lib/python3.12/site-packages/jaxlib/_ifrt_proxy.so
+    linked_libraries: []
+julia:
+  available: true
+  version: 1.13.1
+  strided_version: 2.6.1
+  omeinsum_version: 0.9.4
+  blas_provider: LBTConfig([ILP64] libopenblas64_.so)
+  threads: 1

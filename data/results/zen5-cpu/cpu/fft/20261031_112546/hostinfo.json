@@ -1,0 +1,45 @@
+{
+  "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+  "logical_cpus": 24,
+  "power": {
+    "cpufreq_boost": "0",
+    "amd_pstate_status": "active",
+    "governor": "performance",
+    "energy_performance_preference": "performance",
+    "scaling_max_freq_khz": "2000000",
+    "smt": {
+      "active": "1",
+      "control": "on"
+    }
+  },
+  "numa": {
+    "nodes": 1,
+    "cpulists": {
+      "0": "0-23"
+    }
+  },
+  "smt_siblings": [
+    "0,12",
+    "1,13",
+    "2,14",
+    "3,15",
+    "4,16",
+    "5,17",
+    "6,18",
+    "7,19",
+    "8,20",
+    "9,21",
+    "10,22",
+    "11,23"
+  ],
+  "l3_domains": [
+    "0-3,12-15",
+    "4-11,16-23"
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+    "rustc_release": "1.99.0",
+    "rustflags": null,
+    "target_cpu": null
+  }
+}

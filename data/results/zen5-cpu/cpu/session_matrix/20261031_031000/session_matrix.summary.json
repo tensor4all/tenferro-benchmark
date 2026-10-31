@@ -1,0 +1,1726 @@
+{
+  "schema_version": 2,
+  "target_profile": "zen5-cpu",
+  "suite_id": "cpu/session_matrix",
+  "timestamp": "2026-10-31T03:10:00Z",
+  "tenferro_commit": "a9f494cc4679387c75af698b299c316fd2295fe4",
+  "hardware": {
+    "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+    "host": "shinaoka-EVO-X1Pro",
+    "threads": [
+      1,
+      4,
+      8
+    ]
+  },
+  "unit": "ns",
+  "rows": [
+    {
+      "case": "bdot_f64_b1024_m4n4k4_canonical_alloc_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_canonical_alloc_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_canonical_alloc_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_canonical_into_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_canonical_into_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_canonical_into_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_direct_alloc_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_direct_alloc_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_direct_alloc_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_direct_into_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_direct_into_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b1024_m4n4k4_direct_into_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b16_m64n64k64_direct_alloc_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b16_m64n64k64_direct_alloc_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b16_m64n64k64_direct_alloc_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b16_m64n64k64_direct_into_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b16_m64n64k64_direct_into_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b16_m64n64k64_direct_into_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m4n4k4_direct_alloc_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m4n4k4_direct_alloc_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m4n4k4_direct_alloc_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m4n4k4_direct_into_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m4n4k4_direct_into_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m4n4k4_direct_into_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m64n1k64_direct_alloc_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m64n1k64_direct_alloc_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m64n1k64_direct_alloc_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m64n1k64_direct_into_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m64n1k64_direct_into_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "bdot_f64_b64_m64n1k64_direct_into_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "beinsum_f64_b1024_m4n4k4_direct_alloc_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "beinsum_f64_b1024_m4n4k4_direct_alloc_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "beinsum_f64_b1024_m4n4k4_direct_alloc_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "beinsum_f64_b1024_m4n4k4_direct_into_auto",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "beinsum_f64_b1024_m4n4k4_direct_into_auto",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "beinsum_f64_b1024_m4n4k4_direct_into_auto",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "chain3_f64_n4_einsum_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "chain3_f64_n4_einsum_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "chain3_f64_n4_einsum_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "eager_stream_f64_fixed_len128_einsum3_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 11190.546875,
+      "iqr": 272.1171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_fixed_len128_einsum3_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_fixed_len128_einsum3_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 12343.6328125,
+      "iqr": 130.8359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_fixed_len128_einsum3_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_fixed_len128_einsum3_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 12546.7265625,
+      "iqr": 90.875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_fixed_len128_einsum3_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_fresh_len128_einsum3_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 45434.921875,
+      "iqr": 889.73828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_fresh_len128_einsum3_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_fresh_len128_einsum3_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 47373.71875,
+      "iqr": 1340.1953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_fresh_len128_einsum3_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_fresh_len128_einsum3_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 46687.0,
+      "iqr": 1068.15234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_fresh_len128_einsum3_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_mixed_len128_einsum3_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 11240.9453125,
+      "iqr": 114.8671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_mixed_len128_einsum3_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_mixed_len128_einsum3_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 12473.1015625,
+      "iqr": 191.22265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_mixed_len128_einsum3_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_mixed_len128_einsum3_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 12843.6171875,
+      "iqr": 49.9375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_mixed_len128_einsum3_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_strides_len128_einsum3_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 16875.625,
+      "iqr": 146.765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_strides_len128_einsum3_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_strides_len128_einsum3_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 18096.03125,
+      "iqr": 106.41015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_strides_len128_einsum3_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "eager_stream_f64_strides_len128_einsum3_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 18751.6015625,
+      "iqr": 76.86328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "eager_stream_f64_strides_len128_einsum3_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "compiled CPU provider blas, requested faer"
+    },
+    {
+      "case": "hadamard_f64_m64n64_dot_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "hadamard_f64_m64n64_dot_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "hadamard_f64_m64n64_dot_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "hadamard_f64_m64n64_einsum_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "hadamard_f64_m64n64_einsum_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "hadamard_f64_m64n64_einsum_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "matmul_n16_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 3115.2646484375,
+      "iqr": 84.07080078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n16_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 1922.9404296875,
+      "iqr": 5.87060546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n16_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n16_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 3078.6435546875,
+      "iqr": 28.48193359375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n16_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 2537.1474609375,
+      "iqr": 12.52392578125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n16_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n16_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 3442.412109375,
+      "iqr": 53.2216796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n16_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 2687.0546875,
+      "iqr": 26.1376953125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n16_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n2_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 2014.962890625,
+      "iqr": 20.46337890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n2_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 1561.34375,
+      "iqr": 5.244140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n2_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n2_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 2023.302734375,
+      "iqr": 20.341796875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n2_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 2146.80859375,
+      "iqr": 9.9755859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n2_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n2_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 2000.24609375,
+      "iqr": 17.2099609375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n2_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 2217.7880859375,
+      "iqr": 15.9970703125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n2_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n32_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 8443.0888671875,
+      "iqr": 101.9853515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n32_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 4633.1181640625,
+      "iqr": 81.31640625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n32_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n32_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 8166.0869140625,
+      "iqr": 50.56982421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n32_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 5201.3330078125,
+      "iqr": 38.57861328125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n32_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n32_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 8169.43359375,
+      "iqr": 46.51416015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n32_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 5407.6201171875,
+      "iqr": 60.68603515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n32_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n4_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 1899.8310546875,
+      "iqr": 10.33740234375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n4_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 1597.4755859375,
+      "iqr": 6.8779296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n4_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n4_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 1914.2373046875,
+      "iqr": 8.93798828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n4_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 2217.078125,
+      "iqr": 22.28369140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n4_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n4_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 1921.1015625,
+      "iqr": 24.0400390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n4_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 2260.3291015625,
+      "iqr": 16.40771484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n4_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n8_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 2010.3720703125,
+      "iqr": 18.52685546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n8_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 1646.9482421875,
+      "iqr": 8.6982421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n8_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n8_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 2026.255859375,
+      "iqr": 39.22021484375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n8_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 2213.4091796875,
+      "iqr": 6.5302734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n8_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "matmul_n8_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 2059.5078125,
+      "iqr": 111.51025390625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n8_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 2334.208984375,
+      "iqr": 5.38134765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "matmul_n8_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n16_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 21096.0224609375,
+      "iqr": 717.5009765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n16_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 7895.8623046875,
+      "iqr": 482.49755859375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n16_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n16_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 21112.1435546875,
+      "iqr": 148.513671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n16_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 7036.1171875,
+      "iqr": 445.23388671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n16_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n16_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 21840.4951171875,
+      "iqr": 159.77978515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n16_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 7687.7734375,
+      "iqr": 547.8046875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n16_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n2_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 16896.4765625,
+      "iqr": 79.84814453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n2_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 1814.0908203125,
+      "iqr": 3.19921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n2_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n2_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 16724.3017578125,
+      "iqr": 126.6708984375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n2_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 2909.2890625,
+      "iqr": 20.72314453125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n2_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n2_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 17001.9853515625,
+      "iqr": 35.697265625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n2_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 3012.259765625,
+      "iqr": 11.12890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n2_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n32_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 37741.9052734375,
+      "iqr": 179.28515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n32_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 27014.19140625,
+      "iqr": 2302.4765625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n32_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n32_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 35277.98046875,
+      "iqr": 152.33154296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n32_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 17001.564453125,
+      "iqr": 2368.19677734375,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n32_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n32_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 35686.3388671875,
+      "iqr": 258.40478515625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n32_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 15919.8271484375,
+      "iqr": 2402.9638671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n32_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n4_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 16992.359375,
+      "iqr": 32.1416015625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n4_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 2181.095703125,
+      "iqr": 11.47705078125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n4_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n4_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 16829.46875,
+      "iqr": 78.12744140625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n4_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 3555.1611328125,
+      "iqr": 13.8837890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n4_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n4_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 16939.1884765625,
+      "iqr": 137.60546875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n4_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 3535.8193359375,
+      "iqr": 9.4951171875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n4_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n8_count1024",
+      "group": "threads=1",
+      "backend": "pytorch-cpu",
+      "median": 17920.9453125,
+      "iqr": 77.8232421875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n8_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-blas",
+      "median": 3260.0390625,
+      "iqr": 10.42529296875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n8_count1024",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n8_count1024",
+      "group": "threads=4",
+      "backend": "pytorch-cpu",
+      "median": 18724.533203125,
+      "iqr": 63.4794921875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n8_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-blas",
+      "median": 4262.05859375,
+      "iqr": 23.8837890625,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n8_count1024",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "solve_n8_count1024",
+      "group": "threads=8",
+      "backend": "pytorch-cpu",
+      "median": 17716.8984375,
+      "iqr": 40.03173828125,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n8_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-blas",
+      "median": 4550.03515625,
+      "iqr": 11.0263671875,
+      "status": "ok",
+      "verified": true
+    },
+    {
+      "case": "solve_n8_count1024",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; rebuild with the native feature set to measure the faer provider"
+    },
+    {
+      "case": "stream_f64_fixed_len32_einsum_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_fixed_len32_einsum_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_fixed_len32_einsum_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_fresh_len32_einsum_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_fresh_len32_einsum_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_fresh_len32_einsum_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_mixed_len32_einsum_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_mixed_len32_einsum_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_mixed_len32_einsum_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_strides_len32_einsum_alloc",
+      "group": "threads=1",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_strides_len32_einsum_alloc",
+      "group": "threads=4",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    },
+    {
+      "case": "stream_f64_strides_len32_einsum_alloc",
+      "group": "threads=8",
+      "backend": "tenferro-faer",
+      "median": null,
+      "status": "unsupported",
+      "verified": false,
+      "reason": "harness compiled with the blas CPU backend; this case is declared for the faer provider"
+    }
+  ],
+  "source_runs": [
+    {
+      "run": "data/results/zen5-cpu/cpu/session_matrix/20261031_031000",
+      "threads": [
+        1
+      ],
+      "host": {
+        "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+        "logical_cpus": 24,
+        "power": {
+          "cpufreq_boost": "0",
+          "amd_pstate_status": "active",
+          "governor": "performance",
+          "energy_performance_preference": "performance",
+          "scaling_max_freq_khz": "2000000",
+          "smt": {
+            "active": "1",
+            "control": "on"
+          }
+        },
+        "numa": {
+          "nodes": 1,
+          "cpulists": {
+            "0": "0-23"
+          }
+        },
+        "smt_siblings": [
+          "0,12",
+          "1,13",
+          "2,14",
+          "3,15",
+          "4,16",
+          "5,17",
+          "6,18",
+          "7,19",
+          "8,20",
+          "9,21",
+          "10,22",
+          "11,23"
+        ],
+        "l3_domains": [
+          "0-3,12-15",
+          "4-11,16-23"
+        ]
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.0",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "boost off, performance, epp performance, max 2000000 kHz, amd-pstate active, smt {'active': '1', 'control': 'on'}"
+    },
+    {
+      "run": "data/results/zen5-cpu/cpu/session_matrix/20261031_031000",
+      "threads": [
+        4
+      ],
+      "host": {
+        "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+        "logical_cpus": 24,
+        "power": {
+          "cpufreq_boost": "0",
+          "amd_pstate_status": "active",
+          "governor": "performance",
+          "energy_performance_preference": "performance",
+          "scaling_max_freq_khz": "2000000",
+          "smt": {
+            "active": "1",
+            "control": "on"
+          }
+        },
+        "numa": {
+          "nodes": 1,
+          "cpulists": {
+            "0": "0-23"
+          }
+        },
+        "smt_siblings": [
+          "0,12",
+          "1,13",
+          "2,14",
+          "3,15",
+          "4,16",
+          "5,17",
+          "6,18",
+          "7,19",
+          "8,20",
+          "9,21",
+          "10,22",
+          "11,23"
+        ],
+        "l3_domains": [
+          "0-3,12-15",
+          "4-11,16-23"
+        ]
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.0",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "boost off, performance, epp performance, max 2000000 kHz, amd-pstate active, smt {'active': '1', 'control': 'on'}"
+    },
+    {
+      "run": "data/results/zen5-cpu/cpu/session_matrix/20261031_031000",
+      "threads": [
+        8
+      ],
+      "host": {
+        "cpu": "AMD Ryzen AI 9 HX 470 w/ Radeon 890M",
+        "logical_cpus": 24,
+        "power": {
+          "cpufreq_boost": "0",
+          "amd_pstate_status": "active",
+          "governor": "performance",
+          "energy_performance_preference": "performance",
+          "scaling_max_freq_khz": "2000000",
+          "smt": {
+            "active": "1",
+            "control": "on"
+          }
+        },
+        "numa": {
+          "nodes": 1,
+          "cpulists": {
+            "0": "0-23"
+          }
+        },
+        "smt_siblings": [
+          "0,12",
+          "1,13",
+          "2,14",
+          "3,15",
+          "4,16",
+          "5,17",
+          "6,18",
+          "7,19",
+          "8,20",
+          "9,21",
+          "10,22",
+          "11,23"
+        ],
+        "l3_domains": [
+          "0-3,12-15",
+          "4-11,16-23"
+        ]
+      },
+      "toolchain": {
+        "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+        "rustc_release": "1.99.0",
+        "rustflags": null,
+        "target_cpu": null
+      },
+      "power": "boost off, performance, epp performance, max 2000000 kHz, amd-pstate active, smt {'active': '1', 'control': 'on'}"
+    }
+  ],
+  "timing_policy": {
+    "version": 2,
+    "scope": "operation execution and completion synchronization",
+    "setup": "inputs, transfers, runtime/session/handles, plans and compilation outside timer",
+    "cleanup": "returned outputs retained until after timer stops",
+    "minimum_untimed_priming_runs": 1,
+    "short_operation_sampling": "many operations per interval; shared session where supported; see docs/short-operation-sessions.md",
+    "trace_execution": "prepare_compiled and caller-held session entry outside timing; run_prepared_in inside",
+    "setup_diagnostics": false
+  }
+}
