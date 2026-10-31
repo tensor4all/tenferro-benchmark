@@ -2,11 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/einsum",
-  "timestamp": "2026-10-24T08:30:43.977408+00:00",
-  "tenferro_commit": "06ac2475a286cdfd0332a2857db0bd78ba704aa5",
+  "timestamp": "2026-10-31T20:18:08.642468+00:00",
+  "tenferro_commit": "c15dfcf0ea5252effdef24cffbebf2f445916e20",
   "hardware": {
-    "gpu": "NVIDIA A100 80GB PCIe",
-    "host": "113fbfd35f39"
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "host": "347e6dfeb493"
   },
   "unit": "ms",
   "rows": [
@@ -14,8 +15,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "pytorch-cuda",
-      "median": 3.18215,
-      "iqr": 0.007925000000000182,
+      "median": 3.902267,
+      "iqr": 0.013788999999999607,
       "status": "ok",
       "verified": true
     },
@@ -23,8 +24,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "tenferro-cuda-eager",
-      "median": 3.167182,
-      "iqr": 0.020317999999999614,
+      "median": 7.592474999999999,
+      "iqr": 0.023470000000000546,
       "status": "ok",
       "verified": true
     },
@@ -32,8 +33,8 @@
       "case": "einsum_bin_matmul_3072_f64",
       "group": "einsum",
       "backend": "tenferro-cuda-trace",
-      "median": 3.2519419999999997,
-      "iqr": 0.036408999999999914,
+      "median": 3.196417,
+      "iqr": 0.0013399999999998968,
       "status": "ok",
       "verified": true
     }

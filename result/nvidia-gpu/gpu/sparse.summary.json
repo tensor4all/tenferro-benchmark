@@ -2,11 +2,12 @@
   "schema_version": 1,
   "target_profile": "nvidia-gpu",
   "suite_id": "gpu/sparse",
-  "timestamp": "2026-10-24T08:30:43.977408+00:00",
-  "tenferro_commit": "06ac2475a286cdfd0332a2857db0bd78ba704aa5",
+  "timestamp": "2026-10-31T20:18:08.642468+00:00",
+  "tenferro_commit": "c15dfcf0ea5252effdef24cffbebf2f445916e20",
   "hardware": {
-    "gpu": "NVIDIA A100 80GB PCIe",
-    "host": "113fbfd35f39"
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "host": "347e6dfeb493"
   },
   "unit": "ms",
   "rows": [
@@ -14,8 +15,8 @@
       "case": "sparse_synthetic_4m_64m_spmv_f64",
       "group": "spmv",
       "backend": "pytorch-cuda",
-      "median": 2.120776,
-      "iqr": 0.003098000000000045,
+      "median": 2.276319,
+      "iqr": 0.010549999999999837,
       "status": "ok",
       "verified": true
     },
@@ -23,8 +24,8 @@
       "case": "sparse_synthetic_64k_4m_spmm_f64_rhs1024",
       "group": "spmm",
       "backend": "pytorch-cuda",
-      "median": 14.867642,
-      "iqr": 0.11498699999999928,
+      "median": 16.439439,
+      "iqr": 2.054959000000002,
       "status": "ok",
       "verified": true
     }
