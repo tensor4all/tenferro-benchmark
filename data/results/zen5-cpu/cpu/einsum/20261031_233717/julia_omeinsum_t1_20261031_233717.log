@@ -1,0 +1,65 @@
+omeinsum-jl einsum benchmark suite
+==================================
+Loaded 24 instances from /home/shinaoka/projects/tensor4all/tenferro-benchmark/data/instances
+Backend: omeinsum-jl
+JULIA_NUM_THREADS=1
+OMP_NUM_THREADS=1
+OPENBLAS_NUM_THREADS=1
+BLAS.get_num_threads()=1
+Timing: median ± IQR of 15 runs (3 warmup), path precomputed (OMEinsum's own optimizer is not used)
+
+Mode: omeinsum_path / Strategy: opt_flops
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00       13.279      6.967
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.950      1.188
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        2.462      2.235
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        6.242      9.166
+bin_elementwise_mul_2048x2048                             2       6.62        22.00       12.942      0.525
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.119      0.016
+bin_matmul_1024                                           2       9.03        20.00      110.623     23.676
+bin_matmul_256                                            2       7.22        16.00        2.211      0.627
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.015      0.001
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.081      0.019
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.027      0.001
+bin_outer_product_4096                                    2       7.22        24.00      318.511      2.062
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00      103.911     28.973
+gm_queen5_5_3.wcsp                                      160       9.75        26.94     8068.036     56.149
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       36.112     11.628
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86      143.112     33.009
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       74.756     32.055
+nary_matmul_chain_64                                      3       5.24        12.00        0.108      0.037
+str_matrix_chain_multiplication_100                     100       8.48        17.26       21.381      0.877
+str_mps_varying_inner_product_200                       200       8.31        15.48       28.134      9.028
+str_nw_mera_closed_120                                  120      10.66        25.02     2599.558     19.124
+str_nw_mera_open_26                                      26      10.49        25.36     2141.989     48.924
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      663.157     27.524
+tensornetwork_permutation_light_415                     415       9.65        24.00      684.883     34.588
+
+Mode: omeinsum_path / Strategy: opt_size
+Instance                                            Tensors log10FLOPS     log2SIZE  Median (ms)   IQR (ms)
+----------------------------------------------------------------------------------------------------------
+bin_batched_matmul_b32_m128_n128_k128                     2       7.83        19.00       13.279      6.967
+bin_batched_matmul_b32_m64_n64_k64                        2       6.92        17.00        0.950      1.188
+bin_batched_outer_product_compact_j16_k16_o64_t64         2       6.02        20.00        2.462      2.235
+bin_batched_outer_product_noncompact_j16_k16_o64_t64        2       6.02        20.00        6.242      9.166
+bin_elementwise_mul_2048x2048                             2       6.62        22.00       12.942      0.525
+bin_elementwise_mul_512x512                               2       5.42        18.00        0.119      0.016
+bin_matmul_1024                                           2       9.03        20.00      110.623     23.676
+bin_matmul_256                                            2       7.22        16.00        2.211      0.627
+bin_omeinsum_batched_matmul_8x8_batch_4                   2       2.71         4.00        0.015      0.001
+bin_omeinsum_high_d_12x12_contract_4_batch_4              2       5.12        12.00        0.081      0.019
+bin_omeinsum_matmul_10x10                                 2       4.82        10.00        0.027      0.001
+bin_outer_product_4096                                    2       7.22        24.00      318.511      2.062
+bin_permuted_r4_abcd_dbef_acef_d32                        2       9.33        20.00      103.911     28.973
+gm_queen5_5_3.wcsp                                      160      10.33        25.36     3443.264     28.209
+lm_batch_likelihood_brackets_4_4d                        84       8.37        18.96       47.566     34.205
+lm_batch_likelihood_sentence_3_12d                       38       9.20        20.86      159.353     34.414
+lm_batch_likelihood_sentence_4_4d                        84       8.46        18.89       48.470     44.866
+nary_matmul_chain_64                                      3       5.24        12.00        0.108      0.037
+str_matrix_chain_multiplication_100                     100       8.48        17.26       21.522      0.471
+str_mps_varying_inner_product_200                       200       8.31        15.48       24.390     12.546
+str_nw_mera_closed_120                                  120      10.67        24.91     2332.860     47.481
+str_nw_mera_open_26                                      26      10.49        25.36     2140.690     54.881
+tensornetwork_permutation_focus_step409_316             316       9.65        24.00      663.157     27.524
+tensornetwork_permutation_light_415                     415       9.65        24.00      684.883     34.588
