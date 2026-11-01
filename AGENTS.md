@@ -340,6 +340,9 @@ that sets the thread environment also sets the affinity of itself and its childr
   are busy (host-wide `/proc/stat`, so it also works inside the devcontainer, whose process
   list cannot see host processes).
 - The run procedure is in `docs/handoffs/2026-10-28-zen5-cpu-refresh.md`.
+- Which CPU suites declare a `tenferro-eager` arm, and why the others do not, is
+  `docs/cpu-suite-arms.md`. An absent eager bar in the dashboard is a declaration, not a
+  lost measurement; read that page before chasing one.
 
 ## Linux CPU Devcontainer Workflow
 
