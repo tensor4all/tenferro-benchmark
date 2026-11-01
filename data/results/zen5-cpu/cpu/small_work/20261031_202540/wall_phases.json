@@ -1,0 +1,7 @@
+{
+  "validation_and_latency_build_seconds": 0.480297274,
+  "metadata_and_latency_collection_seconds": 29.455370441,
+  "allocation_diagnostic_build_seconds": 196.364288999,
+  "allocation_collection_seconds": 2.089191273,
+  "command_before_report_seconds": 228.389147987
+}
