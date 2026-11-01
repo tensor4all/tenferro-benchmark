@@ -14,6 +14,7 @@ import report_summary
 from format_cpu_ops_results import BACKEND_LABELS, clean_markdown_eof, normalize_row, row_value
 
 LINALG_AD_BACKEND_ORDER = [
+    "tenferro-eager",
     "tenferro-trace",
     "pytorch-cpu",
     "jax-cpu",
@@ -39,6 +40,19 @@ def base_op(benchmark: str) -> str:
     return benchmark
 
 
+def backend_order(present: set[str]) -> list[str]:
+    """The table's columns: the declared order first, then any other backend present.
+
+    The JVP/VJP rows are measured on `tenferro-trace` only (`push_linalg_jvp_vjp_trace_benches`
+    in `src/bin/publication_gate.rs`), so `tenferro-eager` is normally absent. It is still listed
+    first so that an eager measurement, if one is ever registered, is rendered instead of
+    silently dropped (see `docs/cpu-suite-arms.md`). A backend this file does not know is kept
+    too, rather than discarded: a missing column is a lost measurement, a stray column is not.
+    """
+    declared = [backend for backend in LINALG_AD_BACKEND_ORDER if backend in present]
+    return declared + sorted(present - set(declared))
+
+
 def format_table(path: Path) -> str:
     by_key: dict[tuple[str, str, str, str, str], dict[str, str]] = defaultdict(dict)
     with path.open(newline="") as f:
@@ -47,10 +61,9 @@ def format_table(path: Path) -> str:
             _, benchmark, _, _, _ = key
             if not is_linalg_ad_benchmark(benchmark):
                 continue
-            if backend not in LINALG_AD_BACKEND_ORDER:
-                continue
             by_key[key][backend] = value
 
+    order = backend_order({backend for values in by_key.values() for backend in values})
     lines = [
         "## Linalg JVP/VJP Benchmark Items",
         "",
@@ -60,10 +73,10 @@ def format_table(path: Path) -> str:
         "`vjp`; JAX uses `jax.jvp` / `jax.vjp`.",
         "",
         "| suite | benchmark | dtype | threads | shape | "
-        + " | ".join(BACKEND_LABELS[b] for b in LINALG_AD_BACKEND_ORDER)
+        + " | ".join(BACKEND_LABELS.get(b, b) for b in order)
         + " |",
         "|---|---|---:|---:|---|"
-        + "|".join("---:" for _ in LINALG_AD_BACKEND_ORDER)
+        + "|".join("---:" for _ in order)
         + "|",
     ]
 
@@ -76,7 +89,7 @@ def format_table(path: Path) -> str:
             dtype,
             threads,
             f"`{shape}`",
-            *(values.get(backend, "-") for backend in LINALG_AD_BACKEND_ORDER),
+            *(values.get(backend, "-") for backend in order),
         ]
         lines.append("| " + " | ".join(row) + " |")
 
