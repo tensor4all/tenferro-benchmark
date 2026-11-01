@@ -990,5 +990,45 @@ class PartialReceiptDashboardTests(unittest.TestCase):
         self.assertNotIn("Non-ok cases", pages(plain))
 
 
+class DeclaredArmsTest(unittest.TestCase):
+    """The dashboard draws the arms a CPU suite declares, not an assumed eager+trace pair.
+
+    An empty eager slot reads as a lost measurement; for `cpu/linalg_jvp_vjp` and the suites
+    that measure other arms it is a declaration (`docs/cpu-suite-arms.md`).
+    """
+
+    def arms(self, suite_id):
+        return [
+            (rule.column, tuple(arm.label for arm in rule.arms))
+            for rule in dashboard.ratio_rules_for(suite_id)
+        ]
+
+    def test_trace_only_page_has_no_eager_arm(self):
+        self.assertEqual(self.arms("cpu/linalg_jvp_vjp"), [("vs PyTorch", ("trace",)), ("vs JAX", ("trace",))])
+        self.assertEqual(dashboard.undeclared_arm_labels("cpu/linalg_jvp_vjp"), ["eager"])
+
+    def test_suite_that_declares_both_keeps_both(self):
+        for suite_id in ("cpu/cpu_ops", "cpu/einsum", "cpu/public_api"):
+            self.assertEqual(
+                [arms for _, arms in self.arms(suite_id)],
+                [("eager", "trace"), ("eager", "trace")],
+                suite_id,
+            )
+            self.assertEqual(dashboard.undeclared_arm_labels(suite_id), [], suite_id)
+
+    def test_suite_without_the_eager_trace_axis_gets_no_ratio_column(self):
+        for suite_id in ("cpu/permutation", "cpu/fft", "cpu/small_work", "cpu/overhead_smoke"):
+            self.assertEqual(self.arms(suite_id), [], suite_id)
+            self.assertEqual(
+                dashboard.undeclared_arm_labels(suite_id), ["eager", "trace"], suite_id
+            )
+
+    def test_a_gpu_suite_keeps_the_default_arms(self):
+        self.assertEqual(
+            [arms for _, arms in self.arms("gpu/dense")], [("eager", "trace"), ("eager", "trace")]
+        )
+        self.assertEqual(dashboard.undeclared_arm_labels("gpu/dense"), [])
+
+
 if __name__ == "__main__":
     unittest.main()
