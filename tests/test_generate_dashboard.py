@@ -8,6 +8,7 @@ import re
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -139,7 +140,7 @@ class DashboardTests(unittest.TestCase):
 
         # Two cases: one with ratio/status/regression flags, one status-only.
         current_rows = [
-            row("case_a", "tenferro-cuda-eager", 20.0),
+            row("case_a", "tenferro-cuda-eager", 20.0, iqr=6.0),
             row("case_a", "tenferro-cuda-trace", 30.0),
             row("case_a", "pytorch-cuda", 10.0),
             row("case_a", "jax-cuda", 5.0),
@@ -403,6 +404,55 @@ class DashboardTests(unittest.TestCase):
         self.assertIn('class="chart-value">eager 1.20x</text>', svg)
         self.assertIn("eager 1.20x of PyTorch", svg)
 
+    def test_noisy_cell_is_badged_and_the_ratio_is_not_asserted(self):
+        # IQR/median = 50%: the run-to-run spread is half the median itself.
+        cases = [
+            {
+                "case": "dense_solve_f64_512_rhs16",
+                "baseline_median": 2.367,
+                "baseline_iqr": 0.011,
+                "contenders": [
+                    {
+                        "label": "eager",
+                        "kind": "tenferro",
+                        "ratio": 8.65,
+                        "median": 20.476,
+                        "iqr": 10.164,
+                        "iqr_share": 0.496,
+                        "noisy": True,
+                    },
+                    {"label": "trace", "kind": "tenferro", "ratio": 1.05, "median": 2.49, "iqr": 0.02, "noisy": False},
+                ],
+            }
+        ]
+        svg = dashboard.svg_ratio_chart(cases, "PyTorch")
+        self.assertIn("eager ~8.65x · 20.5 / 2.37 ms", svg)
+        self.assertIn('<tspan class="chart-noisy"> noisy</tspan>', svg)
+        # A quiet cell keeps the plain ratio and gets no badge.
+        self.assertIn("trace 1.05x · 2.49 / 2.37 ms</text>", svg)
+        self.assertEqual(svg.count('<tspan class="chart-noisy">'), 1)
+        # The legend states the rule and that the ratio is indicative.
+        self.assertIn("noisy = IQR/median &gt; 0.2 (ratio is indicative)", svg)
+
+    def test_noisy_threshold_defaults_and_reads_the_environment(self):
+        self.assertEqual(dashboard.noisy_iqr_ratio(), 0.2)
+        for raw, expected in (("0.35", 0.35), ("", 0.2), ("nonsense", 0.2), ("0", 0.2), ("-1", 0.2)):
+            with self.subTest(raw=raw):
+                with unittest.mock.patch.dict("os.environ", {"DASHBOARD_NOISY_IQR_RATIO": raw}):
+                    self.assertEqual(dashboard.noisy_iqr_ratio(), expected)
+        self.assertEqual(dashboard.iqr_share({"median": 20.0, "iqr": 10.0}), 0.5)
+        self.assertIsNone(dashboard.iqr_share({"median": 20.0}))
+
+    def test_baseline_noise_alone_makes_the_ratio_indicative(self):
+        rows = [
+            row("c", "tenferro-cuda-eager", 12.0, iqr=0.1),
+            row("c", "pytorch-cuda", 10.0, iqr=6.0),
+        ]
+        case = dashboard.CaseView(case="c", group="", regime=dashboard.THROUGHPUT, runs=7, rows=rows)
+        item = dashboard.case_ratio_row(case, "gpu/dense", {}, dashboard.case_rows(summary_document(rows)))
+        self.assertAlmostEqual(item["baseline_iqr_share"], 0.6)
+        self.assertTrue(item["contenders"][0]["noisy"])
+
     def test_permutation_and_perf_issue_ratio_mapping(self):
         permutation = summary_document([
             row("pat", "tenferro-cuda-transpose", 2.0, group="pat"),
@@ -438,9 +488,13 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("gpu/dense", gpu)
         self.assertIn("case_a", gpu)
         # The landing bars carry the absolute times behind each ratio.
-        self.assertIn("eager 2.00x · 20 / 10 ms", gpu)
+        self.assertIn("trace 3.00x · 30 / 10 ms", gpu)
         self.assertIn("JAX 0.50x · 5 / 10 ms", gpu)
         self.assertIn("worst case 10 ms", gpu)
+        # A spread-out cell is badged and its ratio is not asserted.
+        self.assertIn("eager ~2.00x · 20 / 10 ms", gpu)
+        self.assertIn('<tspan class="chart-noisy"> noisy</tspan>', gpu)
+        self.assertIn("noisy = IQR/median", gpu)
         # A latency case never appears on the compute-bound page.
         self.assertNotIn("case_lat", gpu)
 

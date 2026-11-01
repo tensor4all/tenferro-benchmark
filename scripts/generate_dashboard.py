@@ -27,6 +27,7 @@ import html
 import hashlib
 import json
 import math
+import os
 import shutil
 import subprocess
 import sys
@@ -672,6 +673,29 @@ def suite_flags(
 # Formatting helpers
 # ---------------------------------------------------------------------------
 
+# A cell whose IQR is this share of its own median is too spread out for a
+# single ratio to be read as a fact.  DASHBOARD_NOISY_IQR_RATIO overrides it.
+NOISY_IQR_RATIO = 0.2
+
+
+def noisy_iqr_ratio() -> float:
+    """The noisy-cell threshold, from the environment when it is a number > 0."""
+    try:
+        value = float(os.environ.get("DASHBOARD_NOISY_IQR_RATIO", ""))
+    except ValueError:
+        return NOISY_IQR_RATIO
+    return value if value > 0 else NOISY_IQR_RATIO
+
+
+def iqr_share(row: dict[str, Any]) -> float | None:
+    """IQR as a share of the median; ``None`` when either is missing."""
+    median = row.get("median")
+    iqr = row.get("iqr")
+    if not median or iqr is None:
+        return None
+    return float(iqr) / float(median)
+
+
 def fmt_ratio(value: float | None) -> str:
     if value is None:
         return "-"
@@ -871,9 +895,17 @@ def ratio_absolute(item: dict[str, Any], case: dict[str, Any], unit: str) -> str
 
 
 def ratio_bar_label(item: dict[str, Any], case: dict[str, Any], unit: str) -> str:
-    label = f'{item["label"]} {item["ratio"]:.2f}x'
+    ratio = f'{item["ratio"]:.2f}x'
+    if item.get("noisy"):
+        # A spread-out cell is not a fact: keep the ratio but mark it indicative.
+        ratio = f"~{ratio}"
+    label = f'{item["label"]} {ratio}'
     absolute = ratio_absolute(item, case, unit)
     return f"{label} · {absolute}" if absolute else label
+
+
+def noise_legend() -> str:
+    return f"noisy = IQR/median > {noisy_iqr_ratio():g} (ratio is indicative)"
 
 
 def bar_tooltip(item: dict[str, Any], case: dict[str, Any], baseline_label: str, unit: str) -> str:
@@ -922,7 +954,7 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
         f'<text x="0" y="10" class="chart-note">bar = case median / {esc(baseline_label)} median · '
         f"label = contender / {esc(baseline_label)}, {esc(unit)} · "
         "dashed line = baseline (1.00x) · log scale · shorter (left) is faster · "
-        "whisker = estimated 95% CI</text>"
+        f"whisker = estimated 95% CI · {esc(noise_legend())}</text>"
     )
     parity = x_of(1.0)
     parts.append(
@@ -954,7 +986,9 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str 
                 right = max(right, x2)
             parts.append(
                 f'<text x="{right + 6:.1f}" y="{bar_y + 9}" class="chart-value">'
-                f'{esc(ratio_bar_label(item, case, unit))}</text>'
+                f'{esc(ratio_bar_label(item, case, unit))}'
+                + ('<tspan class="chart-noisy"> noisy</tspan>' if item.get("noisy") else "")
+                + "</text>"
             )
         y += row_height
     parts.append("</svg>")
@@ -1019,6 +1053,7 @@ thead th { position: sticky; top: 0; }
 .bars { display: block; max-width: 100%; height: auto; margin: .4rem 0 1.2rem; }
 .chart-label { font-size: 11px; fill: var(--fg); font-family: inherit; }
 .chart-value { font-size: 11px; fill: var(--muted); font-family: inherit; }
+.chart-noisy { fill: var(--much-slower); font-weight: 600; }
 .chart-note { font-size: 10px; fill: var(--muted); font-family: inherit; }
 .chart-reference { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 4 3; opacity: .5; }
 .chart-legend { color: var(--muted); font-size: .9rem; margin: .2rem 0 .8rem; }
@@ -1440,6 +1475,8 @@ def case_ratio_row(
     baseline_median = float(baseline["median"])
     item["baseline_median"] = baseline_median
     item["baseline_iqr"] = baseline.get("iqr")
+    item["baseline_iqr_share"] = iqr_share(baseline)
+    noisy_limit = noisy_iqr_ratio()
     rule = next(
         (rule for rule in ratio_rules_for(suite_id) if not rule.per_case_reference),
         None,
@@ -1464,6 +1501,7 @@ def case_ratio_row(
             continue
         seen.add(name)
         ratio = float(row["median"]) / baseline_median
+        share = iqr_share(row)
         item["contenders"].append(
             {
                 "label": name,
@@ -1471,6 +1509,13 @@ def case_ratio_row(
                 "ratio": ratio,
                 "median": float(row["median"]),
                 "iqr": row.get("iqr"),
+                "iqr_share": share,
+                # Either side being spread out makes the ratio indicative only.
+                "noisy": max(
+                    (value for value in (share, item["baseline_iqr_share"]) if value is not None),
+                    default=0.0,
+                )
+                > noisy_limit,
                 "interval": ratio_interval(row, baseline, case.runs),
             }
         )
@@ -1509,6 +1554,10 @@ def how_to_read() -> str:
         "<dt>whisker</dt><dd>estimated 95% CI of the median from the case's measured runs "
         "(IQR and sample count). A difference smaller than the whisker is not established "
         "by this run.</dd>"
+        "<dt>noisy</dt><dd>a cell whose IQR is more than "
+        f"{noisy_iqr_ratio():g} of its own median. Its ratio is marked "
+        "<code>~</code> and badged as indicative: the run-to-run spread is too large for "
+        "the ratio to be read as a fact.</dd>"
         "<dt>regimes</dt><dd>compute/bandwidth-bound results and latency/overhead results are "
         "on separate pages and are never mixed. A small workload is not evidence of slow compute.</dd>"
         "</dl></section>"
