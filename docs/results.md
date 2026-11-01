@@ -7,8 +7,10 @@ Current target profiles:
 
 - `zen5-cpu` (latest CPU generation; pinned 1/4/8-thread rows)
 - `nvidia-gpu` (latest GPU generation)
-- `mac-cpu`, `amd-cpu`, `linux-cpu`, `mac-gpu` (older generations: kept in `result/`
+- `mac-cpu`, `amd-cpu`, `mac-gpu` (older generations: kept in `result/`
   and git history, not linked from the README or the Pages site)
+- `linux-cpu` is retired (2026-11-02): kept in `result/linux-cpu/` as history
+  only, see [result/linux-cpu/RETIRED.md](../result/linux-cpu/RETIRED.md)
 
 Latest human-facing reports are kept under `result/<target_profile>/...`:
 
@@ -187,8 +189,8 @@ explicit successful main run and commits accepted reports, summary sidecars
 and provenance. `publish-results.yml` only renders these committed results and
 deploys Pages; it has no artifact download or run-discovery stage. Renderer-only
 changes publish directly. Ingestion explicitly triggers Pages after its bot
-commit. The Linux nightly keeps the canonical `amd-cpu` profile; it is not
-copied to `linux-cpu`.
+commit. The Linux nightly keeps the canonical `amd-cpu` profile; the retired
+`linux-cpu` profile is never written and its reports are history only.
 
 Suite pages link the exact accepted run and raw artifact, show its API-recorded
 expiry, and expose the provenance/digests JSON. Raw artifacts can expire without

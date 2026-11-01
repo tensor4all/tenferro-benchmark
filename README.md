@@ -12,9 +12,9 @@ reference backends on CPU and GPU workloads.
 The published pages cover only the latest hardware generation, so older data
 is never mistaken for current: **`zen5-cpu`** (AMD Ryzen AI 9 HX 470 workstation,
 pinned 1/4/8-thread rows; see [AGENTS.md](AGENTS.md#zen5-cpu-workflow-pinned-workstation-rows)) and
-**`nvidia-gpu`** (A100). Older profiles (`amd-cpu`, `linux-cpu`, `mac-cpu`,
-`mac-gpu`) are kept in `result/` and git history but are not linked from here
-or from the Pages site.
+**`nvidia-gpu`** (A100). Older profiles (`amd-cpu`, `mac-cpu`, `mac-gpu`) are
+kept in `result/` and git history but are not linked from here or from the
+Pages site.
 
 - Live pages, generated in CI on every deploy: <https://tensor4all.org/tenferro-benchmark/>
   (landing page, per-suite pages, and a per-commit
@@ -109,7 +109,7 @@ All profiles:
   (`resolved_deps`).
 
 For `mac-cpu`, run the "All profiles" commands directly on the host. For the
-devcontainer profiles (`amd-cpu` / `linux-cpu` / `nvidia-gpu`), run them
+devcontainer profiles (`amd-cpu` / `nvidia-gpu`), run them
 **inside the corresponding devcontainer** (`devcontainer exec ... bash -lc
 'uv sync && ./scripts/setup_extern_deps.sh'`) — the setup script expects the
 container's `OPENBLAS_ROOT` / `MKLROOT` environment, and the container's
@@ -120,7 +120,7 @@ Profile-specific:
 - `zen5-cpu`: the AMD Ryzen AI 9 HX 470 workstation; thread rows 1/4/8 run under
   `taskset` (see AGENTS.md).
 - `mac-cpu`: runs natively (no Docker); tenferro uses Accelerate.
-- `amd-cpu` / `linux-cpu`: the [devcontainer CLI](https://github.com/devcontainers/cli)
+- `amd-cpu`: the [devcontainer CLI](https://github.com/devcontainers/cli)
   and Docker; tenferro defaults to OpenBLAS, oneMKL is optional.
 - `nvidia-gpu`: the CUDA devcontainer under `.devcontainer/cuda/`.
 - `cpu/permutation`, `cpu/public_api`, and `cpu/einsum` suites: Julia on
@@ -137,7 +137,7 @@ Profile-specific:
 
 Workflow guides per platform:
 [macOS CPU](docs/macos-cpu.md) ·
-[Linux CPU devcontainer](docs/linux-cpu-devcontainer.md) ·
+[Linux CPU devcontainer](docs/linux-devcontainer.md) ·
 [NVIDIA GPU devcontainer](docs/gpu-devcontainer.md).
 
 ## Running the Benchmarks
@@ -478,32 +478,6 @@ The GPU tensor network benchmark uses problem data from
 the upstream [TensorNetworkBenchmarks](https://github.com/TensorBFS/TensorNetworkBenchmarks)
 repository; see [docs/tensornetwork-gpu.md](docs/tensornetwork-gpu.md).
 
-### Linux linalg AD repro (OpenBLAS / oneMKL)
-
-Reproduces `result/linux-cpu/cpu/linalg_jvp_jvp.md` with the devcontainer's
-source-built OpenBLAS (`/opt/openblas`):
-
-```bash
-devcontainer up --workspace-folder . --remove-existing-container
-devcontainer exec --workspace-folder . bash -lc '
-  python3 - <<PY
-import ctypes
-lib = ctypes.CDLL("/opt/openblas/lib/libopenblas.so")
-lib.openblas_get_config.restype = ctypes.c_char_p
-lib.openblas_get_parallel.restype = ctypes.c_int
-print(lib.openblas_get_config().decode())
-print(f"parallel={lib.openblas_get_parallel()}")
-PY'
-devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=blas-openblas
-  export PUBLICATION_GATE_FEATURES=blas-openblas
-  ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
-```
-
-For the oneMKL variant (`/opt/intel/oneapi/mkl/latest`), replace both
-`blas-openblas` values with `blas-mkl`. Verify the OpenBLAS build through
-the runtime API above instead of relying on `strings`.
-
 ## Measurement Policy
 
 - Benchmarks are always run **sequentially** — never multiple benchmark
@@ -560,7 +534,7 @@ lineage visible in the comparison, not merely to add another backend.
 C++ Torch/LibTorch runners are intentionally removed; PyTorch Python is the
 ATen comparison backend. The PyTorch CPU provider is detected at run time and
 recorded in `run.yaml` and generated reports. The default Linux image uses a
-binary PyTorch wheel; the separate [provider-matched OpenBLAS image](docs/linux-cpu-devcontainer.md#provider-matched-openblas-image)
+binary PyTorch wheel; the separate [provider-matched OpenBLAS image](docs/linux-devcontainer.md#provider-matched-openblas-image)
 source-builds PyTorch against the same OpenBLAS as tenferro.
 
 ### CPU provider pairs
@@ -590,7 +564,7 @@ Consequences to state in a report instead of assuming provider identity:
 ## Documentation
 
 - [macOS CPU workflow](docs/macos-cpu.md): native run, no Docker, Accelerate.
-- [Linux CPU devcontainer workflow](docs/linux-cpu-devcontainer.md):
+- [Linux CPU devcontainer workflow](docs/linux-devcontainer.md):
   Docker/devcontainer, OpenBLAS default, optional oneMKL, detected PyTorch
   provider.
 - [NVIDIA GPU devcontainer workflow](docs/gpu-devcontainer.md): CUDA

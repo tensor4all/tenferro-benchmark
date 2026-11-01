@@ -30,6 +30,10 @@ WORKFLOWS = {
     '.github/workflows/benchmark-runpod-gpu.yml': ('nvidia-gpu', 'runpod-gpu-benchmark'),
 }
 
+# Retired profiles keep their committed reports as history but may never
+# publish again, not even through a bundle replayed from an older run.
+RETIRED_PROFILES = frozenset({'linux-cpu'})
+
 
 def instant(value: str) -> datetime:
     parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
@@ -165,6 +169,8 @@ def validate_bundle(bundle: Path, profile: str, source: dict) -> list[tuple[dict
         manifest = adapt_publication(bundle, source)
     else:
         manifest = json.loads(safe_file(bundle, 'ingestion.json').read_text())
+    if manifest.get('target_profile') in RETIRED_PROFILES or profile in RETIRED_PROFILES:
+        raise ValueError('Retired target profile cannot publish: %s' % (manifest.get('target_profile') or profile))
     if manifest.get('schema_version') != 1 or manifest.get('target_profile') != profile:
         raise ValueError('Invalid ingestion manifest')
     if manifest.get('harness_commit') != source['head_sha']:

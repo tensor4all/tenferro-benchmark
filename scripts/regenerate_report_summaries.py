@@ -51,6 +51,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import report_summary  # noqa: E402
+from benchmark_layout import safe_target_profile  # noqa: E402
 
 ROOT = SCRIPT_DIR.parent
 RUN_DIR_RE = re.compile(r"\d{8}_\d{6}")
@@ -352,6 +353,11 @@ def render_pages(run_dirs: Iterable[Path], work: Path, root: Path = ROOT) -> dic
     profile = str(metadata.get("target_profile") or "")
     if not profile:
         raise PublishError(f"{selected[0]}: run metadata records no target_profile")
+    try:
+        safe_target_profile(profile)
+    except ValueError as error:
+        # A retired profile (`benchmark_layout.TARGET_PROFILE_RE`) never publishes.
+        raise PublishError(f"{selected[0]}: {error}") from error
 
     work = Path(work)
     work.mkdir(parents=True, exist_ok=True)

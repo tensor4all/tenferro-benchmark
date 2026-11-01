@@ -42,9 +42,11 @@ source commit. No artifact is executed, imported as Python, or sourced as shell.
 Reject traversal, absolute paths and symbolic links in bundles. Do not check
 out or execute the source run's code in the privileged ingestion job.
 
-Keep `amd-cpu` as the Linux nightly's identity; do not duplicate it as
-`linux-cpu`. Existing independently maintained `linux-cpu` reports remain
-unchanged. CPU summaries must contain hardware identity (at least host/CPU)
+Keep `amd-cpu` as the Linux nightly's identity. The `linux-cpu` profile is
+retired (2026-11-02): a bundle whose `ingestion.json` declares `linux-cpu` is
+rejected (`Retired target profile`) instead of published, and existing reports
+under `result/linux-cpu/` stay as history (see `result/linux-cpu/RETIRED.md`).
+Reviving the profile requires the steps recorded there. CPU summaries must contain hardware identity (at least host/CPU)
 and a tenferro commit. Hosted CPU results remain reference indicators. GPU
 publication requires an NVIDIA A100 device name (`NVIDIA A100 80GB PCIe`,
 `NVIDIA A100-SXM4-80GB`, `NVIDIA A100-SXM4-40GB`; case-insensitive whitespace

@@ -11,6 +11,8 @@ bash -n scripts/run_paired_timing.sh \
 out="$(BENCH_CONFIRM_CONFIG=benchmarks/cpu/confirmation.yaml \
     scripts/run_paired_timing.sh paired . . 2>&1)" && { echo "placeholder config accepted"; exit 1; }
 grep -q "confirmation config is not declared" <<<"$out" || { echo "$out"; exit 1; }
+out="$(BENCHMARK_TARGET_PROFILE=linux-cpu scripts/run_paired_timing.sh aa . 2>&1)" && { echo "retired profile accepted"; exit 1; }
+grep -q "must be amd-cpu or mac-cpu" <<<"$out" || { echo "$out"; exit 1; }
 out="$(env -u BENCH_AA_ROUNDS scripts/run_paired_timing.sh aa . 2>&1)" && { echo "aa without repetitions accepted"; exit 1; }
 grep -q "BENCH_AA_ROUNDS" <<<"$out" || { echo "$out"; exit 1; }
 out="$(scripts/build_for_tenferro_rev.sh . /dev/null 2>&1)" && { echo "non-tenferro dir accepted"; exit 1; }

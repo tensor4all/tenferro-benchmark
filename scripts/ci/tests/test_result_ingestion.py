@@ -87,6 +87,12 @@ class IngestionTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'conflicting'):
             plan_updates(self.repo, conflicting)
 
+    def test_retired_profile_rejected(self):
+        self.manifest['target_profile'] = 'linux-cpu'
+        self.save()
+        with self.assertRaisesRegex(ValueError, 'Retired target profile'):
+            self.validate()
+
     def test_legacy_timestamp_floor_and_timezone(self):
         path = self.repo / 'result/amd-cpu/cpu/einsum.summary.json'
         path.parent.mkdir(parents=True)

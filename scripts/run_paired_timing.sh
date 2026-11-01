@@ -28,6 +28,14 @@ cd "$PROJECT_DIR"
 MODE="${1:?mode aa|paired required}"
 shift
 export BENCHMARK_TARGET_PROFILE="${BENCHMARK_TARGET_PROFILE:-amd-cpu}"
+case "$BENCHMARK_TARGET_PROFILE" in
+    amd-cpu|mac-cpu)
+        ;;
+    *)
+        echo "ERROR: BENCHMARK_TARGET_PROFILE must be amd-cpu or mac-cpu for paired timing." >&2
+        exit 2
+        ;;
+esac
 export TENFERRO_CPU_FEATURES="${TENFERRO_CPU_FEATURES:-native}"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
