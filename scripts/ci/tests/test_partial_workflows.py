@@ -52,6 +52,28 @@ class PartialWorkflowTest(unittest.TestCase):
         self.assertEqual(len(runtime),9)
         self.assertTrue(all(step['with']['retention-days']==7 for step in runtime))
 
+    def test_scheduled_gpu_collection_is_not_a_backend_probe(self):
+        workflow = self.workflow('benchmark-runpod-gpu')
+        job = workflow['jobs']['run-gpu-benchmark']
+        # A scheduled run must not look like a filtered probe: it would skip the
+        # routine controls and stop refreshing the routine reports.
+        self.assertNotIn('GPU_BENCH_BACKENDS', job['env'])
+        self.assertIn('jax-cuda', job['env']['GPU_BENCH_RUNTIME_BACKENDS'])
+        collect = next(step for step in job['steps'] if step.get('id') == 'collect')
+        self.assertEqual(collect['env']['GPU_BENCH_BACKENDS'], '${{ inputs.backends }}')
+        package = next(step for step in job['steps']
+                       if step.get('name') == "Package this collection's GPU results")
+        self.assertIn('--backends "$GPU_BENCH_RUNTIME_BACKENDS"', package['run'])
+        # The pod has no Rust toolchain, so both routine runners ship from the
+        # hosted build job.
+        build = next(step for step in workflow['jobs']['prepare-benchmark']['steps']
+                     if step.get('id') == 'build')
+        self.assertIn('benchmark_gpu_linalg_ad', build['run'])
+        self.assertIn('artifact_paths', build['run'])
+        verify = next(step for step in job['steps']
+                      if step.get('name') == 'Verify hosted benchmark build')
+        self.assertIn('benchmark_gpu_linalg_ad', verify['run'])
+
     def test_ingest_if_admits_only_success_failure_and_preserves_trust_conditions(self):
         condition=self.workflow('ingest-results')['jobs']['ingest']['if']
         self.assertIn('fromJSON(\'["success", "failure"]\')',condition)

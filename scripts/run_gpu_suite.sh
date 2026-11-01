@@ -18,14 +18,28 @@ case "$BENCHMARK_TARGET_PROFILE" in
         exit 1
         ;;
 esac
-RUN_TIMESTAMP_RFC3339="$(python3 - <<'PY'
+# The collection timestamp identifies the run directory, so derive it from that
+# directory's own stamp instead of the wall clock: the publication gate compares
+# the two and a second boundary must not decide whether a run is publishable.
+TIMESTAMP="${GPU_BENCH_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
+export GPU_BENCH_TIMESTAMP="$TIMESTAMP"
+RUN_TIMESTAMP_RFC3339="${GPU_BENCH_RUN_TIMESTAMP:-$(python3 - "$TIMESTAMP" <<'PY'
 from datetime import datetime, timezone
-print(datetime.now(timezone.utc).isoformat())
+import sys
+print(datetime.strptime(sys.argv[1], "%Y%m%d_%H%M%S").replace(tzinfo=timezone.utc).isoformat())
 PY
-)"
+)}"
+export GPU_BENCH_RUN_TIMESTAMP="$RUN_TIMESTAMP_RFC3339"
 
-SUITES_VALUE="${GPU_BENCH_SUITE:-benchmarks/gpu/dense.yaml,benchmarks/gpu/einsum.yaml,benchmarks/gpu/sparse.yaml,benchmarks/gpu/tensornetwork.yaml}"
-BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda,jax-cuda-tree-jit,jax-cuda-eager,cublaslt,cutlass,cusolver,cusparse,ginkgo}"
+# Empty means "the routine manifest's own single set"; an explicit
+# GPU_BENCH_SUITE/GPU_BENCH_BACKENDS is a targeted probe, not a routine refresh.
+SUITES_VALUE="${GPU_BENCH_SUITE:-}"
+BACKENDS_VALUE="${GPU_BENCH_BACKENDS:-}"
+# An explicit filter (suite, backend or problem) is a targeted probe, never a
+# routine profile refresh.
+RAW_FILTER="${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}"
+FILTERED=0
+[[ -n "$RAW_FILTER" ]] && FILTERED=1
 DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-0}"
 if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" == 1 ]]; then
     DEVICE_ORDINAL="${GPU_BENCH_DEVICE:-1}"
@@ -56,20 +70,6 @@ fi
 
 mkdir -p "$RESULTS_ROOT" "$REPORTS_DIR"
 
-IFS=',' read -r -a SUITES <<< "$SUITES_VALUE"
-REQUESTED_SUITE_FILES=("${SUITES[@]}")
-IFS=',' read -r -a BACKENDS <<< "$BACKENDS_VALUE"
-
-echo "============================================"
-echo " GPU benchmark contract suite"
-echo "============================================"
-echo "Suites:   $SUITES_VALUE"
-echo "Backends: $BACKENDS_VALUE"
-echo "Device:   cuda:$DEVICE_ORDINAL"
-echo "Target:   $BENCHMARK_TARGET_PROFILE"
-echo "Timestamp: $TIMESTAMP"
-echo ""
-
 # Vendor library locations for JIT-compiled backends (CUTLASS, Ginkgo).
 # Override via env if installed elsewhere.
 export CUTLASS_DIR="${CUTLASS_DIR:-/opt/cutlass}"
@@ -86,41 +86,47 @@ if command -v uv >/dev/null 2>&1; then
     PYTHON=(uv run python)
 fi
 
-if [[ -n "${BENCH_COVERAGE:-}" ]]; then
-    COVERAGE="$BENCH_COVERAGE"
-elif [[ -n "${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}" ]]; then
-    COVERAGE=full
-else
-    COVERAGE=quick
-fi
-# A filtered invocation is a targeted probe, never a routine profile refresh.
-FILTERED=0
-[[ -n "${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}" ]] && FILTERED=1
-# On an unfiltered full run, also write the quick-profile report family from the
-# same records (quick selection is a subset of full; see docs/gpu-routine-coverage.md).
-QUICK_FROM_FULL=0
-if [[ "$COVERAGE" == full && "$FILTERED" == 0 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
-    QUICK_FROM_FULL=1
-fi
-SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection/$TIMESTAMP"
-QUICK_SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection_quick/$TIMESTAMP"
-mapfile -t SUITES < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
-    --coverage "$COVERAGE" --effort "${BENCH_EFFORT:-standard}" \
-    --backends "${GPU_BENCH_BACKENDS:-}" --problem "$PROBLEM_FILTER" \
-    --output "$SELECTION_DIR" "${SUITES[@]}")
-[[ ${#SUITES[@]} -gt 0 ]] || { echo "No GPU suites selected" >&2; exit 1; }
-"${VALIDATOR[@]}" "${SUITES[@]}"
+BENCH_ROUTINE_VENDOR_ARMS="${BENCH_ROUTINE_VENDOR_ARMS:-0}"
+[[ "$BENCH_ROUTINE_VENDOR_ARMS" == 0 || "$BENCH_ROUTINE_VENDOR_ARMS" == 1 ]] || {
+    echo "ERROR: BENCH_ROUTINE_VENDOR_ARMS must be 0 or 1." >&2
+    exit 1
+}
+VENDOR_ARGS=()
+[[ "$BENCH_ROUTINE_VENDOR_ARMS" == 1 ]] && VENDOR_ARGS=(--vendor-arms)
+mapfile -t ROUTINE_DEFAULTS < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
+    --defaults ${VENDOR_ARGS[@]+"${VENDOR_ARGS[@]}"})
+[[ -n "$SUITES_VALUE" ]] || SUITES_VALUE="${ROUTINE_DEFAULTS[0]}"
+[[ -n "$BACKENDS_VALUE" ]] || BACKENDS_VALUE="${ROUTINE_DEFAULTS[1]}"
+IFS=',' read -r -a SUITES <<< "$SUITES_VALUE"
+IFS=',' read -r -a BACKENDS <<< "$BACKENDS_VALUE"
 
-# Split backends: Rust-native vs Python
-RUST_BACKENDS=()
-PYTHON_BACKENDS=()
-for b in "${BACKENDS[@]}"; do
-    if [[ "$b" == "tenferro-cuda-trace" || "$b" == "tenferro-cuda-eager" || "$b" == "tenferro-cuda-eager-per-call-session" ]]; then
-        RUST_BACKENDS+=("$b")
-    else
-        PYTHON_BACKENDS+=("$b")
-    fi
+echo "============================================"
+echo " GPU benchmark contract suite"
+echo "============================================"
+echo "Suites:   $SUITES_VALUE"
+echo "Backends: $BACKENDS_VALUE"
+echo "Vendor arms: $BENCH_ROUTINE_VENDOR_ARMS"
+echo "Device:   cuda:$DEVICE_ORDINAL"
+echo "Target:   $BENCHMARK_TARGET_PROFILE"
+echo "Timestamp: $TIMESTAMP"
+echo ""
+
+SELECTION_BACKENDS="${GPU_BENCH_BACKENDS:-}"
+# A verification-only run executes the debug arm set, so it must plan that set.
+[[ "${GPU_BENCH_VERIFY_ONLY:-0}" == 1 && -z "$SELECTION_BACKENDS" ]] && SELECTION_BACKENDS="$BACKENDS_VALUE"
+SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection/$TIMESTAMP"
+mapfile -t SUITE_ROWS < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
+    --effort "${BENCH_EFFORT:-standard}" ${VENDOR_ARGS[@]+"${VENDOR_ARGS[@]}"} \
+    --backends "$SELECTION_BACKENDS" --problem "$PROBLEM_FILTER" \
+    --output "$SELECTION_DIR" "${SUITES[@]}")
+[[ ${#SUITE_ROWS[@]} -gt 0 ]] || { echo "No GPU suites selected" >&2; exit 1; }
+SUITES=()
+SUITE_DRIVERS=()
+for row in "${SUITE_ROWS[@]}"; do
+    SUITES+=("${row%% *}")
+    SUITE_DRIVERS+=("${row##* }")
 done
+"${VALIDATOR[@]}" "${SUITES[@]}"
 
 resolve_git_commit() {
     local checkout_dir="$1"
@@ -180,16 +186,37 @@ write_run_metadata() {
         args+=(--tenferro-commit "$tenferro_commit")
     fi
     "${METADATA[@]}" "${args[@]}"
-    "${PYTHON[@]}" - "$RUN_YAML" "$SELECTION_DIR/selection.json" <<'PY'
+}
+
+# Suite identity, routine-plan identity and this suite's own wall clock. The
+# per-suite start/end are what let a report attribute measured time to suites on
+# any device (the cumulative script clock alone cannot).
+write_collection_block() {
+    local suite_id="$1"
+    local run_yaml="$2"
+    local started_at="$3"
+    local finished_at="$4"
+    local started_ns="$5"
+    local finished_ns="$6"
+    "${PYTHON[@]}" - "$run_yaml" "$SELECTION_DIR/selection.json" "$suite_id" \
+        "$started_at" "$finished_at" "$started_ns" "$finished_ns" <<'PY'
 import json, sys, yaml
 from pathlib import Path
-path = Path(sys.argv[1]); metadata = yaml.safe_load(path.read_text())
-plan = json.loads(Path(sys.argv[2]).read_text())
-metadata.setdefault('collection',{}).update({'coverage':plan['coverage'],'effort':plan['effort'],
+path = Path(sys.argv[1]); plan = json.loads(Path(sys.argv[2]).read_text())
+suite, started_at, finished_at = sys.argv[3:6]
+started_ns, finished_ns = int(sys.argv[6]), int(sys.argv[7])
+metadata = yaml.safe_load(path.read_text())
+prefix = f'{suite}:'
+metadata.setdefault('collection',{}).update({
+    'effort':plan['effort'],
     'gpu_routine_manifest_version':plan['manifest_version'],
     'gpu_routine_selection_file':sys.argv[2],
-    'expected_case_ids':plan['expected'],'selected_case_ids':plan['selected'],
-    'unselected_full_case_ids':plan['unselected']})
+    'gpu_routine_vendor_arms':plan['vendor_arms'],
+    'expected_case_ids':[key for key in plan['expected'] if key.startswith(prefix)],
+    'selected_case_ids':[key for key in plan['selected'] if key.startswith(prefix)],
+    'suite_started_at':started_at,
+    'suite_finished_at':finished_at,
+    'suite_seconds':round((finished_ns-started_ns)/1e9, 3)})
 path.write_text(yaml.safe_dump(metadata,sort_keys=False))
 PY
 }
@@ -293,9 +320,29 @@ PY
     done
 }
 
+write_suite_wall_record() {
+    local run_dir="$1"
+    local collection_start="$2"
+    local collection_end="$3"
+    local report_start="$4"
+    "${PYTHON[@]}" - "$run_dir/wall_command.json" "$COMMAND_START_NS" "$collection_start" "$collection_end" "$report_start" "$(wall_now)" <<'PY'
+import json, sys
+from pathlib import Path
+start, collection, collected, report, end = map(int, sys.argv[2:])
+Path(sys.argv[1]).write_text(json.dumps({
+    'command_seconds_through_this_suite':(end-start)/1e9,
+    'collection_seconds_including_build_and_backend_release_delays':(collected-collection)/1e9,
+    'report_generation_and_copy_seconds':(end-report)/1e9,
+    'scope':'script clock-read through this suite report copy; devcontainer CLI startup and final wall-record write excluded',
+},indent=2)+'\n')
+PY
+}
+
 RESULT_PATHS=()
 VALIDATION_FAILED=0
-for suite in "${SUITES[@]}"; do
+for index in "${!SUITES[@]}"; do
+    suite="${SUITES[$index]}"
+    driver="${SUITE_DRIVERS[$index]}"
     suite_id="$(suite_id_for_file "$suite")"
     if [[ ! "$suite_id" =~ ^gpu/[a-z0-9][a-z0-9_.-]*$ ]]; then
         echo "ERROR: unsupported GPU suite_id '$suite_id' in $suite" >&2
@@ -314,12 +361,37 @@ for suite in "${SUITES[@]}"; do
     : > "$RESULT_JSONL"
     RESULT_PATHS+=("$RESULT_JSONL")
     : > "$RUN_DIR/wall_backends.jsonl"
-    write_run_metadata "$suite_id" "$suite" "$RUN_YAML"
+    # A delegated collector writes its own run metadata.
+    [[ "$driver" == gpu_linalg_ad ]] || write_run_metadata "$suite_id" "$suite" "$RUN_YAML"
 
     # Each framework releases its CUDA allocator before the next process starts.
+    SUITE_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     COLLECTION_START_NS="$(wall_now)"
-    run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL"
+    if [[ "$driver" == gpu_linalg_ad ]]; then
+        # The AD collector owns its own runner, verification and formatter; it
+        # receives the materialized routine suite so the routine selection
+        # still decides which AD cases run.
+        echo "Delegating $suite_id to scripts/run_gpu_linalg_jvp_vjp.sh"
+        GPU_BENCH_TIMESTAMP="$TIMESTAMP" LINALG_AD_SUITE_FILE="$suite" \
+            bash "$SCRIPT_DIR/run_gpu_linalg_jvp_vjp.sh" || VALIDATION_FAILED=1
+    else
+        run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL"
+    fi
     COLLECTION_END_NS="$(wall_now)"
+    SUITE_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    [[ -f "$RUN_YAML" ]] || continue
+    write_collection_block "$suite_id" "$RUN_YAML" "$SUITE_STARTED_AT" "$SUITE_FINISHED_AT" \
+        "$COLLECTION_START_NS" "$COLLECTION_END_NS"
+    if [[ "$driver" == gpu_linalg_ad ]]; then
+        # The delegate already validated and formatted this suite.
+        write_suite_wall_record "$RUN_DIR" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$COLLECTION_END_NS"
+        echo ""
+        echo "GPU benchmark suite complete: $suite_id"
+        echo "Run YAML: $RUN_YAML"
+        echo "JSONL:    $RESULT_JSONL"
+        echo "Report:   $REPORT_OUT"
+        continue
+    fi
 
     if [[ ! -s "$RESULT_JSONL" ]]; then
         echo "No records generated for $suite_id; skipping report."
@@ -346,17 +418,7 @@ for suite in "${SUITES[@]}"; do
             cp "${MARKDOWN_OUT%.md}.summary.json" "${REPORT_OUT%.md}.summary.json"
         fi
     fi
-    "${PYTHON[@]}" - "$RUN_DIR/wall_command.json" "$COMMAND_START_NS" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$REPORT_START_NS" "$(wall_now)" <<'PY'
-import json, sys
-from pathlib import Path
-start, collection, collected, report, end = map(int, sys.argv[2:])
-Path(sys.argv[1]).write_text(json.dumps({
-    'command_seconds_through_this_suite':(end-start)/1e9,
-    'collection_seconds_including_build_and_backend_release_delays':(collected-collection)/1e9,
-    'report_generation_and_copy_seconds':(end-report)/1e9,
-    'scope':'script clock-read through this suite report copy; devcontainer CLI startup and final wall-record write excluded',
-},indent=2)+'\n')
-PY
+    write_suite_wall_record "$RUN_DIR" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$REPORT_START_NS"
 
     echo ""
     echo "GPU benchmark suite complete: $suite_id"
@@ -370,26 +432,16 @@ done
 [[ "$VALIDATION_FAILED" == 0 ]] || exit 1
 "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$SELECTION_DIR/case_status.json" \
     --output "$SELECTION_DIR/report.md"
-if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
+if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 && "$FILTERED" == 0 ]]; then
     mkdir -p "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu"
-    if [[ "$QUICK_FROM_FULL" == 1 ]]; then
-        cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_full_coverage.md"
-        "${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --coverage quick --effort "${BENCH_EFFORT:-standard}" \
-            --output "$QUICK_SELECTION_DIR" "${REQUESTED_SUITE_FILES[@]}" >/dev/null
-        "${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$QUICK_SELECTION_DIR" \
-            --records "${RESULT_PATHS[@]}" --restrict
-        "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$QUICK_SELECTION_DIR/case_status.json" \
-            --output "$QUICK_SELECTION_DIR/report.md"
-        cp "$QUICK_SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
-    elif [[ "$FILTERED" == 0 ]]; then
-        # A filtered probe is not a routine profile refresh: its accounting stays in the raw selection dir.
-        cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
-    fi
+    # A filtered probe is not a routine profile refresh: its accounting stays in
+    # the raw selection dir.
+    cp "$SELECTION_DIR/report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_coverage.md"
 fi
 
 CONTROLS="${GPU_BENCH_ROUTINE_CONTROLS:-}"
 if [[ -z "$CONTROLS" ]]; then
-    if [[ -z "${GPU_BENCH_SUITE:-}${GPU_BENCH_BACKENDS:-}${GPU_BENCH_PROBLEM:-}" ]]; then
+    if [[ -z "$RAW_FILTER" ]]; then
         CONTROLS=1
     else
         CONTROLS=0
@@ -397,8 +449,7 @@ if [[ -z "$CONTROLS" ]]; then
 fi
 [[ "$CONTROLS" == 0 || "$CONTROLS" == 1 ]] || { echo "Invalid GPU_BENCH_ROUTINE_CONTROLS" >&2; exit 1; }
 if [[ "$CONTROLS" == 1 ]]; then
-    BENCH_COVERAGE="$COVERAGE" GPU_BENCH_TIMESTAMP="$TIMESTAMP" \
-        bash "$SCRIPT_DIR/run_gpu_routine_controls.sh"
+    GPU_BENCH_TIMESTAMP="$TIMESTAMP" bash "$SCRIPT_DIR/run_gpu_routine_controls.sh"
 fi
 COMMAND_COMPLETE_NS="$(wall_now)"
 "${PYTHON[@]}" - "$SELECTION_DIR/wall_command_complete.json" "$COMMAND_START_NS" "$COMMAND_COMPLETE_NS" "$CONTROLS" <<'PY'
@@ -412,18 +463,8 @@ Path(sys.argv[1]).write_text(json.dumps({
 PY
 if [[ "${GPU_BENCH_VERIFY_ONLY:-0}" != 1 ]]; then
     "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_wall.py" "$SELECTION_DIR" --output "$SELECTION_DIR/wall_report.md"
-    if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
-        if [[ "$QUICK_FROM_FULL" == 1 ]]; then
-            # A full campaign has no quick wall clock of its own. Publish the
-            # full-profile workflow report and leave the quick
-            # `routine_workflow.md` (from the last real quick campaign)
-            # untouched: a derived quick wall time would be a counterfactual,
-            # not a measurement, and must not be evaluated against the quick
-            # budget.
-            cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_full_workflow.md"
-        elif [[ "$FILTERED" == 0 ]]; then
-            cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
-        fi
+    if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 && "$FILTERED" == 0 ]]; then
+        cp "$SELECTION_DIR/wall_report.md" "$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/routine_workflow.md"
     fi
 fi
 

@@ -61,10 +61,6 @@ or from the Pages site.
 | `nvidia-gpu` | `gpu/routine_command_wall` | [result/nvidia-gpu/gpu/routine_command_wall.md](result/nvidia-gpu/gpu/routine_command_wall.md) |
 | `nvidia-gpu` | `gpu/routine_controls` | [result/nvidia-gpu/gpu/routine_controls.md](result/nvidia-gpu/gpu/routine_controls.md) |
 | `nvidia-gpu` | `gpu/routine_coverage` | [result/nvidia-gpu/gpu/routine_coverage.md](result/nvidia-gpu/gpu/routine_coverage.md) |
-| `nvidia-gpu` | `gpu/routine_full_command_wall` | [result/nvidia-gpu/gpu/routine_full_command_wall.md](result/nvidia-gpu/gpu/routine_full_command_wall.md) |
-| `nvidia-gpu` | `gpu/routine_full_controls` | [result/nvidia-gpu/gpu/routine_full_controls.md](result/nvidia-gpu/gpu/routine_full_controls.md) |
-| `nvidia-gpu` | `gpu/routine_full_coverage` | [result/nvidia-gpu/gpu/routine_full_coverage.md](result/nvidia-gpu/gpu/routine_full_coverage.md) |
-| `nvidia-gpu` | `gpu/routine_full_workflow` | [result/nvidia-gpu/gpu/routine_full_workflow.md](result/nvidia-gpu/gpu/routine_full_workflow.md) |
 | `nvidia-gpu` | `gpu/routine_workflow` | [result/nvidia-gpu/gpu/routine_workflow.md](result/nvidia-gpu/gpu/routine_workflow.md) |
 | `nvidia-gpu` | `gpu/shape_stream` | [result/nvidia-gpu/gpu/shape_stream.md](result/nvidia-gpu/gpu/shape_stream.md) |
 | `nvidia-gpu` | `gpu/sparse` | [result/nvidia-gpu/gpu/sparse.md](result/nvidia-gpu/gpu/sparse.md) |
@@ -439,14 +435,17 @@ If `nvidia-smi` fails inside a previously created container ("Failed to
 initialize NVML" / `CUDA_ERROR_NO_DEVICE`) while the host GPU is fine,
 `docker restart <container>` usually restores GPU access — no rebuild needed.
 
+The routine set is dense, einsum, sparse, tensor-network, elementwise and both
+linalg AD suites; `docs/gpu-routine-coverage.md` lists every case and the row
+cost.
+
 ```bash
-# gpu/dense, gpu/einsum, gpu/sparse, gpu/tensornetwork:
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
 
-# gpu/linalg_jvp_vjp (separate from the standard GPU suite):
+# One suite alone (a probe, not a routine refresh):
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
-  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_linalg_jvp_vjp.sh'
+  bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_SUITE=benchmarks/gpu/linalg_jvp_vjp.yaml ./scripts/run_gpu_suite.sh'
 
 # gpu/permutation (standalone, like cpu/permutation):
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \

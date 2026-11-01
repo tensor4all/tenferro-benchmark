@@ -14,7 +14,7 @@ does not imply complete measured coverage.
 
 ```bash
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
-  bash -lc 'GPU_BENCH_DEVICE=0 GPU_BENCH_SKIP_LATEST=1 BENCH_COVERAGE=full \
+  bash -lc 'GPU_BENCH_DEVICE=0 GPU_BENCH_SKIP_LATEST=1 \
     BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
 ```
 
@@ -25,6 +25,11 @@ raw results and per-run reports. Each suite run records:
   latter includes interpreter startup, preparation, validation and samples.
 - `wall_command.json`: cumulative script time through that suite, collection
   including the configured allocator-release delays, and report generation.
+- Run metadata `collection.suite_started_at`, `collection.suite_finished_at` and
+  `collection.suite_seconds`: this suite's own wall clock. They are recorded per
+  suite on every device, so a report attributes measured time to suites without
+  the cumulative script clock that cannot be differenced reliably. The routine
+  workflow report lists them in its per-suite table.
 - Result-record notes: available input/preparation, compilation, initialization,
   validation, warmup, calibration and sampling phase walls. Phase clocks sit
   outside operation clocks. Some vendor paths lack detailed phase hooks; those
@@ -53,6 +58,10 @@ Routine coverage and effort changes must retain explicit case identities and
 be measured before a budget is chosen. GPU paired confirmation remains separate
 from these workflow-cost observations.
 
-The subsequent quick/full selection is documented in
-[gpu-routine-coverage.md](gpu-routine-coverage.md). Use explicit `full` when
-repeating the broad baseline; an unfiltered routine command selects quick.
+The single routine set that replaced the earlier quick/full selection is
+documented in [gpu-routine-coverage.md](gpu-routine-coverage.md). An unfiltered
+routine command collects that set. A `GPU_BENCH_SUITE`/`GPU_BENCH_BACKENDS`/
+`GPU_BENCH_PROBLEM` filter only narrows it: naming a case the routine set leaves
+out requires adding that case to `benchmarks/gpu/manifests/routine.yaml` first.
+Repeating this broad baseline therefore means naming its per-suite run
+directories on the `format_gpu_command_wall.py` command line.

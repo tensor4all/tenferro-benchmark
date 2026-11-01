@@ -513,14 +513,14 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
   bash -lc 'BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
 ```
 
-An unfiltered `BENCH_COVERAGE=full` run also writes the quick-profile routine
-coverage and control reports (`routine_coverage.md`, `routine_controls.md`)
-from the same records restricted to the quick manifest selection; the
-full-profile reports are the `routine_full_*.md` variants. The quick
-`routine_workflow.md` wall-time observation is not derived from a full run
-(its clocks would be the full campaign's), so a full run never overwrites it.
-The diagnostic `jax-cuda-eager` tensor-network path is opt-in via
-`GPU_BENCH_BACKENDS=jax-cuda-eager` (see `docs/gpu-routine-coverage.md`).
+`run_gpu_suite.sh` collects one curated set (`benchmarks/gpu/manifests/
+routine.yaml`, cost table in `docs/gpu-routine-coverage.md`): every routine
+suite once, one representative per operation family. There is no quick/full
+switch. The diagnostic `jax-cuda-eager` tensor-network path and the vendor arms
+stay opt-in via `GPU_BENCH_BACKENDS=...` or `BENCH_ROUTINE_VENDOR_ARMS=1`.
+`gpu/linalg_jvp_vjp` and `gpu/linalg_ad_latency` run inside that set through
+their own collector; their standalone scripts below remain available for a
+single-suite probe.
 
 For the GPU linalg JVP/VJP report (CPU `linalg_jvp_vjp` parity on CUDA):
 
@@ -539,7 +539,8 @@ Run this sequentially after the standard GPU suite; do not overlap it with
 other GPU benchmark processes.
 
 For the GPU elementwise chain report (prepared/segmented fusion detection; see
-`benchmarks/gpu/elementwise.yaml`):
+`benchmarks/gpu/elementwise.yaml`). It is part of the routine set; probe it alone
+with an explicit suite filter:
 
 ```bash
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
@@ -557,7 +558,9 @@ fusable. The small problem (n=1024) measures per-command overhead and the large
 one (n=1048576) measures the bandwidth cost; a prepared/segmented execution-path
 divergence shows up as the trace rows sitting far above the PyTorch rows.
 
-For the GPU linalg AD single-call latency / per-op overhead report (n=2, 4, 8):
+For the GPU linalg AD single-call latency / per-op overhead report. The routine
+set collects the n=4 rows; the n=2/8 characterization sweep runs through an
+explicit suite filter:
 
 ```bash
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \

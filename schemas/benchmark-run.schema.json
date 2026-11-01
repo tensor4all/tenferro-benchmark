@@ -75,12 +75,14 @@
       "additionalProperties": true,
       "properties": {
         "command": { "type": "string" },
-        "coverage": { "enum": ["quick", "full"] },
         "effort": { "enum": ["scan", "standard", "confirm", "aa"] },
         "manifest_version": { "type": "integer" },
         "selection_filter": { "type": ["string", "null"] },
         "expected_cases": { "type": "integer" },
-        "selected_cases": { "type": "integer" }
+        "selected_cases": { "type": "integer" },
+        "suite_started_at": { "type": "string", "format": "date-time" },
+        "suite_finished_at": { "type": "string", "format": "date-time" },
+        "suite_seconds": { "type": "number", "exclusiveMinimum": 0 }
       }
     },
     "environment": { "$ref": "#/$defs/environment" },

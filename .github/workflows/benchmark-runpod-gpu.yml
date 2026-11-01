@@ -128,21 +128,33 @@ jobs:
         run: |
           set -euo pipefail
           export PATH="$CUDA_HOME/bin:$PATH"
-          binary_name=benchmark_gpu_rust
+          # The routine set collects both the generic runner and the linalg AD
+          # runner on the pod, which has a CUDA runtime but no Rust toolchain.
+          binaries=(benchmark_gpu_rust benchmark_gpu_linalg_ad)
           if [[ "$REQUESTED_SUITE" == perf-issues-readback ]]; then
-            binary_name=benchmark_gpu_perf_issues
+            binaries=(benchmark_gpu_perf_issues)
           fi
-          cargo build --locked --release --features cuda --bin "$binary_name"
-          python3 scripts/ci/gpu_artifact.py "target/release/$binary_name" --write
-          echo "binary_name=$binary_name" >> "$GITHUB_OUTPUT"
+          build_args=()
+          for binary in "${binaries[@]}"; do
+            build_args+=(--bin "$binary")
+          done
+          cargo build --locked --release --features cuda "${build_args[@]}"
+          {
+            echo "binary_name=${binaries[0]}"
+            echo "artifact_paths<<BUILD_PATHS"
+            for binary in "${binaries[@]}"; do
+              python3 scripts/ci/gpu_artifact.py "target/release/$binary" --write
+              echo "target/release/$binary"
+              echo "target/release/$binary.json"
+            done
+            echo "BUILD_PATHS"
+          } >> "$GITHUB_OUTPUT"
           echo "rustc_version=$(rustc --version)" >> "$GITHUB_OUTPUT"
           echo "tenferro_commit=$(git -C extern/tenferro-rs rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
           name: gpu-benchmark-build-${{ github.run_id }}
-          path: |
-            target/release/${{ steps.build.outputs.binary_name }}
-            target/release/${{ steps.build.outputs.binary_name }}.json
+          path: ${{ steps.build.outputs.artifact_paths }}
           retention-days: 7
           if-no-files-found: error
 
@@ -155,7 +167,10 @@ jobs:
     outputs:
       sha256: ${{ steps.identity.outputs.sha256 }}
     env:
-      GPU_BENCH_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda' }}
+      # The arms the prepared pod runtime must cover. This is infrastructure, not
+      # a selection filter: the routine set names its own arms in
+      # benchmarks/gpu/manifests/routine.yaml.
+      GPU_BENCH_RUNTIME_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -166,7 +181,7 @@ jobs:
           enable-cache: false
       - name: Identify locked runtime environment
         id: key
-        run: echo "key=$(python3 scripts/ci/gpu_environment.py key --backends "$GPU_BENCH_BACKENDS")" >> "$GITHUB_OUTPUT"
+        run: echo "key=$(python3 scripts/ci/gpu_environment.py key --backends "$GPU_BENCH_RUNTIME_BACKENDS")" >> "$GITHUB_OUTPUT"
       - uses: actions/cache/restore@v4
         id: cache
         with:
@@ -180,7 +195,7 @@ jobs:
         run: |
           set -euo pipefail
           sha256=$(python3 -c 'import json; print(json.load(open("_gpu_environment/runtime.json"))["archive_sha256"])')
-          python3 scripts/ci/gpu_environment.py verify --backends "$GPU_BENCH_BACKENDS" --sha256 "$sha256"
+          python3 scripts/ci/gpu_environment.py verify --backends "$GPU_BENCH_RUNTIME_BACKENDS" --sha256 "$sha256"
           echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
       - uses: actions/cache/save@v4
         if: github.ref == 'refs/heads/main' && steps.cache.outputs.cache-hit != 'true'
@@ -358,7 +373,8 @@ jobs:
     # Part of the one-hour rental budget; see POD_MAX_LIFETIME_SECONDS.
     timeout-minutes: 42
     env:
-      GPU_BENCH_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda' }}
+      # Arms the prepared runtime covers; not a selection filter.
+      GPU_BENCH_RUNTIME_BACKENDS: ${{ inputs.backends || 'tenferro-cuda-trace,tenferro-cuda-eager,pytorch-cuda,jax-cuda' }}
       REQUESTED_SUITE: ${{ inputs.suite || 'all' }}
       TENFERRO_REF: ${{ needs.prepare-benchmark.outputs.tenferro_commit }}
       TENFERRO_UPDATE: "1"
@@ -405,8 +421,14 @@ jobs:
           path: target/release
       - name: Verify hosted benchmark build
         run: |
-          chmod +x "target/release/$GPU_BENCH_BINARY_NAME"
-          python3 scripts/ci/gpu_artifact.py "target/release/$GPU_BENCH_BINARY_NAME"
+          set -euo pipefail
+          # The generic runner is always shipped; the linalg AD runner only for
+          # the routine collection (the manual readback runs its own binary).
+          for binary in "$GPU_BENCH_BINARY_NAME" benchmark_gpu_linalg_ad; do
+            [[ -f "target/release/$binary" ]] || continue
+            chmod +x "target/release/$binary"
+            python3 scripts/ci/gpu_artifact.py "target/release/$binary"
+          done
 
       - name: Verify CUDA benchmark environment
         run: |
@@ -432,6 +454,11 @@ jobs:
 
       - name: Run GPU benchmark suite
         id: collect
+        env:
+          # Only an explicit dispatch narrows the arms. An empty value keeps the
+          # scheduled run on the routine manifest's own set, so it still runs the
+          # routine controls and refreshes the routine reports.
+          GPU_BENCH_BACKENDS: ${{ inputs.backends }}
         run: |
           set -euo pipefail
           GPU_BENCH_TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -457,7 +484,7 @@ jobs:
           uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt --with jsonschema \
             python scripts/ci/prepare_result_bundle.py --profile nvidia-gpu --harness-commit "$GITHUB_SHA" \
             --started-at "$COLLECTION_STARTED_AT" --timestamp "$COLLECTION_TIMESTAMP" \
-            --backends "$GPU_BENCH_BACKENDS" --suites "$REQUESTED_SUITE" --bundle-dir _benchmark_artifact
+            --backends "$GPU_BENCH_RUNTIME_BACKENDS" --suites "$REQUESTED_SUITE" --bundle-dir _benchmark_artifact
 
       - name: Archive benchmark results
         if: always() && inputs.suite != 'perf-issues-readback' && hashFiles('_benchmark_artifact/publication.json') != ''

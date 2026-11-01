@@ -10,28 +10,21 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def plan(coverage, effort):
+def plan(effort):
     manifest = yaml.safe_load((ROOT / "benchmarks/gpu/manifests/routine_controls.yaml").read_text())
     cases = {row["id"]: row for row in json.loads((ROOT / manifest["source"]).read_text())}
-    full = manifest["coverage"]["full"]
-    for profile in manifest["coverage"].values():
-        selected = profile["timing"] + profile["state"]
-        if len(selected) != len(set(selected)) or not set(selected) <= cases.keys():
+    selected = {"timing": manifest["timing"], "state": manifest["state"]}
+    for lane, keys in selected.items():
+        if len(keys) != len(set(keys)) or not set(keys) <= cases.keys():
             raise ValueError("duplicate or unknown routine control")
-        for lane in ("timing", "state"):
-            if not set(profile[lane]) <= set(full[lane]):
-                raise ValueError("quick control absent from full coverage")
-            for key in profile[lane]:
-                state = cases[key]["measurement_scope"] in {"state_diagnostic", "counter_diagnostic"}
-                if state != (lane == "state"):
-                    raise ValueError(f"control in wrong measurement lane: {key}")
-    selected = manifest["coverage"][coverage]
-    return dict(manifest_version=manifest["manifest_version"], coverage=coverage, effort=effort,
-                **selected, unselected=[key for lane in full.values() for key in lane
-                                       if key not in selected["timing"] + selected["state"]])
+        for key in keys:
+            state = cases[key]["measurement_scope"] in {"state_diagnostic", "counter_diagnostic"}
+            if state != (lane == "state"):
+                raise ValueError(f"control in wrong measurement lane: {key}")
+    return dict(manifest_version=manifest["manifest_version"], effort=effort, **selected)
 
 
-def account(selection, paths, verify_only=False, restrict=False):
+def account(selection, paths, verify_only=False):
     rows, duplicates, provenance = {}, [], []
     for path in paths:
         metadata = yaml.safe_load((path.parent / "run.yaml").read_text())
@@ -44,13 +37,7 @@ def account(selection, paths, verify_only=False, restrict=False):
                 duplicates.append(key)
             rows[key] = row
     expected = selection["timing"] + selection["state"]
-    if restrict:
-        # Quick-from-full: ignore full-only control records rather than
-        # reporting them as unexpected.
-        allowed = set(expected)
-        rows = {key: row for key, row in rows.items() if key in allowed}
-        duplicates = []
-    status = dict(selection, expected=expected, selected=expected,
+    status = dict(selection, expected=expected,
                   measured=[], observed=[], verification_only=[], missing=[], failed=[], noisy=[],
                   duplicates=duplicates, unexpected=sorted(set(rows) - set(expected)), provenance=provenance,
                   timing_statistics={}, state_statistics={}, sequences={})
@@ -120,9 +107,9 @@ def account(selection, paths, verify_only=False, restrict=False):
 
 def report(status, source):
     lines = ["# GPU routine latency and state controls", "", f"Source: `{source}`.", "",
-             f"Manifest {status['manifest_version']}; coverage {status['coverage']}; effort {status['effort']}.", "",
+             f"Manifest {status['manifest_version']}; effort {status['effort']}.", "",
              "Timing controls measured and state controls observed: " + ("yes" if status["complete"] else "no") + ".", "",
-             "State/counter controls contain no timed samples. Verification-only and unselected cases "
+             "State/counter controls contain no timed samples. Verification-only cases "
              "are not measured coverage. These controls do not establish a paired regression conclusion.", "",
              f"Revision/features mismatch across lanes: {status['provenance_mismatch']}.", ""]
     for source in status["provenance"]:
@@ -159,32 +146,29 @@ def report(status, source):
         lines += [f"- `{key}`: mode `{value['cache_mode']}`; reset `{value['reset']}`; "
                   f"order `{[item['key'] for item in value['sequence']]}`; "
                   f"fixtures `{' '.join(sorted(definitions))}`."]
-    for key in ("expected", "selected", "measured", "observed", "verification_only", "failed", "missing",
-                "noisy", "unselected", "duplicates", "unexpected"):
+    for key in ("expected", "measured", "observed", "verification_only", "failed", "missing",
+                "noisy", "duplicates", "unexpected"):
         lines += ["", f"## {key}", ""] + ([f"- `{case}`" for case in status[key]] or ["None."])
     return "\n".join(lines) + "\n"
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--coverage", choices=("quick", "full"), default="quick")
     parser.add_argument("--effort", default="standard")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--lane", choices=("timing", "state"))
     parser.add_argument("--records", type=Path, nargs="+")
-    parser.add_argument("--restrict", action="store_true",
-                        help="ignore records outside the selection (used for quick-from-full accounting)")
     parser.add_argument("--verify-only", action="store_true")
     args = parser.parse_args()
     if args.records:
         selection = json.loads((args.output / "selection.json").read_text())
-        status = account(selection, args.records, args.verify_only, restrict=args.restrict)
+        status = account(selection, args.records, args.verify_only)
         (args.output / "case_status.json").write_text(json.dumps(status, indent=2) + "\n")
         (args.output / "report.md").write_text(report(status, args.output.as_posix()))
         if status["provenance_mismatch"] or any(status[key] for key in ("failed", "missing", "duplicates", "unexpected")):
             raise SystemExit("incomplete or failed routine GPU controls")
     else:
-        selection = plan(args.coverage, args.effort)
+        selection = plan(args.effort)
         args.output.mkdir(parents=True, exist_ok=True)
         (args.output / "selection.json").write_text(json.dumps(selection, indent=2) + "\n")
         if args.lane:

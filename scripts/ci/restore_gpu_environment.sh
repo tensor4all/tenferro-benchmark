@@ -7,7 +7,7 @@ source /etc/os-release
 [[ "$ID" == ubuntu && "$VERSION_ID" == 24.04 ]]
 [[ ! -e "$runtime_root" ]]
 python3 scripts/ci/gpu_environment.py assemble
-python3 scripts/ci/gpu_environment.py verify --backends "$GPU_BENCH_BACKENDS" --sha256 "$GPU_RUNTIME_SHA256"
+python3 scripts/ci/gpu_environment.py verify --backends "$GPU_BENCH_RUNTIME_BACKENDS" --sha256 "$GPU_RUNTIME_SHA256"
 zstd -dc _gpu_environment/runtime.tar.zst | python3 scripts/ci/gpu_environment.py check-tar
 zstd -dc _gpu_environment/runtime.tar.zst | tar -xf - -C /opt
 export UV_PROJECT_ENVIRONMENT="$runtime_root/venv"

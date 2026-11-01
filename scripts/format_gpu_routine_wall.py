@@ -22,17 +22,27 @@ def render(selection_dir, budget):
     checkpoints = [json.loads((gpu_root / name / selection_dir.name / "wall_command.json").read_text())
                    for name in suite_names]
     core_seconds = max(value["command_seconds_through_this_suite"] for value in checkpoints)
+    # Per-suite measured time, from each suite's own run metadata. Suites
+    # recorded before the metadata carried a suite clock show as unavailable.
+    suites = []
+    for name in suite_names:
+        suite_metadata = yaml.safe_load((gpu_root / name / selection_dir.name / "run.yaml").read_text())
+        collection = suite_metadata.get("collection") or {}
+        seconds_for_suite = collection.get("suite_seconds")
+        if isinstance(seconds_for_suite, (int, float)) and math.isfinite(seconds_for_suite):
+            suites.append((name, collection.get("suite_started_at") or "—",
+                           collection.get("suite_finished_at") or "—", float(seconds_for_suite)))
     controls = None
     if wall["routine_controls_selected"]:
         controls = json.loads((gpu_root / "routine_controls" / selection_dir.name / "case_status.json").read_text())
-    applicable = (plan["coverage"] == budget["coverage"] and plan["effort"] == budget["effort"]
+    applicable = (plan["effort"] == budget["effort"]
                   and metadata["target_profile"] == budget["target_profile"]
                   and metadata["cuda"]["device_name"] == budget["device_name"]
                   and core["complete"] and controls is not None and controls["complete"])
     lines = ["# GPU routine command wall", "", f"Raw selection: `{selection_dir.as_posix()}`.", "",
              f"tenferro-rs `{metadata['tenferro_rs']['commit']}`; harness `{metadata['harness']['commit']}`. "
              f"GPU: {metadata['cuda']['device_name']} (`{metadata['cuda']['device_uuid']}`).", "",
-             f"Coverage `{plan['coverage']}`, effort `{plan['effort']}`; core measured "
+             f"Effort `{plan['effort']}`; core measured "
              f"{len(core['executed'])}/{len(core['expected'])}. Routine controls selected: {wall['routine_controls_selected']}.", ""]
     if controls is not None:
         lines += [f"Controls measured {len(controls['measured'])}/{len(controls['timing'])}; "
@@ -43,6 +53,17 @@ def render(selection_dir, budget):
               f"| Remaining controls/accounting/reporting | {seconds-core_seconds:.3f} |",
               f"| Script through final wall checkpoint | {seconds:.3f} |", "",
               f"Scope: {wall['scope']}.", ""]
+    lines += ["## Per-suite measured time", "",
+              "Each suite records its own start, end and wall time in its run metadata, so a report "
+              "attributes measured time to suites on any device. Suites recorded before that field "
+              "existed show as unavailable rather than zero.", ""]
+    if suites:
+        lines += ["| Suite | Started (UTC) | Finished (UTC) | Seconds |", "|---|---|---|---:|"]
+        lines += [f"| {name} | {started} | {finished} | {value:.3f} |"
+                  for name, started, finished, value in suites]
+    else:
+        lines += ["Per-suite clocks are unavailable for this run."]
+    lines += [""]
     outer = selection_dir / "wall_devcontainer_command.json"
     if outer.exists():
         measurement = json.loads(outer.read_text())
@@ -50,7 +71,7 @@ def render(selection_dir, budget):
                   f"**{measurement['seconds']:.2f} seconds**; tool `{measurement['tool']}`. "
                   "This is an independently measured enclosing interval, not an additive phase.", ""]
     lines += [f"Reference budget: **{budget['script_seconds']:g} seconds** for {budget['device_name']}, "
-              f"{budget['coverage']}/{budget['effort']}. Conditions: {budget['cache_conditions']}.", "",
+              f"effort `{budget['effort']}`. Conditions: {budget['cache_conditions']}.", "",
               f"Budget scope: {budget['scope']}. Reference characterization: `{budget['reference_run']}`.", ""]
     if applicable:
         lines += [f"Observation: **{'within budget' if seconds <= budget['script_seconds'] else 'over budget'}**.", ""]

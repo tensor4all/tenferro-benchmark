@@ -6,10 +6,10 @@ from pathlib import Path
 
 def render(status, source=None):
     lines = ["# GPU routine coverage", "",
-             f"Manifest version: {status['manifest_version']}; coverage: {status['coverage']}; "
+             f"Manifest version: {status['manifest_version']}; "
              f"effort: {status['effort']}.", "",
              "Measured coverage complete: " + ("yes" if status['complete'] else "no") + ".", "",
-             "Verification-only, skipped, unsupported, missing and unselected rows are not measured coverage. "
+             "Verification-only, skipped, unsupported, missing and duplicate rows are not measured coverage. "
              "Noise flags are descriptive screens, not regression conclusions.", "",
              "| Classification | Count |", "|---|---:|"]
     if source is not None:
@@ -17,7 +17,7 @@ def render(status, source=None):
     for category, count in status['counts'].items():
         lines.append(f"| {category} | {count} |")
     for category in ("expected", "selected", "executed", "skipped", "unsupported", "failed", "missing",
-                     "verification_only", "raw_samples_unavailable", "noisy", "unselected",
+                     "verification_only", "raw_samples_unavailable", "noisy",
                      "duplicates", "unexpected"):
         lines.extend(["", f"## {category}", ""])
         for key in status.get(category, []):

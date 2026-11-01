@@ -1,73 +1,92 @@
-# Routine GPU coverage
+# Routine GPU suite set
 
-`scripts/run_gpu_suite.sh` defaults to `BENCH_COVERAGE=quick` when no suite,
-backend or problem filter is supplied. Explicit filters default to `full`;
-an explicit `BENCH_COVERAGE` takes precedence. Coverage selects workloads;
-`BENCH_EFFORT` independently selects sampling effort.
+`scripts/run_gpu_suite.sh` collects exactly one curated set: the suites and
+problem/backend pairs declared in `benchmarks/gpu/manifests/routine.yaml`. There
+is no quick/full switch. `BENCH_EFFORT` still selects sampling effort
+independently; an explicit `GPU_BENCH_SUITE`, `GPU_BENCH_BACKENDS` or
+`GPU_BENCH_PROBLEM` is a targeted probe, never a routine refresh, and
+`BENCH_ROUTINE_VENDOR_ARMS=1` adds the opt-in vendor arms.
 
 ```bash
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
-  bash -lc 'GPU_BENCH_DEVICE=0 BENCH_COVERAGE=quick BENCH_EFFORT=standard \
-    BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
-
-devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
-  bash -lc 'GPU_BENCH_DEVICE=0 BENCH_COVERAGE=full BENCH_EFFORT=standard \
+  bash -lc 'GPU_BENCH_DEVICE=0 BENCH_EFFORT=standard \
     BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_suite.sh'
 ```
 
-The versioned manifest is `benchmarks/gpu/manifests/routine.yaml`. Quick selects
-27 problem/backend pairs: seven dense operations, one public einsum operation
-and one complete tensor-network contraction tree, each with tenferro eager,
-PyTorch and JAX. The small batched matmul retains the reported overhead regime;
-512/2048 solves retain distinct size regimes. Full preserves the broad vendor
-matrix, large batch, larger/adjacent solves, sparse references and the
-node-JIT JAX tensor-network path (94 pairs). The diagnostic `jax-cuda-eager`
-tensor-network path is opt-in, not part of default full coverage; request it
-with
-`GPU_BENCH_SUITE=benchmarks/gpu/tensornetwork.yaml GPU_BENCH_BACKENDS=jax-cuda-eager
-./scripts/run_gpu_suite.sh` (an explicit filter selects full coverage). Optional
-elementwise suites
-participate when explicitly requested. The diagnostic
-`tenferro-cuda-eager-per-call-session` backend is also opt-in, not part of the
-default quick/full backend lists; request it with an explicit
-`GPU_BENCH_BACKENDS=tenferro-cuda-eager-per-call-session` filter to see
-session-entry cost next to the one-session-per-batch eager arm and the
-caller-held trace session. Unsupported implementations remain
-unsupported; selection does not establish implementation availability.
+## Cost of the set
 
-An unfiltered `BENCH_COVERAGE=full` run also regenerates the derivable
-quick-profile results from the same records restricted to the quick manifest
-selection: `routine_coverage.md` (coverage accounting) and
-`routine_controls.md` (latency/state controls) are recomputed for the quick
-selection, while the full-profile reports are mirrored to
-`routine_full_coverage.md`, `routine_full_controls.md` and
-`routine_full_workflow.md`. The quick `routine_workflow.md` wall-time
-observation is **not** derived from a full run: its checkpoints would be the
-full campaign's clocks, so evaluating them against the quick budget would be a
-counterfactual. `routine_workflow.md` therefore keeps the last real quick
-campaign and a full run never overwrites it. The quick selection itself is
-unchanged; a filterless quick run writes the full quick report family. This
-lets one full collection refresh the quick coverage/controls instead of
-running the 27-pair quick profile only to rewrite them.
+`rows = problems × backends`; each row is one measured and numerically verified
+cell, and each backend is a separate process with its own startup and
+preparation. Widening the set is a cost decision, so it belongs in the table
+below and in `routine.yaml`, not in a code change.
 
-The synthetic sparse fixtures are cached per run and reused across the
-`pytorch-cuda`, `cusparse` and `ginkgo` backend processes. `run_gpu_suite.sh`
-points `GPU_BENCH_SPARSE_CACHE_DIR` at `<suite run dir>/cache`; direct runner
-invocations fall back to `data/cache/gpu_sparse`. The cache is keyed by problem
-id + seed + shape and its stored identity (shape/nnz/seed) is verified before
-reuse. Generation and cache I/O happen outside any timed region.
+| Suite | Driver | Problems | Backends | Rows |
+|---|---|---:|---:|---:|
+| `gpu/dense` | `gpu_suite` | 7 | 4 | 28 |
+| `gpu/einsum` | `gpu_suite` | 1 | 4 | 4 |
+| `gpu/sparse` | `gpu_suite` | 2 | 1 | 2 |
+| `gpu/tensornetwork` | `gpu_suite` | 1 | 4 | 4 |
+| `gpu/elementwise` | `gpu_suite` | 2 | 4 | 8 |
+| `gpu/linalg_ad_latency` | `gpu_linalg_ad` | 10 | 3 | 30 |
+| `gpu/linalg_jvp_vjp` | `gpu_linalg_ad` | 10 | 3 | 30 |
+| **Total** | | **33** | **23** | **106** |
 
-Every invocation writes effective suite YAMLs and `selection.json` under
-`data/results/nvidia-gpu/gpu/routine_selection/<timestamp>/`. The selection
-records manifest version, coverage, effort, expected and selected pair IDs,
-and full-profile IDs left unselected. Each suite's run metadata points to this
-selection. Verification-only commands use `data/verification` instead and
-default to physical GPU1; standard timing defaults to physical GPU0.
+The opt-in vendor arms add 27 rows (`gpu/dense` cublaslt/cutlass/cusolver,
+`gpu/einsum` cublaslt/cutlass, `gpu/sparse` cusparse/ginkgo) for a 133-row
+matrix. Vendor comparisons characterize against other libraries; they are not
+part of the weekly bundle.
+
+## What the set keeps and what it leaves out
+
+Each operation family keeps one representative, and a size sweep is treated as
+characterization rather than routine work. The suite files keep every case they
+ever had: `problems` in the manifest is a subset, so a dropped case comes back by
+naming it there again.
+
+- `gpu/dense` keeps matmul, batched matmul, QR, one solve size, SVD, EIGH and the
+  small batched matmul as the latency-regime representative. The solve size
+  ladder (512/1024/2048/4096 and the rhs128 variant) and the 1024-matrix
+  throughput batch stay in `benchmarks/gpu/dense.yaml`.
+- `gpu/linalg_ad_latency` keeps n=4 only (10 operations × one size). These rows
+  measure call overhead, which barely depends on size, so one size keeps
+  regression detection; n=2 and n=8 are the characterization sweep.
+- `gpu/linalg_jvp_vjp` keeps n=256 only (10 operations × one size); n=512 is the
+  sweep of the same GPU-sized AD workloads.
+- `gpu/elementwise` keeps both cases because they are different regimes, not a
+  size sweep: 1k measures per-command overhead (latency), 1m the bandwidth cost.
+  They are never averaged together.
+- `gpu/sparse` is reference-only (tenferro has no CUDA sparse implementation), so
+  only the PyTorch reference arm is routine.
+- The diagnostic `tenferro-cuda-eager-per-call-session` backend and the
+  `jax-cuda-eager` tensor-network path stay opt-in through an explicit
+  `GPU_BENCH_BACKENDS` filter. Selection does not establish implementation
+  availability.
+
+Not in the routine set: `gpu/dense_throughput` and `gpu/linalg_ad_throughput`
+(separate `tenferro-cuda-trace-deferred-batch` regime with their own driver and
+reports; mixing them into one weekly matrix would mix regimes), and the
+fixture-driven public-API families (`fft`, `isolated_ops`, `linalg_public_api`,
+`lstsq`, `nn`, `reuse_contraction`, `structural`, `permutation`), whose problems
+come from `data/instances/*.json` rather than a problem list the routine manifest
+can name. They keep their own runners and reports. `gpu/perf_issues` is the
+routine control lane (see [gpu-routine-controls.md](gpu-routine-controls.md))
+plus the broad matrix, which stays independently selectable.
+
+## Selection, accounting and reports
+
+Every invocation writes the materialized suite YAMLs, `selection.json` and
+`case_status.json` under
+`data/results/nvidia-gpu/gpu/routine_selection/<timestamp>/`. `selection.json`
+records the manifest version, effort, vendor-arm state, expected and selected
+pair IDs, and the driver for each suite. Each suite's run metadata points at this
+selection and records its own start, end and wall time. Verification-only
+commands use `data/verification` instead and default to physical GPU1; standard
+timing defaults to physical GPU0.
 
 After collection, `case_status.json` distinguishes executed, skipped, unsupported,
 failed, missing, verification-only, raw-samples-unavailable and noisy pairs.
 Only successful numerical validation with retained positive raw batch samples
-counts as executed. Skipped, unsupported, verification-only and unselected pairs
+counts as executed. Skipped, unsupported, verification-only and unrecorded pairs
 never count as measured coverage.
 
 A case with no reference implementation or an unconfigured optional reference
@@ -86,10 +105,9 @@ validation failures are deferred until accounting is written and still force
 a nonzero exit, even if the case status itself is benign. Its exit
 code is nonzero for any failed, missing, duplicate or unexpected case, and zero
 for skipped/unsupported-only collections. A reasonless skipped/unsupported row
-fails. Quick-from-full accounting ignores only known unselected full cases;
-selected duplicates and unknown IDs still fail. The existing weekly success gate
-can therefore skip later slots after a benign-only successful collection, but a
-real runtime failure still permits retries. The retry schedule is unchanged.
+fails. The existing weekly success gate can therefore skip later slots after a
+benign-only successful collection, but a real runtime failure still permits
+retries. The retry schedule is unchanged.
 
 The descriptive noise flag uses sample standard deviation divided by mean above
 10%; it is not a regression decision or a functional failure.
@@ -97,20 +115,32 @@ The descriptive noise flag uses sample standard deviation divided by mean above
 `BENCH_EFFORT=scan` uses one warmup and three measured samples without changing
 selection. A scan can identify suspects; it cannot establish a performance
 regression. Command-wall observations and a budget must be measured separately
-from operation timings. The initial full command baseline and its scope are
-documented in [gpu-command-wall.md](gpu-command-wall.md). Dynamic-shape and
-lifetime diagnostic controls run sequentially after the core matrix through
-[the routine control lane](gpu-routine-controls.md). These 27 core pairs alone
-do not complete issue #107.
+from operation timings; see [gpu-command-wall.md](gpu-command-wall.md).
+Dynamic-shape and lifetime diagnostic controls run sequentially after the core
+matrix through [the routine control lane](gpu-routine-controls.md). These core
+pairs alone do not complete issue #107.
 
-The first core-only standard quick collection (`20261013_232208`, tenferro-rs `9655b4e0`,
-harness `020332f`) executed all 27 pairs on physical RTX 3060 GPU0. All passed
-numerical verification and retained raw batch samples; none exceeded the
-descriptive noise threshold. The script clock through the final suite report
-copy was 148.916 seconds, including a 0.30-second cached Rust build. This scope
-excludes devcontainer CLI startup and the final coverage-accounting/report write;
-it is not yet a whole-command budget. See the generated
-[coverage report](../result/nvidia-gpu/gpu/routine_coverage.md) and
-[phase report](../result/nvidia-gpu/gpu/routine_command_wall.md).
-The earlier full baseline used a different upstream revision and validation
-implementation; these observations do not establish an implementation speedup.
+## Historical observations
+
+The earlier quick/full split was removed on 2026-11-02: every weekly run now
+collects the single set above, so the routine selection has no mode switch in
+code, manifests, run metadata, reports, tests or docs. Run metadata written
+before that change still carries its `collection.coverage` value; the report-side
+readers ignore both that field and its absence, and no routine code path writes
+it. The independently selectable `gpu/perf_issues` matrix keeps its own
+quick/full case set, so its child runs and the routine control report still
+record that suite's own `coverage` — that is the perf-issue matrix, not the
+routine selection.
+
+The routine pages published today (`routine_coverage.md`, `routine_controls.md`,
+`routine_workflow.md`, `routine_command_wall.md`) were measured under the retired
+selection and keep their headers so the numbers stay attributable. The first
+complete collection of the single set replaces them, and that run is also what
+re-characterizes the `routine_budget.yaml` cost.
+
+The last core-only standard quick collection (`20261013_232208`, tenferro-rs
+`9655b4e0`, harness `020332f`) executed 27 pairs on physical RTX 3060 GPU0. The
+last full collection on A100 (`20261017_104441`) executed 75 of 94 pairs. Those
+numbers describe the retired split, not this set; the first complete collection
+of the single set re-characterizes the cost and the
+[routine budget](../benchmarks/gpu/routine_budget.yaml).

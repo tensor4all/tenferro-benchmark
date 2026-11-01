@@ -7,7 +7,6 @@ cd "$PROJECT_DIR"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 [[ -x "$PYTHON" ]] || PYTHON=python3
 STAMP="${GPU_BENCH_TIMESTAMP:-$(date -u +%Y%m%d_%H%M%S)}"
-COVERAGE="${BENCH_COVERAGE:-quick}"
 EFFORT="${BENCH_EFFORT:-standard}"
 VERIFY_ONLY="${GPU_BENCH_VERIFY_ONLY:-0}"
 TIMING_DEVICE="${GPU_BENCH_DEVICE:-0}"
@@ -26,7 +25,7 @@ export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" OPENBLAS_NUM_THREADS="${OPENBLAS_
 export RAYON_NUM_THREADS="${RAYON_NUM_THREADS:-1}" MATMUL_NUM_THREADS="${MATMUL_NUM_THREADS:-1}"
 RECORDS=()
 for lane in timing state; do
-    case_ids="$("$PYTHON" scripts/gpu_routine_controls.py --coverage "$COVERAGE" \
+    case_ids="$("$PYTHON" scripts/gpu_routine_controls.py \
         --effort "$EFFORT" --output "$RUN_DIR" --lane "$lane")"
     device="$TIMING_DEVICE"
     correctness=0
@@ -46,16 +45,6 @@ EXTRA=()
 "$PYTHON" scripts/gpu_routine_controls.py --output "$RUN_DIR" --records "${RECORDS[@]}" "${EXTRA[@]}"
 if [[ "$VERIFY_ONLY" != 1 && "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
     mkdir -p "$PROJECT_DIR/result/nvidia-gpu/gpu"
-    if [[ "$COVERAGE" == full ]]; then
-        # A full run also regenerates the quick-profile control report from the
-        # same records, because quick controls are a subset of full controls.
-        cp "$RUN_DIR/report.md" "$PROJECT_DIR/result/nvidia-gpu/gpu/routine_full_controls.md"
-        QUICK_RUN_DIR="$PROJECT_DIR/data/$ROOT_KIND/nvidia-gpu/gpu/routine_controls_quick/$STAMP"
-        "$PYTHON" scripts/gpu_routine_controls.py --coverage quick --effort "$EFFORT" --output "$QUICK_RUN_DIR"
-        "$PYTHON" scripts/gpu_routine_controls.py --output "$QUICK_RUN_DIR" --records "${RECORDS[@]}" --restrict
-        cp "$QUICK_RUN_DIR/report.md" "$PROJECT_DIR/result/nvidia-gpu/gpu/routine_controls.md"
-    else
-        cp "$RUN_DIR/report.md" "$PROJECT_DIR/result/nvidia-gpu/gpu/routine_controls.md"
-    fi
+    cp "$RUN_DIR/report.md" "$PROJECT_DIR/result/nvidia-gpu/gpu/routine_controls.md"
 fi
 echo "Routine controls: $RUN_DIR/report.md"
