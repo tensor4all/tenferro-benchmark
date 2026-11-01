@@ -180,6 +180,12 @@ is read against the size of the workload it came from. JAX and cuTENSOR arms
 keep their own bars, so a case where tenferro beats PyTorch but loses to JAX
 shows both.
 
+A cell whose `iqr` is more than `0.2` of its own `median` is marked noisy: its
+ratio is written `~2.65x` instead of `2.65x`, the bar carries a `noisy` badge,
+and the chart legend states the threshold and that the ratio is indicative.
+Either side being spread out is enough, since both medians feed the ratio. Set
+`DASHBOARD_NOISY_IQR_RATIO` to change the threshold for one generation.
+
 Anomaly flags are `eager/torch >= 1.5`, `eager/jax >= 3`, `trace/eager >= 1.3`,
 a genuine tenferro status anomaly (failed/error/verification failure/missing or
 an `unsupported` row without a recorded reason), or a `>= 1.25x` regression
