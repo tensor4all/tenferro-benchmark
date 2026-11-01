@@ -175,16 +175,16 @@ jobs:
           uv run python -m unittest tests.test_perf_issues_suite tests.test_cpu_followup_cases tests.test_case_status tests.test_perf_issues_env tests.test_overhead_smoke tests.test_gpu_perf_issue_references
 
       - name: Cargo check
-        run: cargo check --all-targets --features strided-rs,hptt
+        run: cargo check --locked --all-targets --features strided-rs,hptt
 
       - name: Check CUDA runners without a GPU
-        run: cargo check --features cuda --all-targets
+        run: cargo check --locked --features cuda --all-targets
 
       - name: Check caller-owned CPU engine thread counts
-        run: cargo test --lib cpu_engine_tests
+        run: cargo test --locked --lib cpu_engine_tests
 
       - name: Check overhead-smoke runtime timing scope
-        run: cargo test --bin perf_issue_case umbrella::alloc_counter::tests -- --test-threads=1
+        run: cargo test --locked --bin perf_issue_case umbrella::alloc_counter::tests -- --test-threads=1
 
   followup-mwe:
     if: github.repository == 'tensor4all/tenferro-benchmark'

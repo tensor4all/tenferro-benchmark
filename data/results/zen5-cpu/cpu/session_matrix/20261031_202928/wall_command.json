@@ -1,0 +1,6 @@
+{
+  "command_seconds_through_collection": 134.725784703,
+  "scope": "command startup through collection; excludes report rendering and publication",
+  "budget_seconds": 300.0,
+  "budget_status": "within_budget"
+}
