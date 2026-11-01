@@ -122,7 +122,7 @@ def run_metadata_lines(metadata: dict[str, Any] | None) -> list[str]:
     collection = metadata.get("collection", {})
     if collection.get("gpu_routine_manifest_version") is not None:
         lines.extend([
-            f"- Coverage: `{collection['coverage']}`; effort: `{collection['effort']}`; "
+            f"- Effort: `{collection['effort']}`; "
             f"manifest version: `{collection['gpu_routine_manifest_version']}`",
             f"- Selection and case accounting: `{collection['gpu_routine_selection_file']}` "
             "(see adjacent `case_status.json` and `report.md`; unselected rows are not covered)",

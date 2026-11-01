@@ -1,125 +1,167 @@
 schema_version: 1
-manifest_version: 1
+manifest_version: 2
 issue: 107
+# One curated routine set. There is no quick/full switch: every weekly run
+# collects exactly this set, so changing it is a cost decision (see the table
+# below and docs/gpu-routine-coverage.md).
+#
+# `problems` is always a subset of the suite file's own problem list; suites
+# keep every case they ever had, so a dropped case comes back by naming it here
+# again. `backends` is the routine arm set. `vendor_backends` are opt-in arms
+# (BENCH_ROUTINE_VENDOR_ARMS=1, or an explicit GPU_BENCH_BACKENDS filter) and
+# stay out of the weekly bundle; they are listed here so their cost stays
+# visible next to the default arms.
+#
+# `driver` says which existing collector runs the suite; the default is the
+# generic gpu_suite runner (scripts/benchmark_gpu_python.py and
+# src/bin/benchmark_gpu_rust.rs). `gpu_linalg_ad` delegates to
+# scripts/run_gpu_linalg_jvp_vjp.sh.
+#
+# | Suite                | Driver       | Problems | Backends | Rows |
+# |----------------------|--------------|---------:|---------:|-----:|
+# | gpu/dense            | gpu_suite    |        7 |        4 |   28 |
+# | gpu/einsum           | gpu_suite    |        1 |        4 |    4 |
+# | gpu/sparse           | gpu_suite    |        2 |        1 |    2 |
+# | gpu/tensornetwork    | gpu_suite    |        1 |        4 |    4 |
+# | gpu/elementwise      | gpu_suite    |        2 |        4 |    8 |
+# | gpu/linalg_ad_latency| gpu_linalg_ad|       10 |        3 |   30 |
+# | gpu/linalg_jvp_vjp   | gpu_linalg_ad|       10 |        3 |   30 |
+# | Total                |              |       33 |       23 |  106 |
+#
+# Opt-in vendor arms add 27 rows (gpu/dense +21, gpu/einsum +2, gpu/sparse +4)
+# for a 133-row matrix. Rows are problem/backend pairs; each pair is one
+# measured and numerically verified cell, and each backend is a separate
+# process with its own startup and preparation.
 suites:
   gpu/dense:
     file: benchmarks/gpu/dense.yaml
-    full:
-      problems:
-      - dense_matmul_f64_3072
-      - dense_batched_matmul_f64_b1024_256
-      - dense_qr_f64_1536
-      - dense_solve_f64_512_rhs16
-      - dense_solve_f64_1024_rhs16
-      - dense_solve_f64_2048_rhs16
-      - dense_solve_f64_4096_rhs16
-      - dense_solve_f64_2048_rhs128
-      - dense_svd_f64_256
-      - dense_eigh_f64_1024
-      - dense_batched_matmul_f64_b16_32
-      backends:
-      - tenferro-cuda-trace
-      - tenferro-cuda-eager
-      - pytorch-cuda
-      - jax-cuda
-      - cublaslt
-      - cutlass
-      - cusolver
-    quick:
-      problems:
-      - dense_matmul_f64_3072
-      - dense_batched_matmul_f64_b16_32
-      - dense_qr_f64_1536
-      - dense_solve_f64_512_rhs16
-      - dense_solve_f64_2048_rhs16
-      - dense_svd_f64_256
-      - dense_eigh_f64_1024
-      backends:
-      - tenferro-cuda-eager
-      - pytorch-cuda
-      - jax-cuda
+    # One representative per operation family: matmul, batched_matmul, qr,
+    # solve, svd, eigh. The solve size ladder (512/1024/4096 and the rhs128
+    # variant) stays in the suite file; a size sweep characterizes the curve, it
+    # is not needed weekly.
+    # dense_batched_matmul_f64_b16_32 is the only latency-regime representative
+    # of this family, so it is a second mechanism, not a second size.
+    problems:
+    - dense_matmul_f64_3072
+    - dense_batched_matmul_f64_b1024_256
+    - dense_qr_f64_1536
+    - dense_solve_f64_2048_rhs16
+    - dense_svd_f64_256
+    - dense_eigh_f64_1024
+    - dense_batched_matmul_f64_b16_32
+    backends:
+    - tenferro-cuda-trace
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+    vendor_backends:
+    - cublaslt
+    - cutlass
+    - cusolver
   gpu/einsum:
     file: benchmarks/gpu/einsum.yaml
-    full:
-      problems: &id001
-      - einsum_bin_matmul_3072_f64
-      backends:
-      - tenferro-cuda-trace
-      - tenferro-cuda-eager
-      - pytorch-cuda
-      - jax-cuda
-      - cublaslt
-      - cutlass
-    quick:
-      problems: *id001
-      backends:
-      - tenferro-cuda-eager
-      - pytorch-cuda
-      - jax-cuda
+    # The single einsum case exercises the public einsum/planning dispatch,
+    # which differs from the direct dot route of dense matmul.
+    problems:
+    - einsum_bin_matmul_3072_f64
+    backends:
+    - tenferro-cuda-trace
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+    vendor_backends:
+    - cublaslt
+    - cutlass
   gpu/sparse:
     file: benchmarks/gpu/sparse.yaml
-    full:
-      problems:
-      - sparse_synthetic_4m_64m_spmv_f64
-      - sparse_synthetic_64k_4m_spmm_f64_rhs1024
-      backends:
-      - pytorch-cuda
-      - cusparse
-      - ginkgo
-    quick:
-      problems: []
-      backends:
-      - tenferro-cuda-eager
-      - pytorch-cuda
-      - jax-cuda
+    # Reference-only suite: tenferro has no CUDA sparse implementation, so only
+    # the PyTorch reference arm is routine. cusparse and ginkgo are the opt-in
+    # vendor arms.
+    problems:
+    - sparse_synthetic_4m_64m_spmv_f64
+    - sparse_synthetic_64k_4m_spmm_f64_rhs1024
+    backends:
+    - pytorch-cuda
+    vendor_backends:
+    - cusparse
+    - ginkgo
   gpu/tensornetwork:
     file: benchmarks/gpu/tensornetwork.yaml
-    full:
-      problems: &id002
-      - tensornetwork_permutation_optimized_f32
-      backends:
-      - tenferro-cuda-trace
-      - tenferro-cuda-eager
-      - pytorch-cuda
-      - jax-cuda
-      - jax-cuda-tree-jit
-    quick:
-      problems: *id002
-      backends:
-      - tenferro-cuda-eager
-      - pytorch-cuda
-      - jax-cuda
+    # One complete-tree control. Node-JIT is the compiled reference; the
+    # diagnostic eager JAX path stays opt-in via GPU_BENCH_BACKENDS.
+    problems:
+    - tensornetwork_permutation_optimized_f32
+    backends:
+    - tenferro-cuda-trace
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda-tree-jit
   gpu/elementwise:
     file: benchmarks/gpu/elementwise.yaml
-    optional: true
-    full:
-      problems: &id003
-      - elementwise_chain_f64_1k
-      - elementwise_chain_f64_1m
-      backends:
-      - tenferro-cuda-trace
-      - tenferro-cuda-eager
-      - pytorch-cuda
-      - jax-cuda
-    quick:
-      problems: *id003
-      backends:
-      - tenferro-cuda-eager
-      - pytorch-cuda
-      - jax-cuda
-full_only_reasons:
-  dense: 4096 solve, nearby solve/RHS variants and the 1024-matrix throughput batch stay in full; quick
-    retains 512/2048 solve and the reported 16-matrix overhead regime.
-  vendors: Broad vendor comparisons consumed substantial baseline process wall time; full retains them.
-  sparse: Reference-only suite without tenferro CUDA implementation; baseline sparse section took about
-    312 seconds.
-  tensornetwork: Quick retains one complete-tree control with core backends. Node-JIT remains
-    in full; the diagnostic eager JAX path is opt-in via GPU_BENCH_BACKENDS.
-    Observed process walls about 55 seconds (node-JIT) and, for the opt-in eager
-    path, about 235 seconds.
-  einsum: Keep the 3072 matmul-shaped einsum in quick because its public einsum/planning dispatch differs
-    from the direct dot route of dense matmul.
-  per_call_session: The diagnostic tenferro-cuda-eager-per-call-session backend (one eager session
-    entered and left per operation) is not part of default quick or full coverage. It stays
-    available through an explicit GPU_BENCH_BACKENDS filter, next to the one-session-per-batch
-    eager arm and the caller-held trace session.
+    # Both cases stay: they are different regimes of the same operation, not a
+    # size sweep. 1k measures per-command overhead (latency), 1m measures the
+    # bandwidth cost, and the two are never averaged together.
+    problems:
+    - elementwise_chain_f64_1k
+    - elementwise_chain_f64_1m
+    backends:
+    - tenferro-cuda-trace
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+  gpu/linalg_ad_latency:
+    file: benchmarks/gpu/linalg_ad_latency.yaml
+    driver: gpu_linalg_ad
+    # n=4 only (10 operations x 1 size). These rows measure call overhead,
+    # which barely depends on size, so one size keeps regression detection and
+    # drops the n=2/8 characterization sweep.
+    problems:
+    - linalg_ad_small_grad_sum_svd_s_jvp_f64_4
+    - linalg_ad_small_grad_sum_svd_s_vjp_f64_4
+    - linalg_ad_small_grad_sum_qr_jvp_f64_4
+    - linalg_ad_small_grad_sum_qr_vjp_f64_4
+    - linalg_ad_small_grad_sum_eigh_jvp_f64_4
+    - linalg_ad_small_grad_sum_eigh_vjp_f64_4
+    - linalg_ad_small_grad_sum_lu_jvp_f64_4
+    - linalg_ad_small_grad_sum_lu_vjp_f64_4
+    - linalg_ad_small_grad_sum_solve_jvp_f64_4
+    - linalg_ad_small_grad_sum_solve_vjp_f64_4
+    backends:
+    - tenferro-cuda-trace
+    - pytorch-cuda
+    - jax-cuda
+  gpu/linalg_jvp_vjp:
+    file: benchmarks/gpu/linalg_jvp_vjp.yaml
+    driver: gpu_linalg_ad
+    # n=256 only (10 operations x 1 size). The n=512 rows are a size sweep of
+    # the same GPU-sized AD workloads; one size detects regressions and keeps
+    # the weekly AD cost bounded.
+    problems:
+    - linalg_ad_large_grad_sum_svd_s_jvp_f64_256
+    - linalg_ad_large_grad_sum_svd_s_vjp_f64_256
+    - linalg_ad_large_grad_sum_qr_jvp_f64_256
+    - linalg_ad_large_grad_sum_qr_vjp_f64_256
+    - linalg_ad_large_grad_sum_eigh_jvp_f64_256
+    - linalg_ad_large_grad_sum_eigh_vjp_f64_256
+    - linalg_ad_large_grad_sum_lu_jvp_f64_256
+    - linalg_ad_large_grad_sum_lu_vjp_f64_256
+    - linalg_ad_large_grad_sum_solve_jvp_f64_256
+    - linalg_ad_large_grad_sum_solve_vjp_f64_256
+    backends:
+    - tenferro-cuda-trace
+    - pytorch-cuda
+    - jax-cuda
+# Not in the routine set, because no routine driver can select them:
+#   gpu/dense_throughput, gpu/linalg_ad_throughput - separate regime
+#     (tenferro-cuda-trace-deferred-batch) with their own driver and reports;
+#     mixing them into one weekly matrix would mix regimes.
+#   gpu/fft, gpu/isolated_ops, gpu/linalg_public_api, gpu/lstsq, gpu/nn,
+#     gpu/reuse_contraction, gpu/structural, gpu/permutation - fixture-driven
+#     public-API families whose problems come from data/instances/*.json, not
+#     from a problem list this manifest can name. They keep their own runners
+#     and reports.
+#   gpu/perf_issues - the routine control lane (benchmarks/gpu/manifests/
+#     routine_controls.yaml) plus the broad matrix, which stays independently
+#     selectable.
+#   benchmarks/gpu/confirmation.yaml, benchmarks/gpu/routine_budget.yaml and
+#     benchmarks/gpu/public_api_coverage.yaml are declarations, not suites.

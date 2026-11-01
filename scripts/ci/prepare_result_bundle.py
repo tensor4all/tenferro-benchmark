@@ -17,12 +17,12 @@ import yaml
 if __package__:
     from .bundle_cpu_results import package_cpu
     from .cpu_ingestion_adapter import CPU_SUITES
-    from .check_gpu_run import DEFAULT_SUITES
+    from .check_gpu_run import DEFAULT_SUITES, planned_rows
     from .result_ingestion import digest, instant, safe_file, validate_bundle
 else:
     from bundle_cpu_results import package_cpu
     from cpu_ingestion_adapter import CPU_SUITES
-    from check_gpu_run import DEFAULT_SUITES
+    from check_gpu_run import DEFAULT_SUITES, planned_rows
     from result_ingestion import digest, instant, safe_file, validate_bundle
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -102,9 +102,14 @@ def prepare_bundle(root: Path, profile: str, source: dict, output: Path,
                 destination = output / f'result/{profile}/{suite}{suffix}'
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(original, destination)
-            declared = declaration.get('backends', backends.split(','))
-            expected = sorted((problem['id'], backend) for problem in declaration['problems']
-                              for backend in backends.split(',') if backend in declared)
+            # The routine selection owns which rows a suite must produce; a
+            # run that predates it falls back to the suite declaration.
+            expected = planned_rows(run, suite)
+            if expected is None:
+                declared = declaration.get('backends', backends.split(','))
+                expected = {(problem['id'], backend) for problem in declaration['problems']
+                            for backend in backends.split(',') if backend in declared}
+            expected = sorted(expected)
             files = [output / f'result/{profile}/{suite}{suffix}' for suffix in ('.md', '.summary.json')]
             files += sorted(path for path in target.rglob('*') if path.is_file())
             entries.append({'suite_id': suite, 'expected_rows': expected,

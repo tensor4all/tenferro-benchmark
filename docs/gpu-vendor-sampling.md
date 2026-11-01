@@ -49,6 +49,7 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
 
 Use the local card UUID on other hosts. The ten small probe rows are numerical
 checks, not coverage or timings of the full-size workloads. Then collect the
-full selection sequentially on physical GPU0 using `BENCH_COVERAGE=full` and
-the desired independent effort setting. Native extension build failures are
-runtime failures with the actual compiler error, not misreported missing SDKs.
+routine set sequentially on physical GPU0 with the vendor arms enabled
+(`BENCH_ROUTINE_VENDOR_ARMS=1`) and the desired independent effort setting.
+Native extension build failures are runtime failures with the actual compiler
+error, not misreported missing SDKs.

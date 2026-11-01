@@ -39,11 +39,14 @@ case "$BENCHMARK_TARGET_PROFILE" in
         ;;
 esac
 
-RUN_TIMESTAMP_RFC3339="$(python3 - <<'PY'
+# Same rule as run_gpu_suite.sh: the run metadata timestamp identifies the run
+# directory, so it is derived from that stamp rather than the wall clock.
+RUN_TIMESTAMP_RFC3339="${GPU_BENCH_RUN_TIMESTAMP:-$(python3 - "$TIMESTAMP" <<'PY'
 from datetime import datetime, timezone
-print(datetime.now(timezone.utc).isoformat())
+import sys
+print(datetime.strptime(sys.argv[1], "%Y%m%d_%H%M%S").replace(tzinfo=timezone.utc).isoformat())
 PY
-)"
+)}"
 
 cd "$PROJECT_DIR"
 if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
@@ -61,7 +64,15 @@ if command -v uv >/dev/null 2>&1; then
     PYTHON=(uv run python)
 fi
 
-"${PYTHON[@]}" "$SCRIPT_DIR/generate_gpu_linalg_jvp_vjp_yaml.py" >/dev/null
+# Regenerate the repository's own suites from their seeds, but never a suite
+# file handed in by the routine selection (that one is already curated).
+for repo_suite in "$PROJECT_DIR/benchmarks/gpu/linalg_jvp_vjp.yaml" \
+                  "$PROJECT_DIR/benchmarks/gpu/linalg_ad_latency.yaml"; do
+    if [[ "$SUITE_FILE" == "$repo_suite" ]]; then
+        "${PYTHON[@]}" "$SCRIPT_DIR/generate_gpu_linalg_jvp_vjp_yaml.py" >/dev/null
+        break
+    fi
+done
 "${VALIDATOR[@]}" "$SUITE_FILE"
 
 suite_id="$(awk '$1 == "suite_id:" { print $2; exit }' "$SUITE_FILE")"
@@ -71,6 +82,7 @@ RUN_YAML="$RUN_DIR/run.yaml"
 RESULT_JSONL="$RUN_DIR/records.jsonl"
 RUST_JSONL="$RUN_DIR/rust_records.jsonl"
 PYTHON_JSONL="$RUN_DIR/python_records.jsonl"
+MARKDOWN_OUT="$RUN_DIR/report.md"
 REPORT_OUT="$REPORTS_DIR/$BENCHMARK_TARGET_PROFILE/gpu/$suite_name.md"
 GPU_BENCH_BACKEND_SLEEP="${GPU_BENCH_BACKEND_SLEEP:-2}"
 
@@ -108,27 +120,51 @@ echo "Timestamp: $TIMESTAMP"
 echo ""
 
 RUST_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_linalg_ad"
-echo "Building benchmark_gpu_linalg_ad..."
-CUBECL_DEBUG_LOG=0 \
-CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
-RUST_MIN_STACK="$RUST_MIN_STACK" \
-LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-    cargo build --release --features cuda --bin benchmark_gpu_linalg_ad
+# The routine run hands in the backend arm set through GPU_BENCH_BACKENDS;
+# without a filter the suite's own declared arms all run.
+mapfile -t AD_BACKENDS < <("${PYTHON[@]}" - "$SUITE_FILE" "${GPU_BENCH_BACKENDS:-}" <<'PY'
+import sys, yaml
+declared = yaml.safe_load(open(sys.argv[1])).get("backends") or []
+requested = [name for name in sys.argv[2].split(",") if name] or declared
+for name in requested:
+    if name in declared:
+        print(name)
+PY
+)
+[[ ${#AD_BACKENDS[@]} -gt 0 ]] || { echo "No linalg AD backends selected" >&2; exit 1; }
+RUN_RUST=0
+for backend in "${AD_BACKENDS[@]}"; do
+    [[ "$backend" == "tenferro-cuda-trace" ]] && RUN_RUST=1
+done
+if [[ "$RUN_RUST" == 1 ]]; then
+    if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == "1" ]]; then
+        # The hosted build job ships this binary; the pod has no Rust toolchain.
+        python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$RUST_BIN"
+    else
+        echo "Building benchmark_gpu_linalg_ad..."
+        CUBECL_DEBUG_LOG=0 \
+        CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+        RUST_MIN_STACK="$RUST_MIN_STACK" \
+        LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+            cargo build --release --features cuda --bin benchmark_gpu_linalg_ad
+    fi
 
-echo "Running tenferro-cuda-trace linalg AD benchmarks..."
-: > "$RUST_JSONL"
-CUBECL_DEBUG_LOG=0 \
-CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
-RUST_MIN_STACK="$RUST_MIN_STACK" \
-LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-    "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "" -- "$SUITE_FILE"
-mv "$RUST_JSONL" "$RUN_DIR/rust_records_unverified.jsonl"
-"${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
-    "$RUN_DIR/rust_records_unverified.jsonl" "$RUST_JSONL" "$SUITE_FILE"
-cat "$RUST_JSONL" >> "$RESULT_JSONL"
-sleep "$GPU_BENCH_BACKEND_SLEEP"
+    echo "Running tenferro-cuda-trace linalg AD benchmarks..."
+    : > "$RUST_JSONL"
+    CUBECL_DEBUG_LOG=0 \
+    CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+    RUST_MIN_STACK="$RUST_MIN_STACK" \
+    LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+        "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "" -- "$SUITE_FILE"
+    mv "$RUST_JSONL" "$RUN_DIR/rust_records_unverified.jsonl"
+    "${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
+        "$RUN_DIR/rust_records_unverified.jsonl" "$RUST_JSONL" "$SUITE_FILE"
+    cat "$RUST_JSONL" >> "$RESULT_JSONL"
+    sleep "$GPU_BENCH_BACKEND_SLEEP"
+fi
 
-for backend in pytorch-cuda jax-cuda; do
+for backend in "${AD_BACKENDS[@]}"; do
+    [[ "$backend" == "tenferro-cuda-trace" ]] && continue
     echo "Running $backend linalg AD benchmarks..."
     chunk="$RUN_DIR/chunk_${backend}.jsonl"
     : > "$chunk"
@@ -158,7 +194,13 @@ PYDEBUG
 fi
 "${VALIDATOR[@]}" --kind run "$RUN_YAML"
 "${VALIDATOR[@]}" --kind result "$RESULT_JSONL"
-"${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$REPORT_OUT"
+"${FORMATTER[@]}" "$RESULT_JSONL" --run-metadata "$RUN_YAML" --output "$MARKDOWN_OUT"
+if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
+    cp "$MARKDOWN_OUT" "$REPORT_OUT"
+    if [[ -f "${MARKDOWN_OUT%.md}.summary.json" ]]; then
+        cp "${MARKDOWN_OUT%.md}.summary.json" "${REPORT_OUT%.md}.summary.json"
+    fi
+fi
 
 echo ""
 echo "GPU linalg JVP/VJP benchmark suite complete: $suite_id"

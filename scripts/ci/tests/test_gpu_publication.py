@@ -72,3 +72,35 @@ class BundleTests(unittest.TestCase):
         bundle_run(self.root, self.timestamp, [Path('dense.yaml')],
                    ['tenferro-cuda-trace', 'pytorch-cuda'], self.bundle)
         self.assertTrue((self.bundle / 'publication.json').exists())
+
+    def test_routine_plan_governs_expected_rows(self):
+        # A curated routine set is smaller than the suite file: only the planned
+        # rows are expected, and cases the set leaves out are not required.
+        self.suite.write_text('suite_id: gpu/dense\nproblems: [{id: matmul}, {id: solve}]\n')
+        (self.run / 'run.yaml').write_text(
+            'suite_id: gpu/dense\ncollection:\n'
+            '  expected_case_ids: [gpu/dense:matmul:tenferro-cuda-trace]\n')
+        bundle_run(self.root, self.timestamp, [Path('dense.yaml')],
+                   ['tenferro-cuda-trace'], self.bundle)
+        publication = json.loads((self.bundle / 'publication.json').read_text())
+        self.assertEqual(publication['suites'][0]['expected_rows'],
+                         [['matmul', 'tenferro-cuda-trace']])
+
+    def test_campaign_wide_legacy_plan_selects_this_suites_rows(self):
+        # Metadata written before the plan became per-suite carries every suite's
+        # rows; this suite's entries are selected instead of rejected.
+        (self.run / 'run.yaml').write_text(
+            'suite_id: gpu/dense\ncollection:\n  expected_case_ids: '
+            '[gpu/einsum:einsum:tenferro-cuda-trace, gpu/dense:matmul:tenferro-cuda-trace]\n')
+        bundle_run(self.root, self.timestamp, [Path('dense.yaml')],
+                   ['tenferro-cuda-trace'], self.bundle)
+        publication = json.loads((self.bundle / 'publication.json').read_text())
+        self.assertEqual(publication['suites'][0]['expected_rows'],
+                         [['matmul', 'tenferro-cuda-trace']])
+
+    def test_planned_row_without_a_record_is_rejected(self):
+        (self.run / 'run.yaml').write_text(
+            'suite_id: gpu/dense\ncollection:\n  expected_case_ids: '
+            '[gpu/dense:matmul:tenferro-cuda-trace, gpu/dense:solve:tenferro-cuda-trace]\n')
+        with self.assertRaises(ValueError):
+            self.build()

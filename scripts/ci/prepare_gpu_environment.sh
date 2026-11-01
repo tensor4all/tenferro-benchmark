@@ -40,7 +40,7 @@ export UV_CACHE_DIR=/tmp/tenferro-gpu-preparation-cache
 export UV_LINK_MODE=copy
 uv python install 3.12.12 --no-bin
 extra=()
-if [[ ",${GPU_BENCH_BACKENDS:-}," == *,jax-cuda,* ]]; then
+if [[ ",${GPU_BENCH_RUNTIME_BACKENDS:-}," == *,jax-cuda,* ]]; then
   extra=(--extra gpu)
 fi
 uv sync --project scripts/ci/runpod_runtime --python 3.12.12 --managed-python --frozen --no-dev "${extra[@]}"
@@ -60,6 +60,6 @@ echo "Runtime preparation seconds: $((SECONDS-started))"
 started=$SECONDS
 tar -C /opt -cf - tenferro-benchmark-ci | zstd -T2 -3 -o _gpu_environment/runtime.tar.zst
 zstd -dc _gpu_environment/runtime.tar.zst | python3 scripts/ci/gpu_environment.py check-tar
-python3 scripts/ci/gpu_environment.py manifest --backends "${GPU_BENCH_BACKENDS:-}"
+python3 scripts/ci/gpu_environment.py manifest --backends "${GPU_BENCH_RUNTIME_BACKENDS:-}"
 echo "Runtime compression seconds: $((SECONDS-started))"
 du -h _gpu_environment/runtime.tar.zst

@@ -14,36 +14,63 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 import gpu_routine_selection as selection
 
+MANIFEST = ROOT/"benchmarks/gpu/manifests/routine.yaml"
+
+
+def manifest_suites():
+    return [spec["file"] for spec in yaml.safe_load(MANIFEST.read_text())["suites"].values()]
+
 
 class RoutineSelectionTest(unittest.TestCase):
-    def plan(self, output, coverage="quick", **kwargs):
-        return selection.materialize(ROOT/"benchmarks/gpu/manifests/routine.yaml",
-            ["benchmarks/gpu/"+name+".yaml" for name in ("dense","einsum","sparse","tensornetwork")],
-            output,coverage,**kwargs)
+    def plan(self, output, **kwargs):
+        return selection.materialize(MANIFEST, manifest_suites(), output, **kwargs)
 
-    def test_quick_retains_core_mechanisms_and_full_preserves_all_cases(self):
+    def test_one_set_selects_every_routine_suite_once(self):
         with tempfile.TemporaryDirectory() as tmp:
-            quick=self.plan(Path(tmp)/"quick"); full=self.plan(Path(tmp)/"full","full")
-            self.assertEqual(len(quick["selected"]),27)
-            self.assertEqual(len(full["selected"]),94)
-            self.assertTrue(set(quick["selected"])<=set(full["selected"]))
-            self.assertTrue(any("b16_32" in key for key in quick["selected"]))
-            self.assertTrue(any("tensornetwork" in key for key in quick["selected"]))
-            self.assertFalse(any("gpu/sparse:" in key or "4096" in key for key in quick["selected"]))
-            # The diagnostic eager JAX tensor-network path is opt-in, not default full.
-            self.assertFalse(any(key.endswith(":jax-cuda-eager") for key in full["selected"]))
+            plan = self.plan(Path(tmp))
+            self.assertEqual(len(plan["selected"]), 106)
+            self.assertEqual(plan["expected"], plan["selected"])
+            for suite in ("dense", "einsum", "sparse", "tensornetwork", "elementwise",
+                          "linalg_ad_latency", "linalg_jvp_vjp"):
+                self.assertTrue(any(key.startswith(f"gpu/{suite}:") for key in plan["selected"]), suite)
+            # The sparse suite is reference-only, so it runs one arm.
+            self.assertTrue(all(key.endswith(":pytorch-cuda") for key in plan["selected"]
+                                if key.startswith("gpu/sparse:")))
+            # Size sweeps are not routine: one size per tiny-size AD suite.
+            latency = [key for key in plan["selected"] if key.startswith("gpu/linalg_ad_latency:")]
+            self.assertEqual(len(latency), 30)
+            self.assertEqual({key.split(":")[1].rsplit("_", 1)[1] for key in latency}, {"4"})
+            jvp_vjp = [key for key in plan["selected"] if key.startswith("gpu/linalg_jvp_vjp:")]
+            self.assertEqual({key.split(":")[1].rsplit("_", 1)[1] for key in jvp_vjp}, {"256"})
+            # The diagnostic and vendor arms are not in the default set.
+            self.assertFalse(any(key.endswith(":jax-cuda-eager") or "cublaslt" in key
+                                 or "cutlass" in key for key in plan["selected"]))
+            self.assertFalse(plan["vendor_arms"])
 
-    def test_jax_cuda_eager_tensor_network_is_opt_in(self):
+    def test_vendor_arms_are_opt_in(self):
         with tempfile.TemporaryDirectory() as tmp:
-            plan = self.plan(
-                Path(tmp), "full",
-                backend_override="jax-cuda-eager",
-                problem="tensornetwork_permutation_optimized_f32",
-            )
-            self.assertEqual(
-                plan["selected"],
-                ["gpu/tensornetwork:tensornetwork_permutation_optimized_f32:jax-cuda-eager"],
-            )
+            plan = self.plan(Path(tmp), vendor_arms=True)
+            self.assertEqual(len(plan["selected"]), 133)
+            self.assertTrue(plan["vendor_arms"])
+            dense = [key for key in plan["selected"] if key.startswith("gpu/dense:")]
+            self.assertEqual(len(dense), 49)
+            self.assertTrue(any(key.endswith(":cublaslt") for key in dense))
+            self.assertTrue(any(key.startswith("gpu/sparse:") and key.endswith(":ginkgo")
+                                for key in plan["selected"]))
+
+    def test_routine_selection_is_the_materialized_suite(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = self.plan(Path(tmp))
+            suite_ids = yaml.safe_load(MANIFEST.read_text())["suites"]
+            self.assertEqual({Path(path).name for path in plan["suite_files"]},
+                             {suite_id.replace("/", "_") + ".yaml" for suite_id in suite_ids})
+            dense = yaml.safe_load((Path(tmp)/"gpu_dense.yaml").read_text())
+            self.assertEqual(len(dense["problems"]), 7)
+            self.assertEqual(dense["backends"],
+                             ["tenferro-cuda-trace", "tenferro-cuda-eager", "pytorch-cuda", "jax-cuda"])
+            self.assertEqual(plan["suite_drivers"][(Path(tmp)/"gpu_dense.yaml").as_posix()], "gpu_suite")
+            self.assertEqual(plan["suite_drivers"][(Path(tmp)/"gpu_linalg_ad_latency.yaml").as_posix()],
+                             "gpu_linalg_ad")
 
     def test_effort_does_not_change_case_selection(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -54,16 +81,32 @@ class RoutineSelectionTest(unittest.TestCase):
                 for problem in yaml.safe_load(Path(path).read_text())["problems"]:
                     self.assertEqual((problem["run"]["warmups"],problem["run"]["runs"]),(1,3))
 
-    def test_explicit_full_case_and_backend_are_preserved(self):
+    def test_case_outside_the_routine_set_is_not_selected(self):
         with tempfile.TemporaryDirectory() as tmp:
-            plan=self.plan(Path(tmp),"full",backend_override="pytorch-cuda",problem="dense_solve_f64_4096_rhs16")
-            self.assertEqual(plan["selected"],["gpu/dense:dense_solve_f64_4096_rhs16:pytorch-cuda"])
+            plan=self.plan(Path(tmp),backend_override="pytorch-cuda",problem="dense_matmul_f64_3072")
+            self.assertEqual(plan["selected"],["gpu/dense:dense_matmul_f64_3072:pytorch-cuda"])
             with self.assertRaisesRegex(ValueError,"no GPU cases"):
                 self.plan(Path(tmp)/"bad",problem="dense_solve_f64_4096_rhs16")
 
+    def test_unknown_backend_and_stale_problem_are_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shutil.copytree(ROOT/"benchmarks/gpu", root/"benchmarks/gpu")
+            path = root/"benchmarks/gpu/manifests/routine.yaml"
+            manifest = yaml.safe_load(path.read_text())
+            manifest["suites"]["gpu/dense"]["problems"].append("dense_absent_case")
+            path.write_text(yaml.safe_dump(manifest, sort_keys=False))
+            with self.assertRaisesRegex(ValueError,"stale routine problem manifest"):
+                selection.materialize(path, manifest_suites(), root/"out")
+            manifest = yaml.safe_load(MANIFEST.read_text())
+            manifest["suites"]["gpu/dense"]["backends"].append("not-a-backend")
+            path.write_text(yaml.safe_dump(manifest, sort_keys=False))
+            with self.assertRaisesRegex(ValueError,"routine backends absent"):
+                selection.materialize(path, manifest_suites(), root/"out")
+
     def test_unsupported_missing_and_unrecorded_samples_never_count_as_covered(self):
-        plan=dict(manifest_version=1,coverage="quick",effort="scan",expected=["s:a:b","s:c:b","s:d:b"],
-                  selected=["s:a:b","s:c:b","s:d:b"],unselected=[])
+        plan=dict(manifest_version=2,effort="scan",expected=["s:a:b","s:c:b","s:d:b"],
+                  selected=["s:a:b","s:c:b","s:d:b"])
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)/"records.jsonl"
             path.write_text(json.dumps(dict(suite_id="s",problem_id="a",backend="b",status="unsupported", execution=dict(unsupported_reason="library does not implement this op")))+"\n"+
@@ -76,9 +119,8 @@ class RoutineSelectionTest(unittest.TestCase):
             self.assertEqual(result["missing"],["s:d:b"])
             self.assertFalse(result["complete"])
 
-    def test_restricted_accounting_ignores_full_only_records(self):
-        plan = dict(manifest_version=1, coverage="quick", effort="standard",
-                    expected=["s:a:b"], selected=["s:a:b"], unselected=["s:c:b"])
+    def test_records_outside_the_set_are_unexpected(self):
+        plan = dict(manifest_version=2, effort="standard", expected=["s:a:b"], selected=["s:a:b"])
         def row(problem):
             return json.dumps(dict(suite_id="s", problem_id=problem, backend="b", status="ok",
                                    verification=dict(status="passed"),
@@ -86,10 +128,10 @@ class RoutineSelectionTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "records.jsonl"
             path.write_text(row("a") + "\n" + row("c") + "\n")
-            self.assertEqual(selection.account(plan, [path])["unexpected"], ["s:c:b"])
-            restricted = selection.account(plan, [path], restrict=True)
-            self.assertEqual(restricted["unexpected"], [])
-            self.assertEqual(restricted["executed"], ["s:a:b"])
+            status = selection.account(plan, [path])
+            self.assertEqual(status["unexpected"], ["s:c:b"])
+            self.assertEqual(status["executed"], ["s:a:b"])
+            self.assertFalse(status["complete"])
 
     def record(self, status="skipped", reason="no reference implementation"):
         return dict(schema_version=1, suite_id="gpu/tensornetwork", problem_id="a",
@@ -127,8 +169,8 @@ class RoutineSelectionTest(unittest.TestCase):
         for rows, category, code in scenarios:
             with self.subTest(category=category, rows=rows), tempfile.TemporaryDirectory() as tmp:
                 output = Path(tmp)
-                plan = dict(manifest_version=1, coverage="quick", effort="scan",
-                            expected=[key], selected=[key], unselected=[])
+                plan = dict(manifest_version=2, effort="scan",
+                            expected=[key], selected=[key])
                 (output/"selection.json").write_text(json.dumps(plan))
                 records = output/"records.jsonl"
                 records.write_text("".join(json.dumps(row)+"\n" for row in rows))
@@ -143,16 +185,14 @@ class RoutineSelectionTest(unittest.TestCase):
                     self.assertIn(status["reasons"][key], process.stdout)
                 self.assertFalse(status["complete"])
 
-    def test_restrict_keeps_selected_duplicates_and_unknown_ids(self):
+    def test_selected_duplicates_and_unknown_ids_still_fail(self):
         key = "gpu/tensornetwork:a:b"
-        plan = dict(manifest_version=1, coverage="quick", effort="scan",
-                    expected=[key], selected=[key], unselected=["gpu/tensornetwork:full:b"])
+        plan = dict(manifest_version=2, effort="scan", expected=[key], selected=[key])
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp)/"records.jsonl"
-            rows = [self.record(), self.record(), dict(self.record(), problem_id="full"),
-                    dict(self.record(), problem_id="full"), dict(self.record(), problem_id="unknown")]
+            rows = [self.record(), self.record(), dict(self.record(), problem_id="unknown")]
             path.write_text("".join(json.dumps(row)+"\n" for row in rows))
-            status = selection.account(plan, [path], restrict=True)
+            status = selection.account(plan, [path])
             self.assertEqual(status["duplicates"], [key])
             self.assertEqual(status["unexpected"], ["gpu/tensornetwork:unknown:b"])
             self.assertFalse(status["complete"])
@@ -170,10 +210,10 @@ class RoutineSelectionTest(unittest.TestCase):
                 root = Path(tmp)
                 shutil.copytree(ROOT/"scripts", root/"scripts", ignore=shutil.ignore_patterns("__pycache__"))
                 shutil.copytree(ROOT/"schemas", root/"schemas")
-                (root/"benchmarks/gpu/manifests").mkdir(parents=True)
-                for name in ("dense", "einsum", "sparse", "tensornetwork"):
-                    shutil.copy(ROOT/f"benchmarks/gpu/{name}.yaml", root/f"benchmarks/gpu/{name}.yaml")
-                shutil.copy(ROOT/"benchmarks/gpu/manifests/routine.yaml", root/"benchmarks/gpu/manifests/routine.yaml")
+                shutil.copytree(ROOT/"benchmarks/gpu/manifests", root/"benchmarks/gpu/manifests")
+                shutil.copy(ROOT/"benchmarks/gpu/routine_budget.yaml", root/"benchmarks/gpu/routine_budget.yaml")
+                for suite_file in manifest_suites():
+                    shutil.copy(ROOT/suite_file, root/suite_file)
                 row = dict(record)
                 row.update(suite_id="gpu/dense", problem_id="dense_matmul_f64_3072",
                            backend="pytorch-cuda", op="matmul")
@@ -198,13 +238,13 @@ class RoutineSelectionTest(unittest.TestCase):
                     script.chmod(0o755)
                 env = dict(os.environ, PATH=f"{commands}:{os.environ['PATH']}",
                            GPU_BENCH_VERIFY_ONLY=verify_only, GPU_BENCH_DEVICE="0",
-                           GPU_BENCH_TIMESTAMP="20000101_000000", BENCH_COVERAGE="full",
+                           GPU_BENCH_TIMESTAMP="20000101_000000",
                            GPU_BENCH_SUITE="benchmarks/gpu/dense.yaml",
                            GPU_BENCH_BACKENDS="pytorch-cuda", GPU_BENCH_PROBLEM="dense_matmul_f64_3072",
                            GPU_BENCH_BACKEND_SLEEP="0", GPU_BENCH_SKIP_LATEST="1",
                            GPU_BENCH_ROUTINE_CONTROLS="0")
                 process = subprocess.run(["bash", str(root/"scripts/run_gpu_suite.sh")],
-                                         env=env, capture_output=True, text=True, timeout=20)
+                                         env=env, capture_output=True, text=True, timeout=30)
                 self.assertEqual(process.returncode, code, process.stdout+process.stderr)
                 kind = "verification" if verify_only == "1" else "results"
                 output = root/f"data/{kind}/nvidia-gpu/gpu/routine_selection/20000101_000000/case_status.json"

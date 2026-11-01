@@ -1,4 +1,4 @@
-"""Versioned workload coverage and independent effort for routine CUDA suites."""
+"""Materialize and account for the single routine CUDA suite set."""
 import argparse
 import copy
 import json
@@ -10,37 +10,49 @@ import yaml
 
 import bench_selection
 
+DEFAULT_DRIVER = "gpu_suite"
 
-def materialize(manifest_path, requested, output, coverage, backend_override="", problem="", effort="standard"):
+
+def defaults(manifest_path, vendor_arms=False):
+    """The manifest's own suite files and the backend arm set it declares."""
+    manifest = yaml.safe_load(manifest_path.read_text())
+    suites = [spec["file"] for spec in manifest["suites"].values()]
+    backends = []
+    for spec in manifest["suites"].values():
+        declared = list(spec["backends"])
+        if vendor_arms:
+            declared += list(spec.get("vendor_backends") or [])
+        backends.extend(backend for backend in declared if backend not in backends)
+    return suites, backends
+
+
+def materialize(manifest_path, requested, output, backend_override="", problem="", effort="standard",
+                vendor_arms=False):
     manifest = yaml.safe_load(manifest_path.read_text())
     root = manifest_path.resolve().parents[3]
-    if coverage not in {"quick", "full"}:
-        raise ValueError("GPU coverage must be quick or full")
     output.mkdir(parents=True, exist_ok=True)
-    expected, selected, files, full = [], [], [], []
+    expected, selected, files, drivers = [], [], [], {}
     requested = {(Path(path).resolve().relative_to(root).as_posix() if Path(path).is_absolute()
                   else Path(path).as_posix()) for path in requested}
     known_files = {spec["file"] for spec in manifest["suites"].values()}
     if requested - known_files:
         raise ValueError(f"suites absent from routine manifest: {sorted(requested-known_files)}")
     for suite_id, spec in manifest["suites"].items():
-        if spec.get("optional") and spec["file"] not in requested:
-            continue
         source = yaml.safe_load((root/spec["file"]).read_text())
         problems = {p["id"]:p for p in source["problems"]}
-        if set(spec["full"]["problems"]) != problems.keys():
-            raise ValueError(f"stale full problem manifest: {suite_id}")
-        if not set(spec["quick"]["problems"]) <= problems.keys():
-            raise ValueError(f"stale quick problem manifest: {suite_id}")
-        for pid in spec["full"]["problems"]:
-            full.extend(f"{suite_id}:{pid}:{backend}" for backend in spec["full"]["backends"])
-        chosen = spec[coverage]
-        backends = ([b for b in backend_override.split(",") if b in source["backends"]]
-                    if backend_override else chosen["backends"])
-        expected.extend(f"{suite_id}:{pid}:{backend}" for pid in chosen["problems"] for backend in backends)
-        if spec["file"] not in requested or not chosen["problems"] or not backends:
+        if not set(spec["problems"]) <= problems.keys():
+            raise ValueError(f"stale routine problem manifest: {suite_id}")
+        backends = list(spec["backends"])
+        if vendor_arms:
+            backends += list(spec.get("vendor_backends") or [])
+        if not set(backends) <= set(source["backends"]):
+            raise ValueError(f"routine backends absent from {spec['file']}: {suite_id}")
+        if backend_override:
+            backends = [b for b in backend_override.split(",") if b in source["backends"]]
+        expected.extend(f"{suite_id}:{pid}:{backend}" for pid in spec["problems"] for backend in backends)
+        if spec["file"] not in requested or not backends:
             continue
-        ids = [pid for pid in chosen["problems"] if not problem or pid == problem]
+        ids = [pid for pid in spec["problems"] if not problem or pid == problem]
         if not ids:
             continue
         selected.extend(f"{suite_id}:{pid}:{backend}" for pid in ids for backend in backends)
@@ -55,18 +67,18 @@ def materialize(manifest_path, requested, output, coverage, backend_override="",
         path = output / (suite_id.replace("/", "_")+".yaml")
         path.write_text(yaml.safe_dump(effective, sort_keys=False, width=100))
         files.append(path.as_posix())
+        drivers[path.as_posix()] = spec.get("driver") or DEFAULT_DRIVER
     if not selected:
-        raise ValueError("no GPU cases selected; use full coverage for full-only workloads")
-    plan = dict(manifest_version=manifest["manifest_version"], coverage=coverage, effort=effort,
-                expected=expected, selected=selected, full=full,
-                unselected=[key for key in full if key not in selected],
-                suite_files=files, backend_override=backend_override or None,
+        raise ValueError("no GPU cases selected")
+    plan = dict(manifest_version=manifest["manifest_version"], effort=effort,
+                expected=expected, selected=selected, suite_files=files, suite_drivers=drivers,
+                backend_override=backend_override or None, vendor_arms=vendor_arms,
                 problem_filter=problem or None)
     (output/"selection.json").write_text(json.dumps(plan,indent=2)+"\n")
     return plan
 
 
-def account(plan, paths, restrict=False):
+def account(plan, paths):
     by_id, duplicates = {}, []
     for path in paths:
         for line in path.read_text().splitlines():
@@ -75,12 +87,6 @@ def account(plan, paths, restrict=False):
             key = f"{row['suite_id']}:{row['problem_id']}:{row['backend']}"
             if key in by_id: duplicates.append(key)
             by_id[key] = row
-    if restrict:
-        # Quick-from-full may omit known full-only pairs, never unknown IDs
-        # or duplicates of selected pairs.
-        full_only = set(plan["unselected"]) - set(plan["selected"])
-        by_id = {key: row for key, row in by_id.items() if key not in full_only}
-        duplicates = [key for key in duplicates if key not in full_only]
     result = {name:[] for name in ("executed","skipped","unsupported","failed","missing","noisy","verification_only","raw_samples_unavailable")}
     reasons = {}
     for key in plan["selected"]:
@@ -122,8 +128,8 @@ def account(plan, paths, restrict=False):
         result["executed"].append(key)
         if len(samples)>1 and statistics.stdev(samples)/statistics.mean(samples)>.10:
             result["noisy"].append(key)
-    result.update(manifest_version=plan["manifest_version"],coverage=plan["coverage"],effort=plan["effort"],
-                  expected=plan["expected"],selected=plan["selected"],unselected=plan["unselected"],
+    result.update(manifest_version=plan["manifest_version"],effort=plan["effort"],
+                  expected=plan["expected"],selected=plan["selected"],
                   duplicates=duplicates,unexpected=sorted(set(by_id)-set(plan["selected"])),
                   reasons=reasons)
     result["complete"] = (len(result["executed"])==len(plan["expected"]) and
@@ -135,19 +141,27 @@ def account(plan, paths, restrict=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest",type=Path,default=Path("benchmarks/gpu/manifests/routine.yaml"))
-    parser.add_argument("--output",type=Path,required=True)
-    parser.add_argument("--coverage",default="quick")
+    parser.add_argument("--output",type=Path)
     parser.add_argument("--backends",default="")
     parser.add_argument("--problem",default="")
     parser.add_argument("--effort",default="standard")
+    parser.add_argument("--vendor-arms",action="store_true",
+        help="add the opt-in vendor arms declared next to each routine suite")
     parser.add_argument("--records",type=Path,nargs="*")
-    parser.add_argument("--restrict",action="store_true",
-        help="ignore records outside the selection (used for quick-from-full accounting)")
+    parser.add_argument("--defaults",action="store_true",
+        help="print the manifest's suite files and backend arms instead of selecting")
     parser.add_argument("suites",nargs="*")
     args = parser.parse_args()
+    if args.defaults:
+        suites, backends = defaults(args.manifest, args.vendor_arms)
+        print(",".join(suites))
+        print(",".join(backends))
+        return
+    if args.output is None:
+        parser.error("--output is required when --defaults is not used")
     if args.records is not None:
         plan = json.loads((args.output/"selection.json").read_text())
-        status = account(plan,args.records,restrict=args.restrict)
+        status = account(plan,args.records)
         (args.output/"case_status.json").write_text(json.dumps(status,indent=2)+"\n")
         for category in ("failed", "skipped", "unsupported", "missing", "duplicates", "unexpected"):
             print(f"{category}: {status['counts'][category]}")
@@ -156,9 +170,10 @@ def main():
         if status["failed"] or status["missing"] or status["duplicates"] or status["unexpected"]:
             raise SystemExit("GPU collection has failed/missing/duplicate/unexpected cases")
         return
-    plan = materialize(args.manifest,args.suites,args.output,args.coverage,args.backends,args.problem,args.effort)
+    plan = materialize(args.manifest,args.suites,args.output,args.backends,args.problem,args.effort,
+                       args.vendor_arms)
     for path in plan["suite_files"]:
-        print(path)
+        print(path, plan["suite_drivers"][path])
 
 
 if __name__ == "__main__":

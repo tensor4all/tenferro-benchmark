@@ -159,7 +159,7 @@ def run(args):
         reps = config['repetitions']
         coverage = config['cases']['coverage']
     else:
-        ids = args.case_ids.split(',') if args.case_ids else gpu_routine_controls.plan('quick', 'standard')['timing']
+        ids = args.case_ids.split(',') if args.case_ids else gpu_routine_controls.plan('standard')['timing']
         reps = dict(rounds=args.rounds, warmups=args.warmups, runs=args.runs)
         coverage = args.coverage
         validate_config(dict(threads=[1], build=dict(profile='release', features=FEATURES),

@@ -9,8 +9,42 @@ import re
 import shutil
 from pathlib import Path
 
-DEFAULT_SUITES = ','.join(f'benchmarks/gpu/{s}.yaml' for s in
-                          ('dense', 'einsum', 'sparse', 'tensornetwork'))
+import yaml
+
+ROOT = Path(__file__).resolve().parents[2]
+ROUTINE_MANIFEST = ROOT / 'benchmarks/gpu/manifests/routine.yaml'
+
+
+def routine_suite_files(manifest_path: Path = ROUTINE_MANIFEST) -> list[str]:
+    """The suite files the single routine manifest declares, in manifest order."""
+    manifest = yaml.safe_load(Path(manifest_path).read_text())
+    return [spec['file'] for spec in manifest['suites'].values()]
+
+
+DEFAULT_SUITES = ','.join(routine_suite_files())
+
+
+def planned_rows(run_dir: Path, suite_id: str) -> set[tuple[str, str]] | None:
+    """The routine selection's expected (problem, backend) rows for one suite.
+
+    ``None`` when the run metadata records no plan at all, so a caller can fall
+    back to the suite declaration. Metadata written before this suite's plan was
+    per-suite carries the whole campaign's rows; those entries are selected by
+    suite id rather than rejected.
+    """
+    metadata_path = Path(run_dir) / 'run.yaml'
+    if not metadata_path.is_file():
+        return None
+    metadata = yaml.safe_load(metadata_path.read_text()) or {}
+    keys = (metadata.get('collection') or {}).get('expected_case_ids')
+    if not keys:
+        return None
+    rows = set()
+    for key in keys:
+        suite, problem, backend = key.split(':')
+        if suite == suite_id:
+            rows.add((problem, backend))
+    return rows or None
 
 
 def digest(path: Path) -> str:
@@ -50,8 +84,6 @@ def validate_records(path: Path, suite_id: str, expected: set[tuple[str, str]]) 
 
 
 def bundle_run(root: Path, timestamp: str, suites: list[Path], backends: list[str], bundle: Path) -> None:
-    import yaml
-
     if not re.fullmatch(r'\d{8}_\d{6}', timestamp):
         raise ValueError('Invalid run timestamp')
     bundle.mkdir(parents=True, exist_ok=True)
@@ -67,9 +99,13 @@ def bundle_run(root: Path, timestamp: str, suites: list[Path], backends: list[st
         target = bundle / run_relative
         # Preserve diagnostics even if validation below rejects this invocation.
         shutil.copytree(run, target, dirs_exist_ok=True)
-        # A suite only runs the requested backends it declares (run_gpu_suite.sh).
-        declared = suite.get('backends', backends)
-        expected = {(p['id'], b) for p in suite['problems'] for b in backends if b in declared}
+        # The routine selection owns which rows a suite must produce. A run that
+        # predates it falls back to the suite declaration, where a suite only
+        # runs the requested backends it declares (run_gpu_suite.sh).
+        expected = planned_rows(run, suite_id)
+        if expected is None:
+            declared = suite.get('backends', backends)
+            expected = {(p['id'], b) for p in suite['problems'] for b in backends if b in declared}
         validate_records(run / 'records.jsonl', suite_id, expected)
         report_relative = Path('result/nvidia-gpu') / f'{suite_id}.md'
         report = bundle / report_relative
