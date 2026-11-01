@@ -352,17 +352,56 @@ class DashboardTests(unittest.TestCase):
         cases = [
             {
                 "case": "case_one",
+                "baseline_median": 10.0,
+                "baseline_iqr": 0.4,
                 "contenders": [
-                    {"label": "eager", "kind": "tenferro", "ratio": 1.2, "interval": (1.1, 1.3)},
-                    {"label": "JAX", "kind": "reference", "ratio": 0.9, "interval": None},
+                    {
+                        "label": "eager",
+                        "kind": "tenferro",
+                        "ratio": 1.2,
+                        "median": 12.0,
+                        "iqr": 0.3,
+                        "interval": (1.1, 1.3),
+                    },
+                    {"label": "JAX", "kind": "reference", "ratio": 0.9, "median": 9.0, "interval": None},
                 ],
             }
         ]
         svg = dashboard.svg_ratio_chart(cases, "PyTorch")
-        self.assertIn("eager 1.20x", svg)
-        self.assertIn("JAX 0.90x", svg)
+        # The bar label carries the ratio and both absolute medians.
+        self.assertIn("eager 1.20x · 12 / 10 ms", svg)
+        self.assertIn("JAX 0.90x · 9 / 10 ms", svg)
+        # The legend says which side of "x / y" is which.
+        self.assertIn("label = contender / PyTorch, ms", svg)
         # Competitor bars are white with a black outline.
         self.assertIn('fill="#ffffff" stroke="#1b1f24"', svg)
+        # The tooltip keeps both medians and IQRs.
+        self.assertIn("median 12.000 ms (IQR 0.3 ms) vs PyTorch median 10.000 ms (IQR 0.4 ms)", svg)
+
+    def test_ratio_chart_labels_units_and_three_significant_digits(self):
+        self.assertEqual(dashboard.fmt_sig(12.3456), "12.3")
+        self.assertEqual(dashboard.fmt_sig(6.024), "6.02")
+        self.assertEqual(dashboard.fmt_sig(0.0012345), "0.00123")
+        cases = [
+            {
+                "case": "c",
+                "baseline_median": 112034.0,
+                "contenders": [
+                    {"label": "tenferro-cuda", "kind": "tenferro", "ratio": 3.87, "median": 434054.0},
+                ],
+            }
+        ]
+        # A non-ms unit is printed on both values, so no row mixes units.
+        svg = dashboard.svg_ratio_chart(cases, "declared reference", "ns/op")
+        self.assertIn("tenferro-cuda 3.87x · 434000 ns/op / 112000 ns/op", svg)
+        self.assertIn("label = contender / declared reference, ns/op", svg)
+
+    def test_missing_median_is_not_invented(self):
+        cases = [{"case": "c", "contenders": [{"label": "eager", "kind": "tenferro", "ratio": 1.2}]}]
+        svg = dashboard.svg_ratio_chart(cases, "PyTorch")
+        # No median on either side means no absolute numbers, not a made-up value.
+        self.assertIn('class="chart-value">eager 1.20x</text>', svg)
+        self.assertIn("eager 1.20x of PyTorch", svg)
 
     def test_permutation_and_perf_issue_ratio_mapping(self):
         permutation = summary_document([
@@ -398,6 +437,10 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("How to read", gpu)
         self.assertIn("gpu/dense", gpu)
         self.assertIn("case_a", gpu)
+        # The landing bars carry the absolute times behind each ratio.
+        self.assertIn("eager 2.00x · 20 / 10 ms", gpu)
+        self.assertIn("JAX 0.50x · 5 / 10 ms", gpu)
+        self.assertIn("worst case 10 ms", gpu)
         # A latency case never appears on the compute-bound page.
         self.assertNotIn("case_lat", gpu)
 
