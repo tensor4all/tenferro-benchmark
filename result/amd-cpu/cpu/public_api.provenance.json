@@ -1,8 +1,10 @@
 {
   "case_outcomes": {
     "failed": {
-      "cases": [],
-      "count": 0
+      "cases": [
+        "lstsq"
+      ],
+      "count": 1
     },
     "skipped": {
       "cases": [],
@@ -53,55 +55,55 @@
       "count": 39
     }
   },
-  "collected_at": "2026-11-01T02:33:53.900896+00:00",
+  "collected_at": "2026-11-01T18:55:13.568870+00:00",
   "files": {
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/cpu_info.md": "42cf8651ec49dbf49e09672d5472a89e8343930d662a36646ae24d97bcd3c47a",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/cpu_public_api_t1_20261101_023353.csv": "20a14b079fc87e68f7836f8587d173fb8c5715fe2ee0ffd2416c63f9040ed0fb",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/cpu_public_api_t4_20261101_023353.csv": "94b061cc339a9ff36ace3f7ef6671036f4169f463f75a56b26b3a09ca7e21f70",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/public_api.summary.json": "4243f75794deff35bf0f0dff969ca27d043487993add23b3c377d636e16fa659",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/report.md": "e17e15250b0cd390cbbf626d4cd54448e2faee290a412569479cc305c9f07061",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/run.yaml": "909a6e1dcdf288701407fe49e6bbc6421a1f6c3df8fd4f47097d85324cadba7f",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/run_t1.yaml": "909a6e1dcdf288701407fe49e6bbc6421a1f6c3df8fd4f47097d85324cadba7f",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/run_t4.yaml": "fbd78cd05d95a7f6f9fbe8b258732a009b0558a5924a34df93fd24516ec2060e",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/thread_env.txt": "e6ff899ae306451433482e4eb02ccf2a3280115d5e775c2d6500a8dfd3193e1c",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/inputs/0/wall_command.json": "57ef0ae2f32ef6b934c45772ee21b0fe19eb2c4850c5f605633e67f555a22213",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/report.md": "e17e15250b0cd390cbbf626d4cd54448e2faee290a412569479cc305c9f07061",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/report.summary.json": "cb3d755b3e806b69103a48cd73697e3a6cf1548e68e4546f065f655a1fa87afe",
-    "data/results/amd-cpu/cpu/public_api/20261101_023353/run.yaml": "ca5c7451783161091419774bc776063561f3a7504391825ee586679a169a6c8b",
-    "result/amd-cpu/cpu/public_api.md": "e17e15250b0cd390cbbf626d4cd54448e2faee290a412569479cc305c9f07061",
-    "result/amd-cpu/cpu/public_api.summary.json": "cb3d755b3e806b69103a48cd73697e3a6cf1548e68e4546f065f655a1fa87afe"
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/cpu_info.md": "f3278132012af670c80d5e20265a42078d53699ec6a8941d541c6590b1668dd9",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/cpu_public_api_t1_20261101_185513.csv": "6f4401dce034eaaa450cab2bea40778e7cb08b2eed9757c95efbafdec2f41c8a",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/cpu_public_api_t4_20261101_185513.csv": "eeedd4164d6a82542df8ea7fa2f363297ab59b8062cae9ccbdfb29c8378f3f7b",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/public_api.summary.json": "d066e14a86784ba276dce6698f2570c749c3d33e40ad7425c5bd54ac841ade46",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/report.md": "424c38fab9de1154f17209f085e05392776635b89e406c90fc87ee12ee09e3bd",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/run.yaml": "e76835901945121489c7fe7ac59d2076dfbc6723001a6897879fa90b353f7721",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/run_t1.yaml": "e76835901945121489c7fe7ac59d2076dfbc6723001a6897879fa90b353f7721",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/run_t4.yaml": "c9c665f20db9f0f3c84a6ca35863bdcece80d8d49b0deac1375809b90eafb5be",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/thread_env.txt": "e6ff899ae306451433482e4eb02ccf2a3280115d5e775c2d6500a8dfd3193e1c",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/inputs/0/wall_command.json": "5276363ef818a4f1fcba9234a984c207fafd9087f6e2f204c5976e8afee46635",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/report.md": "424c38fab9de1154f17209f085e05392776635b89e406c90fc87ee12ee09e3bd",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/report.summary.json": "0009d253289dadba4cdd56f808e44c97ba8c6008e63ad7554e6fe2206953aab7",
+    "data/results/amd-cpu/cpu/public_api/20261101_185513/run.yaml": "ce5a992745cce6ac27a4a818ae2eacca70370228408542d3b1a53174dd9ed8e7",
+    "result/amd-cpu/cpu/public_api.md": "424c38fab9de1154f17209f085e05392776635b89e406c90fc87ee12ee09e3bd",
+    "result/amd-cpu/cpu/public_api.summary.json": "0009d253289dadba4cdd56f808e44c97ba8c6008e63ad7554e6fe2206953aab7"
   },
   "hardware": {
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "host": "8e87612b3072",
+    "cpu": "Intel(R) Xeon(R) 6973P-C",
+    "host": "2152f25c92d1",
     "threads": [
       1,
       4
     ]
   },
-  "harness_commit": "4cc17b1c7061855cfd9ddc2d549a09f50199de3c",
+  "harness_commit": "ab8e941ebccb8606e3781e9d8f6bddeeeab3d2a2",
   "missing_suites": [
     "cpu/permutation",
     "cpu/overhead_smoke"
   ],
   "schema_version": 1,
   "source": {
-    "artifact_id": 13068107683,
+    "artifact_id": 13097670245,
     "artifact_kind": "results",
-    "artifact_name": "linux-cpu-benchmark-results-41259861008-attempt1",
-    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/41259861008/artifacts/13068107683",
+    "artifact_name": "linux-cpu-benchmark-results-41333350090-attempt1",
+    "artifact_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/41333350090/artifacts/13097670245",
     "conclusion": "failure",
-    "created_at": "2026-11-01T03:07:35Z",
-    "digest": "sha256:303716cf4cdc055aeff93391deac25fc56ce033ad528ebc5d31194c5e0c16852",
-    "event": "workflow_dispatch",
-    "expires_at": "2027-01-30T01:09:21Z",
+    "created_at": "2026-11-01T19:20:35Z",
+    "digest": "sha256:d051a126509072ff6f07e53b9d60ab1447882d7732cfbcc54a1323e88d8e2660",
+    "event": "schedule",
+    "expires_at": "2027-01-30T17:48:29Z",
     "head_branch": "main",
-    "head_sha": "4cc17b1c7061855cfd9ddc2d549a09f50199de3c",
+    "head_sha": "ab8e941ebccb8606e3781e9d8f6bddeeeab3d2a2",
     "repository": "tensor4all/tenferro-benchmark",
     "run_attempt": 1,
-    "run_id": 41259861008,
-    "run_started_at": "2026-11-01T01:09:19Z",
-    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/41259861008",
+    "run_id": 41333350090,
+    "run_started_at": "2026-11-01T17:48:29Z",
+    "run_url": "https://github.com/tensor4all/tenferro-benchmark/actions/runs/41333350090",
     "workflow_path": ".github/workflows/benchmark-nightly-linux-cpu.yml"
   },
   "status": "partial",
