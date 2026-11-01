@@ -31,7 +31,7 @@ import os
 import shutil
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
@@ -293,8 +293,72 @@ RATIO_COLUMN_ORDER = ("vs PyTorch", "vs JAX", "vs cuTENSOR", "vs reference")
 GPU_PERF_ISSUES_INSTANCES = Path("data/instances/gpu_perf_issues.json")
 
 
+# A suite that declares its own `backends:` measures the arms in that list.  The
+# eager/trace pair is the default for the suites that do not, and it is wrong for the
+# CPU suites whose declaration has only one of the two (or neither): the dashboard used
+# to draw an empty eager bar there, which reads as a lost measurement rather than as a
+# declaration.  `docs/cpu-suite-arms.md` is the human record of that matrix.
+CPU_SUITE_DIR = Path("benchmarks/cpu")
+# The pages `scripts/render_run.py` derives from another suite's CSV, which therefore have
+# no YAML of their own.  `cpu/linalg_jvp_vjp` comes from the CPU-ops `_jvp`/`_vjp` rows, and
+# those cases are registered on the trace arm only (`push_linalg_jvp_vjp_trace_benches`).
+DERIVED_SUITE_ARMS: dict[str, tuple[str, ...]] = {
+    "cpu/linalg_jvp_vjp": ("tenferro-trace", "pytorch-cpu", "jax-cpu"),
+}
+
+
+def declared_backends(suite_id: str) -> tuple[str, ...] | None:
+    """The suite's own `backends:` list, or ``None`` when the suite declares none."""
+    if suite_id in DERIVED_SUITE_ARMS:
+        return DERIVED_SUITE_ARMS[suite_id]
+    if not suite_id.startswith("cpu/"):
+        return None
+    path = CPU_SUITE_DIR / f"{suite_id.split('/', 1)[1]}.yaml"
+    if not path.exists():
+        return None
+    backends: list[str] = []
+    in_list = False
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("backends:"):
+            in_list = True
+            continue
+        if not in_list:
+            continue
+        stripped = line.strip()
+        if stripped.startswith("- "):
+            backends.append(stripped[2:].strip())
+        elif stripped and not stripped.startswith("#"):
+            break
+    return tuple(backends) if backends else None
+
+
 def ratio_rules_for(suite_id: str) -> tuple[RatioRule, ...]:
-    return RATIO_RULES.get(suite_id, DEFAULT_RATIO_RULES)
+    declared = declared_backends(suite_id)
+    rules = RATIO_RULES.get(suite_id, DEFAULT_RATIO_RULES)
+    if declared is None:
+        return rules
+    known = set(declared)
+    kept: list[RatioRule] = []
+    for rule in rules:
+        if rule.per_case_reference:
+            kept.append(rule)
+            continue
+        arms = tuple(arm for arm in rule.arms if known & set(arm.backends))
+        if arms:
+            kept.append(replace(rule, arms=arms))
+    return tuple(kept)
+
+
+def undeclared_arm_labels(suite_id: str) -> list[str]:
+    """Labels of the default arms this suite does not declare (for the chart legend)."""
+    declared = declared_backends(suite_id)
+    if declared is None:
+        return []
+    known = set(declared)
+    labels = [
+        arm.label for arm in EAGER_TRACE_ARMS if not (known & set(arm.backends))
+    ]
+    return labels
 
 
 def ratio_columns(suite_ids: Iterable[str]) -> list[str]:
@@ -1864,6 +1928,12 @@ def render_family(
                 f" · best first · {len(items)} case{'s' if len(items) != 1 else ''} · "
                 f'<a href="{esc(suite_href)}">case table, absolute times and raw report &rarr;</a>'
             )
+            undeclared = undeclared_arm_labels(view.suite_id)
+            if undeclared:
+                note += (
+                    f" · {' and '.join(esc(label) for label in undeclared)}: not an arm of this"
+                    " suite, so no bar exists (see docs/cpu-suite-arms.md)"
+                )
             body.append(f'<p class="chart-legend">{note}</p>')
             body.append(svg_ratio_chart(items, baseline, unit))
             plotted = {item["case"] for item in items if item["contenders"]}
