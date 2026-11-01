@@ -178,6 +178,13 @@ assert safe_target_profile("zen5-cpu") == "zen5-cpu"
 assert safe_target_profile("nvidia-gpu") == "nvidia-gpu"
 
 try:
+    safe_target_profile("linux-cpu")
+except ValueError as exc:
+    assert "linux-cpu" in str(exc)
+else:
+    raise AssertionError("linux-cpu is retired and must not be a collection profile")
+
+try:
     safe_suite_id_parts("../bad")
 except ValueError as exc:
     assert "invalid suite_id" in str(exc)

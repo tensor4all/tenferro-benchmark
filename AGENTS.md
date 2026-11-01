@@ -133,8 +133,17 @@ Use target profiles to keep latest reports for multiple hardware classes:
 
 - `zen5-cpu` (latest CPU generation: AMD Ryzen AI 9 HX 470 workstation, pinned rows)
 - `nvidia-gpu` (latest GPU generation: A100)
-- `mac-cpu`, `amd-cpu` (EPYC 7713P), `linux-cpu`, `mac-gpu`: older generations, kept
+- `mac-cpu`, `amd-cpu` (EPYC 7713P), `mac-gpu`: older generations, kept
   for history only
+
+`linux-cpu` is retired (2026-11-02). Its reports stay under `result/linux-cpu/`
+with `RETIRED.md`; do not collect, ingest or list it again. It is absent from
+`TARGET_PROFILE_RE` (`scripts/benchmark_layout.py`) and is rejected by
+`RETIRED_PROFILES` in `scripts/generate_dashboard.py` and
+`scripts/ci/result_ingestion.py`. Reviving it means reverting that retirement,
+adding it to `benchmarks/profiles.yaml`, and re-measuring (the kept reports
+carry two different tenferro revisions); see
+[result/linux-cpu/RETIRED.md](result/linux-cpu/RETIRED.md).
 
 `suite_id` remains the workload identity. Do not encode hardware in `suite_id`.
 
@@ -175,7 +184,6 @@ Expected latest report paths:
 - `result/amd-cpu/cpu/elementwise.md`
 - `result/amd-cpu/cpu/perf_issues.md`
 - `result/amd-cpu/cpu/overhead_smoke.md`
-- `result/linux-cpu/cpu/linalg_jvp_jvp.md`
 - `result/nvidia-gpu/gpu/dense.md`
 - `result/nvidia-gpu/gpu/einsum.md`
 - `result/nvidia-gpu/gpu/elementwise.md`
@@ -344,7 +352,7 @@ is not installed on PATH, use `npx --yes @devcontainers/cli` for the same comman
 The default image uses
 `blas-mkl` to match the PyTorch wheel. For provider-matched OpenBLAS comparisons,
 use `.devcontainer/openblas/devcontainer.json` and `blas-openblas` instead;
-see `docs/linux-cpu-devcontainer.md`. Keep its `BENCHMARK_TORCH_WHEEL` setting
+see `docs/linux-devcontainer.md`. Keep its `BENCHMARK_TORCH_WHEEL` setting
 when recreating `.venv`, and verify the runtime provider before collecting.
 Do not present differences from historical MKL runs as implementation speedups.
 
@@ -425,52 +433,11 @@ PY'
 
 ## Local Linux Linalg AD Repro
 
-For the local Linux CPU linalg JVP/VJP repro report, use:
-
-```bash
-./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh
-```
-
-By default the script runs 1T and 4T sequentially, with JAX forced to CPU, then
-writes the combined report to:
-
-```text
-result/linux-cpu/cpu/linalg_jvp_jvp.md
-```
-
-The benchmark runner still uses the maintained `amd-cpu` target profile for
-collection, then mirrors raw runs and report paths under the `linux-cpu` report
-alias. To run specific thread counts, pass them explicitly:
-
-```bash
-./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh 1 4
-./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh 4
-```
-
-When updating this report, **run it inside the Linux devcontainer with tenferro-rs
-`blas-mkl`** so the report matches PyTorch's MKL-backed CPU path:
-
-```bash
-devcontainer up --workspace-folder .
-devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=blas-mkl
-  export PUBLICATION_GATE_FEATURES=blas-mkl
-  ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
-```
-
-For an alternate tenferro OpenBLAS run:
-
-```bash
-devcontainer exec --workspace-folder . bash -lc '
-  export TENFERRO_CPU_FEATURES=blas-openblas
-  export PUBLICATION_GATE_FEATURES=blas-openblas
-  ./scripts/reproduce_linux_cpu_linalg_jvp_jvp.sh'
-```
-
-CPU benchmark entrypoints reset `.venv` before collection so stale Python
-wheels from another backend do not affect the run. Keep linalg repro collection
-sequential: one devcontainer benchmark command at a time, with no concurrent
-`run_all.sh`, `run_cpu_ops.sh`, or ad hoc linalg probes.
+None. The `linux-cpu` linalg AD repro report is retired with its profile
+(2026-11-02, see `result/linux-cpu/RETIRED.md`), and the alias scripts that
+produced it are deleted. The Linux CPU linalg AD rows are collected and
+published as `amd-cpu` (`cpu/linalg_jvp_vjp`) by the nightly; use
+`./scripts/run_all.sh` inside the Linux devcontainer for a local rerun.
 
 ## GPU Devcontainer Workflow
 

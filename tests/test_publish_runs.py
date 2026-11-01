@@ -128,6 +128,14 @@ class PublishRunsTest(unittest.TestCase):
         )
         self.assertEqual([entry["threads"] for entry in document["source_runs"]], [[1], [4]])
 
+    def test_retired_profile_cannot_publish(self):
+        run = self.root / EINSUM_RUNS[0]
+        metadata = run / "run.yaml"
+        metadata.write_text(metadata.read_text().replace("target_profile: mac-cpu", "target_profile: linux-cpu"))
+        with self.assertRaisesRegex(regenerate.PublishError, "linux-cpu"):
+            self.publish([EINSUM_RUNS[0]])
+        self.assertFalse((self.root / "result/linux-cpu").exists())
+
     def test_check_passes_for_pages_published_from_tracked_runs(self):
         self.publish_all()
         status, out, err = self.check()

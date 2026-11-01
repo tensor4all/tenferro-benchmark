@@ -135,7 +135,7 @@ class DashboardTests(unittest.TestCase):
         self.baseline = self.root / "baseline"
         (self.result / "nvidia-gpu" / "gpu").mkdir(parents=True)
         (self.baseline / "nvidia-gpu" / "gpu").mkdir(parents=True)
-        (self.result / "linux-cpu" / "cpu").mkdir(parents=True)
+        (self.result / "mac-cpu" / "cpu").mkdir(parents=True)
 
         # Two cases: one with ratio/status/regression flags, one status-only.
         current_rows = [
@@ -165,7 +165,7 @@ class DashboardTests(unittest.TestCase):
             json.dumps(summary_document(previous_rows))
         )
         # A maintained report with no summary must still render.
-        (self.result / "linux-cpu/cpu/cpu_ops.md").write_text("# CPU Ops\n\nno summary here\n")
+        (self.result / "mac-cpu/cpu/cpu_ops.md").write_text("# CPU Ops\n\nno summary here\n")
         # Regimes and run counts come from the suite YAML.
         self.benchmarks = self.root / "benchmarks" / "gpu"
         self.benchmarks.mkdir(parents=True)
@@ -177,7 +177,7 @@ class DashboardTests(unittest.TestCase):
         )
 
     def generate(self, output, latest_profiles=None):
-        # The fixtures use a legacy profile (linux-cpu); None keeps every profile.
+        # The fixtures use a legacy profile (mac-cpu); None keeps every profile.
         return dashboard.generate(
             self.result,
             output,
@@ -190,14 +190,14 @@ class DashboardTests(unittest.TestCase):
 
     def test_latest_generation_only_is_published_and_linked(self):
         # The default publication covers zen5-cpu and nvidia-gpu; the legacy
-        # linux-cpu/amd-cpu/mac-cpu reports are neither generated nor linked.
+        # mac-cpu/amd-cpu reports are neither generated nor linked.
         for legacy in ("amd-cpu", "mac-cpu"):
-            (self.result / legacy / "cpu").mkdir(parents=True)
+            (self.result / legacy / "cpu").mkdir(parents=True, exist_ok=True)
             (self.result / legacy / "cpu" / "cpu_ops.md").write_text("# old\n")
         output = self.root / "site"
         self.assertEqual(self.generate(output, dashboard.LATEST_PROFILES), 0)
         pages = "".join(path.read_text() for path in output.rglob("*.html"))
-        for legacy in ("linux-cpu", "amd-cpu", "mac-cpu", "mac-gpu"):
+        for legacy in ("amd-cpu", "mac-cpu", "mac-gpu"):
             self.assertNotIn(legacy, pages)
             self.assertFalse((output / legacy).exists(), legacy)
         self.assertTrue((output / "nvidia-gpu/gpu/dense.html").exists())
@@ -413,9 +413,24 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("Original report", suite)
 
         cpu = (output / "cpu/index.html").read_text()
-        self.assertIn("linux-cpu", cpu)
+        self.assertIn("mac-cpu", cpu)
         self.assertIn("Reference-quality indicators only", cpu)
-        self.assertTrue((output / "linux-cpu/cpu/cpu_ops.html").exists())
+        self.assertTrue((output / "mac-cpu/cpu/cpu_ops.html").exists())
+
+    def test_retired_profile_is_never_generated(self):
+        (self.result / "linux-cpu" / "cpu").mkdir(parents=True)
+        (self.result / "linux-cpu" / "cpu" / "linalg_jvp_jvp.md").write_text("# retired\n")
+        self.assertEqual(
+            {profile for profile, _suite, _path in dashboard.discover_reports(self.result)},
+            {"nvidia-gpu", "mac-cpu"},
+        )
+        output = self.root / "site"
+        self.assertEqual(self.generate(output), 0)
+        self.assertNotIn("linux-cpu", "".join(path.read_text() for path in output.rglob("*.html")))
+        self.assertFalse((output / "linux-cpu").exists())
+        # An explicit retired profile fails instead of generating an empty page.
+        with self.assertRaisesRegex(ValueError, "linux-cpu"):
+            self.generate(self.root / "site-retired", ["linux-cpu"])
 
     def test_generator_is_deterministic(self):
         first = self.root / "site-a"
@@ -433,7 +448,7 @@ class DashboardTests(unittest.TestCase):
         reports = dashboard.discover_reports(self.result)
         self.assertEqual(
             {(profile, suite) for profile, suite, _path in reports},
-            {("nvidia-gpu", "gpu/dense"), ("linux-cpu", "cpu/cpu_ops")},
+            {("nvidia-gpu", "gpu/dense"), ("mac-cpu", "cpu/cpu_ops")},
         )
         summaries = dashboard.load_summaries(self.result)
         self.assertIn(("nvidia-gpu", "gpu/dense"), summaries)

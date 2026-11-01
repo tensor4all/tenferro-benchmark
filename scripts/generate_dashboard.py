@@ -62,7 +62,6 @@ MAINTAINED: set[tuple[str, str]] = {
     ("amd-cpu", "cpu/linalg_jvp_vjp"),
     ("amd-cpu", "cpu/permutation"),
     ("amd-cpu", "cpu/perf_issues"),
-    ("linux-cpu", "cpu/linalg_jvp_jvp"),
     ("zen5-cpu", "cpu/einsum"),
     ("zen5-cpu", "cpu/cpu_ops"),
     ("zen5-cpu", "cpu/public_api"),
@@ -83,12 +82,16 @@ MAINTAINED: set[tuple[str, str]] = {
     ("nvidia-gpu", "gpu/perf_issues"),
 }
 
-PROFILE_ORDER = ["nvidia-gpu", "zen5-cpu", "zen2-cpu", "linux-cpu", "mac-cpu", "amd-cpu"]
+PROFILE_ORDER = ["nvidia-gpu", "zen5-cpu", "zen2-cpu", "mac-cpu", "amd-cpu"]
+
+# Retired profiles keep their files under result/ and in git history, but are
+# never discovered, generated or linked, not even with --all-profiles.
+RETIRED_PROFILES = {"linux-cpu"}
 
 # The latest hardware generation per family.  The published site (landing page,
 # family pages, suite pages, history) covers the maintained profiles from
 # `benchmarks/profiles.yaml` plus the GPU profile below: people mistake older
-# data for current, so older profiles (amd-cpu, linux-cpu, mac-cpu, mac-gpu) are
+# data for current, so older profiles (amd-cpu, mac-cpu, mac-gpu) are
 # neither generated nor linked.  Their reports stay under result/ and in git
 # history.  Moving to a new hardware generation is a change to those files.
 PROFILES_FILE = SCRIPT_DIR.parent / "benchmarks/profiles.yaml"
@@ -117,7 +120,6 @@ FAMILY_BLURB = {
 PROFILE_FAMILY = {
     "nvidia-gpu": "gpu",
     "mac-gpu": "gpu",
-    "linux-cpu": "cpu",
     "mac-cpu": "cpu",
     "amd-cpu": "cpu",
     "zen5-cpu": "cpu",
@@ -126,7 +128,6 @@ PROFILE_FAMILY = {
 LOCAL_PROFILE_LABEL = {
     "nvidia-gpu": "NVIDIA A100",
     "mac-gpu": "Apple GPU (GitHub runner)",
-    "linux-cpu": "Linux CPU",
     "mac-cpu": "Apple silicon (GitHub runner)",
     "amd-cpu": "AMD CPU",
 }
@@ -226,7 +227,7 @@ def case_runs(metadata: dict[str, dict[str, Any]], suite_id: str, case: str) -> 
 
 # Profiles whose numbers come from GitHub-hosted runners and therefore carry
 # the reference-quality caveat.  Dedicated A100 / devcontainer hosts do not.
-GITHUB_HOSTED_PROFILES = {"mac-cpu", "linux-cpu"}
+GITHUB_HOSTED_PROFILES = {"mac-cpu"}
 
 PYTORCH_BACKENDS = {"pytorch-cuda", "pytorch-cpu", "pytorch-mps"}
 JAX_BACKENDS = {"jax-cuda", "jax-cpu", "jax-cuda-tree-jit", "jax-cuda-eager", "jax-metal"}
@@ -319,7 +320,7 @@ def discover_reports(result_dir: Path) -> list[tuple[str, str, Path]]:
     if not result_dir.exists():
         return reports
     for profile_dir in sorted(result_dir.iterdir()):
-        if not profile_dir.is_dir():
+        if not profile_dir.is_dir() or profile_dir.name in RETIRED_PROFILES:
             continue
         for suite_dir in sorted(profile_dir.iterdir()):
             if not suite_dir.is_dir():
@@ -1977,6 +1978,8 @@ def generate(
 ) -> int:
     """Write the site.  ``latest_profiles=None`` keeps every profile (local review only)."""
     latest = tuple(latest_profiles) if latest_profiles is not None else None
+    if latest is not None and RETIRED_PROFILES.intersection(latest):
+        raise ValueError(f"retired profile cannot be generated: {sorted(RETIRED_PROFILES.intersection(latest))}")
     reports = discover_reports(result_dir)
     if latest is not None:
         reports = [report for report in reports if report[0] in latest]
