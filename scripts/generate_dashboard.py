@@ -690,6 +690,20 @@ def ratio_class(value: float | None) -> str:
     return "ratio-much-slower"
 
 
+def fmt_sig(value: float | None, digits: int = 3) -> str:
+    """Three significant digits, without exponent notation at ms/µs scale."""
+    if value is None:
+        return "-"
+    if value == 0:
+        return "0"
+    exponent = math.floor(math.log10(abs(value)))
+    rounded = round(value, -exponent + digits - 1)
+    text = f"{rounded:g}"
+    if "e" in text:
+        text = f"{rounded:.{max(0, digits - 1 - exponent)}f}"
+    return text
+
+
 def fmt_median(value: float | None, unit: str) -> str:
     if value is None:
         return "-"
@@ -730,6 +744,9 @@ def flag_badges(flags: list[str]) -> str:
 # ---------------------------------------------------------------------------
 
 BAR_CHART_WIDTH = 880
+# The ratio chart also labels each bar with its absolute times, so it needs a
+# wider box than the case chart while keeping the same bar geometry.
+RATIO_CHART_WIDTH = 1060
 BAR_LABEL_WIDTH = 300
 BAR_AREA_WIDTH = 420
 BAR_HEIGHT = 12
@@ -842,13 +859,47 @@ def svg_case_chart(
     return "".join(parts)
 
 
-def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str) -> str:
+def ratio_absolute(item: dict[str, Any], case: dict[str, Any], unit: str) -> str:
+    """``contender / baseline`` medians, with the unit once for ms."""
+    median = item.get("median")
+    baseline = case.get("baseline_median")
+    if median is None or baseline is None:
+        return ""
+    if unit == "ms":
+        return f"{fmt_sig(median)} / {fmt_sig(baseline)} {unit}"
+    return f"{fmt_sig(median)} {unit} / {fmt_sig(baseline)} {unit}"
+
+
+def ratio_bar_label(item: dict[str, Any], case: dict[str, Any], unit: str) -> str:
+    label = f'{item["label"]} {item["ratio"]:.2f}x'
+    absolute = ratio_absolute(item, case, unit)
+    return f"{label} · {absolute}" if absolute else label
+
+
+def bar_tooltip(item: dict[str, Any], case: dict[str, Any], baseline_label: str, unit: str) -> str:
+    """Median and IQR of both sides, for the bar's hover text."""
+    median = item.get("median")
+    baseline = case.get("baseline_median")
+    if median is None or baseline is None:
+        return f'{item["label"]} {item["ratio"]:.2f}x of {baseline_label}'
+    text = f'{item["label"]}: median {fmt_median(median, unit)}'
+    if item.get("iqr") is not None:
+        text += f" (IQR {fmt_median(float(item['iqr']), unit)})"
+    text += f" vs {baseline_label} median {fmt_median(baseline, unit)}"
+    if case.get("baseline_iqr") is not None:
+        text += f" (IQR {fmt_median(float(case['baseline_iqr']), unit)})"
+    return text
+
+
+def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str, unit: str = "ms") -> str:
     """Per-case ratios for one suite, one bar per contender.
 
     Every bar is ``case median / baseline median``; the dashed line is the
     baseline (1.00x).  Tenferro arms are filled and the competitor arms are
     outlined white, so the reference arms recede.  Whiskers are the estimated
-    ratio CI from the case's sample count.
+    ratio CI from the case's sample count.  Each bar also carries the two
+    medians in ``unit`` (contender / baseline) and a tooltip with both IQRs, so
+    a ratio can be read against the absolute time it came from.
     """
     rows = [case for case in cases if case["contenders"]]
     if not rows:
@@ -864,11 +915,12 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str) -> str:
     row_height = max(1, max(len(case["contenders"]) for case in rows)) * (BAR_HEIGHT + BAR_GAP) + 10
     height = len(rows) * row_height + 34
     parts = [
-        f'<svg class="bars" viewBox="0 0 {BAR_CHART_WIDTH} {height}" '
+        f'<svg class="bars" viewBox="0 0 {RATIO_CHART_WIDTH} {height}" '
         f'width="100%" role="img" aria-label="per-case ratio against {esc(baseline_label)}">'
     ]
     parts.append(
         f'<text x="0" y="10" class="chart-note">bar = case median / {esc(baseline_label)} median · '
+        f"label = contender / {esc(baseline_label)}, {esc(unit)} · "
         "dashed line = baseline (1.00x) · log scale · shorter (left) is faster · "
         "whisker = estimated 95% CI</text>"
     )
@@ -883,15 +935,16 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str) -> str:
             bar_y = y + index * (BAR_HEIGHT + BAR_GAP)
             end = x_of(item["ratio"])
             width = max(2.0, end - BAR_LABEL_WIDTH)
+            title = f'<title>{esc(bar_tooltip(item, case, baseline_label, unit))}</title>'
             if item.get("kind") == "reference":
                 parts.append(
                     f'<rect x="{BAR_LABEL_WIDTH}" y="{bar_y}" width="{width:.1f}" height="{BAR_HEIGHT}" '
-                    'fill="#ffffff" stroke="#1b1f24" stroke-width="1"></rect>'
+                    f'fill="#ffffff" stroke="#1b1f24" stroke-width="1">{title}</rect>'
                 )
             else:
                 parts.append(
                     f'<rect x="{BAR_LABEL_WIDTH}" y="{bar_y}" width="{width:.1f}" height="{BAR_HEIGHT}" '
-                    f'class="{RATIO_COLORS.get(item["label"], "bar-tenferro")}"></rect>'
+                    f'class="{RATIO_COLORS.get(item["label"], "bar-tenferro")}">{title}</rect>'
                 )
             interval = item.get("interval")
             right = end
@@ -901,7 +954,7 @@ def svg_ratio_chart(cases: list[dict[str, Any]], baseline_label: str) -> str:
                 right = max(right, x2)
             parts.append(
                 f'<text x="{right + 6:.1f}" y="{bar_y + 9}" class="chart-value">'
-                f'{esc(item["label"])} {item["ratio"]:.2f}x</text>'
+                f'{esc(ratio_bar_label(item, case, unit))}</text>'
             )
         y += row_height
     parts.append("</svg>")
@@ -1385,6 +1438,8 @@ def case_ratio_row(
     if baseline is None:
         return item
     baseline_median = float(baseline["median"])
+    item["baseline_median"] = baseline_median
+    item["baseline_iqr"] = baseline.get("iqr")
     rule = next(
         (rule for rule in ratio_rules_for(suite_id) if not rule.per_case_reference),
         None,
@@ -1414,6 +1469,8 @@ def case_ratio_row(
                 "label": name,
                 "kind": kind,
                 "ratio": ratio,
+                "median": float(row["median"]),
+                "iqr": row.get("iqr"),
                 "interval": ratio_interval(row, baseline, case.runs),
             }
         )
@@ -1747,13 +1804,19 @@ def render_family(
                 f'<summary><code>{esc(view.suite_id)}</code> '
                 f'<span class="muted">{len(cases)} case{"s" if len(cases) != 1 else ""}{suffix}</span></summary>'
             )
-            note = (
-                f"baseline {esc(baseline)} · best first · {len(items)} case"
-                f'{"s" if len(items) != 1 else ""} · '
+            unit = document.get("unit", "ms")
+            worst_baseline = max(
+                (item["baseline_median"] for item in items if item.get("baseline_median")), default=None
+            )
+            note = f"baseline {esc(baseline)}"
+            if worst_baseline:
+                note += f" · worst case {fmt_sig(worst_baseline)} {esc(unit)}"
+            note += (
+                f" · best first · {len(items)} case{'s' if len(items) != 1 else ''} · "
                 f'<a href="{esc(suite_href)}">case table, absolute times and raw report &rarr;</a>'
             )
             body.append(f'<p class="chart-legend">{note}</p>')
-            body.append(svg_ratio_chart(items, baseline))
+            body.append(svg_ratio_chart(items, baseline, unit))
             plotted = {item["case"] for item in items if item["contenders"]}
             missing = sorted(case.case for case in cases if case.case not in plotted)
             if missing:

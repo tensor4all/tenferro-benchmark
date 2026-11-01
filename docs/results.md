@@ -171,6 +171,15 @@ eager/trace arms.
 lists the worst ratios.
 - `gpu/sparse` has no tenferro column and stays `-`.
 
+Landing-page bars keep the absolute times behind every ratio. A bar label reads
+`trace 2.05x · 12.3 / 6.02 ms` (contender median / baseline median, three
+significant digits, with the unit on each value when it is not `ms`), the bar
+tooltip carries both medians and their IQRs, and each suite block states the
+worst-case baseline time (`baseline PyTorch · worst case 2.54 ms`) so a ratio
+is read against the size of the workload it came from. JAX and cuTENSOR arms
+keep their own bars, so a case where tenferro beats PyTorch but loses to JAX
+shows both.
+
 Anomaly flags are `eager/torch >= 1.5`, `eager/jax >= 3`, `trace/eager >= 1.3`,
 a genuine tenferro status anomaly (failed/error/verification failure/missing or
 an `unsupported` row without a recorded reason), or a `>= 1.25x` regression
