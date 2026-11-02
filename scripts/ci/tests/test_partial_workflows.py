@@ -73,8 +73,12 @@ class PartialWorkflowTest(unittest.TestCase):
         self.assertIn('artifact_paths', build['run'])
         verify = next(step for step in job['steps']
                       if step.get('name') == 'Verify hosted benchmark build')
-        for binary in ('benchmark_gpu_linalg_ad', 'benchmark_gpu_public_api', 'benchmark_gpu_permutation'):
-            self.assertIn(binary, verify['run'])
+        # The required set comes from the selected suites' drivers
+        # (scripts/ci/gpu_binaries.py), not from a list beside the transfer step.
+        self.assertIn('uv run python scripts/ci/gpu_binaries.py --suite "$REQUESTED_SUITE" '
+                      '--directory target/release', verify['run'])
+        self.assertIn('gpu_artifact.py', verify['run'])
+        self.assertNotIn('|| continue', verify['run'])
 
     def test_ingest_if_admits_only_success_failure_and_preserves_trust_conditions(self):
         condition=self.workflow('ingest-results')['jobs']['ingest']['if']

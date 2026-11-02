@@ -90,7 +90,6 @@ jobs:
     timeout-minutes: 60
     outputs:
       tenferro_commit: ${{ steps.build.outputs.tenferro_commit }}
-      binary_name: ${{ steps.build.outputs.binary_name }}
       rustc_version: ${{ steps.build.outputs.rustc_version }}
     steps:
       - uses: actions/checkout@v4
@@ -141,7 +140,6 @@ jobs:
           done
           cargo build --locked --release --features cuda "${build_args[@]}"
           {
-            echo "binary_name=${binaries[0]}"
             echo "artifact_paths<<BUILD_PATHS"
             for binary in "${binaries[@]}"; do
               python3 scripts/ci/gpu_artifact.py "target/release/$binary" --write
@@ -380,7 +378,6 @@ jobs:
       TENFERRO_REF: ${{ needs.prepare-benchmark.outputs.tenferro_commit }}
       TENFERRO_UPDATE: "1"
       GPU_BENCH_PREBUILT_RUST: "1"
-      GPU_BENCH_BINARY_NAME: ${{ needs.prepare-benchmark.outputs.binary_name }}
       BENCHMARK_RUSTC_VERSION: ${{ needs.prepare-benchmark.outputs.rustc_version }}
       BENCHMARK_EXECUTION_ENVIRONMENT: runpod
       GPU_RUNTIME_SHA256: ${{ needs.prepare-environment.outputs.sha256 }}
@@ -423,14 +420,17 @@ jobs:
       - name: Verify hosted benchmark build
         run: |
           set -euo pipefail
-          # The generic runner is always shipped; the linalg AD runner only for
-          # the routine collection (the manual readback runs its own binary).
-          for binary in "$GPU_BENCH_BINARY_NAME" benchmark_gpu_linalg_ad \
-                        benchmark_gpu_public_api benchmark_gpu_permutation; do
-            [[ -f "target/release/$binary" ]] || continue
+          # Each selected suite's driver names the binary it runs, so a binary
+          # that did not arrive fails here by name instead of surfacing later as
+          # `missing` rows and a wasted pod. The module reads the routine
+          # manifest, so it runs in the restored runtime (yaml), like the
+          # environment check below.
+          uv run python scripts/ci/gpu_binaries.py --suite "$REQUESTED_SUITE" --directory target/release
+          required="$(uv run python scripts/ci/gpu_binaries.py --suite "$REQUESTED_SUITE")"
+          while IFS=$'\t' read -r binary _suites; do
             chmod +x "target/release/$binary"
             python3 scripts/ci/gpu_artifact.py "target/release/$binary"
-          done
+          done <<< "$required"
 
       - name: Verify CUDA benchmark environment
         run: |
