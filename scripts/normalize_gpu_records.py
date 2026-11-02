@@ -58,8 +58,16 @@ def _verification(row):
     return "not_applicable"
 
 
-def fold(row):
-    """One routine-contract row from any family record that carries a measurement."""
+def fold(row, suite_id=None):
+    """One routine-contract row from any family record that carries a measurement.
+
+    The row's own ``suite_id`` wins. The public API families' raw rows carry a
+    ``case_id`` and no ``suite_id``, so the run's identity comes from ``run.yaml``
+    through ``suite_id`` instead of a second copy in every row.
+    """
+    suite_id = row.get("suite_id") or suite_id
+    if not suite_id:
+        raise ValueError(f"record without a suite identity: {sorted(row)}")
     problem = row.get("problem_id") or row.get("case_id") or row.get("pattern_id")
     if not problem:
         raise ValueError(f"record without a case identity: {sorted(row)}")
@@ -85,7 +93,7 @@ def fold(row):
         median = None
     return {
         "schema_version": 1,
-        "suite_id": row["suite_id"],
+        "suite_id": suite_id,
         "problem_id": problem,
         "op": row.get("op") or "permutation",
         "backend": row["backend"],
@@ -122,14 +130,15 @@ def main():
     parser.add_argument("--run-metadata", type=Path)
     parser.add_argument("inputs", nargs="+", type=Path)
     args = parser.parse_args()
-    rows = [fold(json.loads(line)) for path in args.inputs
+    metadata = yaml.safe_load(args.run_metadata.read_text()) if args.run_metadata else None
+    suite_id = (metadata or {}).get("suite_id")
+    rows = [fold(json.loads(line), suite_id) for path in args.inputs
             for line in path.read_text().splitlines() if line.strip()]
     if not rows:
         raise SystemExit("no raw rows to normalize")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows))
     if args.summary:
-        metadata = yaml.safe_load(args.run_metadata.read_text()) if args.run_metadata else None
         report_summary.write_document(args.summary, build_summary(rows, metadata))
 
 

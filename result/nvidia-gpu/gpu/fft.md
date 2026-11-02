@@ -1,116 +1,118 @@
 # gpu/fft: CUDA public API benchmark
 
-Raw run: `data/results/nvidia-gpu/gpu/fft/20261013_133616/`.
+Measured cells: **80**. Unsupported cells: **0**, including **0** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
+
+Raw run: `data/results/nvidia-gpu/gpu/fft/20261102_205658/`.
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
-Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; `_into` rows instead reuse preallocated destinations across samples. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.
+Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.
 
-All measured output elements are checked against NumPy/SciPy double-precision reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.
+All measured output elements are checked against independently generated NumPy/SciPy reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda | jax-cuda-jit |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| fft_c32_n1024 | 54.668 (0.758) | 137.450 (21.328) | 20.358 (0.367) | 1680.556 (274.721) | 90.660 (2.242) |
-| fft_c64_n1024 | 66.118 (0.818) | 157.875 (3.201) | 20.823 (0.478) | 1573.035 (33.691) | 75.235 (1.546) |
-| ifft_c32_n1024 | 195.464 (3.000) | 325.953 (26.754) | 38.516 (0.604) | 1655.850 (11.491) | 80.050 (3.617) |
-| ifft_c64_n1024 | 210.301 (2.529) | 380.225 (11.043) | 41.372 (2.876) | 1618.430 (25.014) | 84.819 (3.876) |
-| rfft_f32_n1024 | 84.933 (1.205) | 238.673 (1.953) | 21.822 (0.256) | 1620.170 (29.090) | 72.283 (2.537) |
-| rfft_f64_n1024 | 87.233 (9.790) | 244.200 (3.073) | 21.900 (0.471) | 1667.784 (60.934) | 76.290 (1.831) |
-| irfft_c32_n1024 | 195.769 (3.788) | 430.739 (12.700) | 61.277 (3.343) | 1666.104 (9.878) | 90.534 (1.227) |
-| irfft_c64_n1024 | 215.084 (6.204) | 372.479 (8.541) | 60.712 (0.537) | 1640.465 (18.583) | 93.443 (2.856) |
-| fft_c32_n1048576 | 206.541 (2.558) | 268.856 (1.415) | 136.778 (0.287) | 1336.155 (45.464) | 145.150 (1.438) |
-| fft_c64_n1048576 | 1453.752 (4.519) | 1468.964 (4.258) | 1390.381 (3.905) | 2222.888 (50.793) | 1569.043 (26.529) |
-| ifft_c32_n1048576 | 355.921 (6.124) | 382.598 (13.072) | 188.545 (0.667) | 1342.159 (31.228) | 199.166 (2.395) |
-| ifft_c64_n1048576 | 1657.959 (7.268) | 1606.867 (9.400) | 1415.801 (1.234) | 2293.682 (66.643) | 1667.914 (10.607) |
-| rfft_f32_n1048576 | 154.934 (2.469) | 219.110 (1.953) | 90.121 (0.129) | 1413.943 (78.037) | 96.817 (0.750) |
-| rfft_f64_n1048576 | 860.122 (2.750) | 948.760 (14.438) | 757.983 (1.585) | 1337.880 (27.379) | 893.938 (8.538) |
-| irfft_c32_n1048576 | 277.637 (4.095) | 322.897 (5.548) | 142.688 (0.716) | 1371.984 (31.629) | 152.744 (1.602) |
-| irfft_c64_n1048576 | 995.459 (3.049) | 1025.049 (12.040) | 878.454 (0.925) | 1450.392 (20.827) | 1033.113 (10.938) |
+| fft_c32_n1024 | 19.118 (1.386) | 48.535 (0.436) | 9.260 (0.028) | 706.324 (125.247) | 42.212 (0.489) |
+| fft_c64_n1024 | 20.136 (1.653) | 48.620 (0.135) | 9.363 (0.045) | 704.797 (1.918) | 41.620 (0.395) |
+| ifft_c32_n1024 | 51.634 (0.603) | 83.906 (0.579) | 18.073 (0.080) | 718.764 (27.868) | 46.378 (0.326) |
+| ifft_c64_n1024 | 52.226 (0.278) | 84.969 (1.182) | 18.439 (0.182) | 706.801 (3.364) | 47.476 (0.260) |
+| rfft_f32_n1024 | 19.957 (0.377) | 48.693 (0.258) | 9.589 (0.039) | 702.486 (1.864) | 41.994 (0.399) |
+| rfft_f64_n1024 | 21.155 (0.419) | 50.868 (0.203) | 9.642 (0.139) | 704.017 (2.629) | 41.884 (0.227) |
+| irfft_c32_n1024 | 50.346 (0.571) | 85.870 (0.667) | 30.745 (0.177) | 716.965 (2.397) | 56.528 (0.266) |
+| irfft_c64_n1024 | 51.901 (1.210) | 84.900 (0.889) | 31.449 (0.113) | 715.352 (3.034) | 56.295 (0.150) |
+| fft_c32_n1048576 | 247.677 (0.228) | 137.783 (2.709) | 40.126 (0.073) | 718.413 (4.706) | 44.693 (0.312) |
+| fft_c64_n1048576 | 496.784 (0.524) | 314.375 (4.280) | 99.949 (0.249) | 714.287 (3.368) | 106.033 (0.358) |
+| ifft_c32_n1048576 | 103.809 (0.449) | 143.949 (3.164) | 47.701 (0.100) | 722.895 (3.612) | 52.319 (0.265) |
+| ifft_c64_n1048576 | 273.854 (58.619) | 596.401 (6.639) | 111.534 (0.150) | 720.265 (3.253) | 117.166 (0.349) |
+| rfft_f32_n1048576 | 56.274 (0.481) | 80.932 (1.907) | 28.974 (0.044) | 714.314 (3.894) | 46.077 (0.463) |
+| rfft_f64_n1048576 | 232.007 (0.362) | 113.620 (0.372) | 50.420 (0.037) | 718.845 (3.274) | 54.587 (0.073) |
+| irfft_c32_n1048576 | 87.394 (0.300) | 123.194 (0.770) | 42.714 (0.079) | 740.083 (6.628) | 67.757 (0.398) |
+| irfft_c64_n1048576 | 115.227 (0.610) | 149.159 (6.229) | 71.486 (0.081) | 738.607 (6.036) | 75.511 (0.117) |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: |
-| fft_c32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.499 | 0.01405 |
-| fft_c64_n1024 | tenferro-cuda-direct | 32 | 15 | 2.116 | 1.351e-05 |
-| ifft_c32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.127 | 0.02634 |
-| ifft_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 3.365 | 4.043e-08 |
-| rfft_f32_n1024 | tenferro-cuda-direct | 32 | 15 | 2.718 | 0.01301 |
-| rfft_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 2.791 | 1.518e-05 |
-| irfft_c32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.132 | 0.01787 |
-| irfft_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 3.441 | 3.809e-08 |
-| fft_c32_n1048576 | tenferro-cuda-direct | 8 | 15 | 1.652 | 0.5149 |
-| fft_c64_n1048576 | tenferro-cuda-direct | 2 | 15 | 2.908 | 0.01641 |
-| ifft_c32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.847 | 0.633 |
-| ifft_c64_n1048576 | tenferro-cuda-direct | 2 | 15 | 3.316 | 4.754e-08 |
-| rfft_f32_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.479 | 0.3419 |
-| rfft_f64_n1048576 | tenferro-cuda-direct | 4 | 15 | 3.440 | 0.01077 |
-| irfft_c32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.221 | 0.8898 |
-| irfft_c64_n1048576 | tenferro-cuda-direct | 4 | 15 | 3.982 | 6.867e-08 |
-| fft_c32_n1024 | tenferro-cuda-eager | 32 | 15 | 4.398 | 0.01405 |
-| fft_c64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.526 | 1.351e-05 |
-| ifft_c32_n1024 | tenferro-cuda-eager | 16 | 15 | 5.215 | 0.02634 |
-| ifft_c64_n1024 | tenferro-cuda-eager | 8 | 15 | 3.042 | 4.043e-08 |
-| rfft_f32_n1024 | tenferro-cuda-eager | 8 | 15 | 1.909 | 0.01301 |
-| rfft_f64_n1024 | tenferro-cuda-eager | 8 | 15 | 1.954 | 1.518e-05 |
-| irfft_c32_n1024 | tenferro-cuda-eager | 8 | 15 | 3.446 | 0.01787 |
-| irfft_c64_n1024 | tenferro-cuda-eager | 8 | 15 | 2.980 | 3.809e-08 |
-| fft_c32_n1048576 | tenferro-cuda-eager | 8 | 15 | 2.151 | 0.5149 |
-| fft_c64_n1048576 | tenferro-cuda-eager | 2 | 15 | 2.938 | 0.01641 |
-| ifft_c32_n1048576 | tenferro-cuda-eager | 8 | 15 | 3.061 | 0.633 |
-| ifft_c64_n1048576 | tenferro-cuda-eager | 2 | 15 | 3.214 | 4.754e-08 |
-| rfft_f32_n1048576 | tenferro-cuda-eager | 16 | 15 | 3.506 | 0.3419 |
-| rfft_f64_n1048576 | tenferro-cuda-eager | 4 | 15 | 3.795 | 0.01077 |
-| irfft_c32_n1048576 | tenferro-cuda-eager | 8 | 15 | 2.583 | 0.8898 |
-| irfft_c64_n1048576 | tenferro-cuda-eager | 2 | 15 | 2.050 | 6.867e-08 |
-| fft_c32_n1024 | pytorch-cuda | 128 | 15 | 2.606 | 0.01405 |
-| fft_c64_n1024 | pytorch-cuda | 128 | 15 | 2.665 | 1.351e-05 |
-| ifft_c32_n1024 | pytorch-cuda | 64 | 15 | 2.465 | 0.02634 |
-| ifft_c64_n1024 | pytorch-cuda | 64 | 15 | 2.648 | 4.043e-08 |
-| rfft_f32_n1024 | pytorch-cuda | 128 | 15 | 2.793 | 0.01301 |
-| rfft_f64_n1024 | pytorch-cuda | 128 | 15 | 2.803 | 1.518e-05 |
-| irfft_c32_n1024 | pytorch-cuda | 64 | 15 | 3.922 | 0.01787 |
-| irfft_c64_n1024 | pytorch-cuda | 64 | 15 | 3.886 | 3.809e-08 |
-| fft_c32_n1048576 | pytorch-cuda | 16 | 15 | 2.188 | 0.5149 |
-| fft_c64_n1048576 | pytorch-cuda | 2 | 15 | 2.781 | 0.01641 |
-| ifft_c32_n1048576 | pytorch-cuda | 16 | 15 | 3.017 | 0.633 |
-| ifft_c64_n1048576 | pytorch-cuda | 2 | 15 | 2.832 | 4.754e-08 |
-| rfft_f32_n1048576 | pytorch-cuda | 32 | 15 | 2.884 | 0.3419 |
-| rfft_f64_n1048576 | pytorch-cuda | 4 | 15 | 3.032 | 0.01077 |
-| irfft_c32_n1048576 | pytorch-cuda | 16 | 15 | 2.283 | 0.8898 |
-| irfft_c64_n1048576 | pytorch-cuda | 4 | 15 | 3.514 | 6.867e-08 |
-| fft_c32_n1024 | jax-cuda | 2 | 15 | 3.361 | 0.01405 |
-| fft_c64_n1024 | jax-cuda | 2 | 15 | 3.146 | 1.351e-05 |
-| ifft_c32_n1024 | jax-cuda | 2 | 15 | 3.312 | 0.02634 |
-| ifft_c64_n1024 | jax-cuda | 2 | 15 | 3.237 | 4.043e-08 |
-| rfft_f32_n1024 | jax-cuda | 2 | 15 | 3.240 | 0.01301 |
-| rfft_f64_n1024 | jax-cuda | 2 | 15 | 3.336 | 1.518e-05 |
-| irfft_c32_n1024 | jax-cuda | 2 | 15 | 3.332 | 0.01787 |
-| irfft_c64_n1024 | jax-cuda | 2 | 15 | 3.281 | 3.809e-08 |
-| fft_c32_n1048576 | jax-cuda | 2 | 15 | 2.672 | 0.5149 |
-| fft_c64_n1048576 | jax-cuda | 1 | 15 | 2.223 | 0.01641 |
-| ifft_c32_n1048576 | jax-cuda | 2 | 15 | 2.684 | 0.633 |
-| ifft_c64_n1048576 | jax-cuda | 1 | 15 | 2.294 | 4.754e-08 |
-| rfft_f32_n1048576 | jax-cuda | 2 | 15 | 2.828 | 0.3419 |
-| rfft_f64_n1048576 | jax-cuda | 2 | 15 | 2.676 | 0.01077 |
-| irfft_c32_n1048576 | jax-cuda | 2 | 15 | 2.744 | 0.8898 |
-| irfft_c64_n1048576 | jax-cuda | 2 | 15 | 2.901 | 6.867e-08 |
-| fft_c32_n1024 | jax-cuda-jit | 32 | 15 | 2.901 | 0.01405 |
-| fft_c64_n1024 | jax-cuda-jit | 32 | 15 | 2.408 | 1.351e-05 |
-| ifft_c32_n1024 | jax-cuda-jit | 32 | 15 | 2.562 | 0.02634 |
-| ifft_c64_n1024 | jax-cuda-jit | 32 | 15 | 2.714 | 4.043e-08 |
-| rfft_f32_n1024 | jax-cuda-jit | 32 | 15 | 2.313 | 0.01301 |
-| rfft_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.441 | 1.518e-05 |
-| irfft_c32_n1024 | jax-cuda-jit | 32 | 15 | 2.897 | 0.01787 |
-| irfft_c64_n1024 | jax-cuda-jit | 32 | 15 | 2.990 | 3.809e-08 |
-| fft_c32_n1048576 | jax-cuda-jit | 16 | 15 | 2.322 | 0.5149 |
-| fft_c64_n1048576 | jax-cuda-jit | 2 | 15 | 3.138 | 0.01641 |
-| ifft_c32_n1048576 | jax-cuda-jit | 16 | 15 | 3.187 | 0.633 |
-| ifft_c64_n1048576 | jax-cuda-jit | 2 | 15 | 3.336 | 4.754e-08 |
-| rfft_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.098 | 0.3419 |
-| rfft_f64_n1048576 | jax-cuda-jit | 4 | 15 | 3.576 | 0.01077 |
-| irfft_c32_n1048576 | jax-cuda-jit | 16 | 15 | 2.444 | 0.8898 |
-| irfft_c64_n1048576 | jax-cuda-jit | 2 | 15 | 2.066 | 6.867e-08 |
+| fft_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.447 | 0.01405 |
+| fft_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.577 | 1.351e-05 |
+| ifft_c32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.305 | 0.02634 |
+| ifft_c64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.342 | 4.043e-08 |
+| rfft_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.554 | 0.01301 |
+| rfft_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.708 | 1.518e-05 |
+| irfft_c32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.222 | 0.01787 |
+| irfft_c64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.322 | 3.809e-08 |
+| fft_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 7.926 | 0.5149 |
+| fft_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 7.949 | 0.01641 |
+| ifft_c32_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.661 | 0.633 |
+| ifft_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 4.382 | 4.754e-08 |
+| rfft_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.801 | 0.3419 |
+| rfft_f64_n1048576 | tenferro-cuda-direct | 31 | 15 | 7.192 | 0.01077 |
+| irfft_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.797 | 0.8898 |
+| irfft_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.844 | 6.867e-08 |
+| fft_c32_n1024 | tenferro-cuda-eager | 64 | 15 | 3.106 | 0.01405 |
+| fft_c64_n1024 | tenferro-cuda-eager | 64 | 15 | 3.112 | 1.351e-05 |
+| ifft_c32_n1024 | tenferro-cuda-eager | 32 | 15 | 2.685 | 0.02634 |
+| ifft_c64_n1024 | tenferro-cuda-eager | 32 | 15 | 2.719 | 4.043e-08 |
+| rfft_f32_n1024 | tenferro-cuda-eager | 64 | 15 | 3.116 | 0.01301 |
+| rfft_f64_n1024 | tenferro-cuda-eager | 64 | 15 | 3.256 | 1.518e-05 |
+| irfft_c32_n1024 | tenferro-cuda-eager | 32 | 15 | 2.748 | 0.01787 |
+| irfft_c64_n1024 | tenferro-cuda-eager | 32 | 15 | 2.717 | 3.809e-08 |
+| fft_c32_n1048576 | tenferro-cuda-eager | 32 | 15 | 4.409 | 0.5149 |
+| fft_c64_n1048576 | tenferro-cuda-eager | 16 | 15 | 5.030 | 0.01641 |
+| ifft_c32_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.303 | 0.633 |
+| ifft_c64_n1048576 | tenferro-cuda-eager | 16 | 15 | 9.542 | 4.754e-08 |
+| rfft_f32_n1048576 | tenferro-cuda-eager | 32 | 15 | 2.590 | 0.3419 |
+| rfft_f64_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.818 | 0.01077 |
+| irfft_c32_n1048576 | tenferro-cuda-eager | 16 | 15 | 1.971 | 0.8898 |
+| irfft_c64_n1048576 | tenferro-cuda-eager | 16 | 15 | 2.387 | 6.867e-08 |
+| fft_c32_n1024 | pytorch-cuda | 256 | 15 | 2.371 | 0.01405 |
+| fft_c64_n1024 | pytorch-cuda | 256 | 15 | 2.397 | 1.351e-05 |
+| ifft_c32_n1024 | pytorch-cuda | 128 | 15 | 2.313 | 0.02634 |
+| ifft_c64_n1024 | pytorch-cuda | 128 | 15 | 2.360 | 4.043e-08 |
+| rfft_f32_n1024 | pytorch-cuda | 256 | 15 | 2.455 | 0.01301 |
+| rfft_f64_n1024 | pytorch-cuda | 256 | 15 | 2.468 | 1.518e-05 |
+| irfft_c32_n1024 | pytorch-cuda | 128 | 15 | 3.935 | 0.01787 |
+| irfft_c64_n1024 | pytorch-cuda | 64 | 15 | 2.013 | 3.809e-08 |
+| fft_c32_n1048576 | pytorch-cuda | 32 | 15 | 1.284 | 0.5149 |
+| fft_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.599 | 0.01641 |
+| ifft_c32_n1048576 | pytorch-cuda | 32 | 15 | 1.526 | 0.633 |
+| ifft_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.785 | 4.754e-08 |
+| rfft_f32_n1048576 | pytorch-cuda | 63 | 15 | 1.825 | 0.3419 |
+| rfft_f64_n1048576 | pytorch-cuda | 31 | 15 | 1.563 | 0.01077 |
+| irfft_c32_n1048576 | pytorch-cuda | 64 | 15 | 2.734 | 0.8898 |
+| irfft_c64_n1048576 | pytorch-cuda | 32 | 15 | 2.288 | 6.867e-08 |
+| fft_c32_n1024 | jax-cuda | 4 | 15 | 2.825 | 0.01405 |
+| fft_c64_n1024 | jax-cuda | 4 | 15 | 2.819 | 1.351e-05 |
+| ifft_c32_n1024 | jax-cuda | 4 | 15 | 2.875 | 0.02634 |
+| ifft_c64_n1024 | jax-cuda | 4 | 15 | 2.827 | 4.043e-08 |
+| rfft_f32_n1024 | jax-cuda | 4 | 15 | 2.810 | 0.01301 |
+| rfft_f64_n1024 | jax-cuda | 4 | 15 | 2.816 | 1.518e-05 |
+| irfft_c32_n1024 | jax-cuda | 4 | 15 | 2.868 | 0.01787 |
+| irfft_c64_n1024 | jax-cuda | 4 | 15 | 2.861 | 3.809e-08 |
+| fft_c32_n1048576 | jax-cuda | 2 | 15 | 1.437 | 0.5149 |
+| fft_c64_n1048576 | jax-cuda | 4 | 15 | 2.857 | 0.01641 |
+| ifft_c32_n1048576 | jax-cuda | 4 | 15 | 2.892 | 0.633 |
+| ifft_c64_n1048576 | jax-cuda | 4 | 15 | 2.881 | 4.754e-08 |
+| rfft_f32_n1048576 | jax-cuda | 4 | 15 | 2.857 | 0.3419 |
+| rfft_f64_n1048576 | jax-cuda | 4 | 15 | 2.875 | 0.01077 |
+| irfft_c32_n1048576 | jax-cuda | 4 | 15 | 2.960 | 0.8898 |
+| irfft_c64_n1048576 | jax-cuda | 4 | 15 | 2.954 | 6.867e-08 |
+| fft_c32_n1024 | jax-cuda-jit | 64 | 15 | 2.702 | 0.01405 |
+| fft_c64_n1024 | jax-cuda-jit | 64 | 15 | 2.664 | 1.351e-05 |
+| ifft_c32_n1024 | jax-cuda-jit | 64 | 15 | 2.968 | 0.02634 |
+| ifft_c64_n1024 | jax-cuda-jit | 64 | 15 | 3.038 | 4.043e-08 |
+| rfft_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.688 | 0.01301 |
+| rfft_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.681 | 1.518e-05 |
+| irfft_c32_n1024 | jax-cuda-jit | 64 | 15 | 3.618 | 0.01787 |
+| irfft_c64_n1024 | jax-cuda-jit | 64 | 15 | 3.603 | 3.809e-08 |
+| fft_c32_n1048576 | jax-cuda-jit | 32 | 15 | 1.430 | 0.5149 |
+| fft_c64_n1048576 | jax-cuda-jit | 16 | 15 | 1.697 | 0.01641 |
+| ifft_c32_n1048576 | jax-cuda-jit | 32 | 15 | 1.674 | 0.633 |
+| ifft_c64_n1048576 | jax-cuda-jit | 16 | 15 | 1.875 | 4.754e-08 |
+| rfft_f32_n1048576 | jax-cuda-jit | 63 | 15 | 2.903 | 0.3419 |
+| rfft_f64_n1048576 | jax-cuda-jit | 31 | 15 | 1.692 | 0.01077 |
+| irfft_c32_n1048576 | jax-cuda-jit | 32 | 15 | 2.168 | 0.8898 |
+| irfft_c64_n1048576 | jax-cuda-jit | 32 | 15 | 2.416 | 6.867e-08 |
 
 ## Run metadata
 
@@ -119,23 +121,159 @@ schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/fft
 suite_file: benchmarks/gpu/fft.yaml
-timestamp: '2026-10-13T13:36:17Z'
+timestamp: '2026-11-02T20:58:07Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: dfbdf6b66d40162f4731da116ec42ed034da0dce
+  commit: 433121a7756fdb4f109b02f0422d3714a04514c6
   dirty: false
   features:
   - cuda
-  resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
+  resolved_path: /home/shinaoka/projects/tensor4all/tenferro-batched-gemm
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: 2858dcda46699788bc1df84d923a95ed93ef6469
-  dirty: false
+  commit: 8987033651c18a03e47e16cdd365df807b77b6be
+  dirty: true
+resolved_deps:
+  strided-perm:
+  - 0.8.0
+  - 0.10.0
+  strided-view:
+  - 0.7.0
+  threadteam:
+  - 0.1.0
+  - 0.3.0
+host:
+  cpu: AMD EPYC 7713P 64-Core Processor
+  logical_cpus: 64
+  power:
+    cpufreq_boost: '1'
+    governor: schedutil
+    scaling_max_freq_khz: '2000000'
+    smt:
+      active: '0'
+      control: notsupported
+  numa:
+    nodes: 1
+    cpulists:
+      '0': 0-63
+  smt_siblings:
+  - '0'
+  - '1'
+  - '2'
+  - '3'
+  - '4'
+  - '5'
+  - '6'
+  - '7'
+  - '8'
+  - '9'
+  - '10'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  - '16'
+  - '17'
+  - '18'
+  - '19'
+  - '20'
+  - '21'
+  - '22'
+  - '23'
+  - '24'
+  - '25'
+  - '26'
+  - '27'
+  - '28'
+  - '29'
+  - '30'
+  - '31'
+  - '32'
+  - '33'
+  - '34'
+  - '35'
+  - '36'
+  - '37'
+  - '38'
+  - '39'
+  - '40'
+  - '41'
+  - '42'
+  - '43'
+  - '44'
+  - '45'
+  - '46'
+  - '47'
+  - '48'
+  - '49'
+  - '50'
+  - '51'
+  - '52'
+  - '53'
+  - '54'
+  - '55'
+  - '56'
+  - '57'
+  - '58'
+  - '59'
+  - '60'
+  - '61'
+  - '62'
+  - '63'
+  l3_domains:
+  - 0-7
+  - 8-15
+  - 16-23
+  - 24-31
+  - 32-39
+  - 40-47
+  - 48-55
+  - 56-63
+build:
+  toolchain:
+    rustc: 'rustc 1.99.1 (58cf8f9c3 2026-10-13)
+
+      binary: rustc
+
+      commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+
+      commit-date: 2026-10-13
+
+      host: x86_64-unknown-linux-gnu
+
+      release: 1.99.1
+
+      LLVM version: 23.1.1
+
+      '
+    rustc_release: 1.99.1
+    rustflags: null
+    target_cpu: null
 environment:
-  hostname: 737f43342de3
-  os: Linux-6.8.0-146-generic-x86_64-with-glibc2.39
+  hostname: 0fe295fad79b
+  os: Linux-6.8.0-147-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
+  affinity:
+    pinning: none
+    requested_measured_cpus: null
+    observer_cpus: null
+    override_of: null
+    thread_budget: '1'
+    measured_cpus: 0-7
+    l3_domains:
+    - 0-7
+    - 8-15
+    - 16-23
+    - 24-31
+    - 32-39
+    - 40-47
+    - 48-55
+    - 56-63
+    cpu_boost: enabled
+    scaling_governor: schedutil
+    scaling_driver: acpi-cpufreq
   env:
     OMP_NUM_THREADS: '1'
     RAYON_NUM_THREADS: '1'
@@ -157,8 +295,9 @@ timing_policy:
   minimum_untimed_priming_runs: 1
   short_operation_sampling: adaptive batches target 2 ms, at most 4096 operations
     and 256 MiB retained output; output-reuse destinations prepared before timing
-  trace_execution: 'tenferro trace excluded: run_prepared cannot borrow the entered
-    session; JAX JIT compilation outside timing'
+  trace_execution: 'tenferro trace excluded: this suite compares immediate per-op
+    calls, while trace executes a prepared graph in one caller-held session (run_prepared_in);
+    JAX JIT compilation outside timing'
   setup_diagnostics: false
 blas:
   implementation: none
@@ -220,9 +359,9 @@ julia:
   reason: julia not found on PATH
 cuda:
   device_ordinal: 0
-  device_name: NVIDIA GeForce RTX 3060
-  device_uuid: GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e
-  device_memory_bytes: 12884901888
+  device_name: NVIDIA A100 80GB PCIe
+  device_uuid: GPU-530977e1-4968-9283-4129-9fbec3e66542
+  device_memory_bytes: 85899345920
   driver_version: 580.178.04
   runtime_version: '12.9'
   cuda_version: '13.0'
@@ -230,8 +369,8 @@ cuda:
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
-  device_uuid: GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e
-  cuda_visible_devices: GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e
+  device_uuid: GPU-530977e1-4968-9283-4129-9fbec3e66542
+  cuda_visible_devices: GPU-530977e1-4968-9283-4129-9fbec3e66542
   process_device_ordinal: 0
   verification_only: false
 collection:
@@ -241,17 +380,22 @@ collection:
   expected_cases: 16
   selected_cases: 16
   sha256:
-    .devcontainer/cuda/devcontainer.json: 76569d9e898967d094988483a7adf6ab96eb426793db7248545d50e155f19cf1
-    .devcontainer/cuda/Dockerfile: 1cadf2f890f01187553bab0f136dc817f8964eff6a35b1806b1448a7383d21de
-    src/bin/benchmark_gpu_public_api.rs: 249184323d09433d1fbf401284e39fa797c0252dceb20351bbcc151551d1b32c
-    src/bin/benchmark_gpu_public_api/runtime_ops.rs: d7b64dccce85c804b8f67543fefca89836f045702bdcf15b5441c7bb8543eb21
-    src/bin/benchmark_gpu_public_api/structural.rs: 382fb5ffb6d86ac1a4a66723376808e9c95c8a8731570a5617f2ffed2a6e40a7
-    src/bin/benchmark_gpu_public_api/linalg.rs: 84162923fa0d0772c88ec9c4eab169ad3a75e5d16ff76961d1541670dd8565c1
-    src/bin/benchmark_gpu_public_api/reuse.rs: ad72b565373904275128d7beb8673bada08d922e8f310be6cedb0d2d8187898f
-    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 4d05b9facc0b7e5a3ff31146fc42f98d680010264c6606a3154e9da2dfa6a0cc
-    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: 71cb26510a35647e7aadc46827ca00d06a06e283eacfcba8ebe93d2e8e8add86
-    scripts/run_gpu_public_api.sh: 3516e06358fc3c2e36a066067cdffcab85673c7e78bf9a244dde318d109dd772
-    data/results/nvidia-gpu/gpu/fft/20261013_133616/fixtures/manifest.json: 6f14a232def70d9c1acea54911211620ba8165c34541f631b0f76c95792ea041
-    target/release/benchmark_gpu_public_api: b505a2bdb3d0c5a7bffd1390af659a154753ea998ec68becd4779e137c9c7150
+    .devcontainer/cuda/devcontainer.json: 0bf1465bbd1a4c9f896d5320838f2d5a488632a59af7f9b59cc050e95e0b8e09
+    .devcontainer/cuda/Dockerfile: 578d9815e5145aa1651ac7e93833468c345ee8bf5e95bfa7717551580ae9feca
+    src/bin/benchmark_gpu_public_api.rs: 1a5f3469fc9ffde64a79e05eb9853632366855ece3280ba83e2ba21fe3fb2cdc
+    src/bin/benchmark_gpu_public_api/lifetime.rs: 34be366f56aac88f5f3b86ade8018a15dad2bca85cea74f56cb2fe121917d0a9
+    src/bin/benchmark_gpu_public_api/linalg.rs: 9c3d7916a3281d2dfd1caa68551dc9c81c79dab6b7525324339e5c4816581e6d
+    src/bin/benchmark_gpu_public_api/multi.rs: 291e63a517b6f7108527254a7f83751420aa1d4e73395aa60f0691312b2a3773
+    src/bin/benchmark_gpu_public_api/plan.rs: 2d87b9d73bf25df8797133cf0a8dc8b1fa974fc3bee055ad92e42802c9ebf643
+    src/bin/benchmark_gpu_public_api/read_layout.rs: fc42e2160094ba5f9c7dd6facb5667a76e10b73f971ef9facfb1f64723e42467
+    src/bin/benchmark_gpu_public_api/reuse.rs: a5a4aa0edb0a1158f6669b642f4bc25a7079314fc2a711ef3ef57cc19c0a35b2
+    src/bin/benchmark_gpu_public_api/runtime_ops.rs: c9d61b1e99bda517a59a6e34f625fd4d651bbbb19f6dc06ba4d0d1c0d50dfd6a
+    src/bin/benchmark_gpu_public_api/state.rs: e11a863aee7a85822c474eb771b45ec402e21dbe92173d178c42119ab8ca307e
+    src/bin/benchmark_gpu_public_api/structural.rs: 8b61ac01b58edc090eafbc124ec135d5efeb4979631a939656ba78dd6e5c042a
+    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: ddc112ea5d568a0399378f2be8b31c91b3144fe7d286e8094d27ca5ccda959bf
+    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
+    scripts/run_gpu_public_api.sh: 9cbcb473cba55b1605bab07fd3ff14247859fd7fe9e73d5378dd70108313256b
+    data/results/nvidia-gpu/gpu/fft/20261102_205658/fixtures/manifest.json: 6f14a232def70d9c1acea54911211620ba8165c34541f631b0f76c95792ea041
+    target/release/benchmark_gpu_public_api: c0a0be40dd246cd4cb7ca59cac19bacd1549a4f3a593aea91e887cf41f6e4aa6
   reference_numpy_version: 2.4.2
 ```

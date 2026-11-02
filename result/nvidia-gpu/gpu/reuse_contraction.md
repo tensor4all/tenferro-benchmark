@@ -2,13 +2,13 @@
 
 Measured cells: **1068**. Unsupported cells: **572**, including **0** numerically verified but timing-excluded cells. Unsupported cells do not count as measured coverage.
 
-Raw run: `data/results/nvidia-gpu/gpu/reuse_contraction/20261013_202222/`.
+Raw run: `data/results/nvidia-gpu/gpu/reuse_contraction/20261102_211407/`.
 
 Values are median (IQR) **µs per operation**. Samples time batches of declared operations plus device synchronization; retained output memory is limited to 256 MiB. Batch counts and raw durations are preserved in JSONL.
 
 Setup, input transfers, library/plan initialization, JIT compilation, validation downloads and output destruction are outside timing. Intrinsic output allocation is inside timing; output-reuse rows instead use preallocated destinations across samples. Accumulating destinations are restored from prepared GPU seeds and synchronized before every batch clock, including initialization and calibration. Direct and eager each use one entered session across samples; direct FFT uses cached `FftExecutor`. JAX eager and compiled JIT are separate arms.
 
-All measured output elements are checked against NumPy/SciPy double-precision reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.
+All measured output elements are checked against independently generated NumPy/SciPy reference results before and after sampling. Unsupported rows include unavailable APIs and APIs whose internal setup cannot be excluded; these are not performance measurements. Short batches limited by output memory remain identifiable in the sampling table.
 
 Transposed borrowed-read cases use prepared native CUDA views in tenferro and PyTorch. JAX compares the same logical values in its native representation; its columns do not claim an equivalent public strided-view contract. View creation and input conversion are outside timing.
 
@@ -20,667 +20,667 @@ Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once out
 
 | Case | tenferro-cuda-direct | tenferro-cuda-eager | pytorch-cuda | jax-cuda | jax-cuda-jit |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| add_into_f32_n1024 | 7.229 (0.161) | unsupported | 6.550 (0.233) | unsupported | unsupported |
-| add_into_f64_n1024 | 6.791 (0.981) | unsupported | 7.151 (0.143) | unsupported | unsupported |
-| add_read_into_f32_n1024 | 5.534 (0.319) | unsupported | 6.742 (0.219) | unsupported | unsupported |
-| add_read_into_f64_n1024 | 5.388 (0.072) | unsupported | 6.667 (0.238) | unsupported | unsupported |
-| sub_into_f32_n1024 | 7.304 (0.935) | unsupported | 6.726 (0.312) | unsupported | unsupported |
-| sub_into_f64_n1024 | 7.149 (0.830) | unsupported | 6.836 (0.197) | unsupported | unsupported |
-| sub_read_into_f32_n1024 | 5.447 (0.077) | unsupported | 6.800 (0.299) | unsupported | unsupported |
-| sub_read_into_f64_n1024 | 5.385 (0.091) | unsupported | 6.753 (0.232) | unsupported | unsupported |
-| mul_into_f32_n1024 | 7.297 (0.893) | unsupported | 7.546 (0.480) | unsupported | unsupported |
-| mul_into_f64_n1024 | 6.866 (0.555) | unsupported | 7.259 (0.550) | unsupported | unsupported |
-| mul_read_into_f32_n1024 | 5.465 (0.092) | unsupported | 7.352 (0.560) | unsupported | unsupported |
-| mul_read_into_f64_n1024 | 5.458 (0.026) | unsupported | 6.736 (0.244) | unsupported | unsupported |
-| div_into_f32_n1024 | 51.886 (9.715) | unsupported | 6.623 (0.279) | unsupported | unsupported |
-| div_into_f64_n1024 | 47.040 (0.431) | unsupported | 6.814 (0.234) | unsupported | unsupported |
-| div_read_into_f32_n1024 | 41.637 (1.090) | unsupported | 6.692 (0.377) | unsupported | unsupported |
-| div_read_into_f64_n1024 | 42.231 (0.879) | unsupported | 6.764 (0.338) | unsupported | unsupported |
-| neg_into_f32_n1024 | 7.210 (0.261) | unsupported | 6.252 (0.197) | unsupported | unsupported |
-| neg_into_f64_n1024 | 5.763 (0.446) | unsupported | 6.182 (0.262) | unsupported | unsupported |
-| neg_read_into_f32_n1024 | 4.785 (0.073) | unsupported | 6.273 (0.091) | unsupported | unsupported |
-| neg_read_into_f64_n1024 | 4.947 (0.350) | unsupported | 6.160 (0.188) | unsupported | unsupported |
-| conj_into_c32_n1024 | 45.229 (0.424) | unsupported | 7.280 (0.145) | unsupported | unsupported |
-| conj_into_c64_n1024 | 197.125 (16.203) | unsupported | 7.356 (0.384) | unsupported | unsupported |
-| conj_read_into_c32_n1024 | 38.873 (0.911) | unsupported | 7.307 (0.499) | unsupported | unsupported |
-| conj_read_into_c64_n1024 | 160.737 (5.344) | unsupported | 7.108 (0.035) | unsupported | unsupported |
-| add_into_f32_n1048576 | 44.889 (0.620) | unsupported | 39.743 (0.038) | unsupported | unsupported |
-| add_into_f64_n1048576 | 84.630 (0.669) | unsupported | 77.670 (0.032) | unsupported | unsupported |
-| add_read_into_f32_n1048576 | 42.848 (0.236) | unsupported | 39.751 (0.032) | unsupported | unsupported |
-| add_read_into_f64_n1048576 | 82.722 (0.658) | unsupported | 77.586 (0.069) | unsupported | unsupported |
-| sub_into_f32_n1048576 | 42.950 (0.446) | unsupported | 39.644 (0.056) | unsupported | unsupported |
-| sub_into_f64_n1048576 | 82.740 (0.635) | unsupported | 77.578 (0.102) | unsupported | unsupported |
-| sub_read_into_f32_n1048576 | 42.948 (0.226) | unsupported | 39.649 (0.032) | unsupported | unsupported |
-| sub_read_into_f64_n1048576 | 82.580 (0.523) | unsupported | 77.547 (0.053) | unsupported | unsupported |
-| mul_into_f32_n1048576 | 42.811 (0.267) | unsupported | 39.659 (0.032) | unsupported | unsupported |
-| mul_into_f64_n1048576 | 82.775 (0.566) | unsupported | 77.523 (0.088) | unsupported | unsupported |
-| mul_read_into_f32_n1048576 | 42.867 (0.190) | unsupported | 39.850 (0.129) | unsupported | unsupported |
-| mul_read_into_f64_n1048576 | 83.482 (0.584) | unsupported | 77.518 (0.040) | unsupported | unsupported |
-| div_into_f32_n1048576 | 70.156 (0.109) | unsupported | 39.867 (0.069) | unsupported | unsupported |
-| div_into_f64_n1048576 | 151.429 (0.172) | unsupported | 93.931 (0.105) | unsupported | unsupported |
-| div_read_into_f32_n1048576 | 70.165 (0.230) | unsupported | 39.921 (0.050) | unsupported | unsupported |
-| div_read_into_f64_n1048576 | 151.289 (0.199) | unsupported | 93.972 (0.112) | unsupported | unsupported |
-| neg_into_f32_n1048576 | 29.654 (0.171) | unsupported | 27.193 (0.041) | unsupported | unsupported |
-| neg_into_f64_n1048576 | 57.163 (0.247) | unsupported | 52.823 (0.039) | unsupported | unsupported |
-| neg_read_into_f32_n1048576 | 29.720 (0.078) | unsupported | 27.222 (0.166) | unsupported | unsupported |
-| neg_read_into_f64_n1048576 | 57.676 (0.488) | unsupported | 52.819 (0.047) | unsupported | unsupported |
-| conj_into_c32_n1048576 | 107.928 (0.121) | unsupported | 52.820 (0.105) | unsupported | unsupported |
-| conj_into_c64_n1048576 | 209.249 (0.160) | unsupported | 103.759 (0.266) | unsupported | unsupported |
-| conj_read_into_c32_n1048576 | 107.738 (0.355) | unsupported | 52.789 (0.049) | unsupported | unsupported |
-| conj_read_into_c64_n1048576 | 208.904 (0.393) | unsupported | 103.679 (0.109) | unsupported | unsupported |
-| tensordot_f32_n1024 | 27.334 (4.813) | 38.305 (1.764) | 50.093 (1.320) | 264.705 (6.118) | 100.246 (7.056) |
-| tensordot_f64_n1024 | 39.845 (2.179) | 42.693 (1.484) | 53.642 (1.352) | 166.457 (11.426) | 71.836 (0.967) |
-| tensordot_c32_n1024 | 35.730 (0.234) | 39.725 (1.616) | 50.361 (0.859) | 183.406 (6.410) | 85.269 (1.201) |
-| tensordot_c64_n1024 | 133.513 (1.424) | 42.109 (1.204) | 54.830 (0.877) | 186.650 (9.209) | 96.860 (3.080) |
-| vdot_read_f32_n1024 | 150.002 (2.728) | unsupported | 15.788 (0.200) | 104.718 (12.884) | 94.722 (2.233) |
-| vdot_read_f64_n1024 | 149.887 (0.505) | unsupported | 15.514 (0.133) | 91.653 (9.693) | 80.490 (1.116) |
-| vdot_read_c32_n1024 | 150.050 (2.334) | unsupported | 15.099 (0.236) | 84.188 (2.324) | 96.342 (4.554) |
-| vdot_read_c64_n1024 | 172.863 (1.074) | unsupported | 15.383 (0.138) | 120.590 (14.841) | 109.642 (18.062) |
-| norm_squared_read_f32_n1024 | 160.772 (1.665) | unsupported | 15.647 (0.123) | 85.357 (9.745) | 146.943 (14.051) |
-| norm_squared_read_f64_n1024 | 149.225 (1.825) | unsupported | 15.781 (0.714) | 74.794 (5.442) | 132.740 (6.889) |
-| tensordot_f32_n262144 | 47.703 (0.261) | 46.807 (1.227) | 62.268 (2.757) | 163.846 (2.631) | 90.340 (9.845) |
-| tensordot_f64_n262144 | 1620.364 (1.259) | 1630.637 (2.234) | 1628.357 (5.165) | 1701.892 (28.517) | 1570.333 (41.085) |
-| tensordot_c32_n262144 | 141.914 (1.879) | 142.341 (0.988) | 159.194 (8.296) | 327.250 (16.311) | 170.052 (15.561) |
-| tensordot_c64_n262144 | 5032.362 (2.774) | 5066.478 (2.478) | 5258.257 (4.906) | 5643.406 (44.203) | 5404.210 (23.924) |
-| vdot_read_f32_n262144 | 184.330 (6.212) | unsupported | 16.594 (0.911) | 161.830 (25.045) | 169.856 (14.099) |
-| vdot_read_f64_n262144 | 174.049 (0.594) | unsupported | 20.228 (0.015) | 160.708 (3.194) | 163.234 (5.915) |
-| vdot_read_c32_n262144 | 173.463 (1.693) | unsupported | 17.448 (0.127) | 167.121 (10.199) | 176.704 (20.664) |
-| vdot_read_c64_n262144 | 174.434 (0.789) | unsupported | 33.751 (0.024) | 155.293 (2.494) | 152.076 (5.423) |
-| norm_squared_read_f32_n262144 | 171.862 (1.751) | unsupported | 15.726 (0.208) | 139.321 (25.281) | 174.342 (12.749) |
-| norm_squared_read_f64_n262144 | 171.710 (1.918) | unsupported | 16.148 (0.538) | 121.203 (15.418) | 166.350 (3.955) |
-| axpby_read_into_accum_f32_n1024 | 9.812 (0.158) | unsupported | 7.515 (0.192) | unsupported | unsupported |
-| axpby_read_into_accum_f64_n1024 | 10.346 (0.389) | unsupported | 7.786 (0.544) | unsupported | unsupported |
-| axpby_read_into_accum_c32_n1024 | 10.033 (0.283) | unsupported | 7.660 (0.120) | unsupported | unsupported |
-| axpby_read_into_accum_c64_n1024 | 10.114 (0.578) | unsupported | 7.782 (0.680) | unsupported | unsupported |
-| axpby_read_into_accum_f32_n1048576 | 273.466 (0.345) | unsupported | 39.717 (0.080) | unsupported | unsupported |
-| axpby_read_into_accum_f64_n1048576 | 534.765 (0.693) | unsupported | 77.679 (0.036) | unsupported | unsupported |
-| axpby_read_into_accum_c32_n1048576 | 168.901 (0.268) | unsupported | 77.631 (0.065) | unsupported | unsupported |
-| axpby_read_into_accum_c64_n1048576 | 2144.375 (1.174) | unsupported | 153.460 (0.130) | unsupported | unsupported |
-| dot_general_read_into_f32_s16 | 22.330 (0.465) | unsupported | 18.605 (0.129) | unsupported | unsupported |
-| dot_general_read_into_accum_f32_s16 | 23.135 (1.081) | unsupported | 22.528 (0.505) | unsupported | unsupported |
-| dot_general_read_into_accum_cached_f32_s16 | 22.770 (0.779) | unsupported | 22.365 (0.268) | unsupported | unsupported |
-| dot_general_read_into_f64_s16 | 27.598 (0.846) | unsupported | 20.899 (0.658) | unsupported | unsupported |
-| dot_general_read_into_accum_f64_s16 | 26.342 (0.484) | unsupported | 24.893 (0.828) | unsupported | unsupported |
-| dot_general_read_into_accum_cached_f64_s16 | 26.606 (1.269) | unsupported | 24.937 (0.825) | unsupported | unsupported |
-| dot_general_read_into_c32_s16 | 22.199 (0.462) | unsupported | 21.783 (1.795) | unsupported | unsupported |
-| dot_general_read_into_accum_c32_s16 | 22.095 (0.447) | unsupported | 26.417 (1.520) | unsupported | unsupported |
-| dot_general_read_into_accum_cached_c32_s16 | 22.227 (0.491) | unsupported | 24.614 (0.322) | unsupported | unsupported |
-| dot_general_read_into_c64_s16 | 26.998 (0.934) | unsupported | 21.772 (0.547) | unsupported | unsupported |
-| dot_general_read_into_accum_c64_s16 | 24.806 (0.533) | unsupported | 25.708 (0.427) | unsupported | unsupported |
-| dot_general_read_into_accum_cached_c64_s16 | 24.279 (0.475) | unsupported | 25.931 (0.304) | unsupported | unsupported |
-| dot_general_read_into_f32_s256 | 23.004 (1.181) | unsupported | 19.054 (0.185) | unsupported | unsupported |
-| dot_general_read_into_accum_f32_s256 | 22.605 (0.555) | unsupported | 22.309 (0.471) | unsupported | unsupported |
-| dot_general_read_into_accum_cached_f32_s256 | 23.843 (1.283) | unsupported | 22.473 (0.299) | unsupported | unsupported |
-| dot_general_read_into_f64_s256 | 262.887 (0.212) | unsupported | 248.242 (5.254) | unsupported | unsupported |
-| dot_general_read_into_accum_f64_s256 | 260.343 (10.694) | unsupported | 270.026 (10.049) | unsupported | unsupported |
-| dot_general_read_into_accum_cached_f64_s256 | 260.081 (13.910) | unsupported | 279.880 (14.937) | unsupported | unsupported |
-| dot_general_read_into_c32_s256 | 28.297 (0.310) | unsupported | 26.822 (0.060) | unsupported | unsupported |
-| dot_general_read_into_accum_c32_s256 | 29.856 (0.098) | unsupported | 27.776 (1.117) | unsupported | unsupported |
-| dot_general_read_into_accum_cached_c32_s256 | 29.809 (0.035) | unsupported | 28.497 (1.477) | unsupported | unsupported |
-| dot_general_read_into_c64_s256 | 683.214 (0.466) | unsupported | 975.577 (0.441) | unsupported | unsupported |
-| dot_general_read_into_accum_c64_s256 | 684.419 (0.107) | unsupported | 981.851 (0.598) | unsupported | unsupported |
-| dot_general_read_into_accum_cached_c64_s256 | 684.492 (0.357) | unsupported | 981.670 (0.170) | unsupported | unsupported |
-| add_strided_read_f32_n1024 | 281.693 (9.380) | unsupported | 10.588 (0.677) | 162.905 (30.353) | 173.660 (21.376) |
-| add_strided_read_f64_n1024 | 245.091 (22.601) | unsupported | 10.453 (0.340) | 172.708 (33.507) | 156.446 (17.125) |
-| mul_strided_read_f32_n1024 | 330.078 (4.062) | unsupported | 10.376 (0.302) | 147.964 (27.295) | 144.043 (21.594) |
-| mul_strided_read_f64_n1024 | 307.438 (2.618) | unsupported | 10.392 (0.289) | 145.239 (22.006) | 129.480 (13.616) |
-| neg_strided_read_f32_n1024 | 191.764 (2.985) | unsupported | 11.253 (1.771) | 132.601 (10.820) | 121.938 (14.218) |
-| neg_strided_read_f64_n1024 | 172.451 (4.576) | unsupported | 9.936 (0.768) | 128.482 (12.318) | 120.508 (14.573) |
-| exp_strided_read_f32_n1024 | 197.949 (10.752) | unsupported | 9.169 (0.358) | 102.103 (16.659) | 123.720 (10.196) |
-| exp_strided_read_f64_n1024 | 169.227 (3.648) | unsupported | 11.210 (1.048) | 92.623 (16.292) | 132.044 (8.703) |
-| tanh_strided_read_f32_n1024 | 194.133 (10.104) | unsupported | 9.949 (0.605) | 93.853 (8.689) | 129.673 (7.698) |
-| tanh_strided_read_f64_n1024 | 178.223 (8.916) | unsupported | 9.772 (0.618) | 102.275 (12.961) | 134.586 (8.091) |
-| reduce_sum_strided_read_f32_n1024 | 333.512 (5.629) | unsupported | 15.678 (1.033) | 158.434 (10.250) | 154.291 (12.489) |
-| reduce_sum_strided_read_f64_n1024 | 295.116 (5.278) | unsupported | 15.678 (1.174) | 185.273 (11.672) | 174.348 (12.505) |
-| conj_strided_read_c32_n1024 | 162.503 (6.547) | unsupported | 11.860 (0.284) | 158.094 (18.023) | 165.952 (37.510) |
-| conj_strided_read_c64_n1024 | 235.359 (5.521) | unsupported | 12.307 (0.580) | 166.098 (28.790) | 152.207 (25.180) |
-| add_strided_read_f32_n1048576 | 97.936 (0.500) | unsupported | 39.790 (0.121) | 122.246 (3.174) | 127.379 (10.045) |
-| add_strided_read_f64_n1048576 | 188.814 (0.115) | unsupported | 77.795 (0.232) | 123.086 (4.661) | 105.369 (7.448) |
-| mul_strided_read_f32_n1048576 | 98.222 (0.197) | unsupported | 39.784 (0.088) | 111.440 (1.022) | 99.022 (0.565) |
-| mul_strided_read_f64_n1048576 | 188.969 (0.166) | unsupported | 77.755 (0.124) | 107.564 (2.215) | 93.253 (0.353) |
-| neg_strided_read_f32_n1048576 | 58.860 (0.763) | unsupported | 27.337 (0.120) | 103.881 (2.381) | 95.526 (0.622) |
-| neg_strided_read_f64_n1048576 | 108.445 (0.070) | unsupported | 53.090 (0.192) | 106.309 (0.546) | 98.716 (0.553) |
-| exp_strided_read_f32_n1048576 | 56.760 (1.262) | unsupported | 27.417 (0.046) | 94.209 (0.554) | 95.691 (0.879) |
-| exp_strided_read_f64_n1048576 | 233.598 (0.189) | unsupported | 181.276 (0.084) | 203.522 (2.311) | 203.002 (2.840) |
-| tanh_strided_read_f32_n1048576 | 56.405 (0.189) | unsupported | 27.424 (0.030) | 93.997 (3.127) | 81.918 (9.659) |
-| tanh_strided_read_f64_n1048576 | 220.444 (0.088) | unsupported | 167.929 (0.117) | 191.543 (1.731) | 187.899 (2.544) |
-| reduce_sum_strided_read_f32_n1048576 | 260.447 (12.249) | unsupported | 21.620 (0.689) | 99.766 (0.680) | 124.956 (2.083) |
-| reduce_sum_strided_read_f64_n1048576 | 92.980 (0.273) | unsupported | 36.984 (0.137) | 160.653 (4.863) | 148.140 (1.219) |
-| conj_strided_read_c32_n1048576 | 114.419 (0.163) | unsupported | 53.022 (0.057) | 98.276 (3.370) | 103.003 (5.374) |
-| conj_strided_read_c64_n1048576 | 214.139 (0.526) | unsupported | 104.099 (0.035) | 116.097 (2.530) | 117.810 (1.663) |
-| axpby_overwrite_f32_n1024 | 10.125 (0.135) | unsupported | 11.797 (0.096) | unsupported | unsupported |
-| axpby_lerp_f32_n1024 | 10.300 (0.425) | unsupported | 9.032 (0.153) | unsupported | unsupported |
-| axpby_unit_add_f32_n1024 | 10.272 (0.124) | unsupported | 7.602 (0.112) | 371.358 (58.176) | 246.903 (13.153) |
-| axpby_overwrite_f64_n1024 | 10.396 (0.242) | unsupported | 11.171 (0.216) | unsupported | unsupported |
-| axpby_lerp_f64_n1024 | 10.944 (0.509) | unsupported | 9.010 (0.219) | unsupported | unsupported |
-| axpby_unit_add_f64_n1024 | 10.499 (0.233) | unsupported | 7.832 (0.059) | 354.758 (17.225) | 250.228 (33.572) |
-| axpby_overwrite_c32_n1024 | 10.241 (0.542) | unsupported | 11.831 (0.294) | unsupported | unsupported |
-| axpby_lerp_c32_n1024 | 11.062 (1.098) | unsupported | 7.914 (0.211) | unsupported | unsupported |
-| axpby_unit_add_c32_n1024 | 10.645 (0.343) | unsupported | 8.298 (0.347) | 365.464 (46.924) | 256.248 (30.105) |
-| axpby_overwrite_c64_n1024 | 10.658 (0.929) | unsupported | 11.682 (0.192) | unsupported | unsupported |
-| axpby_lerp_c64_n1024 | 10.337 (0.871) | unsupported | 10.831 (0.004) | unsupported | unsupported |
-| axpby_unit_add_c64_n1024 | 10.284 (0.230) | unsupported | 7.788 (0.121) | 365.502 (26.366) | 266.048 (37.185) |
-| axpby_overwrite_f32_n1048576 | 304.878 (1.078) | unsupported | 27.370 (0.034) | unsupported | unsupported |
-| axpby_lerp_f32_n1048576 | 273.231 (0.270) | unsupported | 39.769 (0.026) | unsupported | unsupported |
-| axpby_unit_add_f32_n1048576 | 273.293 (0.474) | unsupported | 39.719 (0.034) | 368.308 (28.825) | 258.411 (14.279) |
-| axpby_overwrite_f64_n1048576 | 339.214 (0.873) | unsupported | 53.181 (0.213) | unsupported | unsupported |
-| axpby_lerp_f64_n1048576 | 534.848 (0.215) | unsupported | 77.983 (0.074) | unsupported | unsupported |
-| axpby_unit_add_f64_n1048576 | 534.933 (0.321) | unsupported | 77.675 (0.067) | 372.168 (25.857) | 248.933 (8.033) |
-| axpby_overwrite_c32_n1048576 | 156.683 (0.706) | unsupported | 53.111 (0.065) | unsupported | unsupported |
-| axpby_lerp_c32_n1048576 | 168.870 (0.127) | unsupported | 77.917 (0.048) | unsupported | unsupported |
-| axpby_unit_add_c32_n1048576 | 168.922 (0.081) | unsupported | 77.641 (0.057) | 390.207 (18.403) | 250.136 (9.261) |
-| axpby_overwrite_c64_n1048576 | 1271.869 (2.393) | unsupported | 104.405 (0.081) | unsupported | unsupported |
-| axpby_lerp_c64_n1048576 | 2016.922 (0.894) | unsupported | 340.508 (0.181) | unsupported | unsupported |
-| axpby_unit_add_c64_n1048576 | 2016.996 (1.505) | unsupported | 153.434 (0.128) | 379.782 (20.310) | 251.610 (18.820) |
-| dot_general_batch_f32_s32 | 204.996 (15.494) | 47.786 (3.182) | 39.563 (0.392) | 128.374 (7.802) | 70.627 (0.971) |
-| dot_general_batch_f64_s32 | 184.912 (5.469) | 50.836 (1.273) | 45.739 (2.320) | 125.612 (3.480) | 73.844 (2.170) |
-| dot_general_batch_c32_s32 | 169.587 (3.419) | 50.005 (1.309) | 43.824 (1.836) | 160.066 (18.700) | 96.303 (3.707) |
-| dot_general_batch_c64_s32 | 173.527 (1.782) | 53.072 (2.028) | 44.395 (0.911) | 174.528 (10.557) | 98.197 (5.357) |
-| dot_general_multiple_f32_s32 | 205.256 (6.499) | 54.818 (2.777) | 76.757 (5.367) | 130.617 (5.880) | 86.362 (1.980) |
-| dot_general_multiple_f64_s32 | 205.344 (1.361) | 53.051 (2.096) | 78.846 (0.575) | 161.578 (1.173) | 78.585 (1.529) |
-| dot_general_multiple_c32_s32 | 203.816 (3.869) | 52.769 (2.238) | 76.200 (0.309) | 226.190 (35.613) | 101.689 (12.706) |
-| dot_general_multiple_c64_s32 | 202.935 (5.178) | 53.382 (3.092) | 79.565 (0.626) | 300.262 (42.376) | 105.932 (10.966) |
-| dot_general_batch_f32_s256 | 63.284 (4.350) | 40.633 (1.085) | 40.938 (1.521) | 127.994 (4.797) | 79.115 (5.575) |
-| dot_general_batch_f64_s256 | 333.191 (0.854) | 333.742 (0.340) | 418.346 (0.200) | 323.057 (9.936) | 313.510 (8.343) |
-| dot_general_batch_c32_s256 | 42.252 (0.356) | 41.612 (1.880) | 53.961 (0.039) | 280.941 (31.443) | 162.369 (29.195) |
-| dot_general_batch_c64_s256 | 1104.938 (2.186) | 1109.526 (2.030) | 1329.440 (1.879) | 1466.003 (10.892) | 1390.769 (9.654) |
-| dot_general_multiple_f32_s256 | 50.611 (0.195) | 48.693 (1.816) | 75.875 (0.405) | 332.950 (8.585) | 104.711 (0.245) |
-| dot_general_multiple_f64_s256 | 332.583 (1.236) | 334.116 (0.291) | 338.095 (0.243) | 218.073 (4.343) | 211.381 (2.282) |
-| dot_general_multiple_c32_s256 | 47.458 (7.770) | 47.552 (1.948) | 88.152 (4.500) | 328.310 (20.632) | 191.872 (30.659) |
-| dot_general_multiple_c64_s256 | 825.582 (2.111) | 832.635 (2.249) | 1010.838 (0.789) | 1139.160 (12.554) | 1060.934 (22.476) |
-| dot_conj_l0r0_c32_n1024 | 208.325 (1.435) | 34.434 (4.721) | 15.782 (0.149) | 86.718 (4.852) | 168.122 (8.219) |
-| dot_conj_l1r0_c32_n1024 | 176.801 (28.056) | 157.445 (10.486) | 15.502 (0.549) | 80.058 (4.104) | 171.706 (11.219) |
-| dot_conj_l0r1_c32_n1024 | 175.854 (16.572) | 136.885 (3.429) | 15.677 (0.245) | 73.740 (2.729) | 169.856 (12.211) |
-| dot_conj_l1r1_c32_n1024 | 179.301 (3.904) | 126.516 (5.970) | unsupported | unsupported | unsupported |
-| dot_conj_l0r0_c64_n1024 | 263.111 (6.028) | 37.132 (2.776) | 15.902 (0.718) | 97.630 (2.569) | 173.731 (23.321) |
-| dot_conj_l1r0_c64_n1024 | 172.165 (2.175) | 147.805 (5.133) | 15.300 (0.222) | 92.985 (0.773) | 161.225 (17.623) |
-| dot_conj_l0r1_c64_n1024 | 172.198 (4.092) | 142.421 (3.031) | 15.102 (0.174) | 93.997 (0.492) | 173.588 (18.682) |
-| dot_conj_l1r1_c64_n1024 | 171.848 (3.157) | 137.171 (1.389) | unsupported | unsupported | unsupported |
-| dot_conj_l0r0_c32_n262144 | 665.943 (8.131) | 625.881 (2.999) | 17.406 (0.040) | 138.436 (1.374) | 173.427 (27.433) |
-| dot_conj_l1r0_c32_n262144 | 187.209 (4.772) | 105.822 (2.859) | 17.319 (0.018) | 117.805 (19.809) | 176.877 (27.558) |
-| dot_conj_l0r1_c32_n262144 | 186.587 (3.955) | 105.173 (4.152) | 17.431 (0.048) | 102.319 (2.031) | 183.699 (17.297) |
-| dot_conj_l1r1_c32_n262144 | 187.557 (6.888) | 106.148 (2.108) | unsupported | unsupported | unsupported |
-| dot_conj_l0r0_c64_n262144 | 950.374 (4.016) | 909.763 (0.583) | 33.790 (0.047) | 150.941 (3.611) | 187.279 (30.821) |
-| dot_conj_l1r0_c64_n262144 | 183.494 (5.658) | 106.193 (2.659) | 33.835 (0.032) | 132.887 (17.077) | 182.533 (28.936) |
-| dot_conj_l0r1_c64_n262144 | 188.375 (7.988) | 105.191 (2.809) | 33.699 (0.033) | 115.739 (10.388) | 149.810 (26.394) |
-| dot_conj_l1r1_c64_n262144 | 189.226 (5.768) | 106.883 (3.801) | unsupported | unsupported | unsupported |
-| einsum_plan_owned_f32_s32 | 172.334 (8.220) | unsupported | 21.485 (0.138) | 85.794 (0.725) | 97.227 (3.146) |
-| einsum_plan_read_f32_s32 | 172.165 (2.543) | unsupported | 21.304 (0.580) | 85.933 (1.095) | 95.428 (1.087) |
-| einsum_plan_strided_read_f32_s32 | 186.312 (2.371) | unsupported | 23.471 (0.487) | 150.999 (1.588) | 95.073 (1.291) |
-| einsum_plan_into_f32_s32 | 32.744 (0.626) | unsupported | 15.414 (0.151) | unsupported | unsupported |
-| einsum_plan_read_into_f32_s32 | 26.309 (2.217) | unsupported | 15.454 (1.020) | unsupported | unsupported |
-| einsum_plan_read_into_accum_f32_s32 | 25.859 (2.190) | unsupported | 23.353 (0.785) | unsupported | unsupported |
-| einsum_plan_strided_read_into_f32_s32 | 27.553 (1.384) | unsupported | 16.990 (0.098) | unsupported | unsupported |
-| einsum_plan_strided_read_into_accum_f32_s32 | 26.351 (1.895) | unsupported | 24.454 (0.221) | unsupported | unsupported |
-| einsum_plan_owned_f64_s32 | 127.373 (6.121) | unsupported | 23.715 (0.415) | 86.443 (0.995) | 86.854 (1.005) |
-| einsum_plan_read_f64_s32 | 148.127 (19.908) | unsupported | 23.947 (0.610) | 85.704 (1.783) | 86.443 (1.003) |
-| einsum_plan_strided_read_f64_s32 | 168.789 (3.571) | unsupported | 25.603 (0.548) | 159.089 (4.849) | 88.828 (1.879) |
-| einsum_plan_into_f64_s32 | 27.720 (0.869) | unsupported | 17.883 (0.857) | unsupported | unsupported |
-| einsum_plan_read_into_f64_s32 | 27.714 (0.735) | unsupported | 17.919 (0.164) | unsupported | unsupported |
-| einsum_plan_read_into_accum_f64_s32 | 27.766 (1.131) | unsupported | 25.014 (0.342) | unsupported | unsupported |
-| einsum_plan_strided_read_into_f64_s32 | 30.179 (1.701) | unsupported | 18.443 (0.347) | unsupported | unsupported |
-| einsum_plan_strided_read_into_accum_f64_s32 | 28.035 (1.798) | unsupported | 25.759 (0.729) | unsupported | unsupported |
-| einsum_plan_owned_c32_s32 | 125.387 (7.492) | unsupported | 22.464 (0.809) | 154.487 (34.895) | 102.305 (0.512) |
-| einsum_plan_read_c32_s32 | 135.570 (3.131) | unsupported | 22.203 (0.151) | 125.376 (3.793) | 102.489 (0.555) |
-| einsum_plan_strided_read_c32_s32 | 154.395 (6.928) | unsupported | 22.933 (1.825) | 155.864 (3.904) | 132.154 (23.203) |
-| einsum_plan_into_c32_s32 | 23.560 (0.566) | unsupported | 17.377 (0.963) | unsupported | unsupported |
-| einsum_plan_read_into_c32_s32 | 24.599 (1.455) | unsupported | 16.816 (0.272) | unsupported | unsupported |
-| einsum_plan_read_into_accum_c32_s32 | 25.746 (3.018) | unsupported | 23.385 (0.246) | unsupported | unsupported |
-| einsum_plan_strided_read_into_c32_s32 | 26.037 (1.852) | unsupported | 17.115 (0.548) | unsupported | unsupported |
-| einsum_plan_strided_read_into_accum_c32_s32 | 25.108 (0.832) | unsupported | 23.782 (0.366) | unsupported | unsupported |
-| einsum_plan_owned_c64_s32 | 125.570 (3.104) | unsupported | 25.270 (0.629) | 131.752 (19.397) | 121.907 (3.884) |
-| einsum_plan_read_c64_s32 | 125.740 (15.557) | unsupported | 25.395 (1.906) | 124.247 (3.187) | 111.454 (2.109) |
-| einsum_plan_strided_read_c64_s32 | 158.776 (9.933) | unsupported | 29.206 (2.030) | 193.081 (25.820) | 135.230 (19.327) |
-| einsum_plan_into_c64_s32 | 26.064 (0.412) | unsupported | 20.573 (1.741) | unsupported | unsupported |
-| einsum_plan_read_into_c64_s32 | 25.717 (1.150) | unsupported | 19.295 (0.726) | unsupported | unsupported |
-| einsum_plan_read_into_accum_c64_s32 | 26.354 (1.124) | unsupported | 25.844 (0.444) | unsupported | unsupported |
-| einsum_plan_strided_read_into_c64_s32 | 27.744 (1.628) | unsupported | 19.759 (0.101) | unsupported | unsupported |
-| einsum_plan_strided_read_into_accum_c64_s32 | 27.556 (0.911) | unsupported | 27.103 (0.467) | unsupported | unsupported |
-| einsum_plan_owned_f32_s256 | 37.152 (1.865) | unsupported | 22.288 (1.050) | 74.009 (11.460) | 80.207 (1.617) |
-| einsum_plan_read_f32_s256 | 36.680 (0.430) | unsupported | 22.391 (0.834) | 72.898 (3.820) | 78.238 (1.770) |
-| einsum_plan_strided_read_f32_s256 | 42.811 (2.543) | unsupported | 24.131 (0.280) | 146.255 (3.001) | 79.916 (1.795) |
-| einsum_plan_into_f32_s256 | 25.891 (2.321) | unsupported | 15.738 (0.513) | unsupported | unsupported |
-| einsum_plan_read_into_f32_s256 | 24.965 (0.393) | unsupported | 15.894 (0.489) | unsupported | unsupported |
-| einsum_plan_read_into_accum_f32_s256 | 25.907 (2.071) | unsupported | 22.341 (0.417) | unsupported | unsupported |
-| einsum_plan_strided_read_into_f32_s256 | 28.460 (2.226) | unsupported | 18.052 (0.735) | unsupported | unsupported |
-| einsum_plan_strided_read_into_accum_f32_s256 | 24.954 (1.716) | unsupported | 25.501 (0.974) | unsupported | unsupported |
-| einsum_plan_owned_f64_s256 | 171.489 (2.818) | unsupported | 164.243 (3.365) | 108.526 (1.674) | 106.901 (0.331) |
-| einsum_plan_read_f64_s256 | 172.953 (3.839) | unsupported | 164.113 (2.536) | 108.263 (0.594) | 106.504 (0.331) |
-| einsum_plan_strided_read_f64_s256 | 169.652 (5.280) | unsupported | 161.962 (2.453) | 146.669 (1.909) | 106.855 (0.515) |
-| einsum_plan_into_f64_s256 | 165.553 (0.349) | unsupported | 163.606 (2.533) | unsupported | unsupported |
-| einsum_plan_read_into_f64_s256 | 165.794 (0.436) | unsupported | 163.659 (2.516) | unsupported | unsupported |
-| einsum_plan_read_into_accum_f64_s256 | 167.160 (0.173) | unsupported | 163.509 (4.932) | unsupported | unsupported |
-| einsum_plan_strided_read_into_f64_s256 | 166.017 (0.133) | unsupported | 163.226 (2.510) | unsupported | unsupported |
-| einsum_plan_strided_read_into_accum_f64_s256 | 167.411 (0.117) | unsupported | 148.423 (5.021) | unsupported | unsupported |
-| einsum_plan_owned_c32_s256 | 39.181 (1.451) | unsupported | 22.307 (0.243) | 112.905 (16.967) | 91.955 (3.204) |
-| einsum_plan_read_c32_s256 | 38.828 (2.879) | unsupported | 22.527 (1.325) | 91.080 (7.981) | 90.793 (4.668) |
-| einsum_plan_strided_read_c32_s256 | 44.859 (2.849) | unsupported | 24.301 (0.739) | 158.866 (9.795) | 123.942 (14.105) |
-| einsum_plan_into_c32_s256 | 26.365 (1.256) | unsupported | 17.705 (0.625) | unsupported | unsupported |
-| einsum_plan_read_into_c32_s256 | 26.498 (1.503) | unsupported | 17.491 (0.044) | unsupported | unsupported |
-| einsum_plan_read_into_accum_c32_s256 | 25.963 (1.721) | unsupported | 23.511 (0.317) | unsupported | unsupported |
-| einsum_plan_strided_read_into_c32_s256 | 30.189 (1.194) | unsupported | 18.377 (0.534) | unsupported | unsupported |
-| einsum_plan_strided_read_into_accum_c32_s256 | 29.387 (1.064) | unsupported | 27.234 (1.415) | unsupported | unsupported |
-| einsum_plan_owned_c64_s256 | 420.532 (3.766) | unsupported | 491.614 (0.433) | 396.417 (3.862) | 424.536 (13.920) |
-| einsum_plan_read_c64_s256 | 422.423 (3.800) | unsupported | 491.188 (0.203) | 398.774 (3.381) | 432.076 (9.220) |
-| einsum_plan_strided_read_c64_s256 | 415.749 (4.316) | unsupported | 491.507 (0.193) | 395.805 (7.914) | 408.817 (15.489) |
-| einsum_plan_into_c64_s256 | 421.131 (3.935) | unsupported | 490.504 (0.160) | unsupported | unsupported |
-| einsum_plan_read_into_c64_s256 | 421.173 (0.418) | unsupported | 490.728 (0.059) | unsupported | unsupported |
-| einsum_plan_read_into_accum_c64_s256 | 420.801 (5.216) | unsupported | 494.870 (0.187) | unsupported | unsupported |
-| einsum_plan_strided_read_into_c64_s256 | 413.357 (7.661) | unsupported | 490.760 (0.139) | unsupported | unsupported |
-| einsum_plan_strided_read_into_accum_c64_s256 | 413.165 (4.296) | unsupported | 501.309 (1.910) | unsupported | unsupported |
-| sub_strided_read_f32_n1024 | 316.501 (8.714) | unsupported | 11.704 (0.969) | 176.760 (37.872) | 152.569 (33.883) |
-| sub_strided_read_f64_n1024 | 328.799 (46.408) | unsupported | 10.621 (0.194) | 153.139 (25.488) | 138.819 (14.462) |
-| div_strided_read_f32_n1024 | 369.957 (12.132) | unsupported | 10.935 (0.872) | 123.867 (4.988) | 122.406 (15.993) |
-| div_strided_read_f64_n1024 | 334.192 (13.152) | unsupported | 10.444 (0.540) | 108.342 (20.065) | 128.804 (14.279) |
-| rem_strided_read_f32_n1024 | 371.343 (11.360) | unsupported | 10.182 (0.147) | 106.532 (13.981) | 106.896 (11.765) |
-| rem_strided_read_f64_n1024 | 326.010 (8.443) | unsupported | 10.025 (0.290) | 123.184 (2.556) | 131.551 (11.274) |
-| pow_strided_read_f32_n1024 | 368.332 (10.207) | unsupported | 10.150 (0.220) | 188.763 (30.325) | 148.074 (22.226) |
-| pow_strided_read_f64_n1024 | 328.384 (13.574) | unsupported | 29.158 (0.008) | 190.984 (34.739) | 157.282 (16.652) |
-| maximum_strided_read_f32_n1024 | 378.399 (16.863) | unsupported | 10.127 (0.202) | 155.649 (18.123) | 156.041 (30.957) |
-| maximum_strided_read_f64_n1024 | 322.162 (13.272) | unsupported | 9.944 (0.107) | 138.801 (10.385) | 135.267 (21.629) |
-| minimum_strided_read_f32_n1024 | 368.535 (7.686) | unsupported | 10.540 (0.566) | 131.759 (19.430) | 124.863 (8.732) |
-| minimum_strided_read_f64_n1024 | 334.371 (10.282) | unsupported | 10.547 (0.238) | 127.891 (16.891) | 98.862 (10.374) |
-| abs_strided_read_f32_n1024 | 192.201 (7.862) | unsupported | 13.585 (0.267) | 103.061 (11.850) | 94.229 (7.215) |
-| abs_strided_read_f64_n1024 | 167.257 (1.930) | unsupported | 13.490 (0.291) | 99.499 (9.754) | 98.942 (7.873) |
-| sign_strided_read_f32_n1024 | 191.481 (3.791) | unsupported | 9.183 (0.136) | 100.649 (15.695) | 94.464 (6.896) |
-| sign_strided_read_f64_n1024 | 177.202 (2.636) | unsupported | 9.204 (0.134) | 100.450 (9.505) | 98.886 (10.851) |
-| expm1_strided_read_f32_n1024 | 203.719 (12.100) | unsupported | 9.408 (0.224) | 100.257 (10.305) | 99.275 (10.718) |
-| expm1_strided_read_f64_n1024 | 186.330 (5.885) | unsupported | 9.651 (0.133) | 103.262 (8.779) | 97.168 (11.637) |
-| log_strided_read_f32_n1024 | 202.884 (7.967) | unsupported | 9.319 (0.545) | 102.536 (13.625) | 99.123 (14.898) |
-| log_strided_read_f64_n1024 | 179.336 (3.541) | unsupported | 10.930 (0.028) | 128.510 (9.219) | 104.885 (18.277) |
-| log1p_strided_read_f32_n1024 | 200.810 (5.069) | unsupported | 10.051 (0.529) | 142.520 (15.925) | 95.225 (8.331) |
-| log1p_strided_read_f64_n1024 | 179.291 (5.419) | unsupported | 11.187 (0.006) | 159.720 (19.642) | 127.454 (7.690) |
-| erf_strided_read_f32_n1024 | 205.719 (5.903) | unsupported | 9.395 (0.072) | 250.086 (3.162) | 153.612 (29.817) |
-| erf_strided_read_f64_n1024 | 179.398 (5.847) | unsupported | 15.683 (0.005) | 248.884 (5.447) | 151.248 (24.785) |
-| sin_strided_read_f32_n1024 | 202.807 (6.514) | unsupported | 9.505 (0.177) | 151.217 (12.115) | 157.744 (22.714) |
-| sin_strided_read_f64_n1024 | 180.856 (5.207) | unsupported | 9.475 (0.197) | 166.711 (4.869) | 163.704 (15.068) |
-| cos_strided_read_f32_n1024 | 211.657 (11.713) | unsupported | 9.020 (0.080) | 170.233 (15.086) | 165.566 (22.032) |
-| cos_strided_read_f64_n1024 | 178.418 (5.053) | unsupported | 9.195 (0.310) | 162.356 (7.625) | 163.083 (11.205) |
-| sqrt_strided_read_f32_n1024 | 203.027 (7.313) | unsupported | 9.302 (0.105) | 161.812 (28.362) | 148.452 (26.021) |
-| sqrt_strided_read_f64_n1024 | 190.634 (8.276) | unsupported | 9.399 (0.344) | 155.318 (23.690) | 135.807 (16.234) |
-| rsqrt_strided_read_f32_n1024 | 202.375 (2.095) | unsupported | 9.603 (0.684) | 191.339 (55.902) | 121.867 (21.917) |
-| rsqrt_strided_read_f64_n1024 | 180.178 (6.712) | unsupported | 9.337 (0.141) | 179.048 (39.350) | 102.644 (22.375) |
-| reduce_prod_strided_read_f32_n1024 | 345.934 (20.935) | unsupported | 13.573 (0.323) | 166.693 (14.252) | 137.176 (3.328) |
-| reduce_prod_strided_read_f64_n1024 | 335.277 (14.984) | unsupported | 13.090 (0.184) | 141.902 (7.851) | 174.014 (15.980) |
-| reduce_max_strided_read_f32_n1024 | 352.020 (13.991) | unsupported | 14.775 (0.222) | 170.863 (3.289) | 164.119 (7.337) |
-| reduce_max_strided_read_f64_n1024 | 335.191 (18.576) | unsupported | 14.798 (0.221) | 130.675 (3.488) | 112.405 (15.696) |
-| reduce_min_strided_read_f32_n1024 | 343.073 (11.576) | unsupported | 14.763 (0.177) | 149.190 (10.640) | 101.829 (17.882) |
-| reduce_min_strided_read_f64_n1024 | 331.544 (12.062) | unsupported | 15.477 (0.858) | 95.478 (2.233) | 91.349 (0.483) |
-| reduce_sum_squares_strided_read_f32_n1024 | 341.912 (10.686) | unsupported | 27.517 (1.678) | 1825.010 (242.256) | 137.621 (3.150) |
-| reduce_sum_squares_strided_read_f64_n1024 | 337.267 (13.559) | unsupported | 27.667 (0.388) | 1789.226 (255.072) | 118.637 (10.102) |
-| sub_strided_read_f32_n1048576 | 99.459 (1.450) | unsupported | 39.751 (0.056) | 110.285 (1.145) | 99.860 (4.113) |
-| sub_strided_read_f64_n1048576 | 189.746 (0.138) | unsupported | 77.752 (0.028) | 102.341 (3.828) | 89.779 (1.689) |
-| div_strided_read_f32_n1048576 | 98.389 (0.177) | unsupported | 39.970 (0.020) | 98.941 (1.086) | 97.651 (0.351) |
-| div_strided_read_f64_n1048576 | 205.483 (0.129) | unsupported | 94.368 (0.116) | 129.352 (2.548) | 129.718 (2.391) |
-| rem_strided_read_f32_n1048576 | 98.415 (0.309) | unsupported | 39.984 (0.103) | 125.302 (14.460) | 103.085 (9.837) |
-| rem_strided_read_f64_n1048576 | 189.022 (0.279) | unsupported | 78.186 (0.039) | 104.618 (12.741) | 97.005 (10.615) |
-| pow_strided_read_f32_n1048576 | 97.678 (0.245) | unsupported | 41.598 (0.104) | 131.623 (17.555) | 98.821 (2.964) |
-| pow_strided_read_f64_n1048576 | 1113.512 (1.109) | unsupported | 1015.219 (0.518) | 1310.798 (13.968) | 1293.271 (10.900) |
-| maximum_strided_read_f32_n1048576 | 98.035 (0.679) | unsupported | 39.933 (0.197) | 122.861 (11.206) | 98.967 (4.063) |
-| maximum_strided_read_f64_n1048576 | 188.969 (0.198) | unsupported | 78.461 (0.074) | 106.760 (2.911) | 92.000 (0.564) |
-| minimum_strided_read_f32_n1048576 | 97.769 (0.236) | unsupported | 39.891 (0.045) | 107.624 (0.916) | 97.091 (1.048) |
-| minimum_strided_read_f64_n1048576 | 188.999 (0.297) | unsupported | 78.442 (0.087) | 102.346 (3.131) | 91.205 (0.646) |
-| abs_strided_read_f32_n1048576 | 56.161 (0.100) | unsupported | 27.443 (0.115) | 92.644 (0.489) | 93.997 (0.867) |
-| abs_strided_read_f64_n1048576 | 107.864 (0.320) | unsupported | 53.180 (0.036) | 92.907 (1.900) | 95.995 (0.372) |
-| sign_strided_read_f32_n1048576 | 56.176 (0.231) | unsupported | 27.373 (0.047) | 95.176 (0.605) | 94.319 (0.514) |
-| sign_strided_read_f64_n1048576 | 107.855 (0.179) | unsupported | 53.250 (0.166) | 89.876 (4.139) | 95.136 (1.200) |
-| expm1_strided_read_f32_n1048576 | 56.534 (0.279) | unsupported | 27.483 (0.026) | 94.191 (0.808) | 94.545 (0.503) |
-| expm1_strided_read_f64_n1048576 | 280.485 (0.648) | unsupported | 224.196 (0.059) | 269.835 (4.476) | 264.925 (4.281) |
-| log_strided_read_f32_n1048576 | 56.547 (0.314) | unsupported | 27.486 (0.046) | 95.559 (7.119) | 94.754 (1.942) |
-| log_strided_read_f64_n1048576 | 404.460 (0.705) | unsupported | 349.674 (0.111) | 397.294 (12.728) | 403.942 (7.440) |
-| log1p_strided_read_f32_n1048576 | 56.611 (0.293) | unsupported | 27.469 (0.028) | 95.800 (3.350) | 95.552 (2.905) |
-| log1p_strided_read_f64_n1048576 | 416.865 (0.966) | unsupported | 361.793 (0.136) | 407.997 (13.160) | 421.288 (5.639) |
-| erf_strided_read_f32_n1048576 | 56.390 (0.207) | unsupported | 27.448 (0.058) | 144.525 (10.043) | 100.919 (5.262) |
-| erf_strided_read_f64_n1048576 | 583.933 (0.663) | unsupported | 528.709 (0.182) | 675.572 (7.597) | 662.626 (15.373) |
-| sin_strided_read_f32_n1048576 | 56.483 (0.127) | unsupported | 27.567 (0.045) | 120.175 (8.126) | 99.250 (9.081) |
-| sin_strided_read_f64_n1048576 | 253.346 (0.457) | unsupported | 211.516 (0.128) | 238.030 (2.450) | 237.441 (0.579) |
-| cos_strided_read_f32_n1048576 | 56.425 (0.355) | unsupported | 27.719 (0.181) | 101.597 (9.802) | 92.318 (2.476) |
-| cos_strided_read_f64_n1048576 | 253.085 (0.819) | unsupported | 211.062 (0.060) | 237.765 (1.147) | 252.104 (2.775) |
-| sqrt_strided_read_f32_n1048576 | 56.307 (0.185) | unsupported | 27.437 (0.028) | 93.955 (1.494) | 93.034 (2.597) |
-| sqrt_strided_read_f64_n1048576 | 148.072 (0.598) | unsupported | 91.877 (0.152) | 102.910 (1.141) | 102.990 (0.929) |
-| rsqrt_strided_read_f32_n1048576 | 56.197 (0.184) | unsupported | 27.397 (0.047) | 134.684 (1.050) | 91.887 (2.746) |
-| rsqrt_strided_read_f64_n1048576 | 115.344 (0.212) | unsupported | 61.503 (0.063) | 137.575 (3.515) | 88.101 (4.645) |
-| reduce_prod_strided_read_f32_n1048576 | 198.079 (10.490) | unsupported | 19.722 (0.333) | 148.385 (1.777) | 127.901 (1.894) |
-| reduce_prod_strided_read_f64_n1048576 | 92.857 (0.235) | unsupported | 36.415 (0.050) | 169.250 (2.690) | 156.768 (3.188) |
-| reduce_max_strided_read_f32_n1048576 | 212.272 (14.960) | unsupported | 21.581 (0.651) | 102.024 (1.714) | 150.444 (2.797) |
-| reduce_max_strided_read_f64_n1048576 | 123.111 (0.266) | unsupported | 42.267 (0.244) | 157.812 (2.882) | 157.173 (4.155) |
-| reduce_min_strided_read_f32_n1048576 | 208.178 (13.924) | unsupported | 23.878 (1.543) | 95.228 (2.062) | 155.471 (10.324) |
-| reduce_min_strided_read_f64_n1048576 | 123.116 (0.194) | unsupported | 42.343 (0.256) | 165.600 (8.288) | 159.840 (5.199) |
-| reduce_sum_squares_strided_read_f32_n1048576 | 209.887 (12.128) | unsupported | 45.151 (0.188) | 2388.683 (63.812) | 89.752 (2.707) |
-| reduce_sum_squares_strided_read_f64_n1048576 | 94.771 (0.628) | unsupported | 90.321 (0.515) | 2290.031 (17.528) | 147.886 (3.278) |
+| add_into_f32_n1024 | 11.417 (0.080) | unsupported | 4.455 (0.009) | unsupported | unsupported |
+| add_into_f64_n1024 | 11.315 (0.144) | unsupported | 4.525 (0.101) | unsupported | unsupported |
+| add_read_into_f32_n1024 | 11.857 (0.439) | unsupported | 4.471 (0.008) | unsupported | unsupported |
+| add_read_into_f64_n1024 | 11.352 (0.049) | unsupported | 4.474 (0.011) | unsupported | unsupported |
+| sub_into_f32_n1024 | 11.771 (0.025) | unsupported | 4.540 (0.010) | unsupported | unsupported |
+| sub_into_f64_n1024 | 12.127 (0.035) | unsupported | 4.511 (0.115) | unsupported | unsupported |
+| sub_read_into_f32_n1024 | 11.831 (0.203) | unsupported | 4.574 (0.009) | unsupported | unsupported |
+| sub_read_into_f64_n1024 | 12.194 (0.041) | unsupported | 4.504 (0.011) | unsupported | unsupported |
+| mul_into_f32_n1024 | 11.931 (0.046) | unsupported | 4.506 (0.012) | unsupported | unsupported |
+| mul_into_f64_n1024 | 11.768 (0.077) | unsupported | 4.599 (0.095) | unsupported | unsupported |
+| mul_read_into_f32_n1024 | 11.854 (0.071) | unsupported | 4.632 (0.010) | unsupported | unsupported |
+| mul_read_into_f64_n1024 | 12.077 (0.036) | unsupported | 4.625 (0.012) | unsupported | unsupported |
+| div_into_f32_n1024 | 11.766 (0.066) | unsupported | 4.483 (0.006) | unsupported | unsupported |
+| div_into_f64_n1024 | 11.865 (0.252) | unsupported | 4.502 (0.022) | unsupported | unsupported |
+| div_read_into_f32_n1024 | 11.702 (0.228) | unsupported | 4.475 (0.007) | unsupported | unsupported |
+| div_read_into_f64_n1024 | 12.075 (0.322) | unsupported | 4.479 (0.011) | unsupported | unsupported |
+| neg_into_f32_n1024 | 11.660 (0.020) | unsupported | 4.421 (0.006) | unsupported | unsupported |
+| neg_into_f64_n1024 | 11.667 (0.066) | unsupported | 4.438 (0.006) | unsupported | unsupported |
+| neg_read_into_f32_n1024 | 11.637 (0.034) | unsupported | 4.422 (0.015) | unsupported | unsupported |
+| neg_read_into_f64_n1024 | 11.753 (0.033) | unsupported | 4.416 (0.010) | unsupported | unsupported |
+| conj_into_c32_n1024 | 11.611 (0.065) | unsupported | 4.692 (0.006) | unsupported | unsupported |
+| conj_into_c64_n1024 | 11.811 (0.341) | unsupported | 4.878 (0.108) | unsupported | unsupported |
+| conj_read_into_c32_n1024 | 11.661 (0.057) | unsupported | 4.589 (0.011) | unsupported | unsupported |
+| conj_read_into_c64_n1024 | 11.744 (0.084) | unsupported | 4.791 (0.112) | unsupported | unsupported |
+| add_into_f32_n1048576 | 16.445 (0.068) | unsupported | 5.566 (0.024) | unsupported | unsupported |
+| add_into_f64_n1048576 | 21.300 (0.218) | unsupported | 12.571 (0.137) | unsupported | unsupported |
+| add_read_into_f32_n1048576 | 16.503 (0.041) | unsupported | 5.542 (0.049) | unsupported | unsupported |
+| add_read_into_f64_n1048576 | 21.387 (0.173) | unsupported | 12.470 (0.101) | unsupported | unsupported |
+| sub_into_f32_n1048576 | 16.511 (0.061) | unsupported | 5.544 (0.020) | unsupported | unsupported |
+| sub_into_f64_n1048576 | 21.297 (0.423) | unsupported | 12.600 (0.127) | unsupported | unsupported |
+| sub_read_into_f32_n1048576 | 15.884 (0.140) | unsupported | 5.532 (0.027) | unsupported | unsupported |
+| sub_read_into_f64_n1048576 | 21.527 (0.200) | unsupported | 12.511 (0.119) | unsupported | unsupported |
+| mul_into_f32_n1048576 | 15.819 (0.128) | unsupported | 5.542 (0.040) | unsupported | unsupported |
+| mul_into_f64_n1048576 | 21.006 (0.329) | unsupported | 12.731 (0.162) | unsupported | unsupported |
+| mul_read_into_f32_n1048576 | 16.473 (0.084) | unsupported | 5.547 (0.030) | unsupported | unsupported |
+| mul_read_into_f64_n1048576 | 21.065 (0.318) | unsupported | 12.625 (0.142) | unsupported | unsupported |
+| div_into_f32_n1048576 | 15.669 (0.371) | unsupported | 5.569 (0.035) | unsupported | unsupported |
+| div_into_f64_n1048576 | 21.444 (0.302) | unsupported | 13.250 (0.220) | unsupported | unsupported |
+| div_read_into_f32_n1048576 | 16.197 (0.091) | unsupported | 5.568 (0.028) | unsupported | unsupported |
+| div_read_into_f64_n1048576 | 21.474 (0.123) | unsupported | 13.275 (0.098) | unsupported | unsupported |
+| neg_into_f32_n1048576 | 15.440 (0.052) | unsupported | 4.930 (0.022) | unsupported | unsupported |
+| neg_into_f64_n1048576 | 17.773 (0.330) | unsupported | 7.620 (0.079) | unsupported | unsupported |
+| neg_read_into_f32_n1048576 | 15.529 (0.121) | unsupported | 4.915 (0.019) | unsupported | unsupported |
+| neg_read_into_f64_n1048576 | 17.418 (0.148) | unsupported | 7.710 (0.069) | unsupported | unsupported |
+| conj_into_c32_n1048576 | 17.950 (0.366) | unsupported | 7.715 (0.050) | unsupported | unsupported |
+| conj_into_c64_n1048576 | 33.325 (0.315) | unsupported | 25.208 (0.249) | unsupported | unsupported |
+| conj_read_into_c32_n1048576 | 17.412 (0.446) | unsupported | 7.686 (0.079) | unsupported | unsupported |
+| conj_read_into_c64_n1048576 | 33.226 (0.595) | unsupported | 25.164 (0.259) | unsupported | unsupported |
+| tensordot_f32_n1024 | 22.277 (0.106) | 23.305 (0.914) | 26.106 (0.135) | 116.147 (0.681) | 41.539 (0.367) |
+| tensordot_f64_n1024 | 22.000 (0.431) | 26.356 (0.267) | 26.310 (0.278) | 114.855 (0.415) | 41.432 (0.295) |
+| tensordot_c32_n1024 | 23.122 (0.348) | 28.193 (0.102) | 25.913 (0.096) | 130.242 (0.372) | 53.043 (0.342) |
+| tensordot_c64_n1024 | 22.937 (0.221) | 28.020 (0.195) | 26.104 (0.256) | 132.492 (0.547) | 55.546 (0.341) |
+| vdot_read_f32_n1024 | 78.206 (0.601) | unsupported | 9.325 (0.085) | 43.355 (0.360) | 41.168 (0.464) |
+| vdot_read_f64_n1024 | 79.442 (0.155) | unsupported | 9.344 (0.033) | 43.408 (0.186) | 41.725 (0.181) |
+| vdot_read_c32_n1024 | 75.769 (1.677) | unsupported | 9.374 (0.032) | 43.354 (0.435) | 42.936 (0.125) |
+| vdot_read_c64_n1024 | 75.114 (2.974) | unsupported | 9.392 (0.030) | 44.452 (0.255) | 44.108 (0.448) |
+| norm_squared_read_f32_n1024 | 42.894 (2.172) | unsupported | 9.172 (0.035) | 43.055 (1.703) | 40.012 (0.308) |
+| norm_squared_read_f64_n1024 | 41.107 (1.912) | unsupported | 9.054 (0.026) | 38.462 (4.031) | 40.239 (0.212) |
+| tensordot_f32_n262144 | 44.180 (1.863) | 48.923 (0.086) | 27.701 (0.089) | 116.579 (0.693) | 49.866 (4.053) |
+| tensordot_f64_n262144 | 42.705 (1.946) | 47.201 (0.236) | 26.884 (0.397) | 131.952 (8.787) | 62.877 (7.086) |
+| tensordot_c32_n262144 | 78.441 (1.312) | 83.170 (1.045) | 102.553 (1.011) | 138.613 (0.595) | 67.411 (0.678) |
+| tensordot_c64_n262144 | 96.463 (0.301) | 100.224 (0.529) | 79.117 (0.760) | 141.301 (1.009) | 75.518 (0.186) |
+| vdot_read_f32_n262144 | 81.263 (4.582) | unsupported | 9.471 (0.035) | 46.962 (0.254) | 57.548 (4.597) |
+| vdot_read_f64_n262144 | 87.559 (1.577) | unsupported | 9.859 (0.030) | 48.093 (0.450) | 54.669 (5.940) |
+| vdot_read_c32_n262144 | 88.727 (0.226) | unsupported | 9.790 (0.008) | 47.722 (0.251) | 53.366 (4.371) |
+| vdot_read_c64_n262144 | 93.021 (2.302) | unsupported | 13.223 (0.019) | 48.732 (0.280) | 48.831 (0.487) |
+| norm_squared_read_f32_n262144 | 44.576 (2.285) | unsupported | 9.354 (0.046) | 47.356 (0.179) | 45.093 (0.167) |
+| norm_squared_read_f64_n262144 | 45.556 (0.223) | unsupported | 9.594 (0.017) | 48.320 (0.209) | 44.756 (0.444) |
+| axpby_read_into_accum_f32_n1024 | 20.341 (0.476) | unsupported | 5.229 (0.046) | unsupported | unsupported |
+| axpby_read_into_accum_f64_n1024 | 20.642 (0.289) | unsupported | 5.169 (0.015) | unsupported | unsupported |
+| axpby_read_into_accum_c32_n1024 | 20.432 (0.304) | unsupported | 5.102 (0.006) | unsupported | unsupported |
+| axpby_read_into_accum_c64_n1024 | 20.586 (0.558) | unsupported | 5.268 (0.018) | unsupported | unsupported |
+| axpby_read_into_accum_f32_n1048576 | 28.849 (0.336) | unsupported | 8.506 (0.126) | unsupported | unsupported |
+| axpby_read_into_accum_f64_n1048576 | 31.356 (0.157) | unsupported | 16.182 (0.122) | unsupported | unsupported |
+| axpby_read_into_accum_c32_n1048576 | 31.735 (0.204) | unsupported | 16.252 (0.144) | unsupported | unsupported |
+| axpby_read_into_accum_c64_n1048576 | 76.351 (0.538) | unsupported | 36.222 (0.149) | unsupported | unsupported |
+| dot_general_read_into_f32_s16 | 14.318 (0.123) | unsupported | 9.714 (0.061) | unsupported | unsupported |
+| dot_general_read_into_accum_f32_s16 | 15.345 (0.084) | unsupported | 10.807 (0.096) | unsupported | unsupported |
+| dot_general_read_into_accum_cached_f32_s16 | 15.445 (0.045) | unsupported | 10.756 (0.060) | unsupported | unsupported |
+| dot_general_read_into_f64_s16 | 14.104 (1.160) | unsupported | 9.702 (0.048) | unsupported | unsupported |
+| dot_general_read_into_accum_f64_s16 | 13.899 (0.612) | unsupported | 11.332 (0.117) | unsupported | unsupported |
+| dot_general_read_into_accum_cached_f64_s16 | 15.018 (0.090) | unsupported | 11.382 (0.034) | unsupported | unsupported |
+| dot_general_read_into_c32_s16 | 14.651 (0.076) | unsupported | 9.774 (0.176) | unsupported | unsupported |
+| dot_general_read_into_accum_c32_s16 | 15.941 (0.039) | unsupported | 10.751 (0.158) | unsupported | unsupported |
+| dot_general_read_into_accum_cached_c32_s16 | 15.675 (0.044) | unsupported | 10.813 (0.035) | unsupported | unsupported |
+| dot_general_read_into_c64_s16 | 14.731 (0.021) | unsupported | 10.222 (0.044) | unsupported | unsupported |
+| dot_general_read_into_accum_c64_s16 | 15.710 (0.069) | unsupported | 11.458 (0.098) | unsupported | unsupported |
+| dot_general_read_into_accum_cached_c64_s16 | 15.844 (0.076) | unsupported | 11.372 (0.093) | unsupported | unsupported |
+| dot_general_read_into_f32_s256 | 21.492 (0.077) | unsupported | 12.300 (0.018) | unsupported | unsupported |
+| dot_general_read_into_accum_f32_s256 | 22.657 (0.084) | unsupported | 13.265 (0.082) | unsupported | unsupported |
+| dot_general_read_into_accum_cached_f32_s256 | 22.930 (0.123) | unsupported | 13.277 (0.042) | unsupported | unsupported |
+| dot_general_read_into_f64_s256 | 16.874 (0.834) | unsupported | 9.947 (0.046) | unsupported | unsupported |
+| dot_general_read_into_accum_f64_s256 | 18.571 (0.613) | unsupported | 10.192 (1.349) | unsupported | unsupported |
+| dot_general_read_into_accum_cached_f64_s256 | 19.757 (0.788) | unsupported | 11.554 (1.798) | unsupported | unsupported |
+| dot_general_read_into_c32_s256 | 25.781 (0.061) | unsupported | 18.183 (0.015) | unsupported | unsupported |
+| dot_general_read_into_accum_c32_s256 | 27.237 (0.074) | unsupported | 19.011 (0.031) | unsupported | unsupported |
+| dot_general_read_into_accum_cached_c32_s256 | 27.330 (0.087) | unsupported | 19.007 (0.022) | unsupported | unsupported |
+| dot_general_read_into_c64_s256 | 27.547 (0.092) | unsupported | 16.873 (0.024) | unsupported | unsupported |
+| dot_general_read_into_accum_c64_s256 | 28.932 (0.590) | unsupported | 18.181 (0.012) | unsupported | unsupported |
+| dot_general_read_into_accum_cached_c64_s256 | 28.662 (0.580) | unsupported | 18.257 (0.036) | unsupported | unsupported |
+| add_strided_read_f32_n1024 | 49.716 (0.237) | unsupported | 5.107 (0.710) | 49.796 (0.238) | 42.587 (0.324) |
+| add_strided_read_f64_n1024 | 51.612 (2.630) | unsupported | 5.854 (0.159) | 49.652 (0.380) | 42.736 (0.229) |
+| mul_strided_read_f32_n1024 | 47.898 (2.077) | unsupported | 5.587 (0.424) | 49.924 (0.307) | 42.771 (0.255) |
+| mul_strided_read_f64_n1024 | 48.932 (0.602) | unsupported | 5.031 (0.085) | 49.461 (0.097) | 42.233 (0.208) |
+| neg_strided_read_f32_n1024 | 30.449 (0.936) | unsupported | 4.810 (0.874) | 47.750 (0.222) | 39.743 (0.331) |
+| neg_strided_read_f64_n1024 | 34.011 (1.479) | unsupported | 4.764 (0.488) | 47.258 (0.193) | 39.886 (0.333) |
+| exp_strided_read_f32_n1024 | 33.356 (0.112) | unsupported | 5.175 (0.486) | 39.605 (0.493) | 40.120 (0.169) |
+| exp_strided_read_f64_n1024 | 32.825 (0.653) | unsupported | 4.777 (0.132) | 40.100 (0.253) | 40.002 (0.088) |
+| tanh_strided_read_f32_n1024 | 32.579 (0.270) | unsupported | 4.712 (0.341) | 39.883 (0.377) | 40.220 (0.246) |
+| tanh_strided_read_f64_n1024 | 32.715 (0.424) | unsupported | 4.767 (0.122) | 39.901 (0.111) | 40.232 (0.226) |
+| reduce_sum_strided_read_f32_n1024 | 48.353 (1.436) | unsupported | 7.506 (0.028) | 45.510 (0.391) | 40.335 (0.147) |
+| reduce_sum_strided_read_f64_n1024 | 52.532 (2.617) | unsupported | 8.084 (0.019) | 46.096 (0.141) | 40.132 (0.150) |
+| conj_strided_read_c32_n1024 | 34.394 (0.126) | unsupported | 6.490 (0.271) | 40.444 (0.604) | 40.400 (0.214) |
+| conj_strided_read_c64_n1024 | 34.964 (0.104) | unsupported | 6.657 (0.027) | 40.217 (0.189) | 40.614 (0.173) |
+| add_strided_read_f32_n1048576 | 84.927 (0.151) | unsupported | 5.832 (0.132) | 51.302 (0.283) | 44.483 (0.204) |
+| add_strided_read_f64_n1048576 | 102.383 (0.317) | unsupported | 12.578 (0.067) | 51.265 (0.336) | 44.424 (0.174) |
+| mul_strided_read_f32_n1048576 | 84.857 (0.304) | unsupported | 5.736 (0.342) | 51.018 (0.374) | 44.620 (0.246) |
+| mul_strided_read_f64_n1048576 | 102.477 (0.326) | unsupported | 12.644 (0.120) | 52.046 (0.557) | 44.365 (0.629) |
+| neg_strided_read_f32_n1048576 | 53.486 (0.948) | unsupported | 4.974 (0.027) | 49.922 (0.294) | 41.894 (0.206) |
+| neg_strided_read_f64_n1048576 | 68.906 (1.476) | unsupported | 7.834 (0.081) | 50.060 (1.513) | 41.909 (0.291) |
+| exp_strided_read_f32_n1048576 | 56.016 (0.606) | unsupported | 5.536 (0.155) | 41.311 (0.190) | 41.818 (0.259) |
+| exp_strided_read_f64_n1048576 | 65.430 (0.297) | unsupported | 8.315 (0.054) | 41.923 (0.328) | 42.060 (0.803) |
+| tanh_strided_read_f32_n1048576 | 54.068 (0.131) | unsupported | 5.145 (0.596) | 41.530 (0.216) | 42.228 (0.253) |
+| tanh_strided_read_f64_n1048576 | 65.722 (0.341) | unsupported | 8.236 (0.050) | 41.735 (0.384) | 42.545 (0.531) |
+| reduce_sum_strided_read_f32_n1048576 | 95.986 (0.487) | unsupported | 11.990 (0.020) | 47.572 (0.376) | 42.198 (0.158) |
+| reduce_sum_strided_read_f64_n1048576 | 100.640 (0.448) | unsupported | 13.348 (0.015) | 47.118 (0.337) | 42.115 (0.516) |
+| conj_strided_read_c32_n1048576 | 68.136 (1.588) | unsupported | 7.915 (0.054) | 41.810 (0.266) | 42.631 (0.556) |
+| conj_strided_read_c64_n1048576 | 96.413 (2.060) | unsupported | 25.235 (0.253) | 40.863 (0.881) | 42.425 (1.846) |
+| axpby_overwrite_f32_n1024 | 19.637 (0.721) | unsupported | 5.181 (0.581) | unsupported | unsupported |
+| axpby_lerp_f32_n1024 | 20.111 (0.691) | unsupported | 5.501 (0.812) | unsupported | unsupported |
+| axpby_unit_add_f32_n1024 | 19.652 (0.636) | unsupported | 4.369 (0.137) | 221.941 (1.048) | 162.904 (0.497) |
+| axpby_overwrite_f64_n1024 | 20.287 (1.023) | unsupported | 4.851 (0.422) | unsupported | unsupported |
+| axpby_lerp_f64_n1024 | 19.681 (0.295) | unsupported | 4.846 (0.334) | unsupported | unsupported |
+| axpby_unit_add_f64_n1024 | 19.691 (0.242) | unsupported | 4.421 (0.237) | 234.279 (1.339) | 166.150 (0.913) |
+| axpby_overwrite_c32_n1024 | 19.900 (0.470) | unsupported | 5.808 (0.532) | unsupported | unsupported |
+| axpby_lerp_c32_n1024 | 19.824 (0.530) | unsupported | 4.298 (0.318) | unsupported | unsupported |
+| axpby_unit_add_c32_n1024 | 20.414 (0.279) | unsupported | 4.524 (0.547) | 225.051 (0.979) | 165.739 (0.466) |
+| axpby_overwrite_c64_n1024 | 20.974 (0.581) | unsupported | 5.097 (0.381) | unsupported | unsupported |
+| axpby_lerp_c64_n1024 | 20.773 (0.634) | unsupported | 5.445 (0.007) | unsupported | unsupported |
+| axpby_unit_add_c64_n1024 | 20.335 (0.855) | unsupported | 4.616 (0.014) | 224.108 (0.564) | 166.389 (1.081) |
+| axpby_overwrite_f32_n1048576 | 28.115 (0.146) | unsupported | 5.103 (0.058) | unsupported | unsupported |
+| axpby_lerp_f32_n1048576 | 28.434 (0.111) | unsupported | 8.682 (0.054) | unsupported | unsupported |
+| axpby_unit_add_f32_n1048576 | 28.539 (0.546) | unsupported | 8.552 (0.182) | 224.812 (1.090) | 166.386 (0.954) |
+| axpby_overwrite_f64_n1048576 | 31.305 (0.863) | unsupported | 8.016 (0.058) | unsupported | unsupported |
+| axpby_lerp_f64_n1048576 | 31.430 (0.224) | unsupported | 16.935 (0.152) | unsupported | unsupported |
+| axpby_unit_add_f64_n1048576 | 31.123 (0.076) | unsupported | 16.147 (0.127) | 225.107 (0.907) | 166.249 (0.758) |
+| axpby_overwrite_c32_n1048576 | 31.666 (0.193) | unsupported | 7.973 (0.067) | unsupported | unsupported |
+| axpby_lerp_c32_n1048576 | 32.047 (0.241) | unsupported | 17.519 (0.111) | unsupported | unsupported |
+| axpby_unit_add_c32_n1048576 | 31.589 (0.278) | unsupported | 16.152 (0.086) | 223.694 (20.806) | 165.451 (0.606) |
+| axpby_overwrite_c64_n1048576 | 77.554 (0.334) | unsupported | 25.412 (0.318) | unsupported | unsupported |
+| axpby_lerp_c64_n1048576 | 77.328 (0.553) | unsupported | 38.512 (0.145) | unsupported | unsupported |
+| axpby_unit_add_c64_n1048576 | 77.221 (0.913) | unsupported | 36.121 (0.199) | 199.325 (23.327) | 165.976 (0.764) |
+| dot_general_batch_f32_s32 | 20.382 (1.362) | 24.844 (0.066) | 16.798 (0.057) | 83.089 (0.336) | 41.128 (0.330) |
+| dot_general_batch_f64_s32 | 21.518 (2.163) | 25.613 (0.319) | 18.104 (0.062) | 82.312 (0.449) | 41.369 (0.251) |
+| dot_general_batch_c32_s32 | 22.620 (1.311) | 27.061 (0.498) | 16.671 (0.135) | 101.862 (0.543) | 60.165 (0.261) |
+| dot_general_batch_c64_s32 | 21.480 (2.180) | 27.168 (0.073) | 19.053 (1.551) | 86.609 (8.919) | 62.372 (0.577) |
+| dot_general_multiple_f32_s32 | 31.753 (0.094) | 38.829 (0.313) | 36.142 (0.169) | 90.018 (0.274) | 48.408 (0.198) |
+| dot_general_multiple_f64_s32 | 29.938 (1.057) | 35.906 (0.178) | 36.365 (0.236) | 91.587 (0.187) | 48.071 (0.221) |
+| dot_general_multiple_c32_s32 | 28.903 (2.113) | 34.037 (0.209) | 36.749 (0.141) | 106.713 (0.548) | 61.832 (0.546) |
+| dot_general_multiple_c64_s32 | 31.967 (2.422) | 38.252 (0.313) | 36.705 (0.150) | 106.416 (0.526) | 64.136 (0.481) |
+| dot_general_batch_f32_s256 | 44.711 (0.089) | 47.539 (1.346) | 34.782 (0.024) | 99.442 (4.265) | 42.843 (0.248) |
+| dot_general_batch_f64_s256 | 25.765 (1.620) | 30.105 (0.318) | 22.140 (0.117) | 84.547 (0.457) | 41.019 (0.291) |
+| dot_general_batch_c32_s256 | 37.645 (0.733) | 40.956 (0.982) | 33.671 (0.032) | 103.508 (0.575) | 61.053 (0.297) |
+| dot_general_batch_c64_s256 | 34.986 (1.766) | 39.339 (2.250) | 35.003 (0.065) | 106.794 (0.767) | 63.708 (0.666) |
+| dot_general_multiple_f32_s256 | 40.595 (1.952) | 44.300 (0.229) | 36.740 (0.191) | 87.673 (3.041) | 49.188 (0.265) |
+| dot_general_multiple_f64_s256 | 39.387 (0.220) | 43.168 (1.915) | 37.047 (0.249) | 91.808 (1.458) | 62.820 (20.810) |
+| dot_general_multiple_c32_s256 | 53.757 (0.751) | 59.465 (2.455) | 40.103 (0.243) | 107.706 (1.840) | 62.079 (0.737) |
+| dot_general_multiple_c64_s256 | 48.345 (1.768) | 51.260 (2.385) | 38.838 (1.679) | 110.803 (0.560) | 67.174 (0.414) |
+| dot_conj_l0r0_c32_n1024 | 19.513 (0.579) | 21.412 (1.067) | 8.230 (0.192) | 42.264 (2.829) | 43.348 (0.146) |
+| dot_conj_l1r0_c32_n1024 | 20.437 (0.865) | 22.981 (0.213) | 9.401 (0.503) | 43.469 (2.833) | 43.174 (0.156) |
+| dot_conj_l0r1_c32_n1024 | 20.280 (0.732) | 21.582 (0.195) | 9.438 (0.029) | 43.622 (0.296) | 43.148 (0.305) |
+| dot_conj_l1r1_c32_n1024 | 21.168 (1.176) | 21.565 (0.396) | unsupported | unsupported | unsupported |
+| dot_conj_l0r0_c64_n1024 | 20.763 (1.191) | 22.356 (0.046) | 8.257 (0.023) | 44.801 (0.483) | 43.891 (0.148) |
+| dot_conj_l1r0_c64_n1024 | 22.140 (0.123) | 23.100 (1.043) | 9.182 (1.094) | 44.992 (0.157) | 44.481 (0.174) |
+| dot_conj_l0r1_c64_n1024 | 21.892 (0.684) | 22.487 (0.141) | 9.239 (0.047) | 45.266 (0.285) | 44.459 (0.122) |
+| dot_conj_l1r1_c64_n1024 | 22.343 (0.354) | 22.452 (0.060) | unsupported | unsupported | unsupported |
+| dot_conj_l0r0_c32_n262144 | 33.879 (0.225) | 35.311 (0.129) | 9.758 (0.011) | 48.231 (0.155) | 47.457 (0.277) |
+| dot_conj_l1r0_c32_n262144 | 37.757 (0.067) | 39.577 (0.157) | 9.771 (0.023) | 48.438 (0.270) | 47.650 (0.241) |
+| dot_conj_l0r1_c32_n262144 | 38.340 (1.119) | 39.637 (0.229) | 9.746 (0.020) | 48.578 (0.187) | 47.392 (0.314) |
+| dot_conj_l1r1_c32_n262144 | 37.801 (0.947) | 41.201 (0.175) | unsupported | unsupported | unsupported |
+| dot_conj_l0r0_c64_n262144 | 34.637 (0.102) | 36.432 (0.195) | 13.226 (0.011) | 49.106 (0.201) | 48.497 (0.278) |
+| dot_conj_l1r0_c64_n262144 | 35.141 (0.713) | 36.435 (0.128) | 13.195 (0.005) | 49.650 (0.387) | 48.895 (0.333) |
+| dot_conj_l0r1_c64_n262144 | 36.121 (0.080) | 36.461 (0.618) | 13.211 (0.011) | 50.092 (0.263) | 48.398 (0.210) |
+| dot_conj_l1r1_c64_n262144 | 34.713 (0.164) | 36.512 (0.508) | unsupported | unsupported | unsupported |
+| einsum_plan_owned_f32_s32 | 19.410 (0.509) | unsupported | 8.473 (0.185) | 40.663 (0.386) | 41.097 (0.294) |
+| einsum_plan_read_f32_s32 | 19.247 (0.119) | unsupported | 8.489 (0.028) | 41.062 (0.316) | 41.152 (0.099) |
+| einsum_plan_strided_read_f32_s32 | 59.786 (2.240) | unsupported | 8.396 (0.037) | 52.801 (14.026) | 41.537 (0.126) |
+| einsum_plan_into_f32_s32 | 14.782 (0.083) | unsupported | 7.172 (0.291) | unsupported | unsupported |
+| einsum_plan_read_into_f32_s32 | 15.074 (0.144) | unsupported | 7.001 (0.035) | unsupported | unsupported |
+| einsum_plan_read_into_accum_f32_s32 | 15.925 (0.169) | unsupported | 9.145 (0.605) | unsupported | unsupported |
+| einsum_plan_strided_read_into_f32_s32 | 55.452 (0.309) | unsupported | 6.906 (0.193) | unsupported | unsupported |
+| einsum_plan_strided_read_into_accum_f32_s32 | 56.769 (0.241) | unsupported | 8.950 (0.058) | unsupported | unsupported |
+| einsum_plan_owned_f64_s32 | 21.295 (0.107) | unsupported | 10.000 (0.952) | 40.208 (0.230) | 41.494 (0.444) |
+| einsum_plan_read_f64_s32 | 21.371 (0.318) | unsupported | 9.900 (0.414) | 40.835 (0.281) | 41.224 (0.354) |
+| einsum_plan_strided_read_f64_s32 | 61.620 (0.432) | unsupported | 8.715 (0.312) | 41.222 (4.861) | 41.690 (0.212) |
+| einsum_plan_into_f64_s32 | 14.525 (0.038) | unsupported | 7.774 (0.472) | unsupported | unsupported |
+| einsum_plan_read_into_f64_s32 | 14.692 (0.186) | unsupported | 7.749 (0.368) | unsupported | unsupported |
+| einsum_plan_read_into_accum_f64_s32 | 15.657 (0.060) | unsupported | 9.574 (0.088) | unsupported | unsupported |
+| einsum_plan_strided_read_into_f64_s32 | 57.632 (0.880) | unsupported | 7.486 (0.312) | unsupported | unsupported |
+| einsum_plan_strided_read_into_accum_f64_s32 | 59.877 (0.231) | unsupported | 9.829 (0.321) | unsupported | unsupported |
+| einsum_plan_owned_c32_s32 | 20.893 (0.040) | unsupported | 10.031 (0.572) | 53.113 (0.420) | 53.357 (0.295) |
+| einsum_plan_read_c32_s32 | 21.079 (0.327) | unsupported | 10.718 (1.437) | 53.812 (0.361) | 53.470 (0.240) |
+| einsum_plan_strided_read_c32_s32 | 59.046 (2.313) | unsupported | 10.016 (1.423) | 53.317 (0.256) | 53.434 (0.208) |
+| einsum_plan_into_c32_s32 | 14.381 (0.439) | unsupported | 8.906 (0.794) | unsupported | unsupported |
+| einsum_plan_read_into_c32_s32 | 15.455 (0.774) | unsupported | 9.268 (0.780) | unsupported | unsupported |
+| einsum_plan_read_into_accum_c32_s32 | 16.300 (0.642) | unsupported | 10.925 (2.061) | unsupported | unsupported |
+| einsum_plan_strided_read_into_c32_s32 | 52.728 (0.965) | unsupported | 8.528 (1.047) | unsupported | unsupported |
+| einsum_plan_strided_read_into_accum_c32_s32 | 55.480 (2.591) | unsupported | 11.720 (1.135) | unsupported | unsupported |
+| einsum_plan_owned_c64_s32 | 19.934 (0.514) | unsupported | 11.132 (2.199) | 55.451 (0.127) | 55.427 (0.143) |
+| einsum_plan_read_c64_s32 | 20.365 (1.538) | unsupported | 10.923 (0.702) | 55.894 (0.247) | 55.391 (0.176) |
+| einsum_plan_strided_read_c64_s32 | 61.486 (3.951) | unsupported | 11.420 (1.140) | 56.028 (0.161) | 55.805 (0.237) |
+| einsum_plan_into_c64_s32 | 14.131 (0.318) | unsupported | 8.135 (0.769) | unsupported | unsupported |
+| einsum_plan_read_into_c64_s32 | 14.645 (0.617) | unsupported | 8.697 (0.748) | unsupported | unsupported |
+| einsum_plan_read_into_accum_c64_s32 | 16.460 (0.101) | unsupported | 11.508 (0.815) | unsupported | unsupported |
+| einsum_plan_strided_read_into_c64_s32 | 58.816 (0.562) | unsupported | 9.817 (0.800) | unsupported | unsupported |
+| einsum_plan_strided_read_into_accum_c64_s32 | 57.492 (4.484) | unsupported | 12.827 (1.767) | unsupported | unsupported |
+| einsum_plan_owned_f32_s256 | 21.771 (0.769) | unsupported | 10.008 (1.133) | 41.466 (0.461) | 42.816 (0.271) |
+| einsum_plan_read_f32_s256 | 21.715 (1.323) | unsupported | 10.288 (1.115) | 41.806 (0.231) | 43.091 (0.366) |
+| einsum_plan_strided_read_f32_s256 | 65.118 (3.621) | unsupported | 10.647 (0.627) | 41.720 (0.176) | 42.943 (0.263) |
+| einsum_plan_into_f32_s256 | 17.219 (0.099) | unsupported | 9.300 (1.275) | unsupported | unsupported |
+| einsum_plan_read_into_f32_s256 | 17.339 (0.150) | unsupported | 8.142 (1.354) | unsupported | unsupported |
+| einsum_plan_read_into_accum_f32_s256 | 19.919 (0.108) | unsupported | 10.641 (0.019) | unsupported | unsupported |
+| einsum_plan_strided_read_into_f32_s256 | 56.259 (0.218) | unsupported | 7.900 (0.709) | unsupported | unsupported |
+| einsum_plan_strided_read_into_accum_f32_s256 | 58.107 (2.191) | unsupported | 10.539 (0.231) | unsupported | unsupported |
+| einsum_plan_owned_f64_s256 | 21.554 (1.121) | unsupported | 9.042 (0.966) | 41.852 (0.197) | 42.833 (0.280) |
+| einsum_plan_read_f64_s256 | 21.697 (0.889) | unsupported | 10.601 (0.064) | 42.246 (0.211) | 42.813 (0.257) |
+| einsum_plan_strided_read_f64_s256 | 60.311 (0.424) | unsupported | 9.312 (1.097) | 48.174 (8.777) | 48.683 (4.793) |
+| einsum_plan_into_f64_s256 | 16.403 (0.163) | unsupported | 8.027 (0.373) | unsupported | unsupported |
+| einsum_plan_read_into_f64_s256 | 16.472 (0.269) | unsupported | 8.949 (1.100) | unsupported | unsupported |
+| einsum_plan_read_into_accum_f64_s256 | 18.454 (0.255) | unsupported | 11.931 (0.142) | unsupported | unsupported |
+| einsum_plan_strided_read_into_f64_s256 | 60.358 (0.209) | unsupported | 9.454 (0.051) | unsupported | unsupported |
+| einsum_plan_strided_read_into_accum_f64_s256 | 64.664 (4.700) | unsupported | 12.123 (0.339) | unsupported | unsupported |
+| einsum_plan_owned_c32_s256 | 30.940 (1.165) | unsupported | 15.253 (0.024) | 51.882 (0.292) | 61.376 (3.407) |
+| einsum_plan_read_c32_s256 | 30.396 (0.172) | unsupported | 15.262 (0.018) | 53.095 (0.182) | 55.886 (7.239) |
+| einsum_plan_strided_read_c32_s256 | 73.873 (1.042) | unsupported | 15.177 (0.018) | 52.665 (0.306) | 54.082 (2.944) |
+| einsum_plan_into_c32_s256 | 24.351 (0.098) | unsupported | 15.238 (0.011) | unsupported | unsupported |
+| einsum_plan_read_into_c32_s256 | 24.460 (0.036) | unsupported | 15.247 (0.016) | unsupported | unsupported |
+| einsum_plan_read_into_accum_c32_s256 | 26.870 (0.137) | unsupported | 16.468 (0.029) | unsupported | unsupported |
+| einsum_plan_strided_read_into_c32_s256 | 69.053 (0.482) | unsupported | 15.182 (0.012) | unsupported | unsupported |
+| einsum_plan_strided_read_into_accum_c32_s256 | 66.050 (2.732) | unsupported | 16.312 (0.024) | unsupported | unsupported |
+| einsum_plan_owned_c64_s256 | 26.312 (0.974) | unsupported | 17.503 (0.007) | 59.582 (0.205) | 70.452 (7.859) |
+| einsum_plan_read_c64_s256 | 26.298 (0.435) | unsupported | 17.435 (0.010) | 60.208 (0.305) | 59.810 (4.465) |
+| einsum_plan_strided_read_c64_s256 | 66.281 (4.824) | unsupported | 17.406 (0.011) | 60.437 (0.275) | 62.776 (5.843) |
+| einsum_plan_into_c64_s256 | 21.232 (0.040) | unsupported | 17.394 (0.008) | unsupported | unsupported |
+| einsum_plan_read_into_c64_s256 | 21.913 (0.259) | unsupported | 17.422 (0.009) | unsupported | unsupported |
+| einsum_plan_read_into_accum_c64_s256 | 22.739 (0.231) | unsupported | 17.952 (0.019) | unsupported | unsupported |
+| einsum_plan_strided_read_into_c64_s256 | 62.246 (2.552) | unsupported | 17.323 (0.010) | unsupported | unsupported |
+| einsum_plan_strided_read_into_accum_c64_s256 | 64.821 (1.519) | unsupported | 17.897 (0.012) | unsupported | unsupported |
+| sub_strided_read_f32_n1024 | 47.590 (0.208) | unsupported | 5.742 (0.010) | 50.057 (0.255) | 47.088 (2.824) |
+| sub_strided_read_f64_n1024 | 53.200 (1.820) | unsupported | 5.677 (0.032) | 50.142 (0.339) | 52.353 (4.155) |
+| div_strided_read_f32_n1024 | 49.504 (2.205) | unsupported | 5.666 (0.111) | 42.563 (0.155) | 51.299 (3.812) |
+| div_strided_read_f64_n1024 | 48.990 (1.507) | unsupported | 5.816 (0.013) | 42.820 (0.270) | 49.531 (3.214) |
+| rem_strided_read_f32_n1024 | 69.188 (1.269) | unsupported | 5.964 (0.052) | 42.514 (0.267) | 43.027 (0.197) |
+| rem_strided_read_f64_n1024 | 75.543 (4.549) | unsupported | 5.838 (0.041) | 42.800 (0.245) | 42.844 (0.332) |
+| pow_strided_read_f32_n1024 | 59.048 (0.660) | unsupported | 5.895 (0.013) | 56.275 (0.212) | 43.318 (0.195) |
+| pow_strided_read_f64_n1024 | 64.498 (2.642) | unsupported | 7.251 (0.007) | 56.194 (0.147) | 43.069 (0.225) |
+| maximum_strided_read_f32_n1024 | 58.664 (0.882) | unsupported | 5.858 (0.029) | 50.247 (0.221) | 43.156 (0.158) |
+| maximum_strided_read_f64_n1024 | 61.205 (1.371) | unsupported | 5.848 (0.111) | 50.159 (0.202) | 42.905 (0.270) |
+| minimum_strided_read_f32_n1024 | 60.150 (0.744) | unsupported | 5.971 (0.025) | 50.587 (0.254) | 43.095 (0.135) |
+| minimum_strided_read_f64_n1024 | 62.536 (1.197) | unsupported | 5.937 (0.037) | 50.583 (0.186) | 43.013 (0.252) |
+| abs_strided_read_f32_n1024 | 32.537 (0.398) | unsupported | 6.960 (0.058) | 40.440 (0.218) | 40.415 (0.354) |
+| abs_strided_read_f64_n1024 | 34.680 (0.073) | unsupported | 7.050 (0.014) | 40.447 (0.117) | 40.325 (0.312) |
+| sign_strided_read_f32_n1024 | 32.697 (0.172) | unsupported | 5.520 (0.132) | 40.668 (0.268) | 40.310 (0.213) |
+| sign_strided_read_f64_n1024 | 35.117 (0.134) | unsupported | 5.430 (0.028) | 40.468 (0.181) | 40.337 (0.311) |
+| expm1_strided_read_f32_n1024 | 33.558 (0.090) | unsupported | 5.587 (0.021) | 40.241 (0.248) | 40.219 (0.227) |
+| expm1_strided_read_f64_n1024 | 34.913 (0.177) | unsupported | 5.501 (0.035) | 40.621 (0.247) | 40.022 (0.327) |
+| log_strided_read_f32_n1024 | 32.797 (0.116) | unsupported | 5.328 (0.050) | 40.435 (0.259) | 40.113 (0.184) |
+| log_strided_read_f64_n1024 | 35.023 (0.122) | unsupported | 5.329 (0.112) | 40.628 (0.242) | 40.116 (0.159) |
+| log1p_strided_read_f32_n1024 | 32.770 (0.103) | unsupported | 5.325 (0.017) | 40.688 (0.218) | 40.074 (0.226) |
+| log1p_strided_read_f64_n1024 | 34.956 (0.523) | unsupported | 5.476 (0.069) | 40.585 (0.312) | 40.200 (0.246) |
+| erf_strided_read_f32_n1024 | 33.388 (0.109) | unsupported | 5.529 (0.059) | 62.910 (0.352) | 40.279 (0.224) |
+| erf_strided_read_f64_n1024 | 35.729 (0.157) | unsupported | 5.445 (0.009) | 63.086 (0.501) | 40.288 (0.553) |
+| sin_strided_read_f32_n1024 | 33.467 (0.087) | unsupported | 5.447 (0.111) | 40.343 (0.161) | 40.287 (0.245) |
+| sin_strided_read_f64_n1024 | 35.632 (0.093) | unsupported | 5.530 (0.016) | 40.540 (0.278) | 40.646 (0.409) |
+| cos_strided_read_f32_n1024 | 33.509 (0.141) | unsupported | 5.451 (0.027) | 40.192 (0.258) | 40.192 (0.272) |
+| cos_strided_read_f64_n1024 | 34.951 (0.120) | unsupported | 5.342 (0.011) | 40.765 (0.170) | 40.597 (0.176) |
+| sqrt_strided_read_f32_n1024 | 31.409 (0.865) | unsupported | 5.364 (0.091) | 40.202 (0.267) | 40.017 (0.249) |
+| sqrt_strided_read_f64_n1024 | 34.799 (0.164) | unsupported | 5.465 (0.012) | 40.393 (0.257) | 40.119 (0.366) |
+| rsqrt_strided_read_f32_n1024 | 31.383 (0.691) | unsupported | 5.544 (0.024) | 65.075 (0.273) | 40.232 (0.245) |
+| rsqrt_strided_read_f64_n1024 | 35.239 (0.231) | unsupported | 5.460 (0.035) | 65.203 (0.236) | 40.170 (0.305) |
+| reduce_prod_strided_read_f32_n1024 | 50.209 (1.982) | unsupported | 7.330 (0.006) | 46.146 (0.339) | 40.231 (0.279) |
+| reduce_prod_strided_read_f64_n1024 | 50.751 (2.089) | unsupported | 8.134 (0.012) | 46.295 (0.297) | 38.961 (0.234) |
+| reduce_max_strided_read_f32_n1024 | 52.082 (0.798) | unsupported | 8.079 (0.010) | 46.298 (0.300) | 40.340 (0.165) |
+| reduce_max_strided_read_f64_n1024 | 51.765 (1.969) | unsupported | 8.664 (0.006) | 46.208 (0.154) | 40.349 (0.210) |
+| reduce_min_strided_read_f32_n1024 | 50.249 (1.869) | unsupported | 8.074 (0.008) | 46.387 (0.144) | 40.126 (0.224) |
+| reduce_min_strided_read_f64_n1024 | 50.995 (2.230) | unsupported | 8.664 (0.010) | 46.114 (0.199) | 40.067 (0.296) |
+| reduce_sum_squares_strided_read_f32_n1024 | 48.216 (1.207) | unsupported | 13.687 (0.064) | 837.101 (6.785) | 39.994 (0.207) |
+| reduce_sum_squares_strided_read_f64_n1024 | 49.583 (0.232) | unsupported | 13.960 (0.112) | 837.153 (2.768) | 39.997 (0.146) |
+| sub_strided_read_f32_n1048576 | 85.038 (0.878) | unsupported | 5.758 (0.056) | 51.525 (0.243) | 44.178 (0.103) |
+| sub_strided_read_f64_n1048576 | 101.090 (0.893) | unsupported | 12.665 (0.152) | 51.892 (0.384) | 44.418 (0.398) |
+| div_strided_read_f32_n1048576 | 84.445 (0.638) | unsupported | 5.706 (0.106) | 44.085 (0.207) | 44.575 (0.158) |
+| div_strided_read_f64_n1048576 | 101.234 (1.891) | unsupported | 13.573 (0.259) | 44.114 (0.249) | 44.481 (0.282) |
+| rem_strided_read_f32_n1048576 | 105.681 (1.287) | unsupported | 5.831 (0.082) | 43.324 (0.429) | 43.848 (0.309) |
+| rem_strided_read_f64_n1048576 | 126.499 (0.993) | unsupported | 12.180 (0.093) | 44.719 (0.456) | 44.283 (0.415) |
+| pow_strided_read_f32_n1048576 | 98.683 (0.913) | unsupported | 10.878 (0.027) | 58.015 (1.194) | 44.469 (0.147) |
+| pow_strided_read_f64_n1048576 | 127.967 (0.919) | unsupported | 29.108 (0.048) | 56.488 (7.599) | 42.645 (0.351) |
+| maximum_strided_read_f32_n1048576 | 94.253 (0.886) | unsupported | 5.866 (0.102) | 51.275 (0.336) | 44.295 (0.239) |
+| maximum_strided_read_f64_n1048576 | 115.078 (0.765) | unsupported | 12.149 (0.148) | 52.082 (0.270) | 44.388 (0.452) |
+| minimum_strided_read_f32_n1048576 | 94.441 (0.497) | unsupported | 5.861 (0.087) | 51.395 (4.532) | 43.865 (0.220) |
+| minimum_strided_read_f64_n1048576 | 113.904 (0.388) | unsupported | 12.160 (0.118) | 46.496 (7.978) | 44.556 (0.575) |
+| abs_strided_read_f32_n1048576 | 53.062 (0.217) | unsupported | 7.046 (0.097) | 39.462 (6.615) | 42.084 (0.420) |
+| abs_strided_read_f64_n1048576 | 64.992 (0.121) | unsupported | 7.979 (0.091) | 41.555 (0.433) | 41.980 (0.331) |
+| sign_strided_read_f32_n1048576 | 53.653 (0.449) | unsupported | 5.526 (0.112) | 41.191 (0.367) | 42.049 (0.226) |
+| sign_strided_read_f64_n1048576 | 64.958 (0.337) | unsupported | 7.877 (0.038) | 34.172 (0.569) | 42.015 (0.267) |
+| expm1_strided_read_f32_n1048576 | 54.725 (0.163) | unsupported | 5.845 (0.033) | 41.323 (0.203) | 42.065 (0.416) |
+| expm1_strided_read_f64_n1048576 | 67.414 (0.268) | unsupported | 9.957 (0.054) | 41.890 (0.280) | 42.050 (0.450) |
+| log_strided_read_f32_n1048576 | 54.515 (0.239) | unsupported | 5.568 (0.078) | 41.597 (0.212) | 42.199 (0.202) |
+| log_strided_read_f64_n1048576 | 69.150 (0.160) | unsupported | 12.734 (0.031) | 41.569 (0.215) | 42.076 (0.292) |
+| log1p_strided_read_f32_n1048576 | 54.467 (0.200) | unsupported | 5.511 (0.025) | 41.180 (0.181) | 41.678 (0.252) |
+| log1p_strided_read_f64_n1048576 | 69.877 (0.207) | unsupported | 13.150 (0.052) | 41.624 (0.174) | 41.818 (0.275) |
+| erf_strided_read_f32_n1048576 | 54.448 (0.214) | unsupported | 5.178 (0.368) | 64.151 (0.281) | 41.359 (0.197) |
+| erf_strided_read_f64_n1048576 | 71.213 (0.239) | unsupported | 14.372 (0.062) | 64.434 (0.473) | 42.209 (0.251) |
+| sin_strided_read_f32_n1048576 | 52.726 (0.415) | unsupported | 5.814 (0.020) | 41.311 (0.178) | 41.627 (0.265) |
+| sin_strided_read_f64_n1048576 | 66.956 (1.573) | unsupported | 10.107 (0.042) | 41.862 (0.306) | 42.118 (0.372) |
+| cos_strided_read_f32_n1048576 | 53.491 (1.423) | unsupported | 5.813 (0.036) | 41.227 (0.208) | 41.833 (0.231) |
+| cos_strided_read_f64_n1048576 | 66.180 (0.801) | unsupported | 10.199 (0.053) | 41.520 (0.270) | 41.922 (0.557) |
+| sqrt_strided_read_f32_n1048576 | 52.764 (0.753) | unsupported | 5.510 (0.117) | 41.310 (0.142) | 41.866 (0.322) |
+| sqrt_strided_read_f64_n1048576 | 65.587 (1.254) | unsupported | 7.928 (0.055) | 41.493 (0.417) | 42.005 (0.316) |
+| rsqrt_strided_read_f32_n1048576 | 53.341 (0.272) | unsupported | 5.471 (0.097) | 65.846 (0.207) | 41.898 (0.185) |
+| rsqrt_strided_read_f64_n1048576 | 65.170 (0.244) | unsupported | 7.919 (0.023) | 66.072 (0.380) | 41.869 (0.278) |
+| reduce_prod_strided_read_f32_n1048576 | 91.253 (1.404) | unsupported | 12.108 (0.011) | 47.757 (0.399) | 40.588 (0.160) |
+| reduce_prod_strided_read_f64_n1048576 | 99.378 (0.282) | unsupported | 13.305 (0.009) | 47.493 (0.371) | 41.981 (0.246) |
+| reduce_max_strided_read_f32_n1048576 | 92.022 (0.829) | unsupported | 12.072 (0.011) | 47.718 (0.442) | 41.873 (0.296) |
+| reduce_max_strided_read_f64_n1048576 | 96.421 (0.282) | unsupported | 13.405 (0.009) | 47.951 (0.161) | 42.485 (0.117) |
+| reduce_min_strided_read_f32_n1048576 | 91.186 (0.298) | unsupported | 12.066 (0.035) | 47.561 (0.239) | 42.595 (0.375) |
+| reduce_min_strided_read_f64_n1048576 | 96.484 (1.014) | unsupported | 13.408 (0.023) | 47.791 (0.239) | 42.287 (0.355) |
+| reduce_sum_squares_strided_read_f32_n1048576 | 91.054 (3.443) | unsupported | 17.096 (1.634) | 836.490 (4.064) | 41.935 (0.388) |
+| reduce_sum_squares_strided_read_f64_n1048576 | 99.669 (1.751) | unsupported | 20.500 (0.019) | 842.788 (3.958) | 42.435 (0.231) |
 
 ## Sampling
 
 | Case | Backend | Ops/sample | Samples | Median batch ms | Verification error/tolerance |
 | --- | --- | ---: | ---: | ---: | ---: |
-| add_into_f32_n1024 | tenferro-cuda-direct | 512 | 15 | 3.701 | 0 |
-| add_into_f64_n1024 | tenferro-cuda-direct | 512 | 15 | 3.477 | 0 |
-| add_read_into_f32_n1024 | tenferro-cuda-direct | 512 | 15 | 2.833 | 0 |
-| add_read_into_f64_n1024 | tenferro-cuda-direct | 512 | 15 | 2.759 | 0 |
-| sub_into_f32_n1024 | tenferro-cuda-direct | 512 | 15 | 3.740 | 0 |
-| sub_into_f64_n1024 | tenferro-cuda-direct | 512 | 15 | 3.660 | 0 |
-| sub_read_into_f32_n1024 | tenferro-cuda-direct | 512 | 15 | 2.789 | 0 |
-| sub_read_into_f64_n1024 | tenferro-cuda-direct | 512 | 15 | 2.757 | 0 |
-| mul_into_f32_n1024 | tenferro-cuda-direct | 512 | 15 | 3.736 | 0 |
-| mul_into_f64_n1024 | tenferro-cuda-direct | 512 | 15 | 3.516 | 0 |
-| mul_read_into_f32_n1024 | tenferro-cuda-direct | 512 | 15 | 2.798 | 0 |
-| mul_read_into_f64_n1024 | tenferro-cuda-direct | 512 | 15 | 2.795 | 0 |
-| div_into_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.321 | 0 |
-| div_into_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.011 | 0 |
-| div_read_into_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.665 | 0 |
-| div_read_into_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.703 | 0 |
-| neg_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 1.846 | 0 |
-| neg_into_f64_n1024 | tenferro-cuda-direct | 512 | 15 | 2.950 | 0 |
-| neg_read_into_f32_n1024 | tenferro-cuda-direct | 512 | 15 | 2.450 | 0 |
-| neg_read_into_f64_n1024 | tenferro-cuda-direct | 512 | 15 | 2.533 | 0 |
-| conj_into_c32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.895 | 0 |
-| conj_into_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 3.154 | 0 |
-| conj_read_into_c32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.488 | 0 |
-| conj_read_into_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.572 | 0 |
-| add_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.873 | 0 |
-| add_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.708 | 0 |
-| add_read_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.742 | 0 |
-| add_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.647 | 0 |
-| sub_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.749 | 0 |
-| sub_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.648 | 0 |
-| sub_read_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.749 | 0 |
-| sub_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.643 | 0 |
-| mul_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.740 | 0 |
-| mul_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.649 | 0 |
-| mul_read_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 2.743 | 0 |
-| mul_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.671 | 0 |
-| div_into_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.245 | 0 |
-| div_into_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.423 | 0 |
-| div_read_into_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.245 | 0 |
-| div_read_into_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.421 | 0 |
-| neg_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.898 | 0 |
-| neg_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.829 | 0 |
-| neg_read_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.902 | 0 |
-| neg_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.846 | 0 |
-| conj_into_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.454 | 0 |
-| conj_into_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.348 | 0 |
-| conj_read_into_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.448 | 0 |
-| conj_read_into_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.342 | 0 |
-| tensordot_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 3.499 | 0.0008859 |
-| tensordot_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.550 | 0 |
-| tensordot_c32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.287 | 0.0008152 |
-| tensordot_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.136 | 0 |
-| vdot_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 2.400 | 0 |
-| vdot_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.398 | 1.722e-07 |
-| vdot_read_c32_n1024 | tenferro-cuda-direct | 16 | 15 | 2.401 | 0 |
-| vdot_read_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.766 | 3.455e-07 |
-| norm_squared_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 2.572 | 0 |
-| norm_squared_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.388 | 0 |
-| tensordot_f32_n262144 | tenferro-cuda-direct | 64 | 15 | 3.053 | 0.006191 |
-| tensordot_f64_n262144 | tenferro-cuda-direct | 2 | 15 | 3.241 | 6.714e-06 |
-| tensordot_c32_n262144 | tenferro-cuda-direct | 16 | 15 | 2.271 | 0.01583 |
-| tensordot_c64_n262144 | tenferro-cuda-direct | 1 | 15 | 5.032 | 1.446e-05 |
-| vdot_read_f32_n262144 | tenferro-cuda-direct | 16 | 15 | 2.949 | 0 |
-| vdot_read_f64_n262144 | tenferro-cuda-direct | 16 | 15 | 2.785 | 2.995e-06 |
-| vdot_read_c32_n262144 | tenferro-cuda-direct | 16 | 15 | 2.775 | 0 |
-| vdot_read_c64_n262144 | tenferro-cuda-direct | 16 | 15 | 2.791 | 8.762e-06 |
-| norm_squared_read_f32_n262144 | tenferro-cuda-direct | 16 | 15 | 2.750 | 0.0001786 |
-| norm_squared_read_f64_n262144 | tenferro-cuda-direct | 16 | 15 | 2.747 | 0 |
-| axpby_read_into_accum_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.512 | 0 |
-| axpby_read_into_accum_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.648 | 0 |
-| axpby_read_into_accum_c32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.569 | 0 |
-| axpby_read_into_accum_c64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.589 | 0 |
-| axpby_read_into_accum_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.188 | 0 |
-| axpby_read_into_accum_f64_n1048576 | tenferro-cuda-direct | 4 | 15 | 2.139 | 0 |
-| axpby_read_into_accum_c32_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.702 | 0 |
-| axpby_read_into_accum_c64_n1048576 | tenferro-cuda-direct | 1 | 15 | 2.144 | 0 |
-| dot_general_read_into_f32_s16 | tenferro-cuda-direct | 128 | 15 | 2.858 | 8.645e-05 |
-| dot_general_read_into_accum_f32_s16 | tenferro-cuda-direct | 128 | 15 | 2.961 | 7.907e-05 |
-| dot_general_read_into_accum_cached_f32_s16 | tenferro-cuda-direct | 128 | 15 | 2.915 | 7.907e-05 |
-| dot_general_read_into_f64_s16 | tenferro-cuda-direct | 128 | 15 | 3.533 | 0 |
-| dot_general_read_into_accum_f64_s16 | tenferro-cuda-direct | 128 | 15 | 3.372 | 0 |
-| dot_general_read_into_accum_cached_f64_s16 | tenferro-cuda-direct | 128 | 15 | 3.406 | 0 |
-| dot_general_read_into_c32_s16 | tenferro-cuda-direct | 128 | 15 | 2.841 | 0.0003615 |
-| dot_general_read_into_accum_c32_s16 | tenferro-cuda-direct | 128 | 15 | 2.828 | 0.0001632 |
-| dot_general_read_into_accum_cached_c32_s16 | tenferro-cuda-direct | 128 | 15 | 2.845 | 0.0001632 |
-| dot_general_read_into_c64_s16 | tenferro-cuda-direct | 128 | 15 | 3.456 | 1.204e-07 |
-| dot_general_read_into_accum_c64_s16 | tenferro-cuda-direct | 128 | 15 | 3.175 | 6.975e-08 |
-| dot_general_read_into_accum_cached_c64_s16 | tenferro-cuda-direct | 128 | 15 | 3.108 | 6.975e-08 |
-| dot_general_read_into_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.944 | 0.0005542 |
-| dot_general_read_into_accum_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.893 | 0.0003617 |
-| dot_general_read_into_accum_cached_f32_s256 | tenferro-cuda-direct | 128 | 15 | 3.052 | 0.0003617 |
-| dot_general_read_into_f64_s256 | tenferro-cuda-direct | 8 | 15 | 2.103 | 0 |
-| dot_general_read_into_accum_f64_s256 | tenferro-cuda-direct | 8 | 15 | 2.083 | 0 |
-| dot_general_read_into_accum_cached_f64_s256 | tenferro-cuda-direct | 8 | 15 | 2.081 | 0 |
-| dot_general_read_into_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.622 | 0.001457 |
-| dot_general_read_into_accum_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.822 | 0.0008947 |
-| dot_general_read_into_accum_cached_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.816 | 0.0008947 |
-| dot_general_read_into_c64_s256 | tenferro-cuda-direct | 4 | 15 | 2.733 | 2.092e-06 |
-| dot_general_read_into_accum_c64_s256 | tenferro-cuda-direct | 4 | 15 | 2.738 | 1.318e-06 |
-| dot_general_read_into_accum_cached_c64_s256 | tenferro-cuda-direct | 4 | 15 | 2.738 | 1.318e-06 |
-| add_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.254 | 0 |
-| add_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 3.921 | 0 |
-| mul_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.641 | 0 |
-| mul_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.460 | 0 |
-| neg_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.068 | 0 |
-| neg_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.759 | 0 |
-| exp_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.167 | 0.0001272 |
-| exp_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.708 | 1.095e-07 |
-| tanh_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.106 | 9.107e-05 |
-| tanh_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.852 | 4.434e-08 |
-| reduce_sum_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.668 | 0.0001208 |
-| reduce_sum_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.361 | 4.202e-07 |
-| conj_strided_read_c32_n1024 | tenferro-cuda-direct | 16 | 15 | 2.600 | 0 |
-| conj_strided_read_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 3.766 | 0 |
-| add_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.134 | 0 |
-| add_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.021 | 0 |
-| mul_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.143 | 0 |
-| mul_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.024 | 0 |
-| neg_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.767 | 0 |
-| neg_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.470 | 0 |
-| exp_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.633 | 0.0001272 |
-| exp_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.738 | 1.095e-07 |
-| tanh_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.610 | 9.135e-05 |
-| tanh_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.527 | 4.437e-08 |
-| reduce_sum_strided_read_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.084 | 0.002489 |
-| reduce_sum_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.975 | 3.227e-06 |
-| conj_strided_read_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.661 | 0 |
-| conj_strided_read_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.426 | 0 |
-| axpby_overwrite_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.592 | 0 |
-| axpby_lerp_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.637 | 0 |
-| axpby_unit_add_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.630 | 0 |
-| axpby_overwrite_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.661 | 0 |
-| axpby_lerp_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.802 | 1.155e-07 |
-| axpby_unit_add_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.688 | 0 |
-| axpby_overwrite_c32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.622 | 0 |
-| axpby_lerp_c32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.832 | 0 |
-| axpby_unit_add_c32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.725 | 0 |
-| axpby_overwrite_c64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.728 | 0 |
-| axpby_lerp_c64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.646 | 1.155e-07 |
-| axpby_unit_add_c64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.633 | 0 |
-| axpby_overwrite_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.439 | 0 |
-| axpby_lerp_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.186 | 0 |
-| axpby_unit_add_f32_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.186 | 0 |
-| axpby_overwrite_f64_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.714 | 0 |
-| axpby_lerp_f64_n1048576 | tenferro-cuda-direct | 4 | 15 | 2.139 | 1.16e-07 |
-| axpby_unit_add_f64_n1048576 | tenferro-cuda-direct | 4 | 15 | 2.140 | 0 |
-| axpby_overwrite_c32_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.507 | 0 |
-| axpby_lerp_c32_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.702 | 0 |
-| axpby_unit_add_c32_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.703 | 0 |
-| axpby_overwrite_c64_n1048576 | tenferro-cuda-direct | 2 | 15 | 2.544 | 0 |
-| axpby_lerp_c64_n1048576 | tenferro-cuda-direct | 1 | 15 | 2.017 | 1.159e-07 |
-| axpby_unit_add_c64_n1048576 | tenferro-cuda-direct | 1 | 15 | 2.017 | 0 |
-| dot_general_batch_f32_s32 | tenferro-cuda-direct | 16 | 15 | 3.280 | 0.0002227 |
-| dot_general_batch_f64_s32 | tenferro-cuda-direct | 16 | 15 | 2.959 | 1.326e-07 |
-| dot_general_batch_c32_s32 | tenferro-cuda-direct | 16 | 15 | 2.713 | 0.0004376 |
-| dot_general_batch_c64_s32 | tenferro-cuda-direct | 16 | 15 | 2.776 | 4.296e-07 |
-| dot_general_multiple_f32_s32 | tenferro-cuda-direct | 16 | 15 | 3.284 | 0.0002162 |
-| dot_general_multiple_f64_s32 | tenferro-cuda-direct | 16 | 15 | 3.286 | 1.632e-07 |
-| dot_general_multiple_c32_s32 | tenferro-cuda-direct | 16 | 15 | 3.261 | 0.0002794 |
-| dot_general_multiple_c64_s32 | tenferro-cuda-direct | 16 | 15 | 3.247 | 4.303e-07 |
-| dot_general_batch_f32_s256 | tenferro-cuda-direct | 32 | 15 | 2.025 | 0.0008561 |
-| dot_general_batch_f64_s256 | tenferro-cuda-direct | 8 | 15 | 2.666 | 7.463e-07 |
-| dot_general_batch_c32_s256 | tenferro-cuda-direct | 64 | 15 | 2.704 | 0.001749 |
-| dot_general_batch_c64_s256 | tenferro-cuda-direct | 2 | 15 | 2.210 | 1.665e-06 |
-| dot_general_multiple_f32_s256 | tenferro-cuda-direct | 64 | 15 | 3.239 | 0.002418 |
-| dot_general_multiple_f64_s256 | tenferro-cuda-direct | 8 | 15 | 2.661 | 1.519e-06 |
-| dot_general_multiple_c32_s256 | tenferro-cuda-direct | 64 | 15 | 3.037 | 0.0022 |
-| dot_general_multiple_c64_s256 | tenferro-cuda-direct | 4 | 15 | 3.302 | 2.187e-06 |
-| dot_conj_l0r0_c32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.333 | 0.0004142 |
-| dot_conj_l1r0_c32_n1024 | tenferro-cuda-direct | 16 | 15 | 2.829 | 0.0002905 |
-| dot_conj_l0r1_c32_n1024 | tenferro-cuda-direct | 16 | 15 | 2.814 | 0.0002905 |
-| dot_conj_l1r1_c32_n1024 | tenferro-cuda-direct | 16 | 15 | 2.869 | 0.0003083 |
-| dot_conj_l0r0_c64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.105 | 3.737e-07 |
-| dot_conj_l1r0_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.755 | 1.807e-07 |
-| dot_conj_l0r1_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.755 | 1.807e-07 |
-| dot_conj_l1r1_c64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.750 | 4.927e-07 |
-| dot_conj_l0r0_c32_n262144 | tenferro-cuda-direct | 4 | 15 | 2.664 | 0.02908 |
-| dot_conj_l1r0_c32_n262144 | tenferro-cuda-direct | 16 | 15 | 2.995 | 0.005619 |
-| dot_conj_l0r1_c32_n262144 | tenferro-cuda-direct | 16 | 15 | 2.985 | 0.005619 |
-| dot_conj_l1r1_c32_n262144 | tenferro-cuda-direct | 16 | 15 | 3.001 | 0.005822 |
-| dot_conj_l0r0_c64_n262144 | tenferro-cuda-direct | 4 | 15 | 3.801 | 1.986e-05 |
-| dot_conj_l1r0_c64_n262144 | tenferro-cuda-direct | 16 | 15 | 2.936 | 1.516e-05 |
-| dot_conj_l0r1_c64_n262144 | tenferro-cuda-direct | 16 | 15 | 3.014 | 1.516e-05 |
-| dot_conj_l1r1_c64_n262144 | tenferro-cuda-direct | 16 | 15 | 3.028 | 1.212e-05 |
-| einsum_plan_owned_f32_s32 | tenferro-cuda-direct | 16 | 15 | 2.757 | 0.0002018 |
-| einsum_plan_read_f32_s32 | tenferro-cuda-direct | 16 | 15 | 2.755 | 0.0002018 |
-| einsum_plan_strided_read_f32_s32 | tenferro-cuda-direct | 16 | 15 | 2.981 | 0.0002018 |
-| einsum_plan_into_f32_s32 | tenferro-cuda-direct | 64 | 15 | 2.096 | 0.0002018 |
-| einsum_plan_read_into_f32_s32 | tenferro-cuda-direct | 128 | 15 | 3.368 | 0.0002018 |
-| einsum_plan_read_into_accum_f32_s32 | tenferro-cuda-direct | 128 | 15 | 3.310 | 0.0001134 |
-| einsum_plan_strided_read_into_f32_s32 | tenferro-cuda-direct | 128 | 15 | 3.527 | 0.0002018 |
-| einsum_plan_strided_read_into_accum_f32_s32 | tenferro-cuda-direct | 128 | 15 | 3.373 | 0.0001134 |
-| einsum_plan_owned_f64_s32 | tenferro-cuda-direct | 16 | 15 | 2.038 | 0 |
-| einsum_plan_read_f64_s32 | tenferro-cuda-direct | 16 | 15 | 2.370 | 0 |
-| einsum_plan_strided_read_f64_s32 | tenferro-cuda-direct | 16 | 15 | 2.701 | 0 |
-| einsum_plan_into_f64_s32 | tenferro-cuda-direct | 128 | 15 | 3.548 | 0 |
-| einsum_plan_read_into_f64_s32 | tenferro-cuda-direct | 64 | 15 | 1.774 | 0 |
-| einsum_plan_read_into_accum_f64_s32 | tenferro-cuda-direct | 128 | 15 | 3.554 | 0 |
-| einsum_plan_strided_read_into_f64_s32 | tenferro-cuda-direct | 128 | 15 | 3.863 | 0 |
-| einsum_plan_strided_read_into_accum_f64_s32 | tenferro-cuda-direct | 128 | 15 | 3.588 | 0 |
-| einsum_plan_owned_c32_s32 | tenferro-cuda-direct | 16 | 15 | 2.006 | 0.0004148 |
-| einsum_plan_read_c32_s32 | tenferro-cuda-direct | 16 | 15 | 2.169 | 0.0004148 |
-| einsum_plan_strided_read_c32_s32 | tenferro-cuda-direct | 16 | 15 | 2.470 | 0.0004148 |
-| einsum_plan_into_c32_s32 | tenferro-cuda-direct | 128 | 15 | 3.016 | 0.0004148 |
-| einsum_plan_read_into_c32_s32 | tenferro-cuda-direct | 128 | 15 | 3.149 | 0.0004148 |
-| einsum_plan_read_into_accum_c32_s32 | tenferro-cuda-direct | 128 | 15 | 3.296 | 0.0001409 |
-| einsum_plan_strided_read_into_c32_s32 | tenferro-cuda-direct | 128 | 15 | 3.333 | 0.0004148 |
-| einsum_plan_strided_read_into_accum_c32_s32 | tenferro-cuda-direct | 128 | 15 | 3.214 | 0.0001409 |
-| einsum_plan_owned_c64_s32 | tenferro-cuda-direct | 16 | 15 | 2.009 | 1.978e-07 |
-| einsum_plan_read_c64_s32 | tenferro-cuda-direct | 16 | 15 | 2.012 | 1.978e-07 |
-| einsum_plan_strided_read_c64_s32 | tenferro-cuda-direct | 16 | 15 | 2.540 | 1.978e-07 |
-| einsum_plan_into_c64_s32 | tenferro-cuda-direct | 128 | 15 | 3.336 | 1.978e-07 |
-| einsum_plan_read_into_c64_s32 | tenferro-cuda-direct | 128 | 15 | 3.292 | 1.978e-07 |
-| einsum_plan_read_into_accum_c64_s32 | tenferro-cuda-direct | 128 | 15 | 3.373 | 1.074e-07 |
-| einsum_plan_strided_read_into_c64_s32 | tenferro-cuda-direct | 64 | 15 | 1.776 | 1.978e-07 |
-| einsum_plan_strided_read_into_accum_c64_s32 | tenferro-cuda-direct | 128 | 15 | 3.527 | 1.074e-07 |
-| einsum_plan_owned_f32_s256 | tenferro-cuda-direct | 64 | 15 | 2.378 | 0.0009425 |
-| einsum_plan_read_f32_s256 | tenferro-cuda-direct | 64 | 15 | 2.347 | 0.0009425 |
-| einsum_plan_strided_read_f32_s256 | tenferro-cuda-direct | 64 | 15 | 2.740 | 0.0009425 |
-| einsum_plan_into_f32_s256 | tenferro-cuda-direct | 128 | 15 | 3.314 | 0.0009425 |
-| einsum_plan_read_into_f32_s256 | tenferro-cuda-direct | 128 | 15 | 3.195 | 0.0009425 |
-| einsum_plan_read_into_accum_f32_s256 | tenferro-cuda-direct | 128 | 15 | 3.316 | 0.0003475 |
-| einsum_plan_strided_read_into_f32_s256 | tenferro-cuda-direct | 128 | 15 | 3.643 | 0.0009425 |
-| einsum_plan_strided_read_into_accum_f32_s256 | tenferro-cuda-direct | 128 | 15 | 3.194 | 0.0003475 |
-| einsum_plan_owned_f64_s256 | tenferro-cuda-direct | 16 | 15 | 2.744 | 0 |
-| einsum_plan_read_f64_s256 | tenferro-cuda-direct | 16 | 15 | 2.767 | 0 |
-| einsum_plan_strided_read_f64_s256 | tenferro-cuda-direct | 16 | 15 | 2.714 | 0 |
-| einsum_plan_into_f64_s256 | tenferro-cuda-direct | 16 | 15 | 2.649 | 0 |
-| einsum_plan_read_into_f64_s256 | tenferro-cuda-direct | 16 | 15 | 2.653 | 0 |
-| einsum_plan_read_into_accum_f64_s256 | tenferro-cuda-direct | 16 | 15 | 2.675 | 0 |
-| einsum_plan_strided_read_into_f64_s256 | tenferro-cuda-direct | 16 | 15 | 2.656 | 0 |
-| einsum_plan_strided_read_into_accum_f64_s256 | tenferro-cuda-direct | 16 | 15 | 2.679 | 0 |
-| einsum_plan_owned_c32_s256 | tenferro-cuda-direct | 64 | 15 | 2.508 | 0.001996 |
-| einsum_plan_read_c32_s256 | tenferro-cuda-direct | 64 | 15 | 2.485 | 0.001996 |
-| einsum_plan_strided_read_c32_s256 | tenferro-cuda-direct | 64 | 15 | 2.871 | 0.001996 |
-| einsum_plan_into_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.375 | 0.001996 |
-| einsum_plan_read_into_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.392 | 0.001996 |
-| einsum_plan_read_into_accum_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.323 | 0.0006165 |
-| einsum_plan_strided_read_into_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.864 | 0.001996 |
-| einsum_plan_strided_read_into_accum_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.762 | 0.0006165 |
-| einsum_plan_owned_c64_s256 | tenferro-cuda-direct | 8 | 15 | 3.364 | 2.139e-06 |
-| einsum_plan_read_c64_s256 | tenferro-cuda-direct | 8 | 15 | 3.379 | 2.139e-06 |
-| einsum_plan_strided_read_c64_s256 | tenferro-cuda-direct | 8 | 15 | 3.326 | 2.139e-06 |
-| einsum_plan_into_c64_s256 | tenferro-cuda-direct | 8 | 15 | 3.369 | 2.139e-06 |
-| einsum_plan_read_into_c64_s256 | tenferro-cuda-direct | 8 | 15 | 3.369 | 2.139e-06 |
-| einsum_plan_read_into_accum_c64_s256 | tenferro-cuda-direct | 8 | 15 | 3.366 | 9.602e-07 |
-| einsum_plan_strided_read_into_c64_s256 | tenferro-cuda-direct | 8 | 15 | 3.307 | 2.139e-06 |
-| einsum_plan_strided_read_into_accum_c64_s256 | tenferro-cuda-direct | 8 | 15 | 3.305 | 9.602e-07 |
-| sub_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.532 | 0 |
-| sub_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.630 | 0 |
-| div_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.960 | 0 |
-| div_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.674 | 0 |
-| rem_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.971 | 0 |
-| rem_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.608 | 0 |
-| pow_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.947 | 0.000117 |
-| pow_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.627 | 1.48e-07 |
-| maximum_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 3.027 | 0 |
-| maximum_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.577 | 0 |
-| minimum_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.948 | 0 |
-| minimum_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.675 | 0 |
-| abs_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.075 | 0 |
-| abs_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.676 | 0 |
-| sign_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.064 | 0 |
-| sign_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.835 | 0 |
-| expm1_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.260 | 7.911e-05 |
-| expm1_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.981 | 7.39e-08 |
-| log_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.246 | 7.945e-05 |
-| log_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.869 | 4.231e-08 |
-| log1p_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.213 | 0.0001189 |
-| log1p_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.869 | 1.108e-07 |
-| erf_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.292 | 7.914e-05 |
-| erf_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.870 | 8.536e-08 |
-| sin_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.245 | 4.348e-05 |
-| sin_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.894 | 4.153e-08 |
-| cos_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.387 | 6.342e-05 |
-| cos_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.855 | 5.905e-08 |
-| sqrt_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.248 | 0 |
-| sqrt_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 3.050 | 0 |
-| rsqrt_strided_read_f32_n1024 | tenferro-cuda-direct | 16 | 15 | 3.238 | 6.983e-05 |
-| rsqrt_strided_read_f64_n1024 | tenferro-cuda-direct | 16 | 15 | 2.883 | 6.504e-08 |
-| reduce_prod_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.767 | 0.0004769 |
-| reduce_prod_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.682 | 5.55e-07 |
-| reduce_max_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.816 | 0 |
-| reduce_max_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.682 | 0 |
-| reduce_min_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.745 | 0 |
-| reduce_min_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.652 | 0 |
-| reduce_sum_squares_strided_read_f32_n1024 | tenferro-cuda-direct | 8 | 15 | 2.735 | 0.0001524 |
-| reduce_sum_squares_strided_read_f64_n1024 | tenferro-cuda-direct | 8 | 15 | 2.698 | 2.804e-07 |
-| sub_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.183 | 0 |
-| sub_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.036 | 0 |
-| div_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.148 | 0 |
-| div_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.288 | 0 |
-| rem_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.149 | 0 |
-| rem_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.024 | 0 |
-| pow_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.126 | 0.0001577 |
-| pow_strided_read_f64_n1048576 | tenferro-cuda-direct | 2 | 15 | 2.227 | 1.48e-07 |
-| maximum_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.137 | 0 |
-| maximum_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.024 | 0 |
-| minimum_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.129 | 0 |
-| minimum_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.024 | 0 |
-| abs_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.594 | 0 |
-| abs_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.452 | 0 |
-| sign_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.595 | 0 |
-| sign_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.451 | 0 |
-| expm1_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.618 | 7.915e-05 |
-| expm1_strided_read_f64_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.244 | 7.39e-08 |
-| log_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.619 | 7.946e-05 |
-| log_strided_read_f64_n1048576 | tenferro-cuda-direct | 8 | 15 | 3.236 | 4.308e-08 |
-| log1p_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.623 | 0.000119 |
-| log1p_strided_read_f64_n1048576 | tenferro-cuda-direct | 8 | 15 | 3.335 | 1.11e-07 |
-| erf_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.609 | 7.923e-05 |
-| erf_strided_read_f64_n1048576 | tenferro-cuda-direct | 4 | 15 | 2.336 | 8.536e-08 |
-| sin_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.615 | 4.348e-05 |
-| sin_strided_read_f64_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.027 | 4.153e-08 |
-| cos_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.611 | 6.342e-05 |
-| cos_strided_read_f64_n1048576 | tenferro-cuda-direct | 8 | 15 | 2.025 | 5.905e-08 |
-| sqrt_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.604 | 0 |
-| sqrt_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.369 | 0 |
-| rsqrt_strided_read_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 3.597 | 6.983e-05 |
-| rsqrt_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.691 | 6.504e-08 |
-| reduce_prod_strided_read_f32_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.169 | 0.008881 |
-| reduce_prod_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.971 | 4.833e-06 |
-| reduce_max_strided_read_f32_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.396 | 0 |
-| reduce_max_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.940 | 0 |
-| reduce_min_strided_read_f32_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.331 | 0 |
-| reduce_min_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.940 | 0 |
-| reduce_sum_squares_strided_read_f32_n1048576 | tenferro-cuda-direct | 16 | 15 | 3.358 | 0.0001778 |
-| reduce_sum_squares_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.033 | 3.312e-07 |
+| add_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.923 | 0 |
+| add_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.897 | 0 |
+| add_read_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 3.035 | 0 |
+| add_read_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.906 | 0 |
+| sub_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 3.013 | 0 |
+| sub_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 3.105 | 0 |
+| sub_read_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 3.029 | 0 |
+| sub_read_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 3.122 | 0 |
+| mul_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 3.054 | 0 |
+| mul_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 3.012 | 0 |
+| mul_read_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 3.035 | 0 |
+| mul_read_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 3.092 | 0 |
+| div_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 3.012 | 0 |
+| div_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 3.037 | 0 |
+| div_read_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.996 | 0 |
+| div_read_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 3.091 | 0 |
+| neg_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.985 | 0 |
+| neg_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 2.987 | 0 |
+| neg_read_into_f32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.979 | 0 |
+| neg_read_into_f64_n1024 | tenferro-cuda-direct | 256 | 15 | 3.009 | 0 |
+| conj_into_c32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.972 | 0 |
+| conj_into_c64_n1024 | tenferro-cuda-direct | 256 | 15 | 3.024 | 0 |
+| conj_read_into_c32_n1024 | tenferro-cuda-direct | 256 | 15 | 2.985 | 0 |
+| conj_read_into_c64_n1024 | tenferro-cuda-direct | 256 | 15 | 3.006 | 0 |
+| add_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.052 | 0 |
+| add_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.682 | 0 |
+| add_read_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.056 | 0 |
+| add_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.684 | 0 |
+| sub_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.057 | 0 |
+| sub_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.681 | 0 |
+| sub_read_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.017 | 0 |
+| sub_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.689 | 0 |
+| mul_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.012 | 0 |
+| mul_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.672 | 0 |
+| mul_read_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.054 | 0 |
+| mul_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.674 | 0 |
+| div_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.003 | 0 |
+| div_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.686 | 0 |
+| div_read_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.037 | 0 |
+| div_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.687 | 0 |
+| neg_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 0.988 | 0 |
+| neg_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.569 | 0 |
+| neg_read_into_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 0.994 | 0 |
+| neg_read_into_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.557 | 0 |
+| conj_into_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.574 | 0 |
+| conj_into_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 0.533 | 0 |
+| conj_read_into_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.557 | 0 |
+| conj_read_into_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 0.532 | 0 |
+| tensordot_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.851 | 0.000577 |
+| tensordot_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.816 | 0 |
+| tensordot_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.960 | 0.0008152 |
+| tensordot_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.936 | 0 |
+| vdot_read_f32_n1024 | tenferro-cuda-direct | 32 | 15 | 2.503 | 0 |
+| vdot_read_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 2.542 | 1.722e-07 |
+| vdot_read_c32_n1024 | tenferro-cuda-direct | 32 | 15 | 2.425 | 2.301e-05 |
+| vdot_read_c64_n1024 | tenferro-cuda-direct | 32 | 15 | 2.404 | 3.435e-07 |
+| norm_squared_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.745 | 0.0001766 |
+| norm_squared_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.631 | 1.645e-07 |
+| tensordot_f32_n262144 | tenferro-cuda-direct | 64 | 15 | 2.828 | 0.01125 |
+| tensordot_f64_n262144 | tenferro-cuda-direct | 64 | 15 | 2.733 | 6.714e-06 |
+| tensordot_c32_n262144 | tenferro-cuda-direct | 32 | 15 | 2.510 | 0.01203 |
+| tensordot_c64_n262144 | tenferro-cuda-direct | 32 | 15 | 3.087 | 7.381e-06 |
+| vdot_read_f32_n262144 | tenferro-cuda-direct | 32 | 15 | 2.600 | 0 |
+| vdot_read_f64_n262144 | tenferro-cuda-direct | 32 | 15 | 2.802 | 2.995e-06 |
+| vdot_read_c32_n262144 | tenferro-cuda-direct | 32 | 15 | 2.839 | 0 |
+| vdot_read_c64_n262144 | tenferro-cuda-direct | 32 | 15 | 2.977 | 8.766e-06 |
+| norm_squared_read_f32_n262144 | tenferro-cuda-direct | 64 | 15 | 2.853 | 0.0001786 |
+| norm_squared_read_f64_n262144 | tenferro-cuda-direct | 64 | 15 | 2.916 | 1.664e-07 |
+| axpby_read_into_accum_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.604 | 0 |
+| axpby_read_into_accum_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.642 | 0 |
+| axpby_read_into_accum_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.615 | 0 |
+| axpby_read_into_accum_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.635 | 0 |
+| axpby_read_into_accum_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.846 | 0 |
+| axpby_read_into_accum_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.003 | 0 |
+| axpby_read_into_accum_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.016 | 0 |
+| axpby_read_into_accum_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.222 | 0 |
+| dot_general_read_into_f32_s16 | tenferro-cuda-direct | 256 | 15 | 3.665 | 0.0001207 |
+| dot_general_read_into_accum_f32_s16 | tenferro-cuda-direct | 256 | 15 | 3.928 | 9.558e-05 |
+| dot_general_read_into_accum_cached_f32_s16 | tenferro-cuda-direct | 128 | 15 | 1.977 | 9.558e-05 |
+| dot_general_read_into_f64_s16 | tenferro-cuda-direct | 256 | 15 | 3.611 | 0 |
+| dot_general_read_into_accum_f64_s16 | tenferro-cuda-direct | 256 | 15 | 3.558 | 0 |
+| dot_general_read_into_accum_cached_f64_s16 | tenferro-cuda-direct | 256 | 15 | 3.845 | 0 |
+| dot_general_read_into_c32_s16 | tenferro-cuda-direct | 256 | 15 | 3.751 | 0.0003615 |
+| dot_general_read_into_accum_c32_s16 | tenferro-cuda-direct | 128 | 15 | 2.040 | 0.0001632 |
+| dot_general_read_into_accum_cached_c32_s16 | tenferro-cuda-direct | 128 | 15 | 2.006 | 0.0001632 |
+| dot_general_read_into_c64_s16 | tenferro-cuda-direct | 256 | 15 | 3.771 | 2.703e-07 |
+| dot_general_read_into_accum_c64_s16 | tenferro-cuda-direct | 128 | 15 | 2.011 | 1.774e-07 |
+| dot_general_read_into_accum_cached_c64_s16 | tenferro-cuda-direct | 128 | 15 | 2.028 | 1.774e-07 |
+| dot_general_read_into_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.751 | 0.0003909 |
+| dot_general_read_into_accum_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.900 | 0.0002334 |
+| dot_general_read_into_accum_cached_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.935 | 0.0002334 |
+| dot_general_read_into_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.160 | 0 |
+| dot_general_read_into_accum_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.377 | 0 |
+| dot_general_read_into_accum_cached_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.529 | 0 |
+| dot_general_read_into_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.300 | 0.001457 |
+| dot_general_read_into_accum_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.486 | 0.0008947 |
+| dot_general_read_into_accum_cached_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.498 | 0.0008947 |
+| dot_general_read_into_c64_s256 | tenferro-cuda-direct | 128 | 15 | 3.526 | 2.474e-06 |
+| dot_general_read_into_accum_c64_s256 | tenferro-cuda-direct | 128 | 15 | 3.703 | 1.654e-06 |
+| dot_general_read_into_accum_cached_c64_s256 | tenferro-cuda-direct | 128 | 15 | 3.669 | 1.654e-06 |
+| add_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.182 | 0 |
+| add_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.303 | 0 |
+| mul_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.065 | 0 |
+| mul_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.132 | 0 |
+| neg_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 1.949 | 0 |
+| neg_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.177 | 0 |
+| exp_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.135 | 0.0001272 |
+| exp_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.101 | 1.095e-07 |
+| tanh_strided_read_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 4.170 | 9.107e-05 |
+| tanh_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.094 | 4.434e-08 |
+| reduce_sum_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.095 | 0.0001208 |
+| reduce_sum_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.362 | 4.202e-07 |
+| conj_strided_read_c32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.201 | 0 |
+| conj_strided_read_c64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.238 | 0 |
+| add_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.718 | 0 |
+| add_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.638 | 0 |
+| mul_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.715 | 0 |
+| mul_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.640 | 0 |
+| neg_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.712 | 0 |
+| neg_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.205 | 0 |
+| exp_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.793 | 0.0001272 |
+| exp_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.094 | 1.095e-07 |
+| tanh_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.730 | 9.135e-05 |
+| tanh_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.103 | 4.437e-08 |
+| reduce_sum_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.072 | 0.003592 |
+| reduce_sum_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.220 | 4.724e-06 |
+| conj_strided_read_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.180 | 0 |
+| conj_strided_read_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.543 | 0 |
+| axpby_overwrite_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.514 | 0 |
+| axpby_lerp_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.574 | 0.0001233 |
+| axpby_unit_add_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.515 | 0 |
+| axpby_overwrite_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.597 | 0 |
+| axpby_lerp_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.519 | 0 |
+| axpby_unit_add_f64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.520 | 0 |
+| axpby_overwrite_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.547 | 0 |
+| axpby_lerp_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.537 | 0.0001233 |
+| axpby_unit_add_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.613 | 0 |
+| axpby_overwrite_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.685 | 0 |
+| axpby_lerp_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.659 | 0 |
+| axpby_unit_add_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.603 | 0 |
+| axpby_overwrite_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.799 | 0 |
+| axpby_lerp_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.820 | 0.0001247 |
+| axpby_unit_add_f32_n1048576 | tenferro-cuda-direct | 64 | 15 | 1.826 | 0 |
+| axpby_overwrite_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.002 | 0 |
+| axpby_lerp_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.006 | 0 |
+| axpby_unit_add_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 0.996 | 0 |
+| axpby_overwrite_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.013 | 0 |
+| axpby_lerp_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.026 | 0.0001245 |
+| axpby_unit_add_c32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.011 | 0 |
+| axpby_overwrite_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.241 | 0 |
+| axpby_lerp_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.237 | 0 |
+| axpby_unit_add_c64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.236 | 0 |
+| dot_general_batch_f32_s32 | tenferro-cuda-direct | 128 | 15 | 2.609 | 0.0002227 |
+| dot_general_batch_f64_s32 | tenferro-cuda-direct | 128 | 15 | 2.754 | 1.326e-07 |
+| dot_general_batch_c32_s32 | tenferro-cuda-direct | 128 | 15 | 2.895 | 0.0004376 |
+| dot_general_batch_c64_s32 | tenferro-cuda-direct | 128 | 15 | 2.749 | 4.296e-07 |
+| dot_general_multiple_f32_s32 | tenferro-cuda-direct | 64 | 15 | 2.032 | 0.0002162 |
+| dot_general_multiple_f64_s32 | tenferro-cuda-direct | 128 | 15 | 3.832 | 1.632e-07 |
+| dot_general_multiple_c32_s32 | tenferro-cuda-direct | 128 | 15 | 3.700 | 0.0002794 |
+| dot_general_multiple_c64_s32 | tenferro-cuda-direct | 64 | 15 | 2.046 | 4.303e-07 |
+| dot_general_batch_f32_s256 | tenferro-cuda-direct | 64 | 15 | 2.862 | 0.0008561 |
+| dot_general_batch_f64_s256 | tenferro-cuda-direct | 128 | 15 | 3.298 | 7.463e-07 |
+| dot_general_batch_c32_s256 | tenferro-cuda-direct | 64 | 15 | 2.409 | 0.001749 |
+| dot_general_batch_c64_s256 | tenferro-cuda-direct | 64 | 15 | 2.239 | 1.665e-06 |
+| dot_general_multiple_f32_s256 | tenferro-cuda-direct | 64 | 15 | 2.598 | 0.001306 |
+| dot_general_multiple_f64_s256 | tenferro-cuda-direct | 64 | 15 | 2.521 | 1.803e-06 |
+| dot_general_multiple_c32_s256 | tenferro-cuda-direct | 64 | 15 | 3.440 | 0.0022 |
+| dot_general_multiple_c64_s256 | tenferro-cuda-direct | 64 | 15 | 3.094 | 9.057e-07 |
+| dot_conj_l0r0_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.498 | 0.0003083 |
+| dot_conj_l1r0_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.616 | 0.0002905 |
+| dot_conj_l0r1_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.596 | 0.0002905 |
+| dot_conj_l1r1_c32_n1024 | tenferro-cuda-direct | 128 | 15 | 2.709 | 0.0003083 |
+| dot_conj_l0r0_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.658 | 4.927e-07 |
+| dot_conj_l1r0_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.834 | 1.807e-07 |
+| dot_conj_l0r1_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.802 | 1.807e-07 |
+| dot_conj_l1r1_c64_n1024 | tenferro-cuda-direct | 128 | 15 | 2.860 | 4.927e-07 |
+| dot_conj_l0r0_c32_n262144 | tenferro-cuda-direct | 64 | 15 | 2.168 | 0.005822 |
+| dot_conj_l1r0_c32_n262144 | tenferro-cuda-direct | 64 | 15 | 2.416 | 0.005619 |
+| dot_conj_l0r1_c32_n262144 | tenferro-cuda-direct | 64 | 15 | 2.454 | 0.005619 |
+| dot_conj_l1r1_c32_n262144 | tenferro-cuda-direct | 64 | 15 | 2.419 | 0.005822 |
+| dot_conj_l0r0_c64_n262144 | tenferro-cuda-direct | 64 | 15 | 2.217 | 1.212e-05 |
+| dot_conj_l1r0_c64_n262144 | tenferro-cuda-direct | 64 | 15 | 2.249 | 1.516e-05 |
+| dot_conj_l0r1_c64_n262144 | tenferro-cuda-direct | 64 | 15 | 2.312 | 1.516e-05 |
+| dot_conj_l1r1_c64_n262144 | tenferro-cuda-direct | 64 | 15 | 2.222 | 1.212e-05 |
+| einsum_plan_owned_f32_s32 | tenferro-cuda-direct | 128 | 15 | 2.485 | 0.0002018 |
+| einsum_plan_read_f32_s32 | tenferro-cuda-direct | 128 | 15 | 2.464 | 0.0002018 |
+| einsum_plan_strided_read_f32_s32 | tenferro-cuda-direct | 64 | 15 | 3.826 | 0.0002018 |
+| einsum_plan_into_f32_s32 | tenferro-cuda-direct | 256 | 15 | 3.784 | 0.0002018 |
+| einsum_plan_read_into_f32_s32 | tenferro-cuda-direct | 256 | 15 | 3.859 | 0.0002018 |
+| einsum_plan_read_into_accum_f32_s32 | tenferro-cuda-direct | 128 | 15 | 2.038 | 0.0001134 |
+| einsum_plan_strided_read_into_f32_s32 | tenferro-cuda-direct | 64 | 15 | 3.549 | 0.0002018 |
+| einsum_plan_strided_read_into_accum_f32_s32 | tenferro-cuda-direct | 64 | 15 | 3.633 | 0.0001134 |
+| einsum_plan_owned_f64_s32 | tenferro-cuda-direct | 128 | 15 | 2.726 | 0 |
+| einsum_plan_read_f64_s32 | tenferro-cuda-direct | 128 | 15 | 2.736 | 0 |
+| einsum_plan_strided_read_f64_s32 | tenferro-cuda-direct | 32 | 15 | 1.972 | 0 |
+| einsum_plan_into_f64_s32 | tenferro-cuda-direct | 256 | 15 | 3.718 | 0 |
+| einsum_plan_read_into_f64_s32 | tenferro-cuda-direct | 256 | 15 | 3.761 | 0 |
+| einsum_plan_read_into_accum_f64_s32 | tenferro-cuda-direct | 256 | 15 | 4.008 | 0 |
+| einsum_plan_strided_read_into_f64_s32 | tenferro-cuda-direct | 64 | 15 | 3.688 | 0 |
+| einsum_plan_strided_read_into_accum_f64_s32 | tenferro-cuda-direct | 64 | 15 | 3.832 | 0 |
+| einsum_plan_owned_c32_s32 | tenferro-cuda-direct | 128 | 15 | 2.674 | 0.0004148 |
+| einsum_plan_read_c32_s32 | tenferro-cuda-direct | 128 | 15 | 2.698 | 0.0004148 |
+| einsum_plan_strided_read_c32_s32 | tenferro-cuda-direct | 64 | 15 | 3.779 | 0.0004148 |
+| einsum_plan_into_c32_s32 | tenferro-cuda-direct | 256 | 15 | 3.682 | 0.0004148 |
+| einsum_plan_read_into_c32_s32 | tenferro-cuda-direct | 256 | 15 | 3.957 | 0.0004148 |
+| einsum_plan_read_into_accum_c32_s32 | tenferro-cuda-direct | 256 | 15 | 4.173 | 0.0001409 |
+| einsum_plan_strided_read_into_c32_s32 | tenferro-cuda-direct | 64 | 15 | 3.375 | 0.0004148 |
+| einsum_plan_strided_read_into_accum_c32_s32 | tenferro-cuda-direct | 64 | 15 | 3.551 | 0.0001409 |
+| einsum_plan_owned_c64_s32 | tenferro-cuda-direct | 128 | 15 | 2.552 | 1.978e-07 |
+| einsum_plan_read_c64_s32 | tenferro-cuda-direct | 128 | 15 | 2.607 | 1.978e-07 |
+| einsum_plan_strided_read_c64_s32 | tenferro-cuda-direct | 64 | 15 | 3.935 | 1.978e-07 |
+| einsum_plan_into_c64_s32 | tenferro-cuda-direct | 256 | 15 | 3.618 | 1.978e-07 |
+| einsum_plan_read_into_c64_s32 | tenferro-cuda-direct | 256 | 15 | 3.749 | 1.978e-07 |
+| einsum_plan_read_into_accum_c64_s32 | tenferro-cuda-direct | 128 | 15 | 2.107 | 1.074e-07 |
+| einsum_plan_strided_read_into_c64_s32 | tenferro-cuda-direct | 64 | 15 | 3.764 | 1.978e-07 |
+| einsum_plan_strided_read_into_accum_c64_s32 | tenferro-cuda-direct | 64 | 15 | 3.680 | 1.074e-07 |
+| einsum_plan_owned_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.787 | 0.0009425 |
+| einsum_plan_read_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.780 | 0.0009425 |
+| einsum_plan_strided_read_f32_s256 | tenferro-cuda-direct | 64 | 15 | 4.168 | 0.0009425 |
+| einsum_plan_into_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.204 | 0.0009425 |
+| einsum_plan_read_into_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.219 | 0.0009425 |
+| einsum_plan_read_into_accum_f32_s256 | tenferro-cuda-direct | 128 | 15 | 2.550 | 0.0003475 |
+| einsum_plan_strided_read_into_f32_s256 | tenferro-cuda-direct | 64 | 15 | 3.601 | 0.0009425 |
+| einsum_plan_strided_read_into_accum_f32_s256 | tenferro-cuda-direct | 64 | 15 | 3.719 | 0.0003475 |
+| einsum_plan_owned_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.759 | 0 |
+| einsum_plan_read_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.777 | 0 |
+| einsum_plan_strided_read_f64_s256 | tenferro-cuda-direct | 32 | 15 | 1.930 | 0 |
+| einsum_plan_into_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.100 | 0 |
+| einsum_plan_read_into_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.108 | 0 |
+| einsum_plan_read_into_accum_f64_s256 | tenferro-cuda-direct | 128 | 15 | 2.362 | 0 |
+| einsum_plan_strided_read_into_f64_s256 | tenferro-cuda-direct | 64 | 15 | 3.863 | 0 |
+| einsum_plan_strided_read_into_accum_f64_s256 | tenferro-cuda-direct | 32 | 15 | 2.069 | 0 |
+| einsum_plan_owned_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.960 | 0.001882 |
+| einsum_plan_read_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.891 | 0.001882 |
+| einsum_plan_strided_read_c32_s256 | tenferro-cuda-direct | 32 | 15 | 2.364 | 0.001882 |
+| einsum_plan_into_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.117 | 0.001882 |
+| einsum_plan_read_into_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.131 | 0.001882 |
+| einsum_plan_read_into_accum_c32_s256 | tenferro-cuda-direct | 128 | 15 | 3.439 | 0.0006637 |
+| einsum_plan_strided_read_into_c32_s256 | tenferro-cuda-direct | 32 | 15 | 2.210 | 0.001882 |
+| einsum_plan_strided_read_into_accum_c32_s256 | tenferro-cuda-direct | 32 | 15 | 2.114 | 0.0006637 |
+| einsum_plan_owned_c64_s256 | tenferro-cuda-direct | 128 | 15 | 3.368 | 1.972e-06 |
+| einsum_plan_read_c64_s256 | tenferro-cuda-direct | 128 | 15 | 3.366 | 1.972e-06 |
+| einsum_plan_strided_read_c64_s256 | tenferro-cuda-direct | 32 | 15 | 2.121 | 1.972e-06 |
+| einsum_plan_into_c64_s256 | tenferro-cuda-direct | 128 | 15 | 2.718 | 1.972e-06 |
+| einsum_plan_read_into_c64_s256 | tenferro-cuda-direct | 128 | 15 | 2.805 | 1.972e-06 |
+| einsum_plan_read_into_accum_c64_s256 | tenferro-cuda-direct | 128 | 15 | 2.911 | 8.162e-07 |
+| einsum_plan_strided_read_into_c64_s256 | tenferro-cuda-direct | 32 | 15 | 1.992 | 1.972e-06 |
+| einsum_plan_strided_read_into_accum_c64_s256 | tenferro-cuda-direct | 32 | 15 | 2.074 | 8.162e-07 |
+| sub_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.046 | 0 |
+| sub_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.405 | 0 |
+| div_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.168 | 0 |
+| div_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.135 | 0 |
+| rem_strided_read_f32_n1024 | tenferro-cuda-direct | 32 | 15 | 2.214 | 0 |
+| rem_strided_read_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 2.417 | 0 |
+| pow_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.779 | 0.000117 |
+| pow_strided_read_f64_n1024 | tenferro-cuda-direct | 32 | 15 | 2.064 | 1.48e-07 |
+| maximum_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.755 | 0 |
+| maximum_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.917 | 0 |
+| minimum_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.850 | 0 |
+| minimum_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 4.002 | 0 |
+| abs_strided_read_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 4.165 | 0 |
+| abs_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.220 | 0 |
+| sign_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.093 | 0 |
+| sign_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.247 | 0 |
+| expm1_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.148 | 7.911e-05 |
+| expm1_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.234 | 7.39e-08 |
+| log_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.099 | 7.945e-05 |
+| log_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.241 | 4.231e-08 |
+| log1p_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.097 | 0.0001189 |
+| log1p_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.237 | 1.108e-07 |
+| erf_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.137 | 7.914e-05 |
+| erf_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.287 | 8.536e-08 |
+| sin_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.142 | 4.348e-05 |
+| sin_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.280 | 4.153e-08 |
+| cos_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.145 | 6.342e-05 |
+| cos_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.237 | 5.905e-08 |
+| sqrt_strided_read_f32_n1024 | tenferro-cuda-direct | 128 | 15 | 4.020 | 0 |
+| sqrt_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.227 | 0 |
+| rsqrt_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 2.009 | 6.983e-05 |
+| rsqrt_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 2.255 | 6.504e-08 |
+| reduce_prod_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.213 | 0.0004769 |
+| reduce_prod_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.248 | 5.55e-07 |
+| reduce_max_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.333 | 0 |
+| reduce_max_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.313 | 0 |
+| reduce_min_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.216 | 0 |
+| reduce_min_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.264 | 0 |
+| reduce_sum_squares_strided_read_f32_n1024 | tenferro-cuda-direct | 64 | 15 | 3.086 | 0.0001524 |
+| reduce_sum_squares_strided_read_f64_n1024 | tenferro-cuda-direct | 64 | 15 | 3.173 | 2.804e-07 |
+| sub_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.721 | 0 |
+| sub_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.617 | 0 |
+| div_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.702 | 0 |
+| div_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.620 | 0 |
+| rem_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.382 | 0 |
+| rem_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.024 | 0 |
+| pow_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.158 | 0.0001577 |
+| pow_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 2.047 | 1.48e-07 |
+| maximum_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.016 | 0 |
+| maximum_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.841 | 0 |
+| minimum_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.022 | 0 |
+| minimum_strided_read_f64_n1048576 | tenferro-cuda-direct | 16 | 15 | 1.822 | 0 |
+| abs_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.698 | 0 |
+| abs_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.080 | 0 |
+| sign_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.717 | 0 |
+| sign_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.079 | 0 |
+| expm1_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.751 | 7.915e-05 |
+| expm1_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.157 | 7.39e-08 |
+| log_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.744 | 7.946e-05 |
+| log_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.213 | 4.308e-08 |
+| log1p_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.743 | 0.000119 |
+| log1p_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.236 | 1.11e-07 |
+| erf_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.742 | 7.923e-05 |
+| erf_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.279 | 8.536e-08 |
+| sin_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.687 | 4.348e-05 |
+| sin_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.143 | 4.153e-08 |
+| cos_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.712 | 6.342e-05 |
+| cos_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.118 | 5.905e-08 |
+| sqrt_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.688 | 0 |
+| sqrt_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.099 | 0 |
+| rsqrt_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 1.707 | 6.983e-05 |
+| rsqrt_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.085 | 6.504e-08 |
+| reduce_prod_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.920 | 0.008463 |
+| reduce_prod_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.180 | 4.661e-06 |
+| reduce_max_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.945 | 0 |
+| reduce_max_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.085 | 0 |
+| reduce_min_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.918 | 0 |
+| reduce_min_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.087 | 0 |
+| reduce_sum_squares_strided_read_f32_n1048576 | tenferro-cuda-direct | 32 | 15 | 2.914 | 0.0003552 |
+| reduce_sum_squares_strided_read_f64_n1048576 | tenferro-cuda-direct | 32 | 15 | 3.189 | 3.312e-07 |
 | add_into_f32_n1024 | tenferro-cuda-eager | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | add_into_f64_n1024 | tenferro-cuda-eager | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | add_read_into_f32_n1024 | tenferro-cuda-eager | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
@@ -729,20 +729,20 @@ Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once out
 | conj_into_c64_n1048576 | tenferro-cuda-eager | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | conj_read_into_c32_n1048576 | tenferro-cuda-eager | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | conj_read_into_c64_n1048576 | tenferro-cuda-eager | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| tensordot_f32_n1024 | tenferro-cuda-eager | 64 | 15 | 2.452 | 0.0008859 |
-| tensordot_f64_n1024 | tenferro-cuda-eager | 64 | 15 | 2.732 | 0 |
-| tensordot_c32_n1024 | tenferro-cuda-eager | 64 | 15 | 2.542 | 0.0008152 |
-| tensordot_c64_n1024 | tenferro-cuda-eager | 64 | 15 | 2.695 | 0 |
+| tensordot_f32_n1024 | tenferro-cuda-eager | 128 | 15 | 2.983 | 0.000577 |
+| tensordot_f64_n1024 | tenferro-cuda-eager | 128 | 15 | 3.374 | 0 |
+| tensordot_c32_n1024 | tenferro-cuda-eager | 128 | 15 | 3.609 | 0.0008152 |
+| tensordot_c64_n1024 | tenferro-cuda-eager | 128 | 15 | 3.587 | 0 |
 | vdot_read_f32_n1024 | tenferro-cuda-eager | — | — | — | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
 | vdot_read_f64_n1024 | tenferro-cuda-eager | — | — | — | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
 | vdot_read_c32_n1024 | tenferro-cuda-eager | — | — | — | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
 | vdot_read_c64_n1024 | tenferro-cuda-eager | — | — | — | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
 | norm_squared_read_f32_n1024 | tenferro-cuda-eager | — | — | — | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
 | norm_squared_read_f64_n1024 | tenferro-cuda-eager | — | — | — | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
-| tensordot_f32_n262144 | tenferro-cuda-eager | 64 | 15 | 2.996 | 0.006191 |
-| tensordot_f64_n262144 | tenferro-cuda-eager | 2 | 15 | 3.261 | 6.714e-06 |
-| tensordot_c32_n262144 | tenferro-cuda-eager | 16 | 15 | 2.277 | 0.01583 |
-| tensordot_c64_n262144 | tenferro-cuda-eager | 1 | 15 | 5.066 | 1.446e-05 |
+| tensordot_f32_n262144 | tenferro-cuda-eager | 64 | 15 | 3.131 | 0.01125 |
+| tensordot_f64_n262144 | tenferro-cuda-eager | 64 | 15 | 3.021 | 6.714e-06 |
+| tensordot_c32_n262144 | tenferro-cuda-eager | 32 | 15 | 2.661 | 0.01203 |
+| tensordot_c64_n262144 | tenferro-cuda-eager | 32 | 15 | 3.207 | 7.381e-06 |
 | vdot_read_f32_n262144 | tenferro-cuda-eager | — | — | — | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
 | vdot_read_f64_n262144 | tenferro-cuda-eager | — | — | — | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
 | vdot_read_c32_n262144 | tenferro-cuda-eager | — | — | — | No matching immediate EagerSession reduction method; the direct BackendSession API is measured separately. |
@@ -833,38 +833,38 @@ Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once out
 | axpby_overwrite_c64_n1048576 | tenferro-cuda-eager | — | — | — | No matching public caller-owned output API. |
 | axpby_lerp_c64_n1048576 | tenferro-cuda-eager | — | — | — | No matching public caller-owned output API. |
 | axpby_unit_add_c64_n1048576 | tenferro-cuda-eager | — | — | — | No matching public caller-owned output API. |
-| dot_general_batch_f32_s32 | tenferro-cuda-eager | 64 | 15 | 3.058 | 0.0002227 |
-| dot_general_batch_f64_s32 | tenferro-cuda-eager | 64 | 15 | 3.254 | 1.326e-07 |
-| dot_general_batch_c32_s32 | tenferro-cuda-eager | 64 | 15 | 3.200 | 0.0004376 |
-| dot_general_batch_c64_s32 | tenferro-cuda-eager | 64 | 15 | 3.397 | 4.296e-07 |
-| dot_general_multiple_f32_s32 | tenferro-cuda-eager | 64 | 15 | 3.508 | 0.0002162 |
-| dot_general_multiple_f64_s32 | tenferro-cuda-eager | 64 | 15 | 3.395 | 1.632e-07 |
-| dot_general_multiple_c32_s32 | tenferro-cuda-eager | 64 | 15 | 3.377 | 0.0002794 |
-| dot_general_multiple_c64_s32 | tenferro-cuda-eager | 64 | 15 | 3.416 | 4.303e-07 |
-| dot_general_batch_f32_s256 | tenferro-cuda-eager | 64 | 15 | 2.601 | 0.0008561 |
-| dot_general_batch_f64_s256 | tenferro-cuda-eager | 8 | 15 | 2.670 | 7.463e-07 |
-| dot_general_batch_c32_s256 | tenferro-cuda-eager | 64 | 15 | 2.663 | 0.001749 |
-| dot_general_batch_c64_s256 | tenferro-cuda-eager | 2 | 15 | 2.219 | 1.665e-06 |
-| dot_general_multiple_f32_s256 | tenferro-cuda-eager | 64 | 15 | 3.116 | 0.002418 |
-| dot_general_multiple_f64_s256 | tenferro-cuda-eager | 8 | 15 | 2.673 | 1.519e-06 |
-| dot_general_multiple_c32_s256 | tenferro-cuda-eager | 64 | 15 | 3.043 | 0.0022 |
-| dot_general_multiple_c64_s256 | tenferro-cuda-eager | 4 | 15 | 3.331 | 2.187e-06 |
-| dot_conj_l0r0_c32_n1024 | tenferro-cuda-eager | 128 | 15 | 4.408 | 0.0004142 |
-| dot_conj_l1r0_c32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.519 | 0.0002905 |
-| dot_conj_l0r1_c32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.190 | 0.0002905 |
-| dot_conj_l1r1_c32_n1024 | tenferro-cuda-eager | 16 | 15 | 2.024 | 0.0003083 |
-| dot_conj_l0r0_c64_n1024 | tenferro-cuda-eager | 64 | 15 | 2.376 | 3.737e-07 |
-| dot_conj_l1r0_c64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.365 | 1.807e-07 |
-| dot_conj_l0r1_c64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.279 | 1.807e-07 |
-| dot_conj_l1r1_c64_n1024 | tenferro-cuda-eager | 16 | 15 | 2.195 | 4.927e-07 |
-| dot_conj_l0r0_c32_n262144 | tenferro-cuda-eager | 4 | 15 | 2.504 | 0.02908 |
-| dot_conj_l1r0_c32_n262144 | tenferro-cuda-eager | 32 | 15 | 3.386 | 0.005619 |
-| dot_conj_l0r1_c32_n262144 | tenferro-cuda-eager | 32 | 15 | 3.366 | 0.005619 |
-| dot_conj_l1r1_c32_n262144 | tenferro-cuda-eager | 32 | 15 | 3.397 | 0.005822 |
-| dot_conj_l0r0_c64_n262144 | tenferro-cuda-eager | 4 | 15 | 3.639 | 1.986e-05 |
-| dot_conj_l1r0_c64_n262144 | tenferro-cuda-eager | 32 | 15 | 3.398 | 1.516e-05 |
-| dot_conj_l0r1_c64_n262144 | tenferro-cuda-eager | 32 | 15 | 3.366 | 1.516e-05 |
-| dot_conj_l1r1_c64_n262144 | tenferro-cuda-eager | 32 | 15 | 3.420 | 1.212e-05 |
+| dot_general_batch_f32_s32 | tenferro-cuda-eager | 128 | 15 | 3.180 | 0.0002227 |
+| dot_general_batch_f64_s32 | tenferro-cuda-eager | 128 | 15 | 3.278 | 1.326e-07 |
+| dot_general_batch_c32_s32 | tenferro-cuda-eager | 128 | 15 | 3.464 | 0.0004376 |
+| dot_general_batch_c64_s32 | tenferro-cuda-eager | 128 | 15 | 3.478 | 4.296e-07 |
+| dot_general_multiple_f32_s32 | tenferro-cuda-eager | 64 | 15 | 2.485 | 0.0002162 |
+| dot_general_multiple_f64_s32 | tenferro-cuda-eager | 64 | 15 | 2.298 | 1.632e-07 |
+| dot_general_multiple_c32_s32 | tenferro-cuda-eager | 64 | 15 | 2.178 | 0.0002794 |
+| dot_general_multiple_c64_s32 | tenferro-cuda-eager | 64 | 15 | 2.448 | 4.303e-07 |
+| dot_general_batch_f32_s256 | tenferro-cuda-eager | 64 | 15 | 3.043 | 0.0008561 |
+| dot_general_batch_f64_s256 | tenferro-cuda-eager | 64 | 15 | 1.927 | 7.463e-07 |
+| dot_general_batch_c32_s256 | tenferro-cuda-eager | 64 | 15 | 2.621 | 0.001749 |
+| dot_general_batch_c64_s256 | tenferro-cuda-eager | 64 | 15 | 2.518 | 1.665e-06 |
+| dot_general_multiple_f32_s256 | tenferro-cuda-eager | 64 | 15 | 2.835 | 0.001306 |
+| dot_general_multiple_f64_s256 | tenferro-cuda-eager | 64 | 15 | 2.763 | 1.803e-06 |
+| dot_general_multiple_c32_s256 | tenferro-cuda-eager | 32 | 15 | 1.903 | 0.0022 |
+| dot_general_multiple_c64_s256 | tenferro-cuda-eager | 64 | 15 | 3.281 | 9.057e-07 |
+| dot_conj_l0r0_c32_n1024 | tenferro-cuda-eager | 128 | 15 | 2.741 | 0.0003083 |
+| dot_conj_l1r0_c32_n1024 | tenferro-cuda-eager | 128 | 15 | 2.942 | 0.0002905 |
+| dot_conj_l0r1_c32_n1024 | tenferro-cuda-eager | 128 | 15 | 2.762 | 0.0002905 |
+| dot_conj_l1r1_c32_n1024 | tenferro-cuda-eager | 128 | 15 | 2.760 | 0.0003083 |
+| dot_conj_l0r0_c64_n1024 | tenferro-cuda-eager | 128 | 15 | 2.862 | 4.927e-07 |
+| dot_conj_l1r0_c64_n1024 | tenferro-cuda-eager | 128 | 15 | 2.957 | 1.807e-07 |
+| dot_conj_l0r1_c64_n1024 | tenferro-cuda-eager | 128 | 15 | 2.878 | 1.807e-07 |
+| dot_conj_l1r1_c64_n1024 | tenferro-cuda-eager | 128 | 15 | 2.874 | 4.927e-07 |
+| dot_conj_l0r0_c32_n262144 | tenferro-cuda-eager | 64 | 15 | 2.260 | 0.005822 |
+| dot_conj_l1r0_c32_n262144 | tenferro-cuda-eager | 64 | 15 | 2.533 | 0.005619 |
+| dot_conj_l0r1_c32_n262144 | tenferro-cuda-eager | 64 | 15 | 2.537 | 0.005619 |
+| dot_conj_l1r1_c32_n262144 | tenferro-cuda-eager | 64 | 15 | 2.637 | 0.005822 |
+| dot_conj_l0r0_c64_n262144 | tenferro-cuda-eager | 64 | 15 | 2.332 | 1.212e-05 |
+| dot_conj_l1r0_c64_n262144 | tenferro-cuda-eager | 64 | 15 | 2.332 | 1.516e-05 |
+| dot_conj_l0r1_c64_n262144 | tenferro-cuda-eager | 64 | 15 | 2.333 | 1.516e-05 |
+| dot_conj_l1r1_c64_n262144 | tenferro-cuda-eager | 64 | 15 | 2.337 | 1.212e-05 |
 | einsum_plan_owned_f32_s32 | tenferro-cuda-eager | — | — | — | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
 | einsum_plan_read_f32_s32 | tenferro-cuda-eager | — | — | — | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
 | einsum_plan_strided_read_f32_s32 | tenferro-cuda-eager | — | — | — | ConcreteEinsumPlan accepts concrete Tensor/TensorRead; no equivalent public prepared EagerTensor plan execution API is established. |
@@ -1009,334 +1009,334 @@ Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once out
 | reduce_min_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
 | reduce_sum_squares_strided_read_f32_n1048576 | tenferro-cuda-eager | — | — | — | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
 | reduce_sum_squares_strided_read_f64_n1048576 | tenferro-cuda-eager | — | — | — | No equivalent public borrowed TensorRead route; an owned EagerTensor is a different input representation. |
-| add_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.353 | 0 |
-| add_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.662 | 0 |
-| add_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.452 | 0 |
-| add_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.413 | 0 |
-| sub_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.444 | 0 |
-| sub_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.500 | 0 |
-| sub_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.482 | 0 |
-| sub_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.457 | 0 |
-| mul_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.864 | 0 |
-| mul_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.716 | 0 |
-| mul_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.764 | 0 |
-| mul_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.449 | 0 |
-| div_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.391 | 0 |
-| div_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.489 | 0 |
-| div_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.427 | 0 |
-| div_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.463 | 0 |
-| neg_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.201 | 0 |
-| neg_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.165 | 0 |
-| neg_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 3.212 | 0 |
-| neg_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 3.154 | 0 |
-| conj_into_c32_n1024 | pytorch-cuda | 512 | 15 | 3.728 | 0 |
-| conj_into_c64_n1024 | pytorch-cuda | 512 | 15 | 3.766 | 0 |
-| conj_read_into_c32_n1024 | pytorch-cuda | 512 | 15 | 3.741 | 0 |
-| conj_read_into_c64_n1024 | pytorch-cuda | 256 | 15 | 1.820 | 0 |
-| add_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.544 | 0 |
-| add_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.485 | 0 |
-| add_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.544 | 0 |
-| add_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.483 | 0 |
-| sub_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.537 | 0 |
-| sub_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.483 | 0 |
-| sub_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.538 | 0 |
-| sub_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.482 | 0 |
-| mul_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.538 | 0 |
-| mul_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.481 | 0 |
-| mul_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.550 | 0 |
-| mul_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.481 | 0 |
-| div_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.551 | 0 |
-| div_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 3.006 | 0 |
-| div_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.555 | 0 |
-| div_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 3.007 | 0 |
-| neg_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.740 | 0 |
-| neg_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.690 | 0 |
-| neg_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.742 | 0 |
-| neg_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.690 | 0 |
-| conj_into_c32_n1048576 | pytorch-cuda | 32 | 15 | 1.690 | 0 |
-| conj_into_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.660 | 0 |
-| conj_read_into_c32_n1048576 | pytorch-cuda | 32 | 15 | 1.689 | 0 |
-| conj_read_into_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.659 | 0 |
-| tensordot_f32_n1024 | pytorch-cuda | 64 | 15 | 3.206 | 0.0008859 |
-| tensordot_f64_n1024 | pytorch-cuda | 64 | 15 | 3.433 | 0 |
-| tensordot_c32_n1024 | pytorch-cuda | 64 | 15 | 3.223 | 0.0005344 |
-| tensordot_c64_n1024 | pytorch-cuda | 64 | 15 | 3.509 | 0 |
-| vdot_read_f32_n1024 | pytorch-cuda | 128 | 15 | 2.021 | 0 |
-| vdot_read_f64_n1024 | pytorch-cuda | 128 | 15 | 1.986 | 1.722e-07 |
-| vdot_read_c32_n1024 | pytorch-cuda | 256 | 15 | 3.865 | 0 |
-| vdot_read_c64_n1024 | pytorch-cuda | 128 | 15 | 1.969 | 3.455e-07 |
-| norm_squared_read_f32_n1024 | pytorch-cuda | 128 | 15 | 2.003 | 0 |
-| norm_squared_read_f64_n1024 | pytorch-cuda | 256 | 15 | 4.040 | 0 |
-| tensordot_f32_n262144 | pytorch-cuda | 32 | 15 | 1.993 | 0.006191 |
-| tensordot_f64_n262144 | pytorch-cuda | 2 | 15 | 3.257 | 6.714e-06 |
-| tensordot_c32_n262144 | pytorch-cuda | 16 | 15 | 2.547 | 0.005717 |
-| tensordot_c64_n262144 | pytorch-cuda | 1 | 15 | 5.258 | 4.401e-06 |
-| vdot_read_f32_n262144 | pytorch-cuda | 128 | 15 | 2.124 | 0 |
-| vdot_read_f64_n262144 | pytorch-cuda | 128 | 15 | 2.589 | 2.995e-06 |
-| vdot_read_c32_n262144 | pytorch-cuda | 128 | 15 | 2.233 | 0 |
-| vdot_read_c64_n262144 | pytorch-cuda | 64 | 15 | 2.160 | 8.762e-06 |
-| norm_squared_read_f32_n262144 | pytorch-cuda | 128 | 15 | 2.013 | 0.0001786 |
-| norm_squared_read_f64_n262144 | pytorch-cuda | 128 | 15 | 2.067 | 0 |
-| axpby_read_into_accum_f32_n1024 | pytorch-cuda | 256 | 15 | 1.924 | 0 |
-| axpby_read_into_accum_f64_n1024 | pytorch-cuda | 256 | 15 | 1.993 | 0 |
-| axpby_read_into_accum_c32_n1024 | pytorch-cuda | 512 | 15 | 3.922 | 0 |
-| axpby_read_into_accum_c64_n1024 | pytorch-cuda | 512 | 15 | 3.984 | 0 |
-| axpby_read_into_accum_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.542 | 0 |
-| axpby_read_into_accum_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.486 | 0 |
-| axpby_read_into_accum_c32_n1048576 | pytorch-cuda | 32 | 15 | 2.484 | 0 |
-| axpby_read_into_accum_c64_n1048576 | pytorch-cuda | 16 | 15 | 2.455 | 0 |
-| dot_general_read_into_f32_s16 | pytorch-cuda | 128 | 15 | 2.381 | 8.645e-05 |
-| dot_general_read_into_accum_f32_s16 | pytorch-cuda | 128 | 15 | 2.884 | 7.907e-05 |
-| dot_general_read_into_accum_cached_f32_s16 | pytorch-cuda | 128 | 15 | 2.863 | 7.907e-05 |
-| dot_general_read_into_f64_s16 | pytorch-cuda | 128 | 15 | 2.675 | 0 |
-| dot_general_read_into_accum_f64_s16 | pytorch-cuda | 128 | 15 | 3.186 | 0 |
-| dot_general_read_into_accum_cached_f64_s16 | pytorch-cuda | 128 | 15 | 3.192 | 0 |
-| dot_general_read_into_c32_s16 | pytorch-cuda | 128 | 15 | 2.788 | 0.0001647 |
-| dot_general_read_into_accum_c32_s16 | pytorch-cuda | 128 | 15 | 3.381 | 0.0001125 |
-| dot_general_read_into_accum_cached_c32_s16 | pytorch-cuda | 128 | 15 | 3.151 | 0.0001125 |
-| dot_general_read_into_c64_s16 | pytorch-cuda | 128 | 15 | 2.787 | 1.373e-07 |
-| dot_general_read_into_accum_c64_s16 | pytorch-cuda | 128 | 15 | 3.291 | 7.37e-08 |
-| dot_general_read_into_accum_cached_c64_s16 | pytorch-cuda | 64 | 15 | 1.660 | 7.37e-08 |
-| dot_general_read_into_f32_s256 | pytorch-cuda | 128 | 15 | 2.439 | 0.0005542 |
-| dot_general_read_into_accum_f32_s256 | pytorch-cuda | 128 | 15 | 2.856 | 0.0003617 |
-| dot_general_read_into_accum_cached_f32_s256 | pytorch-cuda | 128 | 15 | 2.877 | 0.0003617 |
-| dot_general_read_into_f64_s256 | pytorch-cuda | 8 | 15 | 1.986 | 0 |
-| dot_general_read_into_accum_f64_s256 | pytorch-cuda | 8 | 15 | 2.160 | 0 |
-| dot_general_read_into_accum_cached_f64_s256 | pytorch-cuda | 8 | 15 | 2.239 | 0 |
-| dot_general_read_into_c32_s256 | pytorch-cuda | 128 | 15 | 3.433 | 0.0008017 |
-| dot_general_read_into_accum_c32_s256 | pytorch-cuda | 128 | 15 | 3.555 | 0.000499 |
-| dot_general_read_into_accum_cached_c32_s256 | pytorch-cuda | 128 | 15 | 3.648 | 0.000499 |
-| dot_general_read_into_c64_s256 | pytorch-cuda | 4 | 15 | 3.902 | 1.175e-06 |
-| dot_general_read_into_accum_c64_s256 | pytorch-cuda | 4 | 15 | 3.927 | 6.523e-07 |
-| dot_general_read_into_accum_cached_c64_s256 | pytorch-cuda | 4 | 15 | 3.927 | 6.523e-07 |
-| add_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.711 | 0 |
-| add_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.676 | 0 |
-| mul_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.656 | 0 |
-| mul_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.660 | 0 |
-| neg_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.881 | 0 |
-| neg_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.544 | 0 |
-| exp_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.347 | 0.0001272 |
-| exp_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.870 | 1.095e-07 |
-| tanh_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.547 | 9.107e-05 |
-| tanh_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.502 | 4.434e-08 |
-| reduce_sum_strided_read_f32_n1024 | pytorch-cuda | 128 | 15 | 2.007 | 0.0005233 |
-| reduce_sum_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 4.013 | 3.504e-07 |
-| conj_strided_read_c32_n1024 | pytorch-cuda | 256 | 15 | 3.036 | 0 |
-| conj_strided_read_c64_n1024 | pytorch-cuda | 256 | 15 | 3.150 | 0 |
-| add_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.547 | 0 |
-| add_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.489 | 0 |
-| mul_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.546 | 0 |
-| mul_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.488 | 0 |
-| neg_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.750 | 0 |
-| neg_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.699 | 0 |
-| exp_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.755 | 0.0001272 |
-| exp_strided_read_f64_n1048576 | pytorch-cuda | 16 | 15 | 2.900 | 1.095e-07 |
-| tanh_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.755 | 9.135e-05 |
-| tanh_strided_read_f64_n1048576 | pytorch-cuda | 16 | 15 | 2.687 | 4.437e-08 |
-| reduce_sum_strided_read_f32_n1048576 | pytorch-cuda | 128 | 15 | 2.767 | 0.002693 |
-| reduce_sum_strided_read_f64_n1048576 | pytorch-cuda | 64 | 15 | 2.367 | 5.935e-06 |
-| conj_strided_read_c32_n1048576 | pytorch-cuda | 32 | 15 | 1.697 | 0 |
-| conj_strided_read_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.666 | 0 |
-| axpby_overwrite_f32_n1024 | pytorch-cuda | 256 | 15 | 3.020 | 0 |
-| axpby_lerp_f32_n1024 | pytorch-cuda | 256 | 15 | 2.312 | 0.0001189 |
-| axpby_unit_add_f32_n1024 | pytorch-cuda | 512 | 15 | 3.892 | 0 |
-| axpby_overwrite_f64_n1024 | pytorch-cuda | 256 | 15 | 2.860 | 0 |
-| axpby_lerp_f64_n1024 | pytorch-cuda | 256 | 15 | 2.306 | 1.161e-07 |
-| axpby_unit_add_f64_n1024 | pytorch-cuda | 256 | 15 | 2.005 | 0 |
-| axpby_overwrite_c32_n1024 | pytorch-cuda | 256 | 15 | 3.029 | 0 |
-| axpby_lerp_c32_n1024 | pytorch-cuda | 512 | 15 | 4.052 | 0.0001189 |
-| axpby_unit_add_c32_n1024 | pytorch-cuda | 512 | 15 | 4.248 | 0 |
-| axpby_overwrite_c64_n1024 | pytorch-cuda | 256 | 15 | 2.991 | 0 |
-| axpby_lerp_c64_n1024 | pytorch-cuda | 256 | 15 | 2.773 | 1.161e-07 |
-| axpby_unit_add_c64_n1024 | pytorch-cuda | 256 | 15 | 1.994 | 0 |
-| axpby_overwrite_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.752 | 0 |
-| axpby_lerp_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.545 | 0.0001192 |
-| axpby_unit_add_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.542 | 0 |
-| axpby_overwrite_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.702 | 0 |
-| axpby_lerp_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.495 | 1.161e-07 |
-| axpby_unit_add_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.486 | 0 |
-| axpby_overwrite_c32_n1048576 | pytorch-cuda | 32 | 15 | 1.700 | 0 |
-| axpby_lerp_c32_n1048576 | pytorch-cuda | 32 | 15 | 2.493 | 0.0001191 |
-| axpby_unit_add_c32_n1048576 | pytorch-cuda | 32 | 15 | 2.485 | 0 |
-| axpby_overwrite_c64_n1048576 | pytorch-cuda | 16 | 15 | 1.670 | 0 |
-| axpby_lerp_c64_n1048576 | pytorch-cuda | 8 | 15 | 2.724 | 1.159e-07 |
-| axpby_unit_add_c64_n1048576 | pytorch-cuda | 16 | 15 | 2.455 | 0 |
-| dot_general_batch_f32_s32 | pytorch-cuda | 64 | 15 | 2.532 | 0.0002227 |
-| dot_general_batch_f64_s32 | pytorch-cuda | 64 | 15 | 2.927 | 1.326e-07 |
-| dot_general_batch_c32_s32 | pytorch-cuda | 64 | 15 | 2.805 | 0.0003092 |
-| dot_general_batch_c64_s32 | pytorch-cuda | 64 | 15 | 2.841 | 2.791e-07 |
-| dot_general_multiple_f32_s32 | pytorch-cuda | 32 | 15 | 2.456 | 0.000269 |
-| dot_general_multiple_f64_s32 | pytorch-cuda | 32 | 15 | 2.523 | 2.466e-07 |
-| dot_general_multiple_c32_s32 | pytorch-cuda | 32 | 15 | 2.438 | 0.0004058 |
-| dot_general_multiple_c64_s32 | pytorch-cuda | 32 | 15 | 2.546 | 4.129e-07 |
-| dot_general_batch_f32_s256 | pytorch-cuda | 64 | 15 | 2.620 | 0.0008561 |
-| dot_general_batch_f64_s256 | pytorch-cuda | 8 | 15 | 3.347 | 7.463e-07 |
-| dot_general_batch_c32_s256 | pytorch-cuda | 64 | 15 | 3.454 | 0.001286 |
-| dot_general_batch_c64_s256 | pytorch-cuda | 2 | 15 | 2.659 | 8.893e-07 |
-| dot_general_multiple_f32_s256 | pytorch-cuda | 32 | 15 | 2.428 | 0.00133 |
-| dot_general_multiple_f64_s256 | pytorch-cuda | 8 | 15 | 2.705 | 2.584e-06 |
-| dot_general_multiple_c32_s256 | pytorch-cuda | 32 | 15 | 2.821 | 0.001059 |
-| dot_general_multiple_c64_s256 | pytorch-cuda | 2 | 15 | 2.022 | 2.776e-06 |
-| dot_conj_l0r0_c32_n1024 | pytorch-cuda | 128 | 15 | 2.020 | 0.0001028 |
-| dot_conj_l1r0_c32_n1024 | pytorch-cuda | 256 | 15 | 3.968 | 0.0004339 |
-| dot_conj_l0r1_c32_n1024 | pytorch-cuda | 256 | 15 | 4.013 | 0.0004457 |
+| add_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.281 | 0 |
+| add_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.317 | 0 |
+| add_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.289 | 0 |
+| add_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.291 | 0 |
+| sub_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.325 | 0 |
+| sub_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.310 | 0 |
+| sub_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.342 | 0 |
+| sub_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.306 | 0 |
+| mul_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.307 | 0 |
+| mul_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.355 | 0 |
+| mul_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.372 | 0 |
+| mul_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.368 | 0 |
+| div_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.295 | 0 |
+| div_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.305 | 0 |
+| div_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.291 | 0 |
+| div_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.293 | 0 |
+| neg_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.263 | 0 |
+| neg_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.272 | 0 |
+| neg_read_into_f32_n1024 | pytorch-cuda | 512 | 15 | 2.264 | 0 |
+| neg_read_into_f64_n1024 | pytorch-cuda | 512 | 15 | 2.261 | 0 |
+| conj_into_c32_n1024 | pytorch-cuda | 512 | 15 | 2.402 | 0 |
+| conj_into_c64_n1024 | pytorch-cuda | 512 | 15 | 2.498 | 0 |
+| conj_read_into_c32_n1024 | pytorch-cuda | 512 | 15 | 2.349 | 0 |
+| conj_read_into_c64_n1024 | pytorch-cuda | 512 | 15 | 2.453 | 0 |
+| add_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.356 | 0 |
+| add_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.402 | 0 |
+| add_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.355 | 0 |
+| add_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.399 | 0 |
+| sub_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.355 | 0 |
+| sub_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.403 | 0 |
+| sub_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.354 | 0 |
+| sub_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.400 | 0 |
+| mul_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.355 | 0 |
+| mul_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.407 | 0 |
+| mul_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.355 | 0 |
+| mul_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.404 | 0 |
+| div_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.356 | 0 |
+| div_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.424 | 0 |
+| div_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.356 | 0 |
+| div_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.425 | 0 |
+| neg_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.316 | 0 |
+| neg_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.244 | 0 |
+| neg_read_into_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.315 | 0 |
+| neg_read_into_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.247 | 0 |
+| conj_into_c32_n1048576 | pytorch-cuda | 32 | 15 | 0.247 | 0 |
+| conj_into_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.403 | 0 |
+| conj_read_into_c32_n1048576 | pytorch-cuda | 32 | 15 | 0.246 | 0 |
+| conj_read_into_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.403 | 0 |
+| tensordot_f32_n1024 | pytorch-cuda | 128 | 15 | 3.342 | 0.000577 |
+| tensordot_f64_n1024 | pytorch-cuda | 128 | 15 | 3.368 | 0 |
+| tensordot_c32_n1024 | pytorch-cuda | 128 | 15 | 3.317 | 0.0005344 |
+| tensordot_c64_n1024 | pytorch-cuda | 128 | 15 | 3.341 | 0 |
+| vdot_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.387 | 0 |
+| vdot_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.392 | 1.722e-07 |
+| vdot_read_c32_n1024 | pytorch-cuda | 256 | 15 | 2.400 | 0 |
+| vdot_read_c64_n1024 | pytorch-cuda | 256 | 15 | 2.404 | 3.455e-07 |
+| norm_squared_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.348 | 0 |
+| norm_squared_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.318 | 0 |
+| tensordot_f32_n262144 | pytorch-cuda | 128 | 15 | 3.546 | 0.01125 |
+| tensordot_f64_n262144 | pytorch-cuda | 128 | 15 | 3.441 | 6.714e-06 |
+| tensordot_c32_n262144 | pytorch-cuda | 32 | 15 | 3.282 | 0.00718 |
+| tensordot_c64_n262144 | pytorch-cuda | 32 | 15 | 2.532 | 7.381e-06 |
+| vdot_read_f32_n262144 | pytorch-cuda | 256 | 15 | 2.425 | 0 |
+| vdot_read_f64_n262144 | pytorch-cuda | 256 | 15 | 2.524 | 2.995e-06 |
+| vdot_read_c32_n262144 | pytorch-cuda | 256 | 15 | 2.506 | 0 |
+| vdot_read_c64_n262144 | pytorch-cuda | 256 | 15 | 3.385 | 8.772e-06 |
+| norm_squared_read_f32_n262144 | pytorch-cuda | 256 | 15 | 2.395 | 0.0001786 |
+| norm_squared_read_f64_n262144 | pytorch-cuda | 256 | 15 | 2.456 | 1.664e-07 |
+| axpby_read_into_accum_f32_n1024 | pytorch-cuda | 512 | 15 | 2.677 | 0 |
+| axpby_read_into_accum_f64_n1024 | pytorch-cuda | 512 | 15 | 2.647 | 0 |
+| axpby_read_into_accum_c32_n1024 | pytorch-cuda | 512 | 15 | 2.612 | 0 |
+| axpby_read_into_accum_c64_n1024 | pytorch-cuda | 512 | 15 | 2.697 | 0 |
+| axpby_read_into_accum_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.544 | 0 |
+| axpby_read_into_accum_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.518 | 0 |
+| axpby_read_into_accum_c32_n1048576 | pytorch-cuda | 32 | 15 | 0.520 | 0 |
+| axpby_read_into_accum_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.580 | 0 |
+| dot_general_read_into_f32_s16 | pytorch-cuda | 256 | 15 | 2.487 | 0.0001207 |
+| dot_general_read_into_accum_f32_s16 | pytorch-cuda | 256 | 15 | 2.767 | 9.558e-05 |
+| dot_general_read_into_accum_cached_f32_s16 | pytorch-cuda | 256 | 15 | 2.754 | 9.558e-05 |
+| dot_general_read_into_f64_s16 | pytorch-cuda | 256 | 15 | 2.484 | 0 |
+| dot_general_read_into_accum_f64_s16 | pytorch-cuda | 256 | 15 | 2.901 | 0 |
+| dot_general_read_into_accum_cached_f64_s16 | pytorch-cuda | 256 | 15 | 2.914 | 0 |
+| dot_general_read_into_c32_s16 | pytorch-cuda | 256 | 15 | 2.502 | 0.0001647 |
+| dot_general_read_into_accum_c32_s16 | pytorch-cuda | 256 | 15 | 2.752 | 0.0001125 |
+| dot_general_read_into_accum_cached_c32_s16 | pytorch-cuda | 256 | 15 | 2.768 | 0.0001125 |
+| dot_general_read_into_c64_s16 | pytorch-cuda | 256 | 15 | 2.617 | 1.373e-07 |
+| dot_general_read_into_accum_c64_s16 | pytorch-cuda | 256 | 15 | 2.933 | 7.37e-08 |
+| dot_general_read_into_accum_cached_c64_s16 | pytorch-cuda | 256 | 15 | 2.911 | 7.37e-08 |
+| dot_general_read_into_f32_s256 | pytorch-cuda | 256 | 15 | 3.149 | 0.0003909 |
+| dot_general_read_into_accum_f32_s256 | pytorch-cuda | 256 | 15 | 3.396 | 0.0002334 |
+| dot_general_read_into_accum_cached_f32_s256 | pytorch-cuda | 256 | 15 | 3.399 | 0.0002334 |
+| dot_general_read_into_f64_s256 | pytorch-cuda | 256 | 15 | 2.546 | 0 |
+| dot_general_read_into_accum_f64_s256 | pytorch-cuda | 256 | 15 | 2.609 | 0 |
+| dot_general_read_into_accum_cached_f64_s256 | pytorch-cuda | 256 | 15 | 2.958 | 0 |
+| dot_general_read_into_c32_s256 | pytorch-cuda | 128 | 15 | 2.327 | 0.001008 |
+| dot_general_read_into_accum_c32_s256 | pytorch-cuda | 128 | 15 | 2.433 | 0.0005527 |
+| dot_general_read_into_accum_cached_c32_s256 | pytorch-cuda | 128 | 15 | 2.433 | 0.0005527 |
+| dot_general_read_into_c64_s256 | pytorch-cuda | 128 | 15 | 2.160 | 1.175e-06 |
+| dot_general_read_into_accum_c64_s256 | pytorch-cuda | 128 | 15 | 2.327 | 6.523e-07 |
+| dot_general_read_into_accum_cached_c64_s256 | pytorch-cuda | 128 | 15 | 2.337 | 6.523e-07 |
+| add_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.615 | 0 |
+| add_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.997 | 0 |
+| mul_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.860 | 0 |
+| mul_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.576 | 0 |
+| neg_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.463 | 0 |
+| neg_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.439 | 0 |
+| exp_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.650 | 0.0001272 |
+| exp_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.446 | 1.095e-07 |
+| tanh_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.412 | 9.107e-05 |
+| tanh_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.441 | 4.434e-08 |
+| reduce_sum_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 3.843 | 0.0005233 |
+| reduce_sum_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.069 | 3.504e-07 |
+| conj_strided_read_c32_n1024 | pytorch-cuda | 512 | 15 | 3.323 | 0 |
+| conj_strided_read_c64_n1024 | pytorch-cuda | 512 | 15 | 3.408 | 0 |
+| add_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.373 | 0 |
+| add_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.402 | 0 |
+| mul_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.367 | 0 |
+| mul_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.405 | 0 |
+| neg_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.318 | 0 |
+| neg_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.251 | 0 |
+| exp_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.354 | 0.0001272 |
+| exp_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.266 | 1.095e-07 |
+| tanh_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.329 | 9.135e-05 |
+| tanh_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.264 | 4.437e-08 |
+| reduce_sum_strided_read_f32_n1048576 | pytorch-cuda | 256 | 15 | 3.069 | 0.002693 |
+| reduce_sum_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.417 | 5.935e-06 |
+| conj_strided_read_c32_n1048576 | pytorch-cuda | 32 | 15 | 0.253 | 0 |
+| conj_strided_read_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.404 | 0 |
+| axpby_overwrite_f32_n1024 | pytorch-cuda | 512 | 15 | 2.652 | 0 |
+| axpby_lerp_f32_n1024 | pytorch-cuda | 512 | 15 | 2.817 | 0.0001189 |
+| axpby_unit_add_f32_n1024 | pytorch-cuda | 512 | 15 | 2.237 | 0 |
+| axpby_overwrite_f64_n1024 | pytorch-cuda | 512 | 15 | 2.484 | 0 |
+| axpby_lerp_f64_n1024 | pytorch-cuda | 512 | 15 | 2.481 | 1.161e-07 |
+| axpby_unit_add_f64_n1024 | pytorch-cuda | 512 | 15 | 2.264 | 0 |
+| axpby_overwrite_c32_n1024 | pytorch-cuda | 512 | 15 | 2.974 | 0 |
+| axpby_lerp_c32_n1024 | pytorch-cuda | 512 | 15 | 2.201 | 0.0001189 |
+| axpby_unit_add_c32_n1024 | pytorch-cuda | 512 | 15 | 2.316 | 0 |
+| axpby_overwrite_c64_n1024 | pytorch-cuda | 512 | 15 | 2.610 | 0 |
+| axpby_lerp_c64_n1024 | pytorch-cuda | 512 | 15 | 2.788 | 1.161e-07 |
+| axpby_unit_add_c64_n1024 | pytorch-cuda | 512 | 15 | 2.363 | 0 |
+| axpby_overwrite_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.327 | 0 |
+| axpby_lerp_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.556 | 0.0001192 |
+| axpby_unit_add_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.547 | 0 |
+| axpby_overwrite_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.256 | 0 |
+| axpby_lerp_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.542 | 1.161e-07 |
+| axpby_unit_add_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.517 | 0 |
+| axpby_overwrite_c32_n1048576 | pytorch-cuda | 32 | 15 | 0.255 | 0 |
+| axpby_lerp_c32_n1048576 | pytorch-cuda | 32 | 15 | 0.561 | 0.0001191 |
+| axpby_unit_add_c32_n1048576 | pytorch-cuda | 32 | 15 | 0.517 | 0 |
+| axpby_overwrite_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.407 | 0 |
+| axpby_lerp_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.616 | 1.159e-07 |
+| axpby_unit_add_c64_n1048576 | pytorch-cuda | 16 | 15 | 0.578 | 0 |
+| dot_general_batch_f32_s32 | pytorch-cuda | 128 | 15 | 2.150 | 0.0002227 |
+| dot_general_batch_f64_s32 | pytorch-cuda | 128 | 15 | 2.317 | 1.326e-07 |
+| dot_general_batch_c32_s32 | pytorch-cuda | 128 | 15 | 2.134 | 0.0003092 |
+| dot_general_batch_c64_s32 | pytorch-cuda | 128 | 15 | 2.439 | 2.791e-07 |
+| dot_general_multiple_f32_s32 | pytorch-cuda | 64 | 15 | 2.313 | 0.0001628 |
+| dot_general_multiple_f64_s32 | pytorch-cuda | 64 | 15 | 2.327 | 2.466e-07 |
+| dot_general_multiple_c32_s32 | pytorch-cuda | 64 | 15 | 2.352 | 0.0004058 |
+| dot_general_multiple_c64_s32 | pytorch-cuda | 64 | 15 | 2.349 | 4.129e-07 |
+| dot_general_batch_f32_s256 | pytorch-cuda | 64 | 15 | 2.226 | 0.0008561 |
+| dot_general_batch_f64_s256 | pytorch-cuda | 128 | 15 | 2.834 | 7.463e-07 |
+| dot_general_batch_c32_s256 | pytorch-cuda | 64 | 15 | 2.155 | 0.001286 |
+| dot_general_batch_c64_s256 | pytorch-cuda | 64 | 15 | 2.240 | 8.893e-07 |
+| dot_general_multiple_f32_s256 | pytorch-cuda | 64 | 15 | 2.351 | 0.00133 |
+| dot_general_multiple_f64_s256 | pytorch-cuda | 64 | 15 | 2.371 | 2.584e-06 |
+| dot_general_multiple_c32_s256 | pytorch-cuda | 64 | 15 | 2.567 | 0.001059 |
+| dot_general_multiple_c64_s256 | pytorch-cuda | 64 | 15 | 2.486 | 2.776e-06 |
+| dot_conj_l0r0_c32_n1024 | pytorch-cuda | 256 | 15 | 2.107 | 0.0001028 |
+| dot_conj_l1r0_c32_n1024 | pytorch-cuda | 256 | 15 | 2.407 | 0.0004339 |
+| dot_conj_l0r1_c32_n1024 | pytorch-cuda | 256 | 15 | 2.416 | 0.0004457 |
 | dot_conj_l1r1_c32_n1024 | pytorch-cuda | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| dot_conj_l0r0_c64_n1024 | pytorch-cuda | 128 | 15 | 2.035 | 4.333e-07 |
-| dot_conj_l1r0_c64_n1024 | pytorch-cuda | 256 | 15 | 3.917 | 2.122e-07 |
-| dot_conj_l0r1_c64_n1024 | pytorch-cuda | 128 | 15 | 1.933 | 2.847e-07 |
+| dot_conj_l0r0_c64_n1024 | pytorch-cuda | 256 | 15 | 2.114 | 4.333e-07 |
+| dot_conj_l1r0_c64_n1024 | pytorch-cuda | 256 | 15 | 2.351 | 2.122e-07 |
+| dot_conj_l0r1_c64_n1024 | pytorch-cuda | 256 | 15 | 2.365 | 2.847e-07 |
 | dot_conj_l1r1_c64_n1024 | pytorch-cuda | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| dot_conj_l0r0_c32_n262144 | pytorch-cuda | 128 | 15 | 2.228 | 0.003079 |
-| dot_conj_l1r0_c32_n262144 | pytorch-cuda | 128 | 15 | 2.217 | 0.006155 |
-| dot_conj_l0r1_c32_n262144 | pytorch-cuda | 128 | 15 | 2.231 | 0.006499 |
+| dot_conj_l0r0_c32_n262144 | pytorch-cuda | 256 | 15 | 2.498 | 0.004445 |
+| dot_conj_l1r0_c32_n262144 | pytorch-cuda | 256 | 15 | 2.501 | 0.007446 |
+| dot_conj_l0r1_c32_n262144 | pytorch-cuda | 256 | 15 | 2.495 | 0.007339 |
 | dot_conj_l1r1_c32_n262144 | pytorch-cuda | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| dot_conj_l0r0_c64_n262144 | pytorch-cuda | 64 | 15 | 2.163 | 1.455e-05 |
-| dot_conj_l1r0_c64_n262144 | pytorch-cuda | 64 | 15 | 2.165 | 2.05e-05 |
-| dot_conj_l0r1_c64_n262144 | pytorch-cuda | 64 | 15 | 2.157 | 1.888e-05 |
+| dot_conj_l0r0_c64_n262144 | pytorch-cuda | 256 | 15 | 3.386 | 1.366e-05 |
+| dot_conj_l1r0_c64_n262144 | pytorch-cuda | 256 | 15 | 3.378 | 1.886e-05 |
+| dot_conj_l0r1_c64_n262144 | pytorch-cuda | 256 | 15 | 3.382 | 2.282e-05 |
 | dot_conj_l1r1_c64_n262144 | pytorch-cuda | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| einsum_plan_owned_f32_s32 | pytorch-cuda | 128 | 15 | 2.750 | 0.0002018 |
-| einsum_plan_read_f32_s32 | pytorch-cuda | 128 | 15 | 2.727 | 0.0002018 |
-| einsum_plan_strided_read_f32_s32 | pytorch-cuda | 128 | 15 | 3.004 | 0.0002018 |
-| einsum_plan_into_f32_s32 | pytorch-cuda | 128 | 15 | 1.973 | 0.0002018 |
-| einsum_plan_read_into_f32_s32 | pytorch-cuda | 128 | 15 | 1.978 | 0.0002018 |
-| einsum_plan_read_into_accum_f32_s32 | pytorch-cuda | 128 | 15 | 2.989 | 0.0001134 |
-| einsum_plan_strided_read_into_f32_s32 | pytorch-cuda | 128 | 15 | 2.175 | 0.0002018 |
-| einsum_plan_strided_read_into_accum_f32_s32 | pytorch-cuda | 128 | 15 | 3.130 | 0.0001134 |
-| einsum_plan_owned_f64_s32 | pytorch-cuda | 128 | 15 | 3.035 | 0 |
-| einsum_plan_read_f64_s32 | pytorch-cuda | 128 | 15 | 3.065 | 0 |
-| einsum_plan_strided_read_f64_s32 | pytorch-cuda | 128 | 15 | 3.277 | 0 |
-| einsum_plan_into_f64_s32 | pytorch-cuda | 128 | 15 | 2.289 | 0 |
-| einsum_plan_read_into_f64_s32 | pytorch-cuda | 128 | 15 | 2.294 | 0 |
-| einsum_plan_read_into_accum_f64_s32 | pytorch-cuda | 128 | 15 | 3.202 | 0 |
-| einsum_plan_strided_read_into_f64_s32 | pytorch-cuda | 128 | 15 | 2.361 | 0 |
-| einsum_plan_strided_read_into_accum_f64_s32 | pytorch-cuda | 128 | 15 | 3.297 | 0 |
-| einsum_plan_owned_c32_s32 | pytorch-cuda | 128 | 15 | 2.875 | 0.0002342 |
-| einsum_plan_read_c32_s32 | pytorch-cuda | 128 | 15 | 2.842 | 0.0002342 |
-| einsum_plan_strided_read_c32_s32 | pytorch-cuda | 128 | 15 | 2.935 | 0.0002342 |
-| einsum_plan_into_c32_s32 | pytorch-cuda | 128 | 15 | 2.224 | 0.0002342 |
-| einsum_plan_read_into_c32_s32 | pytorch-cuda | 128 | 15 | 2.152 | 0.0002342 |
-| einsum_plan_read_into_accum_c32_s32 | pytorch-cuda | 128 | 15 | 2.993 | 0.0001157 |
-| einsum_plan_strided_read_into_c32_s32 | pytorch-cuda | 128 | 15 | 2.191 | 0.0002342 |
-| einsum_plan_strided_read_into_accum_c32_s32 | pytorch-cuda | 128 | 15 | 3.044 | 0.0001157 |
-| einsum_plan_owned_c64_s32 | pytorch-cuda | 128 | 15 | 3.235 | 1.981e-07 |
-| einsum_plan_read_c64_s32 | pytorch-cuda | 128 | 15 | 3.251 | 1.981e-07 |
-| einsum_plan_strided_read_c64_s32 | pytorch-cuda | 128 | 15 | 3.738 | 1.981e-07 |
-| einsum_plan_into_c64_s32 | pytorch-cuda | 128 | 15 | 2.633 | 1.981e-07 |
-| einsum_plan_read_into_c64_s32 | pytorch-cuda | 128 | 15 | 2.470 | 1.981e-07 |
-| einsum_plan_read_into_accum_c64_s32 | pytorch-cuda | 128 | 15 | 3.308 | 1.097e-07 |
-| einsum_plan_strided_read_into_c64_s32 | pytorch-cuda | 128 | 15 | 2.529 | 1.981e-07 |
-| einsum_plan_strided_read_into_accum_c64_s32 | pytorch-cuda | 128 | 15 | 3.469 | 1.097e-07 |
-| einsum_plan_owned_f32_s256 | pytorch-cuda | 128 | 15 | 2.853 | 0.0009425 |
-| einsum_plan_read_f32_s256 | pytorch-cuda | 128 | 15 | 2.866 | 0.0009425 |
-| einsum_plan_strided_read_f32_s256 | pytorch-cuda | 128 | 15 | 3.089 | 0.0009425 |
-| einsum_plan_into_f32_s256 | pytorch-cuda | 128 | 15 | 2.014 | 0.0009425 |
-| einsum_plan_read_into_f32_s256 | pytorch-cuda | 128 | 15 | 2.034 | 0.0009425 |
-| einsum_plan_read_into_accum_f32_s256 | pytorch-cuda | 128 | 15 | 2.860 | 0.0003475 |
-| einsum_plan_strided_read_into_f32_s256 | pytorch-cuda | 128 | 15 | 2.311 | 0.0009425 |
-| einsum_plan_strided_read_into_accum_f32_s256 | pytorch-cuda | 128 | 15 | 3.264 | 0.0003475 |
-| einsum_plan_owned_f64_s256 | pytorch-cuda | 16 | 15 | 2.628 | 0 |
-| einsum_plan_read_f64_s256 | pytorch-cuda | 16 | 15 | 2.626 | 0 |
-| einsum_plan_strided_read_f64_s256 | pytorch-cuda | 16 | 15 | 2.591 | 0 |
-| einsum_plan_into_f64_s256 | pytorch-cuda | 16 | 15 | 2.618 | 0 |
-| einsum_plan_read_into_f64_s256 | pytorch-cuda | 16 | 15 | 2.619 | 0 |
-| einsum_plan_read_into_accum_f64_s256 | pytorch-cuda | 16 | 15 | 2.616 | 0 |
-| einsum_plan_strided_read_into_f64_s256 | pytorch-cuda | 16 | 15 | 2.612 | 0 |
-| einsum_plan_strided_read_into_accum_f64_s256 | pytorch-cuda | 16 | 15 | 2.375 | 0 |
-| einsum_plan_owned_c32_s256 | pytorch-cuda | 128 | 15 | 2.855 | 0.001598 |
-| einsum_plan_read_c32_s256 | pytorch-cuda | 128 | 15 | 2.883 | 0.001598 |
-| einsum_plan_strided_read_c32_s256 | pytorch-cuda | 128 | 15 | 3.110 | 0.001598 |
-| einsum_plan_into_c32_s256 | pytorch-cuda | 128 | 15 | 2.266 | 0.001598 |
-| einsum_plan_read_into_c32_s256 | pytorch-cuda | 128 | 15 | 2.239 | 0.001598 |
-| einsum_plan_read_into_accum_c32_s256 | pytorch-cuda | 128 | 15 | 3.009 | 0.0006293 |
-| einsum_plan_strided_read_into_c32_s256 | pytorch-cuda | 128 | 15 | 2.352 | 0.001598 |
-| einsum_plan_strided_read_into_accum_c32_s256 | pytorch-cuda | 128 | 15 | 3.486 | 0.0006293 |
-| einsum_plan_owned_c64_s256 | pytorch-cuda | 8 | 15 | 3.933 | 8.397e-07 |
-| einsum_plan_read_c64_s256 | pytorch-cuda | 8 | 15 | 3.930 | 8.397e-07 |
-| einsum_plan_strided_read_c64_s256 | pytorch-cuda | 8 | 15 | 3.932 | 8.397e-07 |
-| einsum_plan_into_c64_s256 | pytorch-cuda | 8 | 15 | 3.924 | 8.397e-07 |
-| einsum_plan_read_into_c64_s256 | pytorch-cuda | 8 | 15 | 3.926 | 8.397e-07 |
-| einsum_plan_read_into_accum_c64_s256 | pytorch-cuda | 8 | 15 | 3.959 | 4.364e-07 |
-| einsum_plan_strided_read_into_c64_s256 | pytorch-cuda | 8 | 15 | 3.926 | 8.397e-07 |
-| einsum_plan_strided_read_into_accum_c64_s256 | pytorch-cuda | 4 | 15 | 2.005 | 4.364e-07 |
-| sub_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.996 | 0 |
-| sub_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.719 | 0 |
-| div_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.799 | 0 |
-| div_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.674 | 0 |
-| rem_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.607 | 0 |
-| rem_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.567 | 0 |
-| pow_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.599 | 0.000117 |
-| pow_strided_read_f64_n1024 | pytorch-cuda | 128 | 15 | 3.732 | 1.48e-07 |
-| maximum_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.592 | 0 |
-| maximum_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.546 | 0 |
-| minimum_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.698 | 0 |
-| minimum_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.700 | 0 |
-| abs_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 3.478 | 0 |
-| abs_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 3.453 | 0 |
-| sign_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.351 | 0 |
-| sign_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.356 | 0 |
-| expm1_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.408 | 7.911e-05 |
-| expm1_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.471 | 7.39e-08 |
-| log_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.386 | 7.945e-05 |
-| log_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.798 | 4.231e-08 |
-| log1p_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.573 | 0.0001189 |
-| log1p_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.864 | 1.108e-07 |
-| erf_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.405 | 7.914e-05 |
-| erf_strided_read_f64_n1024 | pytorch-cuda | 128 | 15 | 2.007 | 8.536e-08 |
-| sin_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.433 | 4.348e-05 |
-| sin_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.426 | 4.153e-08 |
-| cos_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.309 | 6.342e-05 |
-| cos_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.354 | 5.905e-08 |
-| sqrt_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.381 | 0 |
-| sqrt_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.406 | 0 |
-| rsqrt_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.458 | 6.983e-05 |
-| rsqrt_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.390 | 6.504e-08 |
-| reduce_prod_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 3.475 | 0.0005958 |
-| reduce_prod_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 3.351 | 4.44e-07 |
-| reduce_max_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 3.782 | 0 |
-| reduce_max_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 3.788 | 0 |
-| reduce_min_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 3.779 | 0 |
-| reduce_min_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 3.962 | 0 |
-| reduce_sum_squares_strided_read_f32_n1024 | pytorch-cuda | 128 | 15 | 3.522 | 0.0001524 |
-| reduce_sum_squares_strided_read_f64_n1024 | pytorch-cuda | 128 | 15 | 3.541 | 2.836e-07 |
-| sub_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.544 | 0 |
-| sub_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.488 | 0 |
-| div_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.558 | 0 |
-| div_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 3.020 | 0 |
-| rem_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.559 | 0 |
-| rem_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.502 | 0 |
-| pow_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.662 | 0.0001577 |
-| pow_strided_read_f64_n1048576 | pytorch-cuda | 2 | 15 | 2.030 | 1.48e-07 |
-| maximum_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.556 | 0 |
-| maximum_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.511 | 0 |
-| minimum_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.553 | 0 |
-| minimum_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.510 | 0 |
-| abs_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.756 | 0 |
-| abs_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.702 | 0 |
-| sign_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.752 | 0 |
-| sign_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.704 | 0 |
-| expm1_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.759 | 7.915e-05 |
-| expm1_strided_read_f64_n1048576 | pytorch-cuda | 16 | 15 | 3.587 | 7.39e-08 |
-| log_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.759 | 7.946e-05 |
-| log_strided_read_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.797 | 4.308e-08 |
-| log1p_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.758 | 0.000119 |
-| log1p_strided_read_f64_n1048576 | pytorch-cuda | 8 | 15 | 2.894 | 1.11e-07 |
-| erf_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.757 | 7.923e-05 |
-| erf_strided_read_f64_n1048576 | pytorch-cuda | 4 | 15 | 2.115 | 8.536e-08 |
-| sin_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.764 | 4.348e-05 |
-| sin_strided_read_f64_n1048576 | pytorch-cuda | 16 | 15 | 3.384 | 4.153e-08 |
-| cos_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.774 | 6.342e-05 |
-| cos_strided_read_f64_n1048576 | pytorch-cuda | 16 | 15 | 3.377 | 5.905e-08 |
-| sqrt_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.756 | 0 |
-| sqrt_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.940 | 0 |
-| rsqrt_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 1.753 | 6.983e-05 |
-| rsqrt_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 1.968 | 6.504e-08 |
-| reduce_prod_strided_read_f32_n1048576 | pytorch-cuda | 128 | 15 | 2.524 | 0.009062 |
-| reduce_prod_strided_read_f64_n1048576 | pytorch-cuda | 64 | 15 | 2.331 | 4.106e-06 |
-| reduce_max_strided_read_f32_n1048576 | pytorch-cuda | 128 | 15 | 2.762 | 0 |
-| reduce_max_strided_read_f64_n1048576 | pytorch-cuda | 64 | 15 | 2.705 | 0 |
-| reduce_min_strided_read_f32_n1048576 | pytorch-cuda | 128 | 15 | 3.056 | 0 |
-| reduce_min_strided_read_f64_n1048576 | pytorch-cuda | 64 | 15 | 2.710 | 0 |
-| reduce_sum_squares_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 2.890 | 0.0001778 |
-| reduce_sum_squares_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 2.890 | 3.309e-07 |
+| einsum_plan_owned_f32_s32 | pytorch-cuda | 256 | 15 | 2.169 | 0.0002018 |
+| einsum_plan_read_f32_s32 | pytorch-cuda | 256 | 15 | 2.173 | 0.0002018 |
+| einsum_plan_strided_read_f32_s32 | pytorch-cuda | 256 | 15 | 2.149 | 0.0002018 |
+| einsum_plan_into_f32_s32 | pytorch-cuda | 512 | 15 | 3.672 | 0.0002018 |
+| einsum_plan_read_into_f32_s32 | pytorch-cuda | 512 | 15 | 3.584 | 0.0002018 |
+| einsum_plan_read_into_accum_f32_s32 | pytorch-cuda | 256 | 15 | 2.341 | 0.0001134 |
+| einsum_plan_strided_read_into_f32_s32 | pytorch-cuda | 512 | 15 | 3.536 | 0.0002018 |
+| einsum_plan_strided_read_into_accum_f32_s32 | pytorch-cuda | 256 | 15 | 2.291 | 0.0001134 |
+| einsum_plan_owned_f64_s32 | pytorch-cuda | 256 | 15 | 2.560 | 0 |
+| einsum_plan_read_f64_s32 | pytorch-cuda | 256 | 15 | 2.534 | 0 |
+| einsum_plan_strided_read_f64_s32 | pytorch-cuda | 256 | 15 | 2.231 | 0 |
+| einsum_plan_into_f64_s32 | pytorch-cuda | 512 | 15 | 3.980 | 0 |
+| einsum_plan_read_into_f64_s32 | pytorch-cuda | 256 | 15 | 1.984 | 0 |
+| einsum_plan_read_into_accum_f64_s32 | pytorch-cuda | 256 | 15 | 2.451 | 0 |
+| einsum_plan_strided_read_into_f64_s32 | pytorch-cuda | 512 | 15 | 3.833 | 0 |
+| einsum_plan_strided_read_into_accum_f64_s32 | pytorch-cuda | 256 | 15 | 2.516 | 0 |
+| einsum_plan_owned_c32_s32 | pytorch-cuda | 256 | 15 | 2.568 | 0.0002342 |
+| einsum_plan_read_c32_s32 | pytorch-cuda | 256 | 15 | 2.744 | 0.0002342 |
+| einsum_plan_strided_read_c32_s32 | pytorch-cuda | 256 | 15 | 2.564 | 0.0002342 |
+| einsum_plan_into_c32_s32 | pytorch-cuda | 256 | 15 | 2.280 | 0.0002342 |
+| einsum_plan_read_into_c32_s32 | pytorch-cuda | 256 | 15 | 2.373 | 0.0002342 |
+| einsum_plan_read_into_accum_c32_s32 | pytorch-cuda | 256 | 15 | 2.797 | 0.0001157 |
+| einsum_plan_strided_read_into_c32_s32 | pytorch-cuda | 256 | 15 | 2.183 | 0.0002342 |
+| einsum_plan_strided_read_into_accum_c32_s32 | pytorch-cuda | 256 | 15 | 3.000 | 0.0001157 |
+| einsum_plan_owned_c64_s32 | pytorch-cuda | 256 | 15 | 2.850 | 1.981e-07 |
+| einsum_plan_read_c64_s32 | pytorch-cuda | 256 | 15 | 2.796 | 1.981e-07 |
+| einsum_plan_strided_read_c64_s32 | pytorch-cuda | 256 | 15 | 2.924 | 1.981e-07 |
+| einsum_plan_into_c64_s32 | pytorch-cuda | 256 | 15 | 2.082 | 1.981e-07 |
+| einsum_plan_read_into_c64_s32 | pytorch-cuda | 256 | 15 | 2.226 | 1.981e-07 |
+| einsum_plan_read_into_accum_c64_s32 | pytorch-cuda | 256 | 15 | 2.946 | 1.097e-07 |
+| einsum_plan_strided_read_into_c64_s32 | pytorch-cuda | 256 | 15 | 2.513 | 1.981e-07 |
+| einsum_plan_strided_read_into_accum_c64_s32 | pytorch-cuda | 256 | 15 | 3.284 | 1.097e-07 |
+| einsum_plan_owned_f32_s256 | pytorch-cuda | 256 | 15 | 2.562 | 0.0009425 |
+| einsum_plan_read_f32_s256 | pytorch-cuda | 256 | 15 | 2.634 | 0.0009425 |
+| einsum_plan_strided_read_f32_s256 | pytorch-cuda | 256 | 15 | 2.726 | 0.0009425 |
+| einsum_plan_into_f32_s256 | pytorch-cuda | 256 | 15 | 2.381 | 0.0009425 |
+| einsum_plan_read_into_f32_s256 | pytorch-cuda | 256 | 15 | 2.084 | 0.0009425 |
+| einsum_plan_read_into_accum_f32_s256 | pytorch-cuda | 256 | 15 | 2.724 | 0.0003475 |
+| einsum_plan_strided_read_into_f32_s256 | pytorch-cuda | 512 | 15 | 4.045 | 0.0009425 |
+| einsum_plan_strided_read_into_accum_f32_s256 | pytorch-cuda | 256 | 15 | 2.698 | 0.0003475 |
+| einsum_plan_owned_f64_s256 | pytorch-cuda | 256 | 15 | 2.315 | 0 |
+| einsum_plan_read_f64_s256 | pytorch-cuda | 256 | 15 | 2.714 | 0 |
+| einsum_plan_strided_read_f64_s256 | pytorch-cuda | 256 | 15 | 2.384 | 0 |
+| einsum_plan_into_f64_s256 | pytorch-cuda | 256 | 15 | 2.055 | 0 |
+| einsum_plan_read_into_f64_s256 | pytorch-cuda | 256 | 15 | 2.291 | 0 |
+| einsum_plan_read_into_accum_f64_s256 | pytorch-cuda | 256 | 15 | 3.054 | 0 |
+| einsum_plan_strided_read_into_f64_s256 | pytorch-cuda | 256 | 15 | 2.420 | 0 |
+| einsum_plan_strided_read_into_accum_f64_s256 | pytorch-cuda | 256 | 15 | 3.104 | 0 |
+| einsum_plan_owned_c32_s256 | pytorch-cuda | 256 | 15 | 3.905 | 0.001524 |
+| einsum_plan_read_c32_s256 | pytorch-cuda | 256 | 15 | 3.907 | 0.001524 |
+| einsum_plan_strided_read_c32_s256 | pytorch-cuda | 256 | 15 | 3.885 | 0.001524 |
+| einsum_plan_into_c32_s256 | pytorch-cuda | 256 | 15 | 3.901 | 0.001524 |
+| einsum_plan_read_into_c32_s256 | pytorch-cuda | 256 | 15 | 3.903 | 0.001524 |
+| einsum_plan_read_into_accum_c32_s256 | pytorch-cuda | 128 | 15 | 2.108 | 0.0004028 |
+| einsum_plan_strided_read_into_c32_s256 | pytorch-cuda | 256 | 15 | 3.887 | 0.001524 |
+| einsum_plan_strided_read_into_accum_c32_s256 | pytorch-cuda | 128 | 15 | 2.088 | 0.0004028 |
+| einsum_plan_owned_c64_s256 | pytorch-cuda | 128 | 15 | 2.240 | 8.397e-07 |
+| einsum_plan_read_c64_s256 | pytorch-cuda | 128 | 15 | 2.232 | 8.397e-07 |
+| einsum_plan_strided_read_c64_s256 | pytorch-cuda | 128 | 15 | 2.228 | 8.397e-07 |
+| einsum_plan_into_c64_s256 | pytorch-cuda | 128 | 15 | 2.226 | 8.397e-07 |
+| einsum_plan_read_into_c64_s256 | pytorch-cuda | 128 | 15 | 2.230 | 8.397e-07 |
+| einsum_plan_read_into_accum_c64_s256 | pytorch-cuda | 128 | 15 | 2.298 | 4.364e-07 |
+| einsum_plan_strided_read_into_c64_s256 | pytorch-cuda | 128 | 15 | 2.217 | 8.397e-07 |
+| einsum_plan_strided_read_into_accum_c64_s256 | pytorch-cuda | 128 | 15 | 2.291 | 4.364e-07 |
+| sub_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.940 | 0 |
+| sub_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.907 | 0 |
+| div_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.901 | 0 |
+| div_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.978 | 0 |
+| rem_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 3.054 | 0 |
+| rem_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.989 | 0 |
+| pow_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 3.018 | 0.000117 |
+| pow_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 3.712 | 1.48e-07 |
+| maximum_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.999 | 0 |
+| maximum_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.994 | 0 |
+| minimum_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 3.057 | 0 |
+| minimum_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 3.040 | 0 |
+| abs_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 3.564 | 0 |
+| abs_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 3.609 | 0 |
+| sign_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.826 | 0 |
+| sign_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.780 | 0 |
+| expm1_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.861 | 7.911e-05 |
+| expm1_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.817 | 7.39e-08 |
+| log_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.728 | 7.945e-05 |
+| log_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.728 | 4.231e-08 |
+| log1p_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.726 | 0.0001189 |
+| log1p_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.804 | 1.108e-07 |
+| erf_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.831 | 7.914e-05 |
+| erf_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.788 | 8.536e-08 |
+| sin_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.789 | 4.348e-05 |
+| sin_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.832 | 4.153e-08 |
+| cos_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.791 | 6.342e-05 |
+| cos_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.735 | 5.905e-08 |
+| sqrt_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.746 | 0 |
+| sqrt_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.798 | 0 |
+| rsqrt_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 2.839 | 6.983e-05 |
+| rsqrt_strided_read_f64_n1024 | pytorch-cuda | 512 | 15 | 2.796 | 6.504e-08 |
+| reduce_prod_strided_read_f32_n1024 | pytorch-cuda | 512 | 15 | 3.753 | 0.0005958 |
+| reduce_prod_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.082 | 4.44e-07 |
+| reduce_max_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.068 | 0 |
+| reduce_max_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.218 | 0 |
+| reduce_min_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 2.067 | 0 |
+| reduce_min_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 2.218 | 0 |
+| reduce_sum_squares_strided_read_f32_n1024 | pytorch-cuda | 256 | 15 | 3.504 | 0.0001524 |
+| reduce_sum_squares_strided_read_f64_n1024 | pytorch-cuda | 256 | 15 | 3.574 | 2.836e-07 |
+| sub_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.368 | 0 |
+| sub_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.405 | 0 |
+| div_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.365 | 0 |
+| div_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.434 | 0 |
+| rem_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.373 | 0 |
+| rem_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.390 | 0 |
+| pow_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.696 | 0.0001577 |
+| pow_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.931 | 1.48e-07 |
+| maximum_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.375 | 0 |
+| maximum_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.389 | 0 |
+| minimum_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.375 | 0 |
+| minimum_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.389 | 0 |
+| abs_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.451 | 0 |
+| abs_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.255 | 0 |
+| sign_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.354 | 0 |
+| sign_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.252 | 0 |
+| expm1_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.374 | 7.915e-05 |
+| expm1_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.319 | 7.39e-08 |
+| log_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.356 | 7.946e-05 |
+| log_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.407 | 4.308e-08 |
+| log1p_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.353 | 0.000119 |
+| log1p_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.421 | 1.11e-07 |
+| erf_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.331 | 7.923e-05 |
+| erf_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.460 | 8.536e-08 |
+| sin_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.372 | 4.348e-05 |
+| sin_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.323 | 4.153e-08 |
+| cos_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.372 | 6.342e-05 |
+| cos_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.326 | 5.905e-08 |
+| sqrt_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.353 | 0 |
+| sqrt_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.254 | 0 |
+| rsqrt_strided_read_f32_n1048576 | pytorch-cuda | 64 | 15 | 0.350 | 6.983e-05 |
+| rsqrt_strided_read_f64_n1048576 | pytorch-cuda | 32 | 15 | 0.253 | 6.504e-08 |
+| reduce_prod_strided_read_f32_n1048576 | pytorch-cuda | 256 | 15 | 3.100 | 0.009062 |
+| reduce_prod_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.406 | 4.106e-06 |
+| reduce_max_strided_read_f32_n1048576 | pytorch-cuda | 256 | 15 | 3.090 | 0 |
+| reduce_max_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.432 | 0 |
+| reduce_min_strided_read_f32_n1048576 | pytorch-cuda | 256 | 15 | 3.089 | 0 |
+| reduce_min_strided_read_f64_n1048576 | pytorch-cuda | 256 | 15 | 3.432 | 0 |
+| reduce_sum_squares_strided_read_f32_n1048576 | pytorch-cuda | 128 | 15 | 2.188 | 0.0001778 |
+| reduce_sum_squares_strided_read_f64_n1048576 | pytorch-cuda | 128 | 15 | 2.624 | 3.309e-07 |
 | add_into_f32_n1024 | jax-cuda | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | add_into_f64_n1024 | jax-cuda | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | add_read_into_f32_n1024 | jax-cuda | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
@@ -1385,26 +1385,26 @@ Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once out
 | conj_into_c64_n1048576 | jax-cuda | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | conj_read_into_c32_n1048576 | jax-cuda | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | conj_read_into_c64_n1048576 | jax-cuda | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| tensordot_f32_n1024 | jax-cuda | 8 | 15 | 2.118 | 0.0008859 |
-| tensordot_f64_n1024 | jax-cuda | 16 | 15 | 2.663 | 0 |
-| tensordot_c32_n1024 | jax-cuda | 16 | 15 | 2.935 | 0.0007612 |
-| tensordot_c64_n1024 | jax-cuda | 16 | 15 | 2.986 | 8.245e-07 |
-| vdot_read_f32_n1024 | jax-cuda | 32 | 15 | 3.351 | 0 |
-| vdot_read_f64_n1024 | jax-cuda | 32 | 15 | 2.933 | 1.722e-07 |
-| vdot_read_c32_n1024 | jax-cuda | 32 | 15 | 2.694 | 4.601e-05 |
-| vdot_read_c64_n1024 | jax-cuda | 32 | 15 | 3.859 | 3.435e-07 |
-| norm_squared_read_f32_n1024 | jax-cuda | 32 | 15 | 2.731 | 0.0001766 |
-| norm_squared_read_f64_n1024 | jax-cuda | 32 | 15 | 2.393 | 0 |
-| tensordot_f32_n262144 | jax-cuda | 16 | 15 | 2.622 | 0.009253 |
-| tensordot_f64_n262144 | jax-cuda | 2 | 15 | 3.404 | 6.714e-06 |
-| tensordot_c32_n262144 | jax-cuda | 8 | 15 | 2.618 | 0.01992 |
-| tensordot_c64_n262144 | jax-cuda | 1 | 15 | 5.643 | 1.119e-05 |
-| vdot_read_f32_n262144 | jax-cuda | 16 | 15 | 2.589 | 0 |
-| vdot_read_f64_n262144 | jax-cuda | 16 | 15 | 2.571 | 2.995e-06 |
-| vdot_read_c32_n262144 | jax-cuda | 16 | 15 | 2.674 | 0 |
-| vdot_read_c64_n262144 | jax-cuda | 16 | 15 | 2.485 | 8.766e-06 |
-| norm_squared_read_f32_n262144 | jax-cuda | 16 | 15 | 2.229 | 0.0001786 |
-| norm_squared_read_f64_n262144 | jax-cuda | 16 | 15 | 1.939 | 1.664e-07 |
+| tensordot_f32_n1024 | jax-cuda | 32 | 15 | 3.717 | 0.0008859 |
+| tensordot_f64_n1024 | jax-cuda | 32 | 15 | 3.675 | 0 |
+| tensordot_c32_n1024 | jax-cuda | 16 | 15 | 2.084 | 0.0007612 |
+| tensordot_c64_n1024 | jax-cuda | 16 | 15 | 2.120 | 0 |
+| vdot_read_f32_n1024 | jax-cuda | 64 | 15 | 2.775 | 0 |
+| vdot_read_f64_n1024 | jax-cuda | 64 | 15 | 2.778 | 1.722e-07 |
+| vdot_read_c32_n1024 | jax-cuda | 64 | 15 | 2.775 | 4.601e-05 |
+| vdot_read_c64_n1024 | jax-cuda | 64 | 15 | 2.845 | 3.435e-07 |
+| norm_squared_read_f32_n1024 | jax-cuda | 64 | 15 | 2.756 | 0.0001766 |
+| norm_squared_read_f64_n1024 | jax-cuda | 64 | 15 | 2.462 | 0 |
+| tensordot_f32_n262144 | jax-cuda | 32 | 15 | 3.731 | 0.009253 |
+| tensordot_f64_n262144 | jax-cuda | 16 | 15 | 2.111 | 6.714e-06 |
+| tensordot_c32_n262144 | jax-cuda | 16 | 15 | 2.218 | 0.01974 |
+| tensordot_c64_n262144 | jax-cuda | 16 | 15 | 2.261 | 6.383e-06 |
+| vdot_read_f32_n262144 | jax-cuda | 64 | 15 | 3.006 | 0 |
+| vdot_read_f64_n262144 | jax-cuda | 64 | 15 | 3.078 | 2.995e-06 |
+| vdot_read_c32_n262144 | jax-cuda | 64 | 15 | 3.054 | 0 |
+| vdot_read_c64_n262144 | jax-cuda | 64 | 15 | 3.119 | 8.766e-06 |
+| norm_squared_read_f32_n262144 | jax-cuda | 64 | 15 | 3.031 | 0 |
+| norm_squared_read_f64_n262144 | jax-cuda | 64 | 15 | 3.092 | 1.664e-07 |
 | axpby_read_into_accum_f32_n1024 | jax-cuda | — | — | — | No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter. |
 | axpby_read_into_accum_f64_n1024 | jax-cuda | — | — | — | No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter. |
 | axpby_read_into_accum_c32_n1024 | jax-cuda | — | — | — | No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter. |
@@ -1437,234 +1437,234 @@ Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once out
 | dot_general_read_into_c64_s256 | jax-cuda | — | — | — | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
 | dot_general_read_into_accum_c64_s256 | jax-cuda | — | — | — | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
 | dot_general_read_into_accum_cached_c64_s256 | jax-cuda | — | — | — | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
-| add_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.606 | 0 |
-| add_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.763 | 0 |
-| mul_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.367 | 0 |
-| mul_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.324 | 0 |
-| neg_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.122 | 0 |
-| neg_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.056 | 0 |
-| exp_strided_read_f32_n1024 | jax-cuda | 32 | 15 | 3.267 | 0.0001272 |
-| exp_strided_read_f64_n1024 | jax-cuda | 32 | 15 | 2.964 | 1.095e-07 |
-| tanh_strided_read_f32_n1024 | jax-cuda | 32 | 15 | 3.003 | 9.325e-05 |
-| tanh_strided_read_f64_n1024 | jax-cuda | 32 | 15 | 3.273 | 4.434e-08 |
-| reduce_sum_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.535 | 0.0002267 |
-| reduce_sum_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.964 | 3.268e-07 |
-| conj_strided_read_c32_n1024 | jax-cuda | 16 | 15 | 2.530 | 0 |
-| conj_strided_read_c64_n1024 | jax-cuda | 16 | 15 | 2.658 | 0 |
-| add_strided_read_f32_n1048576 | jax-cuda | 16 | 15 | 1.956 | 0 |
-| add_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 1.969 | 0 |
-| mul_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.566 | 0 |
-| mul_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 3.442 | 0 |
-| neg_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.324 | 0 |
-| neg_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 3.402 | 0 |
-| exp_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.015 | 0.0001272 |
-| exp_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 3.256 | 1.095e-07 |
-| tanh_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.008 | 9.508e-05 |
-| tanh_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 3.065 | 4.437e-08 |
-| reduce_sum_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.193 | 0.002078 |
-| reduce_sum_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 2.570 | 7.159e-06 |
-| conj_strided_read_c32_n1048576 | jax-cuda | 32 | 15 | 3.145 | 0 |
-| conj_strided_read_c64_n1048576 | jax-cuda | 16 | 15 | 1.858 | 0 |
+| add_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 3.187 | 0 |
+| add_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 3.178 | 0 |
+| mul_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 3.195 | 0 |
+| mul_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 3.165 | 0 |
+| neg_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 3.056 | 0 |
+| neg_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 3.025 | 0 |
+| exp_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.535 | 0.0001272 |
+| exp_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.566 | 1.095e-07 |
+| tanh_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.553 | 9.325e-05 |
+| tanh_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.554 | 4.434e-08 |
+| reduce_sum_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.913 | 0.0002267 |
+| reduce_sum_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.950 | 3.268e-07 |
+| conj_strided_read_c32_n1024 | jax-cuda | 64 | 15 | 2.588 | 0 |
+| conj_strided_read_c64_n1024 | jax-cuda | 64 | 15 | 2.574 | 0 |
+| add_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 1.642 | 0 |
+| add_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.640 | 0 |
+| mul_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.265 | 0 |
+| mul_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.665 | 0 |
+| neg_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.195 | 0 |
+| neg_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.602 | 0 |
+| exp_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.644 | 0.0001272 |
+| exp_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.342 | 1.095e-07 |
+| tanh_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.658 | 9.508e-05 |
+| tanh_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.336 | 4.437e-08 |
+| reduce_sum_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.045 | 0.003094 |
+| reduce_sum_strided_read_f64_n1048576 | jax-cuda | 64 | 15 | 3.016 | 7.159e-06 |
+| conj_strided_read_c32_n1048576 | jax-cuda | 32 | 15 | 1.338 | 0 |
+| conj_strided_read_c64_n1048576 | jax-cuda | 16 | 15 | 0.654 | 0 |
 | axpby_overwrite_f32_n1024 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_f32_n1024 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_f32_n1024 | jax-cuda | 8 | 15 | 2.971 | 0 |
+| axpby_unit_add_f32_n1024 | jax-cuda | 16 | 15 | 3.551 | 0 |
 | axpby_overwrite_f64_n1024 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_f64_n1024 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_f64_n1024 | jax-cuda | 8 | 15 | 2.838 | 0 |
+| axpby_unit_add_f64_n1024 | jax-cuda | 8 | 15 | 1.874 | 0 |
 | axpby_overwrite_c32_n1024 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_c32_n1024 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_c32_n1024 | jax-cuda | 8 | 15 | 2.924 | 0 |
+| axpby_unit_add_c32_n1024 | jax-cuda | 16 | 15 | 3.601 | 0 |
 | axpby_overwrite_c64_n1024 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_c64_n1024 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_c64_n1024 | jax-cuda | 8 | 15 | 2.924 | 0 |
+| axpby_unit_add_c64_n1024 | jax-cuda | 16 | 15 | 3.586 | 0 |
 | axpby_overwrite_f32_n1048576 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_f32_n1048576 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_f32_n1048576 | jax-cuda | 8 | 15 | 2.946 | 0 |
+| axpby_unit_add_f32_n1048576 | jax-cuda | 16 | 15 | 3.597 | 0 |
 | axpby_overwrite_f64_n1048576 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_f64_n1048576 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_f64_n1048576 | jax-cuda | 8 | 15 | 2.977 | 0 |
+| axpby_unit_add_f64_n1048576 | jax-cuda | 16 | 15 | 3.602 | 0 |
 | axpby_overwrite_c32_n1048576 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_c32_n1048576 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_c32_n1048576 | jax-cuda | 8 | 15 | 3.122 | 0 |
+| axpby_unit_add_c32_n1048576 | jax-cuda | 16 | 15 | 3.579 | 0 |
 | axpby_overwrite_c64_n1048576 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_c64_n1048576 | jax-cuda | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_c64_n1048576 | jax-cuda | 8 | 15 | 3.038 | 0 |
-| dot_general_batch_f32_s32 | jax-cuda | 16 | 15 | 2.054 | 0.0002227 |
-| dot_general_batch_f64_s32 | jax-cuda | 16 | 15 | 2.010 | 1.326e-07 |
-| dot_general_batch_c32_s32 | jax-cuda | 16 | 15 | 2.561 | 0.0004354 |
-| dot_general_batch_c64_s32 | jax-cuda | 16 | 15 | 2.792 | 2.524e-07 |
-| dot_general_multiple_f32_s32 | jax-cuda | 16 | 15 | 2.090 | 0.000269 |
-| dot_general_multiple_f64_s32 | jax-cuda | 16 | 15 | 2.585 | 2.466e-07 |
-| dot_general_multiple_c32_s32 | jax-cuda | 8 | 15 | 1.810 | 0.0004771 |
-| dot_general_multiple_c64_s32 | jax-cuda | 8 | 15 | 2.402 | 6.063e-07 |
-| dot_general_batch_f32_s256 | jax-cuda | 16 | 15 | 2.048 | 0.0008561 |
-| dot_general_batch_f64_s256 | jax-cuda | 8 | 15 | 2.584 | 7.463e-07 |
-| dot_general_batch_c32_s256 | jax-cuda | 8 | 15 | 2.248 | 0.001359 |
-| dot_general_batch_c64_s256 | jax-cuda | 2 | 15 | 2.932 | 8.493e-07 |
-| dot_general_multiple_f32_s256 | jax-cuda | 8 | 15 | 2.664 | 0.00133 |
-| dot_general_multiple_f64_s256 | jax-cuda | 16 | 15 | 3.489 | 2.584e-06 |
-| dot_general_multiple_c32_s256 | jax-cuda | 8 | 15 | 2.626 | 0.002465 |
-| dot_general_multiple_c64_s256 | jax-cuda | 2 | 15 | 2.278 | 1.805e-06 |
-| dot_conj_l0r0_c32_n1024 | jax-cuda | 32 | 15 | 2.775 | 0.0002298 |
-| dot_conj_l1r0_c32_n1024 | jax-cuda | 32 | 15 | 2.562 | 0.0002522 |
-| dot_conj_l0r1_c32_n1024 | jax-cuda | 32 | 15 | 2.360 | 0.0002522 |
+| axpby_unit_add_c64_n1048576 | jax-cuda | 15 | 15 | 2.990 | 0 |
+| dot_general_batch_f32_s32 | jax-cuda | 32 | 15 | 2.659 | 0.0002227 |
+| dot_general_batch_f64_s32 | jax-cuda | 32 | 15 | 2.634 | 1.326e-07 |
+| dot_general_batch_c32_s32 | jax-cuda | 32 | 15 | 3.260 | 0.0004354 |
+| dot_general_batch_c64_s32 | jax-cuda | 32 | 15 | 2.772 | 2.524e-07 |
+| dot_general_multiple_f32_s32 | jax-cuda | 32 | 15 | 2.881 | 0.000269 |
+| dot_general_multiple_f64_s32 | jax-cuda | 32 | 15 | 2.931 | 2.466e-07 |
+| dot_general_multiple_c32_s32 | jax-cuda | 32 | 15 | 3.415 | 0.0004771 |
+| dot_general_multiple_c64_s32 | jax-cuda | 32 | 15 | 3.405 | 4.129e-07 |
+| dot_general_batch_f32_s256 | jax-cuda | 32 | 15 | 3.182 | 0.0008561 |
+| dot_general_batch_f64_s256 | jax-cuda | 32 | 15 | 2.706 | 7.463e-07 |
+| dot_general_batch_c32_s256 | jax-cuda | 32 | 15 | 3.312 | 0.001359 |
+| dot_general_batch_c64_s256 | jax-cuda | 32 | 15 | 3.417 | 1.869e-06 |
+| dot_general_multiple_f32_s256 | jax-cuda | 32 | 15 | 2.806 | 0.0025 |
+| dot_general_multiple_f64_s256 | jax-cuda | 32 | 15 | 2.938 | 2.584e-06 |
+| dot_general_multiple_c32_s256 | jax-cuda | 32 | 15 | 3.447 | 0.002465 |
+| dot_general_multiple_c64_s256 | jax-cuda | 32 | 15 | 3.546 | 1.805e-06 |
+| dot_conj_l0r0_c32_n1024 | jax-cuda | 64 | 15 | 2.705 | 0.0002298 |
+| dot_conj_l1r0_c32_n1024 | jax-cuda | 64 | 15 | 2.782 | 0.0002522 |
+| dot_conj_l0r1_c32_n1024 | jax-cuda | 64 | 15 | 2.792 | 0.0002522 |
 | dot_conj_l1r1_c32_n1024 | jax-cuda | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| dot_conj_l0r0_c64_n1024 | jax-cuda | 32 | 15 | 3.124 | 3.644e-07 |
-| dot_conj_l1r0_c64_n1024 | jax-cuda | 32 | 15 | 2.976 | 2.767e-07 |
-| dot_conj_l0r1_c64_n1024 | jax-cuda | 32 | 15 | 3.008 | 2.767e-07 |
+| dot_conj_l0r0_c64_n1024 | jax-cuda | 64 | 15 | 2.867 | 3.644e-07 |
+| dot_conj_l1r0_c64_n1024 | jax-cuda | 64 | 15 | 2.879 | 2.767e-07 |
+| dot_conj_l0r1_c64_n1024 | jax-cuda | 64 | 15 | 2.897 | 2.767e-07 |
 | dot_conj_l1r1_c64_n1024 | jax-cuda | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| dot_conj_l0r0_c32_n262144 | jax-cuda | 16 | 15 | 2.215 | 0.01276 |
-| dot_conj_l1r0_c32_n262144 | jax-cuda | 16 | 15 | 1.885 | 0.0002732 |
-| dot_conj_l0r1_c32_n262144 | jax-cuda | 32 | 15 | 3.274 | 0.0002732 |
+| dot_conj_l0r0_c32_n262144 | jax-cuda | 64 | 15 | 3.087 | 0.01276 |
+| dot_conj_l1r0_c32_n262144 | jax-cuda | 64 | 15 | 3.100 | 0.0002732 |
+| dot_conj_l0r1_c32_n262144 | jax-cuda | 64 | 15 | 3.109 | 0.0002732 |
 | dot_conj_l1r1_c32_n262144 | jax-cuda | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| dot_conj_l0r0_c64_n262144 | jax-cuda | 16 | 15 | 2.415 | 1.221e-05 |
-| dot_conj_l1r0_c64_n262144 | jax-cuda | 16 | 15 | 2.126 | 1.586e-05 |
-| dot_conj_l0r1_c64_n262144 | jax-cuda | 16 | 15 | 1.852 | 1.586e-05 |
+| dot_conj_l0r0_c64_n262144 | jax-cuda | 64 | 15 | 3.143 | 1.221e-05 |
+| dot_conj_l1r0_c64_n262144 | jax-cuda | 64 | 15 | 3.178 | 1.586e-05 |
+| dot_conj_l0r1_c64_n262144 | jax-cuda | 64 | 15 | 3.206 | 1.586e-05 |
 | dot_conj_l1r1_c64_n262144 | jax-cuda | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| einsum_plan_owned_f32_s32 | jax-cuda | 32 | 15 | 2.745 | 0.0002018 |
-| einsum_plan_read_f32_s32 | jax-cuda | 32 | 15 | 2.750 | 0.0002018 |
-| einsum_plan_strided_read_f32_s32 | jax-cuda | 16 | 15 | 2.416 | 0.0002018 |
+| einsum_plan_owned_f32_s32 | jax-cuda | 64 | 15 | 2.602 | 0.0002018 |
+| einsum_plan_read_f32_s32 | jax-cuda | 64 | 15 | 2.628 | 0.0002018 |
+| einsum_plan_strided_read_f32_s32 | jax-cuda | 32 | 15 | 1.690 | 0.0002018 |
 | einsum_plan_into_f32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_f32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_f32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_f32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_f32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_f64_s32 | jax-cuda | 32 | 15 | 2.766 | 0 |
-| einsum_plan_read_f64_s32 | jax-cuda | 32 | 15 | 2.743 | 0 |
-| einsum_plan_strided_read_f64_s32 | jax-cuda | 16 | 15 | 2.545 | 0 |
+| einsum_plan_owned_f64_s32 | jax-cuda | 64 | 15 | 2.573 | 0 |
+| einsum_plan_read_f64_s32 | jax-cuda | 64 | 15 | 2.613 | 0 |
+| einsum_plan_strided_read_f64_s32 | jax-cuda | 64 | 15 | 2.638 | 0 |
 | einsum_plan_into_f64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_f64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_f64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_f64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_f64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_c32_s32 | jax-cuda | 16 | 15 | 2.472 | 0.0002532 |
-| einsum_plan_read_c32_s32 | jax-cuda | 16 | 15 | 2.006 | 0.0002532 |
-| einsum_plan_strided_read_c32_s32 | jax-cuda | 16 | 15 | 2.494 | 0.0002532 |
+| einsum_plan_owned_c32_s32 | jax-cuda | 64 | 15 | 3.399 | 0.0002532 |
+| einsum_plan_read_c32_s32 | jax-cuda | 64 | 15 | 3.444 | 0.0002532 |
+| einsum_plan_strided_read_c32_s32 | jax-cuda | 64 | 15 | 3.412 | 0.0002532 |
 | einsum_plan_into_c32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_c32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_c32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_c32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_c32_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_c64_s32 | jax-cuda | 16 | 15 | 2.108 | 3.753e-07 |
-| einsum_plan_read_c64_s32 | jax-cuda | 16 | 15 | 1.988 | 3.753e-07 |
-| einsum_plan_strided_read_c64_s32 | jax-cuda | 16 | 15 | 3.089 | 3.753e-07 |
+| einsum_plan_owned_c64_s32 | jax-cuda | 64 | 15 | 3.549 | 3.753e-07 |
+| einsum_plan_read_c64_s32 | jax-cuda | 64 | 15 | 3.577 | 3.753e-07 |
+| einsum_plan_strided_read_c64_s32 | jax-cuda | 64 | 15 | 3.586 | 3.753e-07 |
 | einsum_plan_into_c64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_c64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_c64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_c64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_c64_s32 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_f32_s256 | jax-cuda | 32 | 15 | 2.368 | 0.00118 |
-| einsum_plan_read_f32_s256 | jax-cuda | 32 | 15 | 2.333 | 0.00118 |
-| einsum_plan_strided_read_f32_s256 | jax-cuda | 16 | 15 | 2.340 | 0.00118 |
+| einsum_plan_owned_f32_s256 | jax-cuda | 64 | 15 | 2.654 | 0.00118 |
+| einsum_plan_read_f32_s256 | jax-cuda | 64 | 15 | 2.676 | 0.00118 |
+| einsum_plan_strided_read_f32_s256 | jax-cuda | 64 | 15 | 2.670 | 0.00118 |
 | einsum_plan_into_f32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_f32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_f32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_f32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_f32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_f64_s256 | jax-cuda | 32 | 15 | 3.473 | 0 |
-| einsum_plan_read_f64_s256 | jax-cuda | 32 | 15 | 3.464 | 0 |
-| einsum_plan_strided_read_f64_s256 | jax-cuda | 16 | 15 | 2.347 | 0 |
+| einsum_plan_owned_f64_s256 | jax-cuda | 64 | 15 | 2.679 | 0 |
+| einsum_plan_read_f64_s256 | jax-cuda | 64 | 15 | 2.704 | 0 |
+| einsum_plan_strided_read_f64_s256 | jax-cuda | 32 | 15 | 1.542 | 0 |
 | einsum_plan_into_f64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_f64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_f64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_f64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_f64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_c32_s256 | jax-cuda | 16 | 15 | 1.806 | 0.002017 |
-| einsum_plan_read_c32_s256 | jax-cuda | 32 | 15 | 2.915 | 0.002017 |
-| einsum_plan_strided_read_c32_s256 | jax-cuda | 16 | 15 | 2.542 | 0.002017 |
+| einsum_plan_owned_c32_s256 | jax-cuda | 64 | 15 | 3.320 | 0.002017 |
+| einsum_plan_read_c32_s256 | jax-cuda | 64 | 15 | 3.398 | 0.002017 |
+| einsum_plan_strided_read_c32_s256 | jax-cuda | 64 | 15 | 3.371 | 0.002017 |
 | einsum_plan_into_c32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_c32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_c32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_c32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_c32_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_c64_s256 | jax-cuda | 8 | 15 | 3.171 | 1.855e-06 |
-| einsum_plan_read_c64_s256 | jax-cuda | 8 | 15 | 3.190 | 1.855e-06 |
-| einsum_plan_strided_read_c64_s256 | jax-cuda | 8 | 15 | 3.166 | 1.855e-06 |
+| einsum_plan_owned_c64_s256 | jax-cuda | 64 | 15 | 3.813 | 1.855e-06 |
+| einsum_plan_read_c64_s256 | jax-cuda | 64 | 15 | 3.853 | 1.855e-06 |
+| einsum_plan_strided_read_c64_s256 | jax-cuda | 64 | 15 | 3.868 | 1.855e-06 |
 | einsum_plan_into_c64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_c64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_c64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_c64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_c64_s256 | jax-cuda | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| sub_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.828 | 0 |
-| sub_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.450 | 0 |
-| div_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 1.982 | 4.875e-05 |
-| div_strided_read_f64_n1024 | jax-cuda | 32 | 15 | 3.467 | 0 |
-| rem_strided_read_f32_n1024 | jax-cuda | 32 | 15 | 3.409 | 0 |
-| rem_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 1.971 | 0 |
-| pow_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 3.020 | 0.000117 |
-| pow_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 3.056 | 1.48e-07 |
-| maximum_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.490 | 0 |
-| maximum_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.221 | 0 |
-| minimum_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.108 | 0 |
-| minimum_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.046 | 0 |
-| abs_strided_read_f32_n1024 | jax-cuda | 32 | 15 | 3.298 | 0 |
-| abs_strided_read_f64_n1024 | jax-cuda | 32 | 15 | 3.184 | 0 |
-| sign_strided_read_f32_n1024 | jax-cuda | 32 | 15 | 3.221 | 0 |
-| sign_strided_read_f64_n1024 | jax-cuda | 32 | 15 | 3.214 | 0 |
-| expm1_strided_read_f32_n1024 | jax-cuda | 32 | 15 | 3.208 | 7.911e-05 |
-| expm1_strided_read_f64_n1024 | jax-cuda | 32 | 15 | 3.304 | 7.39e-08 |
-| log_strided_read_f32_n1024 | jax-cuda | 32 | 15 | 3.281 | 7.945e-05 |
-| log_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.056 | 4.231e-08 |
-| log1p_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.280 | 0.0001189 |
-| log1p_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.556 | 1.108e-07 |
-| erf_strided_read_f32_n1024 | jax-cuda | 8 | 15 | 2.001 | 9.523e-05 |
-| erf_strided_read_f64_n1024 | jax-cuda | 8 | 15 | 1.991 | 8.536e-08 |
-| sin_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.419 | 4.348e-05 |
-| sin_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.667 | 4.153e-08 |
-| cos_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.724 | 6.342e-05 |
-| cos_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.598 | 5.905e-08 |
-| sqrt_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.589 | 0.000119 |
-| sqrt_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.485 | 0 |
-| rsqrt_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 3.061 | 6.983e-05 |
-| rsqrt_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.865 | 6.504e-08 |
-| reduce_prod_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.667 | 0.0004768 |
-| reduce_prod_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.270 | 4.441e-07 |
-| reduce_max_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.734 | 0 |
-| reduce_max_strided_read_f64_n1024 | jax-cuda | 16 | 15 | 2.091 | 0 |
-| reduce_min_strided_read_f32_n1024 | jax-cuda | 16 | 15 | 2.387 | 0 |
-| reduce_min_strided_read_f64_n1024 | jax-cuda | 32 | 15 | 3.055 | 0 |
-| reduce_sum_squares_strided_read_f32_n1024 | jax-cuda | 2 | 15 | 3.650 | 0.0001522 |
-| reduce_sum_squares_strided_read_f64_n1024 | jax-cuda | 2 | 15 | 3.578 | 1.418e-07 |
-| sub_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.529 | 0 |
-| sub_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 3.275 | 0 |
-| div_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.166 | 4.875e-05 |
-| div_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 2.070 | 0 |
-| rem_strided_read_f32_n1048576 | jax-cuda | 16 | 15 | 2.005 | 0 |
-| rem_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 3.348 | 0 |
-| pow_strided_read_f32_n1048576 | jax-cuda | 16 | 15 | 2.106 | 0.0001577 |
-| pow_strided_read_f64_n1048576 | jax-cuda | 2 | 15 | 2.622 | 1.48e-07 |
-| maximum_strided_read_f32_n1048576 | jax-cuda | 16 | 15 | 1.966 | 0 |
-| maximum_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 3.416 | 0 |
-| minimum_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.444 | 0 |
-| minimum_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 3.275 | 0 |
-| abs_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 2.965 | 0 |
-| abs_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.973 | 0 |
-| sign_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.046 | 0 |
-| sign_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.876 | 0 |
-| expm1_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.014 | 7.915e-05 |
-| expm1_strided_read_f64_n1048576 | jax-cuda | 8 | 15 | 2.159 | 7.39e-08 |
-| log_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.058 | 7.946e-05 |
-| log_strided_read_f64_n1048576 | jax-cuda | 8 | 15 | 3.178 | 4.308e-08 |
-| log1p_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.066 | 0.000119 |
-| log1p_strided_read_f64_n1048576 | jax-cuda | 8 | 15 | 3.264 | 1.11e-07 |
-| erf_strided_read_f32_n1048576 | jax-cuda | 16 | 15 | 2.312 | 0.0001214 |
-| erf_strided_read_f64_n1048576 | jax-cuda | 4 | 15 | 2.702 | 8.536e-08 |
-| sin_strided_read_f32_n1048576 | jax-cuda | 16 | 15 | 1.923 | 4.348e-05 |
-| sin_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 3.808 | 4.153e-08 |
-| cos_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.251 | 6.342e-05 |
-| cos_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 3.804 | 5.905e-08 |
-| sqrt_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.007 | 0.0001192 |
-| sqrt_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 3.293 | 0 |
-| rsqrt_strided_read_f32_n1048576 | jax-cuda | 16 | 15 | 2.155 | 6.983e-05 |
-| rsqrt_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 2.201 | 6.504e-08 |
-| reduce_prod_strided_read_f32_n1048576 | jax-cuda | 16 | 15 | 2.374 | 0.007035 |
-| reduce_prod_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 2.708 | 4.995e-06 |
-| reduce_max_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.265 | 0 |
-| reduce_max_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 2.525 | 0 |
-| reduce_min_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 3.047 | 0 |
-| reduce_min_strided_read_f64_n1048576 | jax-cuda | 16 | 15 | 2.650 | 0 |
-| reduce_sum_squares_strided_read_f32_n1048576 | jax-cuda | 1 | 15 | 2.389 | 0.0001778 |
-| reduce_sum_squares_strided_read_f64_n1048576 | jax-cuda | 1 | 15 | 2.290 | 3.311e-07 |
+| sub_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 3.204 | 0 |
+| sub_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 3.209 | 0 |
+| div_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.724 | 4.875e-05 |
+| div_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.740 | 0 |
+| rem_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.721 | 0 |
+| rem_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.739 | 0 |
+| pow_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 3.602 | 0.000117 |
+| pow_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 3.596 | 1.48e-07 |
+| maximum_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 3.216 | 0 |
+| maximum_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 3.210 | 0 |
+| minimum_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 3.238 | 0 |
+| minimum_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 3.237 | 0 |
+| abs_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.588 | 0 |
+| abs_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.589 | 0 |
+| sign_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.603 | 0 |
+| sign_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.590 | 0 |
+| expm1_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.575 | 7.911e-05 |
+| expm1_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.600 | 7.39e-08 |
+| log_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.588 | 7.945e-05 |
+| log_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.600 | 4.231e-08 |
+| log1p_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.604 | 0.0001189 |
+| log1p_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.597 | 1.108e-07 |
+| erf_strided_read_f32_n1024 | jax-cuda | 32 | 15 | 2.013 | 9.523e-05 |
+| erf_strided_read_f64_n1024 | jax-cuda | 32 | 15 | 2.019 | 8.536e-08 |
+| sin_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.582 | 4.348e-05 |
+| sin_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.595 | 4.153e-08 |
+| cos_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.572 | 6.342e-05 |
+| cos_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.609 | 5.905e-08 |
+| sqrt_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.573 | 0.000119 |
+| sqrt_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.585 | 0 |
+| rsqrt_strided_read_f32_n1024 | jax-cuda | 32 | 15 | 2.082 | 6.983e-05 |
+| rsqrt_strided_read_f64_n1024 | jax-cuda | 32 | 15 | 2.086 | 6.504e-08 |
+| reduce_prod_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.953 | 0.0004768 |
+| reduce_prod_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.963 | 6.662e-07 |
+| reduce_max_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.963 | 0 |
+| reduce_max_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.957 | 0 |
+| reduce_min_strided_read_f32_n1024 | jax-cuda | 64 | 15 | 2.969 | 0 |
+| reduce_min_strided_read_f64_n1024 | jax-cuda | 64 | 15 | 2.951 | 0 |
+| reduce_sum_squares_strided_read_f32_n1024 | jax-cuda | 4 | 15 | 3.348 | 0.0001522 |
+| reduce_sum_squares_strided_read_f64_n1024 | jax-cuda | 4 | 15 | 3.349 | 1.418e-07 |
+| sub_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.298 | 0 |
+| sub_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.661 | 0 |
+| div_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.821 | 4.875e-05 |
+| div_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.412 | 0 |
+| rem_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.773 | 0 |
+| rem_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.431 | 0 |
+| pow_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.713 | 0.0001577 |
+| pow_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.808 | 1.48e-07 |
+| maximum_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.282 | 0 |
+| maximum_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.667 | 0 |
+| minimum_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.289 | 0 |
+| minimum_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.488 | 0 |
+| abs_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.526 | 0 |
+| abs_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.330 | 0 |
+| sign_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.636 | 0 |
+| sign_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.094 | 0 |
+| expm1_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.645 | 7.915e-05 |
+| expm1_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.340 | 7.39e-08 |
+| log_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.662 | 7.946e-05 |
+| log_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.330 | 4.308e-08 |
+| log1p_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.636 | 0.000119 |
+| log1p_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.332 | 1.11e-07 |
+| erf_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 2.053 | 0.0001214 |
+| erf_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.062 | 8.536e-08 |
+| sin_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.644 | 4.348e-05 |
+| sin_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.340 | 4.153e-08 |
+| cos_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.639 | 6.342e-05 |
+| cos_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.329 | 5.905e-08 |
+| sqrt_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 2.644 | 0.0001192 |
+| sqrt_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 1.328 | 0 |
+| rsqrt_strided_read_f32_n1048576 | jax-cuda | 32 | 15 | 2.107 | 6.983e-05 |
+| rsqrt_strided_read_f64_n1048576 | jax-cuda | 32 | 15 | 2.114 | 6.504e-08 |
+| reduce_prod_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.056 | 0.007035 |
+| reduce_prod_strided_read_f64_n1048576 | jax-cuda | 64 | 15 | 3.040 | 4.995e-06 |
+| reduce_max_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.054 | 0 |
+| reduce_max_strided_read_f64_n1048576 | jax-cuda | 64 | 15 | 3.069 | 0 |
+| reduce_min_strided_read_f32_n1048576 | jax-cuda | 64 | 15 | 3.044 | 0 |
+| reduce_min_strided_read_f64_n1048576 | jax-cuda | 64 | 15 | 3.059 | 0 |
+| reduce_sum_squares_strided_read_f32_n1048576 | jax-cuda | 4 | 15 | 3.346 | 0.0001778 |
+| reduce_sum_squares_strided_read_f64_n1048576 | jax-cuda | 4 | 15 | 3.371 | 3.311e-07 |
 | add_into_f32_n1024 | jax-cuda-jit | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | add_into_f64_n1024 | jax-cuda-jit | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | add_read_into_f32_n1024 | jax-cuda-jit | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
@@ -1713,26 +1713,26 @@ Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once out
 | conj_into_c64_n1048576 | jax-cuda-jit | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | conj_read_into_c32_n1048576 | jax-cuda-jit | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
 | conj_read_into_c64_n1048576 | jax-cuda-jit | — | — | — | No equivalent public output-reuse API; allocation-returning operations and JAX donation are not substitutes. |
-| tensordot_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.208 | 0.0008859 |
-| tensordot_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.299 | 0 |
-| tensordot_c32_n1024 | jax-cuda-jit | 32 | 15 | 2.729 | 0.0007612 |
-| tensordot_c64_n1024 | jax-cuda-jit | 32 | 15 | 3.100 | 8.245e-07 |
-| vdot_read_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.031 | 0 |
-| vdot_read_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.576 | 1.722e-07 |
-| vdot_read_c32_n1024 | jax-cuda-jit | 32 | 15 | 3.083 | 4.601e-05 |
-| vdot_read_c64_n1024 | jax-cuda-jit | 32 | 15 | 3.509 | 3.435e-07 |
-| norm_squared_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.351 | 0.0001766 |
-| norm_squared_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.124 | 0 |
-| tensordot_f32_n262144 | jax-cuda-jit | 32 | 15 | 2.891 | 0.009253 |
-| tensordot_f64_n262144 | jax-cuda-jit | 2 | 15 | 3.141 | 6.714e-06 |
-| tensordot_c32_n262144 | jax-cuda-jit | 16 | 15 | 2.721 | 0.01992 |
-| tensordot_c64_n262144 | jax-cuda-jit | 1 | 15 | 5.404 | 1.119e-05 |
-| vdot_read_f32_n262144 | jax-cuda-jit | 16 | 15 | 2.718 | 0 |
-| vdot_read_f64_n262144 | jax-cuda-jit | 16 | 15 | 2.612 | 2.995e-06 |
-| vdot_read_c32_n262144 | jax-cuda-jit | 16 | 15 | 2.827 | 0 |
-| vdot_read_c64_n262144 | jax-cuda-jit | 16 | 15 | 2.433 | 8.766e-06 |
-| norm_squared_read_f32_n262144 | jax-cuda-jit | 16 | 15 | 2.789 | 0 |
-| norm_squared_read_f64_n262144 | jax-cuda-jit | 16 | 15 | 2.662 | 1.664e-07 |
+| tensordot_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.658 | 0.0008859 |
+| tensordot_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.652 | 0 |
+| tensordot_c32_n1024 | jax-cuda-jit | 64 | 15 | 3.395 | 0.0007612 |
+| tensordot_c64_n1024 | jax-cuda-jit | 64 | 15 | 3.555 | 0 |
+| vdot_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.635 | 0 |
+| vdot_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.670 | 1.722e-07 |
+| vdot_read_c32_n1024 | jax-cuda-jit | 64 | 15 | 2.748 | 4.601e-05 |
+| vdot_read_c64_n1024 | jax-cuda-jit | 64 | 15 | 2.823 | 3.435e-07 |
+| norm_squared_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.561 | 0.0001766 |
+| norm_squared_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.575 | 0 |
+| tensordot_f32_n262144 | jax-cuda-jit | 64 | 15 | 3.191 | 0.009253 |
+| tensordot_f64_n262144 | jax-cuda-jit | 32 | 15 | 2.012 | 6.714e-06 |
+| tensordot_c32_n262144 | jax-cuda-jit | 32 | 15 | 2.157 | 0.01974 |
+| tensordot_c64_n262144 | jax-cuda-jit | 32 | 15 | 2.417 | 6.383e-06 |
+| vdot_read_f32_n262144 | jax-cuda-jit | 32 | 15 | 1.842 | 0 |
+| vdot_read_f64_n262144 | jax-cuda-jit | 64 | 15 | 3.499 | 2.995e-06 |
+| vdot_read_c32_n262144 | jax-cuda-jit | 64 | 15 | 3.415 | 0 |
+| vdot_read_c64_n262144 | jax-cuda-jit | 64 | 15 | 3.125 | 8.766e-06 |
+| norm_squared_read_f32_n262144 | jax-cuda-jit | 64 | 15 | 2.886 | 0 |
+| norm_squared_read_f64_n262144 | jax-cuda-jit | 64 | 15 | 2.864 | 1.664e-07 |
 | axpby_read_into_accum_f32_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter. |
 | axpby_read_into_accum_f64_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter. |
 | axpby_read_into_accum_c32_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled Ref update for alpha=0.5/beta=1; public Ref.addupdate has no alpha parameter. |
@@ -1765,234 +1765,234 @@ Prepared einsum uses the public ConcreteEinsumPlan for ik,kj->ij, built once out
 | dot_general_read_into_c64_s256 | jax-cuda-jit | — | — | — | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
 | dot_general_read_into_accum_c64_s256 | jax-cuda-jit | — | — | — | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
 | dot_general_read_into_accum_cached_c64_s256 | jax-cuda-jit | — | — | — | No matching public caller-owned output API; allocation-returning dot and donation are different contracts. |
-| add_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.779 | 0 |
-| add_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.503 | 0 |
-| mul_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.305 | 0 |
-| mul_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.072 | 0 |
-| neg_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 1.951 | 0 |
-| neg_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 1.928 | 0 |
-| exp_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 1.980 | 0.0001272 |
-| exp_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.113 | 1.095e-07 |
-| tanh_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.075 | 9.325e-05 |
-| tanh_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.153 | 4.434e-08 |
-| reduce_sum_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.469 | 0.0002267 |
-| reduce_sum_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.790 | 3.268e-07 |
-| conj_strided_read_c32_n1024 | jax-cuda-jit | 16 | 15 | 2.655 | 0 |
-| conj_strided_read_c64_n1024 | jax-cuda-jit | 16 | 15 | 2.435 | 0 |
-| add_strided_read_f32_n1048576 | jax-cuda-jit | 16 | 15 | 2.038 | 0 |
-| add_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 1.686 | 0 |
-| mul_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.169 | 0 |
-| mul_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.984 | 0 |
-| neg_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.057 | 0 |
-| neg_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 3.159 | 0 |
-| exp_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.062 | 0.0001272 |
-| exp_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 3.248 | 1.095e-07 |
-| tanh_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.621 | 9.508e-05 |
-| tanh_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 3.006 | 4.437e-08 |
-| reduce_sum_strided_read_f32_n1048576 | jax-cuda-jit | 16 | 15 | 1.999 | 0.003094 |
-| reduce_sum_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 2.370 | 7.159e-06 |
-| conj_strided_read_c32_n1048576 | jax-cuda-jit | 32 | 15 | 3.296 | 0 |
-| conj_strided_read_c64_n1048576 | jax-cuda-jit | 16 | 15 | 1.885 | 0 |
+| add_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.726 | 0 |
+| add_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.735 | 0 |
+| mul_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.737 | 0 |
+| mul_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.703 | 0 |
+| neg_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.544 | 0 |
+| neg_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.553 | 0 |
+| exp_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.568 | 0.0001272 |
+| exp_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.560 | 1.095e-07 |
+| tanh_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.574 | 9.325e-05 |
+| tanh_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.575 | 4.434e-08 |
+| reduce_sum_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.581 | 0.0002267 |
+| reduce_sum_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.568 | 3.268e-07 |
+| conj_strided_read_c32_n1024 | jax-cuda-jit | 64 | 15 | 2.586 | 0 |
+| conj_strided_read_c64_n1024 | jax-cuda-jit | 64 | 15 | 2.599 | 0 |
+| add_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.847 | 0 |
+| add_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.422 | 0 |
+| mul_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.856 | 0 |
+| mul_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.420 | 0 |
+| neg_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.681 | 0 |
+| neg_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.341 | 0 |
+| exp_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.676 | 0.0001272 |
+| exp_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.346 | 1.095e-07 |
+| tanh_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.703 | 9.508e-05 |
+| tanh_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.361 | 4.437e-08 |
+| reduce_sum_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.701 | 0.003094 |
+| reduce_sum_strided_read_f64_n1048576 | jax-cuda-jit | 64 | 15 | 2.695 | 7.159e-06 |
+| conj_strided_read_c32_n1048576 | jax-cuda-jit | 32 | 15 | 1.364 | 0 |
+| conj_strided_read_c64_n1048576 | jax-cuda-jit | 16 | 15 | 0.679 | 0 |
 | axpby_overwrite_f32_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_f32_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_f32_n1024 | jax-cuda-jit | 8 | 15 | 1.975 | 0 |
+| axpby_unit_add_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.606 | 0 |
 | axpby_overwrite_f64_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_f64_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_f64_n1024 | jax-cuda-jit | 8 | 15 | 2.002 | 0 |
+| axpby_unit_add_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.658 | 0 |
 | axpby_overwrite_c32_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_c32_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_c32_n1024 | jax-cuda-jit | 8 | 15 | 2.050 | 0 |
+| axpby_unit_add_c32_n1024 | jax-cuda-jit | 16 | 15 | 2.652 | 0 |
 | axpby_overwrite_c64_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_c64_n1024 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_c64_n1024 | jax-cuda-jit | 8 | 15 | 2.128 | 0 |
+| axpby_unit_add_c64_n1024 | jax-cuda-jit | 16 | 15 | 2.662 | 0 |
 | axpby_overwrite_f32_n1048576 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_f32_n1048576 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_f32_n1048576 | jax-cuda-jit | 8 | 15 | 2.067 | 0 |
+| axpby_unit_add_f32_n1048576 | jax-cuda-jit | 16 | 15 | 2.662 | 0 |
 | axpby_overwrite_f64_n1048576 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_f64_n1048576 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_f64_n1048576 | jax-cuda-jit | 8 | 15 | 1.991 | 0 |
+| axpby_unit_add_f64_n1048576 | jax-cuda-jit | 16 | 15 | 2.660 | 0 |
 | axpby_overwrite_c32_n1048576 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_c32_n1048576 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_c32_n1048576 | jax-cuda-jit | 8 | 15 | 2.001 | 0 |
+| axpby_unit_add_c32_n1048576 | jax-cuda-jit | 16 | 15 | 2.647 | 0 |
 | axpby_overwrite_c64_n1048576 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
 | axpby_lerp_c64_n1048576 | jax-cuda-jit | — | — | — | No verified single-call scaled caller-owned Ref update with these alpha/beta values; functional outputs and donation are different contracts. |
-| axpby_unit_add_c64_n1048576 | jax-cuda-jit | 8 | 15 | 2.013 | 0 |
-| dot_general_batch_f32_s32 | jax-cuda-jit | 32 | 15 | 2.260 | 0.0002227 |
-| dot_general_batch_f64_s32 | jax-cuda-jit | 32 | 15 | 2.363 | 1.326e-07 |
-| dot_general_batch_c32_s32 | jax-cuda-jit | 32 | 15 | 3.082 | 0.0004354 |
-| dot_general_batch_c64_s32 | jax-cuda-jit | 32 | 15 | 3.142 | 2.524e-07 |
-| dot_general_multiple_f32_s32 | jax-cuda-jit | 32 | 15 | 2.764 | 0.000269 |
-| dot_general_multiple_f64_s32 | jax-cuda-jit | 32 | 15 | 2.515 | 2.466e-07 |
-| dot_general_multiple_c32_s32 | jax-cuda-jit | 32 | 15 | 3.254 | 0.0004771 |
-| dot_general_multiple_c64_s32 | jax-cuda-jit | 32 | 15 | 3.390 | 6.063e-07 |
-| dot_general_batch_f32_s256 | jax-cuda-jit | 32 | 15 | 2.532 | 0.0008561 |
-| dot_general_batch_f64_s256 | jax-cuda-jit | 8 | 15 | 2.508 | 7.463e-07 |
-| dot_general_batch_c32_s256 | jax-cuda-jit | 16 | 15 | 2.598 | 0.001359 |
-| dot_general_batch_c64_s256 | jax-cuda-jit | 2 | 15 | 2.782 | 8.493e-07 |
-| dot_general_multiple_f32_s256 | jax-cuda-jit | 32 | 15 | 3.351 | 0.0025 |
-| dot_general_multiple_f64_s256 | jax-cuda-jit | 16 | 15 | 3.382 | 2.584e-06 |
-| dot_general_multiple_c32_s256 | jax-cuda-jit | 16 | 15 | 3.070 | 0.002465 |
-| dot_general_multiple_c64_s256 | jax-cuda-jit | 2 | 15 | 2.122 | 1.805e-06 |
-| dot_conj_l0r0_c32_n1024 | jax-cuda-jit | 16 | 15 | 2.690 | 0.0002298 |
-| dot_conj_l1r0_c32_n1024 | jax-cuda-jit | 16 | 15 | 2.747 | 0.0002522 |
-| dot_conj_l0r1_c32_n1024 | jax-cuda-jit | 16 | 15 | 2.718 | 0.0002522 |
+| axpby_unit_add_c64_n1048576 | jax-cuda-jit | 15 | 15 | 2.490 | 0 |
+| dot_general_batch_f32_s32 | jax-cuda-jit | 64 | 15 | 2.632 | 0.0002227 |
+| dot_general_batch_f64_s32 | jax-cuda-jit | 64 | 15 | 2.648 | 1.326e-07 |
+| dot_general_batch_c32_s32 | jax-cuda-jit | 64 | 15 | 3.851 | 0.0004354 |
+| dot_general_batch_c64_s32 | jax-cuda-jit | 32 | 15 | 1.996 | 5.436e-07 |
+| dot_general_multiple_f32_s32 | jax-cuda-jit | 64 | 15 | 3.098 | 0.000269 |
+| dot_general_multiple_f64_s32 | jax-cuda-jit | 64 | 15 | 3.077 | 2.466e-07 |
+| dot_general_multiple_c32_s32 | jax-cuda-jit | 32 | 15 | 1.979 | 0.0004771 |
+| dot_general_multiple_c64_s32 | jax-cuda-jit | 32 | 15 | 2.052 | 4.129e-07 |
+| dot_general_batch_f32_s256 | jax-cuda-jit | 64 | 15 | 2.742 | 0.0008561 |
+| dot_general_batch_f64_s256 | jax-cuda-jit | 64 | 15 | 2.625 | 7.463e-07 |
+| dot_general_batch_c32_s256 | jax-cuda-jit | 64 | 15 | 3.907 | 0.001359 |
+| dot_general_batch_c64_s256 | jax-cuda-jit | 32 | 15 | 2.039 | 1.869e-06 |
+| dot_general_multiple_f32_s256 | jax-cuda-jit | 64 | 15 | 3.148 | 0.0025 |
+| dot_general_multiple_f64_s256 | jax-cuda-jit | 32 | 15 | 2.010 | 2.584e-06 |
+| dot_general_multiple_c32_s256 | jax-cuda-jit | 32 | 15 | 1.987 | 0.001197 |
+| dot_general_multiple_c64_s256 | jax-cuda-jit | 32 | 15 | 2.150 | 1.805e-06 |
+| dot_conj_l0r0_c32_n1024 | jax-cuda-jit | 64 | 15 | 2.774 | 0.0002298 |
+| dot_conj_l1r0_c32_n1024 | jax-cuda-jit | 64 | 15 | 2.763 | 0.0002522 |
+| dot_conj_l0r1_c32_n1024 | jax-cuda-jit | 64 | 15 | 2.761 | 0.0002522 |
 | dot_conj_l1r1_c32_n1024 | jax-cuda-jit | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| dot_conj_l0r0_c64_n1024 | jax-cuda-jit | 16 | 15 | 2.780 | 3.644e-07 |
-| dot_conj_l1r0_c64_n1024 | jax-cuda-jit | 16 | 15 | 2.580 | 2.767e-07 |
-| dot_conj_l0r1_c64_n1024 | jax-cuda-jit | 16 | 15 | 2.777 | 2.767e-07 |
+| dot_conj_l0r0_c64_n1024 | jax-cuda-jit | 64 | 15 | 2.809 | 3.644e-07 |
+| dot_conj_l1r0_c64_n1024 | jax-cuda-jit | 64 | 15 | 2.847 | 2.767e-07 |
+| dot_conj_l0r1_c64_n1024 | jax-cuda-jit | 64 | 15 | 2.845 | 2.767e-07 |
 | dot_conj_l1r1_c64_n1024 | jax-cuda-jit | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| dot_conj_l0r0_c32_n262144 | jax-cuda-jit | 16 | 15 | 2.775 | 0.01276 |
-| dot_conj_l1r0_c32_n262144 | jax-cuda-jit | 16 | 15 | 2.830 | 0.0002732 |
-| dot_conj_l0r1_c32_n262144 | jax-cuda-jit | 16 | 15 | 2.939 | 0.0002732 |
+| dot_conj_l0r0_c32_n262144 | jax-cuda-jit | 64 | 15 | 3.037 | 0.01276 |
+| dot_conj_l1r0_c32_n262144 | jax-cuda-jit | 64 | 15 | 3.050 | 0.0002732 |
+| dot_conj_l0r1_c32_n262144 | jax-cuda-jit | 64 | 15 | 3.033 | 0.0002732 |
 | dot_conj_l1r1_c32_n262144 | jax-cuda-jit | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| dot_conj_l0r0_c64_n262144 | jax-cuda-jit | 16 | 15 | 2.996 | 1.221e-05 |
-| dot_conj_l1r0_c64_n262144 | jax-cuda-jit | 16 | 15 | 2.921 | 1.586e-05 |
-| dot_conj_l0r1_c64_n262144 | jax-cuda-jit | 16 | 15 | 2.397 | 1.586e-05 |
+| dot_conj_l0r0_c64_n262144 | jax-cuda-jit | 64 | 15 | 3.104 | 1.221e-05 |
+| dot_conj_l1r0_c64_n262144 | jax-cuda-jit | 64 | 15 | 3.129 | 1.586e-05 |
+| dot_conj_l0r1_c64_n262144 | jax-cuda-jit | 64 | 15 | 3.097 | 1.586e-05 |
 | dot_conj_l1r1_c64_n262144 | jax-cuda-jit | — | — | — | No verified single public both-conjugated dot operation; conjugate-then-dot or conjugating the result is a different operation. |
-| einsum_plan_owned_f32_s32 | jax-cuda-jit | 32 | 15 | 3.111 | 0.0002018 |
-| einsum_plan_read_f32_s32 | jax-cuda-jit | 32 | 15 | 3.054 | 0.0002018 |
-| einsum_plan_strided_read_f32_s32 | jax-cuda-jit | 32 | 15 | 3.042 | 0.0002018 |
+| einsum_plan_owned_f32_s32 | jax-cuda-jit | 64 | 15 | 2.630 | 0.0002018 |
+| einsum_plan_read_f32_s32 | jax-cuda-jit | 64 | 15 | 2.634 | 0.0002018 |
+| einsum_plan_strided_read_f32_s32 | jax-cuda-jit | 64 | 15 | 2.658 | 0.0002018 |
 | einsum_plan_into_f32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_f32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_f32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_f32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_f32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_f64_s32 | jax-cuda-jit | 32 | 15 | 2.779 | 0 |
-| einsum_plan_read_f64_s32 | jax-cuda-jit | 32 | 15 | 2.766 | 0 |
-| einsum_plan_strided_read_f64_s32 | jax-cuda-jit | 32 | 15 | 2.842 | 0 |
+| einsum_plan_owned_f64_s32 | jax-cuda-jit | 64 | 15 | 2.656 | 0 |
+| einsum_plan_read_f64_s32 | jax-cuda-jit | 64 | 15 | 2.638 | 0 |
+| einsum_plan_strided_read_f64_s32 | jax-cuda-jit | 64 | 15 | 2.668 | 0 |
 | einsum_plan_into_f64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_f64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_f64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_f64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_f64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_c32_s32 | jax-cuda-jit | 32 | 15 | 3.274 | 0.0002532 |
-| einsum_plan_read_c32_s32 | jax-cuda-jit | 32 | 15 | 3.280 | 0.0002532 |
-| einsum_plan_strided_read_c32_s32 | jax-cuda-jit | 16 | 15 | 2.114 | 0.0002532 |
+| einsum_plan_owned_c32_s32 | jax-cuda-jit | 64 | 15 | 3.415 | 0.0002532 |
+| einsum_plan_read_c32_s32 | jax-cuda-jit | 64 | 15 | 3.422 | 0.0002532 |
+| einsum_plan_strided_read_c32_s32 | jax-cuda-jit | 64 | 15 | 3.420 | 0.0002532 |
 | einsum_plan_into_c32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_c32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_c32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_c32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_c32_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_c64_s32 | jax-cuda-jit | 16 | 15 | 1.951 | 3.753e-07 |
-| einsum_plan_read_c64_s32 | jax-cuda-jit | 32 | 15 | 3.567 | 3.753e-07 |
-| einsum_plan_strided_read_c64_s32 | jax-cuda-jit | 16 | 15 | 2.164 | 3.753e-07 |
+| einsum_plan_owned_c64_s32 | jax-cuda-jit | 64 | 15 | 3.547 | 1.981e-07 |
+| einsum_plan_read_c64_s32 | jax-cuda-jit | 64 | 15 | 3.545 | 1.981e-07 |
+| einsum_plan_strided_read_c64_s32 | jax-cuda-jit | 64 | 15 | 3.572 | 1.981e-07 |
 | einsum_plan_into_c64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_c64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_c64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_c64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_c64_s32 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_f32_s256 | jax-cuda-jit | 32 | 15 | 2.567 | 0.00118 |
-| einsum_plan_read_f32_s256 | jax-cuda-jit | 32 | 15 | 2.504 | 0.00118 |
-| einsum_plan_strided_read_f32_s256 | jax-cuda-jit | 32 | 15 | 2.557 | 0.00118 |
+| einsum_plan_owned_f32_s256 | jax-cuda-jit | 64 | 15 | 2.740 | 0.00118 |
+| einsum_plan_read_f32_s256 | jax-cuda-jit | 64 | 15 | 2.758 | 0.00118 |
+| einsum_plan_strided_read_f32_s256 | jax-cuda-jit | 64 | 15 | 2.748 | 0.00118 |
 | einsum_plan_into_f32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_f32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_f32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_f32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_f32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_f64_s256 | jax-cuda-jit | 32 | 15 | 3.421 | 0 |
-| einsum_plan_read_f64_s256 | jax-cuda-jit | 32 | 15 | 3.408 | 0 |
-| einsum_plan_strided_read_f64_s256 | jax-cuda-jit | 32 | 15 | 3.419 | 0 |
+| einsum_plan_owned_f64_s256 | jax-cuda-jit | 64 | 15 | 2.741 | 0 |
+| einsum_plan_read_f64_s256 | jax-cuda-jit | 64 | 15 | 2.740 | 0 |
+| einsum_plan_strided_read_f64_s256 | jax-cuda-jit | 64 | 15 | 3.116 | 0 |
 | einsum_plan_into_f64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_f64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_f64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_f64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_f64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_c32_s256 | jax-cuda-jit | 32 | 15 | 2.943 | 0.002017 |
-| einsum_plan_read_c32_s256 | jax-cuda-jit | 32 | 15 | 2.905 | 0.002017 |
-| einsum_plan_strided_read_c32_s256 | jax-cuda-jit | 16 | 15 | 1.983 | 0.002017 |
+| einsum_plan_owned_c32_s256 | jax-cuda-jit | 64 | 15 | 3.928 | 0.002017 |
+| einsum_plan_read_c32_s256 | jax-cuda-jit | 32 | 15 | 1.788 | 0.002017 |
+| einsum_plan_strided_read_c32_s256 | jax-cuda-jit | 64 | 15 | 3.461 | 0.002017 |
 | einsum_plan_into_c32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_c32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_c32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_c32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_c32_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| einsum_plan_owned_c64_s256 | jax-cuda-jit | 8 | 15 | 3.396 | 1.855e-06 |
-| einsum_plan_read_c64_s256 | jax-cuda-jit | 8 | 15 | 3.457 | 1.855e-06 |
-| einsum_plan_strided_read_c64_s256 | jax-cuda-jit | 8 | 15 | 3.271 | 1.855e-06 |
+| einsum_plan_owned_c64_s256 | jax-cuda-jit | 32 | 15 | 2.254 | 2.186e-06 |
+| einsum_plan_read_c64_s256 | jax-cuda-jit | 64 | 15 | 3.828 | 2.186e-06 |
+| einsum_plan_strided_read_c64_s256 | jax-cuda-jit | 32 | 15 | 2.009 | 2.186e-06 |
 | einsum_plan_into_c64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_c64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_read_into_accum_c64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_c64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
 | einsum_plan_strided_read_into_accum_c64_s256 | jax-cuda-jit | — | — | — | No matching single public matrix multiplication with caller-owned output; Ref.set(matmul(...)) and donation change the operation. |
-| sub_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.441 | 0 |
-| sub_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.221 | 0 |
-| div_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 1.958 | 4.875e-05 |
-| div_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.061 | 0 |
-| rem_strided_read_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.421 | 0 |
-| rem_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.105 | 0 |
-| pow_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.369 | 0.000117 |
-| pow_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.517 | 1.48e-07 |
-| maximum_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.497 | 0 |
-| maximum_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.164 | 0 |
-| minimum_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 1.998 | 0 |
-| minimum_strided_read_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.164 | 0 |
-| abs_strided_read_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.015 | 0 |
-| abs_strided_read_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.166 | 0 |
-| sign_strided_read_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.023 | 0 |
-| sign_strided_read_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.164 | 0 |
-| expm1_strided_read_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.177 | 7.911e-05 |
-| expm1_strided_read_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.109 | 7.39e-08 |
-| log_strided_read_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.172 | 7.945e-05 |
-| log_strided_read_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.356 | 4.231e-08 |
-| log1p_strided_read_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.047 | 0.0001189 |
-| log1p_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.039 | 1.108e-07 |
-| erf_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.458 | 9.523e-05 |
-| erf_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.420 | 8.536e-08 |
-| sin_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.524 | 4.348e-05 |
-| sin_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.619 | 4.153e-08 |
-| cos_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.649 | 6.342e-05 |
-| cos_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.609 | 5.905e-08 |
-| sqrt_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.375 | 0.000119 |
-| sqrt_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.173 | 0 |
-| rsqrt_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 1.950 | 6.983e-05 |
-| rsqrt_strided_read_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.285 | 6.504e-08 |
-| reduce_prod_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.195 | 0.0004768 |
-| reduce_prod_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 2.784 | 6.662e-07 |
-| reduce_max_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.626 | 0 |
-| reduce_max_strided_read_f64_n1024 | jax-cuda-jit | 32 | 15 | 3.597 | 0 |
-| reduce_min_strided_read_f32_n1024 | jax-cuda-jit | 32 | 15 | 3.259 | 0 |
-| reduce_min_strided_read_f64_n1024 | jax-cuda-jit | 32 | 15 | 2.923 | 0 |
-| reduce_sum_squares_strided_read_f32_n1024 | jax-cuda-jit | 16 | 15 | 2.202 | 0.0001522 |
-| reduce_sum_squares_strided_read_f64_n1024 | jax-cuda-jit | 16 | 15 | 1.898 | 1.42e-07 |
-| sub_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.196 | 0 |
-| sub_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.873 | 0 |
-| div_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.125 | 4.875e-05 |
-| div_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 2.075 | 0 |
-| rem_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.299 | 0 |
-| rem_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 3.104 | 0 |
-| pow_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.162 | 0.0001577 |
-| pow_strided_read_f64_n1048576 | jax-cuda-jit | 2 | 15 | 2.587 | 1.48e-07 |
-| maximum_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.167 | 0 |
-| maximum_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.944 | 0 |
-| minimum_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.107 | 0 |
-| minimum_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.919 | 0 |
-| abs_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.008 | 0 |
-| abs_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 3.072 | 0 |
-| sign_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.018 | 0 |
-| sign_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 3.044 | 0 |
-| expm1_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.025 | 7.915e-05 |
-| expm1_strided_read_f64_n1048576 | jax-cuda-jit | 8 | 15 | 2.119 | 7.39e-08 |
-| log_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.032 | 7.946e-05 |
-| log_strided_read_f64_n1048576 | jax-cuda-jit | 8 | 15 | 3.232 | 4.308e-08 |
-| log1p_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.058 | 0.000119 |
-| log1p_strided_read_f64_n1048576 | jax-cuda-jit | 8 | 15 | 3.370 | 1.11e-07 |
-| erf_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.229 | 0.0001214 |
-| erf_strided_read_f64_n1048576 | jax-cuda-jit | 4 | 15 | 2.651 | 8.536e-08 |
-| sin_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 3.176 | 4.348e-05 |
-| sin_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 3.799 | 4.153e-08 |
-| cos_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.954 | 6.342e-05 |
-| cos_strided_read_f64_n1048576 | jax-cuda-jit | 8 | 15 | 2.017 | 5.905e-08 |
-| sqrt_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.977 | 0.0001192 |
-| sqrt_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 3.296 | 0 |
-| rsqrt_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.940 | 6.983e-05 |
-| rsqrt_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 2.819 | 6.504e-08 |
-| reduce_prod_strided_read_f32_n1048576 | jax-cuda-jit | 16 | 15 | 2.046 | 0.007035 |
-| reduce_prod_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 2.508 | 4.995e-06 |
-| reduce_max_strided_read_f32_n1048576 | jax-cuda-jit | 16 | 15 | 2.407 | 0 |
-| reduce_max_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 2.515 | 0 |
-| reduce_min_strided_read_f32_n1048576 | jax-cuda-jit | 16 | 15 | 2.488 | 0 |
-| reduce_min_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 2.557 | 0 |
-| reduce_sum_squares_strided_read_f32_n1048576 | jax-cuda-jit | 32 | 15 | 2.872 | 0.0001778 |
-| reduce_sum_squares_strided_read_f64_n1048576 | jax-cuda-jit | 16 | 15 | 2.366 | 3.311e-07 |
+| sub_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 3.014 | 0 |
+| sub_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 3.351 | 0 |
+| div_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 3.283 | 4.875e-05 |
+| div_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 3.170 | 0 |
+| rem_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.754 | 0 |
+| rem_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.742 | 0 |
+| pow_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.772 | 0.000117 |
+| pow_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.756 | 1.48e-07 |
+| maximum_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.762 | 0 |
+| maximum_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.746 | 0 |
+| minimum_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.758 | 0 |
+| minimum_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.753 | 0 |
+| abs_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.587 | 0 |
+| abs_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.581 | 0 |
+| sign_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.580 | 0 |
+| sign_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.582 | 0 |
+| expm1_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.574 | 7.911e-05 |
+| expm1_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.561 | 7.39e-08 |
+| log_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.567 | 7.945e-05 |
+| log_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.567 | 4.231e-08 |
+| log1p_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.565 | 0.0001189 |
+| log1p_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.573 | 1.108e-07 |
+| erf_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.578 | 9.523e-05 |
+| erf_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.578 | 8.536e-08 |
+| sin_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.578 | 4.348e-05 |
+| sin_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.601 | 4.153e-08 |
+| cos_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.572 | 6.342e-05 |
+| cos_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.598 | 5.905e-08 |
+| sqrt_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.561 | 0.000119 |
+| sqrt_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.568 | 0 |
+| rsqrt_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.575 | 6.983e-05 |
+| rsqrt_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.571 | 6.504e-08 |
+| reduce_prod_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.575 | 0.0004768 |
+| reduce_prod_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.494 | 4.441e-07 |
+| reduce_max_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.582 | 0 |
+| reduce_max_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.582 | 0 |
+| reduce_min_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.568 | 0 |
+| reduce_min_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.564 | 0 |
+| reduce_sum_squares_strided_read_f32_n1024 | jax-cuda-jit | 64 | 15 | 2.560 | 0.0001522 |
+| reduce_sum_squares_strided_read_f64_n1024 | jax-cuda-jit | 64 | 15 | 2.560 | 1.418e-07 |
+| sub_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.827 | 0 |
+| sub_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.421 | 0 |
+| div_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.853 | 4.875e-05 |
+| div_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.423 | 0 |
+| rem_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.806 | 0 |
+| rem_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.417 | 0 |
+| pow_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.846 | 0.0001577 |
+| pow_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.365 | 1.48e-07 |
+| maximum_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.835 | 0 |
+| maximum_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.420 | 0 |
+| minimum_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.807 | 0 |
+| minimum_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.426 | 0 |
+| abs_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.693 | 0 |
+| abs_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.343 | 0 |
+| sign_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.691 | 0 |
+| sign_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.344 | 0 |
+| expm1_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.692 | 7.915e-05 |
+| expm1_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.346 | 7.39e-08 |
+| log_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.701 | 7.946e-05 |
+| log_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.346 | 4.308e-08 |
+| log1p_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.667 | 0.000119 |
+| log1p_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.338 | 1.11e-07 |
+| erf_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.647 | 0.0001214 |
+| erf_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.351 | 8.536e-08 |
+| sin_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.664 | 4.348e-05 |
+| sin_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.348 | 4.153e-08 |
+| cos_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.677 | 6.342e-05 |
+| cos_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.341 | 5.905e-08 |
+| sqrt_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.679 | 0.0001192 |
+| sqrt_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.344 | 0 |
+| rsqrt_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.681 | 6.983e-05 |
+| rsqrt_strided_read_f64_n1048576 | jax-cuda-jit | 32 | 15 | 1.340 | 6.504e-08 |
+| reduce_prod_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.598 | 0.006678 |
+| reduce_prod_strided_read_f64_n1048576 | jax-cuda-jit | 64 | 15 | 2.687 | 4.995e-06 |
+| reduce_max_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.680 | 0 |
+| reduce_max_strided_read_f64_n1048576 | jax-cuda-jit | 64 | 15 | 2.719 | 0 |
+| reduce_min_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.726 | 0 |
+| reduce_min_strided_read_f64_n1048576 | jax-cuda-jit | 64 | 15 | 2.706 | 0 |
+| reduce_sum_squares_strided_read_f32_n1048576 | jax-cuda-jit | 64 | 15 | 2.684 | 0.0001778 |
+| reduce_sum_squares_strided_read_f64_n1048576 | jax-cuda-jit | 64 | 15 | 2.716 | 3.311e-07 |
 
 ## Run metadata
 
@@ -2001,23 +2001,159 @@ schema_version: 1
 target_profile: nvidia-gpu
 suite_id: gpu/reuse_contraction
 suite_file: benchmarks/gpu/reuse_contraction.yaml
-timestamp: '2026-10-13T20:27:59Z'
+timestamp: '2026-11-02T21:14:08Z'
 tenferro_rs:
   path: extern/tenferro-rs
-  commit: fbd735abbfd5bcf0453f151472b274a71249f115
+  commit: 433121a7756fdb4f109b02f0422d3714a04514c6
   dirty: false
   features:
   - cuda
-  resolved_path: /workspaces/tenferro-benchmark/extern/tenferro-rs
+  resolved_path: /home/shinaoka/projects/tensor4all/tenferro-batched-gemm
 harness:
   path: /workspaces/tenferro-benchmark
-  commit: 6b1ac3203310fe07a586b76bc19248d00a12ab0c
-  dirty: false
+  commit: 8987033651c18a03e47e16cdd365df807b77b6be
+  dirty: true
+resolved_deps:
+  strided-perm:
+  - 0.8.0
+  - 0.10.0
+  strided-view:
+  - 0.7.0
+  threadteam:
+  - 0.1.0
+  - 0.3.0
+host:
+  cpu: AMD EPYC 7713P 64-Core Processor
+  logical_cpus: 64
+  power:
+    cpufreq_boost: '1'
+    governor: schedutil
+    scaling_max_freq_khz: '2000000'
+    smt:
+      active: '0'
+      control: notsupported
+  numa:
+    nodes: 1
+    cpulists:
+      '0': 0-63
+  smt_siblings:
+  - '0'
+  - '1'
+  - '2'
+  - '3'
+  - '4'
+  - '5'
+  - '6'
+  - '7'
+  - '8'
+  - '9'
+  - '10'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  - '16'
+  - '17'
+  - '18'
+  - '19'
+  - '20'
+  - '21'
+  - '22'
+  - '23'
+  - '24'
+  - '25'
+  - '26'
+  - '27'
+  - '28'
+  - '29'
+  - '30'
+  - '31'
+  - '32'
+  - '33'
+  - '34'
+  - '35'
+  - '36'
+  - '37'
+  - '38'
+  - '39'
+  - '40'
+  - '41'
+  - '42'
+  - '43'
+  - '44'
+  - '45'
+  - '46'
+  - '47'
+  - '48'
+  - '49'
+  - '50'
+  - '51'
+  - '52'
+  - '53'
+  - '54'
+  - '55'
+  - '56'
+  - '57'
+  - '58'
+  - '59'
+  - '60'
+  - '61'
+  - '62'
+  - '63'
+  l3_domains:
+  - 0-7
+  - 8-15
+  - 16-23
+  - 24-31
+  - 32-39
+  - 40-47
+  - 48-55
+  - 56-63
+build:
+  toolchain:
+    rustc: 'rustc 1.99.1 (58cf8f9c3 2026-10-13)
+
+      binary: rustc
+
+      commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+
+      commit-date: 2026-10-13
+
+      host: x86_64-unknown-linux-gnu
+
+      release: 1.99.1
+
+      LLVM version: 23.1.1
+
+      '
+    rustc_release: 1.99.1
+    rustflags: null
+    target_cpu: null
 environment:
-  hostname: 737f43342de3
-  os: Linux-6.8.0-146-generic-x86_64-with-glibc2.39
+  hostname: 0fe295fad79b
+  os: Linux-6.8.0-147-generic-x86_64-with-glibc2.39
   arch: x86_64
   cpu: x86_64
+  affinity:
+    pinning: none
+    requested_measured_cpus: null
+    observer_cpus: null
+    override_of: null
+    thread_budget: '1'
+    measured_cpus: 0-7
+    l3_domains:
+    - 0-7
+    - 8-15
+    - 16-23
+    - 24-31
+    - 32-39
+    - 40-47
+    - 48-55
+    - 56-63
+    cpu_boost: enabled
+    scaling_governor: schedutil
+    scaling_driver: acpi-cpufreq
   env:
     OMP_NUM_THREADS: '1'
     RAYON_NUM_THREADS: '1'
@@ -2039,8 +2175,9 @@ timing_policy:
   minimum_untimed_priming_runs: 1
   short_operation_sampling: adaptive batches target 2 ms, at most 4096 operations
     and 256 MiB retained output; output-reuse destinations prepared before timing
-  trace_execution: 'tenferro trace excluded: run_prepared cannot borrow the entered
-    session; JAX JIT compilation outside timing'
+  trace_execution: 'tenferro trace excluded: this suite compares immediate per-op
+    calls, while trace executes a prepared graph in one caller-held session (run_prepared_in);
+    JAX JIT compilation outside timing'
   setup_diagnostics: false
 blas:
   implementation: none
@@ -2102,9 +2239,9 @@ julia:
   reason: julia not found on PATH
 cuda:
   device_ordinal: 0
-  device_name: NVIDIA GeForce RTX 3060
-  device_uuid: GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e
-  device_memory_bytes: 12884901888
+  device_name: NVIDIA A100 80GB PCIe
+  device_uuid: GPU-530977e1-4968-9283-4129-9fbec3e66542
+  device_memory_bytes: 85899345920
   driver_version: 580.178.04
   runtime_version: '12.9'
   cuda_version: '13.0'
@@ -2112,8 +2249,8 @@ cuda:
 gpu_assignment:
   role: benchmark
   physical_device_index: 0
-  device_uuid: GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e
-  cuda_visible_devices: GPU-a78d5217-eba3-72c2-3d5b-8ae496ebbc2e
+  device_uuid: GPU-530977e1-4968-9283-4129-9fbec3e66542
+  cuda_visible_devices: GPU-530977e1-4968-9283-4129-9fbec3e66542
   process_device_ordinal: 0
   verification_only: false
 collection:
@@ -2123,22 +2260,22 @@ collection:
   expected_cases: 328
   selected_cases: 328
   sha256:
-    .devcontainer/cuda/devcontainer.json: 76569d9e898967d094988483a7adf6ab96eb426793db7248545d50e155f19cf1
-    .devcontainer/cuda/Dockerfile: 1cadf2f890f01187553bab0f136dc817f8964eff6a35b1806b1448a7383d21de
-    src/bin/benchmark_gpu_public_api.rs: e04b88277edb1bb3202f50da23a7b0d359a81675b9fe8a8a3692b1595961aebe
-    src/bin/benchmark_gpu_public_api/plan.rs: 3d0f10f390ebd0e08a40deb5a64e49e086dcd41b9a777d3a208c6846ed6b2fac
-    src/bin/benchmark_gpu_public_api/runtime_ops.rs: da168bf8b7c30f748f62839cf0bf7cce8f5bccf9c37b1c1d993fd70c466f2f76
-    src/bin/benchmark_gpu_public_api/multi.rs: 1b477fef78260cf28aa31e515d57ab411f6241b91ffb30d625939538fdbc6bab
-    src/bin/benchmark_gpu_public_api/lifetime.rs: c687a8b0329f6d3073073671b5d246acbb1f4dc3f983d1430da897a908ef1745
-    src/bin/benchmark_gpu_public_api/read_layout.rs: 70b1ed632ad52db5654c3d9f3df9fdb20a1e8c48894dbdcb24ce055757f5f7eb
-    src/bin/benchmark_gpu_public_api/structural.rs: b8fd99ceb5c80fd3474974b0ba9aa57833ad6bd25383af3091c11c0b6ab94f6d
-    src/bin/benchmark_gpu_public_api/linalg.rs: 5f5c4afc161f3d6e267861511d0d5871be9192d9968c95b59a73c9dc5a64e22b
-    src/bin/benchmark_gpu_public_api/state.rs: af8e9c9b4eb272af9a751d2a0aef9e1f8ff32c5efbd3ffffcf5f76e1e2c9704a
-    src/bin/benchmark_gpu_public_api/reuse.rs: 1dc14ac94fac700aa696d0ada04315685e3245738f9514de3d7989b8cb59152b
-    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: 3faaaf5ae74a2ef9c91888b8fd8e566d1cf83b24d2b385cc1cd7b87d9d80c6fb
-    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: 1ec80b23a4e12325f074f26149b3a21fd9d50f1e9ad70d447db24c471a069b55
-    scripts/run_gpu_public_api.sh: dd5e4cc47e85fcb5afdc56d460136b2a399a6a7d6a62005de8ba94afb0119ecc
-    data/results/nvidia-gpu/gpu/reuse_contraction/20261013_202222/fixtures/manifest.json: 0dee7d09b26142623e40e8d1517ebf92104039edf94ef7a83c73cea2da9830ae
-    target/release/benchmark_gpu_public_api: 1e7435f93580ec070b55a03ff6a2063ecf15fecdb0f6489947a353fe1371e378
+    .devcontainer/cuda/devcontainer.json: 0bf1465bbd1a4c9f896d5320838f2d5a488632a59af7f9b59cc050e95e0b8e09
+    .devcontainer/cuda/Dockerfile: 578d9815e5145aa1651ac7e93833468c345ee8bf5e95bfa7717551580ae9feca
+    src/bin/benchmark_gpu_public_api.rs: 1a5f3469fc9ffde64a79e05eb9853632366855ece3280ba83e2ba21fe3fb2cdc
+    src/bin/benchmark_gpu_public_api/lifetime.rs: 34be366f56aac88f5f3b86ade8018a15dad2bca85cea74f56cb2fe121917d0a9
+    src/bin/benchmark_gpu_public_api/linalg.rs: 9c3d7916a3281d2dfd1caa68551dc9c81c79dab6b7525324339e5c4816581e6d
+    src/bin/benchmark_gpu_public_api/multi.rs: 291e63a517b6f7108527254a7f83751420aa1d4e73395aa60f0691312b2a3773
+    src/bin/benchmark_gpu_public_api/plan.rs: 2d87b9d73bf25df8797133cf0a8dc8b1fa974fc3bee055ad92e42802c9ebf643
+    src/bin/benchmark_gpu_public_api/read_layout.rs: fc42e2160094ba5f9c7dd6facb5667a76e10b73f971ef9facfb1f64723e42467
+    src/bin/benchmark_gpu_public_api/reuse.rs: a5a4aa0edb0a1158f6669b642f4bc25a7079314fc2a711ef3ef57cc19c0a35b2
+    src/bin/benchmark_gpu_public_api/runtime_ops.rs: c9d61b1e99bda517a59a6e34f625fd4d651bbbb19f6dc06ba4d0d1c0d50dfd6a
+    src/bin/benchmark_gpu_public_api/state.rs: e11a863aee7a85822c474eb771b45ec402e21dbe92173d178c42119ab8ca307e
+    src/bin/benchmark_gpu_public_api/structural.rs: 8b61ac01b58edc090eafbc124ec135d5efeb4979631a939656ba78dd6e5c042a
+    /workspaces/tenferro-benchmark/scripts/benchmark_gpu_public_api.py: ddc112ea5d568a0399378f2be8b31c91b3144fe7d286e8094d27ca5ccda959bf
+    /workspaces/tenferro-benchmark/scripts/gpu_public_api_ops.py: e88823db3f4a1fe43dc13c4743c9d78ece6af76a968724091af318dd8d7f2528
+    scripts/run_gpu_public_api.sh: 9cbcb473cba55b1605bab07fd3ff14247859fd7fe9e73d5378dd70108313256b
+    data/results/nvidia-gpu/gpu/reuse_contraction/20261102_211407/fixtures/manifest.json: 0dee7d09b26142623e40e8d1517ebf92104039edf94ef7a83c73cea2da9830ae
+    target/release/benchmark_gpu_public_api: c0a0be40dd246cd4cb7ca59cac19bacd1549a4f3a593aea91e887cf41f6e4aa6
   reference_numpy_version: 2.4.2
 ```

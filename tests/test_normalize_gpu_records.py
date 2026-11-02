@@ -32,8 +32,8 @@ def permutation_row(**overrides):
 
 
 class NormalizeTest(unittest.TestCase):
-    def fold_and_validate(self, row):
-        folded = fold(row)
+    def fold_and_validate(self, row, suite_id=None):
+        folded = fold(row, suite_id)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "records.jsonl"
             path.write_text(json.dumps(folded) + "\n")
@@ -69,6 +69,18 @@ class NormalizeTest(unittest.TestCase):
         row = family_row()
         del row["case_id"]
         with self.assertRaisesRegex(ValueError, "without a case identity"):
+            fold(row)
+
+    def test_a_row_without_a_suite_identity_takes_the_run_suite(self):
+        # The public API families write case_id rows without suite_id; run.yaml
+        # names the suite the run belongs to.
+        row = family_row()
+        del row["suite_id"]
+        folded = self.fold_and_validate(row, "gpu/lstsq")
+        self.assertEqual(folded["suite_id"], "gpu/lstsq")
+        # A row that does carry one keeps it, so an emitter-side suite_id wins.
+        self.assertEqual(fold(family_row(), "gpu/isolated_ops")["suite_id"], "gpu/lstsq")
+        with self.assertRaisesRegex(ValueError, "without a suite identity"):
             fold(row)
 
 
