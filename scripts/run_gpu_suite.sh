@@ -122,10 +122,24 @@ mapfile -t SUITE_ROWS < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" 
 [[ ${#SUITE_ROWS[@]} -gt 0 ]] || { echo "No GPU suites selected" >&2; exit 1; }
 SUITES=()
 SUITE_DRIVERS=()
+SUITE_INSTANCES=()
 for row in "${SUITE_ROWS[@]}"; do
-    SUITES+=("${row%% *}")
-    SUITE_DRIVERS+=("${row##* }")
+    read -r suite_path suite_driver suite_instances <<< "$row"
+    SUITES+=("$suite_path")
+    SUITE_DRIVERS+=("$suite_driver")
+    SUITE_INSTANCES+=("$suite_instances")
 done
+# The family collectors take their repetitions from the environment, so the
+# routine effort choice reaches them through the same resolver.
+read -r ROUTINE_WARMUPS ROUTINE_RUNS < <("${PYTHON[@]}" - "$SCRIPT_DIR" "${BENCH_EFFORT:-standard}" <<'PY'
+import sys
+sys.path.insert(0, sys.argv[1])
+import bench_selection
+resolved = bench_selection.resolve_effort({"warmups": 3, "runs": 15}, value=sys.argv[2])
+print(resolved["warmups"], resolved["runs"])
+PY
+)
+export BENCH_WARMUPS="$ROUTINE_WARMUPS" BENCH_RUNS="$ROUTINE_RUNS"
 "${VALIDATOR[@]}" "${SUITES[@]}"
 
 resolve_git_commit() {
@@ -343,6 +357,7 @@ VALIDATION_FAILED=0
 for index in "${!SUITES[@]}"; do
     suite="${SUITES[$index]}"
     driver="${SUITE_DRIVERS[$index]}"
+    instances="${SUITE_INSTANCES[$index]}"
     suite_id="$(suite_id_for_file "$suite")"
     if [[ ! "$suite_id" =~ ^gpu/[a-z0-9][a-z0-9_.-]*$ ]]; then
         echo "ERROR: unsupported GPU suite_id '$suite_id' in $suite" >&2
@@ -362,27 +377,39 @@ for index in "${!SUITES[@]}"; do
     RESULT_PATHS+=("$RESULT_JSONL")
     : > "$RUN_DIR/wall_backends.jsonl"
     # A delegated collector writes its own run metadata.
-    [[ "$driver" == gpu_linalg_ad ]] || write_run_metadata "$suite_id" "$suite" "$RUN_YAML"
+    [[ "$driver" != gpu_suite ]] || write_run_metadata "$suite_id" "$suite" "$RUN_YAML"
 
     # Each framework releases its CUDA allocator before the next process starts.
     SUITE_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     COLLECTION_START_NS="$(wall_now)"
-    if [[ "$driver" == gpu_linalg_ad ]]; then
-        # The AD collector owns its own runner, verification and formatter; it
-        # receives the materialized routine suite so the routine selection
-        # still decides which AD cases run.
-        echo "Delegating $suite_id to scripts/run_gpu_linalg_jvp_vjp.sh"
-        GPU_BENCH_TIMESTAMP="$TIMESTAMP" LINALG_AD_SUITE_FILE="$suite" \
-            bash "$SCRIPT_DIR/run_gpu_linalg_jvp_vjp.sh" || VALIDATION_FAILED=1
-    else
-        run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL"
-    fi
+    case "$driver" in
+        gpu_linalg_ad)
+            # The AD collector owns its own runner, verification and formatter; it
+            # receives the materialized routine suite so the routine selection
+            # still decides which AD cases run.
+            echo "Delegating $suite_id to scripts/run_gpu_linalg_jvp_vjp.sh"
+            GPU_BENCH_TIMESTAMP="$TIMESTAMP" LINALG_AD_SUITE_FILE="$suite" \
+                bash "$SCRIPT_DIR/run_gpu_linalg_jvp_vjp.sh" || VALIDATION_FAILED=1 ;;
+        gpu_public_api)
+            # The public API collector owns its fixtures, runners and page; the
+            # materialized instance document names the curated cases.
+            echo "Delegating $suite_id to scripts/run_gpu_public_api.sh"
+            GPU_BENCH_TIMESTAMP="$TIMESTAMP" GPU_API_FAMILY="$suite_name" \
+                GPU_API_SUITE_FILE="$instances" GPU_API_SUITE_DECL="$suite" \
+                bash "$SCRIPT_DIR/run_gpu_public_api.sh" "$suite_name" || VALIDATION_FAILED=1 ;;
+        gpu_permutation)
+            echo "Delegating $suite_id to scripts/run_gpu_permutation.sh"
+            GPU_BENCH_TIMESTAMP="$TIMESTAMP" BENCHMARK_TIMESTAMP="$TIMESTAMP" \
+                bash "$SCRIPT_DIR/run_gpu_permutation.sh" || VALIDATION_FAILED=1 ;;
+        *)
+            run_suite_serial_by_backend "$suite" "$suite_id" "$RUN_DIR" "$RESULT_JSONL" ;;
+    esac
     COLLECTION_END_NS="$(wall_now)"
     SUITE_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     [[ -f "$RUN_YAML" ]] || continue
     write_collection_block "$suite_id" "$RUN_YAML" "$SUITE_STARTED_AT" "$SUITE_FINISHED_AT" \
         "$COLLECTION_START_NS" "$COLLECTION_END_NS"
-    if [[ "$driver" == gpu_linalg_ad ]]; then
+    if [[ "$driver" != gpu_suite ]]; then
         # The delegate already validated and formatted this suite.
         write_suite_wall_record "$RUN_DIR" "$COLLECTION_START_NS" "$COLLECTION_END_NS" "$COLLECTION_END_NS"
         echo ""

@@ -17,21 +17,38 @@ issue: 107
 # src/bin/benchmark_gpu_rust.rs). `gpu_linalg_ad` delegates to
 # scripts/run_gpu_linalg_jvp_vjp.sh.
 #
-# | Suite                | Driver       | Problems | Backends | Rows |
-# |----------------------|--------------|---------:|---------:|-----:|
-# | gpu/dense            | gpu_suite    |        7 |        4 |   28 |
-# | gpu/einsum           | gpu_suite    |        1 |        4 |    4 |
-# | gpu/sparse           | gpu_suite    |        2 |        1 |    2 |
-# | gpu/tensornetwork    | gpu_suite    |        1 |        4 |    4 |
-# | gpu/elementwise      | gpu_suite    |        2 |        4 |    8 |
-# | gpu/linalg_ad_latency| gpu_linalg_ad|       10 |        3 |   30 |
-# | gpu/linalg_jvp_vjp   | gpu_linalg_ad|       10 |        3 |   30 |
-# | Total                |              |       33 |       23 |  106 |
+# | Suite                 | Driver          | Problems | Backends | Rows |
+# |-----------------------|-----------------|---------:|---------:|-----:|
+# | gpu/dense             | gpu_suite       |        7 |        4 |   28 |
+# | gpu/einsum            | gpu_suite       |        1 |        4 |    4 |
+# | gpu/sparse            | gpu_suite       |        2 |        1 |    2 |
+# | gpu/tensornetwork     | gpu_suite       |        1 |        4 |    4 |
+# | gpu/elementwise       | gpu_suite       |        2 |        4 |    8 |
+# | gpu/linalg_ad_latency | gpu_linalg_ad   |       10 |        3 |   30 |
+# | gpu/linalg_jvp_vjp    | gpu_linalg_ad   |       10 |        3 |   30 |
+# | gpu/permutation       | gpu_permutation |       10 |        6 |   60 |
+# | gpu/lstsq             | gpu_public_api  |        1 |        4 |    4 |
+# | gpu/linalg_public_api | gpu_public_api  |       16 |        4 |   64 |
+# | gpu/fft               | gpu_public_api  |        4 |        4 |   16 |
+# | gpu/nn                | gpu_public_api  |       11 |        4 |   44 |
+# | gpu/structural        | gpu_public_api  |       16 |        4 |   64 |
+# | gpu/isolated_ops      | gpu_public_api  |       33 |        4 |  132 |
+# | gpu/reuse_contraction | gpu_public_api  |       56 |        4 |  224 |
+# | Total                 |                 |      180 |       55 |  714 |
 #
-# Opt-in vendor arms add 27 rows (gpu/dense +21, gpu/einsum +2, gpu/sparse +4)
-# for a 133-row matrix. Rows are problem/backend pairs; each pair is one
+# Opt-in vendor arms add 164 rows: gpu/dense +21, gpu/einsum +2, gpu/sparse +4,
+# and the second JAX path jax-cuda-jit on the seven public-API families +137,
+# for an 878-row matrix. Rows are problem/backend pairs; each pair is one
 # measured and numerically verified cell, and each backend is a separate
 # process with its own startup and preparation.
+#
+# Order is deliberate: the weekly run collects the manifest in this order, so a
+# night that runs out of budget loses the cheapest-signal-per-row tail last.
+# The tail is gpu/isolated_ops and gpu/reuse_contraction (356 rows of per-op
+# API surface). The first complete A100 run measures the real cost; if it does
+# not fit one night, the documented fallback is to drop those two from this
+# manifest and collect them monthly (a manifest edit, not a code path). They
+# are in the weekly set until that measurement says otherwise.
 suites:
   gpu/dense:
     file: benchmarks/gpu/dense.yaml
@@ -151,6 +168,269 @@ suites:
     - tenferro-cuda-trace
     - pytorch-cuda
     - jax-cuda
+  gpu/permutation:
+    file: benchmarks/gpu/permutation.yaml
+    driver: gpu_permutation
+    # All ten patterns: the materialize kernel sits under every contraction, and
+    #     this suite's 44 rows once went three weeks without an update. Every pattern
+    #     is a different index mapping, not a size sweep, so none is dropped.
+    #     Its arms are fixed by the two permutation runners (no arm filter exists
+    #     there); cuTENSOR is one of them because comparing the materialize kernel
+    #     against it is the suite's purpose.
+    problems:
+    - memcpy_24d_64x2
+    - transpose_2d_32768_16384
+    - transpose_3d_1024_1024_512_201
+    - transpose_3d_1024_1024_512_102
+    - rotation_6d_64_32_32_32_16_16
+    - reverse_23d_128x2
+    - reverse_18d_3
+    - cyclic_18d_3
+    - tn_light_415_24d_scattered_to_colmajor_gpu
+    - tn_light_415_24d_contiguous_same_perm_gpu
+    backends:
+    - tenferro-cuda-transpose
+    - tenferro-cuda-to-contiguous
+    - tenferro-cuda-destination-reuse
+    - cutensor
+    - pytorch-cuda
+    - memcpy-d2d
+  gpu/lstsq:
+    file: benchmarks/gpu/lstsq.yaml
+    driver: gpu_public_api
+    # The public least-squares surface keeps its one operation at the larger system
+    #     size in double precision; the f32/complex and small-system variants are
+    #     precision/size sweeps. This is the suite that carries the unresolved #299
+    #     failures, so it must be measured weekly rather than on request.
+    problems:
+    - lstsq_tall_f64_s256_rhs8
+    backends:
+    - tenferro-cuda-direct
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+    vendor_backends:
+    - jax-cuda-jit
+  gpu/linalg_public_api:
+    file: benchmarks/gpu/linalg_public_api.yaml
+    driver: gpu_public_api
+    # One case per public linalg operation (16), double or complex precision, the
+    #     largest declared shape. Factorization/Factor scheduling variants of the same
+    #     operation were already collapsed per op; dtype and size sweeps are not
+    #     weekly. This is the surface where #299-class failures appear.
+    problems:
+    - cholesky_f64_512x512
+    - svdvals_f64_512x512
+    - eigvalsh_f64_512x512
+    - pinv_f64_512x512
+    - inv_f64_512x512
+    - det_f64_512x512
+    - norm_f64_512x512
+    - triangular_solve_f64_512x512
+    - svd_full_tall_f64_512x256
+    - slogdet_positive_f64_256x256
+    - householder_qr_tall_f64_512x256
+    - householder_from_factors_default_f64_512x256
+    - householder_append_default_f64_512x256
+    - householder_r_default_f64_512x256
+    - householder_q_columns_prefix_f64_512x256
+    - lu_tall_f64_s256
+    backends:
+    - tenferro-cuda-direct
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+    vendor_backends:
+    - jax-cuda-jit
+  gpu/fft:
+    file: benchmarks/gpu/fft.yaml
+    driver: gpu_public_api
+    # The four public transforms once each, double precision and the large size;
+    #     f32 and the 1k size are precision/size sweeps.
+    problems:
+    - fft_c64_n1048576
+    - ifft_c64_n1048576
+    - rfft_f64_n1048576
+    - irfft_c64_n1048576
+    backends:
+    - tenferro-cuda-direct
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+    vendor_backends:
+    - jax-cuda-jit
+  gpu/nn:
+    file: benchmarks/gpu/nn.yaml
+    driver: gpu_public_api
+    # One case per activation/normalization/softmax operation (11), double
+    #     precision, large size; f32 and the 1k size are sweeps.
+    problems:
+    - sigmoid_f64_n1048576
+    - silu_f64_n1048576
+    - softplus_f64_n1048576
+    - gelu_f64_n1048576
+    - gelu_tanh_f64_n1048576
+    - softmax_f64_n1048576
+    - log_softmax_f64_n1048576
+    - masked_softmax_f64_n1048576
+    - masked_log_softmax_f64_n1048576
+    - layer_norm_f64_n1048576
+    - rms_norm_f64_n1048576
+    backends:
+    - tenferro-cuda-direct
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+    vendor_backends:
+    - jax-cuda-jit
+  gpu/structural:
+    file: benchmarks/gpu/structural.yaml
+    driver: gpu_public_api
+    # One case per structural operation (16 of 17; embed_diag only declares the
+    #     small size), double precision, the largest declared size. Integer and
+    #     complex/32-bit variants are dtype sweeps.
+    problems:
+    - pad_default_f64_n1048576
+    - slice_default_f64_n1048576
+    - reverse_default_f64_n1048576
+    - concatenate_default_f64_n1048576
+    - extract_diag_default_f64_n1048576
+    - embed_diag_default_f64_n1024
+    - tril_default_f64_n1048576
+    - triu_default_f64_n1048576
+    - take_along_axis_broadcast_indices_f64_n1048576
+    - scatter_default_f64_n1048576
+    - cast_default_f64_n1048576
+    - broadcast_in_dim_f64_n1048576
+    - dynamic_slice_in_bounds_f64_n1048576
+    - gather_axis0_f64_n1048576
+    - reshape_copy_f64_n1048576
+    - stack_axis0_f64_n1048576
+    backends:
+    - tenferro-cuda-direct
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+    vendor_backends:
+    - jax-cuda-jit
+  gpu/isolated_ops:
+    file: benchmarks/gpu/isolated_ops.yaml
+    driver: gpu_public_api
+    # One case per isolated elementwise/reduction operation (33), double or
+    #     complex precision, large size; the 32-bit and 1k variants are sweeps.
+    #     See the header: this suite and gpu/reuse_contraction are the documented
+    #     monthly fallback if one night cannot hold the weekly set.
+    problems:
+    - add_f64_n1048576
+    - sub_f64_n1048576
+    - mul_f64_n1048576
+    - div_f64_n1048576
+    - rem_f64_n1048576
+    - pow_f64_n1048576
+    - maximum_f64_n1048576
+    - minimum_f64_n1048576
+    - neg_f64_n1048576
+    - abs_f64_n1048576
+    - sign_f64_n1048576
+    - conj_c64_n1048576
+    - exp_f64_n1048576
+    - expm1_f64_n1048576
+    - log_f64_n1048576
+    - log1p_f64_n1048576
+    - erf_f64_n1048576
+    - sin_f64_n1048576
+    - cos_f64_n1048576
+    - tanh_f64_n1048576
+    - sqrt_f64_n1048576
+    - rsqrt_f64_n1048576
+    - compare_f64_n1048576
+    - where_select_f64_n1048576
+    - clamp_f64_n1048576
+    - reduce_sum_f64_n1048576
+    - reduce_prod_f64_n1048576
+    - reduce_max_f64_n1048576
+    - reduce_min_f64_n1048576
+    - reduce_sum_squares_f64_n1048576
+    - reduce_mean_f64_n1048576
+    - scale_real_f64_n1048576
+    - scale_complex_c64_n1048576
+    backends:
+    - tenferro-cuda-direct
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+    vendor_backends:
+    - jax-cuda-jit
+  gpu/reuse_contraction:
+    file: benchmarks/gpu/reuse_contraction.yaml
+    driver: gpu_public_api
+    # One case per reuse/accumulating or strided-read contraction operation (56),
+    #     double or complex precision. This is the output-reuse mechanism comparison
+    #     and the largest suite in the set; see the header for the monthly fallback.
+    problems:
+    - add_into_f64_n1048576
+    - add_read_into_f64_n1048576
+    - sub_into_f64_n1048576
+    - sub_read_into_f64_n1048576
+    - mul_into_f64_n1048576
+    - mul_read_into_f64_n1048576
+    - div_into_f64_n1048576
+    - div_read_into_f64_n1048576
+    - neg_into_f64_n1048576
+    - neg_read_into_f64_n1048576
+    - conj_into_c64_n1048576
+    - conj_read_into_c64_n1048576
+    - tensordot_f64_n262144
+    - vdot_read_f64_n262144
+    - norm_squared_read_f64_n262144
+    - axpby_read_into_accum_f64_n1048576
+    - dot_general_read_into_f64_s256
+    - dot_general_read_into_accum_f64_s256
+    - dot_general_read_into_accum_cached_f64_s256
+    - add_strided_read_f64_n1048576
+    - mul_strided_read_f64_n1048576
+    - neg_strided_read_f64_n1048576
+    - exp_strided_read_f64_n1048576
+    - tanh_strided_read_f64_n1048576
+    - reduce_sum_strided_read_f64_n1048576
+    - conj_strided_read_c64_n1048576
+    - dot_general_batch_f64_s256
+    - dot_conj_l0r0_c64_n262144
+    - einsum_plan_owned_f64_s256
+    - einsum_plan_read_f64_s256
+    - einsum_plan_strided_read_f64_s256
+    - einsum_plan_into_f64_s256
+    - einsum_plan_read_into_f64_s256
+    - einsum_plan_read_into_accum_f64_s256
+    - einsum_plan_strided_read_into_f64_s256
+    - einsum_plan_strided_read_into_accum_f64_s256
+    - sub_strided_read_f64_n1048576
+    - div_strided_read_f64_n1048576
+    - rem_strided_read_f64_n1048576
+    - pow_strided_read_f64_n1048576
+    - maximum_strided_read_f64_n1048576
+    - minimum_strided_read_f64_n1048576
+    - abs_strided_read_f64_n1048576
+    - sign_strided_read_f64_n1048576
+    - expm1_strided_read_f64_n1048576
+    - log_strided_read_f64_n1048576
+    - log1p_strided_read_f64_n1048576
+    - erf_strided_read_f64_n1048576
+    - sin_strided_read_f64_n1048576
+    - cos_strided_read_f64_n1048576
+    - sqrt_strided_read_f64_n1048576
+    - rsqrt_strided_read_f64_n1048576
+    - reduce_prod_strided_read_f64_n1048576
+    - reduce_max_strided_read_f64_n1048576
+    - reduce_min_strided_read_f64_n1048576
+    - reduce_sum_squares_strided_read_f64_n1048576
+    backends:
+    - tenferro-cuda-direct
+    - tenferro-cuda-eager
+    - pytorch-cuda
+    - jax-cuda
+    vendor_backends:
+    - jax-cuda-jit
 # Not in the routine set, because no routine driver can select them:
 #   gpu/dense_throughput, gpu/linalg_ad_throughput - separate regime
 #     (tenferro-cuda-trace-deferred-batch) with their own driver and reports;

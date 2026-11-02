@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-[[ -f /.dockerenv && -d /usr/local/cuda ]] || {
+[[ -f /.dockerenv && -d "${CUDA_HOME:-/usr/local/cuda}" ]] || {
     echo 'Use the repository CUDA devcontainer for GPU AD collection.' >&2
     exit 1
 }

@@ -29,12 +29,41 @@ below and in `routine.yaml`, not in a code change.
 | `gpu/elementwise` | `gpu_suite` | 2 | 4 | 8 |
 | `gpu/linalg_ad_latency` | `gpu_linalg_ad` | 10 | 3 | 30 |
 | `gpu/linalg_jvp_vjp` | `gpu_linalg_ad` | 10 | 3 | 30 |
-| **Total** | | **33** | **23** | **106** |
+| `gpu/permutation` | `gpu_permutation` | 10 | 6 | 60 |
+| `gpu/lstsq` | `gpu_public_api` | 1 | 4 | 4 |
+| `gpu/linalg_public_api` | `gpu_public_api` | 16 | 4 | 64 |
+| `gpu/fft` | `gpu_public_api` | 4 | 4 | 16 |
+| `gpu/nn` | `gpu_public_api` | 11 | 4 | 44 |
+| `gpu/structural` | `gpu_public_api` | 16 | 4 | 64 |
+| `gpu/isolated_ops` | `gpu_public_api` | 33 | 4 | 132 |
+| `gpu/reuse_contraction` | `gpu_public_api` | 56 | 4 | 224 |
+| **Total** | | **180** | **55** | **714** |
 
-The opt-in vendor arms add 27 rows (`gpu/dense` cublaslt/cutlass/cusolver,
-`gpu/einsum` cublaslt/cutlass, `gpu/sparse` cusparse/ginkgo) for a 133-row
-matrix. Vendor comparisons characterize against other libraries; they are not
-part of the weekly bundle.
+The opt-in vendor arms add 164 rows (`gpu/dense` cublaslt/cutlass/cusolver,
+`gpu/einsum` cublaslt/cutlass, `gpu/sparse` cusparse/ginkgo, and the second JAX
+path `jax-cuda-jit` on the seven public-API families) for an 878-row matrix.
+Vendor comparisons characterize against other libraries; they are not part of the
+weekly bundle.
+
+### Every `benchmarks/gpu/*.yaml` file is classified
+
+No suite is silently absent from the weekly set. The four files that are not
+suites (`confirmation.yaml`, `public_api_coverage.yaml`, `routine_budget.yaml`)
+are declarations, and `perf_issues.yaml` is the routine control lane.
+
+| Suite | Class | Evidence | Rows |
+|---|---|---|---:|
+| `gpu/fft` | (a) collected | own collector `run_gpu_public_api.sh`, fixtures in `data/instances/gpu_fft.json`, published page `result/nvidia-gpu/gpu/fft.md` | 16 |
+| `gpu/isolated_ops` | (a) collected | same collector, 33 isolated public operations, published page | 132 |
+| `gpu/linalg_public_api` | (a) collected | same collector; the surface where #299-class failures appear, published page | 64 |
+| `gpu/lstsq` | (a) collected | same collector; carries the unresolved #299 least-squares failures, published page | 4 |
+| `gpu/nn` | (a) collected | same collector, 11 activation/normalization operations, published page | 44 |
+| `gpu/structural` | (a) collected | same collector, 16 structural operations, published page | 64 |
+| `gpu/reuse_contraction` | (a) collected | same collector, 56 reuse/accumulating and strided-read operations, published page | 224 |
+| `gpu/permutation` | (a) collected | own collectors `run_gpu_permutation.sh` and the Rust/Python runners; the materialize kernel under every contraction, and its 44 rows once went three weeks without an update | 60 |
+| `gpu/dense_throughput` | (b) excluded by design | separate regime: backend identity `tenferro-cuda-trace-deferred-batch`, own driver `run_gpu_throughput.sh`, own reports. `AGENTS.md` forbids averaging or summarising a throughput row with a latency row, so it cannot join one weekly matrix | — |
+| `gpu/linalg_ad_throughput` | (b) excluded by design | same deferred-batch regime and driver as `dense_throughput` | — |
+| `gpu/perf_issues` | (c) diagnostic lane | 193-case broad matrix selected by its own `benchmarks/gpu/manifests/perf_issues.yaml`; the routine command already runs the curated 10 timed + 8 state controls from it weekly. The broad matrix stays independently selectable | — |
 
 ## What the set keeps and what it leaves out
 
@@ -57,19 +86,35 @@ naming it there again.
   They are never averaged together.
 - `gpu/sparse` is reference-only (tenferro has no CUDA sparse implementation), so
   only the PyTorch reference arm is routine.
+- The seven public-API families are fixture-driven: their cases come from
+  `data/instances/*.json` through `problems: {source, include}`. The routine
+  selection materializes a curated instance document, so the rule is the same —
+  one case per operation, double or complex precision, the largest declared
+  size; dtype and size sweeps are not weekly. `gpu/reuse_contraction` (56
+  operations) and `gpu/isolated_ops` (33) are the largest families.
+- `gpu/permutation` keeps all ten patterns: each is a different index mapping, not
+  a size sweep, and its arms are fixed by the two permutation runners (cuTENSOR is
+  one of them because comparing the materialize kernel against it is the point).
+
+### Collect order and the one-night budget
+
+The weekly run collects the manifest in order: the core five, both AD suites,
+`permutation`, `lstsq`, `linalg_public_api`, `fft`, `nn`, `structural`,
+`isolated_ops`, `reuse_contraction`. A night that runs out of budget therefore
+loses the cheapest-signal-per-row tail last. The 714-row set is 6.7x the previous
+routine matrix; it has not been measured on A100 yet. If the first complete
+collection does not fit the pod window, the documented fallback is to drop
+`gpu/isolated_ops` and `gpu/reuse_contraction` (356 rows of per-operation API
+surface) from this manifest and collect them monthly — a manifest edit, not a code
+path.
 - The diagnostic `tenferro-cuda-eager-per-call-session` backend and the
   `jax-cuda-eager` tensor-network path stay opt-in through an explicit
   `GPU_BENCH_BACKENDS` filter. Selection does not establish implementation
   availability.
 
-Not in the routine set: `gpu/dense_throughput` and `gpu/linalg_ad_throughput`
-(separate `tenferro-cuda-trace-deferred-batch` regime with their own driver and
-reports; mixing them into one weekly matrix would mix regimes), and the
-fixture-driven public-API families (`fft`, `isolated_ops`, `linalg_public_api`,
-`lstsq`, `nn`, `reuse_contraction`, `structural`, `permutation`), whose problems
-come from `data/instances/*.json` rather than a problem list the routine manifest
-can name. They keep their own runners and reports. `gpu/perf_issues` is the
-routine control lane (see [gpu-routine-controls.md](gpu-routine-controls.md))
+Everything else keeps its own runner and report and is collected through the
+routine command (see the classification table above). `gpu/perf_issues` remains
+the routine control lane (see [gpu-routine-controls.md](gpu-routine-controls.md))
 plus the broad matrix, which stays independently selectable.
 
 ## Selection, accounting and reports

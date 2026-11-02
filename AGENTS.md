@@ -482,12 +482,12 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
 
 `run_gpu_suite.sh` collects one curated set (`benchmarks/gpu/manifests/
 routine.yaml`, cost table in `docs/gpu-routine-coverage.md`): every routine
-suite once, one representative per operation family. There is no quick/full
-switch. The diagnostic `jax-cuda-eager` tensor-network path and the vendor arms
-stay opt-in via `GPU_BENCH_BACKENDS=...` or `BENCH_ROUTINE_VENDOR_ARMS=1`.
-`gpu/linalg_jvp_vjp` and `gpu/linalg_ad_latency` run inside that set through
-their own collector; their standalone scripts below remain available for a
-single-suite probe.
+suite once, one representative per operation family — 15 suites and 714 rows,
+including the fixture-driven public-API families and `gpu/permutation`, which
+keep their own collectors and reports. There is no quick/full switch. The
+diagnostic `jax-cuda-eager`/`jax-cuda-jit` paths and the vendor arms stay opt-in
+via `GPU_BENCH_BACKENDS=...` or `BENCH_ROUTINE_VENDOR_ARMS=1`. The standalone
+scripts below remain available for a single-suite probe.
 
 For the GPU linalg JVP/VJP report (CPU `linalg_jvp_vjp` parity on CUDA):
 

@@ -435,9 +435,9 @@ If `nvidia-smi` fails inside a previously created container ("Failed to
 initialize NVML" / `CUDA_ERROR_NO_DEVICE`) while the host GPU is fine,
 `docker restart <container>` usually restores GPU access — no rebuild needed.
 
-The routine set is dense, einsum, sparse, tensor-network, elementwise and both
-linalg AD suites; `docs/gpu-routine-coverage.md` lists every case and the row
-cost.
+The routine set is dense, einsum, sparse, tensor-network, elementwise, both
+linalg AD suites, permutation and the seven public-API families;
+`docs/gpu-routine-coverage.md` lists every case, the driver and the row cost.
 
 ```bash
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \

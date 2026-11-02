@@ -26,20 +26,43 @@ def defaults(manifest_path, vendor_arms=False):
     return suites, backends
 
 
+def suite_problems(root, spec):
+    """The suite declaration and its selectable cases, for either problem form.
+
+    A suite names its cases either as a `problems` list or as
+    `problems: {source, include}` over an instance file; `instances` is the
+    instance document in the second form, so the routine selection can hand the
+    collectors exactly the cases it selected.
+    """
+    source = yaml.safe_load((root/spec["file"]).read_text())
+    problems = source["problems"]
+    if isinstance(problems, list):
+        return source, {p["id"]: p for p in problems}, None
+    instances = yaml.safe_load((root/problems["source"]).read_text())
+    declared = set(problems.get("include") or [])
+    # Instance documents name their list `cases` (public API) or `patterns`
+    # (permutation); both carry the same per-entry `id`.
+    entries = instances.get("cases") if "cases" in instances else instances["patterns"]
+    cases = {case["id"]: case for case in entries}
+    if not set(spec["problems"]) <= declared or not set(spec["problems"]) <= cases.keys():
+        raise ValueError(f"stale routine problem manifest: {spec['file']}")
+    return source, cases, instances
+
+
 def materialize(manifest_path, requested, output, backend_override="", problem="", effort="standard",
                 vendor_arms=False):
     manifest = yaml.safe_load(manifest_path.read_text())
     root = manifest_path.resolve().parents[3]
     output.mkdir(parents=True, exist_ok=True)
     expected, selected, files, drivers = [], [], [], {}
+    instances_files = {}
     requested = {(Path(path).resolve().relative_to(root).as_posix() if Path(path).is_absolute()
                   else Path(path).as_posix()) for path in requested}
     known_files = {spec["file"] for spec in manifest["suites"].values()}
     if requested - known_files:
         raise ValueError(f"suites absent from routine manifest: {sorted(requested-known_files)}")
     for suite_id, spec in manifest["suites"].items():
-        source = yaml.safe_load((root/spec["file"]).read_text())
-        problems = {p["id"]:p for p in source["problems"]}
+        source, problems, instances = suite_problems(root, spec)
         if not set(spec["problems"]) <= problems.keys():
             raise ValueError(f"stale routine problem manifest: {suite_id}")
         backends = list(spec["backends"])
@@ -58,13 +81,26 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
         selected.extend(f"{suite_id}:{pid}:{backend}" for pid in ids for backend in backends)
         effective = copy.deepcopy(source)
         effective["backends"] = backends
-        effective["problems"] = [copy.deepcopy(problems[pid]) for pid in ids]
-        for item in effective["problems"]:
-            run = dict(source.get("defaults", {}).get("run", {}), **item.get("run", {}))
-            resolved = bench_selection.resolve_effort(run, value=effort)
-            run.update(warmups=resolved["warmups"], runs=resolved["runs"])
-            item["run"] = run
         path = output / (suite_id.replace("/", "_")+".yaml")
+        instances_path = None
+        if instances is None:
+            effective["problems"] = [copy.deepcopy(problems[pid]) for pid in ids]
+            for item in effective["problems"]:
+                run = dict(source.get("defaults", {}).get("run", {}), **item.get("run", {}))
+                resolved = bench_selection.resolve_effort(run, value=effort)
+                run.update(warmups=resolved["warmups"], runs=resolved["runs"])
+                item["run"] = run
+        else:
+            # Instance-driven suites read their cases from data/instances, so the
+            # selection hands the collector a materialized instance document.
+            payload = dict(instances)
+            key = "cases" if "cases" in instances else "patterns"
+            payload[key] = [copy.deepcopy(problems[pid]) for pid in ids]
+            payload["backends"] = backends
+            instances_path = output / (suite_id.replace("/", "_") + "_instances.json")
+            instances_path.write_text(json.dumps(payload, indent=2) + "\n")
+            instances_files[path.as_posix()] = instances_path.as_posix()
+            effective["problems"] = {"source": instances_path.as_posix(), "include": ids}
         path.write_text(yaml.safe_dump(effective, sort_keys=False, width=100))
         files.append(path.as_posix())
         drivers[path.as_posix()] = spec.get("driver") or DEFAULT_DRIVER
@@ -72,6 +108,7 @@ def materialize(manifest_path, requested, output, backend_override="", problem="
         raise ValueError("no GPU cases selected")
     plan = dict(manifest_version=manifest["manifest_version"], effort=effort,
                 expected=expected, selected=selected, suite_files=files, suite_drivers=drivers,
+                suite_instances=instances_files,
                 backend_override=backend_override or None, vendor_arms=vendor_arms,
                 problem_filter=problem or None)
     (output/"selection.json").write_text(json.dumps(plan,indent=2)+"\n")
@@ -173,7 +210,7 @@ def main():
     plan = materialize(args.manifest,args.suites,args.output,args.backends,args.problem,args.effort,
                        args.vendor_arms)
     for path in plan["suite_files"]:
-        print(path, plan["suite_drivers"][path])
+        print(path, plan["suite_drivers"][path], plan["suite_instances"].get(path, "-"))
 
 
 if __name__ == "__main__":

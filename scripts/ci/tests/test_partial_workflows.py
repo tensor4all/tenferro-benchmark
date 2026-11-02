@@ -68,11 +68,13 @@ class PartialWorkflowTest(unittest.TestCase):
         # hosted build job.
         build = next(step for step in workflow['jobs']['prepare-benchmark']['steps']
                      if step.get('id') == 'build')
-        self.assertIn('benchmark_gpu_linalg_ad', build['run'])
+        for binary in ('benchmark_gpu_linalg_ad', 'benchmark_gpu_public_api', 'benchmark_gpu_permutation'):
+            self.assertIn(binary, build['run'])
         self.assertIn('artifact_paths', build['run'])
         verify = next(step for step in job['steps']
                       if step.get('name') == 'Verify hosted benchmark build')
-        self.assertIn('benchmark_gpu_linalg_ad', verify['run'])
+        for binary in ('benchmark_gpu_linalg_ad', 'benchmark_gpu_public_api', 'benchmark_gpu_permutation'):
+            self.assertIn(binary, verify['run'])
 
     def test_ingest_if_admits_only_success_failure_and_preserves_trust_conditions(self):
         condition=self.workflow('ingest-results')['jobs']['ingest']['if']

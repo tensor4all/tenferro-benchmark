@@ -72,10 +72,11 @@ def adapt_publication(bundle: Path, source: dict) -> dict:
         if suite in ('gpu/linalg_jvp_vjp', 'gpu/linalg_ad_latency'):
             from format_gpu_linalg_ad_results import build_summary
         else:
+            # The routine path folds every family into the shared record contract.
             from format_gpu_results import build_summary
         rebuilt = build_summary(records, metadata)
         if rebuilt != summary:
-            raise ValueError('GPU summary differs from raw records')
+            raise ValueError(f'{suite}: GPU summary differs from raw records')
         # Attribution is established by the API-selected run. Some legacy GPU
         # metadata did not record a harness SHA; a conflicting recorded SHA fails.
         recorded = metadata.get('environment', {}).get('env', {}).get('BENCHMARK_COMMIT')

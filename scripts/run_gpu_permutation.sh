@@ -76,12 +76,15 @@ fi
 # scripts/run_gpu_suite.sh exports CUTLASS_DIR / GINKGO_DIR defaults).
 export TENFERRO_CUTENSOR_PATH="${TENFERRO_CUTENSOR_PATH:-/usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2}"
 
-TIMESTAMP="${BENCHMARK_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
-RUN_TIMESTAMP_RFC3339="$(python3 - <<'PY'
+TIMESTAMP="${BENCHMARK_TIMESTAMP:-${GPU_BENCH_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}}"
+# Same rule as run_gpu_suite.sh: the run metadata timestamp identifies the run
+# directory, so it is derived from that stamp rather than the wall clock.
+RUN_TIMESTAMP_RFC3339="${GPU_BENCH_RUN_TIMESTAMP:-$(python3 - "$TIMESTAMP" <<'PY'
 from datetime import datetime, timezone
-print(datetime.now(timezone.utc).isoformat())
+import sys
+print(datetime.strptime(sys.argv[1], "%Y%m%d_%H%M%S").replace(tzinfo=timezone.utc).isoformat())
 PY
-)"
+)}"
 
 RUN_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/permutation/$TIMESTAMP"
 RUN_YAML="$RUN_DIR/run.yaml"
@@ -146,11 +149,17 @@ echo "Run dir:      ${RUN_DIR#$PROJECT_DIR/}"
 echo ""
 
 echo "Building benchmark_gpu_permutation..."
-CUBECL_DEBUG_LOG=0 \
-CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
-RUST_MIN_STACK="$RUST_MIN_STACK" \
-LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-    cargo build --release --features cuda --bin benchmark_gpu_permutation
+PERMUTATION_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_permutation"
+if [[ "${GPU_BENCH_PREBUILT_RUST:-0}" == 1 ]]; then
+    # The hosted build job ships this binary; the benchmark pod has no Rust toolchain.
+    python3 "$SCRIPT_DIR/ci/gpu_artifact.py" "$PERMUTATION_BIN"
+else
+    CUBECL_DEBUG_LOG=0 \
+    CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
+    RUST_MIN_STACK="$RUST_MIN_STACK" \
+    LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+        cargo build --release --features cuda --bin benchmark_gpu_permutation
+fi
 
 RUST_JSONL="$RUN_DIR/rust_output.jsonl"
 GPU_BENCH_BACKEND_SLEEP="${GPU_BENCH_BACKEND_SLEEP:-2}"
@@ -180,11 +189,22 @@ for backend in pytorch-cuda memcpy-d2d; do
 done
 
 echo ""
+# The routine path reads one record contract: fold this suite's rows and build
+# its summary, then render the permutation page into the run directory.
 echo "Formatting gpu/permutation results as markdown..."
 "${FORMATTER[@]}" \
     "${INPUTS[@]}" \
     --run-metadata "$RUN_YAML" \
-    --output "$LATEST_REPORT"
+    --output "$RUN_DIR/report.md"
+# One record contract for the routine accounting, the bundle row gate and the
+# dashboard summary. It is written after the page so the shared summary replaces
+# this suite's own sidecar rather than the other way round.
+"${PYTHON[@]}" "$SCRIPT_DIR/normalize_gpu_records.py" --output "$RUN_DIR/records.jsonl" \
+    --summary "$RUN_DIR/report.summary.json" --run-metadata "$RUN_YAML" "${INPUTS[@]}"
+if [[ "${GPU_BENCH_SKIP_LATEST:-0}" != 1 ]]; then
+    cp "$RUN_DIR/report.md" "$LATEST_REPORT"
+    cp "$RUN_DIR/report.summary.json" "${LATEST_REPORT%.md}.summary.json"
+fi
 
 # Record the correctness-gate mode in the maintained report text too.
 "${PYTHON[@]}" - "$LATEST_REPORT" "$PERMUTATION_VERIFICATION_MODE" <<'PY'

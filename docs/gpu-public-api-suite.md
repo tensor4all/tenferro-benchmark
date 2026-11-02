@@ -1,5 +1,13 @@
 # CUDA public API suites
 
+
+The seven families (`fft`, `nn`, `isolated_ops`, `structural`,
+`linalg_public_api`, `reuse_contraction`, `lstsq`) are part of the single
+routine GPU set: `run_gpu_suite.sh` delegates each one to
+`scripts/run_gpu_public_api.sh` with a curated instance document, so the
+weekly command collects them. The per-family command below remains the way
+to probe one family alone.
+
 These suites implement the missing-operation workstream in
 [issue #155](https://github.com/tensor4all/tenferro-benchmark/issues/155).
 Each family has a YAML selection in `benchmarks/gpu/` and explicit operation,

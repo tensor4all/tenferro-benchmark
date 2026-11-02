@@ -71,8 +71,18 @@ MAINTAINED: dict[tuple[str, str], str] = {
     ("nvidia-gpu", "gpu/elementwise"): "gpu_records",
     ("nvidia-gpu", "gpu/linalg_jvp_vjp"): "gpu_records",
     ("nvidia-gpu", "gpu/linalg_ad_latency"): "gpu_records",
-    ("nvidia-gpu", "gpu/permutation"): "gpu_permutation",
     ("nvidia-gpu", "gpu/perf_issues"): "perf_issues",
+    # The routine collection folds the fixture-driven families into the shared
+    # GPU record contract (scripts/normalize_gpu_records.py), so their summaries
+    # come from the shared builder too.
+    ("nvidia-gpu", "gpu/permutation"): "gpu_records",
+    ("nvidia-gpu", "gpu/fft"): "gpu_records",
+    ("nvidia-gpu", "gpu/isolated_ops"): "gpu_records",
+    ("nvidia-gpu", "gpu/linalg_public_api"): "gpu_records",
+    ("nvidia-gpu", "gpu/lstsq"): "gpu_records",
+    ("nvidia-gpu", "gpu/nn"): "gpu_records",
+    ("nvidia-gpu", "gpu/reuse_contraction"): "gpu_records",
+    ("nvidia-gpu", "gpu/structural"): "gpu_records",
 }
 
 
