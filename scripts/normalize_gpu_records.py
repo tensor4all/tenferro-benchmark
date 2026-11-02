@@ -46,16 +46,41 @@ def _spread(values):
     return quartiles[2] - quartiles[0]
 
 
+CORRECTNESS_TO_VERIFICATION = {"passed": "passed", "skipped": "skipped",
+                               "not_applicable": "not_applicable"}
+
+
 def _verification(row):
     recorded = row.get("verification") or {}
     if recorded.get("status"):
         return recorded["status"]
     if row.get("correctness"):
-        return "passed" if row["correctness"] == "passed" else "failed"
+        # A row whose correctness was never evaluated is not a wrong row. The
+        # three states have to survive the fold: collapsing `skipped` into
+        # `failed` makes the accounting print a numerical failure for a cell
+        # that was never measured.
+        return CORRECTNESS_TO_VERIFICATION.get(row["correctness"], "failed")
     error = recorded.get("max_error_over_tolerance")
     if isinstance(error, (int, float)) and math.isfinite(error):
         return "passed" if error <= 1 else "failed"
     return "not_applicable"
+
+
+def _reason(row):
+    """The row's own explanation, whichever field its family runner used.
+
+    Families disagree: some write ``reason``, the permutation runners write the
+    explanation into ``notes``, and a few only have ``error``. The accounting
+    prefers ``execution.unsupported_reason`` and falls back to
+    ``verification.reason``, so a dropped reason turns a benign skip into a
+    failure whose cause is lost.
+    """
+    recorded = row.get("verification") or {}
+    for value in (row.get("reason"), row.get("notes"), row.get("error"),
+                  recorded.get("reason")):
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
 
 
 def fold(row, suite_id=None):
@@ -87,6 +112,7 @@ def fold(row, suite_id=None):
         values = []
     values = [value for value in values if isinstance(value, (int, float)) and math.isfinite(value)]
     status = row.get("status")
+    reason = _reason(row)
     median = statistics.median(values) if values else None
     iqr = timing.get("iqr_ms_recorded", _spread(values))
     if status not in {"ok", "unsupported", "skipped", "not_configured", "verification_only"}:
@@ -110,13 +136,14 @@ def fold(row, suite_id=None):
             "status": _verification(row),
             "reference_backend": (row.get("verification") or {}).get("reference") or "cpu_fp64",
             "rtol": None, "atol": None,
+            "reason": reason,
         },
         "execution": {
             "device": "cuda", "device_ordinal": int(row.get("device_ordinal") or 0),
             "execution_path": row.get("runner") or "family-runner",
             "synchronization": row.get("synchronization") or "recorded by the family runner",
             "layout": "", "dtype": str(row.get("dtype") or ""),
-            "unsupported_reason": row.get("reason"),
+            "unsupported_reason": reason if status != "ok" else row.get("reason"),
             "notes": json.dumps({"sampling": {"operations_per_sample": timing.get("operations_per_sample") or 1,
                                               "batch_ms": values}}),
         },
