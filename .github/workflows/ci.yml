@@ -183,6 +183,9 @@ jobs:
       - name: Check caller-owned CPU engine thread counts
         run: cargo test --locked --lib cpu_engine_tests
 
+      - name: Check the linalg AD JVP/VJP cases are registered on both arms
+        run: cargo test --locked --bin publication_gate linalg_ad
+
       - name: Check overhead-smoke runtime timing scope
         run: cargo test --locked --bin perf_issue_case umbrella::alloc_counter::tests -- --test-threads=1
 

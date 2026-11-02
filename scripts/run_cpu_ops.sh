@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # Runs the focused CPU benchmark items where this repository has a native
-# runner. Includes primal linalg, trace-mode JVP/VJP (tenferro-trace), and
-# eager backward. Output is normalized to the backend-comparison CSV consumed by
-# format_cpu_ops_results.py.
+# runner. Includes primal linalg, linalg JVP/VJP on both the eager and the trace
+# arm, and eager backward. Output is normalized to the backend-comparison CSV
+# consumed by format_cpu_ops_results.py.
 
 NUM_THREADS="${1:-1}"
 

@@ -43,10 +43,11 @@ def base_op(benchmark: str) -> str:
 def backend_order(present: set[str]) -> list[str]:
     """The table's columns: the declared order first, then any other backend present.
 
-    The JVP/VJP rows are measured on `tenferro-trace` only (`push_linalg_jvp_vjp_trace_benches`
-    in `src/bin/publication_gate.rs`), so `tenferro-eager` is normally absent. It is still listed
-    first so that an eager measurement, if one is ever registered, is rendered instead of
-    silently dropped (see `docs/cpu-suite-arms.md`). A backend this file does not know is kept
+    The JVP/VJP cases are registered on both tenferro arms (`push_linalg_jvp_vjp_eager_benches`
+    and `push_linalg_jvp_vjp_trace_benches` in `src/bin/publication_gate.rs`), so a run normally
+    has `tenferro-eager` and `tenferro-trace` columns; a summary collected before the eager
+    registration has the trace arm only. Either way both are listed first and a missing arm drops
+    only its own column (see `docs/cpu-suite-arms.md`). A backend this file does not know is kept
     too, rather than discarded: a missing column is a lost measurement, a stray column is not.
     """
     declared = [backend for backend in LINALG_AD_BACKEND_ORDER if backend in present]
@@ -69,8 +70,8 @@ def format_table(path: Path) -> str:
         "",
         "Median ± IQR (ms). Missing backends are shown as `-`.",
         "",
-        "tenferro-rs JVP/VJP use trace-mode `AdContext`; PyTorch uses `torch.func.jvp` /",
-        "`vjp`; JAX uses `jax.jvp` / `jax.vjp`.",
+        "tenferro-rs measures both arms: eager `EagerRuntime::jvp` / `vjp`, and trace-mode",
+        "`AdContext`. PyTorch uses `torch.func.jvp` / `vjp`; JAX uses `jax.jvp` / `jax.vjp`.",
         "",
         "| suite | benchmark | dtype | threads | shape | "
         + " | ".join(BACKEND_LABELS.get(b, b) for b in order)

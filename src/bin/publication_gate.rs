@@ -639,6 +639,55 @@ fn run_small_latency(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((loss, x))
             },
         ));
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(10),
+            LinalgAdLoss::SumSvdS { matrix_seed: 10 },
+        );
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(4),
+            LinalgAdLoss::SumQr { matrix_seed: 4 },
+        );
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(5),
+            LinalgAdLoss::SumEigh { matrix_seed: 5 },
+        );
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(52),
+            LinalgAdLoss::SumLu { matrix_seed: 52 },
+        );
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "small",
+            &format!("{n}x{n},rhs=1"),
+            n,
+            tangent_seed(11),
+            LinalgAdLoss::SumSolveWrtA {
+                matrix_seed: 11,
+                rhs_seed: 12,
+                rhs_cols: 1,
+            },
+        );
     }
 }
 
@@ -877,6 +926,59 @@ fn run_large_throughput(config: &BenchConfig, rows: &mut Vec<Row>) {
                 Ok((loss, x))
             },
         ));
+    }
+    // The linalg AD cases use the trace arm's size grid so that both arms of
+    // `cpu/linalg_jvp_vjp` record the same shapes.
+    for &n in large_linalg_jvp_vjp_sizes(config.profile) {
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(34),
+            LinalgAdLoss::SumSvdS { matrix_seed: 34 },
+        );
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(26),
+            LinalgAdLoss::SumQr { matrix_seed: 26 },
+        );
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(27),
+            LinalgAdLoss::SumEigh { matrix_seed: 27 },
+        );
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n}"),
+            n,
+            tangent_seed(54),
+            LinalgAdLoss::SumLu { matrix_seed: 54 },
+        );
+        push_linalg_jvp_vjp_eager_benches(
+            config,
+            rows,
+            "large",
+            &format!("{n}x{n},rhs=1"),
+            n,
+            tangent_seed(35),
+            LinalgAdLoss::SumSolveWrtA {
+                matrix_seed: 35,
+                rhs_seed: 36,
+                rhs_cols: 1,
+            },
+        );
     }
 }
 
@@ -1753,6 +1855,29 @@ fn measure_eager<I: Clone + Send + Sync, O>(
     })
 }
 
+// Eager AD samples cannot share one borrowed session the way the primal rows do:
+// `EagerRuntime::jvp`/`vjp` take the caller-held engine themselves (tenferro-rs
+// #2206), so one sample is one forward pass in a borrowed session plus one AD
+// call. That call also carries the eager side's AD preparation, which the public
+// API does not expose separately; the trace arm prepares outside the clock (see
+// `docs/cpu-suite-arms.md`).
+fn measure_eager_ad<I, O>(
+    config: &BenchConfig,
+    shape: &str,
+    setup: impl FnMut() -> Result<I, Error>,
+    mut execute: impl FnMut(
+        &Arc<EagerRuntime>,
+        &mut dyn ExecutionEngine,
+        &mut I,
+    ) -> tenferro_ad::error::Result<O>,
+) -> Result<Measurement, Error> {
+    let ctx = cpu_ctx();
+    let mut engine = cpu_engine();
+    measure(config, shape, setup, |input| {
+        Ok(execute(&ctx, &mut *engine, input)?)
+    })
+}
+
 fn record_raw(record: serde_json::Value) -> Result<(), Error> {
     if let Ok(path) = env::var("CPU_OPS_RAW_SAMPLES") {
         let mut file = std::fs::OpenOptions::new()
@@ -1871,6 +1996,67 @@ fn bench_row<I: Clone + Send + Sync, O>(
     }
     let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         let measured = measure_eager(config, shape, &mut setup, &mut execute)?;
+        summarize_measurement(measured, suite, op, phase, shape, "tenferro-eager")
+    }));
+
+    match result {
+        Ok(Ok((median, iqr))) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape: shape.to_string(),
+            backend: config.backend,
+            median_ms: Some(median),
+            iqr_ms: Some(iqr),
+            status: "ok".to_string(),
+        },
+        Ok(Err(err)) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape: shape.to_string(),
+            backend: config.backend,
+            median_ms: None,
+            iqr_ms: None,
+            status: format!("error: {err}"),
+        },
+        Err(_) => Row {
+            suite,
+            op,
+            phase,
+            dtype,
+            shape: shape.to_string(),
+            backend: config.backend,
+            median_ms: None,
+            iqr_ms: None,
+            status: "panic".to_string(),
+        },
+    }
+}
+
+/// One eager AD row: `jvp` or `vjp` measured by `measure_eager_ad`.
+fn bench_eager_ad_row<I, O>(
+    config: &BenchConfig,
+    suite: &'static str,
+    op: &'static str,
+    phase: &'static str,
+    dtype: &'static str,
+    shape: &str,
+    mut setup: impl FnMut() -> Result<I, Error>,
+    mut execute: impl FnMut(
+        &Arc<EagerRuntime>,
+        &mut dyn ExecutionEngine,
+        &mut I,
+    ) -> tenferro_ad::error::Result<O>,
+) -> Row {
+    if !benchmark_filter_matches(op, phase) {
+        return filtered_row(suite, op, phase, dtype, shape);
+    }
+
+    let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+        let measured = measure_eager_ad(config, shape, &mut setup, &mut execute)?;
         summarize_measurement(measured, suite, op, phase, shape, "tenferro-eager")
     }));
 
@@ -2137,6 +2323,13 @@ fn scalar_one() -> TracedTensor {
     traced_tensor(&[], vec![1.0])
 }
 
+/// The eager fixtures of one AD case: the differentiated matrix, plus the fixed
+/// right-hand side that `solve` needs.
+struct EagerLinalgAdFixture {
+    wrt: EagerTensor,
+    rhs: Option<EagerTensor>,
+}
+
 #[derive(Clone, Copy, Debug)]
 enum LinalgAdLoss {
     SumSvdS {
@@ -2205,6 +2398,73 @@ impl LinalgAdLoss {
             }
         }
     }
+
+    /// Build the eager inputs of this case. Tensor wrapping may enter a backend
+    /// session, so this happens before a sample's clock.
+    fn eager_fixture(self, n: usize) -> EagerLinalgAdFixture {
+        let matrix = |data: Vec<f64>| eager_requires_grad_in(tensor(&[n, n], data), cpu_ctx());
+        match self {
+            Self::SumSvdS { matrix_seed }
+            | Self::SumQr { matrix_seed }
+            | Self::SumLu { matrix_seed } => EagerLinalgAdFixture {
+                wrt: matrix(well_conditioned_matrix(n, matrix_seed)),
+                rhs: None,
+            },
+            Self::SumEigh { matrix_seed } => EagerLinalgAdFixture {
+                wrt: matrix(spd_matrix(n, matrix_seed)),
+                rhs: None,
+            },
+            Self::SumSolveWrtA {
+                matrix_seed,
+                rhs_seed,
+                rhs_cols,
+            } => EagerLinalgAdFixture {
+                wrt: matrix(spd_matrix(n, matrix_seed)),
+                rhs: Some(eager_from_tensor_in(
+                    tensor(&[n, rhs_cols], data_for_shape(&[n, rhs_cols], rhs_seed)),
+                    cpu_ctx(),
+                )),
+            },
+        }
+    }
+
+    /// The same loss as [`Self::build`], computed by one borrowed eager session.
+    fn eager_forward(
+        self,
+        session: &mut EagerSession<'_>,
+        fixture: &EagerLinalgAdFixture,
+    ) -> tenferro_ad::error::Result<EagerTensor> {
+        match self {
+            Self::SumSvdS { .. } => {
+                let (_, s, _) = session.svd(&fixture.wrt)?;
+                session.reduce_sum(&s, Some(&[0]))
+            }
+            Self::SumQr { .. } => {
+                let (q, r) = session.qr(&fixture.wrt)?;
+                let q_sum = session.reduce_sum(&q, Some(&[0, 1]))?;
+                let r_sum = session.reduce_sum(&r, Some(&[0, 1]))?;
+                session.add(&q_sum, &r_sum)
+            }
+            Self::SumEigh { .. } => {
+                let (w, _) = session.eigh(&fixture.wrt)?;
+                session.reduce_sum(&w, Some(&[0]))
+            }
+            Self::SumLu { .. } => {
+                let (_, l, u, _) = session.lu(&fixture.wrt)?;
+                let l_sum = session.reduce_sum(&l, Some(&[0, 1]))?;
+                let u_sum = session.reduce_sum(&u, Some(&[0, 1]))?;
+                session.add(&l_sum, &u_sum)
+            }
+            Self::SumSolveWrtA { .. } => {
+                let rhs = fixture
+                    .rhs
+                    .as_ref()
+                    .expect("the solve AD case carries a right-hand side");
+                let x = session.solve(&fixture.wrt, rhs)?;
+                session.reduce_sum(&x, Some(&[0, 1]))
+            }
+        }
+    }
 }
 
 fn push_linalg_jvp_vjp_trace_benches(
@@ -2242,6 +2502,64 @@ fn push_linalg_jvp_vjp_trace_benches(
             let (output, wrt) = loss.build(n)?;
             let derivative = vjp(&output, &wrt, &scalar_one())?;
             Ok(vec![output, derivative])
+        },
+    ));
+}
+
+/// Register one linalg AD case on the eager arm under the trace arm's case ids.
+///
+/// `cpu/linalg_jvp_vjp` is derived from the CPU-ops CSV rows named `_jvp`/`_vjp`,
+/// so the ids must match [`push_linalg_jvp_vjp_trace_benches`] exactly for both
+/// arms to share a row.
+fn push_linalg_jvp_vjp_eager_benches(
+    config: &BenchConfig,
+    rows: &mut Vec<Row>,
+    suite: &'static str,
+    shape: &str,
+    n: usize,
+    tangent_seed: u64,
+    loss: LinalgAdLoss,
+) {
+    let op = loss.op_name();
+    rows.push(bench_eager_ad_row(
+        config,
+        suite,
+        op,
+        "jvp",
+        "f64",
+        shape,
+        || {
+            Ok((
+                loss.eager_fixture(n),
+                eager_from_tensor_in(
+                    tensor(&[n, n], data_for_shape(&[n, n], tangent_seed)),
+                    cpu_ctx(),
+                ),
+            ))
+        },
+        |ctx, engine, (fixture, tangent)| {
+            let output = ctx.with_eager_session(engine, |s| loss.eager_forward(s, fixture))?;
+            let derivative = ctx.jvp(engine, &output, &fixture.wrt, tangent)?;
+            Ok((output, derivative))
+        },
+    ));
+    rows.push(bench_eager_ad_row(
+        config,
+        suite,
+        op,
+        "vjp",
+        "f64",
+        shape,
+        || {
+            Ok((
+                loss.eager_fixture(n),
+                eager_from_tensor_in(tensor(&[], vec![1.0]), cpu_ctx()),
+            ))
+        },
+        |ctx, engine, (fixture, cotangent)| {
+            let output = ctx.with_eager_session(engine, |s| loss.eager_forward(s, fixture))?;
+            let derivative = ctx.vjp(engine, &output, &fixture.wrt, cotangent)?;
+            Ok((output, derivative))
         },
     ));
 }
@@ -2361,6 +2679,131 @@ mod timing_tests {
     #[test]
     fn eager_runtime_is_reused_across_samples() {
         assert!(Arc::ptr_eq(&cpu_ctx(), &cpu_ctx()));
+    }
+
+    /// Set the CPU-ops case filter for one test and restore it afterwards, so a
+    /// panicking test cannot leave the process-wide filter set.
+    struct CaseFilter(Option<std::ffi::OsString>);
+
+    impl CaseFilter {
+        fn only(filter: &str) -> Self {
+            let previous = env::var_os("CPU_OPS_BENCHMARK_FILTER");
+            env::set_var("CPU_OPS_BENCHMARK_FILTER", filter);
+            Self(previous)
+        }
+    }
+
+    impl Drop for CaseFilter {
+        fn drop(&mut self) {
+            match self.0.take() {
+                Some(previous) => env::set_var("CPU_OPS_BENCHMARK_FILTER", previous),
+                None => env::remove_var("CPU_OPS_BENCHMARK_FILTER"),
+            }
+        }
+    }
+
+    const LINALG_AD_CASES: [&str; 10] = [
+        "grad_sum_svd_s_jvp",
+        "grad_sum_svd_s_vjp",
+        "grad_sum_qr_jvp",
+        "grad_sum_qr_vjp",
+        "grad_sum_eigh_jvp",
+        "grad_sum_eigh_vjp",
+        "grad_sum_lu_jvp",
+        "grad_sum_lu_vjp",
+        "grad_sum_solve_jvp",
+        "grad_sum_solve_vjp",
+    ];
+
+    fn linalg_ad_config(suite: SuiteFilter, eager: bool, trace: bool) -> BenchConfig {
+        BenchConfig {
+            profile: Profile::Quick,
+            suite,
+            runs: 1,
+            warmups: 1,
+            backend: backend_name(),
+            include_eager: eager,
+            include_trace: trace,
+        }
+    }
+
+    /// Every linalg AD JVP/VJP case runs on the eager arm as well as the trace
+    /// arm, under the same case id (tenferro-benchmark #307).
+    ///
+    /// The case ids are derived from the CPU-ops CSV rows named `_jvp`/`_vjp`, so a
+    /// lost eager registration would shrink `cpu/linalg_jvp_vjp` back to one arm
+    /// without any other test noticing.
+    #[test]
+    fn linalg_ad_jvp_vjp_cases_are_registered_on_both_arms() {
+        let _guard = EAGER_TEST_LOCK.lock().unwrap();
+        // Measure only the linalg AD cases; every other small case is filtered.
+        let _filter = CaseFilter::only(&LINALG_AD_CASES.join(","));
+        let rows = run_all(&linalg_ad_config(SuiteFilter::Small, true, true));
+
+        let mut ids: std::collections::BTreeMap<&str, std::collections::BTreeSet<String>> =
+            std::collections::BTreeMap::new();
+        for row in &rows {
+            if row.phase != "jvp" && row.phase != "vjp" {
+                continue;
+            }
+            let arm = if row.backend == "tenferro-trace" {
+                "tenferro-trace"
+            } else {
+                "tenferro-eager"
+            };
+            let id = benchmark_name(row.op, row.phase);
+            assert_eq!(row.status, "ok", "{arm} {id}: {}", row.status);
+            ids.entry(arm).or_default().insert(id);
+        }
+        for arm in ["tenferro-eager", "tenferro-trace"] {
+            let registered = ids.remove(arm).unwrap_or_default();
+            assert_eq!(
+                registered,
+                LINALG_AD_CASES.iter().map(|id| (*id).to_string()).collect(),
+                "{arm} linalg AD cases"
+            );
+        }
+    }
+
+    /// The large linalg AD cases are registered from the eager driver, and on the
+    /// trace arm's size grid (`large_linalg_jvp_vjp_sizes`): off-grid shapes would
+    /// never join, and a registration in the trace-gated driver would vanish in a
+    /// `PUBLICATION_GATE_TENFERRO_MODE=eager` run.
+    #[test]
+    fn linalg_ad_large_cases_share_the_trace_size_grid() {
+        let _guard = EAGER_TEST_LOCK.lock().unwrap();
+        // No case matches, so both arms register their rows without measuring;
+        // a filtered row keeps its case id and shape.
+        let _filter = CaseFilter::only("__no_case_matches__");
+        let eager_only = run_all(&linalg_ad_config(SuiteFilter::Large, true, false));
+        let trace_only = run_all(&linalg_ad_config(SuiteFilter::Large, false, true));
+
+        let shapes = |rows: &[Row]| {
+            let mut shapes: std::collections::BTreeMap<(String, String), usize> =
+                std::collections::BTreeMap::new();
+            for row in rows {
+                if row.phase == "jvp" || row.phase == "vjp" {
+                    *shapes
+                        .entry((benchmark_name(row.op, row.phase), row.shape.clone()))
+                        .or_default() += 1;
+                }
+            }
+            shapes
+        };
+        let mut expected = std::collections::BTreeMap::new();
+        for id in LINALG_AD_CASES {
+            for &n in large_linalg_jvp_vjp_sizes(Profile::Quick) {
+                let shape = if id.starts_with("grad_sum_solve") {
+                    format!("{n}x{n},rhs=1")
+                } else {
+                    format!("{n}x{n}")
+                };
+                expected.insert((id.to_string(), shape), 1);
+            }
+        }
+        assert_eq!(shapes(&eager_only), expected, "eager-only run");
+        assert_eq!(shapes(&trace_only), expected, "trace-only run");
+        assert_eq!(eager_only.len(), trace_only.len());
     }
 
     #[test]
