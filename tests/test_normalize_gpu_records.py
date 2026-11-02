@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 from normalize_gpu_records import fold
 from scripts.ci.check_gpu_run import validate_records
+import gpu_routine_selection as selection
 
 
 def family_row(**overrides):
@@ -64,6 +65,29 @@ class NormalizeTest(unittest.TestCase):
                                       verification={"max_error_over_tolerance": 0.5}))
         self.assertEqual(unsupported["status"], "unsupported")
         self.assertEqual(unsupported["execution"]["unsupported_reason"], "output reuse unsupported")
+
+    def test_a_skipped_correctness_is_never_reported_as_a_numerical_failure(self):
+        # The permutation runners put the explanation in `notes`, not `reason`,
+        # and a cell whose arm never ran carries correctness=skipped. Folding
+        # that to `failed` is how a "not measured" cell came to be printed as
+        # `numerical verification failed 9/9` on a host without cuTENSOR.
+        notes = "failed to load cuTENSOR library (tried libcutensor.so.2)"
+        row = permutation_row(status="skipped", correctness="skipped", median_ms=None,
+                              p25_ms=None, p75_ms=None, notes=notes)
+        folded = fold(row)
+        self.assertEqual(folded["verification"]["status"], "skipped")
+        self.assertEqual(folded["verification"]["reason"], notes)
+        self.assertEqual(folded["execution"]["unsupported_reason"], notes)
+        self.assertIsNone(folded["timing"]["median_ms"])
+        key = "gpu/permutation:reverse_18d_3:pytorch-cuda"
+        plan = dict(manifest_version=2, effort="scan", expected=[key], selected=[key])
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "records.jsonl"
+            path.write_text(json.dumps(folded) + "\n")
+            status = selection.account(plan, [path])
+        self.assertEqual(status["skipped"], [key])
+        self.assertEqual(status["failed"], [])
+        self.assertEqual(status["reasons"][key], notes)
 
     def test_a_row_without_a_case_identity_is_rejected(self):
         row = family_row()
