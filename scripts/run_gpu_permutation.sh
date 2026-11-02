@@ -70,11 +70,18 @@ if [[ "${PERMUTATION_FULL_VERIFY:-0}" == "1" ]]; then
     PERMUTATION_VERIFICATION_MODE="full"
 fi
 
-# Same cuTENSOR search path baked into .devcontainer/cuda/devcontainer.json;
-# exported here too so this script also works outside that devcontainer as
-# long as the same vendor package layout is present (mirrors how
-# scripts/run_gpu_suite.sh exports CUTLASS_DIR / GINKGO_DIR defaults).
-export TENFERRO_CUTENSOR_PATH="${TENFERRO_CUTENSOR_PATH:-/usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2}"
+# cuTENSOR search path. An explicit TENFERRO_CUTENSOR_PATH always wins. The
+# devcontainer path baked into .devcontainer/cuda/devcontainer.json is used only
+# when that file is actually present; otherwise the variable stays unset so the
+# runner falls back to its own DEFAULT_CUTENSOR_PATHS, which include the bare
+# sonames and therefore find a library reachable through LD_LIBRARY_PATH (a
+# module install, or one unpacked under $HOME). Exporting the devcontainer path
+# unconditionally replaced that fallback with a file that exists on no other
+# host, so every cuTENSOR cell was recorded as skipped off the devcontainer.
+CUTENSOR_DEVCONTAINER_PATH="/usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2"
+if [[ -z "${TENFERRO_CUTENSOR_PATH:-}" && -f "$CUTENSOR_DEVCONTAINER_PATH" ]]; then
+    export TENFERRO_CUTENSOR_PATH="$CUTENSOR_DEVCONTAINER_PATH"
+fi
 
 TIMESTAMP="${BENCHMARK_TIMESTAMP:-${GPU_BENCH_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}}"
 # Same rule as run_gpu_suite.sh: the run metadata timestamp identifies the run

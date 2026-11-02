@@ -37,7 +37,13 @@ export BENCH_RUNS="${BENCH_RUNS:-15}" BENCH_WARMUPS="${BENCH_WARMUPS:-3}"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 RAYON_NUM_THREADS=1
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
 export CUBECL_DEBUG_LOG=0 CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" RUST_MIN_STACK=67108864
-export TENFERRO_CUTENSOR_PATH="${TENFERRO_CUTENSOR_PATH:-/usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2}"
+# As in run_gpu_permutation.sh: only take the devcontainer path when it exists,
+# so the runner's DEFAULT_CUTENSOR_PATHS fallback still finds a cuTENSOR that is
+# on LD_LIBRARY_PATH.
+CUTENSOR_DEVCONTAINER_PATH="/usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2"
+if [[ -z "${TENFERRO_CUTENSOR_PATH:-}" && -f "$CUTENSOR_DEVCONTAINER_PATH" ]]; then
+    export TENFERRO_CUTENSOR_PATH="$CUTENSOR_DEVCONTAINER_PATH"
+fi
 export LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 TENFERRO_CPU_FEATURES=native bash scripts/setup_extern_deps.sh
 
