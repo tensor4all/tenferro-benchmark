@@ -1,11 +1,12 @@
 """The linalg JVP/VJP table keeps every backend it is given.
 
-`cpu/linalg_jvp_vjp` is derived from the CPU-ops CSV, and the JVP/VJP cases are
-registered on `tenferro-trace` only (`push_linalg_jvp_vjp_trace_benches` in
-`src/bin/publication_gate.rs`), so today's pages carry no `tenferro-eager` column.
-That must be a property of the *measurement*, not of the formatter: a formatter
-that drops an unknown backend turns a future eager measurement into a silent
-absence, which is the failure mode `docs/cpu-suite-arms.md` exists to prevent.
+`cpu/linalg_jvp_vjp` is derived from the CPU-ops CSV, and its cases are
+registered on both arms (`push_linalg_jvp_vjp_eager_benches` and
+`push_linalg_jvp_vjp_trace_benches` in `src/bin/publication_gate.rs`); a summary
+collected before tenferro-benchmark #307 has the trace arm only. Which arms a CSV
+carries must be a property of the *measurement*, not of the formatter: a formatter
+that drops a backend turns a measurement into a silent absence, which is the
+failure mode `docs/cpu-suite-arms.md` exists to prevent.
 """
 
 import csv
