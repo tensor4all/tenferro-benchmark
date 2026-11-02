@@ -83,14 +83,69 @@ import shutil, sys
 shutil.copyfile(sys.argv[1], sys.argv[2])
 '''
 
+# Stands in for scripts/benchmark_gpu_public_api.py: the family shape of its rows
+# (case_id, batched per-operation samples, error over tolerance), which the real
+# normalizer folds into the routine contract.
+FAKE_PUBLIC_API = '''
+import json, sys
+from pathlib import Path
+
+args = sys.argv[1:]
+value = lambda name: args[args.index(name) + 1]
+suite_path = value("--suite") if "--suite" in args else None
+fixtures = Path(value("--fixtures"))
+backend = value("--backend")
+if backend == "prepare":
+    fixtures.mkdir(parents=True, exist_ok=True)
+    (fixtures / "manifest.json").write_text(Path(suite_path).read_text())
+    raise SystemExit(0)
+# The Rust arm is driven by the prepared fixture manifest, like the real one.
+manifest = fixtures if fixtures.suffix == ".json" else fixtures / "manifest.json"
+suite = json.loads(Path(suite_path).read_text() if suite_path else manifest.read_text())
+rows = []
+for case in suite["cases"]:
+    rows.append({"schema_version": 1, "suite_id": suite["suite_id"], "case_id": case["id"],
+                 "op": case["op"], "backend": backend, "status": "ok",
+                 "timing": {"operations_per_sample": 4, "batch_ms": [0.4, 0.5, 0.45], "warmups": 1},
+                 "verification": {"max_error_over_tolerance": 1e-3, "reference": "numpy/scipy"}})
+Path(value("--output")).write_text("".join(json.dumps(row) + "\\n" for row in rows))
+'''
+
+# Stands in for the permutation runners: one record per (pattern, backend) in the
+# shape scripts/format_gpu_permutation_results.py and the normalizer read.
+FAKE_PERMUTATION = '''
+import json, os, sys
+from pathlib import Path
+
+suite = json.loads(Path("data/instances/gpu_permutation_patterns.json").read_text())
+out = Path(os.environ["BENCH_OUTPUT"])
+# The Rust runner takes no backend argument; the Python runner is given one.
+backends = sys.argv[1:] or ["tenferro-cuda-transpose", "tenferro-cuda-to-contiguous",
+                            "tenferro-cuda-destination-reuse", "cutensor"]
+rows = []
+for pattern in suite["patterns"]:
+    for backend in backends:
+        rows.append({"schema_version": 1, "suite_id": "gpu/permutation", "runner": "fake",
+                     "pattern_id": pattern["id"], "label": pattern.get("label", ""),
+                     "backend": backend, "shape": pattern["shape"], "perm": pattern["perm"],
+                     "dtype": "f64", "elems": 1, "bytes_rw": 16, "device": "cuda:0",
+                     "status": "ok", "correctness": "passed", "per_call_allocation": False,
+                     "warmup": 1, "iters": 3, "median_ms": 0.01, "p25_ms": 0.009,
+                     "p75_ms": 0.011, "bandwidth_gbs": 1.6, "notes": None})
+out.write_text("".join(json.dumps(row) + "\\n" for row in rows))
+'''
+
 # Stands in for `cargo build --bin NAME`: the compiled artifact is a launcher for
 # the same fake runner, so the driver code under test is unchanged.
 FAKE_CARGO = '''
 import sys
 from pathlib import Path
 
-body = Path(__file__).with_name("fake_runner_body.py").read_text()
 name = sys.argv[sys.argv.index("--bin") + 1]
+body_path = Path(__file__).with_name("fake_" + name + "_body.py")
+if not body_path.is_file():
+    body_path = Path(__file__).with_name("fake_runner_body.py")
+body = body_path.read_text()
 target = Path("target/release")
 target.mkdir(parents=True, exist_ok=True)
 (target / (name + ".py")).write_text(body)
@@ -109,25 +164,32 @@ class WeeklyRoutineRunTest(unittest.TestCase):
                         ignore=shutil.ignore_patterns("__pycache__"))
         shutil.copytree(ROOT / "schemas", self.root / "schemas")
         shutil.copytree(ROOT / "benchmarks/gpu", self.root / "benchmarks/gpu")
+        # Instance documents are what the fixture-driven suites select cases from.
+        shutil.copytree(ROOT / "data/instances", self.root / "data/instances")
         (self.root / "scripts/benchmark_gpu_python.py").write_text(FAKE_RUNNER)
         (self.root / "scripts/benchmark_gpu_linalg_ad.py").write_text(FAKE_RUNNER)
+        (self.root / "scripts/benchmark_gpu_public_api.py").write_text(FAKE_PUBLIC_API)
+        (self.root / "scripts/benchmark_gpu_permutation_python.py").write_text(FAKE_PERMUTATION)
         (self.root / "scripts/verify_gpu_linalg_ad_rust.py").write_text(FAKE_VERIFY_AD)
         (self.root / "scripts/collect_run_metadata.py").write_text(FAKE_METADATA)
+        # Dependency checkout is not part of what this harness exercises.
+        (self.root / "scripts/setup_extern_deps.sh").write_text("#!/bin/sh\nexit 0\n")
         # The linalg AD collector refuses to run outside the CUDA devcontainer;
         # this harness has no device at all, so drop that guard in the copy.
-        ad_script = self.root / "scripts/run_gpu_linalg_jvp_vjp.sh"
-        kept, skipping = [], False
-        for line in ad_script.read_text().splitlines(keepends=True):
-            if skipping:
-                if line.strip() == "}":
-                    skipping = False
-                continue
-            if line.lstrip().startswith("[[ -f /.dockerenv"):
-                skipping = True
-                continue
-            kept.append(line)
-        self.assertFalse(skipping)
-        ad_script.write_text("".join(kept))
+        for vendor_script in ("run_gpu_linalg_jvp_vjp.sh", "run_gpu_public_api.sh"):
+            script = self.root / "scripts" / vendor_script
+            kept, skipping = [], False
+            for line in script.read_text().splitlines(keepends=True):
+                if skipping:
+                    if line.strip() == "}":
+                        skipping = False
+                    continue
+                if line.lstrip().startswith("[[ -f /.dockerenv"):
+                    skipping = True
+                    continue
+                kept.append(line)
+            self.assertFalse(skipping)
+            script.write_text("".join(kept))
         self.commands = self.root / "bin"
         self.commands.mkdir()
         self.write_command("python", f'exec {shlex.quote(sys.executable)} "$@"')
@@ -139,6 +201,8 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         (self.root / "scripts/fake_cargo.py").write_text(
             FAKE_CARGO.replace("__PYTHON__", repr(sys.executable)))
         (self.root / "scripts/fake_runner_body.py").write_text(FAKE_RUNNER)
+        (self.root / "scripts/fake_benchmark_gpu_permutation_body.py").write_text(FAKE_PERMUTATION)
+        (self.root / "scripts/fake_benchmark_gpu_public_api_body.py").write_text(FAKE_PUBLIC_API)
 
     def write_command(self, name, body):
         script = self.commands / name
@@ -163,11 +227,11 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
         selection = self.root / f"data/results/nvidia-gpu/gpu/routine_selection/{TIMESTAMP}"
         plan = json.loads((selection / "selection.json").read_text())
-        self.assertEqual(len(plan["selected"]), 106)
+        self.assertEqual(len(plan["selected"]), 714)
         self.assertNotIn("coverage", plan)
         status = json.loads((selection / "case_status.json").read_text())
         self.assertTrue(status["complete"], status)
-        self.assertEqual(len(status["executed"]), 106)
+        self.assertEqual(len(status["executed"]), 714)
         self.assertEqual(status["counts"]["unexpected"], 0)
 
         # Every suite recorded its own wall clock, which is what fills the
@@ -206,7 +270,10 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         publication = json.loads((bundle / "publication.json").read_text())
         self.assertEqual({entry["suite_id"]: len(entry["expected_rows"]) for entry in publication["suites"]},
                          {"gpu/dense": 28, "gpu/einsum": 4, "gpu/sparse": 2, "gpu/tensornetwork": 4,
-                          "gpu/elementwise": 8, "gpu/linalg_ad_latency": 30, "gpu/linalg_jvp_vjp": 30})
+                          "gpu/elementwise": 8, "gpu/linalg_ad_latency": 30, "gpu/linalg_jvp_vjp": 30,
+                          "gpu/permutation": 60, "gpu/lstsq": 4, "gpu/linalg_public_api": 64,
+                          "gpu/fft": 16, "gpu/nn": 44, "gpu/structural": 64, "gpu/isolated_ops": 132,
+                          "gpu/reuse_contraction": 224})
 
         # The real ingestion path also runs: one campaign timestamp, one
         # tenferro revision and one summary per suite, including the AD lane.
@@ -224,7 +291,8 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         # The weekly pod has no Rust toolchain: it receives both binaries from
         # the hosted build job. A stub cargo proves nothing is rebuilt there.
         self.init_git()
-        for binary in ("benchmark_gpu_rust", "benchmark_gpu_linalg_ad"):
+        for binary in ("benchmark_gpu_rust", "benchmark_gpu_linalg_ad",
+                       "benchmark_gpu_public_api", "benchmark_gpu_permutation"):
             subprocess.run([sys.executable, str(self.root / "scripts/fake_cargo.py"),
                             "build", "--release", "--bin", binary],
                            cwd=self.root, check=True)

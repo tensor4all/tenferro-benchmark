@@ -128,9 +128,10 @@ jobs:
         run: |
           set -euo pipefail
           export PATH="$CUDA_HOME/bin:$PATH"
-          # The routine set collects both the generic runner and the linalg AD
-          # runner on the pod, which has a CUDA runtime but no Rust toolchain.
-          binaries=(benchmark_gpu_rust benchmark_gpu_linalg_ad)
+          # The routine set collects four runners on the pod, which has a CUDA
+          # runtime but no Rust toolchain.
+          binaries=(benchmark_gpu_rust benchmark_gpu_linalg_ad benchmark_gpu_public_api
+                    benchmark_gpu_permutation)
           if [[ "$REQUESTED_SUITE" == perf-issues-readback ]]; then
             binaries=(benchmark_gpu_perf_issues)
           fi
@@ -424,7 +425,8 @@ jobs:
           set -euo pipefail
           # The generic runner is always shipped; the linalg AD runner only for
           # the routine collection (the manual readback runs its own binary).
-          for binary in "$GPU_BENCH_BINARY_NAME" benchmark_gpu_linalg_ad; do
+          for binary in "$GPU_BENCH_BINARY_NAME" benchmark_gpu_linalg_ad \
+                        benchmark_gpu_public_api benchmark_gpu_permutation; do
             [[ -f "target/release/$binary" ]] || continue
             chmod +x "target/release/$binary"
             python3 scripts/ci/gpu_artifact.py "target/release/$binary"

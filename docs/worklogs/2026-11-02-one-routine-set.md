@@ -8,3 +8,17 @@
 - The routine control lane keeps the ten timed and eight state mechanisms it already ran weekly; the wider `gpu/perf_issues` variants stay in the instance data and in that suite's own quick/full matrix, which is not the routine selection.
 - Every suite now records its own start, end and wall time in run metadata, so per-suite cost appears in the routine workflow report on any device.
 - First real-DEVICE validation of the single set is pending on primerose; no GPU run was made in this change.
+
+## Follow-up: no suite is silently outside the set
+
+Reviewed every `benchmarks/gpu/*.yaml`: 11 files were outside the first version of
+the set. Eight are now collected (`permutation`, `lstsq`, `linalg_public_api`, `fft`,
+`nn`, `structural`, `isolated_ops`, `reuse_contraction`) through two existing
+collectors, which meant teaching the routine selection to curate instance-driven
+suites (`problems: {source, include}`) and adding one fold
+(`scripts/normalize_gpu_records.py`) so the accounting, the bundle row gate and the
+dashboard summary keep one record contract. Two are excluded by design (`*_throughput`:
+deferred-batch regime with its own driver) and one is the diagnostic matrix
+(`perf_issues`, whose curated control set already runs weekly). The set is 714 rows;
+the documented fallback if one A100 night cannot hold it is to move
+`isolated_ops` + `reuse_contraction` to monthly.

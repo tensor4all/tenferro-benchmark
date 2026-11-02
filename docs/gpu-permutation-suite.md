@@ -1,5 +1,11 @@
 # GPU Permutation Suite Specification
 
+This suite is part of the single routine GPU set: `run_gpu_suite.sh` delegates
+`gpu/permutation` to `scripts/run_gpu_permutation.sh`, so all ten patterns are
+collected weekly. Its records are folded into the shared routine record
+contract (`scripts/normalize_gpu_records.py`) while the page keeps this suite's
+own comparison shape.
+
 Status: implemented. This document defines `gpu/permutation`, the CUDA port
 of [`cpu/permutation`](permutation-suite.md). Read that document first; this
 one only restates what differs on CUDA.

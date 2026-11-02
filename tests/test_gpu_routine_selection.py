@@ -28,10 +28,12 @@ class RoutineSelectionTest(unittest.TestCase):
     def test_one_set_selects_every_routine_suite_once(self):
         with tempfile.TemporaryDirectory() as tmp:
             plan = self.plan(Path(tmp))
-            self.assertEqual(len(plan["selected"]), 106)
+            self.assertEqual(len(plan["selected"]), 714)
             self.assertEqual(plan["expected"], plan["selected"])
             for suite in ("dense", "einsum", "sparse", "tensornetwork", "elementwise",
-                          "linalg_ad_latency", "linalg_jvp_vjp"):
+                          "linalg_ad_latency", "linalg_jvp_vjp", "permutation", "lstsq",
+                          "linalg_public_api", "fft", "nn", "structural", "isolated_ops",
+                          "reuse_contraction"):
                 self.assertTrue(any(key.startswith(f"gpu/{suite}:") for key in plan["selected"]), suite)
             # The sparse suite is reference-only, so it runs one arm.
             self.assertTrue(all(key.endswith(":pytorch-cuda") for key in plan["selected"]
@@ -43,14 +45,18 @@ class RoutineSelectionTest(unittest.TestCase):
             jvp_vjp = [key for key in plan["selected"] if key.startswith("gpu/linalg_jvp_vjp:")]
             self.assertEqual({key.split(":")[1].rsplit("_", 1)[1] for key in jvp_vjp}, {"256"})
             # The diagnostic and vendor arms are not in the default set.
-            self.assertFalse(any(key.endswith(":jax-cuda-eager") or "cublaslt" in key
-                                 or "cutlass" in key for key in plan["selected"]))
+            self.assertFalse(any(key.endswith(":jax-cuda-eager") or key.endswith(":jax-cuda-jit")
+                                 or "cublaslt" in key or "cutlass" in key
+                                 for key in plan["selected"]))
             self.assertFalse(plan["vendor_arms"])
+            # The permutation runners fix their own arms, cuTENSOR included.
+            self.assertTrue(any(key.startswith("gpu/permutation:") and key.endswith(":cutensor")
+                                for key in plan["selected"]))
 
     def test_vendor_arms_are_opt_in(self):
         with tempfile.TemporaryDirectory() as tmp:
             plan = self.plan(Path(tmp), vendor_arms=True)
-            self.assertEqual(len(plan["selected"]), 133)
+            self.assertEqual(len(plan["selected"]), 878)
             self.assertTrue(plan["vendor_arms"])
             dense = [key for key in plan["selected"] if key.startswith("gpu/dense:")]
             self.assertEqual(len(dense), 49)
@@ -71,6 +77,27 @@ class RoutineSelectionTest(unittest.TestCase):
             self.assertEqual(plan["suite_drivers"][(Path(tmp)/"gpu_dense.yaml").as_posix()], "gpu_suite")
             self.assertEqual(plan["suite_drivers"][(Path(tmp)/"gpu_linalg_ad_latency.yaml").as_posix()],
                              "gpu_linalg_ad")
+            self.assertEqual(plan["suite_drivers"][(Path(tmp)/"gpu_lstsq.yaml").as_posix()], "gpu_public_api")
+            self.assertEqual(plan["suite_drivers"][(Path(tmp)/"gpu_permutation.yaml").as_posix()],
+                             "gpu_permutation")
+
+    def test_instance_driven_suites_hand_the_collector_a_curated_document(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = self.plan(Path(tmp))
+            instances = plan["suite_instances"]
+            self.assertEqual(len(instances), 8)
+            lstsq = yaml.safe_load(Path(instances[(Path(tmp)/"gpu_lstsq.yaml").as_posix()]).read_text())
+            self.assertEqual([case["id"] for case in lstsq["cases"]],
+                             ["lstsq_tall_f64_s256_rhs8"])
+            self.assertEqual(lstsq["backends"],
+                             ["tenferro-cuda-direct", "tenferro-cuda-eager", "pytorch-cuda", "jax-cuda"])
+            patterns = yaml.safe_load(Path(instances[(Path(tmp)/"gpu_permutation.yaml").as_posix()]).read_text())
+            self.assertEqual(len(patterns["patterns"]), 10)
+            # The suite declaration names the materialized document, never the repo one.
+            declaration = yaml.safe_load((Path(tmp)/"gpu_lstsq.yaml").read_text())
+            self.assertEqual(declaration["problems"]["source"],
+                             instances[(Path(tmp)/"gpu_lstsq.yaml").as_posix()])
+            self.assertEqual(declaration["problems"]["include"], ["lstsq_tall_f64_s256_rhs8"])
 
     def test_effort_does_not_change_case_selection(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -78,7 +105,11 @@ class RoutineSelectionTest(unittest.TestCase):
             scan=self.plan(Path(tmp)/"scan",effort="scan")
             self.assertEqual(standard["selected"],scan["selected"])
             for path in scan["suite_files"]:
-                for problem in yaml.safe_load(Path(path).read_text())["problems"]:
+                problems = yaml.safe_load(Path(path).read_text())["problems"]
+                if not isinstance(problems, list):
+                    # Instance-driven suites take repetitions from the environment.
+                    continue
+                for problem in problems:
                     self.assertEqual((problem["run"]["warmups"],problem["run"]["runs"]),(1,3))
 
     def test_case_outside_the_routine_set_is_not_selected(self):
@@ -210,6 +241,7 @@ class RoutineSelectionTest(unittest.TestCase):
                 root = Path(tmp)
                 shutil.copytree(ROOT/"scripts", root/"scripts", ignore=shutil.ignore_patterns("__pycache__"))
                 shutil.copytree(ROOT/"schemas", root/"schemas")
+                shutil.copytree(ROOT/"data/instances", root/"data/instances")
                 shutil.copytree(ROOT/"benchmarks/gpu/manifests", root/"benchmarks/gpu/manifests")
                 shutil.copy(ROOT/"benchmarks/gpu/routine_budget.yaml", root/"benchmarks/gpu/routine_budget.yaml")
                 for suite_file in manifest_suites():
