@@ -483,8 +483,14 @@ jobs:
           COLLECTION_TIMESTAMP: ${{ steps.collect.outputs.timestamp }}
           COLLECTION_STARTED_AT: ${{ steps.collect.outputs.started_at }}
         run: |
-          uv run --no-project --python 3.12 --with-requirements scripts/dashboard-requirements.txt --with jsonschema \
-            python scripts/ci/prepare_result_bundle.py --profile nvidia-gpu --harness-commit "$GITHUB_SHA" \
+          # uv is offline on the pod (restore_gpu_environment.sh sets UV_OFFLINE=1) and the
+          # prepared runtime ships no uv git cache, so `uv run --with-requirements` cannot
+          # resolve the campaign-toolkit git pin there. Run 41560144226 lost a whole weekly
+          # collection that way: the suite passed, packaging failed, the pod was deleted.
+          # `python` is the restored runtime interpreter (first on PATH), which already
+          # carries PyYAML and jsonschema; prepare_result_bundle.py imports nothing else
+          # beyond the repository's own stdlib-only modules.
+          python scripts/ci/prepare_result_bundle.py --profile nvidia-gpu --harness-commit "$GITHUB_SHA" \
             --started-at "$COLLECTION_STARTED_AT" --timestamp "$COLLECTION_TIMESTAMP" \
             --backends "$GPU_BENCH_RUNTIME_BACKENDS" --suites "$REQUESTED_SUITE" --bundle-dir _benchmark_artifact
 
