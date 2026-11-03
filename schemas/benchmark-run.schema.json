@@ -195,6 +195,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "container": {
+          "enum": ["devcontainer", "none"],
+          "description": "Detected from /.dockerenv only: whether collection ran in the repository CUDA devcontainer or on a host without one. This is detection, not a gate, and older records without it still validate."
+        },
         "hostname": { "type": ["string", "null"] },
         "os": { "type": ["string", "null"] },
         "arch": { "type": ["string", "null"] },
@@ -357,6 +361,10 @@
         "driver_version": { "type": ["string", "null"] },
         "runtime_version": { "type": ["string", "null"] },
         "cuda_version": { "type": ["string", "null"] },
+        "toolkit_version": { "type": ["string", "null"], "description": "nvcc version of the selected toolkit root; separate from the driver-supported CUDA version (cuda_version) and the CUDART runtime version (runtime_version)." },
+        "toolkit_root": { "type": ["string", "null"], "description": "Selected CUDA toolkit root: CUDA_HOME, CUDA_PATH, or the nvcc on PATH." },
+        "cutensor_version": { "type": ["string", "null"], "description": "Version from the public cutensorGetVersion symbol of the library the pinned tenferro loader resolves; null when unknown." },
+        "cusolver_version": { "type": ["string", "null"], "description": "Version from the public cusolverGetProperty API of the library the pinned tenferro loader resolves; null when unknown." },
         "cudnn_version": { "type": ["string", "null"] }
       }
     }

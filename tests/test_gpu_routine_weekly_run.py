@@ -174,22 +174,13 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         (self.root / "scripts/collect_run_metadata.py").write_text(FAKE_METADATA)
         # Dependency checkout is not part of what this harness exercises.
         (self.root / "scripts/setup_extern_deps.sh").write_text("#!/bin/sh\nexit 0\n")
-        # The linalg AD collector refuses to run outside the CUDA devcontainer;
-        # this harness has no device at all, so drop that guard in the copy.
-        for vendor_script in ("run_gpu_linalg_jvp_vjp.sh", "run_gpu_public_api.sh"):
-            script = self.root / "scripts" / vendor_script
-            kept, skipping = [], False
-            for line in script.read_text().splitlines(keepends=True):
-                if skipping:
-                    if line.strip() == "}":
-                        skipping = False
-                    continue
-                if line.lstrip().startswith("[[ -f /.dockerenv"):
-                    skipping = True
-                    continue
-                kept.append(line)
-            self.assertFalse(skipping)
-            script.write_text("".join(kept))
+        # The collectors check for a CUDA toolkit instead of a container; this
+        # harness has no device at all, so it provides a stand-in toolkit root.
+        self.cuda_home = self.root / "fake-cuda"
+        (self.cuda_home / "bin").mkdir(parents=True)
+        nvcc = self.cuda_home / "bin" / "nvcc"
+        nvcc.write_text("#!/bin/sh\necho 'Cuda compilation tools, release 12.4, V12.4.131'\n")
+        nvcc.chmod(0o755)
         self.commands = self.root / "bin"
         self.commands.mkdir()
         self.write_command("python", f'exec {shlex.quote(sys.executable)} "$@"')
@@ -211,7 +202,7 @@ class WeeklyRoutineRunTest(unittest.TestCase):
 
     def run_weekly(self):
         env = dict(os.environ, PATH=f"{self.commands}:{os.environ['PATH']}",
-                   GPU_BENCH_DEVICE="0", GPU_BENCH_TIMESTAMP=TIMESTAMP,
+                   CUDA_HOME=str(self.cuda_home), GPU_BENCH_DEVICE="0", GPU_BENCH_TIMESTAMP=TIMESTAMP,
                    GPU_BENCH_BACKEND_SLEEP="0", GPU_BENCH_ROUTINE_CONTROLS="0",
                    BENCHMARK_TARGET_PROFILE="nvidia-gpu")
         env.pop("GPU_BENCH_SUITE", None)
@@ -300,7 +291,7 @@ class WeeklyRoutineRunTest(unittest.TestCase):
                             f"target/release/{binary}", "--write"], cwd=self.root, check=True)
         self.write_command("cargo", 'echo "cargo must not run on the benchmark pod" >&2; exit 1')
         env = dict(os.environ, PATH=f"{self.commands}:{os.environ['PATH']}",
-                   GPU_BENCH_DEVICE="0", GPU_BENCH_TIMESTAMP=TIMESTAMP,
+                   CUDA_HOME=str(self.cuda_home), GPU_BENCH_DEVICE="0", GPU_BENCH_TIMESTAMP=TIMESTAMP,
                    GPU_BENCH_BACKEND_SLEEP="0", GPU_BENCH_ROUTINE_CONTROLS="0",
                    BENCHMARK_TARGET_PROFILE="nvidia-gpu", GPU_BENCH_PREBUILT_RUST="1")
         for name in ("GPU_BENCH_SUITE", "GPU_BENCH_BACKENDS", "GPU_BENCH_PROBLEM", "GPU_BENCH_VERIFY_ONLY"):
@@ -324,7 +315,7 @@ class WeeklyRoutineRunTest(unittest.TestCase):
 
     def test_vendor_arms_are_an_explicit_opt_in_flag(self):
         env = dict(os.environ, PATH=f"{self.commands}:{os.environ['PATH']}",
-                   GPU_BENCH_DEVICE="0", GPU_BENCH_TIMESTAMP=TIMESTAMP,
+                   CUDA_HOME=str(self.cuda_home), GPU_BENCH_DEVICE="0", GPU_BENCH_TIMESTAMP=TIMESTAMP,
                    GPU_BENCH_BACKEND_SLEEP="0", GPU_BENCH_ROUTINE_CONTROLS="0",
                    BENCHMARK_TARGET_PROFILE="nvidia-gpu", BENCH_ROUTINE_VENDOR_ARMS="1",
                    GPU_BENCH_PROBLEM="dense_matmul_f64_3072")
@@ -342,7 +333,7 @@ class WeeklyRoutineRunTest(unittest.TestCase):
 
     def test_filtered_probe_leaves_the_routine_reports_alone(self):
         env = dict(os.environ, PATH=f"{self.commands}:{os.environ['PATH']}",
-                   GPU_BENCH_DEVICE="0", GPU_BENCH_TIMESTAMP=TIMESTAMP,
+                   CUDA_HOME=str(self.cuda_home), GPU_BENCH_DEVICE="0", GPU_BENCH_TIMESTAMP=TIMESTAMP,
                    GPU_BENCH_BACKEND_SLEEP="0", GPU_BENCH_ROUTINE_CONTROLS="0",
                    BENCHMARK_TARGET_PROFILE="nvidia-gpu",
                    GPU_BENCH_SUITE="benchmarks/gpu/dense.yaml",

@@ -16,23 +16,19 @@ set -euo pipefail
 #   BENCHMARK_TARGET_PROFILE=nvidia-gpu ./scripts/run_gpu_throughput.sh
 #   GPU_BENCH_DEFERRED_BATCH_K=16 ./scripts/run_gpu_throughput.sh
 
-[[ -f /.dockerenv && -d /usr/local/cuda ]] || {
-    echo 'Use the repository CUDA devcontainer for GPU throughput collection.' >&2
-    exit 1
-}
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=scripts/gpu_preflight.sh
+source "$SCRIPT_DIR/gpu_preflight.sh"
+
 export GPU_BENCH_VERIFY_ONLY="${GPU_BENCH_VERIFY_ONLY:-0}"
 default_device=0
 [[ "$GPU_BENCH_VERIFY_ONLY" == 1 ]] && default_device=1
-export GPU_BENCH_PHYSICAL_DEVICE="${GPU_BENCH_DEVICE:-$default_device}"
+configure_gpu_bench_env "$default_device"
 export GPU_BENCH_DEFERRED_BATCH_K="${GPU_BENCH_DEFERRED_BATCH_K:-64}"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 RAYON_NUM_THREADS=1
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
-GPU_BENCH_DEVICE_UUID="$(nvidia-smi -i "$GPU_BENCH_PHYSICAL_DEVICE" --query-gpu=uuid --format=csv,noheader)"
-[[ "$GPU_BENCH_DEVICE_UUID" == GPU-* && "$GPU_BENCH_DEVICE_UUID" != *$'\n'* ]] || exit 1
-export CUDA_VISIBLE_DEVICES="$GPU_BENCH_DEVICE_UUID" GPU_BENCH_DEVICE=0
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 [[ "$GPU_BENCH_VERIFY_ONLY" == 1 ]] && RESULTS_ROOT="$PROJECT_DIR/data/verification"
 REPORTS_DIR="$PROJECT_DIR/result"
@@ -57,9 +53,8 @@ PY
 )"
 
 cd "$PROJECT_DIR"
-if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
-    git -C extern/tenferro-rs -c 'url.https://github.com/.insteadOf=git@github.com:' pull --ff-only
-fi
+tenferro_dir="$PROJECT_DIR/extern/tenferro-rs"
+update_tenferro_checkout_if_main "$tenferro_dir"
 
 VALIDATOR=(python3 "$SCRIPT_DIR/validate_benchmark_suite.py")
 METADATA=(python3 "$SCRIPT_DIR/collect_run_metadata.py")
@@ -87,11 +82,7 @@ echo "Target:      $BENCHMARK_TARGET_PROFILE"
 echo "Timestamp:   $TIMESTAMP"
 echo ""
 
-tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
-tenferro_commit=""
-if [[ -d "$tenferro_dir/.git" ]] && command -v git >/dev/null 2>&1; then
-    tenferro_commit="$(git -C "$tenferro_dir" rev-parse HEAD 2>/dev/null || true)"
-fi
+tenferro_commit="$(tenferro_checkout_commit "$tenferro_dir")"
 
 write_run_metadata() {
     local suite_file="$1"
@@ -122,9 +113,7 @@ RUST_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_rust"
 AD_BIN="${CARGO_TARGET_DIR:-$PROJECT_DIR/target}/release/benchmark_gpu_linalg_ad"
 echo "Building benchmark_gpu_rust and benchmark_gpu_linalg_ad..."
 CUBECL_DEBUG_LOG=0 \
-CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
 RUST_MIN_STACK="$RUST_MIN_STACK" \
-LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
     cargo build --release --features cuda \
         --bin benchmark_gpu_rust --bin benchmark_gpu_linalg_ad
 
@@ -151,9 +140,7 @@ write_run_metadata "$DENSE_SUITE" "$dense_id" "$DENSE_YAML" "$MODE_JSON"
 
 echo "Running $dense_id (deferred batch, K=$GPU_BENCH_DEFERRED_BATCH_K)..."
 CUBECL_DEBUG_LOG=0 \
-CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
 RUST_MIN_STACK="$RUST_MIN_STACK" \
-LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
     "$RUST_BIN" "$DENSE_JSONL" 0 "" tenferro-cuda-trace-deferred-batch -- "$DENSE_SUITE"
 
 if [[ ! -s "$DENSE_JSONL" ]]; then
@@ -181,9 +168,7 @@ write_run_metadata "$AD_SUITE" "$ad_id" "$AD_YAML" "$MODE_JSON"
 
 echo "Running $ad_id (deferred batch, K=$GPU_BENCH_DEFERRED_BATCH_K)..."
 CUBECL_DEBUG_LOG=0 \
-CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
 RUST_MIN_STACK="$RUST_MIN_STACK" \
-LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
     "$AD_BIN" "$AD_UNVERIFIED" 0 "" -- "$AD_SUITE"
 "${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \
     "$AD_UNVERIFIED" "$AD_JSONL" "$AD_SUITE"

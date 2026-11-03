@@ -19,7 +19,7 @@ import yaml
 
 from campaign_toolkit import hostinfo as campaign_hostinfo
 
-from collect_gpu_info import collect_cuda_metadata
+from collect_gpu_info import collect_cuda_metadata, detect_container
 
 from benchmark_layout import safe_suite_id_parts, safe_target_profile
 
@@ -224,6 +224,7 @@ def collect_affinity(sysfs: Path = SYSFS_CPU) -> dict[str, Any]:
 
 def collect_environment() -> dict[str, Any]:
     environment: dict[str, Any] = {
+        "container": detect_container(),
         "hostname": non_empty_or_none(socket.gethostname()),
         "os": non_empty_or_none(platform.platform()),
         "arch": non_empty_or_none(platform.machine()),

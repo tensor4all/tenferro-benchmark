@@ -129,3 +129,28 @@ printf '%s\n' "$OLD_COMMIT" >"$TMP/project-pinned/pins/tenferro-rs.rev"
 )
 
 test "$(tr -d '[:space:]' <"$ROOT/pins/tenferro-rs.rev")" != ""
+
+# A linked worktree records its checkout through a .git FILE; setup must reuse it
+# instead of refusing it as "exists, but it is not a git checkout".
+mkdir -p "$TMP/project-worktree/scripts" "$TMP/project-worktree/pins"
+cp "$ROOT/scripts/setup_extern_deps.sh" "$TMP/project-worktree/scripts/setup_extern_deps.sh"
+cp "$ROOT/scripts/cpu_blas_provider.sh" "$TMP/project-worktree/scripts/cpu_blas_provider.sh"
+printf '%s\n' "$NEW_COMMIT" >"$TMP/project-worktree/pins/tenferro-rs.rev"
+git clone "$TMP/tenferro-rs.git" "$TMP/worktree-source" >/dev/null 2>&1
+git -C "$TMP/worktree-source" checkout -q --detach "$NEW_COMMIT"
+git -C "$TMP/worktree-source" worktree add -q \
+  "$TMP/project-worktree/extern/tenferro-rs" -b worktree-checkout "$NEW_COMMIT"
+
+(
+  cd "$TMP/project-worktree"
+  unset TENFERRO_REF TENFERRO_UPDATE
+  export SETUP_EXTERN_DEPS_SKIP_MAIN=1
+  export TENFERRO_REPO_URL="$TMP/tenferro-rs.git"
+
+  # shellcheck source=/dev/null
+  source scripts/setup_extern_deps.sh
+
+  ensure_tenferro_checkout
+  test -f extern/tenferro-rs/.git
+  test "$(git -C extern/tenferro-rs rev-parse HEAD)" = "$NEW_COMMIT"
+)

@@ -1,22 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-[[ -f /.dockerenv && -d "${CUDA_HOME:-/usr/local/cuda}" ]] || {
-    echo 'Use the repository CUDA devcontainer for GPU AD collection.' >&2
-    exit 1
-}
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=scripts/gpu_preflight.sh
+source "$SCRIPT_DIR/gpu_preflight.sh"
+
 export GPU_BENCH_VERIFY_ONLY="${GPU_BENCH_VERIFY_ONLY:-0}"
 default_device=0
 [[ "$GPU_BENCH_VERIFY_ONLY" == 1 ]] && default_device=1
-export GPU_BENCH_PHYSICAL_DEVICE="${GPU_BENCH_DEVICE:-$default_device}"
-export GPU_BENCH_DEVICE_UUID
-GPU_BENCH_DEVICE_UUID="$(nvidia-smi -i "$GPU_BENCH_PHYSICAL_DEVICE" --query-gpu=uuid --format=csv,noheader)"
-[[ "$GPU_BENCH_DEVICE_UUID" == GPU-* && "$GPU_BENCH_DEVICE_UUID" != *$'\n'* ]] || exit 1
-export CUDA_VISIBLE_DEVICES="$GPU_BENCH_DEVICE_UUID" GPU_BENCH_DEVICE=0
+configure_gpu_bench_env "$default_device"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 RAYON_NUM_THREADS=1
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 [[ "$GPU_BENCH_VERIFY_ONLY" == 1 ]] && RESULTS_ROOT="$PROJECT_DIR/data/verification"
 REPORTS_DIR="$PROJECT_DIR/result"
@@ -49,9 +44,8 @@ PY
 )}"
 
 cd "$PROJECT_DIR"
-if [[ "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
-    git -C extern/tenferro-rs -c 'url.https://github.com/.insteadOf=git@github.com:' pull --ff-only
-fi
+tenferro_dir="$PROJECT_DIR/extern/tenferro-rs"
+update_tenferro_checkout_if_main "$tenferro_dir"
 
 VALIDATOR=(python3 "$SCRIPT_DIR/validate_benchmark_suite.py")
 METADATA=(python3 "$SCRIPT_DIR/collect_run_metadata.py")
@@ -89,11 +83,7 @@ GPU_BENCH_BACKEND_SLEEP="${GPU_BENCH_BACKEND_SLEEP:-2}"
 mkdir -p "$RUN_DIR" "$(dirname "$REPORT_OUT")"
 : > "$RESULT_JSONL"
 
-tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
-tenferro_commit=""
-if [[ -d "$tenferro_dir/.git" ]] && command -v git >/dev/null 2>&1; then
-    tenferro_commit="$(git -C "$tenferro_dir" rev-parse HEAD 2>/dev/null || true)"
-fi
+tenferro_commit="$(tenferro_checkout_commit "$tenferro_dir")"
 metadata_args=(
     --suite-id "$suite_id"
     --target-profile "$BENCHMARK_TARGET_PROFILE"
@@ -143,18 +133,14 @@ if [[ "$RUN_RUST" == 1 ]]; then
     else
         echo "Building benchmark_gpu_linalg_ad..."
         CUBECL_DEBUG_LOG=0 \
-        CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
         RUST_MIN_STACK="$RUST_MIN_STACK" \
-        LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
             cargo build --release --features cuda --bin benchmark_gpu_linalg_ad
     fi
 
     echo "Running tenferro-cuda-trace linalg AD benchmarks..."
     : > "$RUST_JSONL"
     CUBECL_DEBUG_LOG=0 \
-    CUDA_PATH="${CUDA_HOME:-/usr/local/cuda}" \
     RUST_MIN_STACK="$RUST_MIN_STACK" \
-    LD_LIBRARY_PATH="${CUDA_HOME:-/usr/local/cuda}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
         "$RUST_BIN" "$RUST_JSONL" "$DEVICE_ORDINAL" "" -- "$SUITE_FILE"
     mv "$RUST_JSONL" "$RUN_DIR/rust_records_unverified.jsonl"
     "${PYTHON[@]}" "$SCRIPT_DIR/verify_gpu_linalg_ad_rust.py" \

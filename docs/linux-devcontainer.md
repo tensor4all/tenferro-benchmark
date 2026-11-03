@@ -143,8 +143,23 @@ devcontainer exec --workspace-folder . bash -lc \
   'BENCHMARK_TARGET_PROFILE=amd-cpu TENFERRO_CPU_FEATURES=blas-mkl PUBLICATION_GATE_FEATURES=blas-mkl ./scripts/run_all.sh 4'
 ```
 
-Alternate OpenBLAS tenferro run (the default PyTorch wheel still uses MKL):
+## Host (non-container) CPU runs
 
+A Linux host with the same MKL provider can collect without the devcontainer.
+The CPU collectors do not check for `/.dockerenv`: `cpu_info.md` records a
+`Container` line (`devcontainer` or `none`) that the reports embed, and
+`run.yaml` records `environment.container`, so a host run and a
+container run stay distinguishable.
+
+Offline hosts keep the checked-out `extern/tenferro-rs` revision with
+`GPU_BENCH_NO_PULL=1`; the recorded commit is the one that was built.
+
+`scripts/run_cpu_followup.sh` writes its run record next to the results: with
+`--output PATH` it writes `PATH.run.yaml` (host, thread environment,
+`environment.container`, tenferro-rs commit, MKL provider) before the MWE run.
+The `--output` results file itself is unchanged.
+
+Alternate OpenBLAS tenferro run (the default PyTorch wheel still uses MKL):
 ```bash
 devcontainer exec --workspace-folder . bash -lc '\
   BENCHMARK_TARGET_PROFILE=amd-cpu \
