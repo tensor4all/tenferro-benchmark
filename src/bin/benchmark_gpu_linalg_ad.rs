@@ -250,9 +250,10 @@ fn dispatch(
         let mut count = 1;
         let initial;
         let final_values;
-        if diagnostic {
-            // Public-path latency: each public `Runtime::run` call and its
-            // device completion are the declared measurement.
+        if !throughput {
+            // Setup and the initial execution are untimed, including with zero
+            // warmups. Every measured call uses the same prepared program and
+            // caller-held engine and waits for device completion.
             let probe = runtime
                 .run(&mut [&mut compute_bk], &prepared, &[])
                 .map_err(|e| format!("initial run: {e}"))?
@@ -278,8 +279,8 @@ fn dispatch(
                                 .run(&mut [&mut compute_bk], &prepared, &[])
                                 .map_err(|e| format!("run: {e}"))?,
                         );
+                        sync_runtime(&transfer_rt)?;
                     }
-                    sync_runtime(&transfer_rt)?;
                     let elapsed = start.elapsed().as_secs_f64() * 1000.0;
                     black_box(&retained);
                     Ok(elapsed)
@@ -310,7 +311,7 @@ fn dispatch(
                 .map_err(|e| format!("final materialization: {e}"))?;
             sync_runtime(&transfer_rt)?;
             final_values = export_outputs(&transfer_rt, &final_outputs, device_ordinal)?;
-        } else if throughput {
+        } else {
             // Throughput mode: K prepared runs enqueued per timed sample on one
             // caller-held engine, then one retirement. Per-call time is
             // sample_ms / K, which is a throughput measurement and is never
@@ -383,84 +384,20 @@ fn dispatch(
             let final_outputs =
                 final_out.ok_or("no deferred-batch result available for verification")?;
             final_values = export_outputs(&transfer_rt, &final_outputs, device_ordinal)?;
-        } else {
-            // Standard operation rows: the caller-held engine executes every
-            // run, including both verification runs. tenferro-rs #2206 has no
-            // per-call session retirement, so an explicit device synchronize
-            // after each run keeps the per-call barrier inside the timed batch,
-            // exactly as the removed `run_prepared_in` did.
-            let mut run_once = |label: &'static str| -> Result<Vec<Tensor>, String> {
-                let outputs = runtime
-                    .run(&mut [&mut compute_bk], &prepared, &[])
-                    .map_err(|e| format!("{label} run: {e}"))?;
-                let outputs = outputs
-                    .into_iter()
-                    .map(|output| output.into_tensor(&mut compute_bk))
-                    .collect::<tenferro_tensor::Result<Vec<_>>>()
-                    .map_err(|e| format!("{label} materialization: {e}"))?;
-                sync_runtime(&transfer_rt)?;
-                Ok(outputs)
-            };
-            let initial_out = run_once("initial")?;
-            initial = export_outputs(&transfer_rt, &initial_out, device_ordinal)?;
-            let bytes = initial_out
-                .iter()
-                .map(|v| v.shape().iter().product::<usize>() * 8)
-                .sum::<usize>();
-            drop(initial_out);
-            let mut last_timed: Option<Vec<Tensor>> = None;
-            if verify_only {
-                // Verification-only lane: no clocks, same caller-held route.
-                last_timed = Some(run_once("verification")?);
-            } else {
-                ramp_gpu_clocks(|| {
-                    let out = run_once("ramp")?;
-                    black_box(out.len());
-                    Ok(())
-                })?;
-                for _ in 0..n_warmup {
-                    let out = run_once("warmup")?;
-                    black_box(out.len());
-                }
-                {
-                    let mut batch = |count: usize| -> Result<f64, String> {
-                        let mut retained = Vec::with_capacity(count);
-                        let start = Instant::now();
-                        for _ in 0..count {
-                            retained.push(run_once("timed")?);
-                        }
-                        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-                        black_box(&retained);
-                        last_timed = retained.pop();
-                        Ok(elapsed)
-                    };
-                    let cap = ((256usize << 20) / bytes.max(1)).clamp(1, 4096);
-                    while batch(count)? < 2.0 && count < cap {
-                        count = (count * 2).min(cap);
-                    }
-                    for _ in 0..n_runs {
-                        let duration = batch(count)?;
-                        batch_ms.push(duration);
-                        times_ms.push(duration / count as f64);
-                    }
-                }
-            }
-            let final_outputs = last_timed.ok_or("no run result available for verification")?;
-            final_values = export_outputs(&transfer_rt, &final_outputs, device_ordinal)?;
         }
+
         Ok((
             times_ms,
             json!({"initial": initial, "final": final_values}),
             {
                 let mut sampling = json!({"operations_per_sample":count,"batch_ms":batch_ms,"retention_budget_bytes":256usize<<20,
-                "target_batch_ms":2,"warmups":n_warmup,"scope": if diagnostic {
-                    "public_path_latency_including_internal_session_entry"
-                } else {
-                    "steady_state_host_api_plus_device_sync_caller_held_session"
-                }});
+                "target_batch_ms":2,"warmups":n_warmup,"scope": "steady_state_host_api_plus_device_sync",
+                "synchronization_policy": "after_each_operation",
+                "setup": "fixtures/transfers, graph construction, compilation, preparation, engine/runtime initialization and initial execution outside clocks"});
                 if throughput {
                     // The explicit mode note keeps a throughput row from ever
                     // being read (or averaged) as a per-call latency row.
+                    sampling["synchronization_policy"] = json!("after_batch");
                     sampling["mode"] = json!("throughput");
                     sampling["execution_mode"] = json!("deferred-batch");
                     sampling["deferred_batch"] = json!({
@@ -506,12 +443,10 @@ fn dispatch(
                     tc,
                 )
             };
-            rec["execution"]["execution_path"] = json!(if diagnostic {
-                "prepared-tenferro-cuda-trace-public-path-linalg-ad"
-            } else if throughput {
-                "trace-run-prepared-in-held-session-linalg-ad-deferred-batch"
+            rec["execution"]["execution_path"] = json!(if throughput {
+                "trace-runtime-run-caller-held-engine-linalg-ad-deferred-batch"
             } else {
-                "trace-run-prepared-in-held-session-linalg-ad"
+                "trace-runtime-run-caller-held-engine-linalg-ad"
             });
             rec["execution"]["synchronization"] = json!(
                 "native CUDA synchronization; initial/final verification downloads outside timing"
@@ -520,9 +455,7 @@ fn dispatch(
             rec["verification"]["reason"] = json!("awaiting independent CPU AD verification");
             rec["execution"]["notes"] = json!(json!({"verification_outputs":verification_outputs,
                 "sampling":if verify_only {Value::Null} else {sampling},
-                "session_policy": if diagnostic {
-                    "Runtime::run on the caller-held engine; each call is one public run, not caller-shared"
-                } else if throughput {
+                "session_policy": if throughput {
                     "K Runtime::run calls are enqueued on one caller-held CUDA engine and paid one caller-side retirement barrier per K-run batch"
                 } else {
                     "Runtime::run executes on one caller-held CUDA engine; an explicit device synchronize after each call is the per-call barrier"
@@ -530,10 +463,6 @@ fn dispatch(
                 "device_uuid":std::env::var("CUDA_VISIBLE_DEVICES").ok(),
                 "physical_device_index":std::env::var("GPU_BENCH_PHYSICAL_DEVICE").ok()})
             .to_string());
-            if diagnostic {
-                rec["timing"]["timing_scope"] =
-                    json!("public_path_latency_including_internal_session_entry");
-            }
             rec
         }
         Ok(Err(msg)) => {

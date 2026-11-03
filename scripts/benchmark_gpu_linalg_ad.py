@@ -223,7 +223,8 @@ def run_framework(suite_id, problem, backend, device_ordinal, *, ts, bc, tc):
         del probe
         sampling = None
         if not verify_only:
-            sampling = measure(runner, sync, ready, output_bytes, warmups, runs)
+            sampling = measure(runner, sync, ready, output_bytes, warmups, runs,
+                               synchronize_each_operation=True)
             final = runner()
             ready(final)
             after = check(final)

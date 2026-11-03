@@ -148,13 +148,22 @@ The formatter rejects skipped verification, failed/debug rows, duplicate cells,
 missing selected cells and invalid sampling. Older AD reports containing only
 successful-execution checks are not numerically validated performance evidence.
 
-The standard operation rows run the prepared graph in one caller-held CUDA
-session (`Runtime::run_prepared_in`); each timed call includes the run's own
-stream-retirement barrier, so standard large-operation rows are timed without
-the public-path session entry. `gpu/linalg_ad_latency` separately measures
-repeated public calls including internal session entry, using
-`public_path_latency_including_internal_session_entry`. These small rows are
-latency diagnostics, not shared-session or GPU throughput comparisons.
+The standard AD operation rows and `gpu/linalg_ad_latency` use the same timing
+boundary across tenferro, PyTorch and JAX: execute one operation and wait for
+its device completion, repeated within a batched wall-clock interval. Every
+operation has its own completion barrier; this is not deferred-batch throughput.
+All outputs remain alive until the clock stops. Fixtures, input transfers,
+graph construction, compilation, preparation, engine/runtime creation and lazy
+initialization are outside timing, including when warmups are zero. tenferro
+uses `Runtime::run` on a reusable caller-held CUDA engine; PyTorch uses
+`torch.func` and JAX uses a compiled callable. Output conversion/download and
+validation are untimed. All arms record
+`steady_state_host_api_plus_device_sync` and `after_each_operation`.
+
+These small rows compare steady-state API latency, not GPU kernel throughput.
+Historical rows labeled `public_path_latency_including_internal_session_entry`
+have a different scope and must be recollected before comparison with these
+rows (issue #309). Changing the collector does not validate old measurements.
 
 Check both suites on physical GPU1 without collecting operation timings or
 updating maintained reports:
