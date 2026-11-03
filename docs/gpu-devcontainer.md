@@ -179,6 +179,44 @@ Collect the two reports sequentially on physical GPU0 after numerical checks.
 The runner isolates each physical card by UUID; all frameworks use local CUDA
 ordinal zero. `BENCH_RUNS` and `BENCH_WARMUPS` override the declared sample counts.
 
+For a non-A100 device, validate the latency collector directly without writing
+the maintained A100 profile. Build first, then run the backends sequentially:
+
+```bash
+devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
+  bash -lc '
+    set -euo pipefail
+    cargo build --release --features cuda --bin benchmark_gpu_linalg_ad
+    export CUDA_VISIBLE_DEVICES=$(nvidia-smi -i 1 --query-gpu=uuid --format=csv,noheader)
+    export GPU_BENCH_PHYSICAL_DEVICE=1 GPU_BENCH_DEVICE=0
+    export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 RAYON_NUM_THREADS=1
+    export XLA_PYTHON_CLIENT_PREALLOCATE=false BENCH_WARMUPS=0 BENCH_RUNS=3
+    export RUST_MIN_STACK=67108864 CUDA_PATH=/usr/local/cuda
+    probe_dir=$(mktemp -d /tmp/gpu-ad-latency.XXXXXX)
+    suite=benchmarks/gpu/linalg_ad_latency.yaml
+    target/release/benchmark_gpu_linalg_ad "$probe_dir/rust-unverified.jsonl" 0 "" -- "$suite"
+    .venv/bin/python scripts/verify_gpu_linalg_ad_rust.py \
+      "$probe_dir/rust-unverified.jsonl" "$probe_dir/rust.jsonl" "$suite"
+    for backend in pytorch-cuda jax-cuda; do
+      .venv/bin/python scripts/benchmark_gpu_linalg_ad.py \
+        "$probe_dir/$backend.jsonl" 0 "" "$backend" -- "$suite"
+    done
+    cat "$probe_dir/rust.jsonl" "$probe_dir/pytorch-cuda.jsonl" \
+      "$probe_dir/jax-cuda.jsonl" > "$probe_dir/records.jsonl"
+    .venv/bin/python scripts/format_gpu_linalg_ad_results.py \
+      "$probe_dir/records.jsonl" --output "$probe_dir/report.md"
+    echo "$probe_dir"
+  '
+```
+
+PR #323 validated this path on RTX 3060 with tenferro-rs
+`bdde3f2b`: all 90 cells (30 per backend, n=2/4/8) passed numerical
+verification with zero warmups and three measured batches. All records used
+the common scope and per-operation synchronization policy above; batches
+contained multiple operations. This validates the collector and report gate,
+not historical A100 measurements or a performance improvement. Recollect on
+A100 before publishing refreshed cross-backend comparisons.
+
 ## Performance diagnostic device selection
 
 `scripts/run_gpu_perf_issues.sh` also interprets `GPU_BENCH_DEVICE` as a physical
