@@ -101,6 +101,43 @@ class PublicGpuContracts(unittest.TestCase):
         gc.collect()
         self.assertEqual(violations, [])
 
+    def test_per_operation_completion_precedes_next_dispatch(self):
+        events, live, tick = [], None, [0]
+
+        class Output:
+            def __del__(self):
+                events.append("drop")
+
+        def operation():
+            events.append("run")
+            return Output()
+
+        def ready(output):
+            self.assertIsInstance(output, Output)
+            events.append("ready")
+            return Output()  # completion tokens must survive the stopped clock too
+
+        def clock():
+            tick[0] += 1
+            events.append("start" if tick[0] % 2 else "stop")
+            # Keep calibration below target; the memory budget caps it at two.
+            return tick[0] * 1_000_000
+
+        with patch.object(bench.time, "perf_counter_ns", clock):
+            sample = bench.measure(operation, lambda: events.append("sync"), ready,
+                                   128 << 20, 0, 2, synchronize_each_operation=True)
+        self.assertEqual(sample["operations_per_sample"], 2)
+        self.assertEqual(sample["synchronization_policy"], "after_each_operation")
+        for event in events:
+            if event == "start":
+                live = []
+            elif event == "stop":
+                self.assertTrue(live)
+                self.assertEqual(live, ["run", "ready"] * (len(live) // 2))
+                live = None
+            elif live is not None:
+                live.append(event)
+
     def test_unqualified_ref_adapter_is_rejected_before_any_timing(self):
         def operation():
             self.fail("numerical-only Ref operation executed by sampler")

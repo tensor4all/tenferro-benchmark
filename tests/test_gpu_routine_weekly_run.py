@@ -54,6 +54,8 @@ for suite_path in [Path(p) for p in sys.argv[sep + 1:]]:
                 "execution": {"device": "cuda", "device_ordinal": 0, "execution_path": "fake",
                               "synchronization": "sync", "layout": "{}", "dtype": "{}",
                               "notes": json.dumps({"sampling": {"operations_per_sample": 1,
+                                                                "scope": "steady_state_host_api_plus_device_sync",
+                                                                "synchronization_policy": "after_each_operation",
                                                                 "batch_ms": [1.0, 1.1, 0.9]},
                                                    "setup": "untimed", "precision": "faithful"})}})
 out.write_text("".join(json.dumps(row) + "\\n" for row in rows))

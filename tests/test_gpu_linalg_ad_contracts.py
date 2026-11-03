@@ -9,6 +9,33 @@ from gpu_linalg_ad_contracts import cpu_reference, verify_arrays
 
 
 class AdVerification(unittest.TestCase):
+    def test_latency_publication_requires_matching_scope_and_per_call_sync(self):
+        import copy
+        import json
+        from format_gpu_linalg_ad_results import format_markdown
+        sampling = dict(operations_per_sample=2, batch_ms=[2.],
+                        scope="steady_state_host_api_plus_device_sync",
+                        synchronization_policy="after_each_operation")
+        row = dict(suite_id="gpu/linalg_ad_latency",
+                   problem_id="linalg_ad_small_grad_sum_qr_jvp_f64_4",
+                   backend="tenferro-cuda-trace", status="ok",
+                   verification=dict(status="passed", reference_backend="fixture",
+                                     max_abs_error=0., max_rel_error=0., residual=0.),
+                   timing=dict(timing_scope=sampling["scope"], timed_runs=1,
+                               median_ms=1., iqr_ms=0.),
+                   execution=dict(notes=json.dumps(dict(sampling=sampling))))
+        self.assertIn("grad_sum_qr_jvp", format_markdown([row]))
+        for change in ("scope", "sampling_scope", "barrier"):
+            bad = copy.deepcopy(row)
+            if change == "scope":
+                bad["timing"]["timing_scope"] = "public_path_latency_including_internal_session_entry"
+            else:
+                altered = dict(sampling)
+                altered["scope" if change == "sampling_scope" else "synchronization_policy"] = "after_batch"
+                bad["execution"]["notes"] = json.dumps(dict(sampling=altered))
+            with self.assertRaisesRegex(ValueError, "timing boundary mismatch"):
+                format_markdown([bad])
+
     def test_verified_timing_unsupported_rows_cannot_carry_operation_timings(self):
         import json
         import jsonschema

@@ -121,6 +121,12 @@ def format_markdown(
             if verification["residual"] > 1:
                 raise ValueError(f"AD verification exceeds tolerance: {key}")
             sampling = json.loads(record["execution"]["notes"])["sampling"]
+            if record["suite_id"] == "gpu/linalg_ad_latency":
+                scope = "steady_state_host_api_plus_device_sync"
+                if (record["timing"].get("timing_scope") != scope
+                        or sampling.get("scope") != scope
+                        or sampling.get("synchronization_policy") != "after_each_operation"):
+                    raise ValueError(f"AD latency timing boundary mismatch; recollect legacy rows (issue #309): {key}")
             count, samples = sampling["operations_per_sample"], sampling["batch_ms"]
             if not isinstance(count, int) or count < 1 or len(samples) != record["timing"]["timed_runs"] or not samples:
                 raise ValueError(f"invalid AD sampling: {key}")
@@ -170,15 +176,15 @@ def format_markdown(
         "`torch.func.jvp` / `vjp` on CUDA."
     )
     lines.append("JAX uses an explicitly lowered/compiled whole-operation JIT; compilation and lazy initialization occur before sampling. Primal loss and first-order derivatives with respect to A are both returned and checked against CPU F64 AD, whose directional derivative is checked by central differences. RHS and derivative seeds are prepared before timing.")
-    lines.append("Standard tenferro trace rows run the prepared graph in one caller-held CUDA session (Runtime::run_prepared_in); each timed call includes the run's own stream-retirement barrier. Small trace rows are separately labelled public-path latency diagnostics including internal session entry. Any unsupported row retains its actual reason in the raw records.")
+    lines.append("Standard and latency AD rows time one prepared operation plus device completion per call on every backend, repeated in bounded batches. tenferro uses Runtime::run on a reusable caller-held CUDA engine. Fixtures, transfers, graph construction, compilation, preparation and initialization are untimed; output conversion and verification follow the stopped clock. Small rows measure API latency, not kernel throughput. Legacy session-entry measurements require recollection (issue #309). Any unsupported row retains its actual reason in the raw records.")
     if any(
         record["backend"] == "tenferro-cuda-trace-deferred-batch" for record in records
     ):
         lines.append(
             "Rows whose backend name ends in `-deferred-batch` are **throughput mode**: each "
             "timed sample enqueues K deferred prepared runs "
-            "(`Runtime::run_prepared_deferred`) in one caller-held CUDA session and pays one "
-            "retirement barrier (`finish_prepared`), so the reported per-operation time is "
+            "(`Runtime::run`) on one caller-held CUDA engine and pays one "
+            "native CUDA synchronization barrier, so the reported per-operation time is "
             "`sample_ms / K`. They measure batched throughput and are not comparable with, "
             "and never averaged together with, the per-call latency rows above."
         )
@@ -192,7 +198,7 @@ def format_markdown(
     )
     suites_present = {suite for suite, _, _, _ in by_key}
     if "small" in suites_present:
-        lines.append("Small cases (n=2, 4, 8) use bounded batches of repeated declared operations with retained outputs. They are public-path latency diagnostics, not isolated GPU throughput or shared-session comparisons. Native synchronization ends each batch; numerical downloads are outside timing.")
+        lines.append("Small cases (n=2, 4, 8) use bounded batches of repeated declared operations with retained outputs. They compare steady-state API latency, not isolated GPU throughput. Native synchronization completes each operation; numerical downloads are outside timing.")
     if suites_present == {"small"}:
         lines.append(
             "This suite exists to measure single-call latency and per-op overhead: the "

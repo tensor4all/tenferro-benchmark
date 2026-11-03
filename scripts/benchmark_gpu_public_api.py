@@ -147,18 +147,22 @@ def verify(actual, expected, case):
     return worst
 
 
-def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
+def measure(op, sync, ready, nbytes, warmups, runs, reuse=False, *, synchronize_each_operation=False):
     if getattr(op, "verification_only", False):
         raise ValueError("Ref completion synchronization is not validated for timing")
     def batch(count):
         outputs = [None] * count
+        completion_tokens = [None] * count if synchronize_each_operation else None
         if hasattr(op, "prepare"):
             op.prepare(count)
         sync()
         start = time.perf_counter_ns()
         for i in range(count):
             outputs[i] = op(i) if reuse else op()
-        completion_tokens = ready(outputs)
+            if synchronize_each_operation:
+                completion_tokens[i] = ready(outputs[i])
+        if not synchronize_each_operation:
+            completion_tokens = ready(outputs)
         elapsed = time.perf_counter_ns() - start
         # Keep all outputs alive through synchronization and the stopped clock.
         return elapsed
@@ -184,6 +188,7 @@ def measure(op, sync, ready, nbytes, warmups, runs, reuse=False):
             "single_output_exceeds_configured_budget": bytes_per_operation > RETENTION_BUDGET,
             "target_batch_ms": 2, "warmups": warmups,
             "scope": "steady_state_host_api_plus_device_sync",
+            "synchronization_policy": "after_each_operation" if synchronize_each_operation else "after_batch",
             "completion_token_bytes_per_operation": getattr(op, "synchronization_bytes_per_operation", 0),
             "wall_phases_ns": {"initial_probe": probe_end-phase_start,
                                "warmup": warmup_end-probe_end,
