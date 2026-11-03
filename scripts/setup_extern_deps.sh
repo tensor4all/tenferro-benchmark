@@ -100,7 +100,7 @@ clone_or_update_tenferro_checkout() {
     local sibling="$PROJECT_DIR/../$name"
 
     mkdir -p "$(dirname "$dest")"
-    if [[ -d "$dest/.git" ]]; then
+    if [[ -e "$dest/.git" ]]; then
         log "$name already exists at ${dest#$PROJECT_DIR/}; reusing current checkout"
         if [[ "$TENFERRO_UPDATE" == "1" ]]; then
             checkout_git_ref "$name" "$dest" "$TENFERRO_REF"
@@ -115,7 +115,7 @@ EOF
         return 1
     fi
 
-    if [[ "$SETUP_EXTERN_MIGRATE_SIBLINGS" == "1" && -d "$sibling/.git" ]]; then
+    if [[ "$SETUP_EXTERN_MIGRATE_SIBLINGS" == "1" && -e "$sibling/.git" ]]; then
         log "moving existing ../$name into extern/$name"
         mv "$sibling" "$dest"
         if [[ "$TENFERRO_UPDATE" == "1" ]]; then

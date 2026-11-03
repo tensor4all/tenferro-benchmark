@@ -346,8 +346,10 @@ that sets the thread environment also sets the affinity of itself and its childr
 
 ## Linux CPU Devcontainer Workflow
 
-Use the devcontainer/Docker path for Linux CPU measurements. **Always run Linux
-CPU benchmark collection inside the devcontainer.** Use the image provided by
+Use the devcontainer/Docker path for Linux CPU measurements. **Use the
+devcontainer for maintained Linux CPU collection**; a host without a container
+is supported for runs whose report records `container: none` (see
+"Host (non-container) CPU runs" in `docs/linux-devcontainer.md`). Use the image provided by
 this repository's `.devcontainer/devcontainer.json` and its referenced
 Dockerfile for builds, validation, and measurement. Create or recreate it with
 the devcontainer CLI; do not substitute an ad hoc Docker image. If `devcontainer`
@@ -444,7 +446,13 @@ published as `amd-cpu` (`cpu/linalg_jvp_vjp`) by the nightly; use
 
 ## GPU Devcontainer Workflow
 
-For local NVIDIA GPU measurements, use the CUDA devcontainer. Managed A100
+For local NVIDIA GPU measurements, use the CUDA devcontainer. A host or batch
+node outside a container is also supported: the collectors check `nvidia-smi`,
+a CUDA toolkit (`CUDA_HOME`, `CUDA_PATH`, or `nvcc` on `PATH`) and the selected
+device UUID instead of `/.dockerenv`, and `GPU_BENCH_NO_PULL=1` keeps an offline
+`extern/tenferro-rs` checkout. Required variables, the PBS example and the
+recorded `environment.container`/toolkit/vendor fields are in
+`docs/gpu-devcontainer.md` ("Host (non-container) runs"). Managed A100
 collection uses the existing `.github/workflows/benchmark-runpod-gpu.yml`:
 it provisions an ephemeral RunPod runner, restores the prepared CUDA runtime,
 verifies a freshly built binary against its source commits and digest, and

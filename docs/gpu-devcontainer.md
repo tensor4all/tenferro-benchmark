@@ -25,6 +25,63 @@ The container also sets `UV_NO_SYNC=1`: `postCreateCommand` installs the CUDA
 variants of PyTorch and JAX after the locked base environment, and later
 benchmark-time `uv run` calls must not replace them with the default wheels.
 
+## Host (non-container) runs
+
+The devcontainer is the recommended environment, not a requirement. The GPU
+collectors check what a run needs instead of `/.dockerenv`:
+
+- `nvidia-smi` runs and resolves the selected physical GPU to exactly one UUID;
+- a CUDA toolkit is selected from `CUDA_HOME`, then `CUDA_PATH`, then the `nvcc`
+  on `PATH`, so a `module load cuda/12.4` that only sets `PATH` and
+  `LD_LIBRARY_PATH` is enough; `/usr/local/cuda` is not assumed. The selected
+  root is exported to the builds and measured runs as
+  `CUDA_HOME`/`CUDA_PATH`/`LD_LIBRARY_PATH`.
+
+Every failed check prints which check failed. `GPU_BENCH_DEVICE` is the physical
+`nvidia-smi` index of the card this run may use (default `0`; `1` for
+`--verify-only`, which is the diagnostic card on a two-GPU host). The collector
+exposes only that card's UUID, so every backend sees it as CUDA ordinal `0`. On
+a batch system set it to the index of the GPU the scheduler allocated to this
+job; it is an assignment, not a preference, and it is never renumbered
+silently.
+
+Collectors pull an `extern/tenferro-rs` checkout on `main` by default. Offline
+compute nodes cannot reach GitHub, so `GPU_BENCH_NO_PULL=1` keeps the current
+revision; the collected commit is recorded in `run.yaml` (`tenferro_rs.commit`)
+either way. `extern/tenferro-rs` is the checkout the harness `Cargo.toml` path
+dependencies build, and it is what the metadata describes.
+
+Each run records `environment.container` (`devcontainer` or `none`, detected
+from `/.dockerenv` only), the driver version and driver-supported CUDA version,
+the CUDART runtime version, the selected toolkit version and root, and the
+cuTENSOR/cuSOLVER versions read through their public version APIs from the
+library the pinned tenferro loader resolves (`null` when unknown). Reports show
+the recorded values, so a host run and a devcontainer run stay distinguishable
+without re-probing the rendering host.
+
+A PBS job with a prebuilt release binary (an A100-SXM4-40GB node, CUDA 12.4
+module, cuTENSOR under `$HOME/opt`, `extern/tenferro-rs` prepared once):
+
+```bash
+#!/bin/bash
+#PBS -l select=1:ncpus=16:ngpus=1:mem=60gb
+#PBS -l walltime=00:20:00
+set -euo pipefail
+cd "$PBS_O_WORKDIR"
+module load cuda/12.4        # sets PATH and LD_LIBRARY_PATH, not CUDA_HOME
+source "$HOME/opt/cutensor/env.sh"
+export BENCHMARK_TARGET_PROFILE=nvidia-gpu GPU_BENCH_NO_PULL=1
+export GPU_BENCH_DEVICE=0    # physical index of the GPU PBS allocated
+# native: a CUDA-only node has no OpenBLAS prefix, and the GPU suites need none.
+TENFERRO_CPU_FEATURES=native ./scripts/setup_extern_deps.sh
+./scripts/run_gpu_linalg_ad_latency.sh   # builds incrementally, then collects
+```
+
+The collectors rebuild before measuring, so warm the release build once in an
+interactive session on the same checkout; the job's rebuild is then incremental.
+`GPU_BENCH_PREBUILT_RUST=1` is only for a shipped binary that comes with its
+`<binary>.json` artifact (the hosted workflow), not for a local build.
+
 ## Host and container Python environments are separate
 
 The CUDA devcontainer mounts a container-only named volume over

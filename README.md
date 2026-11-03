@@ -410,18 +410,18 @@ Rust and Julia runners; result records are validated against
 
 ### GPU suites (CUDA devcontainer)
 
-The repo `.venv` is **shared between the CPU and CUDA devcontainers** (it
-lives in the bind-mounted workspace). A CPU-side `uv sync` — including the
-CPU devcontainer's own post-create hook — replaces the CUDA wheels with CPU
-ones. The GPU Python runners then **silently skip** `pytorch-cuda` /
-`jax-cuda` (they exit 0 and the report is simply missing those columns)
-rather than failing. Before collecting GPU results, install the CUDA Python
-backends inside the container and verify they see the GPU:
+The CUDA devcontainer keeps its Python environment in a container-only named
+volume mounted over `.venv`, so a host or CPU-devcontainer `uv sync` cannot
+replace its CUDA PyTorch/JAX wheels (see
+[docs/gpu-devcontainer.md](docs/gpu-devcontainer.md)). If the GPU runners skip
+`pytorch-cuda` / `jax-cuda` (they exit 0 and the report is missing those
+columns) rather than failing, the container's CUDA backends are missing or do
+not see the GPU. Reinstall them inside the container and verify:
 
 ```bash
 devcontainer up --workspace-folder . --config .devcontainer/cuda/devcontainer.json
 
-# One-time, and again after ANY CPU-side `uv sync`:
+# Normally done by postCreateCommand:
 devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.json \
   bash -lc '
     (uv sync --frozen || uv sync)
@@ -430,6 +430,11 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
     ./scripts/setup_extern_deps.sh
     uv run python -c "import torch, jax; assert torch.cuda.is_available(); jax.devices(\"cuda\"); print(\"CUDA OK:\", torch.__version__)"'
 ```
+
+A GPU node with a CUDA module and driver can also collect without a container;
+see "Host (non-container) runs" in that document for the required variables,
+offline preparation and a PBS example. The recorded `environment.container` and
+toolkit/vendor versions in the report say which kind of run it was.
 
 If `nvidia-smi` fails inside a previously created container ("Failed to
 initialize NVML" / `CUDA_ERROR_NO_DEVICE`) while the host GPU is fine,
@@ -467,7 +472,7 @@ After any GPU run, **check the generated report for the full backend set**
 (the [Comparison Backends](#comparison-backends) section lists what each
 suite compares; for `gpu/permutation` that is two tenferro columns, cuTENSOR,
 PyTorch CUDA, JAX CUDA, and memcpy-d2d). A column that is `-` on every row
-means that backend's runner skipped — usually the CUDA-wheels issue above.
+means that backend's runner skipped — usually missing CUDA wheels in the container, above.
 Like `run_all.sh`, these scripts **overwrite** the tracked latest reports
 under `result/nvidia-gpu/`; after a trial or partial run, restore them before
 committing (`git checkout -- result/`).

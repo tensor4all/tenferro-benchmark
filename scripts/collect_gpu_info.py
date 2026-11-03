@@ -41,20 +41,53 @@ def _nvidia_smi_cuda_version() -> str | None:
     return match.group(1) if match else None
 
 
-def _nvcc_runtime_version() -> str | None:
-    output = _run(["nvcc", "--version"])
+def detect_container(lock: Path = Path("/.dockerenv")) -> str:
+    """Whether collection runs in a container: ``devcontainer`` or ``none``.
+
+    The devcontainer is the recommended environment, not a requirement, so
+    ``/.dockerenv`` is only detection and never gates collection.
+    """
+    return "devcontainer" if lock.exists() else "none"
+
+
+def _cuda_toolkit_root() -> Path | None:
+    """Toolkit root in the collectors' order: CUDA_HOME, CUDA_PATH, nvcc on PATH."""
+    for name in ("CUDA_HOME", "CUDA_PATH"):
+        value = os.environ.get(name)
+        if value and Path(value).is_dir():
+            return Path(value)
+    nvcc = shutil.which("nvcc")
+    if nvcc:
+        # Resolve an alternatives/module symlink to the toolkit it names.
+        return Path(os.path.realpath(nvcc)).parent.parent
+    return None
+
+
+def _nvcc_version(root: Path | None) -> str | None:
+    """Version of the selected toolkit's own nvcc, never an unrelated PATH one."""
+    nvcc = root / "bin" / "nvcc" if root is not None else None
+    if nvcc is None or not nvcc.is_file():
+        return None
+    output = _run([str(nvcc), "--version"])
     if not output:
         return None
     match = re.search(r"release ([0-9.]+)", output)
     return match.group(1) if match else None
 
 
-def _cuda_runtime_version() -> str | None:
-    # Compiler presence/version does not identify a transferred runtime tree.
-    # In particular, the RunPod base image still contains CUDA 11.8 nvcc.
-    root = os.environ.get("CUDA_HOME")
-    candidates = sorted(Path(root, "lib64").glob("libcudart.so*")) if root else []
-    for library in [*(str(path) for path in candidates), "libcudart.so.12", "libcudart.so.13"]:
+def _cuda_runtime_version(root: Path | None = None) -> str | None:
+    """CUDART version of the selected toolkit, else the loader's runtime.
+
+    A compiler version does not identify a runtime tree, so nvcc is never a
+    stand-in here: the toolkit version is recorded separately.
+    """
+    if root is None:
+        root = _cuda_toolkit_root()
+    candidates: list[str] = []
+    if root is not None:
+        candidates.extend(sorted(str(path) for path in (root / "lib64").glob("libcudart.so*")))
+    candidates.extend(["libcudart.so.12", "libcudart.so.13"])
+    for library in candidates:
         try:
             function = ctypes.CDLL(library).cudaRuntimeGetVersion
             function.argtypes = [ctypes.POINTER(ctypes.c_int)]
@@ -64,7 +97,84 @@ def _cuda_runtime_version() -> str | None:
                 return f"{version.value // 1000}.{(version.value % 1000) // 10}"
         except (OSError, AttributeError):
             continue
-    return _nvcc_runtime_version()
+    return None
+
+
+# Search order of the loaders at pins/tenferro-rs.rev: crates/tenferro-gpu
+# `cuda/cutensor.rs` and crates/tenferro-linalg `gpu/ffi/cusolver.rs`. Each env
+# override replaces the defaults, even when empty, and the first loadable
+# candidate wins: an absent version symbol is unknown, not a reason to try the
+# next candidate.
+CUTENSOR_LIBRARY_PATHS = (
+    "/usr/lib/x86_64-linux-gnu/libcutensor/12/libcutensor.so.2",
+    "libcutensor.so.2",
+    "libcutensor.so",
+)
+CUSOLVER_LIBRARY_PATHS = (
+    "libcusolver.so.12",
+    "libcusolver.so.11",
+    "/usr/lib/x86_64-linux-gnu/libcusolver.so.11",
+    "libcusolver.so",
+)
+
+
+def _library_paths(env_var: str, defaults: tuple[str, ...]) -> list[str]:
+    if env_var in os.environ:
+        return [part for part in os.environ[env_var].split(":") if part]
+    return list(defaults)
+
+
+def _load_vendor_library(paths: list[str]) -> Any:
+    for path in paths:
+        try:
+            return ctypes.CDLL(path)
+        except OSError:
+            continue
+    return None
+
+
+def _cutensor_version() -> str | None:
+    """cuTENSOR version through its public ``cutensorGetVersion()`` symbol."""
+    library = _load_vendor_library(_library_paths("TENFERRO_CUTENSOR_PATH", CUTENSOR_LIBRARY_PATHS))
+    if library is None:
+        return None
+    try:
+        function = library.cutensorGetVersion
+    except AttributeError:
+        return None
+    function.restype = ctypes.c_size_t
+    function.argtypes = []
+    try:
+        value = int(function())
+    except (OSError, ctypes.ArgumentError):
+        return None
+    if value <= 0:
+        return None
+    return f"{value // 10000}.{(value // 100) % 100}.{value % 100}"
+
+
+def _cusolver_version() -> str | None:
+    """cuSOLVER version through its public ``cusolverGetProperty`` API."""
+    library = _load_vendor_library(_library_paths("TENFERRO_CUSOLVER_PATH", CUSOLVER_LIBRARY_PATHS))
+    if library is None:
+        return None
+    try:
+        function = library.cusolverGetProperty
+    except AttributeError:
+        return None
+    function.restype = ctypes.c_int
+    function.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+    parts: list[int] = []
+    for property_index in (0, 1, 2):  # MAJOR_VERSION, MINOR_VERSION, PATCH_LEVEL
+        value = ctypes.c_int()
+        try:
+            status = function(property_index, ctypes.byref(value))
+        except OSError:
+            return None
+        if status != 0:
+            return None
+        parts.append(value.value)
+    return ".".join(str(part) for part in parts)
 
 
 def _torch_cudnn_version() -> str | None:
@@ -123,14 +233,19 @@ def collect_cuda_metadata(device_ordinal: int = 0) -> dict[str, Any] | None:
     if device is None:
         return None
 
+    toolkit_root = _cuda_toolkit_root()
     metadata: dict[str, Any] = {
         "device_ordinal": device["device_ordinal"],
         "device_name": device["device_name"],
         "device_uuid": device["device_uuid"],
         "device_memory_bytes": device["device_memory_bytes"],
         "driver_version": device["driver_version"],
-        "runtime_version": _cuda_runtime_version(),
+        "runtime_version": _cuda_runtime_version(toolkit_root),
         "cuda_version": _nvidia_smi_cuda_version(),
+        "toolkit_version": _nvcc_version(toolkit_root),
+        "toolkit_root": str(toolkit_root) if toolkit_root is not None else None,
+        "cutensor_version": _cutensor_version(),
+        "cusolver_version": _cusolver_version(),
         "cudnn_version": _torch_cudnn_version(),
     }
     return metadata
@@ -154,6 +269,15 @@ def collect_gpu_info(device_ordinal: int = 0) -> dict[str, str]:
         info["CUDA runtime"] = str(metadata["runtime_version"])
     if metadata.get("cudnn_version"):
         info["cuDNN version"] = str(metadata["cudnn_version"])
+    for key, label in (
+        ("toolkit_version", "CUDA toolkit"),
+        ("toolkit_root", "CUDA toolkit root"),
+        ("cutensor_version", "cuTENSOR version"),
+        ("cusolver_version", "cuSOLVER version"),
+    ):
+        if metadata.get(key):
+            info[label] = str(metadata[key])
+    info["Container"] = detect_container()
     return info
 
 
@@ -180,6 +304,31 @@ def gpu_info_from_run_metadata(cuda: dict[str, Any]) -> dict[str, str]:
         info["CUDA runtime"] = str(cuda["runtime_version"])
     if cuda.get("cudnn_version"):
         info["cuDNN version"] = str(cuda["cudnn_version"])
+    return info
+
+
+def environment_info_from_run_metadata(run_metadata: dict[str, Any] | None) -> dict[str, str]:
+    """Recorded collection environment, read only from the run record.
+
+    Rendering a stored run must show the container and toolkit it was collected
+    in, so this never probes the host. Keys an older record does not have are
+    omitted rather than guessed.
+    """
+    run_metadata = run_metadata or {}
+    info: dict[str, str] = {}
+    environment = run_metadata.get("environment")
+    if isinstance(environment, dict) and "container" in environment:
+        info["Container"] = str(environment.get("container") or "unknown")
+    cuda = run_metadata.get("cuda")
+    if isinstance(cuda, dict):
+        for key, label in (
+            ("toolkit_version", "CUDA toolkit"),
+            ("toolkit_root", "CUDA toolkit root"),
+            ("cutensor_version", "cuTENSOR version"),
+            ("cusolver_version", "cuSOLVER version"),
+        ):
+            if key in cuda:
+                info[label] = str(cuda.get(key) or "unknown")
     return info
 
 
@@ -220,6 +369,7 @@ def resolve_gpu_info(
         if isinstance(cuda, dict):
             info = gpu_info_from_run_metadata(cuda)
             if info:
+                info.update(environment_info_from_run_metadata(run_metadata))
                 return info
 
     info = gpu_info_from_records(records)

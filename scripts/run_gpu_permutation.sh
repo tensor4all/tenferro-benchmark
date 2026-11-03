@@ -44,6 +44,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=scripts/tenferro_checkout.sh
+source "$SCRIPT_DIR/tenferro_checkout.sh"
 RESULTS_ROOT="$PROJECT_DIR/data/results"
 REPORTS_DIR="$PROJECT_DIR/result"
 
@@ -112,11 +114,8 @@ fi
 
 "${VALIDATOR[@]}" "$SUITE_FILE"
 
-tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
-tenferro_commit=""
-if [[ -d "$tenferro_dir/.git" ]] && command -v git >/dev/null 2>&1; then
-    tenferro_commit="$(git -C "$tenferro_dir" rev-parse HEAD 2>/dev/null || true)"
-fi
+tenferro_dir="$PROJECT_DIR/extern/tenferro-rs"
+tenferro_commit="$(tenferro_checkout_commit "$tenferro_dir")"
 
 metadata_args=(
     --suite-id "$SUITE_ID"

@@ -164,7 +164,15 @@ def format_markdown(
             lines.append(f"- tenferro-rs commit: `{tenferro['commit']}`")
         lines.append("")
 
-    lines.append(cpu_info_markdown(collect_cpu_info()).rstrip())
+    cpu_info = collect_cpu_info()
+    # The container is a fact of collection: a recorded value is shown, and a run
+    # that recorded none keeps it unknown instead of borrowing this host's.
+    recorded_container = ((run_metadata or {}).get("environment") or {}).get("container")
+    if recorded_container:
+        cpu_info["Container"] = str(recorded_container)
+    else:
+        cpu_info.pop("Container", None)
+    lines.append(cpu_info_markdown(cpu_info).rstrip())
     lines.append("")
 
     lines.append(

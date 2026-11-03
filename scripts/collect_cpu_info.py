@@ -9,6 +9,13 @@ import platform
 import subprocess
 from pathlib import Path
 
+# One implementation of the container detection both collectors record; this
+# module is also imported as `scripts.collect_cpu_info`, where a sibling import
+# needs the package spelling.
+try:
+    from collect_gpu_info import detect_container
+except ModuleNotFoundError:  # imported as scripts.collect_cpu_info
+    from scripts.collect_gpu_info import detect_container
 
 def _run(args: list[str]) -> str | None:
     try:
@@ -162,8 +169,14 @@ def _lscpu_fields() -> dict[str, str]:
 
 def collect_cpu_info() -> dict[str, str]:
     if platform.system() == "Darwin":
-        return _darwin_cpu_info()
+        info = _darwin_cpu_info()
+    else:
+        info = _linux_cpu_info()
+    info["Container"] = detect_container()
+    return info
 
+
+def _linux_cpu_info() -> dict[str, str]:
     lscpu = _lscpu_fields()
     cpuinfo = _cpuinfo_fields()
 

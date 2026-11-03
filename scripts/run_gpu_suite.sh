@@ -63,10 +63,9 @@ PROBLEM_FILTER="${GPU_BENCH_PROBLEM:-}"
 RUST_MIN_STACK="${RUST_MIN_STACK:-67108864}"
 
 cd "$PROJECT_DIR"
-
-if [[ -d extern/tenferro-rs/.git && "$(git -C extern/tenferro-rs branch --show-current)" == main ]]; then
-    git -C extern/tenferro-rs -c 'url.https://github.com/.insteadOf=git@github.com:' pull --ff-only
-fi
+# shellcheck source=scripts/tenferro_checkout.sh
+source "$SCRIPT_DIR/tenferro_checkout.sh"
+update_tenferro_checkout_if_main "$PROJECT_DIR/extern/tenferro-rs"
 
 mkdir -p "$RESULTS_ROOT" "$REPORTS_DIR"
 
@@ -142,13 +141,6 @@ PY
 export BENCH_WARMUPS="$ROUTINE_WARMUPS" BENCH_RUNS="$ROUTINE_RUNS"
 "${VALIDATOR[@]}" "${SUITES[@]}"
 
-resolve_git_commit() {
-    local checkout_dir="$1"
-    if [[ -d "$checkout_dir/.git" ]] && command -v git >/dev/null 2>&1; then
-        git -C "$checkout_dir" rev-parse HEAD 2>/dev/null || true
-    fi
-}
-
 suite_id_for_file() {
     awk '$1 == "suite_id:" { print $2; exit }' "$1"
 }
@@ -182,9 +174,9 @@ write_run_metadata() {
     local suite_id="$1"
     local suite_file="$2"
     local run_yaml="$3"
-    local tenferro_dir="${TENFERRO_RS_DIR:-$PROJECT_DIR/extern/tenferro-rs}"
+    local tenferro_dir="$PROJECT_DIR/extern/tenferro-rs"
     local tenferro_commit
-    tenferro_commit="$(resolve_git_commit "$tenferro_dir")"
+    tenferro_commit="$(tenferro_checkout_commit "$tenferro_dir")"
     local args=(
         --suite-id "$suite_id"
         --target-profile "$BENCHMARK_TARGET_PROFILE"
