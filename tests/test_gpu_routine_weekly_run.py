@@ -264,7 +264,7 @@ class WeeklyRoutineRunTest(unittest.TestCase):
         self.assertEqual({entry["suite_id"]: len(entry["expected_rows"]) for entry in publication["suites"]},
                          {"gpu/dense": 28, "gpu/einsum": 4, "gpu/sparse": 2, "gpu/tensornetwork": 4,
                           "gpu/elementwise": 8, "gpu/linalg_ad_latency": 30, "gpu/linalg_jvp_vjp": 30,
-                          "gpu/permutation": 60, "gpu/lstsq": 4, "gpu/linalg_public_api": 64,
+                          "gpu/permutation": 60, "gpu/lstsq": 4, "gpu/linalg_public_api_throughput": 64,
                           "gpu/fft": 16, "gpu/nn": 44, "gpu/structural": 64, "gpu/isolated_ops": 132,
                           "gpu/reuse_contraction": 224})
 

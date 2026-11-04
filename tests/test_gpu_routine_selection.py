@@ -32,7 +32,7 @@ class RoutineSelectionTest(unittest.TestCase):
             self.assertEqual(plan["expected"], plan["selected"])
             for suite in ("dense", "einsum", "sparse", "tensornetwork", "elementwise",
                           "linalg_ad_latency", "linalg_jvp_vjp", "permutation", "lstsq",
-                          "linalg_public_api", "fft", "nn", "structural", "isolated_ops",
+                          "linalg_public_api_throughput", "fft", "nn", "structural", "isolated_ops",
                           "reuse_contraction"):
                 self.assertTrue(any(key.startswith(f"gpu/{suite}:") for key in plan["selected"]), suite)
             # The sparse suite is reference-only, so it runs one arm.

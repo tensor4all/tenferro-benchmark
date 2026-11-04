@@ -1,17 +1,24 @@
 # CUDA public API suites
 
 
-The seven families (`fft`, `nn`, `isolated_ops`, `structural`,
-`linalg_public_api`, `reuse_contraction`, `lstsq`) are part of the single
-routine GPU set: `run_gpu_suite.sh` delegates each one to
-`scripts/run_gpu_public_api.sh` with a curated instance document, so the
-weekly command collects them. The per-family command below remains the way
-to probe one family alone.
+The public-API families (`fft`, `nn`, `isolated_ops`, `structural`,
+`linalg_public_api_throughput` for `linalg`, `reuse_contraction`, `lstsq`) are
+part of the single routine GPU set: `run_gpu_suite.sh` delegates each one to
+`scripts/run_gpu_public_api.sh` with a curated instance document, so the weekly
+command collects them. `linalg_public_api_latency` is the same surface at the
+small shapes, is not in the routine set (every curated routine case is in the
+throughput shape class), and is collected on request. The per-family command
+below remains the way to probe one family alone.
 
 These suites implement the missing-operation workstream in
 [issue #155](https://github.com/tensor4all/tenferro-benchmark/issues/155).
 Each family has a YAML selection in `benchmarks/gpu/` and explicit operation,
 dtype, shape and unsupported-arm records in `data/instances/gpu_<family>.json`.
+The YAML's `problems.include` is the case list: both the routine selection and
+the per-family command hand the collectors an instance document derived from it,
+so a suite cannot measure a case set it does not declare. Two suites may read the
+same instance document - `linalg_public_api_throughput` and
+`linalg_public_api_latency` do - and then differ only in which cases they include.
 An existing einsum, AD or fused-chain measurement does not count as an isolated
 forward-operation measurement.
 
@@ -21,7 +28,8 @@ forward-operation measurement.
 | `nn` | sigmoid, silu, softplus, exact/tanh GELU, softmax/log-softmax including masks, layer/RMS normalization | [NN](../result/nvidia-gpu/gpu/nn.md) |
 | `isolated_ops` | arithmetic, analytic functions including erf, compare/select/clamp, axis-wise reductions | [Isolated operations](../result/nvidia-gpu/gpu/isolated_ops.md) |
 | `structural` | scatter, take_along_axis, pad, materialized slice/reshape, stack, reverse, concatenate, diagonal extraction/embedding, triangular masks, cast | [Structural](../result/nvidia-gpu/gpu/structural.md) |
-| `linalg_public_api` | Cholesky, values-only SVD/eigh, pinv with explicit rtol, inverse, determinant, Frobenius norm, triangular solve | [Linear algebra](../result/nvidia-gpu/gpu/linalg_public_api.md) |
+| `linalg_public_api_throughput` | Cholesky, values-only SVD/eigh, pinv with explicit rtol, inverse, determinant, Frobenius norm, triangular solve, plus full SVD/QR/LU/Householder, at the 256..512 sizes (largest dimension >= 256) | [Linear algebra throughput](../result/nvidia-gpu/gpu/linalg_public_api_throughput.md) |
+| `linalg_public_api_latency` | The same operations at 32x32, 64x32 and 32x64: per-call launch and synchronization overhead, not GPU throughput | [Linear algebra overhead](../result/nvidia-gpu/gpu/linalg_public_api_latency.md) |
 | `reuse_contraction` | add/sub/mul/div/neg/conj `_into` and `_read_into`, tensordot, vdot_read, real norm_squared_read | [Output reuse and contractions](../result/nvidia-gpu/gpu/reuse_contraction.md) |
 | `lstsq` | Public eager solution-only least squares; numeric checks with explicit timing exclusions | [Least squares](../result/nvidia-gpu/gpu/lstsq.md) |
 
@@ -50,14 +58,15 @@ devcontainer exec --workspace-folder . --config .devcontainer/cuda/devcontainer.
   bash -lc './scripts/run_gpu_public_api.sh all'
 ```
 
-`all` invokes fft, nn, isolated_ops, structural, linalg_public_api,
-reuse_contraction and lstsq in that order. It reuses each family's suite_id,
-case selection and report; it does not create duplicate combined timing tables.
-A failing family stops the collection. Individual family commands remain
-available for focused work. Repeat verification and collection sequentially
-with `nn`, `isolated_ops`, `structural`, `linalg_public_api`,
-`reuse_contraction`, and `lstsq`. Do not overlap timing commands or
-other GPU benchmark processes. The runner requires a CUDA container, fetches a
+`all` invokes fft, nn, isolated_ops, structural, linalg_public_api_throughput,
+linalg_public_api_latency, reuse_contraction and lstsq in that order. It reuses
+each family's suite_id, case selection and report; it does not create duplicate
+combined timing tables. A failing family stops the collection. Individual family
+commands remain available for focused work. Repeat verification and collection
+sequentially with `nn`, `isolated_ops`, `structural`,
+`linalg_public_api_throughput`, `linalg_public_api_latency`,
+`reuse_contraction`, and `lstsq`. Do not overlap timing commands or other GPU
+benchmark processes. The runner requires a CUDA container, fetches a
 `main` tenferro checkout while preserving pinned checkouts, and rebuilds its
 Rust binary before collection. Public GitHub fetches use HTTPS inside the image.
 
@@ -259,8 +268,8 @@ cargo check --features cuda --bin benchmark_gpu_public_api -j 4
 uv run python -m unittest tests/test_gpu_public_api.py
 uv run python scripts/validate_benchmark_suite.py benchmarks/gpu/fft.yaml \
   benchmarks/gpu/nn.yaml benchmarks/gpu/isolated_ops.yaml \
-  benchmarks/gpu/structural.yaml benchmarks/gpu/linalg_public_api.yaml \
-  benchmarks/gpu/reuse_contraction.yaml
+  benchmarks/gpu/structural.yaml benchmarks/gpu/linalg_public_api_throughput.yaml \
+  benchmarks/gpu/linalg_public_api_latency.yaml benchmarks/gpu/reuse_contraction.yaml
 bash -n scripts/run_gpu_public_api.sh
 bash tests/test_suite_result_layout.sh
 bash tests/test_run_all_docs_outputs.sh

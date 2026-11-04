@@ -17,24 +17,24 @@ issue: 107
 # src/bin/benchmark_gpu_rust.rs). `gpu_linalg_ad` delegates to
 # scripts/run_gpu_linalg_jvp_vjp.sh.
 #
-# | Suite                 | Driver          | Problems | Backends | Rows |
-# |-----------------------|-----------------|---------:|---------:|-----:|
-# | gpu/dense             | gpu_suite       |        7 |        4 |   28 |
-# | gpu/einsum            | gpu_suite       |        1 |        4 |    4 |
-# | gpu/sparse            | gpu_suite       |        2 |        1 |    2 |
-# | gpu/tensornetwork     | gpu_suite       |        1 |        4 |    4 |
-# | gpu/elementwise       | gpu_suite       |        2 |        4 |    8 |
-# | gpu/linalg_ad_latency | gpu_linalg_ad   |       10 |        3 |   30 |
-# | gpu/linalg_jvp_vjp    | gpu_linalg_ad   |       10 |        3 |   30 |
-# | gpu/permutation       | gpu_permutation |       10 |        6 |   60 |
-# | gpu/lstsq             | gpu_public_api  |        1 |        4 |    4 |
-# | gpu/linalg_public_api | gpu_public_api  |       16 |        4 |   64 |
-# | gpu/fft               | gpu_public_api  |        4 |        4 |   16 |
-# | gpu/nn                | gpu_public_api  |       11 |        4 |   44 |
-# | gpu/structural        | gpu_public_api  |       16 |        4 |   64 |
-# | gpu/isolated_ops      | gpu_public_api  |       33 |        4 |  132 |
-# | gpu/reuse_contraction | gpu_public_api  |       56 |        4 |  224 |
-# | Total                 |                 |      180 |       55 |  714 |
+# | Suite                            | Driver          | Problems | Backends | Rows |
+# |----------------------------------|-----------------|---------:|---------:|-----:|
+# | gpu/dense                        | gpu_suite       |        7 |        4 |   28 |
+# | gpu/einsum                       | gpu_suite       |        1 |        4 |    4 |
+# | gpu/sparse                       | gpu_suite       |        2 |        1 |    2 |
+# | gpu/tensornetwork                | gpu_suite       |        1 |        4 |    4 |
+# | gpu/elementwise                  | gpu_suite       |        2 |        4 |    8 |
+# | gpu/linalg_ad_latency            | gpu_linalg_ad   |       10 |        3 |   30 |
+# | gpu/linalg_jvp_vjp               | gpu_linalg_ad   |       10 |        3 |   30 |
+# | gpu/permutation                  | gpu_permutation |       10 |        6 |   60 |
+# | gpu/lstsq                        | gpu_public_api  |        1 |        4 |    4 |
+# | gpu/linalg_public_api_throughput | gpu_public_api  |       16 |        4 |   64 |
+# | gpu/fft                          | gpu_public_api  |        4 |        4 |   16 |
+# | gpu/nn                           | gpu_public_api  |       11 |        4 |   44 |
+# | gpu/structural                   | gpu_public_api  |       16 |        4 |   64 |
+# | gpu/isolated_ops                 | gpu_public_api  |       33 |        4 |  132 |
+# | gpu/reuse_contraction            | gpu_public_api  |       56 |        4 |  224 |
+# | Total                            |                 |      180 |       55 |  714 |
 #
 # Opt-in vendor arms add 164 rows: gpu/dense +21, gpu/einsum +2, gpu/sparse +4,
 # and the second JAX path jax-cuda-jit on the seven public-API families +137,
@@ -211,13 +211,15 @@ suites:
     - jax-cuda
     vendor_backends:
     - jax-cuda-jit
-  gpu/linalg_public_api:
-    file: benchmarks/gpu/linalg_public_api.yaml
+  gpu/linalg_public_api_throughput:
+    file: benchmarks/gpu/linalg_public_api_throughput.yaml
     driver: gpu_public_api
     # One case per public linalg operation (16), double or complex precision, the
     #     largest declared shape. Factorization/Factor scheduling variants of the same
     #     operation were already collapsed per op; dtype and size sweeps are not
-    #     weekly. This is the surface where #299-class failures appear.
+    #     weekly. This is the surface where #299-class failures appear. Every case
+    #     here is in the throughput shape class (largest dimension >= 256), so the
+    #     per-call overhead page gpu/linalg_public_api_latency is not in this set.
     problems:
     - cholesky_f64_512x512
     - svdvals_f64_512x512
@@ -431,15 +433,14 @@ suites:
     - jax-cuda
     vendor_backends:
     - jax-cuda-jit
-# Not in the routine set, because no routine driver can select them:
+# Suites this manifest does not collect:
 #   gpu/dense_throughput, gpu/linalg_ad_throughput - separate regime
 #     (tenferro-cuda-trace-deferred-batch) with their own driver and reports;
 #     mixing them into one weekly matrix would mix regimes.
-#   gpu/fft, gpu/isolated_ops, gpu/linalg_public_api, gpu/lstsq, gpu/nn,
-#     gpu/reuse_contraction, gpu/structural, gpu/permutation - fixture-driven
-#     public-API families whose problems come from data/instances/*.json, not
-#     from a problem list this manifest can name. They keep their own runners
-#     and reports.
+#   gpu/linalg_public_api_latency - per-call overhead regime (largest dimension
+#     <= 128). Every curated routine case of the public linalg surface is the
+#     largest shape class, so this suite has no weekly representative; its page
+#     is collected on request, not weekly.
 #   gpu/perf_issues - the routine control lane (benchmarks/gpu/manifests/
 #     routine_controls.yaml) plus the broad matrix, which stays independently
 #     selectable.

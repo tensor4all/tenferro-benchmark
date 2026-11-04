@@ -62,7 +62,10 @@ families:
       index_select_slice_axis_take_axis: Public index_select/take_axis lower to gather with host-created indices, and slice_axis/slice-builder lower to slice. Existing device-index gather and materialized slice cases cover those primitives, not wrapper entry/host-index setup; wrapper latency remains separate.
   linalg:
     cases: data/instances/gpu_linalg_public_api.json
-    suite: benchmarks/gpu/linalg_public_api.yaml
+    # One case source, two shape-class pages: the same cases must not be read as
+    # one throughput table.
+    suite: benchmarks/gpu/linalg_public_api_throughput.yaml
+    latency_suite: benchmarks/gpu/linalg_public_api_latency.yaml
     routes: [TensorLinalgExt, EagerSessionLinalgExt]
     existing_partial: [gpu/dense, gpu/linalg_jvp_vjp, gpu/linalg_ad_latency, gpu/perf_issues]
     contracts: F32/F64; owned compact inputs; values-only svdvals/eigvalsh; pinv rtol=1e-5; Frobenius norm; left/lower/non-unit triangular solve.
