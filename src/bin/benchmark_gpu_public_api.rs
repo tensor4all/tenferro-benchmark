@@ -207,6 +207,207 @@ fn numbers(t: &Tensor) -> Result<Vec<Complex64>> {
         _ => return Err("unsupported verification dtype".into()),
     })
 }
+/// Total timed milliseconds of one row's samples, when the row sampled at all.
+fn timed_ms_of(timing: Option<&Value>) -> Option<f64> {
+    let samples = timing?.get("batch_ms")?.as_array()?;
+    let total: f64 = samples.iter().filter_map(Value::as_f64).sum();
+    (!samples.is_empty()).then_some(total)
+}
+
+/// The overhead line a case records when it spent more than `budget` of its timed
+/// region outside it, or `None` when it did not.
+///
+/// The budget has no measured basis: it labels the untimed split for the report. It is
+/// recorded in the row and printed, and nothing reads it back into a status or an exit
+/// code, because a case that spends a long time setting up is still a measurement.
+fn overhead_warning(
+    case_id: &str,
+    timed_ms: Option<f64>,
+    case_wall_ms: f64,
+    budget: f64,
+) -> Option<String> {
+    let timed = timed_ms.filter(|ms| *ms > 0.0)?;
+    let untimed = (case_wall_ms - timed).max(0.0);
+    (untimed > budget * timed).then(|| {
+        format!(
+            "{case_id} untimed {untimed:.1} ms is {:.0}% of the {timed:.1} ms timed region (budget {:.0}%)",
+            100.0 * untimed / timed,
+            100.0 * budget
+        )
+    })
+}
+
+/// The untimed work one case paid, as the harness measured it.
+#[derive(Clone, Copy, Default)]
+struct PhaseTimings {
+    /// Reading the inputs and the reference (bytes and stored fingerprint).
+    fixture_ms: f64,
+    /// Verification, including the downloads it needs.
+    verify_ms: f64,
+    /// Fingerprint passes that ran and produced a diagnostic agreement answer.
+    fingerprint_compares: usize,
+    /// Of those, the passes whose invariants disagreed with the fixture.
+    fingerprint_disagreements: usize,
+    /// False for the families whose per-case path does not instrument the split.
+    split_measured: bool,
+}
+
+/// The split of a path that verifies inside its own module: no phase numbers.
+fn uninstrumented_phases() -> PhaseTimings {
+    PhaseTimings::default()
+}
+
+/// Snapshot the phases measured so far for one case row.
+fn phases_of(expected: &Expected<'_>, fixture_ms: f64) -> PhaseTimings {
+    PhaseTimings {
+        fixture_ms,
+        verify_ms: expected.verify_ms,
+        fingerprint_compares: expected.fingerprint_compares,
+        fingerprint_disagreements: expected.fingerprint_disagreements,
+        split_measured: true,
+    }
+}
+
+/// One case's expected output: the stored fingerprint, and the reference bytes.
+///
+/// The fingerprint is a recorded diagnostic. The elementwise comparison against the
+/// reference decides whether an output is correct, and runs for every verification.
+struct Expected<'a> {
+    case: &'a Case,
+    output: usize,
+    stored: Option<tenferro_einsum_benchmark::fingerprint::StoredFingerprint>,
+    /// The reference values, read once when the case starts (inside the fixture window).
+    tensor: Tensor,
+    verify_ms: f64,
+    /// Fingerprint passes that ran and produced a diagnostic agreement answer.
+    fingerprint_compares: usize,
+    /// Of those, the passes whose invariants disagreed with the stored ones.
+    fingerprint_disagreements: usize,
+}
+
+impl<'a> Expected<'a> {
+    /// Load the fingerprint document that sits next to the fixture.
+    fn new(root: &'a Path, case: &'a Case, output: usize) -> Result<Self> {
+        let path = root.join(
+            tenferro_einsum_benchmark::fingerprint::StoredFingerprint::file_name(
+                &case.outputs[output].file,
+            ),
+        );
+        let stored = match fs::read(&path) {
+            Ok(bytes) => {
+                Some(tenferro_einsum_benchmark::fingerprint::StoredFingerprint::from_bytes(&bytes)?)
+            }
+            // A run against fixtures prepared before fingerprints existed keeps the
+            // elementwise comparison instead of failing.
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+            Err(error) => return Err(error.into()),
+        };
+        Ok(Self {
+            case,
+            output,
+            stored,
+            tensor: read_array(root, &case.outputs[output])?,
+            verify_ms: 0.0,
+            fingerprint_compares: 0,
+            fingerprint_disagreements: 0,
+        })
+    }
+
+    /// The reference's declared shape and dtype.
+    fn tensor_metadata(&self) -> (&[usize], DType) {
+        let array = &self.case.outputs[self.output];
+        (
+            array.shape.as_slice(),
+            match array.dtype.as_str() {
+                "bool" => DType::Bool,
+                "i32" => DType::I32,
+                "i64" => DType::I64,
+                "f32" => DType::F32,
+                "f64" => DType::F64,
+                "c32" => DType::C32,
+                _ => DType::C64,
+            },
+        )
+    }
+
+    /// Verify `actual`, recording what the stored fingerprint says about it.
+    fn verify(&mut self, rt: &CudaRuntime, actual: &Tensor) -> Result<f64> {
+        let started = Instant::now();
+        let outcome = self.verify_inner(rt, actual);
+        self.verify_ms += started.elapsed().as_secs_f64() * 1e3;
+        outcome
+    }
+
+    fn verify_inner(&mut self, rt: &CudaRuntime, actual: &Tensor) -> Result<f64> {
+        // The fingerprint is a diagnostic and never the decision. An output can agree
+        // with every stored invariant and still be elementwise wrong (one large element
+        // pays the whole allowance of a sum), so the comparison below always runs.
+        if let Some(stored) = self.stored.as_ref().and_then(|stored| {
+            stored
+                .fingerprint
+                .as_ref()
+                .map(|fingerprint| (stored, fingerprint))
+        }) {
+            let (stored, fingerprint) = stored;
+            if !matches!(actual.dtype(), DType::Bool | DType::I32 | DType::I64)
+                && actual.shape() == stored.shape.as_slice()
+                && dtype_name(actual.dtype()) == stored.dtype
+            {
+                let host = download_tensor(rt, actual)?;
+                let (real, imaginary) = real_and_imaginary(&host)?;
+                let live =
+                    tenferro_einsum_benchmark::fingerprint::Fingerprint::of(&real, &imaginary);
+                self.fingerprint_compares += 1;
+                if !fingerprint.matches(&live, self.case.atol, self.case.rtol) {
+                    self.fingerprint_disagreements += 1;
+                }
+            }
+        }
+        let case = self.case;
+        verify(rt, actual, &self.tensor, case)
+    }
+}
+
+/// The harness name of a dtype, as the fixture manifest spells it.
+fn dtype_name(dtype: DType) -> &'static str {
+    match dtype {
+        DType::Bool => "bool",
+        DType::I32 => "i32",
+        DType::I64 => "i64",
+        DType::F32 => "f32",
+        DType::F64 => "f64",
+        DType::C32 => "c32",
+        DType::C64 => "c64",
+        _ => "unsupported",
+    }
+}
+
+/// Split a host tensor into real and imaginary parts for the fingerprint pass.
+fn real_and_imaginary(t: &Tensor) -> Result<(Vec<f64>, Vec<f64>)> {
+    Ok(match t.dtype() {
+        DType::F32 => (
+            t.as_slice::<f32>()?.iter().map(|&x| x as f64).collect(),
+            Vec::new(),
+        ),
+        DType::F64 => (t.as_slice::<f64>()?.to_vec(), Vec::new()),
+        DType::C32 => {
+            let values = t.as_slice::<Complex32>()?;
+            (
+                values.iter().map(|x| x.re as f64).collect(),
+                values.iter().map(|x| x.im as f64).collect(),
+            )
+        }
+        DType::C64 => {
+            let values = t.as_slice::<Complex64>()?;
+            (
+                values.iter().map(|x| x.re).collect(),
+                values.iter().map(|x| x.im).collect(),
+            )
+        }
+        _ => return Err("fingerprint verification dtype".into()),
+    })
+}
+
 fn verify(rt: &CudaRuntime, actual: &Tensor, expected: &Tensor, case: &Case) -> Result<f64> {
     let device = actual
         .placement()
@@ -343,9 +544,10 @@ fn run(
     mode: &str,
     settings: &Settings,
     device: usize,
-) -> Result<(Option<Value>, f64)> {
+) -> Result<(Option<Value>, f64, PhaseTimings)> {
     if case.op.starts_with("einsum_plan") {
-        return plan::run(root, case, settings, device);
+        return plan::run(root, case, settings, device)
+            .map(|(timing, error)| (timing, error, PhaseTimings::default()));
     }
     if matches!(
         case.op.as_str(),
@@ -354,20 +556,24 @@ fn run(
             | "householder_r"
             | "householder_q_columns"
     ) {
-        return state::run(root, case, mode, settings, device);
+        return state::run(root, case, mode, settings, device)
+            .map(|(timing, error)| (timing, error, PhaseTimings::default()));
     }
     if matches!(
         case.op.as_str(),
         "svd_full" | "slogdet" | "householder_qr" | "lu"
     ) {
-        return multi::run(root, case, mode, settings, device);
+        return multi::run(root, case, mode, settings, device)
+            .map(|(timing, error)| (timing, error, PhaseTimings::default()));
     }
+    let fixtures_started = Instant::now();
     let input_host = case
         .inputs
         .iter()
         .map(|a| read_array(root, a))
         .collect::<Result<Vec<_>>>()?;
-    let expected = read_array(root, &case.outputs[0])?;
+    let mut expected = Expected::new(root, case, 0)?;
+    let fixture_ms = fixtures_started.elapsed().as_secs_f64() * 1e3;
     let mut backend = CudaEngine::open(CudaDeviceId::from_ordinal(device.try_into()?))?;
     let rt = backend.runtime().clone();
     let input = input_host
@@ -383,12 +589,30 @@ fn run(
         let mut executor = FftExecutor::default();
         backend.with_backend_session(|session| {
             if !case.read_op.is_empty() {
-                return read_layout::run(case, &input, &expected, &rt, session, settings, bytes);
+                return read_layout::run(
+                    case,
+                    &input,
+                    &expected.tensor,
+                    &rt,
+                    session,
+                    settings,
+                    bytes,
+                )
+                .map(|(timing, error)| (timing, error, uninstrumented_phases()));
             }
             if case.op.contains("_into") {
                 return reuse::run(
-                    case, &input, &expected, &rt, session, settings, bytes, None, None,
-                );
+                    case,
+                    &input,
+                    &expected.tensor,
+                    &rt,
+                    session,
+                    settings,
+                    bytes,
+                    None,
+                    None,
+                )
+                .map(|(timing, error)| (timing, error, uninstrumented_phases()));
             }
             let probe = direct(
                 case,
@@ -397,7 +621,7 @@ fn run(
                 session,
                 structural::prepare_direct(case, &input),
             )?;
-            let error = verify(&rt, &probe, &expected, case)?;
+            let error = expected.verify(&rt, &probe)?;
             structural::verify_materialized(
                 case,
                 &input.iter().collect::<Vec<_>>(),
@@ -406,7 +630,7 @@ fn run(
             )?;
             drop(probe);
             if settings.verify_only || case.excluded.contains_key(mode) {
-                return Ok((None, error));
+                return Ok((None, error, phases_of(&expected, fixture_ms)));
             }
             let timing = measure(
                 settings,
@@ -422,14 +646,14 @@ fn run(
                 session,
                 structural::prepare_direct(case, &input),
             )?;
-            let error = error.max(verify(&rt, &final_output, &expected, case)?);
+            let error = error.max(expected.verify(&rt, &final_output)?);
             structural::verify_materialized(
                 case,
                 &input.iter().collect::<Vec<_>>(),
                 &final_output,
                 session,
             )?;
-            Ok((Some(timing), error))
+            Ok((Some(timing), error, phases_of(&expected, fixture_ms)))
         })?
     } else {
         // The runtime stores no engine (tenferro-rs #2206); every eager call
@@ -442,10 +666,10 @@ fn run(
                 .map(|a| Ok(session.constant_from(a)?))
                 .collect::<Result<Vec<_>>>()?;
             let probe = eager(case, &input, session, structural::prepare(case))?;
-            let error = verify_eager_output(&rt, session, &probe, &expected, case)?;
+            let error = verify_eager_inspected(&rt, session, &probe, &mut expected)?;
             drop(probe);
             if settings.verify_only || case.excluded.contains_key(mode) {
-                return Ok((None, error));
+                return Ok((None, error, phases_of(&expected, fixture_ms)));
             }
             let timing = measure(
                 settings,
@@ -455,26 +679,28 @@ fn run(
                 |args| eager(case, &input, session, args),
             )?;
             let final_output = eager(case, &input, session, structural::prepare(case))?;
-            let error = error.max(verify_eager_output(
+            let error = error.max(verify_eager_inspected(
                 &rt,
                 session,
                 &final_output,
-                &expected,
-                case,
+                &mut expected,
             )?);
-            Ok((Some(timing), error))
+            Ok((Some(timing), error, phases_of(&expected, fixture_ms)))
         })
     }
 }
-/// Validate the original eager descriptor before making any untimed inspection copy.
-fn verify_eager_output(
+/// Verify an eager output through the reference.
+///
+/// The placement and dtype guards run first: they are the statement that this row is a
+/// CUDA row at all, and they cost no reference bytes.
+fn verify_eager_inspected(
     rt: &CudaRuntime,
     session: &mut tenferro_ad::EagerSession<'_>,
     output: &EagerTensor,
-    expected: &Tensor,
-    case: &Case,
+    expected: &mut Expected<'_>,
 ) -> Result<f64> {
     let read = output.tensor_read();
+    let reference = expected.tensor_metadata();
     let device = read
         .placement()
         .device
@@ -483,18 +709,18 @@ fn verify_eager_output(
     if device.kind != tenferro_tensor::DeviceKind::Gpu(tenferro_tensor::GpuBackendKind::Cuda)
         || device.ordinal != env_usize("GPU_BENCH_DEVICE", 0)?
         || read.allocation_domain().is_none()
-        || read.shape() != expected.shape()
-        || read.dtype() != expected.dtype()
+        || read.shape() != reference.0
+        || read.dtype() != reference.1
     {
         return Err("verification eager original placement/shape/dtype mismatch".into());
     }
     if let Some(tensor) = read.as_tensor() {
-        return verify(rt, tensor, expected, case);
+        return expected.verify(rt, tensor);
     }
     // This public inspection copy is after clock stop (or before sampling).
     // It must never turn a metadata-only operation into a measured materialization.
     let inspected = session.duplicate_value(output)?;
-    verify(rt, &inspected, expected, case)
+    expected.verify(rt, &inspected)
 }
 
 fn main() -> Result<()> {
@@ -529,8 +755,14 @@ fn main() -> Result<()> {
         .create_new(true)
         .write(true)
         .open(output)?;
+    let overhead_budget = std::env::var("GPU_API_OVERHEAD_BUDGET")
+        .ok()
+        .map(|value| value.parse::<f64>())
+        .transpose()?
+        .unwrap_or(0.2);
     for case in cases {
         eprintln!("{} {}", mode, case.id);
+        let case_started = Instant::now();
         let mut row = json!({"schema_version":1,"case_id":case.id,"op":case.op,"backend":mode,
             "gpu_role":std::env::var("GPU_API_ROLE").unwrap_or_else(|_| "benchmark".into()),
             "physical_device_index":env_usize("GPU_BENCH_PHYSICAL_DEVICE", device)?,
@@ -572,14 +804,35 @@ fn main() -> Result<()> {
             writeln!(file, "{}", row)?;
             continue;
         }
-        match run(root, &case, &mode, &settings, device) {
-            Ok((timing, error)) => {
+        let outcome = run(root, &case, &mode, &settings, device);
+        let case_wall_ms = case_started.elapsed().as_secs_f64() * 1e3;
+        match outcome {
+            Ok((timing, error, phases)) => {
                 row["status"] = json!(if timing.is_some() {
                     "ok"
                 } else if settings.verify_only && !case.excluded.contains_key(&mode) {
                     "verification_only"
                 } else {
                     "unsupported"
+                });
+                let timed_ms = timed_ms_of(timing.as_ref());
+                let warning = overhead_warning(&case.id, timed_ms, case_wall_ms, overhead_budget);
+                if let Some(message) = warning.as_ref() {
+                    eprintln!("overhead budget: {message}");
+                }
+                row["overhead"] = json!({
+                    "timed_ms": timed_ms,
+                    "case_wall_ms": case_wall_ms,
+                    "untimed_ms": timed_ms.map(|timed| (case_wall_ms - timed).max(0.0)),
+                    "fixture_ms": if phases.split_measured { Some(phases.fixture_ms) } else { None },
+                    "verify_ms": if phases.split_measured { Some(phases.verify_ms) } else { None },
+                    "fingerprint_compares": phases.fingerprint_compares,
+                    "fingerprint_disagreements": phases.fingerprint_disagreements,
+                    "split_measured": phases.split_measured,
+                    "budget_ratio": overhead_budget,
+                    "over_budget": warning.is_some(),
+                    "warning": warning,
+                    "scope": "case wall clock outside the timed region: fixtures, H2D, handles, plan initialization, validation, output destruction",
                 });
                 row["timing"] = json!(timing);
                 row["verification"] =
@@ -602,4 +855,44 @@ fn main() -> Result<()> {
         file.flush()?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn an_over_budget_case_records_a_warning() {
+        // The 20 % default against the measured 21.6 s wall clock of a 50 ms case:
+        // the case is far outside it, which must be visible in its row.
+        let warning = overhead_warning("cholesky_f64_32x32", Some(50.0), 21_600.0, 0.2)
+            .expect("the case is outside the budget");
+        assert!(
+            warning.starts_with("cholesky_f64_32x32 untimed"),
+            "{warning}"
+        );
+        assert!(warning.contains("43100%"), "{warning}");
+        assert!(warning.contains("budget 20%"), "{warning}");
+    }
+
+    #[test]
+    fn a_case_inside_the_budget_records_no_warning() {
+        assert!(overhead_warning("case", Some(50.0), 55.0, 0.2).is_none());
+    }
+
+    #[test]
+    fn a_case_that_sampled_nothing_records_no_warning() {
+        assert!(overhead_warning("case", None, 55.0, 0.2).is_none());
+        assert!(overhead_warning("case", Some(0.0), 55.0, 0.2).is_none());
+    }
+
+    #[test]
+    fn a_longer_setup_only_changes_the_recorded_warning() {
+        // Same timed region, growing untimed work: the row's verdict is the timing,
+        // and the only thing that varies here is the recorded warning.
+        for wall in [51.0, 60.0, 200.0, 21_600.0] {
+            let warning = overhead_warning("case", Some(50.0), wall, 0.2);
+            assert_eq!(warning.is_some(), wall > 60.0, "wall {wall}");
+        }
+    }
 }

@@ -1,3 +1,4 @@
+pub mod fingerprint;
 pub mod tensornetwork;
 pub mod thread_enforcement;
 

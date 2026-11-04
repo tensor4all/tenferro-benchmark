@@ -362,5 +362,52 @@ class PublicGpuContracts(unittest.TestCase):
                 formatter.load_rows(suite, [path], verify_only=True)
 
 
+class OverheadBudgetDiagnostic(unittest.TestCase):
+    """The budget labels the untimed split; it never decides anything."""
+
+    def test_an_over_budget_case_records_a_warning(self):
+        # The 20 % default against the measured 21.6 s wall clock of a 50 ms case:
+        # the case is far outside it, and that must be visible in its row.
+        warning = bench.overhead_warning("cholesky_f64_32x32", 50.0, 21_600.0, 0.2)
+        self.assertTrue(warning.startswith("cholesky_f64_32x32 untimed"), warning)
+        self.assertIn("43100%", warning)
+        self.assertIn("budget 20%", warning)
+
+    def test_a_case_inside_the_budget_records_no_warning(self):
+        self.assertIsNone(bench.overhead_warning("case", 50.0, 55.0, 0.2))
+
+    def test_a_case_that_sampled_nothing_records_no_warning(self):
+        self.assertIsNone(bench.overhead_warning("case", None, 55.0, 0.2))
+        self.assertIsNone(bench.overhead_warning("case", 0.0, 55.0, 0.2))
+
+    def test_the_published_report_carries_the_recorded_warning(self):
+        suite = {"suite_id": "gpu/structural", "cases": [{"id": "one"}], "backends": ["a"],
+                 "description": "what this shape class means"}
+        overhead = {"timed_ms": 50.0, "case_wall_ms": 21_600.0, "untimed_ms": 21_550.0,
+                    "budget_ratio": 0.2, "over_budget": True,
+                    "warning": "one untimed 21550.0 ms is 43100% of the 50.0 ms timed region (budget 20%)"}
+        row = {"case_id": "one", "backend": "a", "status": "ok", "overhead": overhead,
+               "timing": {"operations_per_sample": 1, "batch_ms": [0.05]},
+               "verification": {"max_error_over_tolerance": 0.0}}
+        quiet = {"case_id": "one", "backend": "a", "status": "ok",
+                 "overhead": {**overhead, "over_budget": False, "warning": None},
+                 "timing": {"operations_per_sample": 1, "batch_ms": [0.05]},
+                 "verification": {"max_error_over_tolerance": 0.0}}
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "rows.jsonl"
+            for candidate, expected in ((row, True), (quiet, False)):
+                path.write_text(json.dumps(candidate) + "\n")
+                # The section is appended to the page the CLI writes, not by render(),
+                # so this mirrors main(): render, then the recorded warnings.
+                rows = formatter.load_rows(suite, [path])
+                report = formatter.render(suite, [path], {}, "test")
+                report += formatter.overhead_warning_section(rows)
+                self.assertEqual("## Untimed work over the recorded budget" in report, expected)
+                self.assertIn("| one | 50.000 (0.000) |", report)
+                if expected:
+                    self.assertIn("43100%", report)
+                    self.assertIn("does not change a cell", report)
+
+
 if __name__ == "__main__":
     unittest.main()

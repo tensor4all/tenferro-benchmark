@@ -131,10 +131,33 @@ def main():
         print(content, end="")
     else:
         content = render(suite, args.inputs, metadata, args.run_metadata.parent.name)
+        content += overhead_warning_section(load_rows(suite, args.inputs))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temp = args.output.with_suffix(".tmp")
     temp.write_text(content)
     temp.replace(args.output)
+
+
+def overhead_warning_section(rows):
+    """The recorded untimed-budget warnings as a page section, or "".
+
+    The budget has no measured basis, so a case over it is reported here and is still
+    published with its number: the section lists what was recorded and claims nothing.
+    """
+    warned = [(key, warning) for key, row in rows.items()
+              if (warning := (row.get("overhead") or {}).get("warning"))]
+    if not warned:
+        return ""
+    budget = (rows[warned[0][0]].get("overhead") or {}).get("budget_ratio")
+    text = ["", "## Untimed work over the recorded budget", "",
+            f'Each row records the wall clock it spent outside its timed region. These cases '
+            f'spent more than the recorded budget ratio ({budget}) there. The threshold has no '
+            'measured basis, so this is a recorded warning: it does not change a cell, its '
+            'acceptance or the exit status of the run.', "",
+            "| Case | Backend | Warning |", "| --- | --- | --- |"]
+    for key, warning in warned:
+        text.append(f'| {key[0]} | {key[1]} | {warning.replace("|", "/")} |')
+    return "\n".join(text)
 
 
 if __name__ == "__main__":
