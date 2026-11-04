@@ -117,7 +117,7 @@ SELECTION_DIR="$RESULTS_ROOT/$BENCHMARK_TARGET_PROFILE/gpu/routine_selection/$TI
 mapfile -t SUITE_ROWS < <("${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" \
     --effort "${BENCH_EFFORT:-standard}" ${VENDOR_ARGS[@]+"${VENDOR_ARGS[@]}"} \
     --backends "$SELECTION_BACKENDS" --problem "$PROBLEM_FILTER" \
-    --output "$SELECTION_DIR" "${SUITES[@]}")
+    --output "$SELECTION_DIR" "${SUITES[@]+"${SUITES[@]}"}")
 [[ ${#SUITE_ROWS[@]} -gt 0 ]] || { echo "No GPU suites selected" >&2; exit 1; }
 SUITES=()
 SUITE_DRIVERS=()
@@ -139,7 +139,7 @@ print(resolved["warmups"], resolved["runs"])
 PY
 )
 export BENCH_WARMUPS="$ROUTINE_WARMUPS" BENCH_RUNS="$ROUTINE_RUNS"
-"${VALIDATOR[@]}" "${SUITES[@]}"
+"${VALIDATOR[@]}" "${SUITES[@]+"${SUITES[@]}"}"
 
 suite_id_for_file() {
     awk '$1 == "suite_id:" { print $2; exit }' "$1"
@@ -160,8 +160,8 @@ backends_for_suite() {
     local requested
     _out=()
     mapfile -t _suite_backends < <(suite_backends_for_file "$suite")
-    for requested in "${BACKENDS[@]}"; do
-        for suite_backend in "${_suite_backends[@]}"; do
+    for requested in "${BACKENDS[@]+"${BACKENDS[@]}"}"; do
+        for suite_backend in "${_suite_backends[@]+"${_suite_backends[@]}"}"; do
             if [[ "$requested" == "$suite_backend" ]]; then
                 _out+=("$requested")
                 break
@@ -447,7 +447,7 @@ for index in "${!SUITES[@]}"; do
     echo "Report:   $REPORT_OUT"
 done
 
-"${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$SELECTION_DIR" --records "${RESULT_PATHS[@]}"
+"${PYTHON[@]}" "$SCRIPT_DIR/gpu_routine_selection.py" --output "$SELECTION_DIR" --records "${RESULT_PATHS[@]+"${RESULT_PATHS[@]}"}"
 [[ "$VALIDATION_FAILED" == 0 ]] || exit 1
 "${PYTHON[@]}" "$SCRIPT_DIR/format_gpu_routine_coverage.py" "$SELECTION_DIR/case_status.json" \
     --output "$SELECTION_DIR/report.md"

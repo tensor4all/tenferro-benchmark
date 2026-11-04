@@ -76,7 +76,7 @@ PY
         assert_benchmark_host_idle
     fi
     "$PYTHON" "$SCRIPT_DIR/benchmark_perf_issues.py" --binary "$BINARY" \
-        --threads "$threads" --output "$RUN_DIR/samples_t${threads}.jsonl" "${EXTRA[@]}" || failed=1
+        --threads "$threads" --output "$RUN_DIR/samples_t${threads}.jsonl" "${EXTRA[@]+"${EXTRA[@]}"}" || failed=1
 done
 cp "$RUN_DIR/run_t${THREAD_COUNTS[0]}.yaml" "$RUN_DIR/run.yaml"
 finalize_benchmark_run "$PROJECT_DIR" "$RUN_DIR"

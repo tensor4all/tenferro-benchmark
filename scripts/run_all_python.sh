@@ -79,6 +79,6 @@ echo "============================================"
 echo " Python benchmark complete"
 echo "============================================"
 echo "Results:"
-for log in "${PYTHON_LOGS[@]}"; do
+for log in "${PYTHON_LOGS[@]+"${PYTHON_LOGS[@]}"}"; do
     echo "  $log"
 done

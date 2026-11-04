@@ -327,6 +327,6 @@ fi
 
 echo ""
 echo "CPU public API benchmark complete."
-for CSV in "${CSVS[@]}"; do echo "CSV:     $CSV"; done
+for CSV in "${CSVS[@]+"${CSVS[@]}"}"; do echo "CSV:     $CSV"; done
 echo "Report:  $REPORT"
 echo "Latest:  $LATEST_REPORT"

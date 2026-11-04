@@ -66,8 +66,8 @@ for bin in "${BINS[@]}"; do bin_args+=(--bin "$bin"); done
 profile_flag=()
 subdir=debug
 if [[ "$PROFILE" == release ]]; then profile_flag=(--release); subdir=release; fi
-RUSTC_WRAPPER= CARGO_TARGET_DIR="$target" cargo build -j 16 "${profile_flag[@]}" \
-    --no-default-features --features "$FEATURES" "${bin_args[@]}" >&2
+RUSTC_WRAPPER= CARGO_TARGET_DIR="$target" cargo build -j 16 "${profile_flag[@]+"${profile_flag[@]}"}" \
+    --no-default-features --features "$FEATURES" "${bin_args[@]+"${bin_args[@]}"}" >&2
 
 bin_dir="$target/$subdir"
 {

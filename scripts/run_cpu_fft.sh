@@ -175,6 +175,6 @@ publish_cpu_runs "$PROJECT_DIR" "$RUN_DIR"
 
 echo ""
 echo "CPU FFT benchmark complete"
-for CSV in "${CSVS[@]}"; do echo "CSV:      $CSV"; done
+for CSV in "${CSVS[@]+"${CSVS[@]}"}"; do echo "CSV:      $CSV"; done
 echo "Report:   $REPORT"
 echo "Latest:   $LATEST_REPORT"

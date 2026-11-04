@@ -284,7 +284,7 @@ RUNS_AFTER=()
 while IFS= read -r run_dir; do
   RUNS_AFTER+=("$run_dir")
 done < <(find "$TMP/data/results/amd-cpu/cpu/einsum" -mindepth 1 -maxdepth 1 -type d | sort)
-RAW_ONLY_RUN="$(comm -13 <(printf '%s\n' "${RUNS_BEFORE[@]}") <(printf '%s\n' "${RUNS_AFTER[@]}"))"
+RAW_ONLY_RUN="$(comm -13 <(printf '%s\n' "${RUNS_BEFORE[@]+"${RUNS_BEFORE[@]}"}") <(printf '%s\n' "${RUNS_AFTER[@]+"${RUNS_AFTER[@]}"}"))"
 test -n "$RAW_ONLY_RUN"
 test -f "$RAW_ONLY_RUN/run.yaml"
 test -f "$RAW_ONLY_RUN/wall_command.json"

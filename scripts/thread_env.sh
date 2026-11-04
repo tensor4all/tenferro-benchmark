@@ -77,7 +77,9 @@ THREAD_ENV_EXTRA_KEYS=()
 
 thread_env_lines() {
     local key
-    for key in "${THREAD_ENV_KEYS[@]}" "${THREAD_ENV_EXTRA_KEYS[@]}"; do
+    # The `+"${arr[@]}"` form stays safe under `set -u` on bash 3.2, where a
+    # bare "${arr[@]}" of an empty array is an unbound variable.
+    for key in "${THREAD_ENV_KEYS[@]+"${THREAD_ENV_KEYS[@]}"}" "${THREAD_ENV_EXTRA_KEYS[@]+"${THREAD_ENV_EXTRA_KEYS[@]}"}"; do
         echo "- ${key}: \`${!key:-}\`"
     done
 }

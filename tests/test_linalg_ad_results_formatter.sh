@@ -5,7 +5,6 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-PY=()
 if command -v uv >/dev/null 2>&1; then
   PY=(uv run python)
 else
