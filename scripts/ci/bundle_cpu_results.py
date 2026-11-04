@@ -23,7 +23,14 @@ def source_directories(report: str, profile: str) -> list[str]:
     return sorted(set(re.findall(pattern, report)))
 
 
-def package_cpu(root: Path, profile: str, head_sha: str, bundle: Path, suites=CPU_SUITES, threads=(1, 4)) -> dict:
+def package_cpu(root: Path, profile: str, head_sha: str, bundle: Path, suites=CPU_SUITES, threads=(1, 4),
+                *, enforce_inventory=True, window=None) -> dict:
+    """Package selected suites. Only the inventory generator relaxes these knobs.
+
+    `enforce_inventory=False` skips the ledger comparison; `window` adds the
+    collection time bounds that `build_source` checks each source's timestamp
+    against, so a report naming an older run is rejected rather than measured.
+    """
     if profile not in ('amd-cpu', 'mac-cpu') or not re.fullmatch('[a-f0-9]{40}', head_sha):
         raise ValueError('Invalid CPU collection identity')
     if bundle.exists():
@@ -34,7 +41,7 @@ def package_cpu(root: Path, profile: str, head_sha: str, bundle: Path, suites=CP
         raise ValueError('Invalid selected thread counts')
     bundle.mkdir(parents=True)
     entries = []
-    source = {'head_sha': head_sha}
+    source = {'head_sha': head_sha, **(window or {})}
     for name in suites:
         suite = 'cpu/' + name
         report_relative = f'result/{profile}/{suite}.md'
@@ -131,7 +138,7 @@ def package_cpu(root: Path, profile: str, head_sha: str, bundle: Path, suites=CP
         entry = {'suite_id': suite, 'timestamp': stamp, 'run_directory': run_directory,
                  'threads': [1] if name == 'overhead_smoke' else list(threads), 'sources': packed_sources,
                  'files': {str(path.relative_to(bundle)): digest(path) for path in destination.rglob('*') if path.is_file()}}
-        document = rebuild_cpu(bundle, entry, profile, source)
+        document = rebuild_cpu(bundle, entry, profile, source, enforce_inventory=enforce_inventory)
         entry.update(tenferro_commit=document['tenferro_commit'], hardware=document['hardware'], expected_rows=identities(document))
         encoded = json.dumps(document, indent=2)+'\n'
         (destination/'report.summary.json').write_text(encoded)
